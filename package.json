@@ -16,9 +16,10 @@
     "start": "cgulp s",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",
+    "test-frontend":"cgulp karma",
     "test-backend": "mocha --compilers coffee:coffee-script/register --reporter spec spec/backend/*",
     "test-gulp": "mocha --compilers coffee:coffee-script/register --reporter spec spec/gulp/*;",
-    "test": "npm run test-backend; npm run test-gulp;",
+    "test": "npm run test-backend; npm run test-gulp; npm run test-frontend;",
     "postinstall": "bower install"
   },
   "dependencies": {
@@ -49,8 +50,10 @@
     "gulp-flatten": "0.0.x",
     "gulp-help": "^0.1.11",
     "gulp-imagemin": "0.3.x",
+    "gulp-karma": "https://github.com/nmccready/gulp-karma/archive/master.tar.gz",
     "gulp-minify-css": "0.3.x",
     "gulp-nodemon": "^1.0.4",
+    "gulp-open": "^0.2.8",
     "gulp-rimraf": "^0.1.0",
     "gulp-shell": "^0.2.9",
     "gulp-size": "0.3.x",
@@ -61,6 +64,17 @@
     "helmet": "0.2.x",
     "html-loader": "^0.2.2",
     "html-webpack-plugin": "^1.1.0",
+    "karma": "^0.12.21",
+    "karma-chrome-launcher": "0.1.4",
+    "karma-coffee-preprocessor": "0.2.1",
+    "karma-coverage": "https://github.com/nmccready/karma-coverage/archive/master.tar.gz",
+    "karma-fixture": "^0.2.1-1",
+    "karma-html-reporter": "https://github.com/nmccready/karma-html-reporter/archive/master.tar.gz",
+    "karma-html2js-preprocessor": "0.1.0",
+    "karma-jasmine": "0.2.2",
+    "karma-mocha": "^0.1.8",
+    "karma-phantomjs-launcher": "0.1.4",
+    "karma-webpack": "^1.2.1",
     "lodash": "^2.4.1",
     "memwatch": "0.2.x",
     "method-override": "1.0.x",
@@ -68,6 +82,7 @@
     "mocha": "1.18.x",
     "mongoose": "3.8.x",
     "nodetime": "0.8.x",
+    "ns2": "^1.0.1",
     "passport": "0.2.x",
     "passport-http": "0.2.x",
     "password-hash": "1.2.x",
@@ -85,5 +100,10 @@
     "webpack": "^1.3.3-beta2",
     "webpack-dev-server": "^1.4.10",
     "winston": "0.7.x"
+  },
+  "devDependencies": {
+    "karma-chai": "^0.1.0",
+    "karma-mocha-reporter": "^0.3.0",
+    "should": "^4.0.4"
   }
 }
