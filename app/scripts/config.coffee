@@ -11,10 +11,10 @@ module.exports =
     $routeProvider
     .when '/users',
       templateUrl: 'views/users.html'
-      controller: 'UserController'
+      controller: 'UserCtrl'.ourNs()
     .when '/',
       templateUrl: 'views/main.html'
-      controller: 'MainController'
+      controller: 'MainCtrl'.ourNs()
     .when '/500',
       templateUrl: 'views/500.html'
     .when '/404',
