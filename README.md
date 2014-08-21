@@ -6,16 +6,20 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 ### How to map
 
 - Install prerequisites
-    - npm install -g coffee-script coffeegulp cgulp bower gulp webpack
+    - foreman run npm install -g coffee-script coffeegulp cgulp bower gulp webpack
 
 - Install dependencies:
-    - npm install (will bower install as well)
+    - foreman run npm install (will bower install as well)
 
 - Run the server
-    - npm start || cgulp s
+    - foreman start
 
 - Run gulp
-    - npm run gulp (for dev) || cgulp
+    - foreman run npm run gulp (for dev)
+
+### Db change management
+- handled via Flyway
+- [full documentation here](https://realtymaps.atlassian.net/wiki/display/NDS/Database+change+management)
 
 
 ### Differences compared to mean.io:
