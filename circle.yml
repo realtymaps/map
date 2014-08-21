@@ -2,5 +2,6 @@ machine:
   node:
     version: v0.10.29
 dependencies:
-  override:
+  post:
+    - npm install
     - npm install -g coffee-script mocha gulp coffeegulp cgulp karma webpack webpack-dev-server
