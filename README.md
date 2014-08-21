@@ -1,9 +1,10 @@
 map
 ===
 
-Master: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/master.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
-Develop: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/develop.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
+**Master**: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/master.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
 
+**Develop**: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/develop.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
+___
 
 Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 
@@ -21,7 +22,7 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 - Run gulp
     - npm run gulp (for dev) || cgulp
 
-
+___
 ### Differences compared to mean.io:
 
 - everything is written with coffeescript
@@ -50,7 +51,7 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
       - this is planned a start around nginx-buildpack for Heroku
       - actual build pack to use is here https://github.com/ryandotsmith/nginx-buildpack
 
-
+___
 ### TODO
 
 - forever script + git hook for custom deployment
