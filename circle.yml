@@ -4,4 +4,4 @@ machine:
 dependencies:
   post:
     - npm install
-    - npm install -g coffee-script mocha gulp coffeegulp cgulp karma webpack webpack-dev-server
+    - npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server 
