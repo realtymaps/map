@@ -1,5 +1,16 @@
 gulp = require 'gulp'
 gWebpack = require 'gulp-webpack'
+HtmlWebpackPlugin = require 'html-webpack-plugin'
+configFact = require '../../webpack.conf.coffee'
+#end dependencies
+
+conf = configFact(
+  output =
+    filename: "js/[name].wp.js"
+    chunkFilename: "js/[id].wp.js"
+  ,
+  additionalPlugs = [new HtmlWebpackPlugin template: 'app/html/index.html']
+)
 
 # console.log require '../../webpack.conf.coffee'
 gulp.task 'webpack', ->
@@ -11,5 +22,5 @@ gulp.task 'webpack', ->
     'app/styles/*.css'
     'app/styles/**/*.css'
   ]
-  .pipe(gWebpack require '../../webpack.conf.coffee')
+  .pipe(gWebpack conf)
   .pipe(gulp.dest('_public/'))
