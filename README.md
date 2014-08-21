@@ -1,6 +1,10 @@
 map
 ===
 
+Master: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/master.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
+Develop: [![Build Status](https://circleci.com/gh/realtymaps/map/tree/develop.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
+
+
 Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 
 ### How to map
