@@ -3,4 +3,4 @@ machine:
     version: v0.10.29
 dependencies:
   override:
-    - npm install -g gulp coffeegulp cgulp karma webpack webpack-dev-server
+    - npm install -g mocha gulp coffeegulp cgulp karma webpack webpack-dev-server
