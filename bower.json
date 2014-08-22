@@ -2,7 +2,7 @@
   "name": "mean.coffee",
   "version": "0.0.1",
   "dependencies": {
-    "angular": "~1.2.16",
+    "angular": "~1.2.23",
     "bootstrap": "~3.1.1",
     "angular-resource": "~1.2.16",
     "angular-cookies": "~1.2.16",
@@ -13,7 +13,9 @@
     "lodash": "~2.4.1",
     "jquery": "~2.1.1",
     "ns2": "~1.0.1",
-    "angular-google-maps": "2.0.0-SNAPSHOT",
-    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect/archive/3294148e5dbe5b819fd60f4e7a0bfaa1318fcf59.zip"
+    "angular-google-maps": "2.0.0-SNAPSHOT-c",
+    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect/archive/3294148e5dbe5b819fd60f4e7a0bfaa1318fcf59.zip",
+    "angular-state-files": "*",
+    "angular-ui-router": "~0.2.10"
   }
 }
