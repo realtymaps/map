@@ -11,6 +11,9 @@
     "angular-ui-utils": "~0.1.1",
     "angular-route": "~1.2.16",
     "lodash": "~2.4.1",
-    "jquery": "~2.1.1"
+    "jquery": "~2.1.1",
+    "ns2": "~1.0.1",
+    "angular-google-maps": "2.0.0-SNAPSHOT",
+    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect/archive/3294148e5dbe5b819fd60f4e7a0bfaa1318fcf59.zip"
   }
 }

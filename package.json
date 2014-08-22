@@ -16,10 +16,10 @@
     "start": "cgulp s",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",
-    "test-frontend": "cgulp karma",
-    "test-backend": "mocha --compilers coffee:coffee-script/register --reporter spec spec/backend/*",
-    "test-gulp": "mocha --compilers coffee:coffee-script/register --reporter spec spec/gulp/*;",
-    "test": "npm run test-backend; npm run test-gulp; npm run test-frontend;",
+    "test-frontend": "cgulp frontendSpec",
+    "test-backend": "cgulp backendSpec",
+    "test-gulp": "cgulp gulpSpec",
+    "test": "cgulp spec",
     "postinstall": "bower install"
   },
   "dependencies": {
@@ -52,6 +52,7 @@
     "gulp-imagemin": "0.3.x",
     "gulp-karma": "https://github.com/nmccready/gulp-karma/archive/master.tar.gz",
     "gulp-minify-css": "0.3.x",
+    "gulp-mocha": "^1.0.0",
     "gulp-nodemon": "^1.0.4",
     "gulp-open": "^0.2.8",
     "gulp-rimraf": "^0.1.0",

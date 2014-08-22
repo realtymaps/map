@@ -31,3 +31,6 @@ run = (config) ->
 gulp.task 'karma', ->
   log "#{realtymaps.dashes} Karma Setup #{realtymaps.dashes}"
   run(devConfig)
+
+
+gulp.task 'frontendSpec', ['karma']

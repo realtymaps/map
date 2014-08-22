@@ -1,3 +1,3 @@
 gulp = require 'gulp'
 
-gulp.task 'spec', ['karma']
+gulp.task 'spec', ['frontendSpec','backendSpec','gulpSpec']

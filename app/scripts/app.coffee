@@ -6,14 +6,20 @@ require 'angular-cookies'
 require 'angular-resource'
 require 'angular-route'
 require 'angular-bootstrap/ui-bootstrap-tpls.js' #angular-bootstrap
+#require 'angular-google-maps'
 _ = require 'lodash'
 
-require '../styles/common.css'
 require 'bootstrap/dist/css/bootstrap.css'
 require 'bootstrap/dist/js/bootstrap.js'
 
+require '../styles/common.css'
+require '../../common/extensions/strings.coffee'
+
 #console.log "ANGULAR: #{_.keys(angular)}"
 
-app = window.angular.module 'meanApp', ['ngCookies', 'ngResource', 'ngRoute', 'ui.bootstrap']
+appName = 'app'.ourNs()
+console.info "AppName: #{appName}"
+
+app = window.angular.module appName, ['ngCookies', 'ngResource', 'ngRoute', 'ui.bootstrap']
 
 module.exports = app
