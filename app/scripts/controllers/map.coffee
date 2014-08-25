@@ -3,14 +3,7 @@ requires = './baseGoogleMap.coffee'
 app = require '../app.coffee'
 
 ###
-  Our Main Map Controller which can swap out its main map implementation
+  Our Main Map Controller, logic
+  is in a specific factory where Map is a GoogleMap
 ###
-module.exports = app.controller 'MapCtrl'.ourNs(), [
-  '$scope',
-  'Logger'.ns(),
-  '$http',
-  '$timeout',
-  'GoogleMapApi'.ns(),
-  'BaseGoogleMap'.ourNs(),
-  require('../factories/googleMap.coffee')
-]
+module.exports = app.controller 'MapCtrl'.ourNs(), ['$scope', 'GoogleMap'.ourNs(), ($scope, Map) -> new Map($scope)]

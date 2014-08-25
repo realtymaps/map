@@ -16,7 +16,7 @@
         <ui-gmap-layer type="BicyclingLayer" show="map.showBicycling"></ui-gmap-layer>
         <ui-gmap-layer namespace="weather" type="WeatherLayer" show="map.showWeather"></ui-gmap-layer>
 
-        <ui-gmap-marker ng-repeat="m in markers" coords="m.coords" options="m.options" events="m.events" idKey="m.id">
+        <ui-gmap-marker ng-repeat="m in map.markers" coords="m" options="m.options" events="m.events" idKey="m.id">
         </ui-gmap-marker>
 
         <ui-gmap-polygon ng-repeat="p in map.polygons track by p.id" path="p.path"
