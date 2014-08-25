@@ -36,7 +36,7 @@ echo "DB_NAME: $DB_NAME"
 
 echo
 echo "Attempting Flyway command:"
-FLYWAY_CMD="./flyway -url=jdbc:$DB_TYPE://$DB_CONNECTION/$DB_NAME -user=$DB_USER -password=$DB_PASSWORD -validateOnMigrate=false -outOfOrder=true $@"
+FLYWAY_CMD="./flyway -url=jdbc:$DB_TYPE://$DB_CONNECTION/$DB_NAME -user=$DB_USER -password=$DB_PASSWORD -validateOnMigrate=false -outOfOrder=true -locations=filesystem:./sql/$SQL_LOCATION -initOnMigrate=true $@"
 echo "$FLYWAY_CMD"
 
 $FLYWAY_CMD
