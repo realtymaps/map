@@ -4,12 +4,24 @@ base =
   LOGPATH: "mean.coffee.log"
   COOKIE_SECRET: "thisisthesecretforthesession"
   DBURLTEST: "mongodb://localhost/meandb_test"
+  USER_DB_CONFIG:
+    client: 'pg'
+    connection: process.env.DATABASE_URL
+    pool:
+      min: 2
+      max: 10
+  PROPERTY_DB_CONFIG:
+    client: 'pg'
+    connection: process.env.HEROKU_POSTGRESQL_ONYX_URL
+    pool:
+      min: 2
+      max: 10
 
-dev =
-  DBURL: "mongodb://localhost/meandb"
+# we should use environment-specific configuration as little as possible
+dev = {}
+prod = {}
 
-prod =
-  DBURL: "mongodb://localhost/meandb"
+
 
 mergeConfig = (config) ->
   for key, val of config

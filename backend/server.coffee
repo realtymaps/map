@@ -9,8 +9,9 @@ if process.env.NODE_ENV == 'production'
 config = require './config/config'
 logger = require './config/logger'
 express = require 'express'
-mongoose = require 'mongoose'
 passport = require 'passport'
+knex = require 'knex'
+bookshelf = require 'bookshelf'
 
 root_path = __dirname
 
@@ -24,25 +25,11 @@ process.on 'uncaughtException', (err) ->
 memwatch = require 'memwatch'
 memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
-# bootstap db connection
-db = mongoose.connect config.DBURL
-logger.info "mongo connected to", config.DBURL
 
-# exit on db connection error
-mongoose.connection.on 'error', (err) ->
-  logger.error "mongodb error: #{err}"
-  process.exit 1
-
-# retry 10 times on db connection lost
-attempt = 1
-mongoose.connection.on 'disconnected', () ->
-  if attempt < 10
-    logger.error "mongodb disconnected, trying to reconnect.."
-    logger.info "mongodb reconnect, attempt num #{attempt}"
-    attempt += 1
-    db = mongoose.connect config.DBURL, opts
-  else
-    logger.error "mongodb disconnect, giving up!"
+# bootstrap databases
+dbs =
+  users: bookshelf(knex(config.USER_DB_CONFIG))
+  properties: bookshelf(knex(config.PROPERTY_DB_CONFIG))
 
 # bootstrap models
 require('./models')()
@@ -51,7 +38,7 @@ require('./models')()
 require('./config/passport')(passport)
 
 # express configuration
-app = require("./config/express")(passport, db, logger, root_path)
+app = require("./config/express")(passport, dbs, logger, root_path)
 
 # bootstrap routes
 require("./routes")(app)
