@@ -1,4 +1,3 @@
-mongoose = require 'mongoose'
 BasicStrategy = require('passport-http').BasicStrategy
 User = require("../models/user")
 

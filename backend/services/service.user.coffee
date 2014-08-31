@@ -1,5 +1,8 @@
 logger = require '../config/logger'
 
+###
+#TODO: probably just want to remove this service altogether
+
 mongoose = require 'mongoose'
 User = mongoose.model 'User'
 
@@ -19,10 +22,4 @@ module.exports =
 
   deleteUser: (id, cb) ->
     User.findOneAndRemove {'_id': id}, (err, user) -> cb err, user
-
-
-
-
-
-
-
+###

@@ -6,7 +6,8 @@ express = require 'express'
 helmet = require 'helmet'
 multipart = require 'connect-multiparty'
 session = require 'express-session'
-sessionStore = require('connect-mongo')({session: session})
+# TODO: use a postgres-compatible session store
+#sessionStore = require('connect-mongo')({session: session})
 compress = require 'compression'
 bodyParser = require 'body-parser'
 favicon = require 'static-favicon'
@@ -15,11 +16,12 @@ methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 
-module.exports = (passport, db, logger, root_path) ->
+module.exports = (passport, dbs, logger, root_path) ->
 
   app = express()
 
   app.logger = logger
+  app.dbs = dbs
 
   # set port, routes, models and config paths
   app.set 'port', config.PORT
@@ -49,17 +51,19 @@ module.exports = (passport, db, logger, root_path) ->
   app.use multipart()
   app.use methodOverride()
 
+  # JWI: killing mongodb references
   # session store (mongodb)
-  app.use session
-    secret: config.COOKIE_SECRET
-    maxAge: 60 * 60 * 1000
-    store: new sessionStore
-      db: db.connection.db
-      clear_interval: 60 * 60
+  #app.use session
+  #  secret: config.COOKIE_SECRET
+  #  maxAge: 60 * 60 * 1000
+  #  store: new sessionStore
+  #    db: db.connection.db
+  #    clear_interval: 60 * 60
 
   # let passport manage sessions
   app.use passport.initialize()
-  app.use passport.session()
+  #TODO: uncomment this once we have sessions configured for postgres
+  #app.use passport.session()
 
   # bootstrap routes
   require("../routes")(app,frontendAssetsPath)

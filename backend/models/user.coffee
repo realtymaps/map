@@ -1,3 +1,7 @@
+#TODO: fix this model to use postgres, and specifically to use the table
+#TODO: created by django (auth_user)
+
+###
 passwordHash = require 'password-hash'
 mongoose = require 'mongoose'
 Schema = mongoose.Schema
@@ -25,3 +29,4 @@ User.methods.authenticate = (plainText) ->
   passwordHash.verify(plainText, @hashed_password)
 
 module.exports = mongoose.model('User', User)
+###
