@@ -39,8 +39,9 @@ module.exports = (passport, dbs, logger, root_path) ->
   app.use compress()
 
   # setting the favicon and static folder
-  app.use favicon path.join root_path, '../_public/assets/favicon.ico'
-  app.use serveStatic path.join root_path, '../_public'
+  frontendAssetsPath = path.join root_path, '../_public'
+  app.use favicon "#{frontendAssetsPath}/assets/favicon.ico"
+  app.use serveStatic frontendAssetsPath
 
   # cookie parser - above session
   app.use cookieParser config.COOKIE_SECRET
@@ -65,7 +66,7 @@ module.exports = (passport, dbs, logger, root_path) ->
   #app.use passport.session()
 
   # bootstrap routes
-  require("../routes")(app)
+  require("../routes")(app,frontendAssetsPath)
 
   app.use (err, req, res, next) ->
     logger.error err.toString()
