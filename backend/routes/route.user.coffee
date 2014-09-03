@@ -5,7 +5,7 @@ user_service = require '../services/service.user'
 
 
 module.exports = (app) ->
-
+  
   app.get '/users', auth.basic, (req, res) ->
     logger.info 'get all users'
     user_service.getUsers (err, users) ->
