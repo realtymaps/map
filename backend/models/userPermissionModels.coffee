@@ -12,12 +12,14 @@ module.exports = (app) ->
       @belongsToMany(result.Group, "auth_user_groups", "user_id", "group_id")
     permissions: () ->
       @belongsToMany(result.Permission, "auth_user_user_permissions", "user_id", "permission_id")
+  
   result.Permission = app.dbs.users.Model.extend
     tableName: "auth_permission",
     users: () ->
       @belongsToMany(result.User, "auth_user_user_permissions", "permission_id", "user_id")
     groups: () ->
       @belongsToMany(result.Group, "auth_group_permissions", "permission_id", "group_id")
+  
   result.Group = app.dbs.users.Model.extend
     tableName: "auth_group",
     users: () ->

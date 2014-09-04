@@ -18,20 +18,19 @@ hashifySettings = (hash, setting) ->
 
 module.exports = (app) ->
   EnvironmentSetting = require("../models/environmentSetting")(app)
-
+  
   return {
-  getSettings: (callback) ->
-    # we want to get the all_environments values first...
-    EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
-      .then (allEnvironmentSettings) ->
-        settings = {}
-        _.reduce(allEnvironmentSettings.toJSON(), hashifySettings, settings)
-        # ... then override them with the specific environment values
-        EnvironmentSetting.where(environment_name: process.env.NODE_ENV).fetchAll()
-          .then (specificEnvironmentSettings) ->
-            _.reduce(specificEnvironmentSettings.toJSON(), hashifySettings, settings)
-            process.nextTick () ->
-              callback(null, settings)
-          .catch(() -> process.nextTick(callback))
-      .catch(() -> process.nextTick(callback))
+    getSettings: (callback) ->
+      # we want to get the all_environments values first...
+      EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
+        .then (allEnvironmentSettings) ->
+          settings = {}
+          _.reduce(allEnvironmentSettings.toJSON(), hashifySettings, settings)
+          # ... then override them with the specific environment values
+          EnvironmentSetting.where(environment_name: process.env.NODE_ENV).fetchAll()
+            .then (specificEnvironmentSettings) ->
+              _.reduce(specificEnvironmentSettings.toJSON(), hashifySettings, settings)
+              process.nextTick(callback.bind(null, null, settings))
+            .catch((err) -> process.nextTick(callback.bind(null, err)))
+        .catch((err) -> process.nextTick(callback.bind(null, err)))
   }
