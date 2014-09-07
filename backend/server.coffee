@@ -40,8 +40,9 @@ require('./config/passport')(passport)
 # express configuration
 app = require("./config/express")(passport, dbs, logger, root_path)
 
+# JWI: is the below redundant with the similar call in config/express.coffee?  
 # bootstrap routes
-require("./routes")(app)
+#require("./routes")(app)
 
 # start the app
 app.listen app.get('port'), ->
