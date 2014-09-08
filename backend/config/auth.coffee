@@ -1,8 +1,15 @@
 passport = require("passport")
 
-module.exports =
+logger = require '../config/logger'
 
-  none: (req, res, next) ->
-    next()
 
-  basic: passport.authenticate('basic', { session: false })
+module.exports = {
+  
+  allowAll: () ->
+    return (req, res, next) ->
+      next()
+  
+  requireLogin: () ->
+    return passport.authenticate('local', { session: false, successRedirect: "/success", failureRedirect: "/failure", failureFlash: true })
+    
+}

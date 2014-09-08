@@ -1,5 +1,11 @@
-logger = require '../config/logger'
 _ = require("lodash")
+Promise = require "bluebird"
+memoize = require "memoizee"
+
+logger = require '../config/logger'
+config = require '../config/config'
+EnvironmentSetting = require("../models/model.environmentSetting")
+
 
 # coerce values (which are all strings in the db) to the appropriate types here
 hashifySettings = (hash, setting) ->
@@ -16,21 +22,27 @@ hashifySettings = (hash, setting) ->
   return hash
 
 
-module.exports = (app) ->
-  EnvironmentSetting = require("../models/environmentSetting")(app)
-  
-  return {
-    getSettings: (callback) ->
-      # we want to get the all_environments values first...
-      EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
-        .then (allEnvironmentSettings) ->
-          settings = {}
-          _.reduce(allEnvironmentSettings.toJSON(), hashifySettings, settings)
-          # ... then override them with the specific environment values
-          EnvironmentSetting.where(environment_name: process.env.NODE_ENV).fetchAll()
-            .then (specificEnvironmentSettings) ->
-              _.reduce(specificEnvironmentSettings.toJSON(), hashifySettings, settings)
-              process.nextTick(callback.bind(null, null, settings))
-            .catch((err) -> process.nextTick(callback.bind(null, err)))
-        .catch((err) -> process.nextTick(callback.bind(null, err)))
-  }
+getSettings = () ->
+  # we want to get the all_environments values first...
+  defaultSettings = EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
+    .then (settings) -> return settings.toJSON()
+    .reduce(hashifySettings, {})
+  # ... then override them with the specific environment values
+  specificSettings = EnvironmentSetting.where(environment_name: config.ENV).fetchAll()
+    .then (settings) -> return settings.toJSON()
+    .reduce(hashifySettings, {})
+  allSettings = Promise.join defaultSettings, specificSettings, (defaultSettings, specificSettings) ->
+    return _.merge(defaultSettings, specificSettings)
+  allSettings
+    .then (settings) ->
+      logger.debug "all environment settings loaded (#{config.ENV}):"
+      logger.debug JSON.stringify(settings, null, 2)
+    .catch (err) ->
+      logger.error "error loading environment settings (#{config.ENV})"
+  return allSettings
+# wrap function in a caching memoizer
+getSettings = memoize(getSettings, { maxAge: config.DB_CACHE_TIMES.SLOW_REFRESH, prefetch: .1 })
+
+module.exports = {
+  getSettings: getSettings
+}

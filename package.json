@@ -14,6 +14,7 @@
   },
   "scripts": {
     "start": "cgulp s",
+    "flyway": "./flyway/doFlyway.sh userManagement $DATABASE_URL migrate && ./flyway/doFlyway.sh propertyData $HEROKU_POSTGRESQL_ONYX_URL migrate",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",
     "test-frontend": "cgulp frontendSpec",
@@ -23,8 +24,10 @@
     "postinstall": "bower install"
   },
   "dependencies": {
+    "alzheimer": "^0.1.2",
     "angular": "^1.2.21",
-    "async": "^0.9.0",
+    "bcrypt": "^0.8.0",
+    "bluebird": "^2.3.2",
     "body-parser": "1.0.x",
     "bookshelf": "^0.7.7",
     "bower": "1.3.x",
@@ -35,7 +38,9 @@
     "coffee-script": "1.7.x",
     "coffeegulp": "0.0.4",
     "compression": "1.0.x",
+    "connect-flash": "^0.1.1",
     "connect-multiparty": "1.0.x",
+    "connect-pg-simple": "^2.1.0",
     "cookie-parser": "1.0.x",
     "css-loader": "^0.7.1",
     "errorhandler": "1.0.x",
@@ -80,6 +85,7 @@
     "karma-webpack": "^1.2.1",
     "knex": "^0.6.22",
     "lodash": "^2.4.1",
+    "memoizee": "^0.3.7",
     "memwatch": "0.2.x",
     "method-override": "1.0.x",
     "mkdirp": "^0.5.0",
@@ -88,6 +94,7 @@
     "ns2": "^1.0.1",
     "passport": "0.2.x",
     "passport-http": "0.2.x",
+    "passport-local": "^1.0.0",
     "password-hash": "1.2.x",
     "pg": "^3.4.1",
     "pretty-hrtime": "^0.2.1",
@@ -96,6 +103,7 @@
     "sass-loader": "^0.2.0",
     "serve-static": "1.0.x",
     "should": "^4.0.4",
+    "stack-trace": "0.0.9",
     "static-favicon": "1.0.x",
     "style-loader": "^0.7.0",
     "stylus-loader": "^0.4.0",
@@ -109,6 +117,7 @@
   "devDependencies": {
     "karma-chai": "^0.1.0",
     "karma-mocha-reporter": "^0.3.0",
+    "longjohn": "^0.2.4",
     "should": "^4.0.4"
   }
 }
