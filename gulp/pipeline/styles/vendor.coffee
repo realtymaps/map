@@ -6,18 +6,19 @@ log = require('gulp-util').log
 globDebug = require('../../debug/glob')
 
 bowerFilesLoader = require('main-bower-files')
+bowerPath = "bower_components/"
 
-selfHosted = ([]).mapPath path.lib.front.scripts
+selfHosted = [].mapPath path.lib.front.styles
 
 bower = bowerFilesLoader
-  filter: /[.]js$/
+  filter: /[.]css$/
   checkExistence: true
 #  debugging:true
 
 
 #globDebug bower, 'bower'
 
-pipeline = _.flatten([selfHosted, bower])
+pipeline = _.flatten([selfHosted, bower]).map (f) -> f.replace('.css','.min.css')
 
 #pipe.logToob "Vendor", pipeline
 module.exports = pipeline

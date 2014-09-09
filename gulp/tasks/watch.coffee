@@ -12,3 +12,4 @@ gulp.task 'setWatch', ->
 gulp.task 'watch', ['setWatch','browserSync'], ->
   gulp.watch [path.scripts,path.styles,path.bower,path.assets], ['build']
   gulp.watch path.html, ['html']
+  gulp.watch path.bower, ['vendor']
