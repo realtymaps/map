@@ -16,6 +16,7 @@
     "angular-route": "~1.2.16",
     "angular-google-maps": "2.0.0-SNAPSHOT-c",
     "angular-state-files": "*",
-    "angular-ui-router": "~0.2.10"
+    "angular-ui-router": "~0.2.10",
+    "bluebird": "~2.3.2"
   }
 }
