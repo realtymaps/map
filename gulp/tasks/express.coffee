@@ -7,6 +7,3 @@ nodemon = require 'gulp-nodemon'
 
 gulp.task "express", ->
   nodemon(script: "backend/server.coffee")
-
-gulp.task "server", ['default']
-gulp.task 's', ['server']

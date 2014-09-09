@@ -1,8 +1,8 @@
 browserSync = require 'browser-sync'
 gulp = require 'gulp'
 
-gulp.task 'browserSync', ['build','express'], ->
+gulp.task 'browserSync', ['express'], ->
   browserSync.init
-    files: ['_public/**/*','app/**']
+    files: ['_public/**/*']
     proxy: "localhost:4000"
     port: 3000
