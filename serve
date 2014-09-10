@@ -1,0 +1,20 @@
+#!/bin/sh
+# echo $PORT
+set -e
+# defaultPort=8000
+# port=${1:-$defaultPort}
+
+if [ $PORT -eq 5000 ]; then
+  unset PORT
+fi
+
+#echo Original Port $PORT
+#if $PORT is undefined then set it to the argument
+# if [ -z $PORT ] || [ $port -ne $defaultPort ]; then
+#   echo setting to argument port of $port
+#   PORT=$port
+# fi
+
+# echo "Using port $PORT for server"
+# echo
+npm start
