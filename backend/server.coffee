@@ -1,19 +1,23 @@
+#require('source-map-support').install()
+#require 'coffee-script-mapped'
+
+config = require './config/config'
+
 # monitoring with nodetime
-if process.env.NODE_ENV == 'production'
+if config.USE_NODETIME
   require('nodetime').profile(
     accountKey: "ENTER-A-VALID-KEY-HERE"
     appName: 'mean.coffee'
   )
 
-# dependencies
-config = require './config/config'
-logger = require './config/logger'
-express = require 'express'
-passport = require 'passport'
-knex = require 'knex'
-bookshelf = require 'bookshelf'
+# "long stack traces" support
+if config.LOGGING.LONG_STACK_TRACES
+  require 'longjohn'
 
-root_path = __dirname
+# promisify libraries
+require './config/promisify'
+
+logger = require './config/logger'
 
 # catch all uncaught exceptions
 process.on 'uncaughtException', (err) ->
@@ -26,25 +30,12 @@ memwatch = require 'memwatch'
 memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 
-# bootstrap databases
-dbs =
-  users: bookshelf(knex(config.USER_DB_CONFIG))
-  properties: bookshelf(knex(config.PROPERTY_DB_CONFIG))
-
-# bootstrap models
-require('./models')()
-
 # bootstrap passport config
-require('./config/passport')(passport)
+require('./config/passport')
 
 # express configuration
-app = require("./config/express")(passport, dbs, logger, root_path)
-
-# JWI: is the below redundant with the similar call in config/express.coffee?  
-# bootstrap routes
-#require("./routes")(app)
+app = require("./config/express")
 
 # start the app
-app.listen app.get('port'), ->
+app.listen config.PORT, ->
   logger.info "mean.coffee server listening on port #{@address().port} in #{config.ENV} mode"
-

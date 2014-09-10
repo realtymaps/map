@@ -1,13 +1,16 @@
-path = require 'path'
-config = require './config'
 express = require 'express'
+passport = require 'passport'
+path = require 'path'
+
+config = require './config'
+dbs = require './dbs'
+logger = require './logger'
 
 # express midlewares
 helmet = require 'helmet'
 multipart = require 'connect-multiparty'
 session = require 'express-session'
-# TODO: use a postgres-compatible session store
-#sessionStore = require('connect-mongo')({session: session})
+sessionStore = require('connect-pg-simple')(session)
 compress = require 'compression'
 bodyParser = require 'body-parser'
 favicon = require 'static-favicon'
@@ -15,63 +18,68 @@ cookieParser = require 'cookie-parser'
 methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
+connectFlash = require 'connect-flash'
+promisifyMiddleware = require('./promisify').middleware
+auth = require './auth'
 
-module.exports = (passport, dbs, logger, root_path) ->
 
-  app = express()
+app = express()
 
-  app.logger = logger
-  app.dbs = dbs
+# JWI: none of these are necessary
+# set port, routes, models and config paths
+#app.set 'port', config.PORT
+#app.set 'routes', path.join(config.ROOT_PATH, '/routes/')
+#app.set 'models', path.join(config.ROOT_PATH, '/data_access/models/')
+#app.set 'config', config
 
-  # set port, routes, models and config paths
-  app.set 'port', config.PORT
-  app.set 'routes', root_path + '/routes/'
-  app.set 'models', root_path + '/data_access/models/'
-  app.set 'config', config
 
-  # security headers
-  app.use helmet.xframe()
-  app.use helmet.iexss()
-  app.use helmet.contentTypeOptions()
-  app.use helmet.cacheControl()
+# security headers
+app.use helmet.xframe()
+app.use helmet.iexss()
+app.use helmet.contentTypeOptions()
+app.use helmet.cacheControl()
 
-  # ensure all assets and data are compressed - above static
-  app.use compress()
+# ensure all assets and data are compressed - above static
+app.use compress()
 
-  # setting the favicon and static folder
-  frontendAssetsPath = path.join root_path, '../_public'
-  app.use favicon "#{frontendAssetsPath}/assets/favicon.ico"
-  app.use serveStatic frontendAssetsPath
+# setting the favicon and static folder
 
-  # cookie parser - above session
-  app.use cookieParser config.COOKIE_SECRET
+app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicon.ico"
+app.use serveStatic config.FRONTEND_ASSETS_PATH
 
-  # body parsing middleware - above methodOverride()
-  app.use bodyParser()
-  app.use multipart()
-  app.use methodOverride()
+# cookie parser - above session
+app.use cookieParser config.SESSION.secret
 
-  # JWI: killing mongodb references
-  # session store (mongodb)
-  #app.use session
-  #  secret: config.COOKIE_SECRET
-  #  maxAge: 60 * 60 * 1000
-  #  store: new sessionStore
-  #    db: db.connection.db
-  #    clear_interval: 60 * 60
+# body parsing middleware - above methodOverride()
+app.use bodyParser()
+app.use multipart()
+app.use methodOverride()
 
-  # let passport manage sessions
-  app.use passport.initialize()
-  #TODO: uncomment this once we have sessions configured for postgres
-  #app.use passport.session()
+# session store (postgres)
+config.SESSION.store = new sessionStore(config.SESSION_STORE)
+app.use session(config.SESSION)
 
-  # bootstrap routes
-  require("../routes")(app,frontendAssetsPath)
+# promisify sessions
+app.use promisifyMiddleware.promisifySession
 
-  app.use (err, req, res, next) ->
-    logger.error err.toString()
-    next()
+# do login session management
+app.use auth.setSessionCredentials
 
-  if config.ENV is 'development' then  app.use errorHandler { dumpExceptions: true, showStack: true }
+# enable flash messages
+app.use connectFlash()
 
-  return app
+
+# bootstrap routes
+require("../routes")(app)
+
+app.use (err, req, res, next) ->
+  logger.error "uncaught error found by express:"
+  logger.error (if err.stack then ''+err.stack else ''+err)
+  next()
+
+if config.USE_ERROR_HANDLER
+  app.use errorHandler { dumpExceptions: true, showStack: true }
+
+app.set("trust proxy", config.TRUST_PROXY)
+
+module.exports = app
