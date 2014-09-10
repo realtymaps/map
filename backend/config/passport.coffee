@@ -1,12 +1,12 @@
 passport = require 'passport'
 LocalStrategy = require('passport-local').Strategy
 
-environmentSettingsService = require '../services/service.environmentSettings'
 userService = require '../services/service.user'
 logger = require '../config/logger'
 
 
 passport.use new LocalStrategy ({}), (username, password, done) ->
+  logger.debug "attempting to verify password for username: #{username}"
   userService.verifyPassword(username, password)
     .then (user) -> return done(null, user)
     .catch (error) ->
@@ -21,4 +21,11 @@ passport.serializeUser (user, done) ->
     return done(null, user.id)
 
 passport.deserializeUser (userid, done) ->
-  userService.getUser({ id: userid }).nodeify(done)
+  logger.debug "attempting to deserialize user: #{userid}"
+  userService.getUser({ id: userid })
+    .then (user) ->
+      logger.debug "got user from session: #{user.username}"
+      done(null, user)
+    .catch (err) ->
+      logger.error "error deserializing userid: #{userid}"
+      done(err, false)

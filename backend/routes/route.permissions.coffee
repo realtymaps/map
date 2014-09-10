@@ -7,7 +7,7 @@ permissionsService = require '../services/service.permissions'
 
 module.exports = (app) ->
 
-  app.get '/user_permissions/:id', auth.requireLogin(), (req, res, next) ->
+  app.get '/user_permissions/:id', auth.requireLogin(redirectOnFail: true), (req, res, next) ->
     logger.debug "getting user permissions for id: #{req.params.id}"
     permissionsService.getPermissionsForUserId(req.params.id)
       .then (userPermissions) ->
@@ -19,7 +19,7 @@ module.exports = (app) ->
         logger.error ''+(err.stack ? err)
         res.status(500).json(message)
 
-  app.get '/group_permissions/:id', (req, res, next) ->
+  app.get '/group_permissions/:id', auth.requireLogin(redirectOnFail: true), (req, res, next) ->
     logger.debug "getting group permissions for id: #{req.params.id}"
     permissionsService.getPermissionsForGroupId(req.params.id)
       .then (groupPermissions) ->

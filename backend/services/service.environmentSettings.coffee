@@ -35,7 +35,7 @@ getSettings = () ->
     return _.merge(defaultSettings, specificSettings)
   allSettings
     .then (settings) ->
-      logger.debug "all environment settings loaded (#{config.ENV}):"
+      logger.info "environment settings loaded (#{config.ENV})"
       logger.debug JSON.stringify(settings, null, 2)
     .catch (err) ->
       logger.error "error loading environment settings (#{config.ENV})"

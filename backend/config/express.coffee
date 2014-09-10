@@ -19,6 +19,8 @@ methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
+promisifyMiddleware = require('./promisify').middleware
+auth = require './auth'
 
 
 app = express()
@@ -57,9 +59,11 @@ app.use methodOverride()
 config.SESSION.store = new sessionStore(config.SESSION_STORE)
 app.use session(config.SESSION)
 
-# let passport manage sessions
-app.use passport.initialize()
-app.use passport.session()
+# promisify sessions
+app.use promisifyMiddleware.promisifySession
+
+# do login session management
+app.use auth.setSessionCredentials
 
 # enable flash messages
 app.use connectFlash()
@@ -70,11 +74,12 @@ require("../routes")(app)
 
 app.use (err, req, res, next) ->
   logger.error "uncaught error found by express:"
-  logger.error err.toString()
+  logger.error (if err.stack then ''+err.stack else ''+err)
   next()
 
-if config.ENV is 'development'
+if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
-  app.set("trust proxy", 1)
+
+app.set("trust proxy", config.TRUST_PROXY)
 
 module.exports = app

@@ -22,7 +22,7 @@ getPermissionsForGroupId = (id) ->
     .then (group) ->
       # we want to reformat this data as a hash of codenames to truthy values
       permissionsHash = _.reduce(group.related("permissions").toJSON(), hashifyPermissions, {})
-      logger.debug("permissions loaded for groupid #{id}:")
+      logger.info("permissions loaded for groupid #{id}")
       logger.debug(JSON.stringify(permissionsHash, null, 2))
       return permissionsHash
   # ... so we can call catch() and log the error here...
@@ -69,7 +69,7 @@ getPermissionsForUserId = (id) ->
     logger.error "error loading permissions for userid #{id}"
   return result
 # we're not going to memoize this one because we're caching the results on the
-# session, and want new logins to refresh permissions instantly
+# session, and want new logins to get new permissions instantly
 
 module.exports =
   getPermissionsForGroupId: getPermissionsForGroupId

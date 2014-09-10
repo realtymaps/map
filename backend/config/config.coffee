@@ -24,13 +24,17 @@ base =
       min: 2
       max: 10
   SESSION:
-    name: "sessionid"
     secret: "thisisthesecretforthesession"
     cookie: { maxAge: null, secure: true }
+    unset: "destroy"
   DB_CACHE_TIMES:
     SLOW_REFRESH: 10*60*1000  # 10 minutes
     FAST_REFRESH: 60*1000     # 1 minute
   USE_NODETIME: false
+  USE_ERROR_HANDLER: false
+  TRUST_PROXY: 1
+  DEFAULT_LANDING_URL: "/"
+  LOGOUT_URL: "/"
 
 # this one's separated out so we can re-use the USER_DB.connection value 
 base.SESSION_STORE =
@@ -54,9 +58,15 @@ environmentConfig =
       LEVEL: 'debug'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
+    USE_ERROR_HANDLER: true
+    TRUST_PROXY: false
   staging: {}
   production:
     USE_NODETIME: true
+    SESSION:
+      cookie:
+        secure: true
+    
 
 
 module.exports = _.merge({}, base, environmentConfig[base.ENV])
