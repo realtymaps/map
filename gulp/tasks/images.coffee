@@ -1,16 +1,15 @@
 changed = require 'gulp-changed'
 gulp = require 'gulp'
 imagemin = require 'gulp-imagemin'
-
-dest = './_public/assets'
+paths = require '../paths'
 
 gulp.task 'images', ->
   # Ignore unchanged files
   # Optimize
   gulp.src('app/assets/**')
-  .pipe(changed(dest))
+  .pipe(changed(paths.dest.root))
   .pipe(imagemin())
-  .pipe gulp.dest(dest)
+  .pipe gulp.dest(paths.dest.root + paths.dest.assets)
 
 
 #gulp.task 'assets', () ->

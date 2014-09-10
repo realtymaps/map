@@ -4,7 +4,7 @@ help = require('gulp-help')(gulp)
 clean = require 'gulp-rimraf'
 
 gulp.task 'default', ['clean'], ->
-  gulp.start 'build','webpack','images','watch'
+  gulp.start 'build','watch', 'browserSync'
 
 #gulp.task('help', help.withFilters(/:/))
 

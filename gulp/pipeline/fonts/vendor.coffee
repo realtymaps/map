@@ -6,14 +6,17 @@ log = require('gulp-util').log
 globDebug = require('../../debug/glob')
 
 bowerFilesLoader = require('main-bower-files')
+bowerPath = "bower_components/"
 
-selfHosted = ([]).mapPath path.lib.front.scripts
+selfHosted = [].mapPath path.lib.front.fonts
 
 bower = bowerFilesLoader
-  filter: /[.]js$/
   checkExistence: true
 #  debugging:true
 
+
+bower = bower.filter (f) ->
+  f.contains('fonts')
 
 #globDebug bower, 'bower'
 
