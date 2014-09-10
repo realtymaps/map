@@ -14,15 +14,10 @@ getSessionUser = (req) -> Promise.try () ->
   return userService.getUser(id: req.session.userid).catch (err) -> return false
 
     
-doLoginRedirect = (req, res) -> Promise.try () ->
-  if req.query.next
-    return res.redirect(req.query.next)
-  else
-    return res.redirect(config.DEFAULT_LANDING_URL)
-
-
 module.exports = {
 
+  # this function gets used as app-wide middleware, so assume it will have run
+  # before any route gets called
   setSessionCredentials: (req, res, next) ->
     getSessionUser(req)
       .then (user) ->
@@ -41,10 +36,8 @@ module.exports = {
         logger.debug "error while setting session user on request"
         next(err)
 
-  allowAll: () ->
-    return (req, res, next) ->
-      next()
-
+  # route-specific middleware that requires a login, and either responds with
+  # a 401 or a login redirect on failure
   requireLogin: (options = {}) ->
     defaultOptions =
       redirectOnFail: false
@@ -57,37 +50,4 @@ module.exports = {
           return res.status(401).send("Please login to access this URI.")
       return process.nextTick(next)
 
-  checkLogin: () ->
-    return (req, res, next) -> Promise.try () ->
-      logger.debug "checking for already logged-in user"
-      if not req.user then return next()
-      logger.debug "existing session found for username: #{req.user.username}"
-      return doLoginRedirect(req, res)
-
-  doLogin: () ->
-    return (req, res, next) -> Promise.try () ->
-      logger.debug "attempting to do login for username: #{req.body.username}"
-      if req.user
-        logger.debug "existing session found for username: #{req.body.username}"
-        return doLoginRedirect(req, res)
-      userService.verifyPassword(req.body.username, req.body.password)
-        .catch (err) ->
-          logger.debug "failed authentication: #{err}"
-          return false
-        .then (user) ->
-          if not user
-            req.query.errmsg = "Username and/or password does not match our records."
-            return res.redirect("/login?#{querystring.stringify(req.query)}")
-          else
-            logger.debug "user logged in: #{user.username}"
-            req.session.userid = user.id
-            logger.debug "trying to set permissions on session for user: #{user.username}"
-            return permissionsService.getPermissionsForUserId(user.id)
-              .then (permissionsHash) ->
-                logger.debug "permissions loaded on session for user: #{user.username}"
-                req.session.permissions = permissionsHash
-                return doLoginRedirect(req, res)
-        .catch (err) ->
-          logger.error "unexpected error during doLogin(): #{err}"
-          next(err)
 }

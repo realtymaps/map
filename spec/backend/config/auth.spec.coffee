@@ -11,12 +11,6 @@ auth = require "#{basePath}/config/auth"
 
 
 describe 'config/auth'.ourNs().ourNs('Backend'), ->
-  
-  describe 'allowAll', ->
-    it 'should always call next()', (done) ->
-      allowAll = auth.allowAll()
-      allowAll null, null, () ->
-        done()
 
   describe 'requireLogin', ->
     resultBase = (done, expected, call) ->
