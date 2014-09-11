@@ -13,7 +13,7 @@
     "npm": "1.4.x"
   },
   "scripts": {
-    "start": "if [ $PORT -eq 5000 ];then unset PORT;fi;cgulp s",
+    "start": "./serve",
     "flyway": "./flyway/doFlyway.sh userManagement $DATABASE_URL migrate && ./flyway/doFlyway.sh propertyData $HEROKU_POSTGRESQL_ONYX_URL migrate",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",

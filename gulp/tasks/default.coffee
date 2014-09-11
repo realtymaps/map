@@ -21,6 +21,10 @@ gulp.task 'develop', ['pre_develop_watch'], ->
 gulp.task 'develop_no_sync', ['clean'], ->
   gulp.start 'build','express','watch'
 
+#TODO: minify and all that jazz
+gulp.task 'prod', ['clean'], ->
+  gulp.start 'build','express'
+
 gulp.task 'default', ['develop']
 
 gulp.task 'clean', () ->
