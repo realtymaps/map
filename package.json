@@ -21,7 +21,8 @@
     "test-backend": "cgulp backendSpec",
     "test-gulp": "cgulp gulpSpec",
     "test": "cgulp spec",
-    "postinstall": "bower install"
+    "postinstall": "bower install",
+    "clean": "rm -rf node_modules"
   },
   "dependencies": {
     "angular": "^1.2.21",
