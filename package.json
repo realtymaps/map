@@ -25,6 +25,7 @@
   "dependencies": {
     "angular": "^1.2.21",
     "async": "^0.9.0",
+    "bluebird": "^2.3.2",
     "body-parser": "1.0.x",
     "bookshelf": "^0.7.7",
     "bower": "1.3.x",
@@ -102,6 +103,7 @@
     "sass-loader": "^0.2.0",
     "serve-static": "1.0.x",
     "should": "^4.0.4",
+    "sleep": "^1.1.8",
     "static-favicon": "1.0.x",
     "style-loader": "^0.7.0",
     "stylus-loader": "^0.4.0",

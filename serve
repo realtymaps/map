@@ -4,6 +4,8 @@ set -e
 # defaultPort=8000
 # port=${1:-$defaultPort}
 
+#OSX or some process in foreman or flyway sets the port to 5000
+#this is not desirable
 if [ $PORT -eq 5000 ]; then
   unset PORT
 fi

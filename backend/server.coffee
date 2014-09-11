@@ -43,8 +43,8 @@ app = require("./config/express")(passport, dbs, logger, root_path)
 # JWI: is the below redundant with the similar call in config/express.coffee?  
 # bootstrap routes
 #require("./routes")(app)
-
-# start the app
-app.listen app.get('port'), ->
-  logger.info "mean.coffee server listening on port #{@address().port} in #{config.ENV} mode"
-
+try
+  logger.info "attempting to start backend"
+  app.listen app.get('port'), ->
+    logger.info "backend express server listening on port #{@address().port} in #{config.ENV} mode"
+catch e then logger.info "backend failed to start with exception: #{e}"
