@@ -1,5 +1,10 @@
 #!/bin/sh
 set -e
+#echo $IS_HEROKU
+if [ -n "$IS_HEROKU" ] ; then
+  echo in Heroku exiting
+  exit 0
+fi
 #or 4000
 argPorts=${1:-"3000,4000"}
 ports=(${argPorts//,/ })
