@@ -66,7 +66,9 @@ environmentConfig =
     SESSION:
       cookie:
         secure: true
-    
 
 
-module.exports = _.merge({}, base, environmentConfig[base.ENV])
+config = _.merge(base, environmentConfig[base.ENV])
+#console.info "config: %j",config
+
+module.exports = config

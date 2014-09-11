@@ -36,11 +36,10 @@ require('./config/passport')
 # express configuration
 app = require("./config/express")
 
-# JWI: is the below redundant with the similar call in config/express.coffee?  
-# bootstrap routes
-#require("./routes")(app)
 try
-  logger.info "attempting to start backend"
-  app.listen app.get('port'), ->
-    logger.info "backend express server listening on port #{@address().port} in #{config.ENV} mode"
-catch e then logger.info "backend failed to start with exception: #{e}"
+  logger.info "Attempting to start backend on port #{config.PORT}."
+  app.listen config.PORT, ->
+    logger.info "Backend express server listening on port #{@address().port} in #{config.ENV} mode"
+catch e
+  logger.error "backend failed to start with exception: #{e}"
+  throw new Error(e)
