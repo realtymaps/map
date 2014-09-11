@@ -1,1 +1,1 @@
-web: npm flyway && npm start
+web: ./stopServe && npm run flyway && npm start

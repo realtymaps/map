@@ -25,25 +25,25 @@ describe 'config/auth'.ourNs().ourNs('Backend'), ->
           resultcb("send")
     next = () ->
       resultcb("next")
-      
+
     it 'should call next() if req.user is set', (done) ->
       requireLogin = auth.requireLogin()
       req = {user:true}
       resultcb = resultBase.bind(null, done, "next")
       requireLogin req, res, next
-      
+
     it 'should call res.redirect if req.user is not set and redirectOnFail is set truthy', (done) ->
       requireLogin = auth.requireLogin(redirectOnFail: true)
       req = {}
       resultcb = resultBase.bind(null, done, "redirect")
       requireLogin req, res, next
-      
+
     it 'should call res.send if req.user is not set and redirectOnFail is not set', (done) ->
       requireLogin = auth.requireLogin()
       req = {}
       resultcb = resultBase.bind(null, done, "send")
       requireLogin req, res, next
-      
+
     it 'should call res.send if req.user is not set and redirectOnFail is set falsy', (done) ->
       requireLogin = auth.requireLogin(redirectOnFail: false)
       req = {}

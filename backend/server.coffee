@@ -36,6 +36,10 @@ require('./config/passport')
 # express configuration
 app = require("./config/express")
 
-# start the app
-app.listen config.PORT, ->
-  logger.info "mean.coffee server listening on port #{@address().port} in #{config.ENV} mode"
+try
+  logger.info "Attempting to start backend on port #{config.PORT}."
+  app.listen config.PORT, ->
+    logger.info "Backend express server listening on port #{@address().port} in #{config.ENV} mode"
+catch e
+  logger.error "backend failed to start with exception: #{e}"
+  throw new Error(e)

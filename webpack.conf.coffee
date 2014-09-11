@@ -4,7 +4,7 @@ _ = require 'lodash'
 Config = (output, additionalPlugs) ->
   obj =
 #    watch:true
-    verbose:true
+    verbose:false
     devtool: '#source-map'#'#inline-source-map'
     resolve:
       modulesDirectories: ['bower_components','node_modules']

@@ -1,6 +1,14 @@
 libFront = 'app/lib'
 
+dest =
+  scripts: 'scripts'
+  styles: 'styles'
+  fonts: 'fonts'
+  assets: 'assets'
+  root: '_public/'
+
 module.exports =
+  spec: 'spec/**'
   scripts: 'app/scripts/**'
   styles: 'app/styles/**/*.css'
   bower: 'bower_components'
@@ -13,9 +21,8 @@ module.exports =
       fonts: libFront + '/fonts'
     back: 'backend/lib'
 
-  dest:
-    scripts: 'scripts'
-    styles: 'styles'
-    fonts: 'fonts'
-    assets: 'assets'
-    root: '_public/'
+  dest: dest
+  destFull:
+    scripts: dest.root + dest.scripts
+    styles: dest.root + dest.styles
+    fonts: dest.root + dest.fonts
