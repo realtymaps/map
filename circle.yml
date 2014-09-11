@@ -14,7 +14,7 @@ deployment:
   staging_nmccready:
     branch: /feature\/nick_mc.*/
     commands:
-      - git push -f git@heroku.com:nmccready-map.git $CIRCLE_BRANCH:master
+      - git push --force git@heroku.com:nmccready-map.git $CIRCLE_SHA1:master
 
   staging_dan:
     branch: /feature\/dan.*/
