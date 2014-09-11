@@ -48,5 +48,4 @@ describe 'config/auth'.ourNs().ourNs('Backend'), ->
       requireLogin req, res, next
     
     after () ->
-      this.timeout(5000)
       return require("#{basePath}/config/dbs").shutdown()
