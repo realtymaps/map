@@ -4,7 +4,7 @@ machine:
 dependencies:
   post:
     - npm install
-
+    #- npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server
 deployment:
   prod:
     branch: master
