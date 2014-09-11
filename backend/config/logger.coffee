@@ -1,7 +1,10 @@
 winston = require('winston')
 fs = require('fs')
+stackTrace = require('stack-trace')
+path = require 'path'
+
 config = require('./config')
-logPath = config.LOGPATH
+logPath = config.LOGGING.PATH
 
 if !fs.existsSync(logPath)
   fs.openSync(logPath, 'w')
@@ -19,22 +22,35 @@ myCustomLevels =
     warn: 'orange'
     error: 'red'
 
-level = if config.ENV == 'development' then 'debug' else 'info'
 
 logger = new (winston.Logger)
   transports: [
     new (winston.transports.Console)
-      level: level
+      level: config.LOGGING.LEVEL
       colorize: true
+      timestamp: true
     new (winston.transports.File)
       filename: logPath
-      level: level
+      level: config.LOGGING.LEVEL
+      timestamp: true
   ],
   levels: myCustomLevels.levels
 
 winston.addColors myCustomLevels.colors
+
+if config.LOGGING.FILE_AND_LINE
+  for own level of myCustomLevels.levels
+    oldFunc = logger[level]
+    do (oldFunc) ->
+      logger[level] = () ->
+        trace = stackTrace.get()
+        args = Array.prototype.slice.call(arguments)
+        filename = path.basename(trace[1].getFileName(), '.coffee')
+        args.unshift("[#{filename}:#{trace[1].getLineNumber()}]")
+        oldFunc.apply(logger, args)
+
+
 logger.info "Logger configured"
 
+
 module.exports = logger
-
-

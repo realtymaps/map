@@ -4,7 +4,7 @@ machine:
 dependencies:
   post:
     - npm install
-
+    #- npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server
 deployment:
   prod:
     branch: master
@@ -13,8 +13,8 @@ deployment:
 
   staging_nmccready:
     branch: /feature\/nick_mc.*/
-    heroku:
-       appname: nmccready-map
+    commands:
+      - git push --force git@heroku.com:nmccready-map.git $CIRCLE_SHA1:master
 
   staging_dan:
     branch: /feature\/dan.*/

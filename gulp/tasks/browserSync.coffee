@@ -44,5 +44,5 @@ gulp.task 'browserSync', ['express'], => # 'check_express'], ->
         proxy: "localhost:#{backEndConfig.PORT}"
         port: 3000
         open: false #disable browser auto open
-  , 500
+  , 1000
 

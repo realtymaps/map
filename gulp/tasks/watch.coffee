@@ -7,4 +7,6 @@ gulp.task 'watch_rest', ->
   gulp.watch path.bower, ['vendor']
 
 gulp.task 'watch', ['watch_rest'], ->
-  gulp.watch path.spec, ['spec']
+  setTimeout ->
+    gulp.watch path.spec, ['spec']
+  , 6000
