@@ -1,5 +1,8 @@
 #!/bin/sh
 set -e
+if [[ $IS_HEROKU ]]; then
+  exit 0
+fi
 #or 4000
 argPorts=${1:-"3000,4000"}
 ports=(${argPorts//,/ })
