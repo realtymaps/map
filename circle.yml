@@ -13,8 +13,8 @@ deployment:
 
   staging_nmccready:
     branch: /feature\/nick_mc.*/
-    heroku:
-       appname: nmccready-map
+    commands:
+      - git push -f git@heroku.com:nmccready-map.git $CIRCLE_BRANCH:master
 
   staging_dan:
     branch: /feature\/dan.*/
