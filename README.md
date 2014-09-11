@@ -11,6 +11,9 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 
 - Install prerequisites
     - foreman run npm install -g coffee-script coffeegulp cgulp bower gulp webpack
+    - **JWI: it shouldn't actually be necessary to install anything globally to
+    run our app...  ideally "npm install" should handle everything, which also
+    makes Heroku setup simpler**
 
 - Install dependencies:
     - foreman run npm install (will bower install as well)
@@ -18,12 +21,13 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 - Run the server
     - foreman start
 
-- Run gulp
-    - foreman run npm run gulp (for dev)
+- Run gulp (for dev)
+    - foreman run npm run flyway && foreman run npm run gulp
 
 ### Db change management
 - handled via Flyway
 - [full documentation here](https://realtymaps.atlassian.net/wiki/display/NDS/Database+change+management)
+- foreman run npm run flyway
 
 ___
 ### Differences compared to mean.io:
@@ -58,9 +62,12 @@ ___
 ### TODO
 
 - forever script + git hook for custom deployment
-- procfile for heroku deployment
 - nginx-buildpack for Heroku see above
 - make nginx installer work on more than OSX
 - mocha/karma frontend tests with or without web-pack
 - npm run gulp-prod (for prod)
-- remove mongo or add Postgres
+- figure out if global prequisite install is actually necessary
+- set things up so "foreman start" will do what we want for every environment
+- fork memoizee and add option for understanding promises (so it can, at least optionally, choose not to cache rejected promises
+- fix coffescript source-mappings for stacktraces / log output
+- fix warn logging

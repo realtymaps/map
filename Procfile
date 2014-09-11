@@ -1,1 +1,1 @@
-web: ./stopServe && ./dbSync && ./serve
+web: ./stopServe && npm flyway && npm start

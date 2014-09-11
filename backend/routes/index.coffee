@@ -1,13 +1,16 @@
 fs = require 'fs'
 path = require 'path'
+config = require '../config/config'
 
-module.exports = (app,frontendAssetsPath) ->
-  fs.readdirSync(app.settings.routes).forEach((file) ->
-    filePath = path.join app.settings.routes, file
-    unless filePath is __filename
+indexFilePath = path.normalize(__filename)
+
+module.exports = (app) ->
+  fs.readdirSync(__dirname).forEach((file) ->
+    filePath = path.join __dirname, file
+    unless filePath is indexFilePath
       baseFilename = path.basename file, path.extname(file)
-      route = path.join app.settings.routes, baseFilename
+      route = path.join __dirname, baseFilename
       require(route)(app)
   )
   app.get "/", (req, res) ->
-    res.sendfile "#{frontendAssetsPath}/index.html"
+    res.sendfile "#{config.FRONTEND_ASSETS_PATH}/index.html"
