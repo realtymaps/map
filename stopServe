@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
-if [[ $IS_HEROKU ]]; then
+#echo $IS_HEROKU
+if [ -n "$IS_HEROKU" ] ; then
+  echo in Heroku exiting
   exit 0
 fi
 #or 4000

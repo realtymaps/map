@@ -1,1 +1,1 @@
-web: sh stopServe && sh dbSync && sh serve
+web: ./stopServe && ./dbSync && ./serve
