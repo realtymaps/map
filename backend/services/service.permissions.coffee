@@ -1,5 +1,4 @@
 _ = require "lodash"
-async = require "async"
 memoize = require "memoizee"
 Promise = require "bluebird"
 
