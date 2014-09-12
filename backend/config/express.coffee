@@ -56,6 +56,7 @@ app.use multipart()
 app.use methodOverride()
 
 # session store (postgres)
+config.SESSION_STORE.pg = dbs.pg
 config.SESSION.store = new sessionStore(config.SESSION_STORE)
 app.use session(config.SESSION)
 

@@ -1,13 +1,10 @@
 basePath = require '../basePath'
-sinon = require 'sinon'
 
 userService = require "#{basePath}/services/service.user"
 permissionsService = require "#{basePath}/services/service.permissions"
 
 
-
 auth = require "#{basePath}/config/auth"
-
 
 
 describe 'config/auth'.ourNs().ourNs('Backend'), ->
@@ -49,3 +46,4 @@ describe 'config/auth'.ourNs().ourNs('Backend'), ->
       req = {}
       resultcb = resultBase.bind(null, done, "send")
       requireLogin req, res, next
+ 
