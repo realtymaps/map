@@ -1,10 +1,15 @@
 #!/bin/sh
 set -e
-#echo $IS_HEROKU
+
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR"
+
+
 if [ -n "$IS_HEROKU" ] ; then
-  echo in Heroku exiting
+  echo "in Heroku, exiting"
   exit 0
 fi
+
 #or 4000
 argPorts=${1:-"3000,4000"}
 ports=(${argPorts//,/ })
@@ -17,7 +22,7 @@ do
     someThingWasKilled='true'
   else
     if [[ -z $someThingWasKilled ]];then
-      echo "We're goodNothing running to stop."
+      echo "We're good, nothing running to stop."
     fi
   fi
 done

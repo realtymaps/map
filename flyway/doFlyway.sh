@@ -1,7 +1,9 @@
 #!/bin/bash
+set -e
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 cd "$DIR"
+
 
 SQL_LOCATION="$1"
 shift

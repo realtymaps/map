@@ -3,26 +3,32 @@ machine:
     version: v0.10.31
 dependencies:
   post:
-    - npm install
+    # use --production to exclude devDependencies, important to test this way
+    # since (I think) Heroku will install like this
+    - npm --production install
     #- npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server
 deployment:
   prod:
     branch: master
     commands:
-      - git push --force git@heroku.com:realtymaps-map.git $CIRCLE_SHA1:master     #push to heroku
-      - git push --force git@github.com:realtymapsDev/map.git $CIRCLE_SHA1:master  #push to realtymapsDev
+      # the pushTo script contains a safety check; it won't actually do
+      # anything if CircleCI is running on master of any fork other than the
+      # main realtymaps repo.  It also handles db forking and other important
+      # things like setting some environment variables 
+      - ./scripts/pushTo heroku realtymaps-map
+      - ./scripts/pushTo github realtymapsDev/map
 
   staging_nmccready:
     branch: /feature\/nick_mc.*/
     commands:
-      - git push --force git@heroku.com:nmccready-map.git $CIRCLE_SHA1:master
+      - ./scripts/pushTo heroku nmccready-realtymaps-map
 
   staging_dan:
     branch: /feature\/dan.*/
-    heroku:
-       appname: dan-map
+    commands:
+      - ./scripts/pushTo heroku dan-realtymaps-map
 
   staging_joe:
     branch: /feature\/joe.*/
-    heroku:
-       appname: joe-map
+    commands:
+      - ./scripts/pushTo heroku joe-realtymaps-map

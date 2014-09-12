@@ -1,8 +1,10 @@
 #!/bin/bash
+set -e
 
 if [ "$#" -lt 2 ]
 then
-    echo "usage: `basename $0` linesPerChunk sourceFile"
+    echo "usage: `basename $0` <linesPerChunk> <sourceFile>"
+    exit 1
 fi
 
 

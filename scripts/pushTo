@@ -1,0 +1,102 @@
+#!/bin/bash
+set -e
+
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR"
+
+
+if [ "$#" -lt 2 ]
+then
+    echo "usage: `basename $0` <heroku|github> <project> [<destination refspec>]"
+    exit 1
+fi
+
+
+if [ -z "$CIRCLECI" ]
+then
+    # manually run
+    echo "ERROR: This is only intended to be run by CircleCI."
+    exit 1
+fi
+
+
+SERVICE="$1"
+PROJECT="$2"
+DESTINATION="$3"
+if [ -z "$DESTINATION" ]
+then
+    DESTINATION="master"
+fi
+
+
+if [[ "$CIRCLE_BRANCH" == "master" && "$CIRCLE_PROJECT_USERNAME" != "realtymaps" ]]
+then
+    # safety check -- we only want to push from master if we're on the main
+    # "realtymaps" fork, so we're going to bail out here
+    echo "refusing to push changes from master on ${CIRCLE_PROJECT_USERNAME}"
+    exit 1
+fi
+
+
+setHerokuSetting () {
+    SETTING_NAME=$1
+    DESIRED_VALUE=$2
+    
+    CURRENT_SETTING=`heroku config:get $SETTING_NAME --app=$PROJECT`
+    if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
+    then
+        HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
+    fi
+}
+
+forkStagingDb () {
+    DB_VARIABLE_BASE=$1
+    SOURCE_APP_NAME=$2
+    
+    # first de-provision the old fork (if there is one)
+    OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
+    if [ -n "$OLD_FORK" ]
+    then
+        heroku addons:remove ${OLD_FORK%_URL} --app=$PROJECT
+    fi
+    
+    # fork a new copy
+    NEW_VARIABLE=`heroku addons:add heroku-postgresql:standard-0 --fork "${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT" | fgrep 'Attached as' | cut -f3 -d' '`
+    
+    # save the value in a config variable so we can remove it later
+    setHerokuSetting "${DB_VARIABLE_BASE}_VARIABLE" "$NEW_VARIABLE"
+}
+
+
+# pre-push tasks
+if [[ "$SERVICE" == "heroku" ]]
+then
+    HEROKU_SETTINGS=""
+    
+    if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
+    then
+        # this is a prod push
+        setHerokuSetting "NODE_ENV" "production"
+    else
+        # this is a staging push
+        setHerokuSetting "NODE_ENV" "staging"
+        # fork the user db
+        forkStagingDb "USER_DATABASE" "realtymaps-map"
+        
+        # note that for now, we're just re-using the property db (via the
+        # envSync script) since the map project isn't writing to it.  This
+        # may need to be adjusted later if we ever have breaking schema
+        # changes to that db that we need to manage
+        
+        heroku pg:wait --app=$PROJECT
+    fi
+    
+    if [ -n "$HEROKU_SETTINGS" ]
+    then
+        heroku config:set $HEROKU_SETTINGS --app=$PROJECT
+    fi
+fi
+
+
+# do the push
+git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:${DESTINATION}"

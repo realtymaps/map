@@ -1,3 +1,0 @@
-#!/bin/sh
-set -e
-./flyway/doFlyway.sh userManagement "$DATABASE_URL" migrate

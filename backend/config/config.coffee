@@ -27,10 +27,7 @@ base =
     secret: "thisisthesecretforthesession"
     cookie: { maxAge: null, secure: true }
     unset: "destroy"
-  DB_CACHE_TIMES:
-    SLOW_REFRESH: 10*60*1000  # 10 minutes
-    FAST_REFRESH: 60*1000     # 1 minute
-  USE_NODETIME: false
+  NODETIME: false
   USE_ERROR_HANDLER: false
   TRUST_PROXY: 1
   DEFAULT_LANDING_URL: "/"
@@ -43,10 +40,11 @@ base.SESSION_STORE =
 
 # use environment-specific configuration as little as possible
 environmentConfig =
+  
   development:
     USER_DB:
       debug: true
-    USER_DB:
+    PROPERTY_DB:
       debug: true
     SESSION:
       cookie:
@@ -60,15 +58,24 @@ environmentConfig =
       LONG_STACK_TRACES: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
-  staging: {}
+  
+  staging:
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 5*60*1000   # 5 minutes
+      FAST_REFRESH: 60*1000     # 1 minute
+
   production:
-    USE_NODETIME: true
-    SESSION:
-      cookie:
-        secure: true
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 10*60*1000   # 10 minutes
+      FAST_REFRESH: 60*1000      # 1 minute
+    # we probably want this for production, but we need to get it set up with
+    # an API key first
+    #NODETIME:
+    #  accountKey: "ENTER-A-VALID-KEY-HERE"
+    #  appName: 'mean.coffee'
 
 
 config = _.merge(base, environmentConfig[base.ENV])
-#console.info "config: %j",config
+console.log "config: "+JSON.stringify(config, null, 2)
 
 module.exports = config

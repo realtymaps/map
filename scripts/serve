@@ -1,11 +1,15 @@
 #!/bin/sh
 set -e
+
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR"
+
+
 if [[ $PORT -eq 5000 ]];then
   unset PORT
 fi
-#echo $IS_HEROKU
+
 if [ -n "$IS_HEROKU" ]; then
-  echo in Heroku exiting
   cgulp prod
 else
   cgulp
