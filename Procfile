@@ -1,1 +1,1 @@
-web: ./stopServe && npm start
+web: ./stopServe && ./dbSync && npm start
