@@ -9,8 +9,8 @@ deployment:
   prod:
     branch: master
     commands:
-      - git push git@heroku.com:realtymaps-map.git $CIRCLE_BRANCH:master     #push to heroku
-      - git push git@github.com:realtymapsDev/map.git $CIRCLE_BRANCH:master  #push to realtymapsDev
+      - git push --force git@heroku.com:realtymaps-map.git $CIRCLE_BRANCH:master     #push to heroku
+      - git push --force git@github.com:realtymapsDev/map.git $CIRCLE_BRANCH:master  #push to realtymapsDev
 
   staging_nmccready:
     branch: /feature\/nick_mc.*/
