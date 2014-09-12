@@ -36,7 +36,7 @@ base =
   DEFAULT_LANDING_URL: "/"
   LOGOUT_URL: "/"
 
-# this one's separated out so we can re-use the USER_DB.connection value 
+# this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
   conString: base.USER_DB.connection
 
@@ -55,7 +55,7 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'debug'
+      LEVEL: 'info'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
     USE_ERROR_HANDLER: true

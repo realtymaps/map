@@ -2,12 +2,10 @@ auth = require '../config/auth'
 logger = require '../config/logger'
 config = require '../config/config'
 environmentSettingsService = require '../services/service.environmentSettings'
-
-
-# I'm not sure that we'll actually need this route, but it was convenient for testing
+routes = require '../config/routes'
 
 module.exports = (app) ->
-  app.get '/environment_settings/', auth.requireLogin(redirectOnFail: true), (req, res, next) ->
+  app.get routes.environmentSettings, auth.requireLogin(redirectOnFail: true), (req, res, next) ->
     logger.debug "getting environment settings for #{config.ENV}"
     environmentSettingsService.getSettings()
       .then (settings) ->
