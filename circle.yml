@@ -15,14 +15,14 @@ deployment:
   staging_nmccready:
     branch: /feature\/nick_mc.*/
     commands:
-      - git push --force git@heroku.com:nmccready-map.git $CIRCLE_SHA1:master
+      - git push --force git@heroku.com:nem-realtymaps-map.git $CIRCLE_SHA1:master
 
   staging_dan:
     branch: /feature\/dan.*/
     heroku:
-       appname: dan-map
+       appname: dan-realtymaps-map
 
   staging_joe:
     branch: /feature\/joe.*/
     heroku:
-       appname: joe-map
+       appname: joe-realtymaps-map
