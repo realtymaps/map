@@ -13,13 +13,13 @@ base =
     LONG_STACK_TRACES: false
   USER_DB:
     client: 'pg'
-    connection: process.env.DATABASE_URL
+    connection: process.env.USER_DATABASE_URL
     pool:
       min: 2
       max: 10
   PROPERTY_DB:
     client: 'pg'
-    connection: process.env.HEROKU_POSTGRESQL_ONYX_URL
+    connection: process.env.PROPERTY_DATABASE_URL
     pool:
       min: 2
       max: 10
