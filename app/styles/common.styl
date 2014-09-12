@@ -1,0 +1,124 @@
+/* Set a basic variable */
+base-font-size = 12px
+
+/* Set a variable based on result of mixin call */
+body-background = invert(#ccc)
+
+/* Set some basic rules */
+body
+    height: 100%
+    width: 100%
+    background: #2E425C
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body
+    padding-top: 50px
+
+.starter-template
+    padding: 40px 15px
+    text-align: center
+
+.angular-google-map-container
+    height: 100%
+    width: 100%
+    position: absolute
+
+.middle
+    display: table
+    width: 50%
+    margin-left: auto
+    margin-right: auto
+
+/*
+Use bootstraps container w/ some overrides, nice thing about this on bootstrap is there is
+psuedo element with clearfix and display: table; , all after (which is why I know .middle works above)
+*/
+.container
+    width: 100%
+    padding-left: 0
+    padding-right: 0
+
+@media (min-width: 768px)
+    .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand
+        margin-left: 0px
+
+
+ /* Nav Bar */
+.navbar
+    background:#123D74
+    background:#2E425C
+    border: none
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
+    font-weight: 100
+    font-size:23px
+    letter-spacing: .35em
+
+
+.navbar .navbar-text
+    color: #777777
+    font-weight: 100
+
+.navbar .navbar-nav > li > a
+    color: #FFFFFF
+    height:50px
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px)
+    .navbar .navbar-nav  #navbar-login
+        position:absolute;
+        right:0;
+
+
+
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > li > a:focus
+    color: #FFF
+    background-color: #0062A0
+    -webkit-transition:background-color 0.25s
+    -moz-transition:background-color 0.25s
+    transition:background-color 0.25s
+
+.navbar .navbar-nav > .active > a,
+.navbar .navbar-nav > .active > a:hover,
+.navbar.navbar-nav > .active > a:focus
+    color: #FFF
+    background-color: #45a0d9
+    -webkit-transition:background-color 0.25s
+    -moz-transition:background-color 0.25s
+    transition:background-color 0.25s
+
+
+.navbar-brand
+    font-size: 25px
+    line-height: 20px
+    color: #FFF !important
+    padding: 3px 5px 0 3px
+
+ .navbar-brand img
+    height:45px
+    padding: 0px 8px
+
+ .navbar-brand .logo-c1
+     color: #FFFFFF
+
+ .navbar-brand .logo-c2
+     color: #45a0d9
+
+ .navbar-toggle
+    background-color: #255992
+    border-color:none
+
+.navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
+    background-color: #2B72BE
+
+
+.navbar-toggle:hover,
+.navbar-toggle:focus
+    background-color: #2B72BE
+
+#side-nav-container
+    position:absolute
+    left:0
+
+

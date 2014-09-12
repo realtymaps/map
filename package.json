@@ -114,6 +114,7 @@
   "devDependencies": {
     "karma-chai": "^0.1.0",
     "karma-mocha-reporter": "^0.3.0",
-    "should": "^4.0.4"
+    "should": "^4.0.4",
+    "stylus-loader": "^0.4.0"
   }
 }
