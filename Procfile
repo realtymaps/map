@@ -1,1 +1,2 @@
-web: ./stopServe && ./dbSync && npm start
+#TODO: ./dbSync thows errors must fix
+web: ./stopServe && npm start
