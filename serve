@@ -1,10 +1,10 @@
 #!/bin/sh
 set -e
-if [ $PORT -eq 5000 ];then
+if [[ $PORT -eq 5000 ]];then
   unset PORT
 fi
 #echo $IS_HEROKU
-if [ -n "$IS_HEROKU" ] ; then
+if [ -n "$IS_HEROKU" ]; then
   echo in Heroku exiting
   cgulp prod
 else
