@@ -1,1 +1,2 @@
-web: ./stopServe && npm run flyway && npm start
+#TODO: ./dbSync or npm run flyway throws errors must fix
+web: ./stopServe && npm start
