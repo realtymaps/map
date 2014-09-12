@@ -9,11 +9,11 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "0.10.x",
+    "node": "0.10.31",
     "npm": "1.4.x"
   },
   "scripts": {
-    "start": "if [ $PORT -eq 5000 ];then unset PORT;fi;cgulp s",
+    "start": "./serve",
     "flyway": "./flyway/doFlyway.sh userManagement $DATABASE_URL migrate && ./flyway/doFlyway.sh propertyData $HEROKU_POSTGRESQL_ONYX_URL migrate",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",
@@ -72,6 +72,7 @@
     "gulp-util": "2.2.x",
     "gulp-watch": "0.6.x",
     "gulp-webpack": "^0.3.0",
+    "gulp-wrap": "^0.3.0",
     "helmet": "0.2.x",
     "html-loader": "^0.2.2",
     "html-webpack-plugin": "^1.1.0",
@@ -97,6 +98,7 @@
     "mocha": "1.18.x",
     "nodetime": "0.8.x",
     "ns2": "^1.0.3",
+    "passport": "^0.2.1",
     "passport-local": "^1.0.0",
     "pg": "^3.4.1",
     "pretty-hrtime": "^0.2.1",
@@ -116,12 +118,12 @@
     "url-loader": "^0.5.5",
     "webpack": "^1.3.3-beta2",
     "webpack-dev-server": "^1.4.10",
-    "winston": "0.7.x"
+    "winston": "0.7.x",
+    "longjohn": "^0.2.4"
   },
   "devDependencies": {
     "karma-chai": "^0.1.0",
     "karma-mocha-reporter": "^0.3.0",
-    "longjohn": "^0.2.4",
     "should": "^4.0.4"
   }
 }

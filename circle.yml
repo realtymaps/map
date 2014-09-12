@@ -1,6 +1,6 @@
 machine:
   node:
-    version: v0.10.29
+    version: v0.10.31
 dependencies:
   post:
     - npm install
