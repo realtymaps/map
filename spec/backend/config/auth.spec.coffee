@@ -46,6 +46,4 @@ describe 'config/auth'.ourNs().ourNs('Backend'), ->
       req = {}
       resultcb = resultBase.bind(null, done, "send")
       requireLogin req, res, next
-    
-    after () ->
-      return require("#{basePath}/config/dbs").shutdown()
+ 

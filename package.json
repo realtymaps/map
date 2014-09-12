@@ -22,7 +22,7 @@
     "test-gulp": "cgulp gulpSpec",
     "test": "cgulp spec",
     "postinstall": "bower install",
-    "clean": "rm -rf node_modules"
+    "clean": "rm -rf node_modules bower_components; gulp clean"
   },
   "dependencies": {
     "angular": "^1.2.21",
