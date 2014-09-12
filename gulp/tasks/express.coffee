@@ -1,5 +1,5 @@
 gulp = require 'gulp'
-log = require('gulp').log
+log = require('gulp-util').log
 #server = require 'gulp-express'
 shell = require 'gulp-shell'
 nodemon = require 'gulp-nodemon'
