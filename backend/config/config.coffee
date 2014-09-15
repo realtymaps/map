@@ -55,7 +55,7 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'info'
+      LEVEL: 'route'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
     USE_ERROR_HANDLER: true

@@ -1,8 +1,12 @@
 logger = require '../config/logger'
 pack = require '../../package.json'
-routes = require '../config/routes'
+routes = require '../../common/config/routes'
 
 module.exports = (app) ->
-  app.get routes.version, (req, res) ->
-    logger.info "version info"
-    res.send("#{pack.name}: #{pack.version}")
+  version = "#{pack.name}: #{pack.version}"
+  logger.infoRoute 'route.version', routes.version
+  logger.debug version
+
+  app.get 'version', (req, res) ->
+    logger.info "sending version info #{version}"
+    res.send version

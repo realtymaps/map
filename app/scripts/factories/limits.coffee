@@ -2,7 +2,7 @@
 User service to get current and fetch additional about the user
 ###
 app = require '../app.coffee'
-routes = require '../../../backend/config/routes.coffee'
+routes = require '../../../common/config/routes.coffee'
 
 module.exports =
   app.factory 'Limits'.ourNs(), [ '$http', ($http) =>

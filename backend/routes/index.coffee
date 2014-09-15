@@ -1,20 +1,30 @@
-fs = require 'fs'
 path = require 'path'
 config = require '../config/config'
-routes = require '../config/routes'
 logger = require '../config/logger'
+attachRoutes = require('../routeUtils/loader').loadRoutes
+routes = require '../../common/config/routes'
 
 indexFilePath = path.normalize(__filename)
 
 module.exports = (app) ->
-  fs.readdirSync(__dirname).forEach (file) ->
-    logger.debug "index: file: #{file}"
-    filePath = path.join __dirname, file
-    if !filePath is indexFilePath# and !filePath.contains 'routes'
-      logger.debug "index: filePath: #{filePath}, \nfile: #{file}"
-      baseFilename = path.basename file, path.extname(file)
-      route = path.join __dirname, baseFilename
-      require(route)(app)
+  attachRoutes app, indexFilePath, __dirname
+
+  logger.infoRoute 'index', routes.index
 
   app.get routes.index, (req, res) ->
-    res.sendfile "#{config.FRONTEND_ASSETS_PATH}/index.html"
+    frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/index.html"
+    logger.debug "frontEndIndex: #{frontEndIndex}"
+    res.sendfile frontEndIndex
+
+  logAllRoutes = ->
+    logger.info '\n'
+    logger.info "available routes: "
+    app._router.stack.filter((r) ->
+      # console.info r
+      r.route?
+    ).map (r) ->
+      path = r.route.path
+      logger.info path
+      path
+
+  logAllRoutes()

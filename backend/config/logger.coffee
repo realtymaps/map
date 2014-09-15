@@ -11,19 +11,22 @@ if !fs.existsSync(logPath)
 
 myCustomLevels =
   levels:
-    debug: 0
-    info: 1
-    warn: 2
-    error: 3
+    route: 0
+    debug: 1
+    info: 2
+    warn: 3
+    error: 4
+    crap: 5
 
   colors:
-    debug: 'grey'
+    route: 'grey'
+    debug: 'cyan'
     info: 'green'
     warn: 'orange'
     error: 'red'
 
-
-logger = new (winston.Logger)
+console.info config.LOGGING.LEVEL
+logger = new (winston.Logger)(
   transports: [
     new (winston.transports.Console)
       level: config.LOGGING.LEVEL
@@ -33,9 +36,9 @@ logger = new (winston.Logger)
       filename: logPath
       level: config.LOGGING.LEVEL
       timestamp: true
-  ],
+  ]
   levels: myCustomLevels.levels
-
+)
 winston.addColors myCustomLevels.colors
 
 if config.LOGGING.FILE_AND_LINE
@@ -50,7 +53,10 @@ if config.LOGGING.FILE_AND_LINE
         oldFunc.apply(logger, args)
 
 
-logger.info "Logger configured"
+logger.info "Logger configured: #{logger.transports}"
 
 
+unless logger.infoRoute
+  logger.infoRoute = (name, route) ->
+    logger.route "Route #{name} of: '#{route}' set"
 module.exports = logger

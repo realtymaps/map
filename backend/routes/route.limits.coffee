@@ -1,6 +1,6 @@
 logger = require '../config/logger'
 pack = require '../../package.json'
-routes = require '../config/routes'
+routes = require '../../common/config/routes'
 
 #a place for system restraints
 limits =
@@ -13,9 +13,7 @@ limits =
   doLog: true
 
 module.exports = (app) ->
-  logger.debug "WTF"
-  logger.info "WTF"
+  logger.infoRoute 'limits', routes.limits
   app.get routes.limits, (req, res) ->
-    console.info "limits hit %j", req
-    logger.info "limits"
+    logger.log 'debug', "limits hit %j", req, {}
     res.send(limits)

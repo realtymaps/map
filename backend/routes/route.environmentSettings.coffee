@@ -2,10 +2,13 @@ auth = require '../config/auth'
 logger = require '../config/logger'
 config = require '../config/config'
 environmentSettingsService = require '../services/service.environmentSettings'
-routes = require '../config/routes'
+routes = require '../../common/config/routes'
 
 module.exports = (app) ->
-  app.get routes.environmentSettings, auth.requireLogin(redirectOnFail: true), (req, res, next) ->
+  logger.infoRoute 'environmentSettings', routes.environmentSettings
+  app.get routes.environmentSettings
+  , auth.requireLogin(redirectOnFail: true)
+  , (req, res, next) ->
     logger.debug "getting environment settings for #{config.ENV}"
     environmentSettingsService.getSettings()
       .then (settings) ->
