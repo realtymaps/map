@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 
 SELECT setval('auth_user_id_seq', (SELECT MAX(id) FROM auth_user));
 
@@ -70,4 +69,3 @@ INSERT INTO management_environmentsetting (setting_name, setting_value, setting_
 INSERT INTO management_environmentsetting (setting_name, setting_value, setting_type, environment_name) VALUES ('default premium logins', '2', 'integer', 'all_environments');
 INSERT INTO management_environmentsetting (setting_name, setting_value, setting_type, environment_name) VALUES ('default free logins', '1', 'integer', 'all_environments');
 
-COMMIT;

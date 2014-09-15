@@ -1,4 +1,3 @@
-BEGIN;
 CREATE TABLE "django_admin_log" (
     "id" serial NOT NULL PRIMARY KEY,
     "action_time" timestamp with time zone NOT NULL,
@@ -123,4 +122,3 @@ INSERT INTO django_content_type (id, name, app_label, model) VALUES (4, 'user', 
 INSERT INTO django_content_type (id, name, app_label, model) VALUES (5, 'content type', 'contenttypes', 'contenttype');
 INSERT INTO django_content_type (id, name, app_label, model) VALUES (6, 'session', 'sessions', 'session');
 
-COMMIT;

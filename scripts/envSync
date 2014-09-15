@@ -25,12 +25,11 @@ remoteSync() {
 
 if [[ "$NODE_ENV" == "production" ]]
 then
-    localSync("USER_DATABASE")
-    localSync("PROPERTY_DATABASE")
+    localSync "USER_DATABASE"
+    localSync "PROPERTY_DATABASE"
 elif [[ "$NODE_ENV" == "staging" ]]
 then
-    localSync("USER_DATABASE")
-    remoteSync("PROPERTY_DATABASE", "realtymaps-map")
-else # development
-    # shouldn't need to do anything here, foreman will set things up from .env
+    localSync "USER_DATABASE"
+    remoteSync "PROPERTY_DATABASE" "realtymaps-map"
 fi
+# nothing needed
