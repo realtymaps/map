@@ -28,6 +28,9 @@ then
     DESTINATION="master"
 fi
 
+echo "attempting to push to ${DESTINATION} on ${PROJECT} at ${SERVICE}"
+
+
 
 if [[ "$CIRCLE_BRANCH" == "master" && "$CIRCLE_PROJECT_USERNAME" != "realtymaps" ]]
 then
@@ -44,7 +47,9 @@ setHerokuSetting () {
     
     echo "checking value of Heroku setting: $SETTING_NAME"
     
-    CURRENT_SETTING=`heroku config:get $SETTING_NAME --app=$PROJECT`
+    exec 5>&1
+    CURRENT_SETTING=$(heroku config:get $SETTING_NAME --app=$PROJECT|tee >(cat - >&5))
+    exec 5>&-
     if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
     then
         echo "current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
@@ -61,7 +66,9 @@ forkStagingDb () {
     echo "attempting to fork $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
     
     # first de-provision the old fork (if there is one)
-    OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
+    exec 5>&1
+    OLD_FORK=$(heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT|tee >(cat - >&5))
+    exec 5>&-
     if [ -n "$OLD_FORK" ]
     then
         echo "de-provisioning previously forked db: $OLD_FORK"
@@ -70,8 +77,10 @@ forkStagingDb () {
     
     # fork a new copy
     echo "forking new copy"
+    
     exec 5>&1
     FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork "${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT"|tee >(cat - >&5))
+    exec 5>&-
     
     NEW_VARIABLE=`cat $FORK_OUTPUT | fgrep 'Attached as' | cut -f3 -d' '`
     
