@@ -86,7 +86,7 @@ forkStagingDb () {
     FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork ${SOURCE_DB_URL} --app=$PROJECT|tee >(cat - >&5))
     exec 5>&-
     
-    NEW_VARIABLE=`cat $FORK_OUTPUT | fgrep 'Attached as' | cut -f3 -d' '`
+    NEW_VARIABLE=`echo "$FORK_OUTPUT" | fgrep 'Attached as' | cut -f3 -d' '`
     
     echo "fork name captured: $NEW_VARIABLE"
     
@@ -124,7 +124,7 @@ then
     
     if [ -n "$HEROKU_SETTINGS" ]
     then
-        echo "setting config values: $HEROKU_SETTINGS"
+        echo "setting config values:$HEROKU_SETTINGS"
         heroku config:set $HEROKU_SETTINGS --app=$PROJECT
     fi
 fi
