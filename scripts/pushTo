@@ -79,7 +79,7 @@ forkStagingDb () {
     echo "forking new copy"
     
     exec 5>&1
-    FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork "${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT"|tee >(cat - >&5))
+    FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork ${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT|tee >(cat - >&5))
     exec 5>&-
     
     NEW_VARIABLE=`cat $FORK_OUTPUT | fgrep 'Attached as' | cut -f3 -d' '`
