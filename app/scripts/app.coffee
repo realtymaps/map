@@ -1,5 +1,5 @@
 'use strict'
-require '../styles/common.scss'
+require '../styles/common.styl'
 require '../../common/extensions/strings.coffee'
 
 #console.log "ANGULAR: #{_.keys(angular)}"

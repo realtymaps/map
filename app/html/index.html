@@ -2,6 +2,8 @@
 <html lang="en" ng-app="realtymaps-app">
 
     <head>
+        <!-- inject:css -->
+        <!-- endinject -->
         <meta charset="utf-8">
         <title>RealtyMaps</title>
         <base href="/"/>
@@ -18,13 +20,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#">RealtyMaps</a>
+                <a class="navbar-brand" href="#">
+                    <img src="/assets/logo25.png"><span class="logo-c1">REALTY</span><span class="logo-c2">MAPS</span>
+                </a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li><a href="/">Home</a></li>
                     <li><a href="#map">Map</a></li>
-                    <li><a href="#users">Users</a></li>
+                    <li><a href="">Criteria</a></li>
+                    <li><a href="">Results</a></li>
                 </ul>
             </div>
         </div>
@@ -33,8 +37,7 @@
     <div class="container">
         <div ng-view></div>
     </div>
-    <!-- inject:css -->
-    <!-- endinject -->
+
 
     <!-- FONTS -->
     <!-- inject:eot -->
