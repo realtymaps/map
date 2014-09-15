@@ -95,6 +95,7 @@ forkStagingDb () {
 if [[ "$SERVICE" == "heroku" ]]
 then
     cp ../.netrc ../../.netrc
+    chmod 0600 ../../.netrc
     
     HEROKU_SETTINGS=""
     
