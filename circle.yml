@@ -3,9 +3,8 @@ machine:
     version: v0.10.31
 dependencies:
   post:
-    # use --production to exclude devDependencies, important to test this way
-    # since (I think) Heroku will install like this
-    - npm --production install
+    # CircleCI is inferring the need to do "npm install", so this is redundant
+    #- npm --production install
     #- npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server
 deployment:
   prod:

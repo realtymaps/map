@@ -94,6 +94,8 @@ forkStagingDb () {
 # pre-push tasks
 if [[ "$SERVICE" == "heroku" ]]
 then
+    cp ../.netrc ../../.netrc
+    
     HEROKU_SETTINGS=""
     
     if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
