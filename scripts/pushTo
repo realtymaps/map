@@ -42,10 +42,15 @@ setHerokuSetting () {
     SETTING_NAME=$1
     DESIRED_VALUE=$2
     
+    echo "checking value of Heroku setting: $SETTING_NAME"
+    
     CURRENT_SETTING=`heroku config:get $SETTING_NAME --app=$PROJECT`
     if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
     then
+        echo "current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
         HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
+    else
+        echo "current value is correct ('$CURRENT_SETTING')"
     fi
 }
 
@@ -53,15 +58,24 @@ forkStagingDb () {
     DB_VARIABLE_BASE=$1
     SOURCE_APP_NAME=$2
     
+    echo "attempting to fork $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
+    
     # first de-provision the old fork (if there is one)
     OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
     if [ -n "$OLD_FORK" ]
     then
+        echo "de-provisioning previously forked db: $OLD_FORK"
         heroku addons:remove ${OLD_FORK%_URL} --app=$PROJECT
     fi
     
     # fork a new copy
-    NEW_VARIABLE=`heroku addons:add heroku-postgresql:standard-0 --fork "${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT" | fgrep 'Attached as' | cut -f3 -d' '`
+    echo "forking new copy"
+    exec 5>&1
+    FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork "${SOURCE_APP_NAME}:${DB_VARIABLE_BASE}_URL --app=$PROJECT"|tee >(cat - >&5))
+    
+    NEW_VARIABLE=`cat $FORK_OUTPUT | fgrep 'Attached as' | cut -f3 -d' '`
+    
+    echo "fork name captured: $NEW_VARIABLE"
     
     # save the value in a config variable so we can remove it later
     setHerokuSetting "${DB_VARIABLE_BASE}_VARIABLE" "$NEW_VARIABLE"
@@ -88,15 +102,18 @@ then
         # may need to be adjusted later if we ever have breaking schema
         # changes to that db that we need to manage
         
+        echo "waiting for databases to finish forking..."
         heroku pg:wait --app=$PROJECT
     fi
     
     if [ -n "$HEROKU_SETTINGS" ]
     then
+        echo "setting config values: $HEROKU_SETTINGS"
         heroku config:set $HEROKU_SETTINGS --app=$PROJECT
     fi
 fi
 
 
 # do the push
+echo "pushing to ${SERVICE}"
 git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:${DESTINATION}"

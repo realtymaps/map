@@ -59,6 +59,24 @@ environmentConfig =
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
   
+  test:
+    USER_DB:
+      debug: true
+    PROPERTY_DB:
+      debug: true
+    SESSION:
+      cookie:
+        secure: false
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 60*1000   # 1 minute
+      FAST_REFRESH: 30*1000   # 30 seconds
+    LOGGING:
+      LEVEL: 'debug'
+      FILE_AND_LINE: true
+      LONG_STACK_TRACES: true
+    USE_ERROR_HANDLER: true
+    TRUST_PROXY: false
+  
   staging:
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
