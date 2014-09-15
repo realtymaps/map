@@ -98,9 +98,6 @@ forkStagingDb () {
 # pre-push tasks
 if [[ "$SERVICE" == "heroku" ]]
 then
-    echo -e "machine api.heroku.com\n  login realtymaps.ci@gmail.com\n  password $HEROKU_API_AUTH_TOKEN" > ../../.netrc
-    chmod 0600 ../../.netrc
-    
     HEROKU_SETTINGS=""
     
     if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
