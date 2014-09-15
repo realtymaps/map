@@ -116,8 +116,7 @@
     "supertest": "0.11.x",
     "through2": "^0.6.1",
     "url-loader": "^0.5.5",
-    "webpack": "^1.3.3-beta2",
-    "webpack-dev-server": "^1.4.10",
+    "webpack": "1.3.7",
     "winston": "0.7.x"
   },
   "devDependencies": {
