@@ -68,7 +68,7 @@ forkStagingDb () {
     if [ -n "$OLD_FORK" ]
     then
         echo "de-provisioning previously forked db: $OLD_FORK"
-        heroku addons:remove ${OLD_FORK%_URL} --app=$PROJECT
+        heroku addons:remove ${OLD_FORK%_URL} --app=$PROJECT --confirm $PROJECT
     fi
     
 
@@ -98,7 +98,7 @@ forkStagingDb () {
 # pre-push tasks
 if [[ "$SERVICE" == "heroku" ]]
 then
-    cp ../.netrc ../../.netrc
+    echo -e "machine api.heroku.com\n  login realtymaps.ci@gmail.com\n  password $HEROKU_API_AUTH_TOKEN" > ../../.netrc
     chmod 0600 ../../.netrc
     
     HEROKU_SETTINGS=""
