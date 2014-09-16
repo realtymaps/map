@@ -3,8 +3,8 @@
     "level": "warn"
   },
   "max_line_length": {
-    "value": 120,
-    "level": "ignore",
+    "value": 90,
+    "level": "warn",
     "limitComments": false
   },
   "no_backticks": {

@@ -5,7 +5,7 @@ Config = (output, additionalPlugs) ->
   obj =
 #    watch:true
     verbose:false
-    devtool: '#source-map'#'#inline-source-map'
+    # devtool: '#source-map'#'#inline-source-map'
     resolve:
       modulesDirectories: ['bower_components','node_modules']
     plugins: [

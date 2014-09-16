@@ -1,4 +1,4 @@
-<section>
+<section ng-cloak>
 
     <ui-gmap-google-map
             center="map.center"
@@ -11,6 +11,7 @@
             pan="true"
             control="map.control"
             options="map.options"
+            ng-cloak
             >
         <ui-gmap-layer type="TrafficLayer" show="map.showTraffic"></ui-gmap-layer>
         <ui-gmap-layer type="BicyclingLayer" show="map.showBicycling"></ui-gmap-layer>
