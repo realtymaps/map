@@ -22,15 +22,8 @@ remoteSync() {
 
     if [ -n "$IS_HEROKU" ]
     then
-        echo "===================================="
-        pwd
-        echo "===================================="
-        ls -la
-        echo "===================================="
-        ls -la ..
-        echo "===================================="
-        INDIRECT=`./hk get -a $SOURCE_APP_NAME ${VARIABLE_BASE}_VARIABLE`
-        DIRECT=`./hk get -a $SOURCE_APP_NAME ${INDIRECT}`
+        INDIRECT=`./app/hk get -a $SOURCE_APP_NAME ${VARIABLE_BASE}_VARIABLE`
+        DIRECT=`./app/hk get -a $SOURCE_APP_NAME ${INDIRECT}`
         eval "${VARIABLE_BASE}_URL=${DIRECT}"
     else
         INDIRECT=`heroku config:get ${VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
