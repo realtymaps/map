@@ -65,10 +65,12 @@ forkStagingDb () {
     
     # first de-provision the old fork (if there is one)
     OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
+    OLD_FORK="${OLD_FORK%_URI}"
+    OLD_FORK="${OLD_FORK%_URL}"
     if [ -n "$OLD_FORK" ]
     then
         echo "de-provisioning previously forked db: $OLD_FORK"
-        heroku addons:remove ${OLD_FORK%_URL} --app=$PROJECT --confirm $PROJECT
+        heroku addons:remove ${OLD_FORK} --app=$PROJECT --confirm $PROJECT
     fi
     
 
