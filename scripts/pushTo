@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ -n "$IS_HEROKU" ]
+if [ ! -n "$IS_HEROKU" ]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/.."

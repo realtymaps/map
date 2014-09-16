@@ -1,12 +1,6 @@
 #!/bin/bash
 set -e
 
-if [ -n "$IS_HEROKU" ]
-then
-    DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
-    cd "$DIR/.."
-fi
-
 
 localSync() {
     # sets the value of <PARAM>_URL via indirect reference to <PARAM>_VARIABLE
