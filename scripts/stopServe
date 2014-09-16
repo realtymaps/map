@@ -2,7 +2,7 @@
 set -e
 
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
-cd "$DIR"
+cd "$DIR/.."
 
 
 if [ -n "$IS_HEROKU" ] ; then
@@ -16,7 +16,7 @@ ports=(${argPorts//,/ })
 
 for i in "${!ports[@]}"
 do
-  PID=$(./getRunningPID)
+  PID=$(./scripts/getRunningPID)
   if [[ -n $PID ]]; then
     kill $PID
     someThingWasKilled='true'
