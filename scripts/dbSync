@@ -1,10 +1,6 @@
 #!/bin/sh
 set -e
 
-echo "====================="
-pwd
-echo "====================="
-
 DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
 cd "$DIR/.."
 
