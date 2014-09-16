@@ -1,8 +1,11 @@
 #!/bin/sh
 set -e
 
-DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
-cd "$DIR/.."
+if [ -n "$IS_HEROKU" ]
+then
+    DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
+    cd "$DIR/.."
+fi
 
 
 if [[ $PORT -eq 5000 ]];then

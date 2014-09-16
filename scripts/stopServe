@@ -2,17 +2,14 @@
 set -e
 
 
-echo "====================="
-pwd
-echo "====================="
-
-DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
-cd "$DIR/.."
-
 if [ -n "$IS_HEROKU" ] ; then
   echo "in Heroku, exiting"
   exit 0
 fi
+
+DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
+cd "$DIR/.."
+
 
 
 #or 4000
