@@ -5,6 +5,7 @@ path = require 'path'
 
 config = require('./config')
 logPath = config.LOGGING.PATH
+_ = require 'lodash'
 
 if !fs.existsSync(logPath)
   fs.openSync(logPath, 'w')
@@ -16,7 +17,6 @@ myCustomLevels =
     info: 2
     warn: 3
     error: 4
-    crap: 5
 
   colors:
     route: 'grey'
@@ -53,10 +53,11 @@ if config.LOGGING.FILE_AND_LINE
         oldFunc.apply(logger, args)
 
 
-logger.info "Logger configured: #{logger.transports}"
-
-
 unless logger.infoRoute
   logger.infoRoute = (name, route) ->
     logger.route "Route #{name} of: '#{route}' set"
+
+logger.log 'debug', 'Log Levels: %j', logger.levels, {}
+logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+
 module.exports = logger

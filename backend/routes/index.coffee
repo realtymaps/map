@@ -10,10 +10,9 @@ module.exports = (app) ->
   attachRoutes app, indexFilePath, __dirname
 
   logger.infoRoute 'index', routes.index
-
   app.get routes.index, (req, res) ->
     frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/index.html"
-    logger.debug "frontEndIndex: #{frontEndIndex}"
+    logger.route "frontEndIndex: #{frontEndIndex}"
     res.sendfile frontEndIndex
 
   logAllRoutes = ->

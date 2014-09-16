@@ -1,4 +1,5 @@
 'use strict'
+
 require '../styles/common.styl'
 require '../../common/extensions/strings.coffee'
 

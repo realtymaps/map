@@ -11,6 +11,7 @@ base =
     LEVEL: 'info'
     FILE_AND_LINE: false
     LONG_STACK_TRACES: false
+    FONT_END: false
   USER_DB:
     client: 'pg'
     connection: process.env.DATABASE_URL
@@ -55,9 +56,10 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'route'
+      LEVEL: 'debug'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
+      FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
   staging: {}

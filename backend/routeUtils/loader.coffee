@@ -7,12 +7,12 @@ routes = require '../../common/config/routes'
 module.exports =
   loadRoutes: (app, indexFilePath, directoryName)->
     files = fs.readdirSync(directoryName)
-    logger.log 'debug', "files: %j", files, {}
+    logger.log 'route', "files: %j", files, {}
 
     files.forEach (file) ->
       filePath = path.join directoryName, file
       unless filePath is indexFilePath
-        logger.debug " filePath: #{filePath}, \nfile: #{file}"
+        logger.route " filePath: #{filePath}, \nfile: #{file}"
         baseFilename = path.basename file, path.extname(file)
         route = path.join directoryName, baseFilename
         require(route)?(app)
