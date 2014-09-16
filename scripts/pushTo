@@ -100,10 +100,13 @@ if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
     
-    echo "checking for .netrc"
+    echo "========== trying hk creds"
+    L=~/bin/hk && curl -sL -A "`uname -sp`" https://hk.heroku.com/hk.gz | zcat >$L && chmod +x $L && ~/bin/hk creds
+    
+    echo "========== checking for .netrc"
     ls -la
     
-    echo "searching for .netrc"
+    echo "========== searching for .netrc"
     find . -print0 | xargs -0 fgrep 'machine api.heroku.com'
 
     # value needed by ./scripts/stopServe and maybe elsewhere
