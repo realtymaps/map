@@ -100,8 +100,11 @@ if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
     
-    echo "checking .netrc"
-    cat ./.netrc
+    echo "checking for .netrc"
+    ls -la
+    
+    echo "searching for .netrc"
+    find . | xargs fgrep 'machine api.heroku.com'
 
     # value needed by ./scripts/stopServe and maybe elsewhere
     setHerokuSetting "IS_HEROKU" "1"
