@@ -11,6 +11,7 @@ base =
     LEVEL: 'info'
     FILE_AND_LINE: false
     LONG_STACK_TRACES: false
+    FRONT_END: false
   USER_DB:
     client: 'pg'
     connection: process.env.DATABASE_URL
@@ -36,7 +37,7 @@ base =
   DEFAULT_LANDING_URL: "/"
   LOGOUT_URL: "/"
 
-# this one's separated out so we can re-use the USER_DB.connection value 
+# this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
   conString: base.USER_DB.connection
 
@@ -58,6 +59,7 @@ environmentConfig =
       LEVEL: 'debug'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
+      FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
   staging: {}

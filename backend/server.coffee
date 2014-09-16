@@ -29,10 +29,6 @@ process.on 'uncaughtException', (err) ->
 memwatch = require 'memwatch'
 memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
-
-# bootstrap passport config
-require('./config/passport')
-
 # express configuration
 app = require("./config/express")
 

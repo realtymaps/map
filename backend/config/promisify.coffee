@@ -10,8 +10,6 @@ bcrypt.genSaltAsync = Promise.promisify(bcrypt.genSalt)
 bcrypt.hashAsync = Promise.promisify(bcrypt.hash)
 bcrypt.compareAsync = Promise.promisify(bcrypt.compare)
 
-passport = require "passport"
-passport.authenticateAsync = Promise.promisify(passport.authenticate, passport)
 
 module.exports = {
   middleware:

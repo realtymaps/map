@@ -1,9 +1,16 @@
 logger = require '../config/logger'
 pack = require '../../package.json'
+routes = require '../../common/config/routes'
 
-# I'm not sure that we'll actually need this route, but it was convenient for testing
+version =
+  app: pack.name
+  version: pack.version
+versionJSON = JSON.stringify version
 
 module.exports = (app) ->
-  app.get '/version/', (req, res) ->
-    logger.info "version info"
-    res.send("#{pack.name}: #{pack.version}")
+  logger.infoRoute 'route.version', routes.version
+  logger.debug 'version: ' + versionJSON
+
+  app.get routes.version, (req, res) ->
+    logger.info "sending version info #{versionJSON}"
+    res.send version

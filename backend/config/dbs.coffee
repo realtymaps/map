@@ -5,10 +5,12 @@ Promise = require 'bluebird'
 
 config = require './config'
 logger = require './logger'
+require('../../common/config/dbChecker.coffee')()
 
-module.exports = 
-  users: bookshelf(knex(config.USER_DB))
-  properties: bookshelf(knex(config.PROPERTY_DB))
+
+module.exports =
+  users: bookshelf knex(config.USER_DB)
+  properties: bookshelf knex(config.PROPERTY_DB)
   pg: pg
 
 module.exports.shutdown = () ->
@@ -17,7 +19,7 @@ module.exports.shutdown = () ->
   pgDbShutdown = new Promise (resolve, reject) ->
     pg.on "end", () ->
       logger.info "... 'pg' database shutdown complete ..."
-      process.nextTick resolve 
+      process.nextTick resolve
     pg.on "error", (error) ->
       logger.error "!!! 'pg' database shutdown error: #{error}"
       process.nextTick reject.bind(null, error)
