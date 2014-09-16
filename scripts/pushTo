@@ -104,7 +104,7 @@ then
     ls -la
     
     echo "searching for .netrc"
-    find . | xargs fgrep 'machine api.heroku.com'
+    find . -print0 | xargs -0 fgrep 'machine api.heroku.com'
 
     # value needed by ./scripts/stopServe and maybe elsewhere
     setHerokuSetting "IS_HEROKU" "1"
