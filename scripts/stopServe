@@ -1,31 +1,35 @@
-#!/bin/sh
+#!/bin/bash
 set -e
+
 
 
 if [ -n "$IS_HEROKU" ] ; then
     echo "in Heroku, exiting"
 else
 
+    
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/.."
     
     
+    if [[ $# == 0 ]]
+    then
+        PORTS="3000 4000"
+    else
+        PORTS="$*"
+    fi
     
-    #or 4000
-    argPorts=${1:-"3000,4000"}
-    ports=(${argPorts//,/ })
-    
-    for i in "${!ports[@]}"
+    for i in $PORTS
     do
-      PID=$(./scripts/getRunningPID)
-      if [[ -n $PID ]]; then
-        kill $PID
-        someThingWasKilled='true'
-      else
-        if [[ -z $someThingWasKilled ]];then
-          echo "We're good, nothing running to stop."
+        PID=$(./scripts/getRunningPID $i)
+        if [[ -n $PID ]]; then
+            kill $PID
+            someThingWasKilled='true'
+        else
+            if [[ -z $someThingWasKilled ]];then
+                echo "We're good, nothing running to stop."
+            fi
         fi
-      fi
     done
 
 fi
