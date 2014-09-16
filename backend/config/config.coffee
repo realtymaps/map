@@ -11,7 +11,7 @@ base =
     LEVEL: 'info'
     FILE_AND_LINE: false
     LONG_STACK_TRACES: false
-    FONT_END: false
+    FRONT_END: false
   USER_DB:
     client: 'pg'
     connection: process.env.DATABASE_URL

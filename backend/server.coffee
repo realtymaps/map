@@ -26,9 +26,8 @@ process.on 'uncaughtException', (err) ->
   process.exit 1  # because now, you are in unpredictable state!
 
 # watch and log any leak (a lot of false positive though)
-# memwatch = require 'memwatch'
-# memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
-
+memwatch = require 'memwatch'
+memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 # express configuration
 app = require("./config/express")

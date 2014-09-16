@@ -9,5 +9,5 @@ gulp.task "express", ->
   nodemon
     script: "backend/server.coffee"
     ext: 'js coffee cson'
-    ignore: ['node_modules/**','bower_componets/**', 'app/**', 'dist/**']
+    ignore: ['node_modules/**','bower_componets/**', 'app/**', 'dist/**/**']
     delay: 1

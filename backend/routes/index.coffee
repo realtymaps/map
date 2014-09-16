@@ -6,6 +6,7 @@ routes = require '../../common/config/routes'
 
 indexFilePath = path.normalize(__filename)
 
+
 module.exports = (app) ->
   attachRoutes app, indexFilePath, __dirname
 
@@ -13,14 +14,14 @@ module.exports = (app) ->
   app.get routes.index, (req, res) ->
     frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/index.html"
     logger.route "frontEndIndex: #{frontEndIndex}"
-    res.sendfile frontEndIndex
+    res.sendFile frontEndIndex
 
   logAllRoutes = ->
     logger.info '\n'
     logger.info "available routes: "
     app._router.stack.filter((r) ->
-      # console.info r
-      r.route?
+      #console.info r
+      r?.route?
     ).map (r) ->
       path = r.route.path
       logger.info path

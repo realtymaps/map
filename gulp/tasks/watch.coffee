@@ -9,4 +9,4 @@ gulp.task 'watch_rest', ->
 gulp.task 'watch', ['watch_rest'], ->
   setTimeout ->
     gulp.watch path.spec, ['spec']
-  , 6000
+  , 8000
