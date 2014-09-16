@@ -7,6 +7,6 @@ should = require 'should'
 
 module.exports = (config) ->
   commonConfig = require('./karma.common')(config,webpackConf)
-  commonConfig.browsers = ['Chrome']
+  # commonConfig.browsers = ['Chrome']
   commonConfig.autoWatch = true
   config.set commonConfig
