@@ -100,14 +100,16 @@ if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
     
-    echo "========== trying hk creds"
-    L=~/bin/hk && curl -sL -A "`uname -sp`" https://hk.heroku.com/hk.gz | zcat >$L && chmod +x $L && ~/bin/hk creds
+    # we have to give our heroku instance creds so it can access config
+    echo "retrieving Heroku creds"
+    HK_LOCATION=~/bin/hk
+    curl -sL -A "`uname -sp`" https://hk.heroku.com/hk.gz | zcat >$HK_LOCATION && chmod +x $HK_LOCATION
+    HEROKU_CREDS=`~/bin/hk creds`
+    HEROKU_USERNAME=`echo $HEROKU_CREDS | cut -f1 -d' '`
+    HEROKU_AUTH_TOKEN=`echo $HEROKU_CREDS | cut -f2 -d' '`
+    setHerokuSetting "HEROKU_USERNAME" "$HEROKU_USERNAME"    
+    setHerokuSetting "HEROKU_AUTH_TOKEN" "$HEROKU_AUTH_TOKEN"    
     
-    echo "========== checking for .netrc"
-    ls -la
-    
-    echo "========== searching for .netrc"
-    find . -print0 | xargs -0 fgrep 'machine api.heroku.com'
 
     # value needed by ./scripts/stopServe and maybe elsewhere
     setHerokuSetting "IS_HEROKU" "1"
