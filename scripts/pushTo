@@ -99,6 +99,9 @@ forkStagingDb () {
 if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
+
+    # value needed by ./scripts/stopServe and maybe elsewhere
+    setHerokuSetting "IS_HEROKU" "1"
     
     if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
     then
