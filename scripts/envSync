@@ -19,6 +19,11 @@ remoteSync() {
 
     if [ -n "$IS_HEROKU" ]
     then
+        echo "==============="
+        pwd
+        echo "==============="
+        ls -la
+        echo "==============="
         INDIRECT=`./app/hk get -a $SOURCE_APP_NAME ${VARIABLE_BASE}_VARIABLE`
         DIRECT=`./app/hk get -a $SOURCE_APP_NAME ${INDIRECT}`
         eval "${VARIABLE_BASE}_URL=${DIRECT}"

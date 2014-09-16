@@ -1,1 +1,1 @@
-web: npm stop && source ./scripts/envSync && npm run db-sync && npm start
+web: ./scripts/stopServe && source ./scripts/envSync && npm run db-sync && npm start

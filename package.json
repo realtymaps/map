@@ -15,7 +15,6 @@
   "scripts": {
     "start": "./scripts/serve",
     "db-sync": "./scripts/dbSync",
-    "stop": "./scripts/stopServe",
     "gulp": "cgulp",
     "gulp-build": "cgulp build",
     "test-frontend": "cgulp frontendSpec",
