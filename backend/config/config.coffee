@@ -26,7 +26,9 @@ base =
       max: 10
   SESSION:
     secret: "thisisthesecretforthesession"
-    cookie: { maxAge: null, secure: true }
+    cookie:
+      maxAge: null
+      secure: true
     unset: "destroy"
   NODETIME: false
   USE_ERROR_HANDLER: false
@@ -76,6 +78,7 @@ environmentConfig =
       LEVEL: 'debug'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
+      FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
   

@@ -1,14 +1,16 @@
 #!/bin/sh
 set -e
 
-DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
-cd "$DIR/.."
-
 
 if [ -n "$IS_HEROKU" ] ; then
   echo "in Heroku, exiting"
   exit 0
 fi
+
+
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR/.."
+
 
 #or 4000
 argPorts=${1:-"3000,4000"}

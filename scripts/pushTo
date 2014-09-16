@@ -99,6 +99,9 @@ forkStagingDb () {
 if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
+    
+    echo "checking .netrc"
+    cat ./.netrc
 
     # value needed by ./scripts/stopServe and maybe elsewhere
     setHerokuSetting "IS_HEROKU" "1"
