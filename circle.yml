@@ -20,7 +20,7 @@ deployment:
   staging_nmccready:
     branch: /feature\/nick_mc.*/
     commands:
-      - ./scripts/pushTo heroku nmccready-realtymaps-map
+      - ./scripts/pushTo heroku nem-realtymaps-map
 
   staging_dan:
     branch: /feature\/dan.*/
