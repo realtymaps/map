@@ -6,8 +6,8 @@ localSync() {
     # sets the value of <PARAM>_URL via indirect reference to <PARAM>_VARIABLE
     VARIABLE_BASE=$1
     
-    INDIRECT=`eval echo "\$${VARIABLE_BASE}_VARIABLE"`
-    DIRECT=`eval echo "\$${INDIRECT}"`
+    INDIRECT=`eval echo '$'"${VARIABLE_BASE}_VARIABLE"`
+    DIRECT=`eval echo '$'"${INDIRECT}"`
     eval "export ${VARIABLE_BASE}_URL=${DIRECT}"
 }
 
