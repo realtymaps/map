@@ -4,7 +4,7 @@ set -e
 
 
 if [ -n "$IS_HEROKU" ] ; then
-    echo "in Heroku, exiting"
+    echo "in Heroku, skipping stopServe script"
 else
 
     
