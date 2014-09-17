@@ -43,7 +43,7 @@ base.SESSION_STORE =
 
 # use environment-specific configuration as little as possible
 environmentConfig =
-  
+
   development:
     USER_DB:
       debug: true
@@ -62,7 +62,7 @@ environmentConfig =
       FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
-  
+
   test:
     USER_DB:
       debug: true
@@ -81,7 +81,7 @@ environmentConfig =
       FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
-  
+
   staging:
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
@@ -99,6 +99,6 @@ environmentConfig =
 
 
 config = _.merge(base, environmentConfig[base.ENV])
-console.log "config: "+JSON.stringify(config, null, 2)
+#console.log "config: "+JSON.stringify(config, null, 2)
 
 module.exports = config

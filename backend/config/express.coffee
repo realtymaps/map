@@ -20,6 +20,7 @@ errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 promisifyMiddleware = require('./promisify').middleware
 auth = require './auth'
+status = require '../../common/utils/httpStatus'
 
 
 app = express()
@@ -75,6 +76,7 @@ require("../routes")(app)
 app.use (err, req, res, next) ->
   logger.error "uncaught error found by express:"
   logger.error (if err.stack then ''+err.stack else ''+err)
+  res.json status.INTERNAL_SERVER_ERROR, error: err.message
   next()
 
 if config.USE_ERROR_HANDLER
