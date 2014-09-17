@@ -64,7 +64,7 @@ forkStagingDb () {
     DB_VARIABLE_BASE=$1
     SOURCE_APP_NAME=$2
     
-    echo "attempting to fork $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
+    echo "beginning fork of $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
     
     # first de-provision the old fork (if there is one)
     OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
@@ -74,6 +74,8 @@ forkStagingDb () {
     then
         echo "de-provisioning previously forked db: $OLD_FORK"
         heroku addons:remove ${OLD_FORK} --app=$PROJECT --confirm $PROJECT
+    else
+        echo "no previously forked db to worry about"
     fi
     
 
@@ -83,7 +85,7 @@ forkStagingDb () {
     # get the db url we want to fork
     SOURCE_DB=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
     echo "db name: $SOURCE_DB"
-    SOURCE_DB_URL=`heroku config:get ${SOURCE_DB}_URL --app=$SOURCE_APP_NAME`
+    SOURCE_DB_URL=`heroku config:get ${SOURCE_DB} --app=$SOURCE_APP_NAME`
     echo "db url: $SOURCE_DB_URL"
 
     
