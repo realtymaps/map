@@ -1,64 +1,43 @@
-xdescribe "baseGMap", ->
+describe "BaseGoogleMap", ->
   beforeEach ->
-    module "google-maps".ns()
-    module "google-maps.mocks"
-    inject (GoogleApiMock) =>
-      @gmap = new GoogleApiMock()
-      @gmap.mockAPI()
-      @gmap.mockLatLng()
-      @gmap.mockMarker()
-      @gmap.mockEvent()
+    #console.info "beforeEach ->"
 
+
+    angular.mock.module 'app'.ourNs()
+    angular.mock.module "google-maps.mocks"
+    angular.mock.module "google-maps".ns()
+
+    #console.info "beforeEach.after modules"
+    angular.mock.inject ['GoogleApiMock', (GoogleApiMock) =>
+      @apiMock = new GoogleApiMock()
+      @apiMock.mockAPI()
+      @apiMock.mockLatLng()
+      @apiMock.mockMarker()
+      @apiMock.mockEvent()
+    ]
+
+    #console.info "after GoogleApiMock"
     @mocks =
-      scope:
-        idKey: 0
-        coords:
-          latitude: 90.0
-          longitude: 89.0
-        show: true
-        $watch: ()->
-        $on: ()->
-        control: {}
+      options:
+        json:
+          center:
+            latitude: 90.0
+            longitude: 89.0
+          zoom: 3
+      zoomThresholdMilli: 1000
 
-      element:
-        html: ->
-          "<p>test html</p>"
-      attrs:
-        isiconvisibleonclick: true
-      ctrl:
-        getMap: ()->
-          {}
-    @timeOutNoW = (fnc, time) =>
-      fnc()
-    inject ($rootScope, nggmapMarker, $q) =>
-      @$rootScope = $rootScope
-      d = $q.defer()
-      d.resolve {}
-      @$rootScope.deferred = d
-      @mocks.ctrl.getScope =  =>
-        @$rootScope
-      @mocks.scope.$new = () =>
-        @$rootScope.$new()
-      @mocks.scope.deferred = d
-      @subject = new nggmapMarker()
+    inject ["$rootScope", 'BaseGoogleMap'.ourNs(),
+     ($rootScope, BaseGoogleMap) =>
+        #console.log "$rootScope: ", $rootScope
+        @$rootScope = $rootScope
 
-  it 'can be created', ->
-    expect(@subject).toBeDefined()
+        @ctor = BaseGoogleMap
+        @subject = new BaseGoogleMap(
+          $rootScope.$new(), @mocks.options, @mocks.zoomThresholdMilli
+        )
+    ]
+  it 'ctor exists', ->
+    @ctor.should.be.ok
 
-  describe "link", ->
-    it 'gMarkerManager exists', ->
-      @subject.link(@mocks.scope, @mocks.element, @mocks.attrs, @mocks.ctrl)
-      @$rootScope.$apply()
-      expect(@subject.gMarkerManager).toBeDefined()
-
-    it 'slaps control functions when a control is available', ->
-      @subject.link(@mocks.scope, @mocks.element, @mocks.attrs, @mocks.ctrl)
-      @$rootScope.$apply()
-      expect(@mocks.scope.control.getGMarkers).toBeDefined()
-
-    it 'slaps control functions work', ->
-      @subject.link(@mocks.scope, @mocks.element, @mocks.attrs, @mocks.ctrl)
-      @$rootScope.$apply()
-      fn = @mocks.scope.control.getGMarkers
-      expect(fn).toBeDefined()
-      expect(fn()[0].key).toEqual(@mocks.scope.idKey)
+  it 'subject can be created', ->
+    @subject.should.beok
