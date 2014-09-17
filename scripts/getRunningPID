@@ -1,0 +1,7 @@
+#!/bin/sh
+set -e
+
+
+port=${1:-3000}
+
+lsof -i:$port | grep -v PID | awk '{print $2}'

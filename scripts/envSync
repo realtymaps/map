@@ -1,0 +1,42 @@
+#!/bin/bash
+set -e
+
+
+localSync() {
+    # sets the value of <PARAM>_URL via indirect reference to <PARAM>_VARIABLE
+    VARIABLE_BASE=$1
+    
+    INDIRECT=`eval echo '$'"${VARIABLE_BASE}_VARIABLE"`
+    DIRECT=`eval echo '$'"${INDIRECT}"`
+    eval "export ${VARIABLE_BASE}_URL=${DIRECT}"
+}
+
+remoteSync() {
+    # sets the value of <PARAM_1>_URL via indirect reference to
+    # <PARAM_1>_VARIABLE as evaluated on the heroku app named <PARAM_2> 
+    VARIABLE_BASE=$1
+    SOURCE_APP_NAME=$2
+
+    if [ -n "$IS_HEROKU" ]
+    then
+        INDIRECT=`./hk get -a $SOURCE_APP_NAME ${VARIABLE_BASE}_VARIABLE`
+        DIRECT=`./hk get -a $SOURCE_APP_NAME ${INDIRECT}`
+        eval "export ${VARIABLE_BASE}_URL=${DIRECT}"
+    else
+        INDIRECT=`heroku config:get ${VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
+        DIRECT=`heroku config:get ${INDIRECT} --app=$SOURCE_APP_NAME`
+        eval "export ${VARIABLE_BASE}_URL=${DIRECT}"
+    fi
+}
+
+
+if [[ "$NODE_ENV" == "production" ]]
+then
+    localSync "USER_DATABASE"
+    localSync "PROPERTY_DATABASE"
+elif [[ "$NODE_ENV" == "staging" ]]
+then
+    localSync "USER_DATABASE"
+    remoteSync "PROPERTY_DATABASE" "realtymaps-map"
+fi
+# nothing needed

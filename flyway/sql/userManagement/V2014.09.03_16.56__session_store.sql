@@ -1,4 +1,3 @@
-BEGIN TRANSACTION;
 
 INSERT INTO management_environmentsetting (setting_name, setting_value, setting_type, environment_name) VALUES ('password hashing cost factor', '13', 'integer', 'all_environments');
 
@@ -10,4 +9,3 @@ CREATE TABLE "session" (
 WITH (OIDS=FALSE);
 ALTER TABLE "session" ADD CONSTRAINT "session_pkey" PRIMARY KEY ("sid") NOT DEFERRABLE INITIALLY IMMEDIATE;
 
-COMMIT;

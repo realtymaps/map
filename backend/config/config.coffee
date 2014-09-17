@@ -14,24 +14,23 @@ base =
     FRONT_END: false
   USER_DB:
     client: 'pg'
-    connection: process.env.DATABASE_URL
+    connection: process.env.USER_DATABASE_URL
     pool:
       min: 2
       max: 10
   PROPERTY_DB:
     client: 'pg'
-    connection: process.env.HEROKU_POSTGRESQL_ONYX_URL
+    connection: process.env.PROPERTY_DATABASE_URL
     pool:
       min: 2
       max: 10
   SESSION:
     secret: "thisisthesecretforthesession"
-    cookie: { maxAge: null, secure: true }
+    cookie:
+      maxAge: null
+      secure: true
     unset: "destroy"
-  DB_CACHE_TIMES:
-    SLOW_REFRESH: 10*60*1000  # 10 minutes
-    FAST_REFRESH: 60*1000     # 1 minute
-  USE_NODETIME: false
+  NODETIME: false
   USE_ERROR_HANDLER: false
   TRUST_PROXY: 1
   DEFAULT_LANDING_URL: "/"
@@ -44,10 +43,11 @@ base.SESSION_STORE =
 
 # use environment-specific configuration as little as possible
 environmentConfig =
+  
   development:
     USER_DB:
       debug: true
-    USER_DB:
+    PROPERTY_DB:
       debug: true
     SESSION:
       cookie:
@@ -62,15 +62,43 @@ environmentConfig =
       FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
-  staging: {}
-  production:
-    USE_NODETIME: true
+  
+  test:
+    USER_DB:
+      debug: true
+    PROPERTY_DB:
+      debug: true
     SESSION:
       cookie:
-        secure: true
+        secure: false
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 60*1000   # 1 minute
+      FAST_REFRESH: 30*1000   # 30 seconds
+    LOGGING:
+      LEVEL: 'debug'
+      FILE_AND_LINE: true
+      LONG_STACK_TRACES: true
+      FRONT_END: true
+    USE_ERROR_HANDLER: true
+    TRUST_PROXY: false
+  
+  staging:
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 5*60*1000   # 5 minutes
+      FAST_REFRESH: 60*1000     # 1 minute
+
+  production:
+    DB_CACHE_TIMES:
+      SLOW_REFRESH: 10*60*1000   # 10 minutes
+      FAST_REFRESH: 60*1000      # 1 minute
+    # we probably want this for production, but we need to get it set up with
+    # an API key first
+    #NODETIME:
+    #  accountKey: "ENTER-A-VALID-KEY-HERE"
+    #  appName: 'mean.coffee'
 
 
 config = _.merge(base, environmentConfig[base.ENV])
-#console.info "config: %j",config
+console.log "config: "+JSON.stringify(config, null, 2)
 
 module.exports = config

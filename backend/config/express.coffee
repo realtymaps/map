@@ -1,5 +1,4 @@
 express = require 'express'
-
 path = require 'path'
 
 config = require './config'

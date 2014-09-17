@@ -1,0 +1,19 @@
+#!/bin/sh
+set -e
+
+if [ ! -n "$IS_HEROKU" ]
+then
+    DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
+    cd "$DIR/.."
+fi
+
+
+if [[ $PORT -eq 5000 ]];then
+  unset PORT
+fi
+
+if [ -n "$IS_HEROKU" ]; then
+  cgulp prod
+else
+  cgulp
+fi

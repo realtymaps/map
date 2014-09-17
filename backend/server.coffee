@@ -4,11 +4,8 @@
 config = require './config/config'
 
 # monitoring with nodetime
-if config.USE_NODETIME
-  require('nodetime').profile(
-    accountKey: "ENTER-A-VALID-KEY-HERE"
-    appName: 'mean.coffee'
-  )
+if config.NODETIME
+  require('nodetime').profile(config.NODETIME)
 
 # "long stack traces" support
 if config.LOGGING.LONG_STACK_TRACES
@@ -28,6 +25,7 @@ process.on 'uncaughtException', (err) ->
 # watch and log any leak (a lot of false positive though)
 memwatch = require 'memwatch'
 memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
+
 
 # express configuration
 app = require("./config/express")

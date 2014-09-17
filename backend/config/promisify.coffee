@@ -5,6 +5,7 @@ Promise = require "bluebird"
 # which makes a promisified version of each exported function, using the
 # suffix 'Async' (so someLib.nodeFunc becomes someLib.nodeFuncAsync)
 
+
 bcrypt = require('bcrypt')
 bcrypt.genSaltAsync = Promise.promisify(bcrypt.genSalt)
 bcrypt.hashAsync = Promise.promisify(bcrypt.hash)
