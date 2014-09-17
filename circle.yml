@@ -14,20 +14,25 @@ deployment:
       # anything if CircleCI is running on master of any fork other than the
       # main realtymaps repo.  It also handles db forking and other important
       # things like setting some environment variables 
-      - ./scripts/pushTo heroku realtymaps-map
-      - ./scripts/pushTo github realtymapsDev/map
+      - ./scripts/pushTo heroku realtymaps-map:
+        timeout: 600
+      - ./scripts/pushTo github realtymapsDev/map:
+        timeout: 300
 
   staging_nmccready:
     branch: /feature\/nick_mc.*/
     commands:
-      - ./scripts/pushTo heroku nem-realtymaps-map
+      - ./scripts/pushTo heroku nem-realtymaps-map:
+        timeout: 600
 
   staging_dan:
     branch: /feature\/dan.*/
     commands:
-      - ./scripts/pushTo heroku dan-realtymaps-map
+      - ./scripts/pushTo heroku dan-realtymaps-map:
+        timeout: 600
 
   staging_joe:
     branch: /feature\/joe.*/
     commands:
-      - ./scripts/pushTo heroku joe-realtymaps-map
+      - ./scripts/pushTo heroku joe-realtymaps-map:
+        timeout: 600
