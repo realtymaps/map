@@ -87,7 +87,7 @@
     "karma-jasmine": "0.2.2",
     "karma-mocha": "^0.1.8",
     "karma-phantomjs-launcher": "0.1.4",
-    "karma-webpack": "^1.2.1",
+    "karma-webpack": "git://github.com/nmccready/karma-webpack.git",
     "knex": "^0.6.22",
     "lodash": "^2.4.1",
     "main-bower-files": "^2.0.0",

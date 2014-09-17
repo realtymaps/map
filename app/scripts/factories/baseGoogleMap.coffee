@@ -29,7 +29,7 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['Logger'.ns(),'$http','$t
           markers: [],
           active_markers: [],
           onMarkerClicked: (marker) =>
-            @onMarkerClicked(marker)
+            @onMarkerClicked?(marker)
 
         @scope.$watch 'zoom', (newValue, oldValue) =>
           if (newValue == oldValue)
