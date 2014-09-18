@@ -1,25 +1,22 @@
 subject = require '../../../../backend/services/bookshelfext/bookshelf.raw'
-app = do require 'express'
 Promise = require 'bluebird'
+next = undefined
 
 describe 'bookshelf.raw', ->
   beforeEach ->
-    @sqlResult = ''
+    next = sinon.spy()
+
+    @calledSql = ''
     @db =
       knex:
         raw: (sql) =>
-          console.info "WHAT THE FUCK! %j",
-          @sqlResult = sql
-          Promise.resolve()
+          @calledSql = sql
+          Promise.resolve(rows: toJSON: () -> return "{}")
 
-    #this works great below
     @dbWError =
       knex:
         raw: (sql) =>
-          throw new Error "mock error"
-          @sqlResult = sql
-
-    # next = sinon.spy()
+          Promise.reject "mock error"
 
   it 'exists', ->
     subject.should.be.ok
@@ -28,21 +25,21 @@ describe 'bookshelf.raw', ->
   it 'calls knex.raw without error', (done) ->
     testSql = 'testSql1'
 
-    promise = subject @db, testSql, 'testFn'
+    promise = subject @db, testSql, next, 'testFn'
 
     console.info "promise: %j", promise
-    promise.then =>
-      console.info "WHY IN THE HELL IS THIS NEVER BEING HIT!!!!!!???"
-      @sqlResult.should.be.eql testSql
+    promise.then (result) =>
+      result.should.be.eql '{}'
+      @calledSql.should.be.eql testSql
       done()
 
   it 'calls knex.raw with error', (done)->
     testSql = 'testSql2'
     error = false
-    subject @dbWError, testSql, 'testFn'
+    subject @dbWError, testSql, next, 'testFn'
     .catch (e) =>
       error = true
-      @sqlResult.should.not.be.eql testSql
+      @calledSql.should.not.be.eql testSql
     .then ->
       error.should.be.ok
       done()
