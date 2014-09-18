@@ -1,5 +1,3 @@
-_ = require 'lodash'
-
 describe 'Sanity'.ourNs().ourNs('Backend'), ->
   describe 'lodash', ->
 

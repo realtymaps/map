@@ -1,7 +1,7 @@
 path = require 'path'
 config = require '../config/config'
 logger = require '../config/logger'
-attachRoutes = require('../routeUtils/loader').loadRoutes
+attachRoutes = require('../route/utils/loader').loadRoutes
 routes = require '../../common/config/routes'
 
 indexFilePath = path.normalize(__filename)

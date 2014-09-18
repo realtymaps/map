@@ -29,7 +29,10 @@ module.exports =
       """
       connector = " AND "
     else if obj.bounds?
-      tquery += "county_data1_copy.geom && ST_MakeEnvelope('" + obj.bounds[1] + "', '" + obj.bounds[0] + "','" + obj.bounds[3] + "', '" + obj.bounds[2] + "', 4326) "
+      tquery += """
+      county_data1_copy.geom && ST_MakeEnvelope('#{obj.bounds[1]}',
+      '#{obj.bounds[0]}','#{obj.bounds[3]', '#{obj.bounds[2]}', 4326)
+      """
       connector = " AND "
     if obj.type?
       tquery += connector + "use_code = '1' "
