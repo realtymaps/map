@@ -1,7 +1,8 @@
 logger = require '../config/logger'
-countySvc = require('../services/service.properties.county')
+countySvc = require('../services/service.properties.county')()
 
-module.exports =
+module.exports = (next) ->
+  
   getAll: (req, res) ->
 
     # TODO: Query params should exist without the need to split
