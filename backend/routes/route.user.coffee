@@ -74,8 +74,8 @@ module.exports = (app) ->
   app.get routes.logOut, (req, res, next) -> Promise.try () ->
     logger.debug "attempting to log user out: #{req.user.username}"
     req.session.destroyAsync()
-      .then () ->
-        res.redirect(config.LOGOUT_URL)
-      .catch (err) ->
-        logger.error "error logging out user: #{err}"
-        next(err)
+    .then () ->
+      res.redirect(config.LOGOUT_URL)
+    .catch (err) ->
+      logger.error "error logging out user: #{err}"
+      next(err)
