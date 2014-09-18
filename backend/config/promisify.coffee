@@ -12,6 +12,8 @@ bcrypt.hashAsync = Promise.promisify(bcrypt.hash)
 bcrypt.compareAsync = Promise.promisify(bcrypt.compare)
 
 
+# we don't have access to promisify the entire session class, so we have to
+# export it as middleware and promisify each instance
 module.exports = {
   middleware:
     promisifySession: (req, res, next) ->

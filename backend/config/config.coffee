@@ -29,12 +29,11 @@ base =
     cookie:
       maxAge: null
       secure: true
+    name: "connect.sid"
     unset: "destroy"
   NODETIME: false
   USE_ERROR_HANDLER: false
   TRUST_PROXY: 1
-  DEFAULT_LANDING_URL: "/"
-  LOGOUT_URL: "/"
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
