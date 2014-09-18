@@ -9,7 +9,7 @@
 
 module.exports =
   all: (obj) ->
-    tquery = """"
+    tquery = """
     select id, parcel_id, owner_name1,owner_name2,owner_name3,owner_name4,owner_name5,owner_city, owner_state, owner_zipcode,
     street_name, street_type, street_ord, street_num, zipcode, acres, sale1_amount,sale1_date,sale2_amount,sale2_date,sale3_amount,
     sale3_date,sale4_amount,sale4_date, use_code, total_value,total_taxes, lat, lng
@@ -31,7 +31,7 @@ module.exports =
     else if obj.bounds?
       tquery += """
       county_data1_copy.geom && ST_MakeEnvelope('#{obj.bounds[1]}',
-      '#{obj.bounds[0]}','#{obj.bounds[3]', '#{obj.bounds[2]}', 4326)
+      '#{obj.bounds[0]}','#{obj.bounds[3]}', '#{obj.bounds[2]}', 4326)
       """
       connector = " AND "
     if obj.type?
