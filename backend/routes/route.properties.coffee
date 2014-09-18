@@ -3,7 +3,7 @@ countyHandles = require './handles/handle.county'
 mlsHandles = require './handles/handle.mls'
 routes = require '../../common/config/routes'
 
-glue = require './utils/bindRoutesToHandles'
+bindRoutes = require './utils/bindRoutesToHandles'
 
 myRoutesHandles = [
   #county
@@ -15,4 +15,4 @@ myRoutesHandles = [
 ]
 
 module.exports = (app) ->
-  glue(app,myRoutesHandles)
+  bindRoutes app, myRoutesHandles

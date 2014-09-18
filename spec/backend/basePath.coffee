@@ -1,5 +1,6 @@
 path = require 'path'
 module.exports = path.join __dirname, '../../backend'
+global.should = require 'should'
 global.sinon = require 'sinon'
 global._ = require 'lodash'
 require '../../common/extensions/strings'
