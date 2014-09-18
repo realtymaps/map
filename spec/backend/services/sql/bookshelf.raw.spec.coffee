@@ -8,21 +8,14 @@ describe 'bookshelf.raw', ->
     @db =
       knex:
         raw: (sql) =>
-          new Promise (resolve = arguments[0], reject = arguments[1]) =>
-            console.info "WHAT THE FUCK! %j",
-            resolve @sqlResult = sql
-            process.nextTick resolve
-
-    #same failing resilt in test 2 for both db2, and db mock
-    @db2 =
-      knex:
-        raw: Promise.promisify (sql) =>
+          console.info "WHAT THE FUCK! %j",
           @sqlResult = sql
+          Promise.resolve()
 
     #this works great below
     @dbWError =
       knex:
-        raw: Promise.promisify (sql) =>
+        raw: (sql) =>
           throw new Error "mock error"
           @sqlResult = sql
 
