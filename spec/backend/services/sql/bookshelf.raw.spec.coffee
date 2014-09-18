@@ -43,3 +43,19 @@ describe 'bookshelf.raw', ->
     .then ->
       error.should.be.ok
       done()
+
+  describe 'invalid args still returns a promise!', ->
+      it 'db undefined', (done) ->
+        subject().catch (msg) ->
+          done()
+          msg.should.be.eql 'db is not defined'
+
+      it 'sql undefined', (done) ->
+        subject({}).catch (msg) ->
+          msg.should.be.eql 'sql is not defined'
+          done()
+
+      it 'next undefined', (done) ->
+        subject(@db,"crap").then (row) ->
+          row.should.be.eql '{}'
+          done()
