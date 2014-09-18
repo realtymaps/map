@@ -40,7 +40,7 @@ then
     # safety check -- we only want to push from master if we're on the main
     # "realtymaps" fork, so we're going to bail out here
     echo "refusing to push changes from master on ${CIRCLE_PROJECT_USERNAME}"
-    exit 1
+    exit 0
 fi
 
 
