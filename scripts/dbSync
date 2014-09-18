@@ -7,9 +7,5 @@ then
     cd "$DIR/.."
 fi
 
-echo "=================================================="
-set
-echo "=================================================="
-
 ./flyway/doFlyway.sh userManagement "$USER_DATABASE_URL" migrate
 ./flyway/doFlyway.sh propertyData "$PROPERTY_DATABASE_URL" migrate
