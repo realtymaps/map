@@ -25,21 +25,22 @@ hashifySettings = (hash, setting) ->
 getSettings = () ->
   # we want to get the all_environments values first...
   defaultSettings = EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
-    .then (settings) -> return settings.toJSON()
-    .reduce(hashifySettings, {})
+  .then (settings) -> return settings.toJSON()
+  .reduce(hashifySettings, {})
+    
   # ... then override them with the specific environment values
   specificSettings = EnvironmentSetting.where(environment_name: config.ENV).fetchAll()
-    .then (settings) -> return settings.toJSON()
-    .reduce(hashifySettings, {})
-  allSettings = Promise.join defaultSettings, specificSettings, (defaultSettings, specificSettings) ->
+  .then (settings) -> return settings.toJSON()
+  .reduce(hashifySettings, {})
+  Promise.join defaultSettings, specificSettings, (defaultSettings, specificSettings) ->
     return _.merge(defaultSettings, specificSettings)
-  allSettings
-    .then (settings) ->
-      logger.info "environment settings loaded (#{config.ENV})"
-      logger.debug JSON.stringify(settings, null, 2)
-    .catch (err) ->
-      logger.error "error loading environment settings (#{config.ENV})"
-  return allSettings
+  .then (settings) ->
+    logger.info "environment settings loaded (#{config.ENV})"
+    logger.debug JSON.stringify(settings, null, 2)
+  .catch (err) ->
+    logger.error "error loading environment settings (#{config.ENV})"
+    Promise.reject(err)
+    
 # wrap function in a caching memoizer
 getSettings = memoize(getSettings, { maxAge: config.DB_CACHE_TIMES.SLOW_REFRESH, prefetch: .1 })
 
