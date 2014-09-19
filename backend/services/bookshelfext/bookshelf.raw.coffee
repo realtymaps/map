@@ -1,6 +1,6 @@
 logger = require '../../config/logger'
 Promise = require 'bluebird'
-
+status =  require '../../../common/utils/httpStatus'
 makeStringLoggable = (name) ->
   return unless name
   name = name + ": "
@@ -22,11 +22,16 @@ module.exports = (db, sql, next, callingFnName = 'bookshelf.raw') ->
 
   makeStringLoggable callingFnName
 
-  logger.debug callingFnName + "'#{sql}'"
+  #logger.sql callingFnName + "'#{sql}'"
 
   db.knex.raw(sql).then (data) ->
-    data.rows.toJSON()
+    logger.log "sql", "result: data.rows: %j", data.rows, {}
+    if data.rows
+      data.rows
+    else
+      []
   .catch (e) ->
     logger.error "failed to #{callingFnName}#{e}"
     next status:status.NOT_FOUND, message: e.message
+    e.isLogged = true
     Promise.reject e

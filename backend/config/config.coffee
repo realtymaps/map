@@ -60,7 +60,7 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'debug'
+      LEVEL: 'sql'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
       FRONT_END: true
@@ -79,7 +79,7 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'route'
+      LEVEL: 'debug'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
       FRONT_END: true
@@ -104,6 +104,6 @@ environmentConfig =
 environmentConfig.debug = environmentConfig.development
 
 config = _.merge(base, environmentConfig[base.ENV])
-#console.log "config: "+JSON.stringify(config, null, 2)
+# console.log "config: "+JSON.stringify(config, null, 2)
 
 module.exports = config

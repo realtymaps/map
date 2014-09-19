@@ -2,23 +2,31 @@ logger = require '../../config/logger'
 _ = require 'lodash'
 status = require '../../../common/utils/httpStatus'
 
+cleanQuery = (query) ->
+  _.each query, (value,key) ->
+    query[key] = decodeURIComponent value
+
 module.exports =
   query:
     params:
+      cleanQuery: cleanQuery
+
       toObject: (params, paramsObj = {}) ->
         params.forEach (p)->
           paramsObj[p] = true
         paramsObj
 
-      isAllowed: (query, qAllowedObj, allowed = false,badKeys = [])->
+      isAllowed: (query, qAllowedObj, fnName, allowed = false,badKeys = [])->
+        fnName = if fnName then "#{fnName} ->" else ""
         query = _.clone query, true
-        logger.log "debug", "query: %j", query, {}
+        logger.log "debug", "#{fnName} query: %j", query, {}
         if _.keys(query).length
           allowed = _.all query, (value, key) ->
             unless qAllowedObj[key]
               badKeys.push key
               return false
             true
+          # query = cleanQuery query
           allowed: allowed
           badKeys: badKeys
 

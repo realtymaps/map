@@ -36,15 +36,12 @@ overrideCountySql, overrideDebug, overrideLogger) ->
     #        console.log ("returned tquery = " + tquery);
     #        test.query(tquery).fetch('acres').then(function(test) {callback(test.toJSON())});
     sql = countySql.all queryOpts, next
-    debug 'getAll', sql
     safeQuery db, sql, next, 'getAll'
 
   getAddresses: (queryOpts, next) ->
     sql = countySql.allByAddressNumbers queryOpts
-    debug 'getAddresses', sql
     safeQuery db, sql, next, 'getAddresses'
 
   getByApn: (queryOpts, next) ->
     sql = countySql.allByApn queryOpts
-    debug 'getByApn', sql
     safeQuery db, sql, next, 'getByApn'

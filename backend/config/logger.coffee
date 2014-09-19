@@ -13,19 +13,21 @@ if !fs.existsSync(logPath)
 myCustomLevels =
   levels:
     route: 0
-    debug: 1
-    info: 2
-    warn: 3
-    error: 4
+    sql: 1
+    debug: 2
+    info: 3
+    warn: 4
+    error: 5
 
   colors:
     route: 'grey'
+    sql: 'magenta'
     debug: 'cyan'
     info: 'green'
     warn: 'orange'
     error: 'red'
 
-console.info config.LOGGING.LEVEL
+# console.info config.LOGGING.LEVEL
 logger = new (winston.Logger)(
   transports: [
     new (winston.transports.Console)
