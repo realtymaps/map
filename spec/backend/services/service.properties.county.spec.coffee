@@ -33,19 +33,19 @@ describe 'service.properties.county', ->
   describe 'overriden dependencies', ->
     describe 'debug and safeQuery get the same sql', ->
       it 'getAll', ->
-        subjectFn(next, {},@safeQuery,@countySql,@debug,{}).getAll({})
+        subjectFn({},@safeQuery,@countySql,@debug,{}).getAll({})
         testSql.should.be.eql "all"
         testSafeQuerySql.should.be.eql testSql
         testFnName.should.be.eql "getAll"
 
       it 'getAddresses', ->
-        subjectFn(next, {},@safeQuery,@countySql,@debug,{}).getAddresses({})
+        subjectFn({},@safeQuery,@countySql,@debug,{}).getAddresses({})
         testSql.should.be.eql "allByAddressNumbers"
         testSafeQuerySql.should.be.eql testSql
         testFnName.should.be.eql "getAddresses"
 
       it 'getByApn', ->
-        subjectFn(next, {},@safeQuery,@countySql,@debug,{}).getByApn({})
+        subjectFn({},@safeQuery,@countySql,@debug,{}).getByApn({})
         testSql.should.be.eql "allByApn"
         testSafeQuerySql.should.be.eql testSql
         testFnName.should.be.eql "getByApn"

@@ -1,17 +1,20 @@
 logger = require '../config/logger'
-countyHandles = require './handles/handle.county'
+countyHandles = do require './handles/handle.county'
 mlsHandles = require './handles/handle.mls'
 routes = require '../../common/config/routes'
 
 bindRoutes = require './utils/bindRoutesToHandles'
 
+
+# logger.debug "routes: #{JSON.stringify routes}"
+logger.debug "countyHandles: " + countyHandles
 myRoutesHandles = [
   #county
-  {route: routes.country.root handle: countyHandles.getAll}
-  {route: routes.country.addresses handle: countyHandles.getAddresses}
-  {route: routes.country.apn handle: countyHandles.getApn}
+  {route: routes.county.root, handle: countyHandles.getAll}
+  {route: routes.county.addresses, handle: countyHandles.getAddresses}
+  {route: routes.county.apn, handle: countyHandles.getApn}
   #mls
-  {route: routes.mls.root handle: countyHandles.getAll}
+  {route: routes.mls.root, handle: countyHandles.getAll}
 ]
 
 module.exports = (app) ->

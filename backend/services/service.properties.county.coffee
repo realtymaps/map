@@ -13,8 +13,8 @@ to build the correct sql.
 
 After that the query is called via safeQuery @return a promise in all cases.
 ###
-module.exports = (next ,overrideDb, overrideSafeQuery,
-  overrideCountySql, overrideDebug, overrideLogger) ->
+module.exports = (overrideDb, overrideSafeQuery,
+overrideCountySql, overrideDebug, overrideLogger) ->
 
   db = overrideDb if overrideDb
   safeQuery = overrideSafeQuery if overrideSafeQuery

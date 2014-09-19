@@ -76,6 +76,7 @@
     "helmet": "0.2.x",
     "html-loader": "^0.2.2",
     "html-webpack-plugin": "^1.1.0",
+    "isnode": "0.0.1",
     "karma": "^0.12.21",
     "karma-chrome-launcher": "0.1.4",
     "karma-cli": "0.0.4",

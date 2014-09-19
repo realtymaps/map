@@ -73,7 +73,15 @@ app.use connectFlash()
 # bootstrap routes
 require("../routes")(app)
 
+nomsg = ""
+
 app.use (err, req, res, next) ->
+  if err.status?
+    #if we have a status then it is handled and not severe.
+    # send the Error code to client along with a possible message
+    msg = if err.message? then err.message else nomsg
+    return res.status(err.status).send msg
+
   logger.error "uncaught error found by express:"
   logger.error (if err.stack then ''+err.stack else ''+err)
   res.json status.INTERNAL_SERVER_ERROR, error: err.message

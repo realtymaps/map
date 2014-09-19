@@ -28,5 +28,5 @@ module.exports = (db, sql, next, callingFnName = 'bookshelf.raw') ->
     data.rows.toJSON()
   .catch (e) ->
     logger.error "failed to #{callingFnName}#{e}"
-    next?(e)
+    next status:status.NOT_FOUND, message: e.message
     Promise.reject e

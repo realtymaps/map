@@ -1,6 +1,7 @@
 _ = require 'lodash'
 path = require 'path'
 
+#console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
 base =
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
@@ -35,6 +36,9 @@ base =
   TRUST_PROXY: 1
   DEFAULT_LANDING_URL: "/"
   LOGOUT_URL: "/"
+  CACHE:
+    MAX_AGE: 10000
+    PRE_FETCH: true
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
@@ -75,7 +79,7 @@ environmentConfig =
       SLOW_REFRESH: 60*1000   # 1 minute
       FAST_REFRESH: 30*1000   # 30 seconds
     LOGGING:
-      LEVEL: 'debug'
+      LEVEL: 'route'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: true
       FRONT_END: true
@@ -97,6 +101,7 @@ environmentConfig =
     #  accountKey: "ENTER-A-VALID-KEY-HERE"
     #  appName: 'mean.coffee'
 
+environmentConfig.debug = environmentConfig.development
 
 config = _.merge(base, environmentConfig[base.ENV])
 #console.log "config: "+JSON.stringify(config, null, 2)

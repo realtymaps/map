@@ -1,8 +1,8 @@
 fs = require 'fs'
 path = require 'path'
-config = require '../config/config'
-logger = require '../config/logger'
-routes = require '../../common/config/routes'
+config = require '../../config/config'
+logger = require '../../config/logger'
+routes = require '../../../common/config/routes'
 
 module.exports =
   loadRoutes: (app, indexFilePath, directoryName)->
@@ -11,8 +11,11 @@ module.exports =
 
     files.forEach (file) ->
       filePath = path.join directoryName, file
-      unless filePath is indexFilePath
+
+      if !(filePath == indexFilePath) and
+          !filePath.contains('utils') and !filePath.contains('handles')
         logger.route " filePath: #{filePath}, \nfile: #{file}"
+        logger.route " handles: #{filePath.contains('handles')}"
         baseFilename = path.basename file, path.extname(file)
         route = path.join directoryName, baseFilename
         require(route)?(app)

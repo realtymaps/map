@@ -1,7 +1,9 @@
 #require('source-map-support').install()
 #require 'coffee-script-mapped'
+global._ = require 'lodash'
 
 config = require './config/config'
+require '../common/extensions/strings'
 
 # monitoring with nodetime
 if config.NODETIME
@@ -22,9 +24,10 @@ process.on 'uncaughtException', (err) ->
   logger.error err.stack
   process.exit 1  # because now, you are in unpredictable state!
 
-# watch and log any leak (a lot of false positive though)
-memwatch = require 'memwatch'
-memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
+unless config.ENV == "debug"
+  # watch and log any leak (a lot of false positive though)
+  memwatch = require 'memwatch'
+  memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 
 # express configuration

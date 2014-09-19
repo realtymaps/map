@@ -1,53 +1,44 @@
-logger = require '../config/logger'
-countySvc = require('../services/service.properties.county')()
+logger = require '../../config/logger'
+countySvc = do require '../../services/service.properties.county'
+requestUtil = require '../utils/util.http.request'
+memoize = require('../../extensions/memoizee').memoizeExp
 
-module.exports = (next) ->
-  
-  getAll: (req, res) ->
+paramsToObject = requestUtil.query.params.toObject
+paramsAreAllowed = requestUtil.query.params.isAllowed
+queryExec = requestUtil.query.execute
 
-    # TODO: Query params should exist without the need to split
-    # Parse url path to get query params
-    # http://stackoverflow.com/questions/6912584/how-to-get-get-query-string-variables-in-node-js
+allAllowed = paramsToObject [ "name", "address", "city", "state", "zipcode", "apn",
+  "soldwithin", "acres", "price", "type", "bounds", "polys"
+]
+
+addressAllowed = ["bounds"]
+
+
+#do validation later with express validation
+module.exports = () ->
+
+  getAll: memoize (req, res, next) ->
+    allowedObj = paramsAreAllowed req.query, allAllowed
+
+    queryExec allowedObj, next, res,  ->
+      countySvc.getAll(req.query, next).then (json) ->
+        res.send json
+
+  getAddresses: memoize (req, res, next) ->
+    allowedObj = paramsAreAllowed req.query, addressAllowed
+
+    queryExec allowedObj, next, res,  ->
+      countySvc.getAddresses(req.query, next).then (json) ->
+        res.send json
+
+  getApn: memoize (req, res, next) ->
     list = req.path.split("/")
     list.forEach (item) ->
-      switch tItem
-        when "name", "address", "city", "state", "zipcode", "apn"
-          obj[tItem] = decodeURIComponent(list.shift().replace(/\+/g, " "))
-        when "soldwithin"
-          obj[tItem] = decodeURIComponent(list.shift().replace(/\+/g, " "))
-        when "acres"
-          obj[tItem] = decodeURIComponent(list.shift()).split("-")
-        when "price"
-          obj[tItem] = decodeURIComponent(list.shift()).split("-")
-        when "type"
-          obj[tItem] = decodeURIComponent(list.shift()).split("-")
-        when "bounds"
-          obj[tItem] = decodeURIComponent(list.shift()).split(",")
-        when "polys"
-          obj[tItem] = decodeURIComponent(list.shift()).split(",")
-
-    countySvc.getAll(obj).then (json) ->
-      res.send json
-
-  getAddresses: (req, res) ->
-    list = req.path.split("/")
-    list.forEach (item) ->
-      tItem = list.shift()
-      switch tItem
-        when "bounds"
-          obj[tItem] = decodeURIComponent(list.shift()).split(",")
-
-    countySvc.getAddresses(obj).then (json) ->
-      res.send json
-
-  getApn: (req, res) ->
-    list = req.path.split("/")
-    list.forEach (item) ->
-      switch tItem
+      switch item
         when "apn"
-          obj[tItem] = decodeURIComponent(list.shift().replace(/\+/g, " "))
+          obj[item] = decodeURIComponent(list.shift().replace(/\+/g, " "))
         when "bounds"
-          obj[tItem] = decodeURIComponent(list.shift()).split(",")
+          obj[item] = decodeURIComponent(list.shift()).split(",")
 
-    countySvc.getByApn(obj).then (json) ->
+    countySvc.getByApn(obj,next).then (json) ->
       res.send json

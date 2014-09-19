@@ -1,5 +1,5 @@
-logger = require '../config/logger'
-mlsSvc = require('../services/service.properties.mls')
+logger = require '../../config/logger'
+mlsSvc = require('../../services/service.properties.mls')
 
 module.exports =
   getAll: (req, res) ->
