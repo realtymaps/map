@@ -49,6 +49,7 @@
     "express-session": "1.0.x",
     "file-loader": "^0.6.1",
     "forever": "0.11.x",
+    "geohash64": "^1.0.2",
     "gulp": "^3.8.7",
     "gulp-changed": "^1.0.0",
     "gulp-coffee": "^2.1.1",

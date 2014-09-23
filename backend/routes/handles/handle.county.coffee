@@ -2,10 +2,12 @@ logger = require '../../config/logger'
 countySvc = do require '../../services/service.properties.county'
 requestUtil = require '../utils/util.http.request'
 memoize = require('../../extensions/memoizee').memoizeExp
+geohash64 = require 'geohash64'
 
 paramsToObject = requestUtil.query.params.toObject
 paramsAreAllowed = requestUtil.query.params.isAllowed
-queryExec = requestUtil.query.execute
+exec = requestUtil.query.execute
+transform = requestUtil.query.transform
 
 allAllowed = paramsToObject [ "name", "address", "city", "state", "zipcode", "apn",
   "soldwithin", "acres", "price", "type", "bounds", "polys"]
@@ -14,6 +16,17 @@ addressAllowed = paramsToObject ["bounds"]
 
 apnsAllowed = paramsToObject ["apn", "bounds"]
 
+
+transforms = [
+  param:"bounds"
+  transform: (boundsStr, next) ->
+    unless _.isString boundsStr
+      if next?
+        return next(status:status.NOT_FOUND, message: "bounds must be a string")
+      return []
+    geohash64.decode boundsStr, true
+]
+
 ###
   do validation later with express validation
   (for ints, strings etc add to util.http.request)
@@ -21,22 +34,14 @@ apnsAllowed = paramsToObject ["apn", "bounds"]
 module.exports = () ->
 
   getAll: memoize (req, res, next) ->
+    #are all query params allowed
     allowedObj = paramsAreAllowed req.query, allAllowed, "getAll"
+    #convert what we need to
+    transform req.query, transforms, next
+    logger.debug req.query
 
-    queryExec allowedObj, next, res,  ->
+    exec allowedObj, next, res,  ->
       countySvc.getAll(req.query, next).then (json) ->
         res.send json
 
-  getAddresses: memoize (req, res, next) ->
-    allowedObj = paramsAreAllowed req.query, addressAllowed, "getAddresses"
-
-    queryExec allowedObj, next, res, ->
-      countySvc.getAddresses(req.query, next).then (json) ->
-        res.send json
-
-  getApn: memoize (req, res, next) ->
-    allowedObj = paramsAreAllowed req.query, apnsAllowed, "getApn"
-
-    queryExec allowedObj, next, res,  ->
-      countySvc.getByApn(req.query, next).then (json) ->
-        res.send json
+  #if you want to get bounds via put or post , then you can send bounds as an array

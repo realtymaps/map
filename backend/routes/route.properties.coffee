@@ -11,8 +11,6 @@ logger.debug "countyHandles: " + countyHandles
 myRoutesHandles = [
   #county
   {route: routes.county.root, handle: countyHandles.getAll}
-  {route: routes.county.addresses, handle: countyHandles.getAddresses}
-  {route: routes.county.apn, handle: countyHandles.getApn}
   #mls
   {route: routes.mls.root, handle: countyHandles.getAll}
 ]

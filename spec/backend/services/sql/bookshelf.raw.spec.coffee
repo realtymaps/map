@@ -4,14 +4,14 @@ next = undefined
 
 describe 'bookshelf.raw', ->
   beforeEach ->
-    next = sinon.spy()
+    next = ->
 
     @calledSql = ''
     @db =
       knex:
         raw: (sql) =>
           @calledSql = sql
-          Promise.resolve(rows: toJSON: () -> return "{}")
+          Promise.resolve(rows: {})
 
     @dbWError =
       knex:
@@ -27,9 +27,8 @@ describe 'bookshelf.raw', ->
 
     promise = subject @db, testSql, next, 'testFn'
 
-    console.info "promise: %j", promise
     promise.then (result) =>
-      result.should.be.eql '{}'
+      result.should.be.eql {}
       @calledSql.should.be.eql testSql
       done()
 
@@ -57,5 +56,5 @@ describe 'bookshelf.raw', ->
 
       it 'next undefined', (done) ->
         subject(@db,"crap").then (row) ->
-          row.should.be.eql '{}'
+          row.should.be.eql {}
           done()

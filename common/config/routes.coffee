@@ -18,8 +18,6 @@ module.exports =
   #properties
   county:
     root:                    "/#{resource.county}/"
-    addresses:               "/#{resource.county}/addresses/"
-    apn:                     "/#{resource.county}/apn/"
 
   mls:
     root:                    "/#{resource.mls}/"

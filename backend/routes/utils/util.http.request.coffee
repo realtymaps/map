@@ -30,6 +30,13 @@ module.exports =
           allowed: allowed
           badKeys: badKeys
 
+    transform: (obj, transforms, next) ->
+      transforms.forEach (t) ->
+        if obj[t.param]?
+          obj[t.param] = t.transform(obj[t.param],next)
+          logger.debug "transform: #{obj}"
+      obj
+
     execute: (isAllowedObj, next, res, execFn)->
       allowed = isAllowedObj.allowed
       badKeys = isAllowedObj.badKeys

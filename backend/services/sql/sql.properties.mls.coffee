@@ -7,18 +7,22 @@
  Original queries from the concept map
 ###
 
-module.exports =
-  all: (obj) ->
-    tquery = """
+select =
+    """
     select id, parcel_id, mls_number, full_address, street_num, street_name, street_type, street_ord, city, state, zipcode,
     list_price, beds, baths, baths_half, living_area, year_built, acres, listing_date, lat, lng
     from temp_mls_data2
     where
-     """
+    """.space()
+
+module.exports =
+  all: (obj) ->
+    tquery = select
 
     #var tquery = "select lat, lng from county_data1_copy where ";
     if obj.bounds?
-      tquery += "temp_mls_data2.geom && ST_MakeEnvelope('" + obj.bounds[1] + "', '" + obj.bounds[0] + "','" + obj.bounds[3] + "', '" + obj.bounds[2] + "', 4326) "
+      tquery += "temp_mls_data2.geom && ST_MakeEnvelope('" + obj.bounds[1] + "', '" + obj.bounds[0] + "','" +
+        obj.bounds[3] + "', '" + obj.bounds[2] + "', 4326) "
     if obj.name?
       tquery += "AND owner_name1 LIKE '%'" + decodeURIComponent(obj.name).toUpperCase() + "'%' "
     if obj.acres?

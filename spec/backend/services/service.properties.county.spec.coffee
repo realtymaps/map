@@ -1,16 +1,12 @@
 subjectFn = require '../../../backend/services/service.properties.county'
 Promise = require 'bluebird'
-next = subject =testSql = testFnName = testSafeQuerySql = undefined
+next = subject =testSql = undefined
+testFnName  = testSafeQuerySql = ""
 
 describe 'service.properties.county', ->
   beforeEach ->
     #reset
     next = subject =testSql = testFnName = testSafeQuerySql = undefined
-
-    @debug = (fnName, sql) ->
-      console.info "fnName: " + fnName
-      testFnName = fnName
-      testSql = sql
 
     @safeQuery = (db, sql) ->
       testSafeQuerySql = sql
@@ -19,10 +15,6 @@ describe 'service.properties.county', ->
     @countySql =
       all: ->
         "all"
-      allByAddressNumbers: ->
-        "allByAddressNumbers"
-      allByApn: ->
-        "allByApn"
 
   it 'ctor exist', ->
     subjectFn.should.be.ok
@@ -32,20 +24,7 @@ describe 'service.properties.county', ->
 
   describe 'overriden dependencies', ->
     describe 'debug and safeQuery get the same sql', ->
-      it 'getAll', ->
-        subjectFn({},@safeQuery,@countySql,@debug,{}).getAll({})
-        testSql.should.be.eql "all"
-        testSafeQuerySql.should.be.eql testSql
-        testFnName.should.be.eql "getAll"
-
-      it 'getAddresses', ->
-        subjectFn({},@safeQuery,@countySql,@debug,{}).getAddresses({})
-        testSql.should.be.eql "allByAddressNumbers"
-        testSafeQuerySql.should.be.eql testSql
-        testFnName.should.be.eql "getAddresses"
-
-      it 'getByApn', ->
-        subjectFn({},@safeQuery,@countySql,@debug,{}).getByApn({})
-        testSql.should.be.eql "allByApn"
-        testSafeQuerySql.should.be.eql testSql
-        testFnName.should.be.eql "getByApn"
+#      it 'getAll', ->
+#        subjectFn({},@safeQuery,@countySql,() ->).getAll({})
+#        testSafeQuerySql.should.be.eql "all"
+#        testFnName.should.be.eql "getAll"
