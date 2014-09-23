@@ -42,9 +42,5 @@ app.factory 'Map'.ourNs(), [
 
         $http.get("#{routes.county.root}?bounds=#{hash}")
         .then (data) =>
-          mapped = data.data.map (d) ->
-            d.latitude = d.lat
-            d.longitude = d.lng
-            d
-          @scope.map.markers = mapped
+          @scope.map.markers = data.data
   ]

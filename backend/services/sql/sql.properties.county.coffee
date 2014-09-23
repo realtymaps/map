@@ -10,9 +10,31 @@ errors = require './sql.errors'
  Original queries from the concept map
 ###
 
+### ignored fields
+  geom, lng_old, lat_old
+###
 select =
-    """
-    select *
+    """select
+    id,parcel_id,zipcode,
+    owner_name1,owner_name2,owner_name3,
+    owner_name4,owner_name5,owner_city,
+    owner_state,owner_zipcode,legal1,
+    legal2,legal3,legal4,
+    street_name,street_type,street_ord,
+    street_num,block,lot,acres,
+    cur_yr_ass,sale1_date,sale1_amount,
+    sale2_date,sale2_amount,
+    sale3_date,sale3_amount,
+    sale4_date,sale4_amount,
+    use_code,subcondo,section,
+    township,range,strap,parcel,
+    land_value,adjusted_value,
+    improved_value,total_value,
+    total_taxable,adjusted_ex_amount,
+    hms_ex_amount,wh_ex_amount,
+    wid_ex_amount,bld_ex_amount,
+    dis_ex_amount,total_taxes,
+    lat as latitude, lng as longitude
     from county_data1_copy
     where
     """.space()
