@@ -2,7 +2,7 @@ gulp = require 'gulp'
 log = require('gulp-util').log
 #server = require 'gulp-express'
 nodemon = require 'gulp-nodemon'
-require('../../common/config/dbChecker.coffee')()
+do require '../../common/config/dbChecker.coffee'
 
 options =
   script: "backend/server.coffee"

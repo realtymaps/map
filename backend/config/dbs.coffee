@@ -5,7 +5,7 @@ Promise = require 'bluebird'
 
 config = require './config'
 logger = require './logger'
-require('../../common/config/dbChecker.coffee')()
+do require '../../common/config/dbChecker.coffee'
 
 
 module.exports =
