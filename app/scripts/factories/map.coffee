@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 require './baseGoogleMap.coffee'
+require '../../styles/views/map.styl'
 ###
   Our Main Map Implementation
 ###
@@ -20,8 +21,9 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
-            bounds: {}
             markers: []
+            clickedMarker: ($markerModel) ->
+              $scope.map.window = $markerModel
 
         $log.info $scope.map
         $log.info "map.center: #{$scope.map.center}"

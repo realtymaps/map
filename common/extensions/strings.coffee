@@ -11,3 +11,5 @@ String::ourNs = String::ourNameSpace
 
 String::space = ->
   @ + space
+
+String::EMPTY = ''

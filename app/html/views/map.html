@@ -18,8 +18,11 @@
         <ui-gmap-layer namespace="weather" type="WeatherLayer" show="map.showWeather"></ui-gmap-layer>
 
         <!-- docluster="true" -->
-        <ui-gmap-markers models="map.markers" coords='"self"' idKey='"id"' >
+        <ui-gmap-markers models="map.markers" coords='"self"' idKey='"id"' click="map.clickedMarker">
         </ui-gmap-markers>
+      <ui-gmap-window coords="map.window">
+          {{map.window}}
+      </ui-gmap-window>
 
         <ui-gmap-polygon ng-repeat="p in map.polygons track by p.id" path="p.path"
                          stroke="p.stroke" visible="p.visible"
