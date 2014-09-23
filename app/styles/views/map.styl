@@ -17,15 +17,11 @@ psuedo element with clearfix and display: table; , all after (which is why I kno
     width: 100%
     padding-left: 0
     padding-right: 0
-
-
 /*
 http://stackoverflow.com/questions/1554893/google-maps-api-v3-infowindow-not-sizing-correctly
 */
-// .gm-style-iw > div
-//   font-family: sans-serif !important;
-//   font-weight: normal !important;
-//   overflow: auto;
+.gm-style-iw
+  overflow: hidden !important
 
-.gm-style
-    line-height:normal;
+.gm-style-iw > div
+  overflow: hidden !important

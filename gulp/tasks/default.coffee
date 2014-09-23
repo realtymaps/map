@@ -2,10 +2,15 @@ gulp = require 'gulp'
 help = require('gulp-help')(gulp)
 clean = require 'gulp-rimraf'
 
+gulp.task 'clean', () ->
+  gulp.src('_public', { read: false })
+  .pipe(clean())
 
 #runs on port(s) 3000 & 4000
 gulp.task 'pre_develop_build', ['clean'], ->
   gulp.start 'build'
+
+gulp.task 'clean_build', ['pre_develop_build']
 
 gulp.task 'pre_develop_watch', ['pre_develop_build'], ->
   gulp.start 'watch'
@@ -26,10 +31,6 @@ gulp.task 'prod', ['clean'], ->
   gulp.start 'build','express'
 
 gulp.task 'default', ['develop']
-
-gulp.task 'clean', () ->
-  gulp.src('_public', { read: false })
-  .pipe(clean())
 
 gulp.task "server", ['default']
 gulp.task 's', ['server']

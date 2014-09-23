@@ -4,6 +4,7 @@ path = require '../paths'
 gulp.task 'watch_rest', ->
   gulp.watch [path.scripts,path.styles,path.bower,
   path.assets,path.common], ['build']
+  gulp.watch ['app/**'], ['build']
   gulp.watch path.html, ['html']
   gulp.watch path.bower, ['vendor']
 
