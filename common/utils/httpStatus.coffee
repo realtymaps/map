@@ -1,7 +1,4 @@
 hack = require '../utils/webpackHack.coffee'
-_ = hack.hiddenRequire 'lodash'
-
-# console.info "Lodash: #{_}"
 
 codes =
   OK: 200
