@@ -21,7 +21,9 @@
         <ui-gmap-markers models="map.markers" coords='"self"' idKey='"id"' click="map.clickedMarker">
         </ui-gmap-markers>
       <ui-gmap-window coords="map.window">
-          {{map.window}}
+          <div>
+            {{map.window}}
+          </div>
       </ui-gmap-window>
 
         <ui-gmap-polygon ng-repeat="p in map.polygons track by p.id" path="p.path"
