@@ -1,11 +1,7 @@
 machine:
   node:
     version: v0.10.31
-dependencies:
-  post:
-    # CircleCI is inferring the need to do "npm install", so this is redundant
-    #- npm --production install
-    #- npm install -g coffee-script mocha gulp coffeegulp cgulp karma karma-cli webpack webpack-dev-server
+
 deployment:
   prod:
     branch: master
@@ -13,7 +9,7 @@ deployment:
       # the pushTo script contains a safety check; it won't actually do
       # anything if CircleCI is running on master of any fork other than the
       # main realtymaps repo.  It also handles db forking and other important
-      # things like setting some environment variables 
+      # things like setting some environment variables
       - ./scripts/pushTo heroku realtymaps-map:
           timeout: 600
       - ./scripts/pushTo github realtymapsDev/map:

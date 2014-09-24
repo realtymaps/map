@@ -8,4 +8,4 @@ module.exports =
   But that failure led to this success : )
   ###
   hiddenRequire: (dep) ->
-    require unless window?
+    require dep

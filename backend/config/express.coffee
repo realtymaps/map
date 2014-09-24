@@ -12,7 +12,7 @@ session = require 'express-session'
 sessionStore = require('connect-pg-simple')(session)
 compress = require 'compression'
 bodyParser = require 'body-parser'
-favicon = require 'static-favicon'
+favicon = require 'serve-favicon'
 cookieParser = require 'cookie-parser'
 methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
@@ -20,7 +20,8 @@ errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 promisifyMiddleware = require('./promisify').middleware
 auth = require './auth'
-
+status = require '../../common/utils/httpStatus'
+livereload = require "connect-livereload"
 
 app = express()
 
@@ -34,9 +35,9 @@ app = express()
 
 # security headers
 app.use helmet.xframe()
-app.use helmet.iexss()
-app.use helmet.contentTypeOptions()
-app.use helmet.cacheControl()
+app.use helmet.xssFilter()
+app.use helmet.nosniff()
+app.use helmet.nocache()
 
 # ensure all assets and data are compressed - above static
 app.use compress()
@@ -68,13 +69,26 @@ app.use auth.setSessionCredentials
 # enable flash messages
 app.use connectFlash()
 
+if config.PORT != config.PROD_PORT
+  app.use livereload
+    port: 35729
+    ignore: []#[".js",".svg"] example
 
 # bootstrap routes
 require("../routes")(app)
 
+nomsg = ""
+
 app.use (err, req, res, next) ->
+  if err.status?
+    #if we have a status then it is handled and not severe.
+    # send the Error code to client along with a possible message
+    msg = if err.message? then err.message else nomsg
+    return res.status(err.status).send msg
+
   logger.error "uncaught error found by express:"
   logger.error (if err.stack then ''+err.stack else ''+err)
+  res.json status.INTERNAL_SERVER_ERROR, error: err.message
   next()
 
 if config.USE_ERROR_HANDLER

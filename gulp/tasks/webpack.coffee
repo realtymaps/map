@@ -3,6 +3,8 @@ gWebpack = require 'gulp-webpack'
 HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../paths'
+clean = require 'gulp-rimraf'
+
 #end dependencies
 
 conf = configFact(
@@ -14,7 +16,7 @@ conf = configFact(
 )
 
 # console.log require '../../webpack.conf.coffee'
-gulp.task 'webpack', ->
+gulp.task 'build_webpack', ->
   gulp.src [
     'app/scripts/app.coffee'
     'app/scripts/config.coffee'
@@ -25,3 +27,13 @@ gulp.task 'webpack', ->
   ]
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
+
+gulp.task 'clean_webpack', ->
+  gulp.src [
+    paths.dest.scripts + "/main.wp.js"
+    paths.dest.scripts + "/*.map*"
+  ]
+  .pipe clean()
+
+gulp.task 'webpack', ['clean_webpack'], ->
+  gulp.start 'build_webpack'
