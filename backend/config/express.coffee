@@ -12,7 +12,7 @@ session = require 'express-session'
 sessionStore = require('connect-pg-simple')(session)
 compress = require 'compression'
 bodyParser = require 'body-parser'
-favicon = require 'static-favicon'
+favicon = require 'serve-favicon'
 cookieParser = require 'cookie-parser'
 methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
@@ -35,9 +35,9 @@ app = express()
 
 # security headers
 app.use helmet.xframe()
-app.use helmet.iexss()
-app.use helmet.contentTypeOptions()
-app.use helmet.cacheControl()
+app.use helmet.xssFilter()
+app.use helmet.nosniff()
+app.use helmet.nocache()
 
 # ensure all assets and data are compressed - above static
 app.use compress()

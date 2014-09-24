@@ -6,17 +6,12 @@ gulp.task 'clean', () ->
   gulp.src('_public', { read: false })
   .pipe(clean())
 
-#runs on port(s) 3000 & 4000
 gulp.task 'pre_develop_build', ['clean'], ->
-  gulp.start 'spec'
+  gulp.start ['spec','express']
 
-gulp.task 'pre_develop_watch', ['pre_develop_build'], ->
-  gulp.start ['express']
-
-gulp.task 'develop', ['pre_develop_watch'], ->
+gulp.task 'develop', ['pre_develop_build'], ->
   gulp.start 'watch'
 
-#runs on port 4000
 gulp.task 'develop_no_sync', ['clean'], ->
   gulp.start 'build','express','watch'
 
