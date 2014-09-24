@@ -16,6 +16,7 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['Logger'.ns(),'$http','$t
 
         angular.extend @scope,
           map:
+            bounds: {}
             options: options
             center: options.json.center
             zoom: options.json.zoom,
@@ -24,26 +25,21 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['Logger'.ns(),'$http','$t
               tilesloaded: (map, eventName, originalEventArgs) =>
                 if !@hasRun
                   @map = map
-                  @updateMarkers?(@map,'ready')
                   @hasRun = true
           markers: [],
           active_markers: [],
           onMarkerClicked: (marker) =>
             @onMarkerClicked?(marker)
 
+        unBindWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) =>
+          return if (newValue == oldValue)
+          @updateMarkers?(@map,'ready')
+        , true
+
         @scope.$watch 'zoom', (newValue, oldValue) =>
-          if (newValue == oldValue)
-            return
+          return if (newValue == oldValue)
           @eventDispatcher?.on_event(@constructor.name,'zoom')
           @updateMarkers?(@map,'zoom') if !@scope.dragging and !@tooManyZoomChanges()
-
-        @scope.$watch 'dragging', (newValue, oldValue) =>
-          if (newValue == oldValue)
-            return
-          if(!newValue)   #if dragging is really over
-            @eventDispatcher?.on_event(@constructor.name,'dragging')
-            @updateMarkers?(@map,'dragging')
-        ,true
 
         $log.info 'BaseGoogleMapCtrl: ' + @
 

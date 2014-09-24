@@ -1,7 +1,10 @@
 map
 ===
 
-**Master**: &nbsp; [![Build Status](https://circleci.com/gh/realtymaps/map/tree/master.png?circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map)&nbsp;
+[![Dependencies](https://david-dm.org/nmccready/geohash64.png)](https://david-dm.org/nmccready/geohash64)&nbsp;
+[![Dependencies](https://david-dm.org/nmccready/geohash64.png)](https://david-dm.org/nmccready/geohash64)&nbsp;
+[![Build Status](https://travis-ci.org/nmccready/geohash64.png?branch=master)](https://travis-ci.org/nmccready/geohash64)
+
 
 ___
 
@@ -10,7 +13,7 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
 ### How to map
 
 - Install prerequisites
-    - foreman run npm install -g coffee-script coffeegulp cgulp bower gulp webpack
+    - foreman run npm install -g coffee-script bower gulp webpack karma
     - **JWI: it shouldn't actually be necessary to install anything globally to
     run our app...  ideally "npm install" should handle everything, which also
     makes Heroku setup simpler**
@@ -42,11 +45,8 @@ ___
     - winston (logger) - lib/logger.coffee
     - memwatch (for memory leaks) - server.coffee
     - nodetime (monitoring) - server.coffee
-    - browserSync (live reload browser)
-      - gulp/tasks/express.coffee - via nodemon
-      - gulp/tasks/browserSync.coffee
-        - syncs with express server to reload client pages on server changes
 
+    - gulp/tasks/express.coffee - via nodemon
     - webpack - CommonJS for the Browser! Main Files
       - gulp/tasks/webpack.conf
         - tells webpack what client side code to pack via gulp globs

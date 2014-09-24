@@ -13,7 +13,7 @@ if [[ $PORT -eq 5000 ]];then
 fi
 
 if [ -n "$IS_HEROKU" ]; then
-  cgulp prod
+  gulp prod
 else
-  cgulp
+  gulp
 fi
