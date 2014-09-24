@@ -20,7 +20,8 @@
     "test-frontend": "gulp frontendSpec",
     "test-backend": "gulp backendSpec",
     "test-gulp": "gulp gulpSpec",
-    "test": "gulp spec",
+    "test": "foreman run gulp spec",
+    "spec": "gulp spec",
     "postinstall": "bower install",
     "clean": "gulp clean; rm -rf node_modules bower_components"
   },
