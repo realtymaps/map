@@ -24,7 +24,7 @@ process.on 'uncaughtException', (err) ->
   logger.error err.stack
   process.exit 1  # because now, you are in unpredictable state!
 
-unless config.ENV == "debug"
+if config.MEM_WATCH.IS_ON
   # watch and log any leak (a lot of false positive though)
   memwatch = require 'memwatch'
   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"

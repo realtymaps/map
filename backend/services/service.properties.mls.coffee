@@ -1,6 +1,7 @@
 # Promise = require "bluebird"
 db = require('../config/dbs').properties
-safeQuery = require './bookshelfext/bookshelf.raw'
+logger =  require '../config/logger'
+safeQuery = require('bookshelf.raw.safe')(logger).safeQuery
 all =  require('./sql/sql.properties.mls').all
 
 module.exports =

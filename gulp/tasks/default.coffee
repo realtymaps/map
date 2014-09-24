@@ -8,19 +8,13 @@ gulp.task 'clean', () ->
 
 #runs on port(s) 3000 & 4000
 gulp.task 'pre_develop_build', ['clean'], ->
-  gulp.start 'build'
-
-gulp.task 'clean_build', ['pre_develop_build']
+  gulp.start 'spec'
 
 gulp.task 'pre_develop_watch', ['pre_develop_build'], ->
-  gulp.start 'watch'
+  gulp.start ['express']
 
 gulp.task 'develop', ['pre_develop_watch'], ->
-  gulp.start 'browserSync'
-  #make this happen later and all in the gulp build feed
-  setTimeout ->
-    gulp.start 'spec'
-  , 6000
+  gulp.start 'watch'
 
 #runs on port 4000
 gulp.task 'develop_no_sync', ['clean'], ->

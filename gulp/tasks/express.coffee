@@ -1,5 +1,6 @@
 gulp = require 'gulp'
 log = require('gulp-util').log
+config = require '../../backend/config/config'
 #server = require 'gulp-express'
 nodemon = require 'gulp-nodemon'
 do require '../../common/config/dbChecker.coffee'
@@ -16,10 +17,10 @@ options =
   delay: 1
 
 gulp.task "express", ->
-  log "ENV Port in gulp: " + process.env.PORT
+  log "ENV Port in gulp: " + config.PORT
   nodemon options
 
 gulp.task "express_debug", ->
-  log "ENV Port in gulp: " + process.env.PORT
+  log "ENV Port in gulp: " + config.PORT
   options.nodeArgs = ['--debug=9999']
   nodemon options

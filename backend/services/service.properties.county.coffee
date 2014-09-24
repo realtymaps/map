@@ -1,12 +1,12 @@
 db = require('../config/dbs').properties
-safeQuery = require './bookshelfext/bookshelf.raw'
+logger =  require '../config/logger'
+safeQuery = require('bookshelf.raw.safe')(logger).safeQuery
 countySql = require('./sql/sql.properties.county')
 status =  require '../../common/utils/httpStatus'
 
 debug =( (fnName = "", sql) ->
   logger.debug "#{fnName} : calling with #{sql}" if sql?)
 
-logger =  require '../config/logger'
 ###
 @author Nick McCready
 Object in all cases has a getSomething database query, which uses the @parm queryOpts param

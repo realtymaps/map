@@ -24,7 +24,3 @@ describe 'service.properties.county', ->
 
   describe 'overriden dependencies', ->
     describe 'debug and safeQuery get the same sql', ->
-#      it 'getAll', ->
-#        subjectFn({},@safeQuery,@countySql,() ->).getAll({})
-#        testSafeQuerySql.should.be.eql "all"
-#        testFnName.should.be.eql "getAll"

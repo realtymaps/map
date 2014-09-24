@@ -30,11 +30,11 @@ gulp.task 'karma', ->
     (err) -> throw err #new Error("Karma Specs failed!")
     #Make sure failed tests cause gulp to exit non-zero
 
-gulp.task 'karma_watch', ->
-  run
-    configFile: 'karma/karma_watch.conf.coffee'
-    action: 'watch'
-    noOverrideFiles: true
+# gulp.task 'karma_watch', ->
+#   run
+#     configFile: 'karma/karma_watch.conf.coffee'
+#     action: 'watch'
+#     noOverrideFiles: true
 
 gulp.task 'frontendSpec', ['karma']
 

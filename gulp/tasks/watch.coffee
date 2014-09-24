@@ -2,17 +2,19 @@ gulp = require 'gulp'
 path = require '../paths'
 
 gulp.task 'watch_rest', ->
-  gulp.watch [path.scripts,path.styles,path.bower,
-  path.assets,path.common], ['build']
-  gulp.watch ['app/**'], ['build']
+  gulp.watch [
+    path.scripts, path.styles
+    path.assets,path.common
+  ], ['build']
+  gulp.watch ['app/**.*.coffee'], ['build']
   gulp.watch path.html, ['html']
   gulp.watch path.bower, ['vendor']
 
-specCommon = "spec/common/**"
+specCommon = "spec/common/**/*.coffee"
 gulp.task 'watch', ['watch_rest'], ->
-  setTimeout ->
-    #gulp.watch path.spec, ['spec']
-    gulp.watch ['gulp/**',"spec/gulp/**", specCommon], ['gulpSpec']
-    gulp.watch ['backend/**', 'spec/backend/**', specCommon], ['backendSpec']
-    gulp.watch ['app/**', 'spec/app/**', specCommon], ['frontendSpec']
-  , 8000
+  # setTimeout ->
+  gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], ['gulpSpec']
+  gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon],
+    ['backendSpec']
+  gulp.watch ['app/**/*.coffee', 'spec/app/**/*.coffee', specCommon], ['frontendSpec']
+  # , 8000

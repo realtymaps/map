@@ -1,12 +1,27 @@
 memoize = require 'memoizee'
 config = require '../config/config'
 
+expiringMemoizee = (
+  fn,
+  options = {
+    maxAge: config.DB_CACHE_TIMES.SLOW_REFRESH,
+    preFetch: config.DB_CACHE_TIMES.PRE_FETCH
+  }
+) ->
+  memoize fn, options
 
-expiringMemoizee = (fn) ->
-  memoize fn,
-    maxAge: config.CACHE.MAX_AGE,
-    preFetch: config.CACHE.PRE_FETCH
+expiringFastMemoizee = (
+  fn,
+  options = {
+    maxAge: config.DB_CACHE_TIMES.FAST_REFRESH
+    preFetch: config.DB_CACHE_TIMES.PRE_FETCH
+  }
+) ->
+  memoize fn, options
+
 
 module.exports =
   memoize: memoize
   memoizeExp : expiringMemoizee
+  memoizeSlowExp : expiringMemoizee
+  memoizeFastExp : expiringFastMemoizee

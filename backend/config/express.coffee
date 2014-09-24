@@ -21,7 +21,7 @@ connectFlash = require 'connect-flash'
 promisifyMiddleware = require('./promisify').middleware
 auth = require './auth'
 status = require '../../common/utils/httpStatus'
-
+livereload = require "connect-livereload"
 
 app = express()
 
@@ -69,6 +69,10 @@ app.use auth.setSessionCredentials
 # enable flash messages
 app.use connectFlash()
 
+if config.PORT != config.PROD_PORT
+  app.use livereload
+    port: 35729
+    ignore: []#[".js",".svg"] example
 
 # bootstrap routes
 require("../routes")(app)
