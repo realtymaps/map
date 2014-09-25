@@ -1,48 +1,43 @@
 querystring = require 'querystring'
 Promise = require 'bluebird'
 _ = require 'lodash'
-crypto = require 'crypto'
-base64url = require 'base64url'
 
 logger = require '../config/logger'
 config = require '../config/config'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
+sessionSecurityService = require '../services/service.sessionSecurity'
 routes = require '../../common/config/routes'
-userUtils = require '../routeUtils/userUtils'
+userUtils = require '../utils/util.user'
 
 
 getSessionUser = (req) -> Promise.try () ->
   if not req.session.userid
     return Promise.resolve(false)
-  return userService.getUser(id: req.session.userid).catch (err) -> return false
+  return userService.getUser(id: req.session.userid)
+  .catch (err) ->
+    return false
 
     
 module.exports = {
 
   # this function gets used as app-wide middleware, so assume it will have run
   # before any route gets called
-  setSessionCredentials: (req, res, next) ->
-    getSessionUser(req)
-      .then (user) ->
-        # set the user on the request
-        req.user = user
+  setSessionCredentials: (req, res) ->
+    getSessionUser(req).then (user) ->
+      # set the user on the request
+      req.user = user
+      if req.user
+        return userUtils.cacheUserValues(req)
+    .catch (err) ->
+      logger.error "error while setting session data on request"
+      Promise.reject(err)
         
-        if req.user and not req.session.permissions
-          # something bad must have happened while loading permissions, try to recover
-          logger.debug "trying to set permissions on session for user: #{req.user.username}"
-          return permissionsService.getPermissionsForUserId(req.user.id)
-            .then (permissionsHash) ->
-              logger.debug "permissions loaded on session for user: #{req.user.username}"
-              req.session.permissions = permissionsHash
-      .then () ->
-        next()
-      .catch (err) ->
-        logger.debug "error while setting session user on request"
-        next(err)
-        
-  checkSessionSecurity: (req res, next) ->
-    
+  checkSessionSecurity: (req, res) ->
+    Promise.resolve()
+    .catch (err) ->
+      logger.debug "error doing session security checks: #{err}"
+      Promise.reject(err)
 
 
 # route-specific middleware that requires a login, and either responds with
@@ -90,7 +85,7 @@ module.exports = {
             if req.session.permissions[permission]
               logger.debug "access allowed because user has '#{permission}' permission"
               granted = true
-              break;
+              break
         else if permissions.all
           # we need all the permissions in the array
           granted = true
@@ -106,14 +101,4 @@ module.exports = {
         else
           return res.status(401).send("You do not have permission to access this URI.")
       return process.nextTick(next)
-
-  # function to generate a 64-char session UUID, much larger than the default
-  # which is 24-char.  We don't make this a config option here because the
-  # session_security.session_id column is varchar(64); that table would need
-  # to be migrated if this value is increased
-  genUUID: () ->
-    # increase security by throwing away some random bytes
-    crypto.pseudoRandomBytes(8)
-    # 48 bytes is 64 characters after base64 encoding
-    return base64url(crypto.pseudoRandomBytes(48))
 }

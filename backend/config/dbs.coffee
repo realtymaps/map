@@ -7,13 +7,16 @@ config = require './config'
 logger = require './logger'
 do require '../../common/config/dbChecker.coffee'
 
+bookshelfRaw = require('bookshelf.raw.safe')(logger)
 
-module.exports =
-  users: bookshelf knex(config.USER_DB)
-  properties: bookshelf knex(config.PROPERTY_DB)
-  pg: pg
+# bind the bookshelf raw safe query logic into the db object
+users = bookshelf knex(config.USER_DB)
+users.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, users)
+properties = bookshelf knex(config.PROPERTY_DB)
+properties.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, properties)
 
-module.exports.shutdown = () ->
+
+shutdown = () ->
   logger.info "database shutdowns initiated..."
 
   pgDbShutdown = new Promise (resolve, reject) ->
@@ -26,19 +29,29 @@ module.exports.shutdown = () ->
     pg.end()
 
   userDbShutdown = module.exports.users.knex.destroy()
-  userDbShutdown.catch (error) ->
-    logger.error "!!! 'users' database shutdown error: #{error}"
-  userDbShutdown = userDbShutdown.then () ->
+  .then () ->
     logger.info "... 'users' database shutdown complete ..."
+  .catch (error) ->
+    logger.error "!!! 'users' database shutdown error: #{error}"
+    Promise.reject(error)
 
   propertyDbShutdown = module.exports.properties.knex.destroy()
-  propertyDbShutdown.catch (error) ->
-    logger.error "!!! 'properties' database shutdown error: #{error}"
-  propertyDbShutdown = propertyDbShutdown.then () ->
+  .then () ->
     logger.info "... 'properties' database shutdown complete ..."
+  .catch (error) ->
+    logger.error "!!! 'properties' database shutdown error: #{error}"
+    Promise.reject(error)
 
-  allShutdown = Promise.join pgDbShutdown, userDbShutdown, propertyDbShutdown, (pgDbShutdown, userDbShutdown, propertyDbShutdown) ->
+  return Promise.join pgDbShutdown, userDbShutdown, propertyDbShutdown, (pgDbShutdown, userDbShutdown, propertyDbShutdown) ->
     logger.info "all databases successfully shut down."
-  allShutdown.catch (error) ->
+  .catch (error) ->
     logger.error "all databases shut down, some with errors."
-  return allShutdown
+    Promise.reject(error)
+
+
+module.exports =
+  users: users
+  properties: properties
+  pg: pg
+  shutdown: shutdown
+

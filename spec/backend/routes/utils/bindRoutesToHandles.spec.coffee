@@ -1,4 +1,4 @@
-subject = require '../../../../backend/routes/utils/bindRoutesToHandles'
+subject = require '../../../../backend/utils/util.bindRoutesToHandles'
 
 describe 'bindRoutesToHandles', ->
   beforeEach ->

@@ -1,5 +1,5 @@
 logger = require '../config/logger'
-auth = require '../config/auth'
+auth = require '../utils/util.auth'
 permissionsService = require '../services/service.permissions'
 routes = require '../../common/config/routes'
 

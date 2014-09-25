@@ -1,6 +1,6 @@
 logger = require '../../config/logger'
 countySvc = do require '../../services/service.properties.county'
-requestUtil = require '../utils/util.http.request'
+requestUtil = require '../../utils/util.http.request'
 memoize = require('../../extensions/memoizee').memoizeExp
 geohash64 = require 'geohash64'
 

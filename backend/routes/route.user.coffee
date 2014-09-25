@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 
 logger = require '../config/logger'
 config = require '../config/config'
-userUtils = require '../routeUtils/userUtils'
+userUtils = require '../utils/util.user'
 routes = require '../../common/config/routes'
 
 

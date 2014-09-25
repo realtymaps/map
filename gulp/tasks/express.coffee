@@ -15,6 +15,8 @@ options =
     'dist/**/**'
   ]
   delay: 1
+  execMap:
+    coffee: 'coffeem'
 
 gulp.task "express", ->
   log "ENV Port in gulp: " + config.PORT

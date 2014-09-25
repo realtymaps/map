@@ -27,12 +27,22 @@ base =
       min: 2
       max: 10
   SESSION:
-    secret: "thisisthesecretforthesession"
+    secret: "thisistheREALTYMAPSsecretforthesession"
     cookie:
       maxAge: null
       secure: true
     name: "connect.sid"
+    resave: true
+    saveUninitialized: true
     unset: "destroy"
+  SESSION_SECURITY:
+    name: "anticlone"
+    window: 60*1000 # 1 minute
+    rememberMeAge: 30*24*60*60*1000 # 30 days
+    cookie:
+      httpOnly: true
+      signed: true
+      secure: true
   NODETIME: false
   USE_ERROR_HANDLER: false
   TRUST_PROXY: 1
@@ -59,10 +69,13 @@ environmentConfig =
     SESSION:
       cookie:
         secure: false
+    SESSION_SECURITY:
+      cookie:
+        secure: false
     LOGGING:
       LEVEL: 'sql'
       FILE_AND_LINE: true
-      LONG_STACK_TRACES: true
+      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
       FRONT_END: true
     USE_ERROR_HANDLER: true
     TRUST_PROXY: false
@@ -77,6 +90,8 @@ environmentConfig =
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
       FAST_REFRESH: 60*1000     # 1 minute
+    LOGGING:
+      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
 
   production:
     DB_CACHE_TIMES:

@@ -1,8 +1,8 @@
 fs = require 'fs'
 path = require 'path'
-config = require '../../config/config'
-logger = require '../../config/logger'
-routes = require '../../../common/config/routes'
+config = require '../config/config'
+logger = require '../config/logger'
+routes = require '../../common/config/routes'
 
 module.exports =
   loadRoutes: (app, indexFilePath, directoryName)->

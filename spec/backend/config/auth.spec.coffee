@@ -4,10 +4,10 @@ userService = require "#{basePath}/services/service.user"
 permissionsService = require "#{basePath}/services/service.permissions"
 
 
-auth = require "#{basePath}/config/auth"
+auth = require "#{basePath}/utils/util.auth"
 
 
-describe 'config/auth'.ourNs().ourNs('Backend'), ->
+describe 'utils/auth'.ourNs().ourNs('Backend'), ->
 
   describe 'requireLogin', ->
     resultBase = (done, expected, call) ->

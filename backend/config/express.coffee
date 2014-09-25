@@ -1,9 +1,12 @@
 express = require 'express'
 path = require 'path'
+Promise = require 'bluebird'
 
 config = require './config'
 dbs = require './dbs'
 logger = require './logger'
+auth = require '../utils/util.auth'
+uuid = require '../utils/util.uuid'
 
 # express midlewares
 helmet = require 'helmet'
@@ -19,7 +22,7 @@ serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 promisifyMiddleware = require('./promisify').middleware
-auth = require './auth'
+sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
 livereload = require "connect-livereload"
 
@@ -55,17 +58,22 @@ app.use bodyParser()
 app.use multipart()
 app.use methodOverride()
 
+
 # session store (postgres)
 config.SESSION_STORE.pg = dbs.pg
 config.SESSION.store = new sessionStore(config.SESSION_STORE)
-config.SESSION.genid = auth.genUUID
+config.SESSION.genid = uuid
 app.use session(config.SESSION)
 
+
 # promisify sessions
-app.use promisifyMiddleware.promisifySession
+app.use Promise.nodeifyWrapper(promisifyMiddleware.promisifySession)
 
 # do login session management
-app.use auth.setSessionCredentials
+app.use Promise.nodeifyWrapper(auth.setSessionCredentials)
+
+# do session security checks
+app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 
 # enable flash messages
 app.use connectFlash()
@@ -89,12 +97,13 @@ app.use (err, req, res, next) ->
 
   logger.error "uncaught error found by express:"
   logger.error (if err.stack then ''+err.stack else ''+err)
-  res.json status.INTERNAL_SERVER_ERROR, error: err.message
+  res.status(status.INTERNAL_SERVER_ERROR).json(error: err.message)
   next()
 
 if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
 
 app.set("trust proxy", config.TRUST_PROXY)
+
 
 module.exports = app

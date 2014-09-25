@@ -1,5 +1,5 @@
 _ = require "lodash"
-memoize = require "memoizee"
+memoize = require("../extensions/memoizee").memoizeSlowExp
 Promise = require "bluebird"
 
 config = require "../config/config"
@@ -11,6 +11,10 @@ Group = require "../models/model.group"
 
 hashifyPermissions = (hash, permission) ->
   hash[permission.codename] = true;
+  return hash
+
+hashifyGroups = (hash, group) ->
+  hash[group.name] = true;
   return hash
 
 
@@ -26,9 +30,6 @@ getPermissionsForGroupId = (id) ->
   .catch (err) ->
     logger.error "error loading permissions for groupid #{id}: #{err}"
     Promise.reject(err)
-    
-# wrap function in a caching memoizer
-getPermissionsForGroupId = memoize(getPermissionsForGroupId, { maxAge: config.DB_CACHE_TIMES.SLOW_REFRESH, prefetch: .1 })
 
 
 # returns: a hash of codenames to truthy values
@@ -63,10 +64,24 @@ getPermissionsForUserId = (id) ->
     return permissionsHash
   .catch (err) ->
     logger.error "error loading permissions for userid #{id}"
-    Promise.reject(err)
+    return Promise.reject(err)
 # we're not going to memoize this one because we're caching the results on the
 # session, and want new logins to get new permissions instantly
 
+
+# returns: a hash of group names to truthy values
+getGroupsForUserId = (id) ->
+  User.forge(id: id).fetch(withRelated: ['groups'], require: true)
+  .then (user) ->
+    return _.reduce(user.related('groups').toJSON(), hashifyGroups, {})
+  .catch (err) ->
+    logger.error "error loading groups for userid #{id}"
+    return Promise.reject(err)
+# we're not going to memoize this one because we're caching the results on the
+# session, and want new logins to get new groups instantly
+
+
 module.exports =
-  getPermissionsForGroupId: getPermissionsForGroupId
+  getPermissionsForGroupId: memoize(getPermissionsForGroupId)
   getPermissionsForUserId: getPermissionsForUserId
+  getGroupsForUserId: getGroupsForUserId

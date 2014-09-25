@@ -3,7 +3,7 @@ countyHandles = do require './handles/handle.county'
 mlsHandles = require './handles/handle.mls'
 routes = require '../../common/config/routes'
 
-bindRoutes = require './utils/bindRoutesToHandles'
+bindRoutes = require '../utils/util.bindRoutesToHandles'
 
 
 # logger.debug "routes: #{JSON.stringify routes}"
