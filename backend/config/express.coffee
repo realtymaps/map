@@ -62,7 +62,7 @@ app.use methodOverride()
 # session store (postgres)
 config.SESSION_STORE.pg = dbs.pg
 config.SESSION.store = new sessionStore(config.SESSION_STORE)
-config.SESSION.genid = uuid
+config.SESSION.genid = uuid.genUUID
 app.use session(config.SESSION)
 
 

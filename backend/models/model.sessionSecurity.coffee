@@ -7,5 +7,5 @@ module.exports = dbs.users.Model.extend {
     @belongsTo(Session)
   hasTimestamps: true
 }, {
-  knex: dbs.users.knex('session_security')
+  knex: () -> dbs.users.knex('session_security')
 }

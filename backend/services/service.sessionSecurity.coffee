@@ -13,23 +13,46 @@ dbs = require '../config/dbs'
 CLEAN_SESSION_SECURITY = 'DELETE FROM session_security WHERE session_id IN (SELECT session_id FROM session_security LEFT JOIN session ON session.sid=session_security.session_id WHERE sid IS NULL);'
 
 
+hashToken = (token, salt) ->
+  bcrypt.hashAsync(token, salt)
+  .then (tokenHash) ->
+    tokenHash.substring(salt.length)
+
+
+setSecurityCookie = (req, res, token, rememberMe) ->
+  if rememberMe
+    options = _.clone(config.SESSION_SECURITY.cookie)
+    options.maxAge = config.SESSION_SECURITY.rememberMeAge
+  else
+    options = config.SESSION_SECURITY.cookie
+  res.cookie config.SESSION_SECURITY.name, "#{req.user.id}.#{req.sessionID}.#{token}", options
+
+
 createNewSeries = (req, res) ->
   if req.body.remember_me
     logger.debug "setting remember_me for user: #{req.user.username}"
-  token = uuid()
-  SessionSecurity.forge
-    user_id: req.user.id
-    session_id: req.sessionID
-    remember_me: !!req.body.remember_me
-    next_security_token: token
-  .save()
+  token = uuid.genToken()
+  logger.debug "############################################## new / token: #{token}"
+  environmentSettingsService.getSettings()
+  .then (settings) ->
+    bcrypt.genSaltAsync(settings["token hashing cost factor"])
+  .then (salt) ->
+    logger.debug "############################################## new / salt: #{salt}"
+    hashToken(token, salt)
+    .then (tokenHash) ->
+      logger.debug "############################################## new / hash: #{tokenHash}"
+      security =
+        user_id: req.user.id
+        session_id: req.sessionID
+        remember_me: !!req.body.remember_me
+        series_salt: salt
+        next_security_token: tokenHash
+      return security
+  .then (security) ->
+    SessionSecurity.forge(security).save()
   .then () ->
-    if req.body.remember_me
-      options = _.clone(config.SESSION_SECURITY)
-      options.maxAge = config.SESSION_SECURITY.rememberMeAge
-    else
-      options = config.SESSION_SECURITY
-    res.cookie config.SESSION_SECURITY.name, "#{req.sessionID}.#{token}", options
+    setSecurityCookie(req, res, token, req.body.remember_me)
+
 
 ensureSessionCount = (req) -> Promise.try () ->
   if not req.user
@@ -51,7 +74,7 @@ ensureSessionCount = (req) -> Promise.try () ->
 
   sessionSecuritiesPromise = dbs.users.raw(CLEAN_SESSION_SECURITY)
   .then () ->
-    SessionSecurity.forge(user_id: req.user.id).fetchAll()
+    SessionSecurity.where(user_id: req.user.id).fetchAll()
   .then (sessionSecurities) ->
     return sessionSecurities.toJSON()
   
@@ -60,10 +83,43 @@ ensureSessionCount = (req) -> Promise.try () ->
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
       sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, maxLogins-1), 'session_id')
-      SessionSecurity.knex.where('session_id', 'in', sessionIdsToDelete).del()
+      SessionSecurity.knex().where('session_id', 'in', sessionIdsToDelete).del()
 
+
+deleteSecurities = (criteria) ->
+  SessionSecurity.knex().where(criteria).del()
+
+getSecuritiesForSession = (sessionId) ->
+  SessionSecurity.where(session_id: sessionId).fetchAll()
+  .then (securities) ->
+    return securities.toJSON()
+
+iterateSecurity = (req, res, security) ->
+  token = uuid.genToken()
+  hashToken(token, security.series_salt)
+  .then (tokenHash) ->
+    SessionSecurity.where
+      id: security.id
+      # this next criterium ensures we don't clobber another update
+      next_security_token: security.next_security_token
+    .save
+      next_security_token: tokenHash
+      current_security_token: security.next_security_token
+      previous_security_token: security.current_security_token
+      , {method: "update", patch: true}
+    .then () ->
+      SessionSecurity.forge(id: security.id).fetch()
+    .then (new_security) ->
+        new_security.toJSON()
+    .then (new_security) ->
+      if new_security.next_security_token == tokenHash
+        # only if we detect that we successfully performed a save...
+        setSecurityCookie(req, res, token, security.remember_me)
 
 module.exports =
   createNewSeries: createNewSeries
   ensureSessionCount: ensureSessionCount
-
+  deleteSecurities: deleteSecurities
+  getSecuritiesForSession: getSecuritiesForSession
+  iterateSecurity: iterateSecurity
+  hashToken: hashToken

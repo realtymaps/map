@@ -72,9 +72,12 @@ doLogin = (req, res, next) -> Promise.try () ->
     next(err)
 
 doLogout = (req, res, next) -> Promise.try () ->
-  logger.debug "attempting to log user out: #{req.user.username}"
-  req.session.destroyAsync()
-  .then () ->
+  if req.user
+    logger.debug "attempting to log user out: #{req.user.username}"
+    promise = req.session.destroyAsync()
+  else
+    promise = Promise.resolve()
+  promise.then () ->
     return module.exports.doNextRedirect(req, res)
   .catch (err) ->
     logger.error "error logging out user: #{err}"
