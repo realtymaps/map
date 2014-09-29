@@ -29,18 +29,13 @@ setSecurityCookie = (req, res, token, rememberMe) ->
 
 
 createNewSeries = (req, res) ->
-  if req.body.remember_me
-    logger.debug "setting remember_me for user: #{req.user.username}"
   token = uuid.genToken()
-  logger.debug "############################################## new / token: #{token}"
   environmentSettingsService.getSettings()
   .then (settings) ->
     bcrypt.genSaltAsync(settings["token hashing cost factor"])
   .then (salt) ->
-    logger.debug "############################################## new / salt: #{salt}"
     hashToken(token, salt)
     .then (tokenHash) ->
-      logger.debug "############################################## new / hash: #{tokenHash}"
       security =
         user_id: req.user.id
         session_id: req.sessionID
@@ -82,7 +77,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
-      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, maxLogins-1), 'session_id')
+      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
       SessionSecurity.knex().where('session_id', 'in', sessionIdsToDelete).del()
 
 

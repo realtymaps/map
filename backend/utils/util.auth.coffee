@@ -29,6 +29,7 @@ getSessionUser = (req) -> Promise.try () ->
   .catch (err) ->
     return false
     
+    
 module.exports = {
 
   # this function gets used as app-wide middleware, so assume it will have run
@@ -43,6 +44,7 @@ module.exports = {
       logger.error "error while setting session data on request"
       Promise.reject(err)
   
+  # app-wide middleware to prevent session cloning/hijacking and implement remember_me functionality
   checkSessionSecurity: (req, res) ->
     context = {}
     
@@ -60,9 +62,6 @@ module.exports = {
         else
           return Promise.reject(new SessionSecurityError())
       context.cookieValues = {userId: parseInt(values[0]), sessionId: values[1], token: values[2]}
-      logger.debug "SessionSecurityCheck: ============================================================== cookieValues"
-      logger.debug "SessionSecurityCheck: #{JSON.stringify(context.cookieValues, null, 2)}"
-      logger.debug "SessionSecurityCheck: ============================================================== cookieValues"
       
       if (req.user)
         if req.user.id != context.cookieValues.userId
@@ -84,16 +83,10 @@ module.exports = {
       else
         return Promise.reject(new SessionSecurityError("nothing", "anonymous user with no session security", "debug"))
     .then (security) ->
-      logger.debug "SessionSecurityCheck: ============================================================== security"
-      logger.debug "SessionSecurityCheck: #{JSON.stringify(security, null, 2)}"
-      logger.debug "SessionSecurityCheck: ============================================================== security"
       if context.cookieValues.userId != security.user_id
         return Promise.reject(new SessionSecurityError("session", "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}"))
       sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
       .then (tokenHash) ->
-        logger.debug "SessionSecurityCheck: ============================================================== tokenHash"
-        logger.debug "SessionSecurityCheck: #{JSON.stringify(tokenHash, null, 2)}"
-        logger.debug "SessionSecurityCheck: ============================================================== tokenHash"
         if req.user
           # this is a logged-in user, so validate on any of the 3 tokens (with
           # time restriction on the later 2), and iterate only on the first
@@ -145,7 +138,7 @@ module.exports = {
         delete req.session
         res.clearCookie config.SESSION_SECURITY.name, config.SESSION_SECURITY
     .catch (err) ->
-      logger.debug "error doing session security checks: #{err}"
+      logger.error "error doing session security checks: #{err}"
       Promise.reject(err)
 
 
@@ -162,7 +155,7 @@ module.exports = {
         if options.redirectOnFail
           return res.redirect("#{routes.logIn}?#{querystring.stringify(next: req.originalUrl)}")
         else
-          return res.status(401).send("Please login to access this URI.")
+          return next(status: 401, message: "Please login to access this URI.")
       return process.nextTick(next)
 
 # route-specific middleware that requires permissions set on the session,
@@ -208,6 +201,6 @@ module.exports = {
         if options.logoutOnFail
           return userUtils.doLogout(req, res, next)
         else
-          return res.status(401).send("You do not have permission to access this URI.")
+          return next(status: 401, message: "You do not have permission to access this URI.")
       return process.nextTick(next)
 }

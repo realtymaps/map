@@ -19,17 +19,13 @@ doNextRedirect = (req, res) -> Promise.try () ->
 cacheUserValues = (req) ->
   promises = []
   if not req.session.permissions
-    logger.debug "trying to set permissions on session for user: #{req.user.username}"
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
-      logger.debug "permissions loaded on session for user: #{req.user.username}"
       req.session.permissions = permissionsHash
     promises.push permissionsPromise
   if not req.session.groups
-    logger.debug "trying to set groups on session for user: #{req.user.username}"
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
-      logger.debug "groups loaded on session for user: #{req.user.username}"
       req.session.groups = groupsHash
     promises.push groupsPromise
   return Promise.all(promises)

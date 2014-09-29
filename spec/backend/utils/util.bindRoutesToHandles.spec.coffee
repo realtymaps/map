@@ -1,4 +1,6 @@
-subject = require '../../../../backend/utils/util.bindRoutesToHandles'
+basePath = require '../basePath'
+
+subject = require "#{basePath}/utils/util.bindRoutesToHandles"
 
 describe 'bindRoutesToHandles', ->
   beforeEach ->
