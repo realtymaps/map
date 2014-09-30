@@ -13,22 +13,26 @@ dbs = require '../config/dbs'
 CLEAN_SESSION_SECURITY = 'DELETE FROM session_security WHERE session_id IN (SELECT session_id FROM session_security LEFT JOIN session ON session.sid=session_security.session_id WHERE sid IS NULL);'
 
 
+# creates a bcrypt hash, without the built-in salt
 hashToken = (token, salt) ->
   bcrypt.hashAsync(token, salt)
   .then (tokenHash) ->
     tokenHash.substring(salt.length)
 
 
+# correctly sets the security cookie, depending on whether rememberMe is desired
 setSecurityCookie = (req, res, token, rememberMe) ->
   if rememberMe
     options = _.clone(config.SESSION_SECURITY.cookie)
     options.maxAge = config.SESSION_SECURITY.rememberMeAge
   else
     options = config.SESSION_SECURITY.cookie
+  # cookie has 3 parts: userid, sessionid, and the token (before hashing)
   res.cookie config.SESSION_SECURITY.name, "#{req.user.id}.#{req.sessionID}.#{token}", options
 
 
-createNewSeries = (req, res) ->
+# this is for when new logins occur, or when we want to create a session based on rememberMe
+createNewSeries = (req, res, rememberMe) ->
   token = uuid.genToken()
   environmentSettingsService.getSettings()
   .then (settings) ->
@@ -39,8 +43,11 @@ createNewSeries = (req, res) ->
       security =
         user_id: req.user.id
         session_id: req.sessionID
-        remember_me: !!req.body.remember_me
+        remember_me: rememberMe
         series_salt: salt
+        # here we store the hash, not the token, for the same reason you do
+        # that with passwords -- someone who gets some db data they shouldn't
+        # won't be able to use it to log in as someone else (easily)
         next_security_token: tokenHash
       return security
   .then (security) ->
@@ -49,6 +56,8 @@ createNewSeries = (req, res) ->
     setSecurityCookie(req, res, token, req.body.remember_me)
 
 
+# figures out how many logins the user should have, and culls away enough to
+# make "room" for a new one
 ensureSessionCount = (req) -> Promise.try () ->
   if not req.user
     logger.debug "ensureSessionCount: anonymous users don't get session-counted"
@@ -84,11 +93,15 @@ ensureSessionCount = (req) -> Promise.try () ->
 deleteSecurities = (criteria) ->
   SessionSecurity.knex().where(criteria).del()
 
+
 getSecuritiesForSession = (sessionId) ->
   SessionSecurity.where(session_id: sessionId).fetchAll()
   .then (securities) ->
     return securities.toJSON()
 
+
+# alter the existing sessionSecurity object, since each token only gets used
+# once (with allowances made for AJAX-simultaneous requests)
 iterateSecurity = (req, res, security) ->
   token = uuid.genToken()
   hashToken(token, security.series_salt)
@@ -110,6 +123,7 @@ iterateSecurity = (req, res, security) ->
       if new_security.next_security_token == tokenHash
         # only if we detect that we successfully performed a save...
         setSecurityCookie(req, res, token, security.remember_me)
+
 
 module.exports =
   createNewSeries: createNewSeries

@@ -60,7 +60,7 @@ doLogin = (req, res, next) -> Promise.try () ->
       .then () ->
         sessionSecurityService.ensureSessionCount(req)
       .then () ->
-        sessionSecurityService.createNewSeries(req, res)
+        sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
       .then () ->
         module.exports.doNextRedirect(req, res)
   .catch (err) ->

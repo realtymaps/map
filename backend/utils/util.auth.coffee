@@ -123,8 +123,9 @@ module.exports = {
           .then () ->
             sessionSecurityService.ensureSessionCount(req)
           .then () ->
-            sessionSecurityService.createNewSeries(req, res)
+            sessionSecurityService.createNewSeries(req, res, true)
     .catch SessionSecurityError, (err) ->
+      # figure out what we need to invalidate and do it
       switch (err.invalidate)
         when "nothing" then return Promise.resolve()
         when "security" then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
