@@ -2,14 +2,16 @@ Promise = require 'bluebird'
 
 basePath = require '../basePath'
 
-userService = require "#{basePath}/services/service.user"
-permissionsService = require "#{basePath}/services/service.permissions"
+sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
 
 
 auth = require "#{basePath}/utils/util.auth"
 
 
 describe 'utils/auth'.ourNs().ourNs('Backend'), ->
+
+  # mock this call so we don't actually call the db
+  sessionSecurityService.deleteSecurities = () -> Promise.resolve()
 
   describe 'requireLogin', ->
     resultBase = (done, expected, call) ->
