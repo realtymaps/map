@@ -105,6 +105,12 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       resultcb = resultBase.bind(null, done, "next")
       requirePermissions req, res, next
 
+    it 'should call next() if req.session.permissions contains the permission passed as a singleton', (done) ->
+      requirePermissions = auth.requirePermissions("perm1")
+      req = {session: {permissions: {perm1: true, perm1: true}}, user: {}}
+      resultcb = resultBase.bind(null, done, "next")
+      requirePermissions req, res, next
+
     it 'should call res.redirect() instead of next(err) if would fail and logoutOnFail is set truthy', (done) ->
       requirePermissions = auth.requirePermissions({all: ["perm1", "perm2"]}, {logoutOnFail: true})
       req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
