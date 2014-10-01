@@ -1,5 +1,3 @@
-#require('source-map-support').install()
-#require 'coffee-script-mapped'
 global._ = require 'lodash'
 
 config = require './config/config'

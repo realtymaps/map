@@ -1,6 +1,6 @@
 _ = require("lodash")
 Promise = require "bluebird"
-memoize = require "memoizee"
+memoize = require("../extensions/memoizee").memoizeSlowExp
 
 logger = require '../config/logger'
 config = require '../config/config'
@@ -23,6 +23,8 @@ hashifySettings = (hash, setting) ->
 
 
 getSettings = () ->
+  logger.debug "loading environment settings (#{config.ENV})"
+
   # we want to get the all_environments values first...
   defaultSettings = EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
   .then (settings) -> return settings.toJSON()
@@ -32,18 +34,18 @@ getSettings = () ->
   specificSettings = EnvironmentSetting.where(environment_name: config.ENV).fetchAll()
   .then (settings) -> return settings.toJSON()
   .reduce(hashifySettings, {})
+  
   Promise.join defaultSettings, specificSettings, (defaultSettings, specificSettings) ->
     return _.merge(defaultSettings, specificSettings)
   .then (settings) ->
     logger.info "environment settings loaded (#{config.ENV})"
     logger.debug JSON.stringify(settings, null, 2)
+    return settings
   .catch (err) ->
     logger.error "error loading environment settings (#{config.ENV})"
     Promise.reject(err)
-    
-# wrap function in a caching memoizer
-getSettings = memoize(getSettings, { maxAge: config.DB_CACHE_TIMES.SLOW_REFRESH, prefetch: .1 })
+  
 
 module.exports = {
-  getSettings: getSettings
+  getSettings: memoize(getSettings)
 }

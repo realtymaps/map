@@ -21,9 +21,9 @@ preprocessHash = (password) ->
       hashData.algo = 'bcrypt'
       hashData.hash = password.slice("bcrypt$".length)
       return environmentSettingsService.getSettings()
-        .then (settings) ->
-          hashData.needsUpdate = bcrypt.getRounds(hashData.hash) isnt settings["password hashing cost factor"]
-          return hashData
+      .then (settings) ->
+        hashData.needsUpdate = bcrypt.getRounds(hashData.hash) isnt settings["password hashing cost factor"]
+        return hashData
     # ... else check for other valid formats and do preprocessing for them
     # ...
     # if nothing worked, indicate failure
@@ -48,8 +48,8 @@ verifyPassword = (username, password) ->
       return createPasswordHash(password).then (hash) -> return false
     hashData = null
     preprocessHash(user.password)
-    .catch (error) ->
-      logger.error "error while preprocessing password hash for username #{username}: #{error}"
+    .catch (err) ->
+      logger.error "error while preprocessing password hash for username #{username}: #{err}"
       Promise.reject(err)
     .then (data) ->
       hashData = data

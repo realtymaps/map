@@ -1,6 +1,6 @@
-logger = require '../../config/logger'
+logger = require '../config/logger'
 _ = require 'lodash'
-status = require '../../../common/utils/httpStatus'
+status = require '../../common/utils/httpStatus'
 
 cleanQuery = (query) ->
   _.each query, (value,key) ->

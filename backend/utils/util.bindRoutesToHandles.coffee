@@ -1,4 +1,4 @@
-logger = require '../../config/logger'
+logger = require '../config/logger'
 ###
   Iterate through all routeHandles and atatch a route to a handler
 ###

@@ -23,10 +23,11 @@
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
     "postinstall": "bower install",
-    "clean": "gulp clean; rm -rf node_modules bower_components"
+    "clean": "gulp clean && rm -rf node_modules bower_components"
   },
   "dependencies": {
     "async": "^0.9.0",
+    "base64url": "0.0.6",
     "bcrypt": "^0.8.0",
     "bluebird": "^2.3.2",
     "body-parser": "1.9.x",
@@ -35,6 +36,9 @@
     "bower": "1.3.x",
     "chai": "1.9.x",
     "coffee-loader": "^0.7.2",
+    "coffee-script": "1.7.x",
+    "coffee-script-mapped": "^0.1.7",
+    "coffeegulp": "0.0.4",
     "compression": "1.1.x",
     "connect-flash": "^0.1.1",
     "connect-livereload": "^0.4.0",

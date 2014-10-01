@@ -1,4 +1,4 @@
-auth = require '../config/auth'
+auth = require '../utils/util.auth'
 logger = require '../config/logger'
 config = require '../config/config'
 environmentSettingsService = require '../services/service.environmentSettings'
