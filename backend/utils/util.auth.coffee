@@ -157,7 +157,7 @@ module.exports = {
         if options.redirectOnFail
           return res.redirect("#{routes.logIn}?#{querystring.stringify(next: req.originalUrl)}")
         else
-          return next(status: status.UNAUTHORIZED, message: "Please login to access this URI.")
+          return next(status: httpStatus.UNAUTHORIZED, message: "Please login to access this URI.")
       return process.nextTick(next)
 
 # route-specific middleware that requires permissions set on the session,
@@ -203,6 +203,6 @@ module.exports = {
         if options.logoutOnFail
           return userUtils.doLogout(req, res, next)
         else
-          return next(status: status.UNAUTHORIZED, message: "You do not have permission to access this URI.")
+          return next(status: httpStatus.UNAUTHORIZED, message: "You do not have permission to access this URI.")
       return process.nextTick(next)
 }
