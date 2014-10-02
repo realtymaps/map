@@ -5,6 +5,7 @@ path = require '../paths'
 inject = require 'gulp-inject'
 es = require 'event-stream'
 logFile = require '../debug/logFile'
+jade = require 'gulp-jade'
 
 toInject = [
   path.dest.scripts + '/vendor.js'
@@ -19,4 +20,9 @@ gulp.task 'html', () ->
 #  .pipe(logFile(es))
   .pipe(inject(gulp.src(toInject, read: false), relative: true))
   .pipe(size())
+  .pipe(gulp.dest '_public')
+
+gulp.task 'jadeTemplates', () ->
+  gulp.src(path.jade)
+  .pipe jade pretty: true
   .pipe(gulp.dest '_public')
