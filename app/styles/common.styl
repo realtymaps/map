@@ -8,7 +8,7 @@ body-background = invert(#ccc)
 body
     height: 100%
     width: 100%
-    background: #2E425C
+    background: #313145
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
 
 /* Move down content because we have a fixed navbar that is 50px tall */
@@ -26,8 +26,7 @@ body
 
  /* Nav Bar */
 .navbar
-    background:#123D74
-    background:#2E425C
+    background:#313145
     border: none
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
     font-weight: 100
@@ -90,15 +89,18 @@ body
 
  .navbar-toggle
     background-color: #255992
-    border-color:none
+    border-color:transparent
+    height:50px
+    margin-top:0
+    margin-bottom: 0
+    border-radius: 0
 
 .navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
     background-color: #2B72BE
 
 
-.navbar-toggle:hover,
-.navbar-toggle:focus
-    background-color: #2B72BE
+.navbar-toggle .icon-bar
+    height:4px
 
 #side-nav-container
     position:absolute

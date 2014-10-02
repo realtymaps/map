@@ -1,0 +1,51 @@
+<!--Begin Results Container-->
+.results-container.navbar-below#results-slide
+    .tray-close#results-close(ng-click="toggleNav('map')")
+    #results-list-inner
+        #results-header
+            div(id="results-header-results-count-arrow")
+            div(id="results-header-results-count")
+                .ng-cloak {{properties.length}}34 Results
+            div(id="results-header-right")
+                span Sort by |
+                .btn-group
+                    button(id="results-sort-beds", class="btn btn-default btn-xs", ng-click="predicate = 'beds'; reverse=true") Beds
+                    button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'living_area'; reverse=true") Sq Ft
+                    button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'year_built'; reverse=true") Year
+                    button(id="results-sort-price", class="btn btn-default btn-xs", ng-click="predicate = 'display_price'; reverse=true") Price
+        #results-list(infinite-scroll='addDisplayedResults()' infinite-scroll-distance='1')
+            <!-- DAN - this div needed for infinite scroll to work for some unknown reason -->
+            div
+                div
+                - for (var x = 0; x < 6; x++)
+                    .card.animated.slide-down( id="l-el{{result.id}}" click="toggleDetails(result)")
+                        //.result-arrow
+                            .box Sold
+                            .arrow
+                        .photo()
+                            .sold
+                                img(src="http://placehold.it/100x75")
+
+                        .info
+                            .address {{result.street_num + " " + result.street_name + " " + result.street_type + " " + result.street_ord }} 1995 8th St S
+                            .price {{result.display_price}} $4,395,000
+                                .property-status(ng-class="{sold: result.propertyStatus == propertyStatusSold, forsale: result.propertyStatus == propertyStatusForSale}") {{result.propertyStatus}}
+                            div
+                                .beds
+                                    span.data {{result.beds || "5"}}
+                                    span.title Beds
+                                .baths
+                                    span.data {{result.baths || "3"}}
+                                    span.title Baths
+                                .sqft
+                                    span.data {{result.living_area || "3400"}}
+                                    span.title Sq Ft
+                                .year
+                                    span.data {{result.year_built || "2012"}}
+                                    span.title Year
+                        .c
+                            //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
+
+        #results-footer
+            .close(ng-click="toggleNav('map')") x
+<!--End Results Container-->
