@@ -1,42 +1,54 @@
 /* Menu Bar Controls */
 /* Small devices (tablets, 768px and up) */
 
-.control-bar
-  //position: relative
-  //top: 10px
-  //left: 5px
+.toolbar
+  position: absolute
   text-align: left
   width:40px
-  box-shadow: 4px 2px 6px rgba(0,0,0,.4)
+  box-shadow: 2px 2px 6px rgba(0,0,0,.4)
 
-.cb-layer-icon, .cb-location-icon, .cb-results-icon, .cb-filters-icon, .cb-zoomin-icon, .cb-zoomout-icon
+.toolbar-layer-icon, .toolbar-location-icon, .toolbar-results-icon, .toolbar-filters-icon, .toolbar-zoomin-icon, .toolbar-zoomout-icon
   width: 40px
   height: 40px
   position: relative
   cursor: pointer
   background: white
-  fill:#FFF
-  background:#0067A2
+  fill: rgb(75, 84, 107)
+  background:#FFF
 
-.cb-layer-icon:hover, .cb-location-icon:hover, .cb-results-icon:hover, .cb-filters-icon:hover, .cb-zoomin-icon:hover, .cb-zoomout-icon:hover
+.toolbar svg
+  width:40px
+  display: block
+  margin: 0 auto
+
+.toolbar-layer-icon:hover, .toolbar-location-icon:hover, .toolbar-results-icon:hover, .toolbar-filters-icon:hover, .toolbar-zoomin-icon:hover, .toolbar-zoomout-icon:hover
   background: #0062A0
   fill: #FFF
+  color: #FFF
 
-.cb-layer-svg, .cb-results-svg ,.cb-location-svg
+.toolbar-layer-svg, .toolbar-results-svg ,.toolbar-location-svg
   position: absolute
   top: 50%
   left: 50%
   margin-top: -16px
   margin-left: -16px
 
+.toolbar-label
+  display: none
+
+
 @media (min-width: 768px)
-    .cb-layer-icon, .cb-location-icon, .cb-results-icon, .cb-filters-icon, .cb-zoomin-icon, .cb-zoomout-icon
-        width:  80px
-        height: 80px
-    .cb-layer-icon:hover, .cb-location-icon:hover, .cb-results-icon:hover, .cb-filters-icon:hover, .cb-zoomin-icon:hover, .cb-zoomout-icon:hover
-        width:  180px
-        height: 80px
-        transition: 0.25s all ease-in-out
+    .toolbar
+      width: 70px
+
+    .toolbar-layer-icon, .toolbar-location-icon, .toolbar-results-icon, .toolbar-filters-icon, .toolbar-zoomin-icon, .toolbar-zoomout-icon
+      width:  70px
+      height: 70px
+      padding-top:2px;
+
+    .toolbar-label
+      display:block
+      text-align: center
 
 
 
@@ -53,7 +65,7 @@ Results Container
     bottom: 0
     right: 0
     width:100%
-    top:50px
+    top: 0px
 
 
 #results-close
@@ -273,8 +285,9 @@ Results Container
     
 
 /* Large devices (large desktops, 1200px and up) */
-@media (min-width: 1200px){}
+//@media (min-width: 1200px)
     
+
 
 /*********************
 End Results Container
@@ -291,3 +304,149 @@ End Results Container
 
 .tray-close-light:hover
     background-color:rgba(0,0,0,.25)
+
+/*****************
+Detail Container
+*****************/
+.detail-container 
+    margin: 0 0 0 0px
+    position: absolute
+    z-index: 3
+    bottom: 0
+    right: 0
+    width:100%
+    top: 0px
+
+#detail-close
+    float:left
+    width:35px
+    height:100%
+    font-size:1.3em
+    background-image: url("../../assets/right-arrow-icon.png")
+    background-repeat:no-repeat
+    background-position:center center
+    position:absolute
+    left:-35px
+
+
+
+#detail-list-inner
+    float: left
+
+#detail-list
+    background: #FFF
+    overflow-y: auto
+    position: absolute
+    bottom: 50px
+    top: 0px
+    width: 100%
+
+.detail-container .info
+    margin-top:10px
+    margin-right: auto
+    margin-left: auto
+    padding-left: 15px
+    padding-right: 15px
+
+.detail-container .address
+    font-size:20px
+    color: #0062A0
+
+.detail-container .city-state-zip
+    font-size:16px
+    color: #4D4D4D
+
+.detail-container .price
+    font-size:20px
+    color: #0062A0
+    text-align:left
+
+.detail-container .property-status
+    text-align: center
+    color:#FFF
+.sold
+    background: rgb(211, 96, 96)
+    background: rgb(216, 216, 216)
+    color: #6F6F6F !important
+.forsale
+    background: rgb(100, 197, 100)
+
+.detail-container .photo
+    height:200px
+    background: no-repeat url("http://placehold.it/500x300&text=image%20not%20available")
+
+
+
+.detail-container .beds-baths-sqft 
+    text-align:left
+
+.detail-container .info .beds, .detail-container .info .baths, .detail-container .info .sqft, .detail-container .info .year
+    font-size: 18px
+
+.detail-container .info .title
+    display: block 
+    color:#6B6B6B
+    font-size:14px
+
+.detail-container .detail-section-title
+    border-bottom: 1px solid #A7A7A7
+    margin-top: 15px
+    color: rgb(92, 92, 92)
+    font-size: 18px
+    font-weight: 200
+
+#detail-footer 
+    width: 100%
+    background: rgb(162, 200, 226)
+    height: 50px
+    position: absolute
+    bottom: 0px
+
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px)  
+    
+    .detail-container 
+      width:350px
+   
+
+    .detail-container .photo
+      height:300px 
+   
+
+    .detail-container .close
+      display:none 
+   
+    .detail-container .address
+      font-size:20px
+     
+    .detail-container .price
+      font-size:22px
+      text-align:right
+   
+
+    #detail-close
+      display:block
+   
+    #detail-list
+      width:100%
+   
+
+
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) 
+    
+    .detail-container 
+      width:500px
+  
+    #detail-close
+      display:block
+   
+    #detail-list
+      width:100%
+   
+
+/*****************
+End Detail Container
+*****************/
