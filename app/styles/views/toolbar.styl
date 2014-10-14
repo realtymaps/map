@@ -16,7 +16,7 @@
   fill: rgb(75, 84, 107)
   background:#FFF
 
-.toolbar svg
+.toolbar .icon svg
   width:40px
   display: block
   margin: 0 auto
@@ -44,8 +44,123 @@
     .toolbar-layer-icon, .toolbar-location-icon, .toolbar-results-icon, .toolbar-filters-icon, .toolbar-zoomin-icon, .toolbar-zoomout-icon
       width:  70px
       height: 70px
-      padding-top:2px;
+      padding-top:2px
+
 
     .toolbar-label
       display:block
       text-align: center
+
+/* Layer Panel
+============================================================================= */
+.layer-panel 
+  background: #FFF
+  width: 160px
+  max-width: 220px
+  max-height: 400px
+  position: absolute
+  left: 90px
+  top: 0
+  z-index: 1000000
+  -webkit-transition: left .5s
+  -moz-transition: left .5s
+  -o-transition: left .5s
+  transition: left .5s
+  box-shadow: 4px 2px 6px rgba(0,0,0,.4)
+
+
+.layer-panel .header
+  background-color: #0062A0
+  font-size: 16px
+  color: #FFF
+  padding: 8px 10px 0px 15px
+  font-weight: 100
+  letter-spacing: 1.5px
+  height:40px
+
+
+.layer-panel .close
+  line-height:.7
+  margin:0
+  color: #fff
+  text-shadow: none
+  opacity: 1
+  font-weight: 100
+
+
+
+.layer-panel ul
+  list-style: none
+  padding:0px 0px
+  margin-bottom: 0px
+
+
+.layer-panel li
+  padding: 2px 10px
+
+.layer-panel li:hover
+  background: rgb(230,230,230)
+
+
+.layer-panel li.active
+  background: rgba(161, 228, 161, .7)
+
+
+.layer-panel li.active:hover
+  background: rgba(161, 228, 161, 1)
+
+
+.layer-panel-open
+  left:0px
+  -webkit-transition: left .5s
+  -moz-transition: left .5s
+  -o-transition: left .5s
+  transition: left .5s
+
+
+.lp-check-icon
+  fill:none
+
+
+.lp-check-icon:hover
+  fill:#D1D1D1
+
+.lp-check-icon.active
+  fill:#666
+
+.lp-check-icon .title
+  display: inline-block
+  font-size: 14px
+  position: absolute
+  margin-top: 6px
+  margin-left: 10px
+
+
+.lp-check-icon .colorLegend
+  width: 20px
+  height: 20px
+  position: absolute
+  display: inline-block
+  right: 10px
+  margin-top: 6px
+
+
+#layers-slide
+  transition: 0.15s all ease-in-out
+
+
+
+#layers-slide.ng-hide-add, #layers-slide.ng-hide-remove
+  display: block !important 
+
+
+#layers-slide.ng-hide-remove, #layers-slide.ng-hide-add.ng-hide-add-active
+  margin-left: -100px
+  opacity: 1
+
+
+#layers-slide.ng-hide-remove.ng-hide-remove-active, #layers-slide.ng-hide-add
+  margin-left: 0
+  opacity: 1
+
+

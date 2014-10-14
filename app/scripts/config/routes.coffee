@@ -14,6 +14,9 @@ module.exports = app.config([
     .when '/users',
       templateUrl: 'views/users.html'
       controller: 'UserCtrl'.ourNs()
+    .when '/test',
+      templateUrl: 'views/test.html'
+      controller: 'TestCtrl'.ourNs()
     .when '/',
       templateUrl: 'views/main.html'
       controller: 'MainCtrl'.ourNs()

@@ -1,13 +1,13 @@
 <!--Begin Results Container-->
-.results-container.navbar-below#results-slide
-    .tray-close#results-close(ng-click="toggleNav('map')")
+.results-container.navbar-below#results-slide(ng-show="showResults")
+    .tray-close#results-close(ng-click="showResults = !showResults")
     #results-list-inner
         #results-header
             div(id="results-header-results-count-arrow")
             div(id="results-header-results-count")
                 .ng-cloak {{properties.length}}34 Results
             div(id="results-header-right")
-                span Sort by |
+                span Sort by {{ showDetails }} |
                 .btn-group
                     button(id="results-sort-beds", class="btn btn-default btn-xs", ng-click="predicate = 'beds'; reverse=true") Beds
                     button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'living_area'; reverse=true") Sq Ft
@@ -18,7 +18,7 @@
             div
                 div
                 - for (var x = 0; x < 6; x++)
-                    .card.animated.slide-down( id="l-el{{result.id}}" click="toggleDetails(result)")
+                    .card.animated.slide-down( id="l-el{{result.id}}" ng-click="showDetails = !showDetails")
                         //.result-arrow
                             .box Sold
                             .arrow
