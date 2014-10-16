@@ -1,10 +1,7 @@
 map
 ===
 
-[![Dependencies](https://david-dm.org/nmccready/geohash64.png)](https://david-dm.org/nmccready/geohash64)&nbsp;
-[![Dependencies](https://david-dm.org/nmccready/geohash64.png)](https://david-dm.org/nmccready/geohash64)&nbsp;
-[![Build Status](https://travis-ci.org/nmccready/geohash64.png?branch=master)](https://travis-ci.org/nmccready/geohash64)
-
+[![Circle CI](https://circleci.com/gh/realtymaps/map/tree/master.png?style=badge&circle-token=1d2b000d3820a249ad236f05210a63f3ebc5cd23)](https://circleci.com/gh/realtymaps/map/tree/master)
 
 ___
 
