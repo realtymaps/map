@@ -14,7 +14,7 @@ module.exports = (app) ->
   logger.infoRoute 'route.user.logIn (GET)', routes.logIn
   app.get routes.logIn, userUtils.checkLogin, (req, res, next) -> Promise.try () ->
     # TODO: fix this to be the for-real way we display the login page
-    return res.sendFile config.FRONTEND_ASSETS_PATH+"/login-form-test.html", (err) ->
+    return res.sendFile config.FRONTEND_ASSETS_PATH+"/login-form.html", (err) ->
       if (err)
         logger.error "error encountered while serving login page: #{err}"
         next(err)
