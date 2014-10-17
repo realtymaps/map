@@ -3,16 +3,19 @@ karma = require 'gulp-karma' #forked to https://github.com/lazd/gulp-karma see b
 open  = require "gulp-open"
 concat = require 'gulp-concat'
 log = require('gulp-util').log
+plumber = require 'gulp-plumber'
 
 
 gulp.task 'coverage', ["spec"],->
   gulp.src('')
+  .pipe plumber()
   .pipe open '',
     url: "http://localhost:3000/coverage/chrome/index.html"
     app: "Google Chrome" #osx , linux: google-chrome, windows: chrome
 
 run = (config) ->
   gulp.src("")
+  .pipe plumber()
   .pipe karma(config)
 
 gulp.task 'karma', ->

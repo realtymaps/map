@@ -1,9 +1,11 @@
 gulp = require 'gulp'
 help = require('gulp-help')(gulp)
 clean = require 'gulp-rimraf'
+plumber = require 'gulp-plumber'
 
 gulp.task 'clean', () ->
   gulp.src('_public', { read: false })
+  .pipe plumber()
   .pipe(clean())
 
 gulp.task 'pre_develop_build', ['clean'], ->

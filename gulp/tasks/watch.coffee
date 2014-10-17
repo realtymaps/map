@@ -1,5 +1,6 @@
 gulp = require 'gulp'
 path = require '../paths'
+plumber = require 'gulp-plumber'
 
 gulp.task 'watch_rest', ->
   gulp.watch [
@@ -7,7 +8,9 @@ gulp.task 'watch_rest', ->
     path.assets,path.common
   ], ['build']
   gulp.watch ['app/**.*.coffee'], ['build']
-  gulp.watch path.html, ['html']
+  gulp.watch [path.html, path.jade], ['html']
+  gulp.watch [path.jade], ['jadeTemplates']
+  gulp.watch [path.stylus], ['stylus']
   gulp.watch path.bower, ['vendor']
 
 specCommon = "spec/common/**/*.coffee"

@@ -4,6 +4,7 @@ HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../paths'
 clean = require 'gulp-rimraf'
+plumber = require 'gulp-plumber'
 
 #end dependencies
 
@@ -25,6 +26,7 @@ gulp.task 'build_webpack', ->
     'app/styles/*.css'
     'app/styles/**/*.css'
   ]
+  .pipe plumber()
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
 
@@ -33,6 +35,7 @@ gulp.task 'clean_webpack', ->
     paths.dest.scripts + "/main.wp.js"
     paths.dest.scripts + "/*.map*"
   ]
+  .pipe plumber()
   .pipe clean()
 
 gulp.task 'webpack', ['clean_webpack'], ->
