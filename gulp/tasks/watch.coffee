@@ -9,7 +9,7 @@ gulp.task 'watch_rest', ->
   ], ['build']
   gulp.watch ['app/**.*.coffee'], ['build']
   gulp.watch [path.html, path.jade], ['html']
-  gulp.watch [path.jade], ['jadeTemplates']
+  gulp.watch [path.jade], ['jade']
   gulp.watch [path.stylus], ['stylus']
   gulp.watch path.bower, ['vendor']
 

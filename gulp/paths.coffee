@@ -14,8 +14,8 @@ module.exports =
   stylus: 'app/styles/**/*.styl'
   bower: 'bower_components'
   common: 'common/**'
-  html: ['app/html/**/*.html','_public/index.html','!app/html/index.html']
-  jade: ['app/html/**/*.jade']
+  html: ['app/html/*.html','app/html/**/*.html','_public/index.html','!app/html/index.html']
+  jade: ['app/html/*.jade','app/html/**/*.jade']
   assets: 'app/assets/*'
   lib:
     front:
