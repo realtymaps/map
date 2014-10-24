@@ -23,6 +23,7 @@ Config = (output, additionalPlugs) ->
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.jpg$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.woff$/, loader:"url?prefix=font/&limit=5000&mimetype=application/font-woff" }
+        { test: /\.ico$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.ttf$/, loader: "file?prefix=font/" }
         { test: /\.eot$/, loader: "file?prefix=font/" }
         { test: /\.svg$/, loader: "file?prefix=font/" }
