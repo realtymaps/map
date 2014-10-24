@@ -36,7 +36,7 @@ module.exports = (config, webpackConf) ->
   files: [
     '../_public/scripts/vendor.js'
     '../_public/styles/vendor.css'
-    '../_public/scripts/main.wp.js'
+    '../_public/scripts/app.min.js'
     '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
     '../spec/fixtures/*.html'
     '../spec/fixtures/*.json'

@@ -15,6 +15,7 @@ module.exports =
   bower: 'bower_components'
   common: 'common/**'
   html: ['app/html/**/*.html','_public/index.html','!app/html/index.html']
+  index: 'app/html/index.html'
   jade: ['app/html/**/*.jade']
   assets: 'app/assets/*'
   lib:
@@ -26,6 +27,8 @@ module.exports =
 
   dest: dest
   destFull:
+    assets: dest.root + dest.assets
     scripts: dest.root + dest.scripts
     styles: dest.root + dest.styles
     fonts: dest.root + dest.fonts
+    index: dest.root + 'index.html'

@@ -17,14 +17,16 @@ conf = configFact(
 )
 
 # console.log require '../../webpack.conf.coffee'
-gulp.task 'build_webpack', ->
+gulp.task 'build_webpack', ['vendor'], ->
   gulp.src [
-    'app/scripts/app.coffee'
-    'app/scripts/config.coffee'
+    'app/assets/**/*.jpg'
+    'app/assets/**/*.png'
+    'app/styles/**/*.css'
+    'app/styles/**/*.styl'
+    'app/html/views/**/*.jade'
+    'app/html/views/**/*.html'
     'app/scripts/**/*.coffee'
     'app/scripts/**/*.js'
-    'app/styles/*.css'
-    'app/styles/**/*.css'
   ]
   .pipe plumber()
   .pipe(gWebpack conf)
@@ -32,8 +34,8 @@ gulp.task 'build_webpack', ->
 
 gulp.task 'clean_webpack', ->
   gulp.src [
-    paths.dest.scripts + "/main.wp.js"
-    paths.dest.scripts + "/*.map*"
+    paths.destFull.scripts + "/main.wp.js"
+    paths.destFull.scripts + "/main.wp.min.js"
   ]
   .pipe plumber()
   .pipe clean()

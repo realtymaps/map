@@ -2,11 +2,10 @@
 <html lang="en" ng-app="realtymaps-app">
 
     <head>
-        <!-- inject:css -->
-        <!-- endinject -->
         <meta charset="utf-8">
         <title>RealtyMaps</title>
         <base href="/"/>
+        <link rel="stylesheet" href="styles/vendor.css">
     </head>
 
     <body>
@@ -29,7 +28,7 @@
                     <li><a href="#map">Map</a></li>
                     <li><a href="">Criteria</a></li>
                     <li><a href="">Results</a></li>
-                    <li id="navbar-login"><a>Sign In</a></li>
+                    <li id="navbar-login"><a href="#login">Sign In</a></li>
                 </ul>
             </div>
         </div>
@@ -39,23 +38,7 @@
         <div ng-view></div>
     </div>
 
-
-    <!-- FONTS -->
-    <!-- inject:eot -->
-    <!-- endinject -->
-
-    <!-- inject:svg -->
-    <!-- endinject -->
-
-    <!-- inject:tff -->
-    <!-- endinject -->
-
-    <!-- inject:woff -->
-    <!-- endinject -->
-    <!-- END FONTS -->
-
-    <!-- inject:js -->
-    <!-- endinject -->
+    <script src="scripts/vendor.js"></script>
     <script type="application/javascript" src="{%=o.htmlWebpackPlugin.assets.main%}"></script>
     </body>
 </html>

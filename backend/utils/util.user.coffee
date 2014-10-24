@@ -4,6 +4,7 @@ querystring = require 'querystring'
 logger = require '../config/logger'
 config = require '../config/config'
 
+httpStatus = require '../../common/utils/httpStatus'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
@@ -13,9 +14,9 @@ routes = require '../../common/config/routes'
 # does a redirect based on the "next" parameter, if present
 doNextRedirect = (req, res) -> Promise.try () ->
   if req.query.next
-    return res.redirect(req.query.next)
+    return res.json(redirectUrl: req.query.next)
   else
-    return res.redirect(routes.index)
+    return res.json(redirectUrl: routes.index)
 
 
 # caches permission and group membership values on the user session; we could
@@ -63,8 +64,7 @@ doLogin = (req, res, next) -> Promise.try () ->
     return false
   .then (user) ->
     if not user
-      req.query.errmsg = "Username and/or password does not match our records."
-      return res.redirect("#{routes.logIn}?#{querystring.stringify(req.query)}")
+      return next(status: httpStatus.UNAUTHORIZED, message: "Username and/or password does not match our records.")
     else
       req.user = user
       req.session.userid = user.id
