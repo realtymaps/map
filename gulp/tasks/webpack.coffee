@@ -39,5 +39,6 @@ gulp.task 'clean_webpack', ->
   .pipe plumber()
   .pipe clean()
 
-gulp.task 'webpack', ['clean_webpack'], ->
+# removed dependency on clean_webpack to make sure we're not introducing a race condition with the delete
+gulp.task 'webpack', ->
   gulp.start 'build_webpack'
