@@ -35,7 +35,6 @@ gulp.task 'build_webpack', ['vendor'], ->
 gulp.task 'clean_webpack', ->
   gulp.src [
     paths.destFull.scripts + "/main.wp.js"
-    paths.destFull.scripts + "/main.wp.min.js"
   ]
   .pipe plumber()
   .pipe clean()
