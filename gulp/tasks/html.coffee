@@ -17,7 +17,8 @@ toInject = [
 
 # log 'toInject: ' + toInject
 
-gulp.task 'html', ['jadeTemplates'], () ->
+#REMEMBER HTML has the dependency of JADE so you ONLY NEED HTML TASK 
+gulp.task 'html', ['jade'], () ->
   gulp.src(path.html)
   .pipe plumber()
 #  .pipe(logFile(es))
@@ -25,7 +26,7 @@ gulp.task 'html', ['jadeTemplates'], () ->
   .pipe(size())
   .pipe(gulp.dest '_public')
 
-gulp.task 'jadeTemplates', () ->
+gulp.task 'jade', () ->
   gulp.src(path.jade)
   .pipe plumber()
   .pipe jade pretty: true

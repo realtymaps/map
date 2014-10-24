@@ -8,6 +8,7 @@ _this = app.config(['GoogleMapApiProvider'.ns(), (GoogleMapApi) ->
 
 ]).config ['$locationProvider', ($locationProvider) ->
   $locationProvider.html5Mode(true)
+  # $locationProvider.hashPrefix("!")
 ]
 
 module.exports = _this

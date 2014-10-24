@@ -21,6 +21,5 @@ module.exports = app.config([
       templateUrl: 'views/500.html'
     .when '/404',
       templateUrl: 'views/404.html'
-    .otherwise
-        redirectTo: '/'
+    .otherwise redirectTo: '/'
 ])
