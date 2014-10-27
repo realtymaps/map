@@ -5,7 +5,7 @@ Config = (output, additionalPlugs) ->
   obj =
 #    watch:true
     verbose:false
-    # devtool: '#source-map'#'#inline-source-map'
+    devtool: '#inline-source-map'
     resolve:
       modulesDirectories: ['bower_components','node_modules']
     plugins: [
@@ -20,15 +20,15 @@ Config = (output, additionalPlugs) ->
         { test: /\.styl$/, loader: 'style!css!stylus' }
         { test: /\.scss$/, loader: "style!css!sass?outputStyle=expanded"}
         { test: /\.coffee$/, loader: 'coffee' }
-        { test: /\.png/, loader: 'url?limit=100000&minetype=image/png' }
-        { test: /\.jpg/, loader: 'file' }
-        {
-          test: /\.woff$/,
-          loader:"url?prefix=font/&limit=5000&mimetype=application/font-woff"
-        }
+        { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
+        { test: /\.jpg$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
+        { test: /\.woff$/, loader:"url?prefix=font/&limit=5000&mimetype=application/font-woff" }
+        { test: /\.ico$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.ttf$/, loader: "file?prefix=font/" }
         { test: /\.eot$/, loader: "file?prefix=font/" }
         { test: /\.svg$/, loader: "file?prefix=font/" }
+        { test: /\.jade$/, loader: "html!jade-html" }
+        { test: /\.html$/, loader: "html" }
       ]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"

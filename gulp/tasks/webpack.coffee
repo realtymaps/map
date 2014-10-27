@@ -5,6 +5,7 @@ configFact = require '../../webpack.conf.coffee'
 paths = require '../paths'
 clean = require 'gulp-rimraf'
 plumber = require 'gulp-plumber'
+_ = require 'lodash'
 
 #end dependencies
 
@@ -13,30 +14,18 @@ conf = configFact(
     filename: paths.dest.scripts + "/[name].wp.js"
     chunkFilename: paths.dest.scripts + "/[id].wp.js"
   ,
-  additionalPlugs = [new HtmlWebpackPlugin template: 'app/html/index.html']
+  additionalPlugs = [new HtmlWebpackPlugin template: paths.index]
 )
 
-# console.log require '../../webpack.conf.coffee'
-gulp.task 'build_webpack', ->
+gulp.task 'webpack', ['vendor'], ->
   gulp.src [
-    'app/scripts/app.coffee'
-    'app/scripts/config.coffee'
-    'app/scripts/**/*.coffee'
-    'app/scripts/**/*.js'
-    'app/styles/*.css'
-    'app/styles/**/*.css'
+    paths.assets
+    paths.styles
+    paths.stylus
+    paths.jade
+    paths.html
+    paths.scripts
   ]
   .pipe plumber()
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
-
-gulp.task 'clean_webpack', ->
-  gulp.src [
-    paths.dest.scripts + "/main.wp.js"
-    paths.dest.scripts + "/*.map*"
-  ]
-  .pipe plumber()
-  .pipe clean()
-
-gulp.task 'webpack', ['clean_webpack'], ->
-  gulp.start 'build_webpack'

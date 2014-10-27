@@ -18,7 +18,7 @@ run = (config) ->
   .pipe plumber()
   .pipe karma(config)
 
-gulp.task 'karma', ->
+gulp.task 'karma', ['build'], ->
   log "#{realtymaps.dashes} Karma Setup #{realtymaps.dashes}"
   run(
     configFile: 'karma/karma.conf.coffee'

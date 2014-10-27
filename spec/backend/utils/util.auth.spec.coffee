@@ -19,8 +19,8 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       done()
     resultcb = null
     res =
-      redirect: () ->
-        resultcb("redirect")
+      json: () ->
+        resultcb("json")
     next = (err) ->
       if err and err.status
         resultcb("error: #{err.status}")
@@ -33,10 +33,10 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       resultcb = resultBase.bind(null, done, "next")
       requireLogin req, res, next
 
-    it 'should call res.redirect() if req.user is not set and redirectOnFail is set truthy', (done) ->
+    it 'should call res.json() if req.user is not set and redirectOnFail is set truthy', (done) ->
       requireLogin = auth.requireLogin(redirectOnFail: true)
       req = {}
-      resultcb = resultBase.bind(null, done, "redirect")
+      resultcb = resultBase.bind(null, done, "json")
       requireLogin req, res, next
 
     it 'should call next() with an error object if req.user is not set and redirectOnFail is not set', (done) ->
@@ -57,8 +57,8 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       done()
     resultcb = null
     res =
-      redirect: () ->
-        resultcb("redirect")
+      json: () ->
+        resultcb("json")
     next = (err) ->
       if err and err.status
         resultcb("error: #{err.status}")
@@ -113,8 +113,8 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       resultcb = resultBase.bind(null, done, "next")
       requirePermissions req, res, next
 
-    it 'should call res.redirect() instead of next(err) if would fail and logoutOnFail is set truthy', (done) ->
+    it 'should call res.json() instead of next(err) if would fail and logoutOnFail is set truthy', (done) ->
       requirePermissions = auth.requirePermissions({all: ["perm1", "perm2"]}, {logoutOnFail: true})
       req = {session: {permissions: {perm1: true}, destroyAsync: () -> Promise.resolve()}, user: {}, query: {}}
-      resultcb = resultBase.bind(null, done, "redirect")
+      resultcb = resultBase.bind(null, done, "json")
       requirePermissions req, res, next

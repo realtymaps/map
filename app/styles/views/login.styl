@@ -1,6 +1,5 @@
-@require 'common'
-
 form.login
+  color: #DDD
   input[type=text]
   input[type=password]
     padding: 8px
@@ -42,6 +41,14 @@ form.login
   padding-bottom: 10px
   background-color: darkred
   $border-radius 5px
+
 .errmsg-wrapper
-  display: none
   overflow: hidden
+
+.errmsg-wrapper.ng-hide-add
+.errmsg-wrapper.ng-hide-remove
+  transition: all 0s ease-in-out
+
+.errmsg-wrapper.ng-hide-add-active
+.errmsg-wrapper.ng-hide-remove-active
+  transition: all 1s ease-in-out

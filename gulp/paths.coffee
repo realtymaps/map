@@ -9,13 +9,14 @@ dest =
 
 module.exports =
   spec: 'spec/**'
-  scripts: 'app/scripts/**'
+  scripts: 'app/scripts/**/*.*'
   styles: 'app/styles/**/*.css'
   stylus: 'app/styles/**/*.styl'
   bower: 'bower_components'
-  common: 'common/**'
-  html: ['app/html/*.html','app/html/**/*.html','_public/index.html','!app/html/index.html']
-  jade: ['app/html/*.jade','app/html/**/*.jade']
+  common: 'common/**/*.*'
+  html: 'app/html/**/*.html'
+  jade: 'app/html/**/*.jade'
+  index: 'app/html/index.html'
   assets: 'app/assets/*'
   lib:
     front:
@@ -26,6 +27,8 @@ module.exports =
 
   dest: dest
   destFull:
+    assets: dest.root + dest.assets
     scripts: dest.root + dest.scripts
     styles: dest.root + dest.styles
     fonts: dest.root + dest.fonts
+    index: dest.root + 'index.html'
