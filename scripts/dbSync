@@ -7,5 +7,5 @@ then
     cd "$DIR/.."
 fi
 
-./flyway/doFlyway.sh userManagement "$USER_DATABASE_URL" migrate
-./flyway/doFlyway.sh propertyData "$PROPERTY_DATABASE_URL" migrate
+./bower_components/dbsync/doFlyway.sh userManagement "$USER_DATABASE_URL" migrate
+./bower_components/dbsync/doFlyway.sh propertyData "$PROPERTY_DATABASE_URL" migrate
