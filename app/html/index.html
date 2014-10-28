@@ -2,11 +2,11 @@
 <html lang="en" ng-app="realtymaps-app">
 
     <head>
-        <!-- inject:css -->
-        <!-- endinject -->
         <meta charset="utf-8">
         <title>RealtyMaps</title>
         <base href="/"/>
+        <link rel="stylesheet" href="styles/vendor.css">
+        require("styles/main.styl")
     </head>
 
     <body>
@@ -21,13 +21,13 @@
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="#" ng-hide="hide-nav">
-                    <img src="/assets/logo.png">
+                  <img src="/assets/logo.png">
                 </a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
                     <li ng-hide="hide-nav"><a href="#map">Map</a></li>
-                    <li id="navbar-login"><a href="#users">Sign In</a></li>
+                    <li id="navbar-login"><a href="#login">Sign In</a></li>
                 </ul>
             </div>
         </div>
@@ -37,23 +37,7 @@
         <div class="page {{ pageClass }}" ng-view></div>
     </div>
 
-
-    <!-- FONTS -->
-    <!-- inject:eot -->
-    <!-- endinject -->
-
-    <!-- inject:svg -->
-    <!-- endinject -->
-
-    <!-- inject:tff -->
-    <!-- endinject -->
-
-    <!-- inject:woff -->
-    <!-- endinject -->
-    <!-- END FONTS -->
-
-    <!-- inject:js -->
-    <!-- endinject -->
+    <script src="scripts/vendor.js"></script>
     <script type="application/javascript" src="{%=o.htmlWebpackPlugin.assets.main%}"></script>
     </body>
 </html>

@@ -1,0 +1,25 @@
+.row
+  .logo.center-block
+    img(src="/assets/logo.png")
+form.login(action="", method="POST")
+  .errmsg-wrapper(ng-show="errorMessage")
+    .row.spacer
+      .col-md-4.col-md-offset-4.errmsg.danger {{errorMessage}} 
+  .row.spacer
+    .col-md-4.col-md-offset-4
+      label(for="username") Username:
+  .row
+    .col-md-4.col-md-offset-4
+      input#username(type="text",name="username",autofocus,ng-model="form.username")
+  .row.spacer
+    .col-md-4.col-md-offset-4
+      label(for="password") Password:
+  .row
+    .col-md-4.col-md-offset-4
+      input#password(type="password",name="password",ng-model="form.password")
+  .row.spacer
+    .col-md-2.col-md-offset-4
+      input(type="submit",value="Log In")
+    .col-md-2.checkbox-replace
+      input#remember_me(type="checkbox",name="remember_me",ng-model="form.remember_me")
+      label(for="remember_me") Keep me logged in

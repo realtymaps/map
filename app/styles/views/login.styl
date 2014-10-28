@@ -1,0 +1,54 @@
+form.login
+  color: #DDD
+  input[type=text]
+  input[type=password]
+    padding: 8px
+    color: black
+  input[type=text]
+  input[type=password]
+  input[type=submit]
+    width: 100%
+    height: 35px
+    $border-radius 5px
+    border: 2px solid #AAA
+  input[type=submit]
+    background-color: grey
+    border: 0
+    font-size: 16px
+    &:hover
+      background-color: #666
+  .row.spacer
+    margin-top: 25px
+  label
+    font-size: 16px
+    font-weight: normal
+  .checkbox-replace
+    checkbox(24px)
+  label[for=remember_me]
+    margin-top: 5px
+
+.copyright
+  margin-top: 50px
+  color: grey
+
+.logo
+  height: $logo-height
+  width: @height
+  overflow: hidden
+
+.errmsg
+  padding-top: 10px
+  padding-bottom: 10px
+  background-color: darkred
+  $border-radius 5px
+
+.errmsg-wrapper
+  overflow: hidden
+
+.errmsg-wrapper.ng-hide-add
+.errmsg-wrapper.ng-hide-remove
+  transition: all 0s ease-in-out
+
+.errmsg-wrapper.ng-hide-add-active
+.errmsg-wrapper.ng-hide-remove-active
+  transition: all 1s ease-in-out

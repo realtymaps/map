@@ -7,6 +7,7 @@ require '../factories/map.coffee'
   is in a specific factory where Map is a GoogleMap
 ###
 map = undefined
+
 module.exports = app
 
 .config(['GoogleMapApiProvider'.ns(), (GoogleMapApi) ->
@@ -16,7 +17,6 @@ module.exports = app
     libraries: 'weather,geometry,visualization,geometry'
 
 ])
-
 
 .controller 'MapCtrl'.ourNs(), [
   '$scope', 'Map'.ourNs(), 'MapOptions'.ourNs(), 'MapToggles'.ourNs()
@@ -29,5 +29,4 @@ module.exports = app
     $scope.showResults = Toggle.showResults
     $scope.showDetails = Toggle.showDetails
 
-  
 ]

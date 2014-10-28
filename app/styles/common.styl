@@ -370,3 +370,33 @@ body
 
 }
 
+
+$border-radius()
+  -webkit-border-radius arguments
+  -moz-border-radius arguments
+  border-radius arguments
+
+$scale()
+  transform: scale(arguments)
+  -webkit-transform: scale(arguments)
+  -ms-transform: scale(arguments)
+  -moz-transform: scale(arguments)
+  -o-transform: scale(arguments)
+
+$logo-height = 150px
+
+checkbox(size)
+  input[type=checkbox]
+    opacity: 0
+    position: absolute
+    top: 0
+    left: 0
+    & + label
+      padding-left: size+5px
+      height: size
+      display: inline-block
+      cursor: pointer
+      background: url(/assets/sprites.png) no-repeat 0 0
+    &:checked + label
+      background: url(/assets/sprites.png) no-repeat 0 -24px
+

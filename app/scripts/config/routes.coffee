@@ -9,21 +9,21 @@ module.exports = app.config([
 #    $urlRouterProvider.otherwise('/')
     $routeProvider
     .when '/map',
-      templateUrl: 'views/map.html'
+      template: require('../../html/views/map.jade')
       controller: 'MapCtrl'.ourNs()
     .when '/users',
-      templateUrl: 'views/users.html'
+      template: require('../../html/views/users.html')
       controller: 'UserCtrl'.ourNs()
-    .when '/test',
-      templateUrl: 'views/test.html'
-      controller: 'TestCtrl'.ourNs()
+    .when '/login',
+      template: require('../../html/views/login.jade')
+      controller: 'LoginCtrl'.ourNs()
     .when '/',
-      templateUrl: 'views/main.html'
+      template: require('../../html/views/main.html')
       controller: 'MainCtrl'.ourNs()
     .when '/500',
-      templateUrl: 'views/500.html'
+      template: require('../../html/views/500.html')
     .when '/404',
-      templateUrl: 'views/404.html'
+      template: require('../../html/views/404.html')
     .otherwise
         redirectTo: '/'
 ])

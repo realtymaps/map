@@ -22,9 +22,12 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            window: undefined
+            windowOptions:
+              forceClick: true
             markers: []
-            clickedMarker: ($markerModel) ->
-              $scope.map.window = $markerModel
+            clickedMarker: (gMarker, eventname, model) ->
+              $scope.map.window = model
 
         $log.info $scope.map
         $log.info "map.center: #{$scope.map.center}"
@@ -42,7 +45,7 @@ app.factory 'Map'.ourNs(), [
           new google.maps.LatLng b.latitude, b.longitude
 
         hash = encode toEncode
-
+        #query to county data, should be encapsulated in a service which has all the urls
         $http.get("#{routes.county.root}?bounds=#{hash}")
         .then (data) =>
           @scope.map.markers = data.data

@@ -1,11 +1,13 @@
 gulp = require 'gulp'
 mocha = require 'gulp-mocha'
+plumber = require 'gulp-plumber'
 
 require 'chai'
 require 'should'
 
 runMocha = (files, reporter = 'spec') ->
   gulp.src files, read: false
+  .pipe plumber()
   .pipe(mocha(reporter: reporter))
 
 gulp.task 'backendSpec', ->

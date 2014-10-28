@@ -54,7 +54,8 @@ app.use serveStatic config.FRONTEND_ASSETS_PATH
 app.use cookieParser config.SESSION.secret
 
 # body parsing middleware - above methodOverride()
-app.use bodyParser()
+app.use bodyParser.urlencoded(extended: true)
+app.use bodyParser.json()
 app.use multipart()
 app.use methodOverride()
 
