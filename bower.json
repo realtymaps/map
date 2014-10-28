@@ -20,5 +20,13 @@
     "angular-ui-router": "~0.2.10",
     "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/nmccready/dbsync.git#feature/nick_mc/DATA-10/corelogic",
     "csv2psql": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/nmccready/csv2psql.git"
+  },
+  "overrides": {
+    "csv2psql":{
+      "ignore":"true"
+    },
+    "dbsync":{
+      "ignore":"true"
+    }
   }
 }
