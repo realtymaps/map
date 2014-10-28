@@ -1,1 +1,1 @@
-web: ./scripts/stopServe && source ./scripts/envSync "realtymaps-map" && npm run db-sync && npm start
+web: ./scripts/stopServe && source ./scripts/envSync "realtymaps-map" && ./scripts/dbSync && npm start
