@@ -2,6 +2,10 @@
     .layer-panel(ng-show="showLayerPanel" id="layers-slide" ng-cloak)
         .header Map Layers
             .button(click ng-click="showLayerPanel = !showLayerPanel" type="button" class="close close-sm" aria-hidden="true") &times;
+        
+        //- TODO: hook up checkmark functionality
+        //- TODO: pull out SVGs from here
+        
         ul
             li(ng-click="toggleSold()")
                 .lp-check-icon(ng:class="{'active' : showSold }")
