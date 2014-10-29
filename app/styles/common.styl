@@ -4,12 +4,17 @@ base-font-size = 12px
 /* Set a variable based on result of mixin call */
 body-background = invert(#ccc)
 
+/* Set color variables */
+main-dark-blue = #313145
+medium-blue = #2B72BE
+
 /* Set some basic rules */
 body
     height: 100%
     width: 100%
-    background: #313145
+    background: main-dark-blue
     font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
+    overflow: hidden
 
 /* Move down content because we have a fixed navbar that is 50px tall */
 body
@@ -26,7 +31,7 @@ body
 
  /* Nav Bar */
 .navbar
-    background:#313145
+    background: main-dark-blue
     border: none
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
     font-weight: 100
@@ -96,8 +101,11 @@ body
     border-radius: 0
 
 .navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
-    background-color: #2B72BE
+    background-color: medium-blue
 
+.navbar-toggle
+    float: left
+    margin-left: 15px
 
 .navbar-toggle .icon-bar
     height:4px
@@ -105,6 +113,263 @@ body
 #side-nav-container
     position:absolute
     left:0
+
+
+/* PAGES
+============================================================================= */
+.page
+    bottom:0 
+    position:absolute 
+    text-align:center
+    top:50px  
+    width:100%
+    background: main-dark-blue 
+
+
+.page-test 
+    background:#00D0BC 
+    color:#00907c
+.page-about
+    background:#E59400
+    color:#a55400
+.page-contact
+    background:#ffa6bb
+    color:#9e0000
+
+/* ANIMATIONS
+============================================================================= */
+
+.page.ng-leave
+    z-index:8888
+    -webkit-animation:keepStill 0.5s both ease-in
+    -moz-animation:keepStill 0.5s  both ease-in
+    animation:keepStill 0.5s  both ease-in  
+
+.page.ng-enter
+    z-index:9999 
+    -webkit-animation:slideInUp 0.5s both ease-in
+    -moz-animation:slideInUp 0.5s both ease-in
+    animation:slideInUp 0.5s both ease-in   
+
+
+/* Slider Trays */
+#results-slide
+    transition: 0.15s all ease-in-out
+
+
+#results-slide.ng-hide-add, #results-slide.ng-hide-remove
+    display: block !important 
+    
+
+#results-slide.ng-hide-remove, #results-slide.ng-hide-add.ng-hide-add-active
+    margin-right: -500px
+    opacity: 1
+
+#results-slide.ng-hide-remove.ng-hide-remove-active, #results-slide.ng-hide-add
+    margin-right: 0
+    opacity: 1
+
+
+/* slide in from the right */
+@keyframes slideInRight {
+    from    { transform:translateX(100%); }
+    to      { transform: translateX(0); }
+}
+@-moz-keyframes slideInRight {
+    from    { -moz-transform:translateX(100%); }
+    to      { -moz-transform: translateX(0); }
+}
+@-webkit-keyframes slideInRight {
+    from    { -webkit-transform:translateX(100%); }
+    to      { -webkit-transform: translateX(0); }
+}
+
+/* slide out the right */
+@keyframes slideOutRight {
+    from    { transform: translateX(0);}
+    to      { transform:translateX(100%);}
+}
+@-moz-keyframes slideOutRight {
+    from    { -moz-transform:translateX(0); }
+    to      { -moz-transform: translateX(100%); }
+}
+@-webkit-keyframes slideOutRight {
+    from    { -webkit-transform:translateX(0); }
+    to      { -webkit-transform: translateX(100%); }
+}
+
+/* slide in from the bottom */
+@keyframes slideInUp {
+    from    { transform:translateY(100%); }
+    to      { transform: translateY(0); }
+}
+@-moz-keyframes slideInUp {
+    from    { -moz-transform:translateY(100%); }
+    to      { -moz-transform: translateY(0); }
+}
+@-webkit-keyframes slideInUp {
+    from    { -webkit-transform:translateY(100%); }
+    to      { -webkit-transform: translateY(0); }
+}
+
+/* slide in from the left */
+@keyframes slideInLeft {
+    from    { transform:translateX(-100%); }
+    to      { transform: translateX(0); }
+}
+@-moz-keyframes slideInLeft {
+    from    { -moz-transform:translateX(-100%); }
+    to      { -moz-transform: translateX(0); }
+}
+@-webkit-keyframes slideInLeft {
+    from    { -webkit-transform:translateX(-100%); }
+    to      { -webkit-transform: translateX(0); }
+}
+
+/* slide out from the left */
+@keyframes slideOutLeft {
+    from    { transform: translateX(100%);}
+    to      { transform:translateX(0);}
+}
+@-moz-keyframes slideOutLeft {
+    from    { -moz-transform:translateX(100%); }
+    to      { -moz-transform: translateX(0); }
+}
+@-webkit-keyframes slideOutLeft {
+    from    { -webkit-transform:translateX(100%); }
+    to      { -webkit-transform: translateX(0); }
+}
+
+/* keep page still */
+@-webkit-keyframes keepStill {
+    to { -webkit-transform:  translateX(0); }
+}
+@-moz-keyframes keepStill {
+    to { -moz-transform: translateX(0); }
+}
+@keyframes keepStill {
+    to { transform: translateX(0); }
+}
+
+
+/* Main Page
+============================================================================= */
+
+
+#search-bar-main
+    position: relative
+    width: 100%
+    margin-top:50px
+
+
+#search-bar-main input
+    width: 100%
+    height: 60px
+    bottom: 50px
+    border: none
+    background-color: rgba(255,255,255,.10)
+    border-bottom: 4px solid #FFF
+    padding: 10px
+    font-size: 15px
+    font-weight: 100
+    letter-spacing: 0.1em
+    color:#FFF
+
+
+#search-bar-main #btn
+    color:#FFFFFF
+    width:57px
+    height:57px
+    background-color: rgba(255,255,255,.3)
+    top: 0px
+    right: 0px
+    position: absolute
+
+
+#search-bar-main #btn:hover
+    background-color: medium-blue
+
+#search-bar-main #btn div 
+    font-size:20px
+    text-align: center
+    vertical-align: middle
+    line-height: 57px
+
+
+#search-bar
+    position: absolute
+    z-index:10000000
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3),0 4px 15px -5px rgba(0,0,0,0.0)
+
+@media (min-width: 768px) {
+    #search-bar-main input{
+        font-size: 18px;
+        letter-spacing: .2em;
+        }
+}
+
+@media (min-width: 1200px) {
+    #search-bar-main input{
+        font-size: 20px;
+        }
+}
+
+
+
+/* Hero Container
+============================================================================= */
+.heroContainer
+    width:90%;
+    margin: auto;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    height: 350px;
+
+
+.heroImage
+    width:100%
+    display:block
+    margin: 0 auto
+
+
+.heroImage img
+    width: 100%
+
+.heroText
+    font-weight: 100
+    font-size: 15px
+    text-align: center
+    letter-spacing: .2em
+    margin: 1.1363636363636365em 0 0 0
+    color: rgba(255, 255, 255, 0.51)
+
+@media (min-width: 768px) {
+    .heroContainer {
+        width:75%;
+    }
+
+    .heroText{
+        font-size: 20px;
+     }
+
+
+}
+
+@media (min-width: 1200px) {
+    
+    .heroContainer {
+        width:50%;
+    }
+
+    .heroText{
+        font-size: 22px;
+     }
+
+}
+
 
 $border-radius()
   -webkit-border-radius arguments
@@ -134,3 +399,4 @@ checkbox(size)
       background: url(/assets/sprites.png) no-repeat 0 0
     &:checked + label
       background: url(/assets/sprites.png) no-repeat 0 -24px
+
