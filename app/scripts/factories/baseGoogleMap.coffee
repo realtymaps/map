@@ -15,6 +15,7 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['Logger'.ns(),'$http','$t
         @activeMarker = undefined
 
         angular.extend @scope,
+          pageClass: 'page-map',
           map:
             bounds: {}
             options: options

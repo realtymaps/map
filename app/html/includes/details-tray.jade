@@ -1,0 +1,53 @@
+<!--Begin Detail Container-->
+.navbar-below.detail-container#results-slide(ng-show="showDetails")
+    .tray-close-light#detail-close(ng-click="showDetails = !showDetails")
+    #detail-list-inner
+        #detail-list
+            .photo(streetview="{{ selectedResult.lat }},{{ selectedResult.lng }}")
+                //img(src="http://maps.googleapis.com/maps/api/streetview?size=500x300&location={{ selectedResult.lat }},{{ selectedResult.lng }}&fov=90&heading=235&pitch=10&sensor=false")
+                //img(src="http://maps.googleapis.com/maps/api/streetview?size=500x300&location={{ selectedResult.lat }},{{ selectedResult.lng }}&fov=90&heading=235&pitch=10&sensor=false")
+                <div id="pano" style="width: 100%;height:100%"></div>
+            .info.container
+                .row
+                    .col-sm-8
+                        .address {{selectedResult.street_num + " " + selectedResult.street_name + " " + selectedResult.street_type + " " + selectedResult.street_ord}}
+                        .city-state-zip Naples, FL {{selectedResult.zipcode}}
+                    .col-sm-4
+                        .price {{selectedResult.display_price}}
+                        .property-status(ng-class="{sold: selectedResult.propertyStatus == propertyStatusSold, forsale: selectedResult.propertyStatus == propertyStatusForSale}") {{selectedResult.propertyStatus}}
+                .row.beds-baths-sqft
+                    .col-sm-12.detail-section-title Property Info
+                    .col-sm-3.beds
+                        span.data {{selectedResult.beds || "-"}}
+                        span.title Beds
+                    .col-sm-3.baths
+                        span.data {{selectedResult.baths || "-"}}
+                        span.title Baths
+                    .col-sm-3.sqft
+                        span.data {{selectedResult.living_area || "-"}}
+                        span.title Sq Ft
+                    .col-sm-3.year
+                        span.data {{selectedResult.year_built || "-"}}
+                        span.title Built
+                .row.owner-info
+                    .col-sm-12.detail-section-title Owner Info
+                    .col-sm-12 {{selectedResult.owner_name1}}
+                    .col-sm-12 {{selectedResult.owner_name2}}
+                    .col-sm-12 {{selectedResult.owner_name3}}
+                    .col-sm-12 {{selectedResult.owner_name4}}
+                    .col-sm-12 {{selectedResult.owner_name5}}
+                    .col-sm-12 {{selectedResult.owner_name5}}
+                    .col-sm-12 {{selectedResult.owner_city}}, {{selectedResult.owner_state}} {{selectedResult.owner_zipcode}}
+                .row.sale-info
+                    .col-sm-12.detail-section-title Historical Sales
+                    .col-sm-4 {{selectedResult.sale1_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    .col-sm-8 {{selectedResult.sale1_amount}}
+                    .col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    .col-sm-8 {{selectedResult.sale2_amount}}
+                    .col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    .col-sm-8 {{selectedResult.sale3_amount}}
+                    .col-sm-4 {{selectedResult.sale4_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    .col-sm-8 {{selectedResult.sale4_amount}}
+    #results-footer
+        .close(click="toggleDetails()") x
+<!--End Details Container-->
