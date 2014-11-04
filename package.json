@@ -22,7 +22,7 @@
     "test-gulp": "gulp gulpSpec",
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
-    "preinstall": "if ! (hash bowerfresh &> /dev/null);then npm install -g bowerfresh@0.0.1; fi",
+    "preinstall": "./scripts/preinstall",
     "postinstall": "bowerfresh; bower install",
     "clean": "gulp clean && rm -rf node_modules bower_components"
   },
