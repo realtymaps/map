@@ -20,11 +20,10 @@
     "angular-ui-router": "~0.2.10",
     "angular-animate": "~1.2.26",
     "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync.git"
+
   },
+  "sofresh": ["dbsync"],
   "overrides": {
-    "csv2psql":{
-      "ignore":"true"
-    },
     "dbsync":{
       "ignore":"true"
     }
