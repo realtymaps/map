@@ -26,10 +26,9 @@ Config = (output, additionalPlugs) ->
         { test: /\.ico$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.ttf$/, loader: "file?prefix=font/" }
         { test: /\.eot$/, loader: "file?prefix=font/" }
-        { test: /\.svg$/, loader: "file?prefix=font/" }
-        { test: /\.jade$/, loader: "html!jade-html" }
-        { test: /\.html$/, loader: "html" }
-      ]
+        { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
+        { test: /\.html$/, loader: "html?attrs=img:src" }
+      ] 
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"
     obj.output = output

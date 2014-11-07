@@ -4,71 +4,64 @@
             .button(click ng-click="showLayerPanel = !showLayerPanel" type="button" class="close close-sm" aria-hidden="true") &times;
         
         //- TODO: hook up checkmark functionality
-        //- TODO: pull out SVGs from here
         
         ul
             li(ng-click="toggleSold()")
                 .lp-check-icon(ng:class="{'active' : showSold }")
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="35px" height="20px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" style="height: 32px;"><polygon id="check-mark-icon" points="398.218,92.985 199.729,291.475 113.754,205.476 50,269.242 199.733,419.015 462,156.726 "/></svg>
+                    include ../svg/checkmark.svg
                     div(class="title") Sold
                     div(class="colorLegend colorSold")
             li(ng-click="toggleForSale()")
                 .lp-check-icon(ng:class="{'active' : showForSale}")
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="35px" height="20px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" style="height: 32px;"><polygon id="check-mark-icon" points="398.218,92.985 199.729,291.475 113.754,205.476 50,269.242 199.733,419.015 462,156.726 "/></svg>
+                    include ../svg/checkmark.svg
                     div(class="title") For Sale
                     div(class="colorLegend colorForSale")
             li(ng-click="toggleHouseNumbers()")
                 .lp-check-icon(ng:class="{'active' : showAddresses }")
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="35px" height="20px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" style="height: 32px;"><polygon id="check-mark-icon" points="398.218,92.985 199.729,291.475 113.754,205.476 50,269.242 199.733,419.015 462,156.726 "/></svg>
+                    include ../svg/checkmark.svg
                     div(class="title") Addresses
             li(ng-click="togglePrices()")
                 .lp-check-icon(ng:class="{'active' : showPrices }")
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="35px" height="20px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" style="height: 32px;"><polygon id="check-mark-icon" points="398.218,92.985 199.729,291.475 113.754,205.476 50,269.242 199.733,419.015 462,156.726 "/></svg>
+                    include ../svg/checkmark.svg
                     div(class="title") Prices
             li(ng-click="toggleStats()")
                 .lp-check-icon(ng:class="{'active' : showStats }")
-                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" x="0px" y="0px" width="35px" height="20px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve" xmlns:xml="http://www.w3.org/XML/1998/namespace" style="height: 32px;"><polygon id="check-mark-icon" points="398.218,92.985 199.729,291.475 113.754,205.476 50,269.242 199.733,419.015 462,156.726 "/></svg>
+                    include ../svg/checkmark.svg
                     div(class="title") Statistics
 
 
-     .toolbar-layer-icon.icon(ng-click="showLayerPanel = !showLayerPanel" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
-        <svg class="ml-filters-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" ><path d="M422.486,232.958L462,256L255.966,376.166L50,256l39.497-23.042l166.47,97.125L422.486,232.958z M255.966,415.915l-166.47-97.116L50,341.834L255.966,462L462,341.834l-39.514-23.035L255.966,415.915z M462,170.167L255.966,50 L50,170.167l205.966,120.167L462,170.167z"/></svg>
+     .toolbar-layer-icon.icon(ng-click="showLayerPanel = !showLayerPanel" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Layers")
+        include ../svg/layers.svg
         .toolbar-label Layers
 
     .toolbar-filters-icon.icon(ng-click="toggleNav('filters')" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
-        <svg class="ml-filters-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" ><path d="M50,279.694h119v69h-39.5V442h-40v-93.306H50V279.694z M197,247.25h39.5V442h40V247.25H316v-69  H197V247.25z M276.5,70h-40v78.25h40V70z M462,279.89H343v69h39.5V442h40v-93.11H462V279.89z M129.5,70h-40v179.694h40V70z   M422.5,70h-40v179.694h40V70z"/></svg>
+        include ../svg/criteria.svg
         .toolbar-label Filters
 
     .toolbar-results-icon.icon(ng-click="showResults = !showResults" ng:class="{'active' : selectedNav=='results' }" tool-tip placement="right" title="Results List")
-        <svg class="ml-results-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" ><path id="menu-2-icon" d="M123.027,413.5H50v-65h73.027V413.5z M123.027,223.5H50v65h73.027V223.5z M123.027,98.5H50v65h73.027V98.5  z M168.027,98.5v65H462v-65H168.027z M168.027,288.5H462v-65H168.027V288.5z M168.027,413.5H462v-65H168.027V413.5z"/></svg>
+        include ../svg/results.svg
         .toolbar-label Results
 
     .toolbar-location-icon.icon(findme="" ng:class="{'active' : map.showFollowMe }" tool-tip placement="right" title="My Location")
-        <svg class="ml-arrow-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M256,50c-93.061,0-168.5,75.439-168.5,168.5C87.5,313,169.43,375.333,256,462  c86.57-86.667,168.5-149,168.5-243.5C424.5,125.439,349.061,50,256,50z M276,335.339v-56.838h-40v56.838  c-52.199-8.492-93.42-49.669-101.979-101.846h56.971v-40h-57.023C142.411,141.164,183.694,99.838,236,91.328v57.157h40V91.328  c52.307,8.51,93.59,49.836,102.032,102.165h-57.024v40h56.972C369.421,285.67,328.2,326.847,276,335.339z"/></svg>
+        include ../svg/location.svg
         .toolbar-label Find Me
 
     .toolbar-zoomin-icon.icon(ng-click="zoom('+')" tool-tip placement="right" title="Zoom In")
-        <svg class="ml-zoomin-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M460.475,408.443L351.4,299.37c15.95-25.137,25.2-54.923,25.2-86.833   C376.601,122.914,303.687,50,214.062,50c-89.623,0-162.537,72.914-162.537,162.537s72.914,162.537,162.537,162.537   c30.326,0,58.733-8.356,83.055-22.876L406.918,462L460.475,408.443z M96.315,212.538c0-64.927,52.819-117.748,117.746-117.748   c64.926,0,117.748,52.821,117.748,117.748c0,64.926-52.822,117.747-117.748,117.747C149.135,330.285,96.315,277.464,96.315,212.538z    M282.276,231.882h-47.729v47.729h-36.859v-47.729h-47.73v-36.86h47.73v-47.729h36.859v47.729h47.729V231.882z"/>
+        include ../svg/zoom_in.svg
         .toolbar-label Zoom In
 
     .toolbar-zoomout-icon.icon(ng-click="zoom('-')" tool-tip placement="right" title="Zoom Out")
-        <svg class="ml-zoomout-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M460.475,408.443L351.4,299.37c15.95-25.137,25.2-54.923,25.2-86.833   C376.601,122.914,303.687,50,214.062,50c-89.623,0-162.537,72.914-162.537,162.537s72.914,162.537,162.537,162.537   c30.325,0,58.732-8.356,83.055-22.876L406.918,462L460.475,408.443z M96.315,212.538c0-64.927,52.819-117.748,117.746-117.748   c64.926,0,117.748,52.821,117.748,117.748c0,64.926-52.822,117.747-117.748,117.747C149.135,330.285,96.315,277.464,96.315,212.538z    M282.276,231.882H149.957v-36.86h132.319V231.882z"/>
+        include ../svg/zoom_out.svg
         .toolbar-label Zoom Out
 
     .toolbar-zoomout-icon.icon(ng-click="save()" tool-tip placement="right" title="Save Map")
-        <svg class="ml-zoomout-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M285.666,102.333h43V180h-43V102.333z M456,123v339H56V50h327L456,123z M150.5,202H354V80H150.5V202z   M398.333,269.666H113.667v159.666h284.666V269.666z"/>
+        include ../svg/save.svg
         .toolbar-label Save
 
     .toolbar-zoomout-icon.icon(ng-click="email()" data-toggle="modal" data-target="#emailMap" tool-tip placement="right" title="Email Map")
-        <svg class="ml-zoomout-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M50.423,103.407v305.186h411.153V103.407H50.423z M412.928,143.407L255.593,273.436L98.691,143.407   H412.928z M421.576,368.593H90.423V191.085L255.56,327.898l166.016-137.19V368.593z"/>
+        include ../svg/email.svg
         .toolbar-label Email
 
     .toolbar-zoomout-icon.icon(ng-click="print()" tool-tip placement="right" title="Print Map")
-        <svg class="ml-zoomout-svg" viewBox="0 0 512 512" enable-background="new 0 0 512 512" >
-        <path d="M408.5,138V50h-305v88H50v203h53.5v121h305V341H462V138H408.5z M368.5,422h-225V293h225V422z M368.5,138  h-225V90h225V138z M422.334,188.767c-6.682,0-12.1-5.418-12.1-12.101s5.418-12.1,12.1-12.1s12.101,5.417,12.101,12.1  S429.016,188.767,422.334,188.767z M296.334,380.189h-127.19v-22.515h127.19V380.189z M344,338.66H169.144v-22.515H344V338.66z"/>
+        include ../svg/print.svg
         .toolbar-label Print
