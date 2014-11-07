@@ -3,7 +3,6 @@ gWebpack = require 'gulp-webpack'
 HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../paths'
-clean = require 'gulp-rimraf'
 plumber = require 'gulp-plumber'
 _ = require 'lodash'
 

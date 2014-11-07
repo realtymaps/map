@@ -14,6 +14,7 @@ module.exports =
   stylus: 'app/styles/**/*.styl'
   bower: 'bower_components'
   common: 'common/**/*.*'
+  svg: 'app/html/svg/*.svg'
   html: 'app/html/**/*.html'
   jade: 'app/html/**/*.jade'
   index: 'app/html/index.html'
