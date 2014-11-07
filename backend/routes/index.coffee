@@ -16,6 +16,11 @@ module.exports = (app) ->
     logger.route "frontEndIndex: #{frontEndIndex}"
     res.sendFile frontEndIndex
 
+  # this wildcard fallback
+  logger.infoRoute 'wildcard', routes.wildcard
+  app.get routes.wildcard, (req, res) ->
+    res.redirect '/#'+req.originalUrl
+
   logAllRoutes = ->
     logger.info '\n'
     logger.info "available routes: "

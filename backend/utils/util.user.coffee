@@ -64,7 +64,7 @@ doLogin = (req, res, next) -> Promise.try () ->
     return false
   .then (user) ->
     if not user
-      return next(status: httpStatus.UNAUTHORIZED, message: "Username and/or password does not match our records.")
+      return next(status: httpStatus.UNAUTHORIZED, message: {error: "Username and/or password does not match our records."})
     else
       req.user = user
       req.session.userid = user.id
