@@ -1,5 +1,5 @@
 gulp = require 'gulp'
-karma = require 'gulp-karma' #forked to https://github.com/lazd/gulp-karma see below
+karma = require('karma').server
 open  = require "gulp-open"
 concat = require 'gulp-concat'
 log = require('gulp-util').log
@@ -18,20 +18,14 @@ run = (config) ->
   .pipe plumber()
   .pipe karma(config)
 
-gulp.task 'karma', ['build'], ->
+karmaConf = require.resolve('../../karma/karma.conf.coffee')
+log "KarmaConf #{karmaConf}"
+gulp.task 'karma', ['build'], (done) ->
   log "#{realtymaps.dashes} Karma Setup #{realtymaps.dashes}"
-  run(
-    configFile: 'karma/karma.conf.coffee'
-    action: 'run'
-    # NOTICE:
-    # noOverrideFiles -
-    #
-    # see issue https://github.com/lazd/gulp-karma/pull/18, why I forked to nmccready
-    # otherwise you will need the src below in gulpspec.coffee , spec task
-    noOverrideFiles: true
-  ).on 'error',
-    (err) -> throw err #new Error("Karma Specs failed!")
-    #Make sure failed tests cause gulp to exit non-zero
+  karma.start
+    configFile: karmaConf
+    singleRun: true
+    , done
 
 # gulp.task 'karma_watch', ->
 #   run
