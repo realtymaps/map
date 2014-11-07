@@ -4,21 +4,16 @@ del = require 'del'
 plumber = require 'gulp-plumber'
 util = require 'gulp-util'
 
-gulp.task 'clean', () ->
-  del(['_public'])
+gulp.task 'clean', (done) ->
+  # done is absolutley needed to let gulp known when this async task is done!!!!!!!
+  del ['_public'], done
 
-gulp.task 'pre_develop_build', ['clean'], ->
-  gulp.start ['spec','express']
+#gulp dependency hell
+gulp.task 'develop', ['clean', 'spec', 'express','watch']
 
-gulp.task 'develop', ['pre_develop_build'], ->
-  gulp.start 'watch'
+gulp.task 'develop_no_spec', ['clean', 'build','express','watch']
 
-gulp.task 'develop_no_sync', ['clean'], ->
-  gulp.start 'build','express','watch'
-
-#TODO: minify and all that jazz
-gulp.task 'prod', ['clean'], ->
-  gulp.start 'build','express'
+gulp.task 'prod', ['clean', 'build','express']
 
 gulp.task 'default', ['develop']
 
