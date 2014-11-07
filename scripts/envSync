@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+thisApp=${1:-realtymaps-map}
 
 localSync() {
     set -x
