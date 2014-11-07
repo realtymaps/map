@@ -16,7 +16,7 @@ conf = configFact(
   additionalPlugs = [new HtmlWebpackPlugin template: paths.index]
 )
 
-gulp.task 'webpack', ['vendor'], ->
+gulp.task 'webpack', ['otherAssets'], ->
   gulp.src [
     paths.assets
     paths.styles

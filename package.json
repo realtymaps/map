@@ -67,7 +67,6 @@
     "gulp-imagemin": "^1.0.x",
     "gulp-inject": "^1.0.2",
     "gulp-jade": "^0.8.0",
-    "gulp-karma": "https://github.com/realtymaps/gulp-karma/archive/master.tar.gz",
     "gulp-minify-css": "0.3.x",
     "gulp-mocha": "^1.1.0",
     "gulp-nodemon": "^1.0.4",
