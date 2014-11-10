@@ -25,5 +25,5 @@ module.exports = app.config([
     .when '/404',
       template: require('../../html/views/404.html')
     .otherwise
-        redirectTo: '/'
+      template: require('../../html/views/404.html')
 ])
