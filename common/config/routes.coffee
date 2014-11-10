@@ -6,18 +6,24 @@ resource =
   county: 'county'
   mls: 'mls'
 
+apiBase = '/api'
+
 module.exports =
+  apiWildcard:               "#{apiBase}/*"
+  wildcard:                  "/*"
+
   index:                     '/'
-  limits:                    '/limits'
-  userPermissions:           '/user_permissions/:id'
-  groupPermissions:          '/group_permissions/:id'
-  logIn:                     '/login'
-  logOut:                    '/logout'
-  version:                   '/version'
-  environmentSettings:       '/environment_settings/'
+  logInForm:                 '/login'
+  
+  limits:                    "#{apiBase}/limits"
+  userPermissions:           "#{apiBase}/user_permissions/:id"
+  groupPermissions:          "#{apiBase}/group_permissions/:id"
+  logIn:                     "#{apiBase}/login"
+  logOut:                    "#{apiBase}/logout"
+  version:                   "#{apiBase}/version"
+  environmentSettings:       "#{apiBase}/environment_settings/"
   #properties
   county:
-    root:                    "/#{resource.county}/"
-
+    root:                    "#{apiBase}/#{resource.county}/"
   mls:
-    root:                    "/#{resource.mls}/"
+    root:                    "#{apiBase}/#{resource.mls}/"

@@ -155,7 +155,7 @@ module.exports = {
     return (req, res, next) -> Promise.try () ->
       if not req.user
         if options.redirectOnFail
-          return res.json(redirectUrl: "#{routes.logIn}?#{querystring.stringify(next: req.originalUrl)}")
+          return res.json(redirectUrl: "#{routes.logInForm}?#{querystring.stringify(next: req.originalUrl)}")
         else
           return next(status: httpStatus.UNAUTHORIZED, message: "Please login to access this URI.")
       return process.nextTick(next)
