@@ -5,15 +5,13 @@ require '../../styles/views/toolbar.styl'
 ###
   Our Main Map Implementation
 ###
-routes = require '../../../common/config/routes.coffee'
 require '../services/httpStatus.coffee'
 encode = undefined
 
 app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$http', '$timeout', '$q',
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs()
-  ($log, $http, $timeout, $q,
-  GoogleMapApi, BaseGoogleMap, HttpStatus) ->
+  'uiGmapLogger', '$timeout', '$q',
+  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs(), 'Properties'.ourNs(),
+  ($log, $timeout, $q, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -22,6 +20,9 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            drawPolys:
+              polys: []
+              isEnabled: false
             window: undefined
             windowOptions:
               forceClick: true
@@ -39,14 +40,19 @@ app.factory 'Map'.ourNs(), [
           maps.visualRefresh = true
           $scope.map.polygons = polys
 
+      #subscribing to events (Angular's built in channel bubbling)
+      @scope.$onRootScope events.map.drawPolys.clear, ->
+        @scope.drawPolys.polys = []
+      @scope.$onRootScope events.map.drawPolys.isEnabled, (isEnabled) ->
+        @scope.drawPolys.isEnabled = isEnabled
 
-      updateMarkers:(map) =>
-        toEncode = _.map @scope.map.bounds, (b) ->
-          new google.maps.LatLng b.latitude, b.longitude
+      updateMarkers: (paths) =>
+        unless paths
+          paths = _.map @scope.map.bounds, (b) ->
+            new google.maps.LatLng b.latitude, b.longitude
 
-        hash = encode toEncode
+        hash = encode paths
         #query to county data, should be encapsulated in a service which has all the urls
-        $http.get("#{routes.county.root}?bounds=#{hash}")
-        .then (data) =>
+        properties.getCounty(hash).then (data) =>
           @scope.map.markers = data.data
-  ]
+]

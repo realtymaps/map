@@ -2,11 +2,8 @@ app = require '../app.coffee'
 
 #if this configuration gets much larger consider breaking this into a config folder
 
-module.exports = app.config([
-  '$routeProvider'
-  '$urlRouterProvider'
-  ($routeProvider, $urlRouterProvider) ->
-#    $urlRouterProvider.otherwise('/')
+module.exports = app.config([ '$routeProvider', '$urlRouterProvider',
+  ($routeProvider) ->
     $routeProvider
     .when '/map',
       template: require('../../html/views/map.jade')
@@ -24,6 +21,5 @@ module.exports = app.config([
       template: require('../../html/views/500.html')
     .when '/404',
       template: require('../../html/views/404.html')
-    .otherwise
-      template: require('../../html/views/404.html')
+    .otherwise template: require('../../html/views/404.html')
 ])
