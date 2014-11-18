@@ -1,14 +1,10 @@
-pipe = require("../pipeInit").create()
 path = require '../../paths'
-_ = pipe._
 
 log = require('gulp-util').log
 globDebug = require('../../debug/glob')
 
 bowerFilesLoader = require('main-bower-files')
 bowerPath = "bower_components/"
-
-selfHosted = [].mapPath path.lib.front.fonts
 
 bower = bowerFilesLoader
   checkExistence: true
@@ -20,7 +16,7 @@ bower = bower.filter (f) ->
 
 #globDebug bower, 'bower'
 
-pipeline = _.flatten([selfHosted, bower])
+pipeline = _.flatten([bower])
 
 #pipe.logToob "Vendor", pipeline
 module.exports = pipeline

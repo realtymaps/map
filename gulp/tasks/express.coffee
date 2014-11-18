@@ -18,11 +18,16 @@ options =
   execMap:
     coffee: 'coffee'
 
-gulp.task "express", ->
+run_express = (nodeArgs) ->
   log "ENV Port in gulp: " + config.PORT
+  options.nodeArgs = nodeArgs if nodeArgs
   nodemon options
 
+gulp.task "express_spec", ['spec'], ->
+  run_express()
+
+gulp.task "express", ->
+  run_express()
+
 gulp.task "express_debug", ->
-  log "ENV Port in gulp: " + config.PORT
-  options.nodeArgs = ['--debug=9999']
-  nodemon options
+  run_express ['--debug=9999']
