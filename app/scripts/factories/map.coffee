@@ -10,8 +10,8 @@ require '../services/httpStatus.coffee'
 encode = undefined
 
 app.factory 'Map'.ourNs(), [
-  'Logger'.ns(), '$http', '$timeout', '$q',
-  'GoogleMapApi'.ns(), 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs()
+  'uiGmapLogger', '$http', '$timeout', '$q',
+  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs()
   ($log, $http, $timeout, $q,
   GoogleMapApi, BaseGoogleMap, HttpStatus) ->
     class Map extends BaseGoogleMap

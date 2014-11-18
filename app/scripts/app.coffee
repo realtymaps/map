@@ -10,7 +10,7 @@ console.info "AppName: #{appName}"
 
 #ns() ~ ui-gmap ~ uiGmap
 app = window.angular.module appName, [
-  'google-maps'.ns()
+  'uiGmapgoogle-maps'
   'ngCookies'
   'ngResource'
   'ngRoute'

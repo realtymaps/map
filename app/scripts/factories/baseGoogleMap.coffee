@@ -5,7 +5,7 @@ app = require '../app.coffee'
 
   For example if only update markers if dragging has really changed. Also checking for zoom deltas (tooManyZoomChanges)
 ###
-module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['Logger'.ns(),'$http','$timeout', ($log) ->
+module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$timeout', ($log) ->
     class BaseGoogleMapCtrl extends BaseObject
       #all constructor arguments are for an instance (other stuff is singletons)
       constructor: (@scope, options, @zoomThresholdMill, @eventDispatcher) ->

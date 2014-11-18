@@ -15,7 +15,7 @@
     "angular-route": "~1.2.26",
     "angular-bootstrap": "~0.10.0",
     "angular-ui-utils": "~0.1.1",
-    "angular-google-maps": "~2.0.7",
+    "angular-google-maps": "~2.0.9",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
     "angular-animate": "~1.2.26",

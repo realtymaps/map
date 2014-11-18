@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 
 app.factory 'MapOptions'.ourNs(), [
-  'Logger'.ns(), '$http', '$timeout', '$q',
+  'uiGmapLogger', '$http', '$timeout', '$q',
   'Limits'.ourNs(), 'User'.ourNs()
   ($log, $http, $timeout, $q,
   Limits, User) ->

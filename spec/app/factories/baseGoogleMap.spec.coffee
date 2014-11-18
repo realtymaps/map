@@ -4,8 +4,8 @@ describe "BaseGoogleMap", ->
 
 
     angular.mock.module 'app'.ourNs()
-    angular.mock.module "google-maps.mocks"
-    angular.mock.module "google-maps".ns()
+    angular.mock.module "uiGmapgoogle-maps.mocks"
+    angular.mock.module "uiGmapgoogle-maps"
 
     #console.info "beforeEach.after modules"
     angular.mock.inject ['GoogleApiMock', (GoogleApiMock) =>

@@ -10,7 +10,7 @@ map = undefined
 
 module.exports = app
 
-.config(['GoogleMapApiProvider'.ns(), (GoogleMapApi) ->
+.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
   GoogleMapApi.configure
   # key: 'your api key',
     v: '3.17' #note 3.16 is slow and buggy on markers
@@ -25,7 +25,7 @@ module.exports = app
       map = unless map then new Map($scope, options) else map
     .catch (e) ->
       console.error e
-    
+
     $scope.showResults = Toggle.showResults
     $scope.showDetails = Toggle.showDetails
 
