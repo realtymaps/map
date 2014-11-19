@@ -44,11 +44,17 @@ module.exports =
     tquery = select
 
     if obj.bounds? and obj.bounds.length > 2
-      #  ( lat,lon lat,lon) ..etc
+      #  ( lon0 lat0, lonN latN, lon0 lat0 )
+      isFirst = true
       boundsStr = _.reduce obj.bounds, (all, next) ->
-        "#{all} #{next[0]},#{next[1]}"
+        unless isFirst
+          "#{all} #{next[0]} #{next[1]}, "
+        else
+          isFirst = false
+          "#{all[1]} #{all[0]}, #{next[1]} #{next[0]}, "
+      boundsStr += "#{obj.bounds[0][1]} #{obj.bounds[0][0]}"
       tquery += """
-      st_contains(county_data1_copy.geom,ST_GeomFromText('POLYGON((#{boundsStr}))', 4326))
+      ST_WITHIN(county_data1_copy.geom,ST_GeomFromText('MULTIPOLYGON(((#{boundsStr})))', 4326))
       """.space()
       connector = " AND "
     else
