@@ -5,5 +5,4 @@ app.constant 'events'.ourNs(),
     drawPolys:
       isEnabled: 'map.drawPolys.isEnabled'
       clear: 'map.drawPolys.clear'
-      need:  'map.drawPolys.need'
-      here:  'map.drawPolys.here'
+      query:  'map.drawPolys.query'

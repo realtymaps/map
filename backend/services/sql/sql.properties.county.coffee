@@ -43,12 +43,12 @@ module.exports =
   all: (obj) ->
     tquery = select
 
-    if obj.polys?
+    if obj.bounds? and obj.bounds.length > 2
+      #  ( lat,lon lat,lon) ..etc
+      boundsStr = _.reduce obj.bounds, (all, next) ->
+        "#{all} #{next[0]},#{next[1]}"
       tquery += """
-      ST_Within(county_data1_copy.geom,ST_GeomFromText('MULTIPOLYGON(((-81.799607 26.119916,-81.792183 26.119647,-81.789565 26.115909,
-      -81.789823 26.112556,-81.796045 26.111863,-81.799908 26.112749,-81.802611 26.118606,-81.799607 26.119916)),((-81.792097 26.104502,
-      -81.795058 26.102074,-81.797118 26.098837,-81.792397 26.098105,-81.787333 26.100263,-81.786819 26.103616,-81.789050 26.104849,
-      -81.792097 26.104502)))', 4326))
+      st_contains(county_data1_copy.geom,ST_GeomFromText('POLYGON((#{boundsStr}))', 4326))
       """.space()
       connector = " AND "
     else

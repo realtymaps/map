@@ -1,23 +1,25 @@
 #controller responsible for delegating map drawing (map-control) actions
 #mapDrawingCtrl
-app = require '../app.coffee'
+app = require '../../app.coffee'
+require '../../runners/run-templates.coffee'
 
 module.exports =
   app.controller 'MapDrawingCtrl'.ourNs(), [
-    '$scope', '$emit', 'events'.ourNs(),
-    ($scope, $emit, events) ->
+    '$scope', '$rootScope', 'events'.ourNs(),
+    ($scope, $rootScope, Events) ->
 
       angular.extend $scope,
         clearDrawnPolysClick: ->
-          $emit events.map.drawPolys.clear
+          $rootScope.$emit Events.map.drawPolys.clear
 
         queryDrawnPolysClick: ->
-          $emit events.map.drawPolys.need
+          $rootScope.$emit Events.map.drawPolys.query
 
         enableDrawnPolysClick: ->
           $scope.danger = !$scope.danger
-          $emit events.map.drawPolys.isEnabled, $scope.danger
+          $scope.enableDisableText = if $scope.danger then 'draw enabled' else 'draw disabled'
+          $rootScope.$emit Events.map.drawPolys.isEnabled, $scope.danger
 
-        enableDisableText: 'disabled'
+        enableDisableText: 'draw disabled'
         danger: false
   ]

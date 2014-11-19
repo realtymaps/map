@@ -1,4 +1,4 @@
-app = require '../scripts/app.coffee'
+app = require '../app.coffee'
 
 # should refresh browser
 # https://github.com/angular-ui/ui-router/issues/105

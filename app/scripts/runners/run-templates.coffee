@@ -1,6 +1,7 @@
-app = require '../scripts/app.coffee'
+app = require '../app.coffee'
+
 templates = [
-  {name: 'map-draw.tpl.html', tpl: require('jade!../../html/templates/map-draw.tpl.jade')}
+  {name: 'map-draw.tpl.html', tpl: require('../../html/views/templates/map-draw.tpl.jade')}
 ]
 
 #load all templates via webpack

@@ -1,7 +1,7 @@
 div
-  button.btn.btn-sm.btn-primary.pull-left(type='button', ng-class='{"btn-warning": danger}'
-    ng-click='enableDrawnPolysClick()' title='enable drawing search / disables dragging search') {{enableDisableText}}
-  button.btn.btn-sm.btn-primary.pull-left(type='button', ng-click='queryDrawnPolysClick()'
+  button.btn.btn-sm.btn-primary.pull-left(type='button', ng-class="{'btn-warning': danger}",
+    ng-click="enableDrawnPolysClick()", title='enable drawing search - disables dragging search') {{enableDisableText}}
+  button.btn.btn-sm.btn-primary.pull-left(type='button', ng-click="queryDrawnPolysClick()",
     title='search for propertoes within the drawing(s) bounds') find properties
-  button.btn.btn-sm.btn-primary.pull-left(type='button', ng-click='clearDrawnPolysClick()'
-    title='clear / erase properties') clear
+  button.btn.btn-sm.btn-primary.pull-left(type='button',
+    ng-click="clearDrawnPolysClick()", title='clear - erase properties') clear
