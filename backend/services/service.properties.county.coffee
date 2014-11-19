@@ -1,6 +1,13 @@
 db = require('../config/dbs').properties
 logger =  require '../config/logger'
-safeQuery = require('bookshelf.raw.safe')(logger).safeQuery
+fakeLogger =
+  info: ->
+    logger.info
+  log: ->
+  error: (msg)->
+    logger.error(msg)
+
+safeQuery = require('bookshelf.raw.safe')(fakeLogger).safeQuery
 countySql = require('./sql/sql.properties.county')
 status =  require '../../common/utils/httpStatus'
 

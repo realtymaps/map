@@ -9,7 +9,7 @@ describe "extensions > String".ourNs().ourNs('Common'), ->
 
   describe 'ourNs', ->
     it 'defaults to ', ->
-      ''.ourNs().should.be.eql 'realtymaps-'
+      ''.ourNs().should.be.eql 'RealtyMaps-'
 
     it 'can be overriden', ->
       ''.ourNs('test').should.not.be.eql 'test\--'

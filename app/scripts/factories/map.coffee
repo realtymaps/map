@@ -5,15 +5,13 @@ require '../../styles/views/toolbar.styl'
 ###
   Our Main Map Implementation
 ###
-routes = require '../../../common/config/routes.coffee'
 require '../services/httpStatus.coffee'
 encode = undefined
 
 app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$http', '$timeout', '$q',
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs()
-  ($log, $http, $timeout, $q,
-  GoogleMapApi, BaseGoogleMap, HttpStatus) ->
+  'uiGmapLogger', '$timeout', '$q',
+  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
+  ($log, $timeout, $q, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -22,12 +20,18 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            drawPolys:
+              draw: undefined
+              polygons: []
+              isEnabled: false
             window: undefined
             windowOptions:
               forceClick: true
             markers: []
             clickedMarker: (gMarker, eventname, model) ->
               $scope.map.window = model
+
+        @subscribe()
 
         $log.info $scope.map
         $log.info "map.center: #{$scope.map.center}"
@@ -39,14 +43,33 @@ app.factory 'Map'.ourNs(), [
           maps.visualRefresh = true
           $scope.map.polygons = polys
 
+      updateMarkers: (event, paths) =>
+        if not paths and not @scope.map.drawPolys.isEnabled
+          paths = _.map @scope.map.bounds, (b) ->
+            new google.maps.LatLng b.latitude, b.longitude
 
-      updateMarkers:(map) =>
-        toEncode = _.map @scope.map.bounds, (b) ->
-          new google.maps.LatLng b.latitude, b.longitude
+        return if not paths? or not paths.length > 0
 
-        hash = encode toEncode
+        hash = encode paths
         #query to county data, should be encapsulated in a service which has all the urls
-        $http.get("#{routes.county.root}?bounds=#{hash}")
-        .then (data) =>
+        Properties.getCounty(hash).then (data) =>
           @scope.map.markers = data.data
-  ]
+
+      subscribe: ->
+        #subscribing to events (Angular's built in channel bubbling)
+        @scope.$onRootScope Events.map.drawPolys.clear, =>
+          @scope.map.drawPolys.polygons = []
+
+        @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
+          @scope.map.drawPolys.isEnabled = isEnabled
+          if isEnabled
+            @scope.map.markers = []
+            @scope.map.drawPolys.draw()
+
+        @scope.$onRootScope Events.map.drawPolys.query, =>
+          polygons = @scope.map.drawPolys.polygons
+          paths = _.flatten polygons.map (polygon) ->
+            _.reduce(polygon.getPaths().getArray()).getArray()
+          @updateMarkers 'draw_tool', paths
+
+]

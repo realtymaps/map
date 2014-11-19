@@ -10,3 +10,5 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true', dragg
     div(ng-cloak='') {{map.window}}
 
   ui-gmap-polygon(ng-repeat='p in map.polygons track by p.id', path='p.path', stroke='p.stroke', visible='p.visible', geodesic='p.geodesic', fill='p.fill', fit='false', editable='p.editable', draggable='p.draggable', ng-cloak='')
+
+  include ./map-query-draw.jade

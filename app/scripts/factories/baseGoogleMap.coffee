@@ -34,13 +34,13 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$
 
         unBindWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) =>
           return if (newValue == oldValue)
-          @updateMarkers?(@map,'ready')
+          @updateMarkers? 'ready'
         , true
 
         @scope.$watch 'zoom', (newValue, oldValue) =>
           return if (newValue == oldValue)
           @eventDispatcher?.on_event(@constructor.name,'zoom')
-          @updateMarkers?(@map,'zoom') if !@scope.dragging and !@tooManyZoomChanges()
+          @updateMarkers? 'zoom' if !@scope.dragging and !@tooManyZoomChanges()
 
         $log.info 'BaseGoogleMapCtrl: ' + @
 

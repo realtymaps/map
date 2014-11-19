@@ -5,7 +5,8 @@ Config = (output, additionalPlugs) ->
   obj =
 #    watch:true
     verbose:false
-    devtool: '#inline-source-map'
+    #http://webpack.github.io/docs/configuration.html#devtool
+    devtool: '#eval'#'#eval-source-map' #eval is the fastest it is source map js, where eval-source-map is coffee and jade (ef that)
     resolve:
       modulesDirectories: ['bower_components','node_modules']
     plugins: [

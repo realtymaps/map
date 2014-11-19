@@ -40,20 +40,27 @@ select =
     """.space()
 
 module.exports =
-  all: (obj) ->
+  all: (obj, nextCb, limit = "500", doLimit = true) ->
     tquery = select
 
-    if obj.polys?
+    if obj.bounds? and obj.bounds.length > 2
+      doLimit = true
+      #  ( lon0 lat0, lonN latN, lon0 lat0 )
+      isFirst = true
+      #TODO this kind of crap should be moved to an external lib, latslons, geojson to POSTGIS strings or something
+      boundsStr = _.reduce obj.bounds, (all, next) ->
+        unless isFirst
+          "#{all} #{next[1]} #{next[0]}, "
+        else
+          isFirst = false
+          "#{all[1]} #{all[0]}, #{next[1]} #{next[0]}, "
+      boundsStr += "#{obj.bounds[0][1]} #{obj.bounds[0][0]}"
       tquery += """
-      ST_Within(county_data1_copy.geom,ST_GeomFromText('MULTIPOLYGON(((-81.799607 26.119916,-81.792183 26.119647,-81.789565 26.115909,
-      -81.789823 26.112556,-81.796045 26.111863,-81.799908 26.112749,-81.802611 26.118606,-81.799607 26.119916)),((-81.792097 26.104502,
-      -81.795058 26.102074,-81.797118 26.098837,-81.792397 26.098105,-81.787333 26.100263,-81.786819 26.103616,-81.789050 26.104849,
-      -81.792097 26.104502)))', 4326))
+      ST_WITHIN(county_data1_copy.geom,ST_GeomFromText('MULTIPOLYGON(((#{boundsStr})))', 4326))
       """.space()
       connector = " AND "
     else
       throw new errors.SqlTypeError("bounds is not defined or not an array") if !obj.bounds? or !_.isArray obj.bounds
-      #ST_MakeEnvelope(minLon, minLat, maxLon, maxLat, 4326);
       #http://gis.stackexchange.com/questions/60700/postgis-select-by-lat-long-bounding-box
       tquery += """
       county_data1_copy.geom && ST_MakeEnvelope(#{obj.bounds[0][1]},
@@ -95,7 +102,8 @@ module.exports =
       tquery += connector + "owner_city = '#{obj.city}'"
       connector = " AND "
 
-    tquery += " LIMIT 500"
+    if doLimit
+      tquery += " LIMIT #{limit}"
 
     logger.sql tquery
 
