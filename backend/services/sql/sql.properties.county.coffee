@@ -40,15 +40,17 @@ select =
     """.space()
 
 module.exports =
-  all: (obj) ->
+  all: (obj, nextCb, limit = "500", doLimit = true) ->
     tquery = select
 
     if obj.bounds? and obj.bounds.length > 2
+      doLimit = true
       #  ( lon0 lat0, lonN latN, lon0 lat0 )
       isFirst = true
+      #TODO this kind of crap should be moved to an external lib, latslons, geojson to POSTGIS strings or something
       boundsStr = _.reduce obj.bounds, (all, next) ->
         unless isFirst
-          "#{all} #{next[0]} #{next[1]}, "
+          "#{all} #{next[1]} #{next[0]}, "
         else
           isFirst = false
           "#{all[1]} #{all[0]}, #{next[1]} #{next[0]}, "
@@ -59,7 +61,6 @@ module.exports =
       connector = " AND "
     else
       throw new errors.SqlTypeError("bounds is not defined or not an array") if !obj.bounds? or !_.isArray obj.bounds
-      #ST_MakeEnvelope(minLon, minLat, maxLon, maxLat, 4326);
       #http://gis.stackexchange.com/questions/60700/postgis-select-by-lat-long-bounding-box
       tquery += """
       county_data1_copy.geom && ST_MakeEnvelope(#{obj.bounds[0][1]},
@@ -101,7 +102,8 @@ module.exports =
       tquery += connector + "owner_city = '#{obj.city}'"
       connector = " AND "
 
-    tquery += " LIMIT 500"
+    if doLimit
+      tquery += " LIMIT #{limit}"
 
     logger.sql tquery
 
