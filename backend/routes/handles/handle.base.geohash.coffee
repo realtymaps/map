@@ -11,16 +11,10 @@ transform = requestUtil.query.transform
 
 validation = require '../../utils/validation/util.validation.geohash'
 
-
-###
-  do validation later with express validation
-  (for ints, strings etc add to util.http.request)
-###
-module.exports = (serviceUri, fnName = 'getAll') ->
-  service = do require serviceUri
-  @getAll = memoize (req, res, next) ->
+validateHandle = (service, fnName) ->
+  memoize (req, res, next) ->
     #are all query params allowed
-    allowedObj = paramsAreAllowed req.query, validation.allAllowed, fnNAme
+    allowedObj = paramsAreAllowed req.query, validation.allAllowed, fnName
     #convert what we need to
     transform req.query, validation.transforms, next
     logger.debug req.query
@@ -28,4 +22,17 @@ module.exports = (serviceUri, fnName = 'getAll') ->
     exec allowedObj, next, res, ->
       service[fnName](req.query, next).then (json) ->
         res.send json
+
+validWrapService = (service, thing) ->
+  _.keys(service).forEach (fnName) ->
+    thing[fnName] = validateHandle service, fnName
+  thing
+
+###
+  do validation later with express validation
+  (for ints, strings etc add to util.http.request)
+###
+module.exports = (serviceUri, fnName = 'getAll') ->
+  service = do require serviceUri
+  _.extend @, validWrapService service, @
   @

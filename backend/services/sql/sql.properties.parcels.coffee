@@ -9,6 +9,7 @@ sqlStrings = require '../../utils/util.sql.strings'
 AND = sqlStrings.AND
 SELECTAll = sqlStrings.SELECTAll
 SELECT = sqlStrings.SELECT
+_limit = '1000'
 
 
 tableName = 'parcels'
@@ -43,7 +44,7 @@ selectPolys = sprintf(SELECT, """
 selectGeoJson = sprintf(SELECT, geoStrings.postgisProcs.ST_AsGeoJSON + '(geom_polys) as polys', tableName)
 
 # basic getAll function to take different selectors
-getAll = (obj, nextCb, selector = select, limit = "1000", doLimit = true) ->
+getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
   tquery = selector
 
   if obj.bounds? and obj.bounds.length > 2
