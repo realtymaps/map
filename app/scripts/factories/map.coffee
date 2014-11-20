@@ -38,10 +38,7 @@ app.factory 'Map'.ourNs(), [
 
         GoogleMapApi.then (maps) ->
           encode = maps.geometry.encoding.encodePath
-          polys = require('../mocks/polylines.coffee')()
-          console.info "Polys: #{polys}"
           maps.visualRefresh = true
-          $scope.map.polygons = polys
 
       updateMarkers: (event, paths) =>
         if not paths and not @scope.map.drawPolys.isEnabled
@@ -54,6 +51,11 @@ app.factory 'Map'.ourNs(), [
         #query to county data, should be encapsulated in a service which has all the urls
         Properties.getCounty(hash).then (data) =>
           @scope.map.markers = data.data
+
+        Properties.getParcelsPolys(hash).then (data) =>
+          @scope.map.polygons = data.data.map (d) ->
+            d.geom_polys = JSON.parse(d.geom_polys)
+            d
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)

@@ -9,7 +9,8 @@ sqlStrings = require '../../utils/util.sql.strings'
 AND = sqlStrings.AND
 SELECTAll = sqlStrings.SELECTAll
 SELECT = sqlStrings.SELECT
-_limit = '1000'
+DISTINCT = sqlStrings.DISTINCT
+_limit = '250'
 
 
 tableName = 'parcels'
@@ -37,11 +38,14 @@ addrscore,
 , tableName)
 
 selectPolys = sprintf(SELECT, """
+#{DISTINCT("rm_property_id")}
+rm_property_id,
+stcity as city,
+ststate as state,
 #{geoStrings.postgisProcs.ST_AsGeoJSON}(geom_polys) as geom_polys
 """
 , tableName)
 
-selectGeoJson = sprintf(SELECT, geoStrings.postgisProcs.ST_AsGeoJSON + '(geom_polys) as polys', tableName)
 
 # basic getAll function to take different selectors
 getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
