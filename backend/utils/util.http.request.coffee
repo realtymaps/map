@@ -30,6 +30,7 @@ module.exports =
           allowed: allowed
           badKeys: badKeys
 
+    #iterate through all params and transform / map each value back to the obj[param]
     transform: (obj, transforms, next) ->
       transforms.forEach (t) ->
         if obj[t.param]?

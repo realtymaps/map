@@ -123,6 +123,7 @@
     "should": "^4.0.4",
     "sinon": "^1.10.3",
     "sleep": "^1.1.8",
+    "sprintf-js": "^1.0.2",
     "stack-trace": "0.0.9",
     "style-loader": "0.8.1",
     "stylus-loader": "^0.4.0",
