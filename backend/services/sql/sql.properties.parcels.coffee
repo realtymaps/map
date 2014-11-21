@@ -4,7 +4,7 @@ errors = require './sql.errors'
 geoStrings = require '../../../common/utils/util.geom.strings'
 coordSys = require '../../../common/utils/enums/util.enums.map.coord_system'
 sqlStrings = require '../../utils/util.sql.strings'
-
+safeGen = require('../../utils/sql/util.sql.safegen')
 
 AND = sqlStrings.AND
 SELECTAll = sqlStrings.SELECTAll
@@ -49,6 +49,8 @@ ststate as state,
 
 # basic getAll function to take different selectors
 getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
+  throw new errors.SqlTypeError("bounds is not defined or not an array") if !obj.bounds? or !_.isArray obj.bounds
+
   tquery = selector
 
   if obj.bounds? and obj.bounds.length > 2
@@ -58,7 +60,6 @@ getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
       """.space()
     connector = AND
   else
-    throw new errors.SqlTypeError("bounds is not defined or not an array") if !obj.bounds? or !_.isArray obj.bounds
     #http://gis.stackexchange.com/questions/60700/postgis-select-by-lat-long-bounding-box
     tquery += """
       geom_polys && #{geoStrings.makeEnvelope(obj.bounds, coordSys.UTM)}
@@ -71,10 +72,15 @@ getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
 
   tquery
 
+getAllPolys = (queryOpts, next) ->
+  getAll(queryOpts, next, selectPolys)
+
 module.exports =
-  all: getAll
-  allPolys: (obj, nextCb, limit = _limit, doLimit = true) ->
-    getAll(obj, nextCb, selectPolys, limit, doLimit)
+  all: (queryOpts, next) ->
+    safeGen getAll, queryOpts, next
+
+  allPolys: (queryOpts, next) ->
+    safeGen getAllPolys, queryOpts, next
 
 
 ### THIS NEEDS TO BE REFACTORED, the whole connector stuff should be a function that automates the repetitiveness
