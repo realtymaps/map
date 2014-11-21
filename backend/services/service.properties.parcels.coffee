@@ -11,8 +11,8 @@ safeQuery = require('bookshelf.raw.safe')(fakeLogger).safeQuery
 sqlGen = require('./sql/sql.properties.parcels')
 status = require '../../common/utils/httpStatus'
 
-debug = ( (fnName = "", sql) ->
-  logger.debug "#{fnName} : calling with #{sql}" if sql?)
+debug = (fnName = "", sql) ->
+  logger.debug "#{fnName} : calling with #{sql}" if sql?
 
 module.exports = (overrideDb, overrideSafeQuery, overrideSqlGen, overrideLogger) ->
 
@@ -21,26 +21,16 @@ module.exports = (overrideDb, overrideSafeQuery, overrideSqlGen, overrideLogger)
   sqlGen = overrideSqlGen if overrideSqlGen
   logger = overrideLogger if overrideLogger
 
-  ###
-  @param queryOpts
-  ###
   getAll: (queryOpts, next) ->
-    try
-      sql = sqlGen.all queryOpts, next
-    catch e
-      switch e.name
-        when 'SqlTypeError'
-          next? status: status.BAD_REQUEST, message: e.message
-
+    sql = sqlGen.all queryOpts, next
     safeQuery db, sql, next, 'getAll'
 
-
   getAllPolys: (queryOpts, next) ->
-    try
-      sql = sqlGen.allPolys queryOpts, next
-    catch e
-      switch e.name
-        when 'SqlTypeError'
-          next? status: status.BAD_REQUEST, message: e.message
-
-    safeQuery db, sql, next, 'getAllPolys'
+    sql = sql = sqlGen.allPolys queryOpts, next
+    safeQuery(db, sql, next, 'getAllPolys')
+    .then (results) ->
+      #make the json string an object here to not be serialized twice
+      #also this keeps the front end from having to do this
+      results.map (poly) ->
+        poly.geom_polys = JSON.parse(poly.geom_polys)
+        poly

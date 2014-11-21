@@ -14,12 +14,14 @@ app.factory 'Map'.ourNs(), [
   ($log, $timeout, $q, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
+        $log.doLog = limits.options.doLog
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
           showWeather: false
           map:
+            doClusterMarkers: true
             drawPolys:
               draw: undefined
               polygons: []
@@ -38,12 +40,9 @@ app.factory 'Map'.ourNs(), [
 
         GoogleMapApi.then (maps) ->
           encode = maps.geometry.encoding.encodePath
-          polys = require('../mocks/polylines.coffee')()
-          console.info "Polys: #{polys}"
           maps.visualRefresh = true
-          $scope.map.polygons = polys
 
-      updateMarkers: (event, paths) =>
+      draw: (event, paths) =>
         if not paths and not @scope.map.drawPolys.isEnabled
           paths = _.map @scope.map.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
@@ -51,9 +50,21 @@ app.factory 'Map'.ourNs(), [
         return if not paths? or not paths.length > 0
 
         hash = encode paths
+        oldDoCluster = @scope.map.doClusterMarkers
+        @scope.map.doClusterMarkers = if @map.zoom < @scope.map.options.clusteringThresh then true else false
+        @scope.map.markers = [] if oldDoCluster is not @scope.map.doClusterMarkers
+
         #query to county data, should be encapsulated in a service which has all the urls
         Properties.getCounty(hash).then (data) =>
           @scope.map.markers = data.data
+
+#        $log.debug "current zoom: " + @scope.map.zoom
+
+        if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
+          Properties.getParcelsPolys(hash).then (data) =>
+            @scope.map.polygons = data.data
+        else
+          @scope.map.polygons = []
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
@@ -70,6 +81,6 @@ app.factory 'Map'.ourNs(), [
           polygons = @scope.map.drawPolys.polygons
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
-          @updateMarkers 'draw_tool', paths
+          @draw 'draw_tool', paths
 
 ]

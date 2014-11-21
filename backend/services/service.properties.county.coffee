@@ -44,11 +44,5 @@ overrideCountySql, overrideLogger) ->
   @param queryOpts
   ###
   getAll: (queryOpts, next) ->
-    try
-      sql = countySql.all queryOpts, next
-    catch e
-      switch e.name
-        when 'SqlTypeError'
-          next? status:status.BAD_REQUEST, message: e.message
-
+    sql = countySql.all queryOpts, next
     safeQuery db, sql, next, 'getAll'

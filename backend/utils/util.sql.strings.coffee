@@ -7,7 +7,11 @@ SELECT =
     where
     """.space()
 
+DISTINCT = (onVar) ->
+  "DISTINCT ON(#{onVar}) "
+
 module.exports =
   SELECT: SELECT
   SELECTAll: sprintf(SELECT, '*', '%s')
   AND: AND
+  DISTINCT: DISTINCT
