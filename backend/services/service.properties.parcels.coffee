@@ -27,4 +27,10 @@ module.exports = (overrideDb, overrideSafeQuery, overrideSqlGen, overrideLogger)
 
   getAllPolys: (queryOpts, next) ->
     sql = sql = sqlGen.allPolys queryOpts, next
-    safeQuery db, sql, next, 'getAllPolys'
+    safeQuery(db, sql, next, 'getAllPolys')
+    .then (results) ->
+      #make the json string an object here to not be serialized twice
+      #also this keeps the front end from having to do this
+      results.map (poly) ->
+        poly.geom_polys = JSON.parse(poly.geom_polys)
+        poly

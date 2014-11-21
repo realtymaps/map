@@ -10,7 +10,7 @@ AND = sqlStrings.AND
 SELECTAll = sqlStrings.SELECTAll
 SELECT = sqlStrings.SELECT
 DISTINCT = sqlStrings.DISTINCT
-_limit = '250'
+_limit = '500'
 
 
 tableName = 'parcels'

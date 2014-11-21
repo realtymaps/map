@@ -8,7 +8,9 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
   ui-gmap-layer(namespace='weather', type='WeatherLayer', show='map.showWeather')
 
 
-  ui-gmap-markers(models='map.markers', coords='"self"', idkey='"id"', click='map.clickedMarker', ng-cloak='')
+  ui-gmap-markers(models='map.markers', coords='"self"',
+    idkey='"id"', click='map.clickedMarker', ng-cloak=''
+    doCluster='map.doClusterMarkers')
 
   ui-gmap-window(coords='map.window', options="map.windowOptions")
     div(ng-cloak='') {{map.window}}
