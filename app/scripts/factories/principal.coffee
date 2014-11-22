@@ -2,6 +2,7 @@
 
 app = require '../app.coffee'
 backendRoutes = require '../../../common/config/routes.backend.coffee'
+permissionsUtil = require '../../../common/utils/permissions.coffee'
 
 
 app.factory 'principal'.ourNs(), ['$q', '$http', ($q, $http) ->
@@ -29,8 +30,8 @@ app.factory 'principal'.ourNs(), ['$q', '$http', ($q, $http) ->
     return _resolved
   isAuthenticated: () ->
     return _authenticated
-  hasPermission: (permission) ->
-    return _authenticated && _identity.permissions[permission]
+  hasPermission: (required) ->
+    return _authenticated && permissionsUtil.checkAllowed(required,_identity.permissions)
   isInGroup: (group) ->
     return _authenticated && _identity.groups[group]
   setIdentity: setIdentity
