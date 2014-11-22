@@ -5,6 +5,7 @@ module.exports =
     options:
       doLog: true
       streetViewControl: false
+      zoomControl: false
       panControl: false
       maxZoom: 20
       minZoom: 3

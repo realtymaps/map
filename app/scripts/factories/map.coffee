@@ -21,6 +21,8 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            changeZoom: (increment) ->
+              $scope.map.zoom += increment
             doClusterMarkers: true
             drawPolys:
               draw: undefined
