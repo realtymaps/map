@@ -1,0 +1,71 @@
+@import '../variables.styl'
+
+/* Filters Container
+============================================================================= */
+
+/* Extra small devices (phones, up to 480px) */
+/* No media query since this is the default in Bootstrap */
+.filters-container
+    margin: 0 0 0 0px
+    position: absolute
+    z-index: 2
+    bottom: 0
+    left: 0
+    width:100%
+    top: 0px
+    background-color: medium-blue
+
+
+#filters-close
+    width:35px
+    height:100%
+    font-size:1.3em
+    background-image: url("/assets/left-arrow-icon.png")
+    background-repeat:no-repeat
+    background-position:center center
+    position:absolute
+    right:-35px
+
+
+
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px)  
+
+    
+    .filters-container .close
+      display:none 
+
+    
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) 
+    .filters-container 
+      width:300px
+    
+    #results-list
+      width:auto
+
+    
+
+/* Large devices (large desktops, 1200px and up) */
+//@media (min-width: 1200px)
+    
+
+
+/*********************
+End Results Container
+**********************/
+
+.tray-close
+    background-color:rgba(0,0,0,.45)
+
+.tray-close-light
+    background-color:rgba(0,0,0,.15)
+
+.tray-close:hover
+    background-color:rgba(0,0,0,.55)
+
+.tray-close-light:hover
+    background-color:rgba(0,0,0,.25)
+

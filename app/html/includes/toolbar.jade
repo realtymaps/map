@@ -34,7 +34,7 @@
         include ../svg/layers.svg
         .toolbar-label Layers
 
-    .toolbar-filters-icon.icon(ng-click="toggleNav('filters')" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
+    .toolbar-filters-icon.icon(ng-click="showFilters = !showFilters" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
         include ../svg/criteria.svg
         .toolbar-label Filters
 
