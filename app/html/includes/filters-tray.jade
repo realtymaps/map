@@ -1,23 +1,39 @@
 <!--Begin Filters Container-->
-.filters-container.navbar-below#filters-slide(ng-show="showFilters")
+.filters-container.navbar-below#filters-slide(ng-show="showFilters" ng-controller="RealtyMaps-FiltersCtrl")
     .tray-close#filters-close(ng-click="showFilters = !showFilters")
-    .bedrooms Bedrooms
-        .btn-toolbar(role="toolbar")
-            .btn-group(role="group")
-                button.btn.btn-success(type="button") 1+
-                button.btn.btn-success(type="button") 2+
-                button.btn.btn-success(type="button") 3+
-                button.btn.btn-success(type="button") 4+
-                button.btn.btn-success(type="button") 5+
-                button.btn.btn-success(type="button") 6+
+    
+    .inner
+        .property-status   
+            .checkbox-inline(ng-repeat="status in filterValues.propertyStatus") {{ status }}
+                input(type="checkbox" id="propertyStatusCheckbox" value="{{status}}")
 
-    .baths Baths
-        .btn-toolbar(role="toolbar")
-            .btn-group(role="group")
-                button.btn.btn-success(type="button") 1+
-                button.btn.btn-success(type="button") 2+
-                button.btn.btn-success(type="button") 3+
-                button.btn.btn-success(type="button") 4+
-                button.btn.btn-success(type="button") 5+
-                button.btn.btn-success(type="button") 6+
+        .beds
+            div Beds
+            .btn-group(data-toggle="buttons" )
+                label.btn.btn-primary.active(ng-repeat="value in filterValues.beds") {{ value }}
+                    input(type="radio" name="options" id="option1" autocomplete="off" checked)
+
+        .baths 
+            div Baths
+            .btn-group(data-toggle="buttons")
+                label.btn.btn-primary.active(ng-repeat="value in filterValues.baths") {{ value }}
+                    input(type="radio" name="options" id="option1" autocomplete="off" checked)
+        
+        .row
+            .col-sm-6
+                input(ng-model="selectedFilters.priceMin")
+            .col-sm-6
+                input(ng-model="selecteFilters.priceMax")
+                    
+        .row
+            .col-sm-6
+                .search-price Acres Min
+                    select(name="Lot Size Min" ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresMin')
+
+            .col-sm-6
+                .search-price Acres Max
+                    select(name="Lot Size Min" ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresMax')
+
+
+
 <!--End Filters Container-->
