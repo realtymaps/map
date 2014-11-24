@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+foreman start -c web=1,dbsync=0
