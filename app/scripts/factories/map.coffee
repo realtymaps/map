@@ -1,7 +1,5 @@
 app = require '../app.coffee'
 require './baseGoogleMap.coffee'
-require '../../styles/views/map.styl'
-require '../../styles/views/toolbar.styl'
 ###
   Our Main Map Implementation
 ###
@@ -21,6 +19,8 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            changeZoom: (increment) ->
+              $scope.map.zoom += increment
             doClusterMarkers: true
             drawPolys:
               draw: undefined

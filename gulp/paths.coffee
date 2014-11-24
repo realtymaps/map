@@ -10,8 +10,8 @@ dest =
 module.exports =
   spec: 'spec/**'
   scripts: 'app/scripts/**/*.*'
-  styles: 'app/styles/**/*.css'
-  stylus: 'app/styles/**/*.styl'
+  styles: 'app/styles/*.css'
+  stylus: 'app/styles/main.styl'
   bower: 'bower_components'
   common: 'common/**/*.*'
   svg: 'app/html/svg/*.svg'
