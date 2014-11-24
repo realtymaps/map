@@ -8,7 +8,7 @@ app = require '../app.coffee'
 module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$timeout', ($log) ->
     class BaseGoogleMapCtrl extends BaseObject
       #all constructor arguments are for an instance (other stuff is singletons)
-      constructor: (@scope, options, @zoomThresholdMill, @eventDispatcher) ->
+      constructor: (@scope, options, @zoomThresholdMill) ->
         @map = {}
         @hasRun = false;
         @zoomChangedTimeMilli = new Date().getTime()
@@ -27,10 +27,7 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$
                 if !@hasRun
                   @map = map
                   @hasRun = true
-          markers: [],
-          active_markers: [],
-          onMarkerClicked: (marker) =>
-            @onMarkerClicked?(marker)
+          markers: []
 
         unBindWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) =>
           return if (newValue == oldValue)
@@ -39,7 +36,6 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$
 
         @scope.$watch 'zoom', (newValue, oldValue) =>
           return if (newValue == oldValue)
-          @eventDispatcher?.on_event(@constructor.name,'zoom')
           @draw? 'zoom' if !@scope.dragging and !@tooManyZoomChanges()
 
         $log.info 'BaseGoogleMapCtrl: ' + @
