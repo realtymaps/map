@@ -14,7 +14,7 @@ module.exports = app
   GoogleMapApi.configure
   # key: 'your api key',
     v: '3.17' #note 3.16 is slow and buggy on markers
-    libraries: 'weather,geometry,visualization,geometry'
+    libraries: 'visualization,geometry'
 
 ])
 

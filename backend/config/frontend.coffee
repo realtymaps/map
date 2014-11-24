@@ -1,7 +1,7 @@
 config = require './config'
 module.exports =
   map:
-    zoomThresholdMilliSeconds: 1250
+    zoomThresholdMilliSeconds: 1500
     options:
       doLog: true
       streetViewControl: false
