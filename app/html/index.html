@@ -19,14 +19,15 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="#" ng-hide="hide-nav">
+                <a class="navbar-brand" href="#{{$root.frontendRoutes.index.slice(1)}}" ng-hide="hide-nav">
                   <img src="/assets/logo.png">
                 </a>
             </div>
             <div class="collapse navbar-collapse">
                 <ul class="nav navbar-nav">
-                    <li ng-hide="hide-nav"><a href="#map">Map</a></li>
-                    <li id="navbar-login"><a href="#login">Sign In</a></li>
+                    <li ng-hide="hide-nav"><a href="#{{$root.frontendRoutes.map.slice(1)}}">Map</a></li>
+                    <li ng-hide="$root.principal.isAuthenticated()" class="navbar-right"><a href="#{{$root.frontendRoutes.login.slice(1)}}">Sign In</a></li>
+                    <li ng-show="$root.principal.isAuthenticated()" class="navbar-right"><a href="#{{$root.frontendRoutes.logout.slice(1)}}">Sign Out</a></li>
                 </ul>
             </div>
         </div>

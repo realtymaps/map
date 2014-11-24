@@ -12,17 +12,14 @@ resource = keysToValue
 apiBase = '/api'
 
 module.exports =
-  apiWildcard:               "#{apiBase}/*"
-  wildcard:                  "/*"
-
-  index:                     '/'
-  logInForm:                 '/login'
+  wildcard:                  "#{apiBase}/*"
 
   limits:                    "#{apiBase}/limits"
+  identity:                  "#{apiBase}/identity"
   userPermissions:           "#{apiBase}/user_permissions/:id"
   groupPermissions:          "#{apiBase}/group_permissions/:id"
-  logIn:                     "#{apiBase}/login"
-  logOut:                    "#{apiBase}/logout"
+  login:                     "#{apiBase}/login"
+  logout:                    "#{apiBase}/logout"
   version:                   "#{apiBase}/version"
   environmentSettings:       "#{apiBase}/environment_settings/"
 

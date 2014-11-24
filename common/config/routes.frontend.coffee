@@ -1,0 +1,10 @@
+module.exports =
+  wildcard:                  "/*"
+  index:                     '/'
+  login:                     '/login'
+  logout:                    '/logout'
+  map:                       '/map'
+  users:                     '/users'
+  accessDenied:              '/401'
+  notFound:                  '/404'
+  serverError:               '/500'

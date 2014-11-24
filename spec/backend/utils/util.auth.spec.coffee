@@ -83,6 +83,15 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
       finally
         caught.should.be.true
 
+    it "should throw an error if neither permissions is something other than an object or string", ->
+      caught = false
+      try
+        requirePermissions = auth.requirePermissions(42)
+      catch
+        caught = true
+      finally
+        caught.should.be.true
+
     it 'should call next() if req.session.permissions contains any key from permissions.any', (done) ->
       requirePermissions = auth.requirePermissions(any: ["perm1", "perm2"])
       req = {session: {permissions: {perm2: true}}, user: {}}
@@ -109,7 +118,7 @@ describe 'utils/auth'.ourNs().ourNs('Backend'), ->
 
     it 'should call next() if req.session.permissions contains the permission passed as a singleton', (done) ->
       requirePermissions = auth.requirePermissions("perm1")
-      req = {session: {permissions: {perm1: true, perm1: true}}, user: {}}
+      req = {session: {permissions: {perm1: true, perm2: true}}, user: {}}
       resultcb = resultBase.bind(null, done, "next")
       requirePermissions req, res, next
 

@@ -111,6 +111,7 @@ iterateSecurity = (req, res, security) ->
       # this next criterium ensures we don't clobber another update
       next_security_token: security.next_security_token
     .save
+      # it seems we get an error if an "update" modifies 0 rows...
       next_security_token: tokenHash
       current_security_token: security.next_security_token
       previous_security_token: security.current_security_token
@@ -123,6 +124,9 @@ iterateSecurity = (req, res, security) ->
       if new_security.next_security_token == tokenHash
         # only if we detect that we successfully performed a save...
         setSecurityCookie(req, res, token, security.remember_me)
+    .catch (err) ->
+      logger.warn "Error while iterating security token: #{err}"
+      return
 
 
 module.exports =

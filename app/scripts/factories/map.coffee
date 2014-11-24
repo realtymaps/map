@@ -1,7 +1,5 @@
 app = require '../app.coffee'
 require './baseGoogleMap.coffee'
-require '../../styles/views/map.styl'
-require '../../styles/views/toolbar.styl'
 ###
   Our Main Map Implementation
 ###
