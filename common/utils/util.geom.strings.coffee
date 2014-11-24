@@ -7,7 +7,7 @@ keysToValue = require './util.keys_to_values.coffee'
 #TODO: This lib is a candidate to be outsources as a OSS npm / bower package
 #/////////////////////////////// OBJECTS
 #postgis gis objects
-geom_enums =
+geomEnums =
   MULTIPOLYGON: undefined
   POLYGON: undefined
   POINT: undefined
