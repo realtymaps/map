@@ -1,25 +1,15 @@
+# see http://webpack.github.io/docs/context.html#require-context for documentation on the API being used below
+
+# require() all modules in the config directory
+directoryContext = require.context("../config", true, /^\.\/.*\.coffee$/)
+for request in directoryContext.keys()
+  directoryContext(request)
+
+# require() all modules in the runners directory
+directoryContext = require.context("../runners", true, /^\.\/.*\.coffee$/)
+for request in directoryContext.keys()
+  directoryContext(request)
+
+
 app = require '../app.coffee'
-
-require '../runners/run-templates.coffee'
-require '../runners/run.coffee'
-require '../config/location.coffee'
-require '../config/on-root-scope.coffee'
-require '../config/routes.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-
-module.exports = app.controller 'MainCtrl'.ourNs(), [ 'uiGmapLogger', 'Limits'.ourNs(), ($log, limitsPromise) ->
-  limitsPromise.then (limits) ->
-    $log.doLog = limits.doLog
-]
-
-app.run ["$rootScope", "principal".ourNs(), ($rootScope, principal) ->
-
-  $rootScope.frontendRoutes = frontendRoutes;
-  
-  $rootScope.principal = principal;
-  #bootstrap the idenitity check when the app loads
-  principal.getIdentity()
-  
-  $rootScope.$on "$routeChangeStart", (event, nextRoute) ->
-    console.log("$routeChangeStart: #{nextRoute?.$$route?.originalPath}")
-]
+module.exports = app.controller 'MainCtrl'.ourNs(), ->
