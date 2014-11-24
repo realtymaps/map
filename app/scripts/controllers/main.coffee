@@ -1,4 +1,6 @@
 # see http://webpack.github.io/docs/context.html#require-context for documentation on the API being used below
+# JWI: I tried to make a requireDirectory() function to handle the code below, but it failed because of how the
+#      webpack parser works.  So, for now it will have to remain this small bit of copy-pasta.
 
 # require() all modules in the config directory
 directoryContext = require.context("../config", true, /^\.\/.*\.coffee$/)
@@ -11,5 +13,6 @@ for request in directoryContext.keys()
   directoryContext(request)
 
 
+# main app controller
 app = require '../app.coffee'
 module.exports = app.controller 'MainCtrl'.ourNs(), ->
