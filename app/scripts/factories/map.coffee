@@ -19,6 +19,8 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            polygons: []
+            dragZoom:{}
             changeZoom: (increment) ->
               $scope.map.zoom += increment
             doClusterMarkers: true
@@ -38,9 +40,10 @@ app.factory 'Map'.ourNs(), [
         $log.info $scope.map
         $log.info "map.center: #{$scope.map.center}"
 
-        GoogleMapApi.then (maps) ->
+        GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
+          @scope.map.dragZoom.options = getDragZoomOptions()
 
       draw: (event, paths) =>
         if not paths and not @scope.map.drawPolys.isEnabled
@@ -83,4 +86,16 @@ app.factory 'Map'.ourNs(), [
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
+    getDragZoomOptions = ->
+      visualEnabled: true,
+      visualPosition: google.maps.ControlPosition.LEFT,
+      visualPositionOffset: new google.maps.Size(25, 425),
+      visualPositionIndex: null,
+      #TODO: change this image, DAN?
+      visualSprite: "http://maps.gstatic.com/mapfiles/ftr/controls/dragzoom_btn.png",
+      visualSize: new google.maps.Size(20, 20),
+      visualTips:
+        off: "Turn on",
+        on: "Turn off"
+    Map
 ]

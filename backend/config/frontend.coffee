@@ -5,7 +5,7 @@ module.exports =
     options:
       doLog: true
       streetViewControl: false
-      zoomControl: false
+      zoomControl: true
       panControl: false
       maxZoom: 20
       minZoom: 3
@@ -16,6 +16,5 @@ module.exports =
         center:
           latitude: 26.148111
           longitude: -81.790809
-
 
   doLog: config.LOGGING.FRONT_END
