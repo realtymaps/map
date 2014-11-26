@@ -8,14 +8,29 @@ module.exports =
     
     # query filters 
     values:
-    	propertyStatus: { "For Sale", "Pending", "Recently Sold", "Not For Sale"},
-    	beds: { "1+", "2+", "3+", "4+", "5+", "6+"},
-    	baths: { "1+", "2+", "3+", "4+", "5+", "6+"},
+    	propertyStatus: [
+    		{ label: "For Sale", value:"forSale" },
+    		{ label: "Pending", value:"pending" },
+    		{ label: "Recently Sold", value:"recentlySold"},
+    		{ label: "Not For Sale", value:"notForSale" }
+    	],
+    	beds:[
+        { value: 1, name: "1+" },
+        { value: 2, name: "2+" },
+        { value: 3, name: "3+" },
+        { value: 4, name: "4+" },
+        { value: 5, name: "5+" },
+        { value: 5, name: "6+" }
+      ],
+    	baths:[
+        { value: 1, name: "1+" },
+        { value: 2, name: "2+" },
+        { value: 3, name: "3+" },
+        { value: 4, name: "4+" },
+        { value: 5, name: "5+" },
+        { value: 5, name: "6+" }
+      ],
     	acresMin:[
-        {
-          value: 0,
-          name: "Any"
-        },
         {
           value: 0.1,
           name: ".10 acres"
@@ -58,10 +73,6 @@ module.exports =
         }
       ],
     	acresMax:[
-        {
-          value: 0,
-          name: "Any"
-        },
         {
           value: 0.1,
           name: ".10 acres"

@@ -4,35 +4,53 @@
     
     .inner
         .property-status   
-            .checkbox-inline(ng-repeat="status in filterValues.propertyStatus") {{ status }}
-                input(type="checkbox" id="propertyStatusCheckbox" value="{{status}}")
+            .checkbox-inline(ng-repeat="status in filterValues.propertyStatus")
+                .label {{ status.label }}
+                input(ng-model="$root.selectedFilters.status[status.value]" type="checkbox" id="propertyStatusCheckbox" value="'{{status.value}}'")
 
-        .beds
-            div Beds
-            .btn-group(data-toggle="buttons" )
-                label.btn.btn-primary.active(ng-repeat="value in filterValues.beds") {{ value }}
-                    input(type="radio" name="options" id="option1" autocomplete="off" checked)
-
-        .baths 
-            div Baths
-            .btn-group(data-toggle="buttons")
-                label.btn.btn-primary.active(ng-repeat="value in filterValues.baths") {{ value }}
-                    input(type="radio" name="options" id="option1" autocomplete="off" checked)
-        
+        //.row
+            .col-sm-12
+                .label Beds
+                .btn-group(data-toggle="buttons")
+                    label.btn.btn-default( ng-repeat="value in filterValues.beds") {{ value }}
+                        input(ng-model="$root.selectedFilters.beds" type="radio" name="options" id="option1" value="'{{value}}'")
         .row
             .col-sm-6
-                input(ng-model="selectedFilters.priceMin")
+                .label Beds
+                select(ng-model="$root.selectedFilters.beds" ng-options='c.value as c.name for c in filterValues.beds')
+
+
             .col-sm-6
-                input(ng-model="selecteFilters.priceMax")
+                .label Baths
+                select(ng-model="$root.selectedFilters.baths" ng-options='c.value as c.name for c in filterValues.baths')
+
+        .row
+            .col-sm-6
+                .label Price Min
+                input(valid-number currency-input ng-model="$root.selectedFilters.priceMin")
+            .col-sm-6
+                .label Price Max
+                input(valid-number currency-input ng-model="$root.selectedFilters.priceMax")
                     
         .row
             .col-sm-6
-                .search-price Acres Min
-                    select(name="Lot Size Min" ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresMin')
+                .label Sqft Min
+                input(valid-number ng-model="$root.selectedFilters.sqftMin")
+
 
             .col-sm-6
-                .search-price Acres Max
-                    select(name="Lot Size Min" ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresMax')
+                .label Sqft Max
+                input(valid-number ng-model="$root.selectedFilters.sqftMax")
+
+        .row
+            .col-sm-6
+                .label Acres Min
+                select(name="Lot Size Min" ng-model="$root.selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresMin')
+
+
+            .col-sm-6
+                .label Acres Max
+                select(name="Lot Size Min" ng-model="$root.selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresMax')
 
 
 
