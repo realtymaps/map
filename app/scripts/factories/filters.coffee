@@ -11,7 +11,6 @@ module.exports =
     	propertyStatus: [
     		{ label: "For Sale", value:"forSale" },
     		{ label: "Pending", value:"pending" },
-    		{ label: "Recently Sold", value:"recentlySold"},
     		{ label: "Not For Sale", value:"notForSale" }
     	],
     	beds:[
