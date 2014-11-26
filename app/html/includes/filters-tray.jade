@@ -3,10 +3,10 @@
     .tray-close#filters-close(ng-click="showFilters = !showFilters")
     
     .inner
-        .property-status   
+        .row   
             .checkbox-inline(ng-repeat="status in filterValues.propertyStatus")
-                .label {{ status.label }}
-                input(ng-model="$root.selectedFilters.status[status.value]" type="checkbox" id="propertyStatusCheckbox" value="'{{status.value}}'")
+                input.checkbox(ng-model="$root.selectedFilters.status[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}")
+                label(for="{{status.value}}") {{ status.label }}
 
         //.row
             .col-sm-12
@@ -27,20 +27,20 @@
         .row
             .col-sm-6
                 .label Price Min
-                input(currency-input ng-model="$root.selectedFilters.priceMin")
+                input(type="text" currency-input ng-model="$root.selectedFilters.priceMin")
             .col-sm-6
                 .label Price Max
-                input(currency-input ng-model="$root.selectedFilters.priceMax")
+                input(type="text" currency-input ng-model="$root.selectedFilters.priceMax")
                     
         .row
             .col-sm-6
                 .label Sqft Min
-                input(valid-number ng-model="$root.selectedFilters.sqftMin")
+                input(type="text" valid-number ng-model="$root.selectedFilters.sqftMin")
 
 
             .col-sm-6
                 .label Sqft Max
-                input(valid-number ng-model="$root.selectedFilters.sqftMax")
+                input(type="text" valid-number ng-model="$root.selectedFilters.sqftMax")
 
         .row
             .col-sm-6

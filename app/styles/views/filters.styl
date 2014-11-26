@@ -15,14 +15,60 @@
     top: 0px
     background-color: rm-medium-blue
 
-.filters-container .label
-    color:#FFF
-    font-size: 18px
-    font-weight: 200
+    .row
+        margin-bottom:20px
 
-.filters-container .inner{
-    padding: 10px
-}
+    .inner
+        padding: 20px
+
+    .label
+        color:#FFF
+        font-size: 18px
+        font-weight: 200
+        padding: 0
+        display: block
+        text-align: left
+        margin-bottom:4px
+        display:block;
+
+    input[type="text"], select
+        height: 35px
+        width:100%
+        border-radius:0
+        border:none
+        -webkit-appearance: none
+        padding-left: 10px
+        font-size: 20px
+
+    input[type="checkbox"].checkbox
+        display: none
+
+    input[type="checkbox"].checkbox + label
+        display: inline;
+        position: relative;
+        background-color: none
+        border: 1px solid #FFF
+        
+        /*label styling*/
+        padding: 8px
+        font-size: 16px
+        font-weight: 200
+        line-height: 14px
+        color: rm-translucent-white
+        vertical-align: baseline
+        white-space: nowrap
+
+
+    
+    input[type="checkbox"].checkbox:checked + label
+        background-color: rm-highlight-green
+        color: #FFF
+        border-color: rm-highlight-green
+    
+
+    input[type="checkbox"].checkbox:disabled + label
+        opacity: 0.5
+    
 
 
 #filters-close
@@ -34,7 +80,6 @@
     background-position:center center
     position:absolute
     right:-35px
-
 
 
 
