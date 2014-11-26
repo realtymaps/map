@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-require '../../styles/views/results.styl'
 
 ###
   Results Tray
@@ -7,5 +6,4 @@ require '../../styles/views/results.styl'
 
 app.factory 'results'.ourNs(), [
   () ->
-
-  ]
+]

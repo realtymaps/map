@@ -8,15 +8,7 @@ httpStatus = require '../../common/utils/httpStatus'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
-routes = require '../../common/config/routes'
-
-
-# does a redirect based on the "next" parameter, if present
-doNextRedirect = (req, res) -> Promise.try () ->
-  if req.query.next
-    return res.json(redirectUrl: req.query.next)
-  else
-    return res.json(redirectUrl: routes.index)
+frontendRoutes = require '../../common/config/routes.frontend.coffee'
 
 
 # caches permission and group membership values on the user session; we could
@@ -44,21 +36,22 @@ cacheUserValues = (req) ->
     logger.error "error caching user values for user: #{req.user.username}"
     Promise.reject(err)
 
-
-# function used to check for an existing login if someone navigates manually 
-# to the login page
-checkLogin = (req, res, next) -> Promise.try () ->
-  logger.debug "checking for already logged-in user"
-  if not req.user then return next()
-  logger.debug "existing session found for username: #{req.user.username}"
-  return module.exports.doNextRedirect(req, res)
-
-
-# actually handle login authentication, and do all the things needed for a new
-# login session
+    
+# handle login authentication, and do all the things needed for a new login session
 doLogin = (req, res, next) -> Promise.try () ->
-  logger.debug "attempting to do login for username: #{req.body.username}"
-  userService.verifyPassword(req.body.username, req.body.password)
+  if req.user
+    # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
+    logger.debug "attempting to log user out (someone is logging in): #{req.user.username}"
+    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
+    .then () ->
+      req.user = null
+      req.session.regenerateAsync()
+  else
+    promise = Promise.resolve()
+
+  promise.then () ->
+    logger.debug "attempting to do login for username: #{req.body.username}"
+    userService.verifyPassword(req.body.username, req.body.password)
   .catch (err) ->
     logger.debug "failed authentication: #{err}"
     return false
@@ -76,7 +69,10 @@ doLogin = (req, res, next) -> Promise.try () ->
       .then () ->
         sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
       .then () ->
-        module.exports.doNextRedirect(req, res)
+        identity =
+          permissions: req.session.permissions
+          groups: req.session.groups
+        return res.json(identity: identity)
   .catch (err) ->
     logger.error "unexpected error during doLogin(): #{err}"
     next(err)
@@ -92,16 +88,14 @@ doLogout = (req, res, next) -> Promise.try () ->
   else
     promise = Promise.resolve()
   promise.then () ->
-    return module.exports.doNextRedirect(req, res)
+    return res.json(identity: null)
   .catch (err) ->
     logger.error "error logging out user: #{err}"
     next(err)
 
 
 module.exports =
-  doNextRedirect: doNextRedirect
   cacheUserValues: cacheUserValues
-  checkLogin: checkLogin
   doLogin: doLogin
   doLogout: doLogout
  

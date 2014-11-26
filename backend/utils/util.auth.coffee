@@ -8,7 +8,8 @@ config = require '../config/config'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
-routes = require '../../common/config/routes'
+frontendRoutes = require '../../common/config/routes.frontend.coffee'
+permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
 httpStatus = require '../../common/utils/httpStatus'
 
@@ -155,7 +156,7 @@ module.exports = {
     return (req, res, next) -> Promise.try () ->
       if not req.user
         if options.redirectOnFail
-          return res.json(redirectUrl: "#{routes.logInForm}?#{querystring.stringify(next: req.originalUrl)}")
+          return res.json(redirectUrl: "#{frontendRoutes.login}?#{querystring.stringify(next: req.originalUrl)}")
         else
           return next(status: httpStatus.UNAUTHORIZED, message: "Please login to access this URI.")
       return process.nextTick(next)
@@ -168,37 +169,21 @@ module.exports = {
 #     access the given route; can either be a single string, or an object
 #     with either "any" or "all" as a key and an array of strings as a value  
 #   options:
-#     logoutOnFail: whether to redirect to the logout page, default false
+#     logoutOnFail: whether force a logout on failure, default false
   requirePermissions: (permissions, options = {}) ->
     defaultOptions =
       logoutOnFail: false
     options = _.merge(defaultOptions, options)
-    if typeof(permissions) is "string"
-      permissions = { any: [permissions] }
     # don't allow strange inputs
-    if permissions.all and permissions.any
-      throw new Error("Both 'all' and 'any' permission semantics may not be used on the same route.")
-    if not permissions.all and not permissions.any
-      throw new Error("No permissions specified.")
+    if typeof(permissions) == 'object'
+      if permissions.all and permissions.any
+        throw new Error("Both 'all' and 'any' permission semantics may not be used on the same route.")
+      if not permissions.all and not permissions.any
+        throw new Error("No permissions specified.")
+    else if typeof(permissions) != 'string'
+      throw new Error("Bad permissions object")
     return (req, res, next) -> Promise.try () ->
-      granted = false
-      if req.session.permissions
-        if permissions.any
-          # we only need one of the permissions in the array
-          for permission in permissions.any
-            if req.session.permissions[permission]
-              logger.debug "access allowed because user has '#{permission}' permission"
-              granted = true
-              break
-        else if permissions.all
-          # we need all the permissions in the array
-          granted = true
-          for permission in permissions.all
-            if not req.session.permissions[permission]
-              logger.debug "access denied because user lacks '#{permission}' permission"
-              granted = false
-              break
-      if not granted
+      if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
         logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
         if options.logoutOnFail
           return userUtils.doLogout(req, res, next)

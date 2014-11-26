@@ -46,11 +46,11 @@
         include ../svg/location.svg
         .toolbar-label Find Me
 
-    .toolbar-zoomin-icon.icon(ng-click="zoom('+')" tool-tip placement="right" title="Zoom In")
+    .toolbar-zoomin-icon.icon(ng-click="map.changeZoom(+1)" tool-tip placement="right" title="Zoom In")
         include ../svg/zoom_in.svg
         .toolbar-label Zoom In
 
-    .toolbar-zoomout-icon.icon(ng-click="zoom('-')" tool-tip placement="right" title="Zoom Out")
+    .toolbar-zoomout-icon.icon(ng-click="map.changeZoom(-1)" tool-tip placement="right" title="Zoom Out")
         include ../svg/zoom_out.svg
         .toolbar-label Zoom Out
 

@@ -1,14 +1,27 @@
-ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true', dragging='map.dragging', bounds='map.bounds', events='map.events', options='map.options', pan='true', control='map.control', ng-cloak='')
+include ./map-toolbar.jade
+
+ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
+  dragging='map.dragging', bounds='map.bounds', events='map.events', options='map.options',
+  pan='true', control='map.control', ng-cloak=''
+)
+
   ui-gmap-layer(type='TrafficLayer', show='map.showTraffic')
   ui-gmap-layer(type='BicyclingLayer', show='map.showBicycling')
   ui-gmap-layer(namespace='weather', type='WeatherLayer', show='map.showWeather')
 
 
-  ui-gmap-markers(models='map.markers', coords='"self"', idkey='"id"', click='map.clickedMarker', ng-cloak='')
+  ui-gmap-markers(models='map.markers', coords='"self"',
+    idkey='"id"', click='map.clickedMarker', ng-cloak=''
+    doCluster='map.doClusterMarkers')
 
   ui-gmap-window(coords='map.window', options="map.windowOptions")
     div(ng-cloak='') {{map.window}}
 
-  ui-gmap-polygon(ng-repeat='p in map.polygons track by p.id', path='p.path', stroke='p.stroke', visible='p.visible', geodesic='p.geodesic', fill='p.fill', fit='false', editable='p.editable', draggable='p.draggable', ng-cloak='')
+  ui-gmap-polygon(ng-repeat='p in map.polygons',
+    path='p.geom_polys',
+    fill="{ color: '#2c8aa7', opacity: '0.3' }",
+    stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
+    visible='true', geodesic='true',
+    fit='false', editable='false', static='true', ng-cloak='')
 
   include ./map-query-draw.jade

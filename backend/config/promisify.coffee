@@ -14,11 +14,18 @@ bcrypt.compareAsync = Promise.promisify(bcrypt.compare)
 
 # we don't have access to promisify the entire session class, so we have to
 # export it as middleware and promisify each instance
+promisifySession = (req, res) -> Promise.try () ->
+  Promise.promisifyAll(req.session)
+  req.session.regenerateAsyncImpl = req.session.regenerateAsync
+  req.session.regenerateAsync = () ->
+    req.session.regenerateAsyncImpl
+    .then () ->
+      promisifySession(req, res)
+  Promise.resolve()
+
 module.exports = {
   middleware:
-    promisifySession: (req, res) -> Promise.try () ->
-      Promise.promisifyAll(req.session)
-      Promise.resolve()
+    promisifySession: promisifySession
 }
 
 
