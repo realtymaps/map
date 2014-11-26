@@ -5,7 +5,7 @@
     .inner
         .row   
             .checkbox-inline(ng-repeat="status in filterValues.propertyStatus")
-                input.checkbox(ng-model="$root.selectedFilters.status[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}")
+                input.checkbox(ng-model="$root.selectedFilters[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}" class="{{status.value}}")
                 label(for="{{status.value}}") {{ status.label }}
 
         //.row

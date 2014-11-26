@@ -10,7 +10,7 @@
     position: absolute
     z-index: 2
     bottom: 0
-    left: 60px
+    left: 0px
     width:100%
     top: 0px
     background-color: rm-medium-blue
@@ -47,7 +47,7 @@
         display: inline;
         position: relative;
         background-color: none
-        border: 1px solid #FFF
+        border: 1px solid rm-translucent-white
         
         /*label styling*/
         padding: 8px
@@ -60,10 +60,20 @@
 
 
     
-    input[type="checkbox"].checkbox:checked + label
+    input[type="checkbox"].checkbox.forSale:checked + label
         background-color: rm-highlight-green
         color: #FFF
         border-color: rm-highlight-green
+
+    input[type="checkbox"].checkbox.sold:checked + label
+        background-color: rm-highlight-blue
+        color: #FFF
+        border-color: rm-highlight-blue
+
+    input[type="checkbox"].checkbox.pending:checked + label
+        background-color: rm-highlight-purple
+        color: #FFF
+        border-color: rm-highlight-purple
     
 
     input[type="checkbox"].checkbox:disabled + label
@@ -96,6 +106,7 @@
 @media (min-width: 992px) 
     .filters-container 
       width:400px
+      left: 60px
     
     #results-list
       width:auto
