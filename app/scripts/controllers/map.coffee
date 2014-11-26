@@ -28,5 +28,5 @@ module.exports = app
 
     $scope.showResults = Toggle.showResults
     $scope.showDetails = Toggle.showDetails
-
 ]
+
