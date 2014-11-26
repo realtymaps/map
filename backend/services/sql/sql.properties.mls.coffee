@@ -2,6 +2,11 @@
  TODO DECISION, Many POSTGIS queries will be complex
 
  Is it worth even attempting to learn the bookshelf dsl (or search for bookshelf POSTGIS extensions)
+  
+ JWI: We don't need to use bookshelf, but we should use Knex.  Knex allows raw queries (and partial queries) so it
+      doesn't matter if it "handles" GIS.  Really, Knex is just a SQL builder -- it does exactly what's happening below,
+      but in a cross-db way, with protection against SQL injection, and yielding easier to read code.  You can even
+      take the resulting query object and use .toString() to get the SQL string.
 
 
  Original queries from the concept map

@@ -67,20 +67,20 @@ getAll = (obj, nextCb, limit = "500", doLimit = true) ->
   if obj.acres?
     acresMin = obj.acres[0]
     acresMax = obj.acres[1]
-    unless acresMax is 0
-      tquery += connector + "acres between " + acresMin + AND + acresMax
+    if not acresMax
+      tquery += connector + "acres >= " + acresMin
       connector = AND
     else
-      tquery += connector + "acres >= " + acresMin
+      tquery += connector + "acres between " + acresMin + AND + acresMax
       connector = AND
   if obj.price?
     priceMin = obj.price[0]
     priceMax = obj.price[1]
-    unless priceMax is 0
-      tquery += connector + "sale1_amount between #{priceMin}#{AND}#{priceMax} "
+    if not priceMax
+      tquery += connector + "sale1_amount >= " + priceMin
       connector = AND
     else
-      tquery += connector + "sale1_amount >= " + priceMin
+      tquery += connector + "sale1_amount between #{priceMin}#{AND}#{priceMax} "
       connector = AND
   if obj.apn?
     tquery += connector + "parcel_id = '#{obj.apn}'"
