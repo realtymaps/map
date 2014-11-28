@@ -67,7 +67,7 @@ app.factory 'Map'.ourNs(), [
           Properties.getParcelsPolys(hash).then (data) =>
             @scope.map.polygons = data.data
         else
-          @scope.map.polygons = []
+          @scope.map.polygons.length = 0
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
