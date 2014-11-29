@@ -24,7 +24,7 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
   ui-gmap-polygons(models='map.polygons',
     idkey='"rm_property_id"'
     path='"geom_polys"',
-    fill="{ color: '#2c8aa7', opacity: '0.3' }",
+    fill="map.parcels.fill",
     stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')

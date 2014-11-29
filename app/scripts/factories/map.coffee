@@ -4,12 +4,18 @@ require './baseGoogleMap.coffee'
   Our Main Map Implementation
 ###
 require '../services/httpStatus.coffee'
+# require '../services/parcels.coffee'
 encode = undefined
 
 app.factory 'Map'.ourNs(), [
   'uiGmapLogger', '$timeout', '$q',
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  ($log, $timeout, $q, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events) ->
+  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
+  'Parcels'.ourNs()
+  ($log, $timeout, $q,
+  GoogleMapApi, BaseGoogleMap,
+  HttpStatus, Properties, Events,
+  Parcels) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         $log.doLog = limits.options.doLog
@@ -32,6 +38,7 @@ app.factory 'Map'.ourNs(), [
             windowOptions:
               forceClick: true
             markers: []
+            parcels: Parcels
             clickedMarker: (gMarker, eventname, model) ->
               $scope.map.window = model
 
