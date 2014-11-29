@@ -37,15 +37,18 @@ addrscore,
 """
 , tableName)
 
-selectPolys = sprintf(SELECT, """
-#{DISTINCT("rm_property_id")}
-rm_property_id,
-stcity as city,
-ststate as state,
-#{geoStrings.postgisProcs.ST_AsGeoJSON}(geom_polys) as geom_polys
-"""
-, tableName)
+selectPolys = """
+SELECT DISTINCT
+parcel.rm_property_id,
+parcel.stcity as city,
+parcel.ststate as state,
+#{geoStrings.postgisProcs.ST_AsGeoJSON}(parcel.geom_polys) as geom_polys,
+parcel_for_sale(mls.status,mls.last_change_type, mls.close_date, '2 months') as for_sale
+from #{tableName} as parcel
+full outer join mls_listings as mls on parcel.rm_property_id = mls.rm_property_id
+where
 
+"""
 
 # basic getAll function to take different selectors
 getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
@@ -73,7 +76,10 @@ getAll = (obj, nextCb, selector = select, limit = _limit, doLimit = true) ->
   tquery
 
 getAllPolys = (queryOpts, next) ->
-  getAll(queryOpts, next, selectPolys)
+
+  gAll = getAll(queryOpts, next, selectPolys)
+  logger.info gAll
+  gAll
 
 module.exports =
   all: (queryOpts, next) ->
