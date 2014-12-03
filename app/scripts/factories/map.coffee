@@ -74,7 +74,6 @@ app.factory 'Map'.ourNs(), [
 #        $log.debug "current zoom: " + @scope.map.zoom
 
         if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
-          #query to county data, should be encapsulated in a service which has all the urls
           Properties.getCounty(hash).then (data) =>
             @scope.map.markers = data.data
 
