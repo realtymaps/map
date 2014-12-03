@@ -1,7 +1,7 @@
 .toolbar
-    .layer-panel(ng-show="showLayerPanel" id="layers-slide" ng-cloak)
+    .layer-panel(ng-show="Toggles.showLayerPanel" id="layers-slide" ng-cloak)
         .header Map Layers
-            .button(click ng-click="showLayerPanel = !showLayerPanel" type="button" class="close close-sm" aria-hidden="true") &times;
+            .button(click ng-click="Toggles.showLayerPanel = !Toggles.showLayerPanel" type="button" class="close close-sm" aria-hidden="true") &times;
         
         //- TODO: hook up checkmark functionality
         
@@ -30,15 +30,15 @@
                     div(class="title") Statistics
 
 
-     .toolbar-layer-icon.icon(ng-click="showLayerPanel = !showLayerPanel" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Layers")
+     .toolbar-layer-icon.icon(ng-click="Toggles.showLayerPanel = !Toggles.showLayerPanel" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Layers")
         include ../svg/layers.svg
         .toolbar-label Layers
 
-    .toolbar-filters-icon.icon(ng-click="showFilters = !showFilters" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
+    .toolbar-filters-icon.icon(ng-click="Toggles.showFilters = !Toggles.showFilters" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Criteria")
         include ../svg/criteria.svg
         .toolbar-label Filters
 
-    .toolbar-results-icon.icon(ng-click="showResults = !showResults" ng:class="{'active' : selectedNav=='results' }" tool-tip placement="right" title="Results List")
+    .toolbar-results-icon.icon(ng-click="Toggles.showResults = !Toggles.showResults" ng:class="{'active' : selectedNav=='results' }" tool-tip placement="right" title="Results List")
         include ../svg/results.svg
         .toolbar-label Results
 

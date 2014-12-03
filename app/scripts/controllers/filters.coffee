@@ -6,7 +6,7 @@ require '../factories/filters.coffee'
 ###
 
 module.exports = app.controller 'FiltersCtrl'.ourNs(), [
-  '$scope', '$rootScope', 'Filters'.ourNs(), ($scope, $rootScope, Filters) ->
+  '$scope', 'Filters'.ourNs(), 'MapToggles'.ourNs(), ($scope, Filters, Toggles) ->
     
     #initialize values for filter options in the select tags
     $scope.filterValues = Filters.values

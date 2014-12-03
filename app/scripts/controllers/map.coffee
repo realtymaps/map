@@ -20,13 +20,12 @@ module.exports = app
 
 .controller 'MapCtrl'.ourNs(), [
   '$scope', 'Map'.ourNs(), 'MapOptions'.ourNs(), 'MapToggles'.ourNs()
-  ($scope, Map, PromisedOptions, Toggle) ->
+  ($scope, Map, PromisedOptions, Toggles) ->
     PromisedOptions.then (options) ->
       map = unless map then new Map($scope, options) else map
     .catch (e) ->
       console.error e
 
-    $scope.showResults = Toggle.showResults
-    $scope.showDetails = Toggle.showDetails
+    $scope.Toggles = Toggles
 ]
 
