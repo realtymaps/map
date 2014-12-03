@@ -9,7 +9,7 @@ module.exports =
       panControl: false
       maxZoom: 20
       minZoom: 3
-      parcelsZoomThresh: 16
+      parcelsZoomThresh: 17
       clusteringThresh: 14
       json:
         zoom: 15
