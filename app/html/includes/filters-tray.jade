@@ -45,12 +45,12 @@
         .row
             .col-sm-6
                 .label Acres Min
-                select(ng-model="$root.selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresMin')
+                select(ng-model="$root.selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
 
 
             .col-sm-6
                 .label Acres Max
-                select(ng-model="$root.selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresMax')
+                select(ng-model="$root.selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
 
 
