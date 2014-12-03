@@ -16,6 +16,7 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
 
   ui-gmap-markers(models='map.markers', coords='"self"',
     idkey='"id"', click='map.clickedMarker', ng-cloak=''
+    options='map.labelFromParcel'
     doCluster='map.doClusterMarkers')
 
   ui-gmap-window(coords='map.window', options="map.windowOptions")

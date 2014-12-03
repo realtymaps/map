@@ -39,6 +39,13 @@ app.factory 'Map'.ourNs(), [
               forceClick: true
             markers: []
             parcels: Parcels
+            labelFromParcel: (p) ->
+              return {} unless p
+              icon: ' '
+              labelContent: p.street_num
+              labelAnchor: "0 0"
+              labelClass: "address-label"
+
             clickedMarker: (gMarker, eventname, model) ->
               $scope.map.window = model
 
@@ -64,17 +71,18 @@ app.factory 'Map'.ourNs(), [
         @scope.map.doClusterMarkers = if @map.zoom < @scope.map.options.clusteringThresh then true else false
         @scope.map.markers = [] if oldDoCluster is not @scope.map.doClusterMarkers
 
-        #query to county data, should be encapsulated in a service which has all the urls
-        Properties.getCounty(hash).then (data) =>
-          @scope.map.markers = data.data
-
 #        $log.debug "current zoom: " + @scope.map.zoom
 
         if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
+          #query to county data, should be encapsulated in a service which has all the urls
+          Properties.getCounty(hash).then (data) =>
+            @scope.map.markers = data.data
+
           Properties.getParcelsPolys(hash).then (data) =>
             @scope.map.polygons = data.data
         else
-          @scope.map.polygons = []
+          @scope.map.polygons.length = 0
+          @scope.map.markers.length = 0
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
