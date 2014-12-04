@@ -11,8 +11,13 @@ qs = require 'qs'
 
 app.factory 'Map'.ourNs(), [
   'uiGmapLogger', '$timeout', '$q', '$rootScope',
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(), 'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events) ->
+  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
+  'Parcels'.ourNs()
+  ($log, $timeout, $q, $rootScope,
+  GoogleMapApi, BaseGoogleMap,
+  HttpStatus, Properties, Events,
+  Parcels) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         $log.doLog = limits.options.doLog
@@ -28,6 +33,8 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
+            polygons: []
+            dragZoom:{}
             changeZoom: (increment) ->
               $scope.map.zoom += increment
             doClusterMarkers: true
@@ -39,6 +46,14 @@ app.factory 'Map'.ourNs(), [
             windowOptions:
               forceClick: true
             markers: []
+            parcels: Parcels
+            labelFromParcel: (p) ->
+              return {} unless p
+              icon: ' '
+              labelContent: p.street_num
+              labelAnchor: "0 0"
+              labelClass: "address-label"
+
             clickedMarker: (gMarker, eventname, model) ->
               $scope.map.window = model
 
@@ -47,20 +62,21 @@ app.factory 'Map'.ourNs(), [
         $log.info $scope.map
         $log.info "map.center: #{$scope.map.center}"
 
-        GoogleMapApi.then (maps) ->
+        GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
+          @scope.map.dragZoom.options = getDragZoomOptions()
 
       redraw: () =>
-        #query to county data, should be encapsulated in a service which has all the urls
-        Properties.getCounty(@hash, @filters).then (data) =>
-          @scope.map.markers = data.data
-
         if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
-          Properties.getParcelsPolys(@hash, @filters).then (data) =>
+          Properties.getCounty(hash).then (data) =>
+            @scope.map.markers = data.data
+
+          Properties.getParcelsPolys(hash).then (data) =>
             @scope.map.polygons = data.data
         else
-          @scope.map.polygons = []
+          @scope.map.polygons.length = 0
+          @scope.map.markers.length = 0
         
       draw: (event, paths) =>
         if not paths and not @scope.map.drawPolys.isEnabled
@@ -104,4 +120,17 @@ app.factory 'Map'.ourNs(), [
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
+
+    getDragZoomOptions = ->
+      visualEnabled: true,
+      visualPosition: google.maps.ControlPosition.LEFT,
+      visualPositionOffset: new google.maps.Size(25, 425),
+      visualPositionIndex: null,
+      #TODO: change this image, DAN?
+      visualSprite: "http://maps.gstatic.com/mapfiles/ftr/controls/dragzoom_btn.png",
+      visualSize: new google.maps.Size(20, 20),
+      visualTips:
+        off: "Turn on",
+        on: "Turn off"
+    Map
 ]

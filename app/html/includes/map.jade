@@ -3,21 +3,27 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
   pan='true', control='map.control', ng-cloak=''
 )
 
-  ui-gmap-layer(type='TrafficLayer', show='map.showTraffic')
-  ui-gmap-layer(type='BicyclingLayer', show='map.showBicycling')
-  ui-gmap-layer(namespace='weather', type='WeatherLayer', show='map.showWeather')
+  //ui-gmap-layer(type='TrafficLayer', show='map.showTraffic')
+  //ui-gmap-layer(type='BicyclingLayer', show='map.showBicycling')
+  //ui-gmap-layer(namespace='weather', type='WeatherLayer', show='map.showWeather')
+  //two drag zooms for either keyboard or button
+  
+  ui-gmap-drag-zoom(keyboardkey='"alt"')
+  ui-gmap-drag-zoom(options='map.dragZoom.options')
 
 
   ui-gmap-markers(models='map.markers', coords='"self"',
     idkey='"id"', click='map.clickedMarker', ng-cloak=''
+    options='map.labelFromParcel'
     doCluster='map.doClusterMarkers')
 
   ui-gmap-window(coords='map.window', options="map.windowOptions")
     div(ng-cloak='') {{map.window}}
 
-  ui-gmap-polygon(ng-repeat='p in map.polygons',
-    path='p.geom_polys',
-    fill="{ color: '#2c8aa7', opacity: '0.3' }",
+  ui-gmap-polygons(models='map.polygons',
+    idkey='"rm_property_id"'
+    path='"geom_polys"',
+    fill="map.parcels.fill",
     stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')

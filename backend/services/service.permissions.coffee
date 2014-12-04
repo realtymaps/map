@@ -39,7 +39,7 @@ getPermissionsForUserId = (id) ->
     if user.get('is_superuser')
       # just give them all the permissions
       Permission.fetchAll()
-      .then (permissions) -> return permissions.toJSON()
+      .then((permissions) -> return permissions.toJSON())
       .reduce(hashifyPermissions, {})
       .then (permissionsHash) ->
         logger.debug "superuser permissions loaded for userid #{id}"

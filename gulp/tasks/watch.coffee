@@ -4,7 +4,7 @@ plumber = require 'gulp-plumber'
 
 gulp.task 'watch_rest', ->
   gulp.watch [
-    path.scripts, path.styles
+    path.scripts, path.styles, path.stylus,
     path.assets, path.common
     path.index, path.stylus
     path.jade, path.html
