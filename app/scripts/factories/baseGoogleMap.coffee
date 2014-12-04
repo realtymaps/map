@@ -15,19 +15,16 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$
         @activeMarker = undefined
 
         angular.extend @scope,
-          pageClass: 'page-map',
-          map:
-            bounds: {}
-            options: options
-            center: options.json.center
-            zoom: options.json.zoom,
-            dragging: false,
-            events:   #direct hook to google maps sdk events
-              tilesloaded: (map, eventName, originalEventArgs) =>
-                if !@hasRun
-                  @map = map
-                  @hasRun = true
-          markers: []
+          bounds: {}
+          options: options
+          center: options.json.center
+          zoom: options.json.zoom,
+          dragging: false,
+          events:   #direct hook to google maps sdk events
+            tilesloaded: (map, eventName, originalEventArgs) =>
+              if !@hasRun
+                @map = map
+                @hasRun = true
 
         unBindWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) =>
           return if (newValue == oldValue)

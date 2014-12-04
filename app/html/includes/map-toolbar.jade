@@ -42,15 +42,15 @@
         include ../svg/results.svg
         .toolbar-label Results
 
-    .toolbar-location-icon.icon(findme="" ng:class="{'active' : map.showFollowMe }" tool-tip placement="right" title="My Location")
+    .toolbar-location-icon.icon(findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
         include ../svg/location.svg
         .toolbar-label Find Me
 
-    .toolbar-zoomin-icon.icon(ng-click="map.changeZoom(+1)" tool-tip placement="right" title="Zoom In")
+    .toolbar-zoomin-icon.icon(ng-click="changeZoom(+1)" tool-tip placement="right" title="Zoom In")
         include ../svg/zoom_in.svg
         .toolbar-label Zoom In
 
-    .toolbar-zoomout-icon.icon(ng-click="map.changeZoom(-1)" tool-tip placement="right" title="Zoom Out")
+    .toolbar-zoomout-icon.icon(ng-click="changeZoom(-1)" tool-tip placement="right" title="Zoom Out")
         include ../svg/zoom_out.svg
         .toolbar-label Zoom Out
 

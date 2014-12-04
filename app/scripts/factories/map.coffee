@@ -11,11 +11,11 @@ app.factory 'Map'.ourNs(), [
   'uiGmapLogger', '$timeout', '$q',
   'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'Parcels'.ourNs()
+  'LayerFormatters'.ourNs()
   ($log, $timeout, $q,
   GoogleMapApi, BaseGoogleMap,
   HttpStatus, Properties, Events,
-  Parcels) ->
+    LayerFormatters) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         $log.doLog = limits.options.doLog
@@ -24,78 +24,79 @@ app.factory 'Map'.ourNs(), [
           control: {}
           showTraffic: true
           showWeather: false
-          map:
-            polygons: []
-            dragZoom:{}
-            changeZoom: (increment) ->
-              $scope.map.zoom += increment
-            doClusterMarkers: true
-            drawPolys:
-              draw: undefined
-              polygons: []
-              isEnabled: false
-            window: undefined
-            windowOptions:
-              forceClick: true
-            markers: []
-            parcels: Parcels
-            labelFromParcel: (p) ->
-              return {} unless p
-              icon: ' '
-              labelContent: p.street_num
-              labelAnchor: "0 0"
-              labelClass: "address-label"
 
-            clickedMarker: (gMarker, eventname, model) ->
-              $scope.map.window = model
+          #consider moving to layers
+          drawPolys:
+            draw: undefined
+            polygons: []
+            isEnabled: false
+
+          layers:
+            parcels: []
+            mlsListings: []
+            listingDetail: undefined
+
+          layerFormatters: LayerFormatters
+
+          dragZoom:{}
+          changeZoom: (increment) ->
+            $scope.zoom += increment
+          doClusterMarkers: true
+
+
+
+          clickedMarker: (gMarker, eventname, model) ->
+            $scope.layers.listingDetail = model
 
         @subscribe()
 
-        $log.info $scope.map
-        $log.info "map.center: #{$scope.map.center}"
+        $log.debug $scope.map
+        $log.debug "map center: #{$scope.center}"
 
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
-          @scope.map.dragZoom.options = getDragZoomOptions()
+          @scope.dragZoom.options = getDragZoomOptions()
 
       draw: (event, paths) =>
-        if not paths and not @scope.map.drawPolys.isEnabled
-          paths = _.map @scope.map.bounds, (b) ->
+        if not paths and not @scope.drawPolys.isEnabled
+          paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
 
         return if not paths? or not paths.length > 0
 
         hash = encode paths
-        oldDoCluster = @scope.map.doClusterMarkers
-        @scope.map.doClusterMarkers = if @map.zoom < @scope.map.options.clusteringThresh then true else false
-        @scope.map.markers = [] if oldDoCluster is not @scope.map.doClusterMarkers
+        oldDoCluster = @scope.doClusterMarkers
+        @scope.doClusterMarkers = if @map.zoom < @scope.options.clusteringThresh then true else false
+        @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
 
-#        $log.debug "current zoom: " + @scope.map.zoom
+#        $log.debug "current zoom: " + @scope.zoom
 
-        if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
-          Properties.getCounty(hash).then (data) =>
-            @scope.map.markers = data.data
-
-          Properties.getParcelsPolys(hash).then (data) =>
-            @scope.map.polygons = data.data
+        if @scope.zoom > @scope.options.parcelsZoomThresh
+          Properties.getMLS(hash)
+          .then (data) =>
+            @scope.layers.mlsListings = data.data
+#          .then =>
+#            Properties.getParcelsPolys(hash)
+#            .then (data) =>
+#              @scope.layers.parcels = data.data
         else
-          @scope.map.polygons.length = 0
-          @scope.map.markers.length = 0
+          @scope.layers.parcels.length = 0
+          @scope.layers.mlsListings.length = 0
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
         @scope.$onRootScope Events.map.drawPolys.clear, =>
-          @scope.map.drawPolys.polygons = []
+          @scope.drawPolys.polygons = []
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
-          @scope.map.drawPolys.isEnabled = isEnabled
+          @scope.drawPolys.isEnabled = isEnabled
           if isEnabled
-            @scope.map.markers = []
-            @scope.map.drawPolys.draw()
+            @scope.layers.mlsListings.length = 0
+            @scope.drawPolys.draw()
 
         @scope.$onRootScope Events.map.drawPolys.query, =>
-          polygons = @scope.map.drawPolys.polygons
+          polygons = @scope.drawPolys.polygons
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths

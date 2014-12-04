@@ -21,6 +21,9 @@ module.exports = app
 .controller 'MapCtrl'.ourNs(), [
   '$scope', 'Map'.ourNs(), 'MapOptions'.ourNs(), 'MapToggles'.ourNs()
   ($scope, Map, PromisedOptions, Toggle) ->
+
+    $scope.pageClass = 'page-map'
+
     PromisedOptions.then (options) ->
       map = unless map then new Map($scope, options) else map
     .catch (e) ->
