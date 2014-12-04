@@ -3,7 +3,7 @@ module.exports =
   map:
     zoomThresholdMilliSeconds: 1500
     options:
-      doLog: true
+      doLog: false
       streetViewControl: false
       zoomControl: true
       panControl: false

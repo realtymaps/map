@@ -7,7 +7,7 @@ fakeLogger =
   error: (msg)->
     logger.error(msg)
 
-safeQuery = require('bookshelf.raw.safe')(fakeLogger).safeQuery
+safeQuery = (require('bookshelf.raw.safe')(fakeLogger)).safeQuery
 countySql = require('./sql/sql.properties.county')
 status =  require '../../common/utils/httpStatus'
 
