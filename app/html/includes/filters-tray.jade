@@ -27,20 +27,20 @@
         .row
             .col-sm-6
                 .label Price Min
-                input(type="text" currency-input ng-model="$root.selectedFilters.priceMin")
+                input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.priceMin")
             .col-sm-6
                 .label Price Max
-                input(type="text" currency-input ng-model="$root.selectedFilters.priceMax")
+                input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.priceMax")
                     
         .row
             .col-sm-6
                 .label Sqft Min
-                input(type="text" valid-number ng-model="$root.selectedFilters.sqftMin")
+                input(type="text" numeral format="0,0" ng-model="$root.selectedFilters.sqftMin")
 
 
             .col-sm-6
                 .label Sqft Max
-                input(type="text" valid-number ng-model="$root.selectedFilters.sqftMax")
+                input(type="text" numeral format="0,0" ng-model="$root.selectedFilters.sqftMax")
 
         .row
             .col-sm-6
