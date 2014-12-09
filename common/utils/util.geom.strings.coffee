@@ -29,18 +29,18 @@ pathsToBounds = (paths)->
   # lat's lon's, geojson to POSTGIS strings or something
   boundsStr = _.reduce paths, (all, next) ->
     unless isFirst
-      "#{all} #{next[1]} #{next[0]}, "
+      "#{all} #{next.lon} #{next.lat}, "
     else
       isFirst = false
-      "#{all[1]} #{all[0]}, #{next[1]} #{next[0]}, "
-  boundsStr += "#{paths[0][1]} #{paths[0][0]}"
+      "#{all.lon} #{all.lat}, #{next.lon} #{next.lat}, "
+  boundsStr += "#{paths[0].lon} #{paths[0].lat}"
 
 multiPolygon = (paths) ->
   boundsStr = pathsToBounds paths
   "'#{ge.MULTIPOLYGON}(((#{boundsStr})))'"
 
 makeEnvelope = (box, coord = coordSys.WGS84) ->
-  pgp.ST_MakeEnvelope + "(#{box[0][1]}, #{box[1][0]},#{box[1][1]}, #{box[0][0]}, #{coord})"
+  pgp.ST_MakeEnvelope + "(#{box[1].lon}, #{box[1].lat}, #{box[0].lon}, #{box[0].lat}, #{coord})"
 
 
 module.exports =

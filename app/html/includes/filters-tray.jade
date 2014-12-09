@@ -17,12 +17,12 @@
         .row
             .col-sm-6
                 .label Beds
-                select(ng-model="$root.selectedFilters.beds" ng-options='c.value as c.name for c in filterValues.beds')
+                select(ng-model="$root.selectedFilters.bedsMin" ng-options='c.value as c.name for c in filterValues.beds')
 
 
             .col-sm-6
                 .label Baths
-                select(ng-model="$root.selectedFilters.baths" ng-options='c.value as c.name for c in filterValues.baths')
+                select(ng-model="$root.selectedFilters.bathsMin" ng-options='c.value as c.name for c in filterValues.baths')
 
         .row
             .col-sm-6

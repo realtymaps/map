@@ -13,11 +13,11 @@ app.factory 'Map'.ourNs(), [
   'uiGmapLogger', '$timeout', '$q', '$rootScope',
   'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'Parcels'.ourNs()
+  'Parcels'.ourNs(), 'ParcelEnums'.ourNs()
   ($log, $timeout, $q, $rootScope,
   GoogleMapApi, BaseGoogleMap,
   HttpStatus, Properties, Events,
-  Parcels) ->
+  Parcels, ParcelEnums) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         $log.doLog = limits.options.doLog
@@ -33,7 +33,8 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
           map:
-            polygons: []
+            parcelBase: []
+            filterSummary: []
             dragZoom:{}
             changeZoom: (increment) ->
               $scope.map.zoom += increment
@@ -50,7 +51,7 @@ app.factory 'Map'.ourNs(), [
             labelFromParcel: (p) ->
               return {} unless p
               icon: ' '
-              labelContent: p.street_num
+              labelContent: p.street_address_num
               labelAnchor: "0 0"
               labelClass: "address-label"
 
@@ -69,15 +70,18 @@ app.factory 'Map'.ourNs(), [
 
       redraw: () =>
         if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
-          Properties.getCounty(hash).then (data) =>
+          Properties.getParcelBase(@hash).then (data) =>
+            @scope.map.parcelBase = data.data
             @scope.map.markers = data.data
-
-          Properties.getParcelsPolys(hash).then (data) =>
-            @scope.map.polygons = data.data
         else
-          @scope.map.polygons.length = 0
+          @scope.map.parcelBase.length = 0
           @scope.map.markers.length = 0
-        
+        if @filters
+          Properties.getFilterSummary(@hash, @filters).then (data) =>
+            @scope.map.filterSummary = data.data
+        else
+          @scope.map.filterSummary.length = 0
+
       draw: (event, paths) =>
         if not paths and not @scope.map.drawPolys.isEnabled
           paths = _.map @scope.map.bounds, (b) ->
@@ -87,7 +91,7 @@ app.factory 'Map'.ourNs(), [
 
         @hash = encode paths
         oldDoCluster = @scope.map.doClusterMarkers
-        @scope.map.doClusterMarkers = if @map.zoom < @scope.map.options.clusteringThresh then true else false
+        @scope.map.doClusterMarkers = @map.zoom < @scope.map.options.clusteringThresh
         @scope.map.markers = [] if oldDoCluster is not @scope.map.doClusterMarkers
 
         @redraw()
@@ -99,8 +103,24 @@ app.factory 'Map'.ourNs(), [
         @filterDrawPromise = $timeout(@filterImpl, @filterDrawDelay)
         
       filterImpl: () =>
-        @filters = if $rootScope.selectedFilters then qs.stringify($rootScope.selectedFilters) else '' 
-        @filters = '&'+@filters if @filters.length > 0
+        if $rootScope.selectedFilters
+          selectedFilters = _.clone($rootScope.selectedFilters)
+          selectedFilters.status = []
+          if (selectedFilters.forSale)
+            selectedFilters.status.push(ParcelEnums.status.forSale)
+            delete selectedFilters.forSale
+          if (selectedFilters.pending)
+            selectedFilters.status.push(ParcelEnums.status.pending)
+            delete selectedFilters.pending
+          if (selectedFilters.sold)
+            selectedFilters.status.push(ParcelEnums.status.recentlySold)
+            delete selectedFilters.sold
+          if selectedFilters.status.length == 0
+            @filters = null
+          else
+            @filters = '&'+qs.stringify(selectedFilters)
+        else
+          @filters = null
         @filterDrawPromise = false
         @redraw()
       

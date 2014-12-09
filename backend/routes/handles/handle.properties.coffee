@@ -1,14 +1,14 @@
 Promise = require "bluebird"
-parcelService = require '../../services/service.properties.parcels'
+filterSummaryService = require '../../services/service.properties.filterSummary'
 requestUtil = require '../../utils/util.http.request'
 status = require '../../../common/utils/httpStatus'
 logger = require '../../config/logger'
 
 
-module.exports =
-  parcelBase: (req, res, next) ->
+module.exports = 
+  filterSummary: (req, res, next) ->
     Promise.try () ->
-      parcelService.getBaseParcelData(req.query)
+      filterSummaryService.getFilterSummary(req.query)
     .then (data) ->
       res.json(data)
     .catch requestUtil.query.ParamValidationError, (err) ->
