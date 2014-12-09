@@ -11,7 +11,7 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
   return authorize: (nextRoute) ->
     principal.getIdentity().then (identity) ->
       if not principal.isAuthenticated()
-        if nextRoute?.$$route?.permissionsRequired || nextRoute.$$route.loginRequired
+        if nextRoute?.$$route?.permissionsRequired || nextRoute?.$$route?.loginRequired
           # user is not authenticated, but needs to be.
           # set the route they wanted as a query parameter
           # then, send them to the signin route so they can log in

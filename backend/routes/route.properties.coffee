@@ -1,3 +1,4 @@
+auth = require '../utils/util.auth'
 logger = require '../config/logger'
 propertyHandles = require './handles/handle.properties'
 backendRoutes = require '../../common/config/routes.backend.coffee'
@@ -16,8 +17,8 @@ bindRoutes = require '../utils/util.bindRoutesToHandles'
 
 
 myRoutesHandles = [
-  {route: backendRoutes.filterSummary, handle: propertyHandles.filterSummary}
-  {route: backendRoutes.parcelBase,    handle: propertyHandles.parcelBase}
+  { route: backendRoutes.filterSummary, handle: propertyHandles.filterSummary, middleware: auth.requireLogin(redirectOnFail: true) }
+  { route: backendRoutes.parcelBase,    handle: propertyHandles.parcelBase,    middleware: auth.requireLogin(redirectOnFail: true) }
 ]
 
 module.exports = (app) ->
