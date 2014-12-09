@@ -128,6 +128,7 @@ module.exports = {
             sessionSecurityService.createNewSeries(req, res, true)
     .catch SessionSecurityError, (err) ->
       # figure out what we need to invalidate and do it
+      logger.error "session security error triggered: #{err}"
       switch (err.invalidate)
         when "security" then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
         when "session" then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
