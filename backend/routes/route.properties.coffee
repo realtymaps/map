@@ -1,5 +1,4 @@
 logger = require '../config/logger'
-parcelHandles = require './handles/handle.parcels'
 propertyHandles = require './handles/handle.properties'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 
@@ -18,7 +17,7 @@ bindRoutes = require '../utils/util.bindRoutesToHandles'
 
 myRoutesHandles = [
   {route: backendRoutes.filterSummary, handle: propertyHandles.filterSummary}
-  {route: backendRoutes.parcelBase, handle: parcelHandles.parcelBase}
+  {route: backendRoutes.parcelBase,    handle: propertyHandles.parcelBase}
 ]
 
 module.exports = (app) ->

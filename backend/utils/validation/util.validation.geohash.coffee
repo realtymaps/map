@@ -1,8 +1,6 @@
 Promise = require "bluebird"
 geohash64 = require 'geohash64'
 requestUtil = require '../../utils/util.http.request'
-paramsToObject = requestUtil.query.params.toObject
-geoStrings = require '../../../common/utils/util.geom.strings'
 coordSys = require '../../../common/utils/enums/util.enums.map.coord_system'
 
 

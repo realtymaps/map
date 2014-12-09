@@ -37,10 +37,9 @@ module.exports =
     #     the validators are iteratively applied as per _.reduce().  A validator/transformation is only called if
     #     the param name is present as a key in the original param map.
     #   - an optional map of params to booleans indicating which params are required to have values after transformation
-    # ; returns a promise that is resolved
-    # with a new map of the (optionally) transformed params, or is rejected if any of the params failed validation or
-    # a required param has an undefined value after transformation
-    # a validator/transform 
+    # returns:
+    #     a promise that is resolved with a new map of the (optionally) transformed params, or is rejected if any of
+    #     the params failed validation or a required param has an undefined value after transformation
     validateAndTransform: (params, transforms, required = {}) -> Promise.try () ->
       promises = {}
       for param,value of params
