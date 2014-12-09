@@ -20,11 +20,19 @@ ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
   ui-gmap-window(coords='map.window', options="map.windowOptions")
     div(ng-cloak='') {{map.window}}
 
-  ui-gmap-polygons(models='map.polygons',
+  ui-gmap-polygons(models='map.parcelBase',
     idkey='"rm_property_id"'
-    path='"geom_polys"',
+    path='"geom_polys_json"',
+    fill="{color: '#CC6', opacity: '0.2'}",
+    stroke="{ color: '#444', weight: 3, opacity: '0.3' }",
+    visible='true', geodesic='true',
+    fit='false', editable='false', static='true', ng-cloak='')
+  
+  ui-gmap-polygons(models='map.filterSummary',
+    idkey='"rm_property_id"'
+    path='"geom_polys_json"',
     fill="map.parcels.fill",
-    stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
+    stroke="{ color: '#000', weight: 2, opacity: '0.3' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')
 

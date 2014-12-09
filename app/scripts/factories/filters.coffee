@@ -43,5 +43,5 @@ module.exports =
       ]
 
       #TODO - add function to filter the values for Min/Max so that Max can't be set lower than Min and vice versa.
-
+      #JWI: this may not be necessary, backend might automatically handle reversed values when using BETWEEN in SQL
   ]

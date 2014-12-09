@@ -12,5 +12,7 @@ module.exports = (app, routesHandles) ->
       throw new Error "handle: #{rh.handle} has no route"
     if not rh.handle or not rh.route
       throw new Error "no valid route -> handle"
+    
+    method = rh.method || 'get'
 
-    app.get rh.route, rh.handle
+    app[method] rh.route, rh.handle

@@ -11,6 +11,7 @@ resource = keysToValue
 
 apiBase = '/api'
 
+
 module.exports =
   wildcard:                  "#{apiBase}/*"
 
@@ -22,12 +23,9 @@ module.exports =
   logout:                    "#{apiBase}/logout"
   version:                   "#{apiBase}/version"
   environmentSettings:       "#{apiBase}/environment_settings/"
-
-  #properties
-  county:
-    root:                    "#{apiBase}/#{resource.county}/"
-  mls:
-    root:                    "#{apiBase}/#{resource.mls}/"
-  parcels:
-    root:                    "#{apiBase}/#{resource.parcels}/"
-    polys:                   "#{apiBase}/#{resource.parcels}/polys/"
+  
+  # new properties routes
+  filterSummary:             "#{apiBase}/properties/filter_summary/"
+  parcelBase:                "#{apiBase}/properties/parcel_base/"
+  propertyDetails:           "#{apiBase}/properties/property_details/" # not yet set up or fully specified
+  
