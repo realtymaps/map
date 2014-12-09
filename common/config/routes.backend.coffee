@@ -13,19 +13,18 @@ apiBase = '/api'
 
 
 module.exports =
-  wildcard:                  "#{apiBase}/*"
+  wildcard:             "#{apiBase}/*"
 
-  limits:                    "#{apiBase}/limits"
-  identity:                  "#{apiBase}/identity"
-  userPermissions:           "#{apiBase}/user_permissions/:id"
-  groupPermissions:          "#{apiBase}/group_permissions/:id"
-  login:                     "#{apiBase}/login"
-  logout:                    "#{apiBase}/logout"
-  version:                   "#{apiBase}/version"
-  environmentSettings:       "#{apiBase}/environment_settings/"
+  limits:               "#{apiBase}/limits"
+  identity:             "#{apiBase}/identity"
+  userPermissions:      "#{apiBase}/user_permissions/:id"
+  groupPermissions:     "#{apiBase}/group_permissions/:id"
+  login:                "#{apiBase}/login"
+  logout:               "#{apiBase}/logout"
+  version:              "#{apiBase}/version"
+  environmentSettings:  "#{apiBase}/environment_settings/"
   
   # new properties routes
-  filterSummary:             "#{apiBase}/properties/filter_summary/"
-  parcelBase:                "#{apiBase}/properties/parcel_base/"
-  propertyDetails:           "#{apiBase}/properties/property_details/" # not yet set up or fully specified
-  
+  filterSummary:        "#{apiBase}/properties/filter_summary/"
+  parcelBase:           "#{apiBase}/properties/parcel_base/"
+  propertyDetails:      "#{apiBase}/properties/property_details/" # not yet set up or fully specified

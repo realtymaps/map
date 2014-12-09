@@ -129,10 +129,10 @@ module.exports = {
     .catch SessionSecurityError, (err) ->
       # figure out what we need to invalidate and do it
       switch (err.invalidate)
-        when "nothing" then return Promise.resolve()
         when "security" then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
         when "session" then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
         when "user" then invalidatePromise = sessionSecurityService.deleteSecurities(user_id: req.user.id)
+        else return Promise.resolve() # "nothing" is a valid possibility
       return invalidatePromise.then () ->
         req.session.destroyAsync()
       .then () ->
