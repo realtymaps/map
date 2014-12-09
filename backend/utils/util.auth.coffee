@@ -128,7 +128,6 @@ module.exports = {
             sessionSecurityService.createNewSeries(req, res, true)
     .catch SessionSecurityError, (err) ->
       # figure out what we need to invalidate and do it
-      logger.error "session security error triggered: #{err}"
       switch (err.invalidate)
         when "security" then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
         when "session" then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
@@ -157,7 +156,7 @@ module.exports = {
     return (req, res, next) -> Promise.try () ->
       if not req.user
         if options.redirectOnFail
-          return res.json(redirectUrl: "#{frontendRoutes.login}?#{querystring.stringify(next: req.originalUrl)}")
+          return res.json(doLogin: true)
         else
           return next(status: httpStatus.UNAUTHORIZED, message: "Please login to access this URI.")
       return process.nextTick(next)
