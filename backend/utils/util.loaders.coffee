@@ -11,10 +11,15 @@ module.exports =
     files.forEach (file) ->
       filePath = path.join directoryName, file
 
-      if !(filePath == indexFilePath) and
-          !filePath.contains('utils') and !filePath.contains('handles')
+      if filePath != indexFilePath and !filePath.contains('handles')
         logger.route " filePath: #{filePath}, \nfile: #{file}"
         logger.route " handles: #{filePath.contains('handles')}"
-        baseFilename = path.basename file, path.extname(file)
-        route = path.join directoryName, baseFilename
-        require(route)?(app)
+        require(filePath)?(app)
+  loadValidators: (directoryName) ->
+    result = {}
+    fs.readdirSync(directoryName).forEach (file) ->
+      match = (/^util\.validation\.(\w+)\.coffee$/).exec(file)
+      if (match)
+        filePath = path.join directoryName, file
+        result[match[1]] = require(filePath)
+    return result

@@ -2,7 +2,6 @@ db = require('../config/dbs').properties
 FilterSummary = require "../models/model.filterSummary"
 Promise = require "bluebird"
 logger = require '../config/logger'
-geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './sql/sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
@@ -14,19 +13,19 @@ statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 transforms = 
   bounds: [
     validators.string(minLength: 1)
-    geohashHelper.geohash
+    validators.geohash.decode
     validators.array(minLength: 2)
-    geohashHelper.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
+    validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
   status:   validators.array(minLength: 1, subValidation: [ validators.string(forceLowerCase: true), validators.choice(choices: statuses) ])
-  priceMin: validators.float()
-  priceMax: validators.float()
+  priceMin: [ validators.string(replace: [/[$,]/g, ""]), validators.float() ]
+  priceMax: [ validators.string(replace: [/[$,]/g, ""]), validators.float() ]
   bedsMin:  validators.integer()
   bathsMin: validators.integer()
   acresMin: validators.float()
   acresMax: validators.float()
-  sqftMin:  validators.integer()
-  sqftMax:  validators.integer()
+  sqftMin:  [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+  sqftMax:  [ validators.string(replace: [/,/g, ""]), validators.integer() ]
   # other fields we could have:
   #   close date (to remove the hardcoded "recently sold" logic and allow specification by time window)
   #   owner name
@@ -34,16 +33,16 @@ transforms =
   #   bathsMax
   #   bathsHalf[Min/Max]
   #   property type
-  
+
 required =
-  bounds: true
-  status: true
+  bounds: undefined
+  status: undefined
 
 
 module.exports = 
   
   getFilterSummary: (filters) -> Promise.try () ->
-    requestUtil.query.validateAndTransform(filters, transforms, required)
+    requestUtil.query.validateAndTransform(filters, transforms)
     .then (filters) ->
 
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))

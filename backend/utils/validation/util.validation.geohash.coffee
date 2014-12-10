@@ -1,6 +1,6 @@
 Promise = require "bluebird"
 geohash64 = require 'geohash64'
-requestUtil = require '../../utils/util.http.request'
+ParamValidationError = require './util.error.paramValidation'
 coordSys = require '../../../common/utils/enums/util.enums.map.coord_system'
 
 
@@ -19,11 +19,11 @@ flattenLonLat = (bounds) ->
   
 module.exports =
 
-  geohash: (param, boundsStr) ->
+  decode: (param, boundsStr) ->
     Promise.try () ->
       geohash64.decode(boundsStr)
     .catch (err) ->
-      Promise.reject new requestUtil.query.ParamValidationError("error decoding geohash string", param, boundsStr)
+      Promise.reject new ParamValidationError("error decoding geohash string", param, boundsStr)
   
   transformToRawSQL: (options = {}) ->
     (param, bounds) ->
@@ -38,4 +38,4 @@ module.exports =
           results.bindings = [ bounds[1].lon, bounds[1].lat, bounds[0].lon, bounds[0].lat ]
         return results
       .catch (err) ->
-        return Promise.reject new requestUtil.query.ParamValidationError("problem processing decoded data", param, bounds)
+        return Promise.reject new ParamValidationError("problem processing decoded data", param, bounds)

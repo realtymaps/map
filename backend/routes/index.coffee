@@ -1,7 +1,7 @@
 path = require 'path'
 config = require '../config/config'
 logger = require '../config/logger'
-attachRoutes = require('../utils/util.routeLoader').loadRoutes
+attachRoutes = require('../utils/util.loaders.coffee').loadRoutes
 frontendRoutes = require '../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 
