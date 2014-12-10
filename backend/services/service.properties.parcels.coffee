@@ -12,13 +12,13 @@ validators = requestUtil.query.validators
 transforms =
   bounds: [
     validators.string(minLength: 1)
-    geohashHelper.geohash
+    validators.geohash.decode
     validators.array(minLength: 2)
-    geohashHelper.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
+    validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
 
 required =
-  bounds: true
+  bounds: undefined
 
 
 module.exports =

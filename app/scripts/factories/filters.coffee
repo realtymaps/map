@@ -19,7 +19,7 @@ module.exports =
         { value: 3, name: "3+" },
         { value: 4, name: "4+" },
         { value: 5, name: "5+" },
-        { value: 5, name: "6+" }
+        { value: 6, name: "6+" }
       ],
     	baths:[
         { value: 1, name: "1+" },
@@ -27,7 +27,7 @@ module.exports =
         { value: 3, name: "3+" },
         { value: 4, name: "4+" },
         { value: 5, name: "5+" },
-        { value: 5, name: "6+" }
+        { value: 6, name: "6+" }
       ],
     	acresValues:[
         { value: 0.1, name: ".10 acres" },
@@ -42,6 +42,5 @@ module.exports =
         { value: 1.0, name: "1.0 acres" }
       ]
 
-      #TODO - add function to filter the values for Min/Max so that Max can't be set lower than Min and vice versa.
-      #JWI: this may not be necessary, backend might automatically handle reversed values when using BETWEEN in SQL
+      #TODO - add function to warn when Max and Min values are swapped.
   ]
