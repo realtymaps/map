@@ -6,7 +6,7 @@ module.exports = app.factory 'RedirectInterceptor'.ourNs(), [ '$location', '$roo
   ($location, $rootScope) ->
     'response': (response) ->
       if response.data?.doLogin and $location.path() != frontendRoutes.login
-        $rootScope.principal?.setIdentity()
+        $rootScope.principal?.unsetIdentity()
         $location.url frontendRoutes.login+'?'+qs.stringify(next: $location.path()+'?'+qs.stringify($location.search()))
       response
 ]
