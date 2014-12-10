@@ -8,7 +8,6 @@ app = require '../app.coffee'
 module.exports = app.factory 'BaseGoogleMap'.ourNs(), [
   'uiGmapLogger', 'uiGmapIsReady', '$timeout',
   ($log, uiGmapIsReady, $timeout) ->
-    $log.currentLevel = $log.LEVELS.warn
     class BaseGoogleMapCtrl extends BaseObject
       #all constructor arguments are for an instance (other stuff is singletons)
       constructor: (@scope, options, @zoomThresholdMill) ->

@@ -26,6 +26,7 @@ base =
     pool:
       min: 2
       max: 10
+  TRUST_PROXY: 1
   SESSION:
     secret: "thisistheREALTYMAPSsecretforthesession"
     cookie:
@@ -45,7 +46,6 @@ base =
       secure: true
   NODETIME: false
   USE_ERROR_HANDLER: false
-  TRUST_PROXY: 1
   DB_CACHE_TIMES:
     SLOW_REFRESH: 60*1000   # 1 minute
     FAST_REFRESH: 30*1000   # 30 seconds
@@ -66,6 +66,7 @@ environmentConfig =
       debug: true
     PROPERTY_DB:
       debug: true
+    TRUST_PROXY: false
     SESSION:
       cookie:
         secure: false
@@ -78,7 +79,6 @@ environmentConfig =
       LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
       FRONT_END: true
     USE_ERROR_HANDLER: true
-    TRUST_PROXY: false
 
   test: # test inherits from development below
     LOGGING:
@@ -92,6 +92,14 @@ environmentConfig =
       FAST_REFRESH: 60*1000     # 1 minute
     LOGGING:
       LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
+    # the proxy and secure settings below need to be removed when we start using nginx
+    TRUST_PROXY: false
+    SESSION:
+      cookie:
+        secure: false
+    SESSION_SECURITY:
+      cookie:
+        secure: false
 
   production:
     DB_CACHE_TIMES:
@@ -99,6 +107,14 @@ environmentConfig =
       FAST_REFRESH: 60*1000      # 1 minute
     MEM_WATCH:
       IS_ON: true
+  # the proxy and secure settings below need to be removed when we start using nginx
+    TRUST_PROXY: false
+    SESSION:
+      cookie:
+        secure: false
+    SESSION_SECURITY:
+      cookie:
+        secure: false
     # we probably want this for production, but we need to get it set up with
     # an API key first
     #NODETIME:

@@ -1,8 +1,8 @@
 app = require '../app.coffee'
 
 app.constant 'ParcelEnums'.ourNs(),
-  forSale:
-    Not: 'Not'
-    NotRecent: 'Not Recent'
-    NotPending: 'Not Pending'
-    Active: 'Active'
+  status:
+    notForSale: 'not for sale'
+    sold: 'recently sold'
+    pending: 'pending'
+    forSale: 'for sale'

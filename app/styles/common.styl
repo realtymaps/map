@@ -120,21 +120,10 @@ body
 .page
     bottom:0 
     position:absolute 
-    text-align:center
     top:50px  
     width:100%
     background: main-dark-blue 
 
-
-.page-test 
-    background:#00D0BC 
-    color:#00907c
-.page-about
-    background:#E59400
-    color:#a55400
-.page-contact
-    background:#ffa6bb
-    color:#9e0000
 
 /* ANIMATIONS
 ============================================================================= */
@@ -167,6 +156,23 @@ body
 
 #results-slide.ng-hide-remove.ng-hide-remove-active, #results-slide.ng-hide-add
     margin-right: 0
+    opacity: 1
+
+
+#filters-slide
+    transition: 0.15s all ease-in-out
+
+
+#filters-slide.ng-hide-add, #filters-slide.ng-hide-remove
+    display: block !important 
+    
+
+#filters-slide.ng-hide-remove, #filters-slide.ng-hide-add.ng-hide-add-active
+    margin-left: -300px
+    opacity: 1
+
+#filters-slide.ng-hide-remove.ng-hide-remove-active, #filters-slide.ng-hide-add
+    margin-left: 0
     opacity: 1
 
 
@@ -399,4 +405,3 @@ checkbox(size)
       background: url(/assets/sprites.png) no-repeat 0 0
     &:checked + label
       background: url(/assets/sprites.png) no-repeat 0 -24px
-

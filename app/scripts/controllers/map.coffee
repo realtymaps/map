@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-require '../factories/mapOptions.coffee'
+require '../factories/mainOptions.coffee'
 require '../factories/map.coffee'
 
 ###
@@ -19,9 +19,8 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', 'Map'.ourNs(), 'MapOptions'.ourNs(), 'MapToggles'.ourNs()
-  ($scope, Map, PromisedOptions, Toggle) ->
-
+  '$scope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs()
+  ($scope, Map, PromisedOptions, Toggles) ->
     $scope.pageClass = 'page-map'
 
     PromisedOptions.then (options) ->
@@ -29,7 +28,6 @@ module.exports = app
     .catch (e) ->
       console.error e
 
-    $scope.showResults = Toggle.showResults
-    $scope.showDetails = Toggle.showDetails
-
+    $scope.Toggles = Toggles
 ]
+

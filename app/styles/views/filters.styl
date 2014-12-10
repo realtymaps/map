@@ -1,0 +1,142 @@
+@import '../variables.styl'
+
+/* Filters Container
+============================================================================= */
+
+/* Extra small devices (phones, up to 480px) */
+/* No media query since this is the default in Bootstrap */
+.filters-container
+    margin: 0 0 0 0px
+    position: absolute
+    z-index: 2
+    bottom: 0
+    left: 0px
+    width:100%
+    top: 0px
+    background-color: rm-medium-blue
+
+    .row
+        margin-bottom:20px
+
+    .inner
+        padding: 20px
+
+    .label
+        color:#FFF
+        font-size: 18px
+        font-weight: 200
+        padding: 0
+        display: block
+        text-align: left
+        margin-bottom:4px
+        display:block;
+
+    input[type="text"], select
+        height: 35px
+        width:100%
+        border-radius:0
+        border:none
+        -webkit-appearance: none
+        padding-left: 10px
+        font-size: 20px
+
+    input[type="checkbox"].checkbox
+        display: none
+
+    input[type="checkbox"].checkbox + label
+        display: inline;
+        position: relative;
+        background-color: none
+        border: 1px solid rm-translucent-white
+        
+        /*label styling*/
+        padding: 8px
+        font-size: 16px
+        font-weight: 200
+        line-height: 14px
+        color: rm-translucent-white
+        vertical-align: baseline
+        white-space: nowrap
+
+
+    
+    input[type="checkbox"].checkbox.forSale:checked + label
+        background-color: rm-highlight-green
+        color: #FFF
+        border-color: rm-highlight-green
+
+    input[type="checkbox"].checkbox.sold:checked + label
+        background-color: rm-highlight-blue
+        color: #FFF
+        border-color: rm-highlight-blue
+
+    input[type="checkbox"].checkbox.pending:checked + label
+        background-color: rm-highlight-purple
+        color: #FFF
+        border-color: rm-highlight-purple
+    
+
+    input[type="checkbox"].checkbox:disabled + label
+        opacity: 0.5
+    
+
+
+#filters-close
+    width:35px
+    height:100%
+    font-size:1.3em
+    background-image: url("/assets/left-arrow-icon.png")
+    background-repeat:no-repeat
+    background-position:center center
+    position:absolute
+    right:-35px
+
+
+
+/* Small devices (tablets, 768px and up) */
+@media (min-width: 768px)  
+
+    
+    .filters-container .close
+      display:none 
+
+    
+
+/* Medium devices (desktops, 992px and up) */
+@media (min-width: 992px) 
+    .filters-container 
+      width:400px
+      left: 60px
+    
+    #results-list
+      width:auto
+
+    
+
+/* Large devices (large desktops, 1200px and up) */
+//@media (min-width: 1200px)
+    
+
+
+/*********************
+End Results Container
+**********************/
+
+.tray-close
+    background-color:rgba(0,0,0,.45)
+
+.tray-close-light
+    background-color:rgba(0,0,0,.15)
+
+.tray-close:hover
+    background-color:rgba(0,0,0,.55)
+
+.tray-close-light:hover
+    background-color:rgba(0,0,0,.25)
+
+
+.filter-container .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default
+    color: #333;
+    background-color: rm-medium-blue;
+    border-color: #adadad;
+    color:#FFF

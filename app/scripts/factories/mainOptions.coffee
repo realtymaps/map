@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.factory 'MapOptions'.ourNs(), [
+app.factory 'MainOptions'.ourNs(), [
   'uiGmapLogger', '$http', '$timeout', '$q',
   'Limits'.ourNs(), 'User'.ourNs()
   ($log, $http, $timeout, $q,

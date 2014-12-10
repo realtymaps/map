@@ -1,9 +1,20 @@
 config = require './config'
+
+#match ui-gmap log levels
+LOG_LEVELS =
+  log: 1
+  info: 2
+  debug: 3
+  warn: 4
+  error: 5
+  none: 6
+
 module.exports =
   map:
     zoomThresholdMilliSeconds: 1500
     options:
       doLog: true
+      logLevel: LOG_LEVELS.debug
       streetViewControl: false
       zoomControl: true
       panControl: false

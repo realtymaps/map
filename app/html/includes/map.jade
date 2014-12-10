@@ -13,13 +13,6 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   ui-gmap-drag-zoom(keyboardkey='"alt"')
   ui-gmap-drag-zoom(options='dragZoom.options')
 
-  ui-gmap-markers(options='layerFormatters.MLS.labelFromStreetNum',
-    models='layers.mlsListings',
-    coords='"self"',
-    idkey='"id"',
-    click='clickedMarker',
-    ng-cloak='')
-
 
   //ui-gmap-markers(options='layerFormatters.MLS.labelFromPrice',
   //  models='layers.mlsListings',
@@ -32,6 +25,14 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   ui-gmap-window(coords='layers.listingDetail', forceClick="true")
     div(ng-cloak='') {{layers.listingDetail}}
 
+  // BEGIN PARCEL DATA
+  ui-gmap-markers(options='layerFormatters.Parcels.labelFromStreetNum',
+    models='layers.parcels',
+    coords='"self"',
+    idkey='"rm_property_id"',
+    click='clickedMarker',
+    ng-cloak='')
+
   ui-gmap-polygons(models='layers.parcels',
     idkey='"rm_property_id"'
     path='"geom_polys"',
@@ -39,5 +40,6 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')
+  //END PARCEL DATA
 
   include ./map-query-draw.jade

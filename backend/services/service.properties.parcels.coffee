@@ -1,36 +1,37 @@
 db = require('../config/dbs').properties
+Parcel = require "../models/model.parcels"
+Promise = require "bluebird"
 logger = require '../config/logger'
-fakeLogger =
-  info: ->
-    logger.info
-  log: ->
-  error: (msg)->
-    logger.error(msg)
+geohashHelper = require '../utils/validation/util.validation.geohash'
+requestUtil = require '../utils/util.http.request'
+sqlHelpers = require './sql/sql.helpers.coffee'
+coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
-safeQuery = require('bookshelf.raw.safe')(fakeLogger).safeQuery
-sqlGen = require('./sql/sql.properties.parcels')
-status = require '../../common/utils/httpStatus'
+validators = requestUtil.query.validators
 
-debug = (fnName = "", sql) ->
-  logger.debug "#{fnName} : calling with #{sql}" if sql?
+transforms =
+  bounds: [
+    validators.string(minLength: 1)
+    geohashHelper.geohash
+    validators.array(minLength: 2)
+    geohashHelper.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
+  ]
 
-module.exports = (overrideDb, overrideSafeQuery, overrideSqlGen, overrideLogger) ->
+required =
+  bounds: true
 
-  db = overrideDb if overrideDb
-  safeQuery = overrideSafeQuery if overrideSafeQuery
-  sqlGen = overrideSqlGen if overrideSqlGen
-  logger = overrideLogger if overrideLogger
 
-  getAll: (queryOpts, next) ->
-    sql = sqlGen.all queryOpts, next
-    safeQuery db, sql, next, 'getAll'
+module.exports =
 
-  getAllPolys: (queryOpts, next) ->
-    sql = sql = sqlGen.allPolys queryOpts, next
-    safeQuery(db, sql, next, 'getAllPolys')
-    .then (results) ->
-      #make the json string an object here to not be serialized twice
-      #also this keeps the front end from having to do this
-      results.map (poly) ->
-        poly.geom_polys = JSON.parse(poly.geom_polys)
-        poly
+  getBaseParcelData: (filters) -> Promise.try () ->
+    requestUtil.query.validateAndTransform(filters, transforms, required)
+    .then (filters) ->
+
+        query = db.knex.select().from(sqlHelpers.tableName(Parcel))
+        query.whereRaw(filters.bounds.sql, filters.bounds.bindings)
+
+        query.then (data) ->
+          data = data||[]
+          _.forEach data, (row) ->
+            row.geom_polys_json = JSON.parse(row.geom_polys_json)
+          data

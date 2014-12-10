@@ -1,25 +1,31 @@
 app = require '../app.coffee'
 require './baseGoogleMap.coffee'
+require '../services/httpStatus.coffee'
+qs = require 'qs'
+encode = undefined
 ###
   Our Main Map Implementation
 ###
-require '../services/httpStatus.coffee'
-# require '../services/parcels.coffee'
-encode = undefined
-
 app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$timeout', '$q',
+  'uiGmapLogger', '$timeout', '$q', '$rootScope',    
   'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
   'LayerFormatters'.ourNs()
-  ($log, $timeout, $q,
+  ($log, $timeout, $q, $rootScope,
   GoogleMapApi, BaseGoogleMap,
   HttpStatus, Properties, Events,
     LayerFormatters) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
-        $log.doLog = limits.options.doLog
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
+
+        @filters = ''
+        # @filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
+        #TODO: This should come from frontend config
+        @filterDrawDelay = 1000
+
+        @filterDrawPromise = false
+        $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
@@ -31,6 +37,7 @@ app.factory 'Map'.ourNs(), [
             polygons: []
             isEnabled: false
 
+          filterSummary: []
           layers:
             parcels: []
             mlsListings: []
@@ -56,6 +63,22 @@ app.factory 'Map'.ourNs(), [
           maps.visualRefresh = true
           @scope.dragZoom.options = getDragZoomOptions()
 
+      redraw: (paths) =>
+        if @scope.zoom > @scope.options.parcelsZoomThresh
+          hash = encode paths
+          Properties.getParcelBase(hash).then (data) =>
+            @scope.layers.parcels = data.data
+            #@scope.layers.mlsListings = data.data
+        else
+          @scope.layers.parcels.length = 0
+          #@scope.layers.mlsListings .length = 0
+
+        if @filters
+          Properties.getFilterSummary(hash, @filters).then (data) =>
+            @scope.filterSummary = data.data
+        else
+          @scope.filterSummary.length = 0
+
       draw: (event, paths) =>
         if not paths and not @scope.drawPolys.isEnabled
           paths = _.map @scope.bounds, (b) ->
@@ -63,24 +86,42 @@ app.factory 'Map'.ourNs(), [
 
         return if not paths? or not paths.length > 0
 
-        hash = encode paths
         oldDoCluster = @scope.doClusterMarkers
-        @scope.doClusterMarkers = if @map.zoom < @scope.options.clusteringThresh then true else false
+        @scope.doClusterMarkers = if @scope.zoom < @scope.options.clusteringThresh then true else false
         @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
-
-#        $log.debug "current zoom: " + @scope.zoom
-
-        if @scope.zoom > @scope.options.parcelsZoomThresh
-
-          Properties.getParcelsPolys(hash).then (data) =>
-            @scope.layers.parcels = data.data
-
-          Properties.getMLS(hash).then (data) =>
-              @scope.layers.mlsListings = data.data
+        @redraw(paths)
+      
+      filter: (newFilters, oldFilters) =>
+        if not newFilters and not oldFilters then return
+        if @filterDrawPromise
+          $timeout.cancel(@filterDrawPromise)
+        @filterDrawPromise = $timeout(@filterImpl, @filterDrawDelay)
+        
+      filterImpl: () =>
+        if $rootScope.selectedFilters
+          selectedFilters = _.clone($rootScope.selectedFilters)
+          selectedFilters.status = []
+          if (selectedFilters.forSale)
+            selectedFilters.status.push(ParcelEnums.status.forSale)
+            delete selectedFilters.forSale
+          if (selectedFilters.pending)
+            selectedFilters.status.push(ParcelEnums.status.pending)
+            delete selectedFilters.pending
+          if (selectedFilters.sold)
+            selectedFilters.status.push(ParcelEnums.status.recentlySold)
+            delete selectedFilters.sold
+          if selectedFilters.status.length == 0
+            @filters = null
+          else
+            @filters = '&'+qs.stringify(selectedFilters)
         else
           @scope.layers.parcels.length = 0
           @scope.layers.mlsListings.length = 0
 
+          @filters = null
+        @filterDrawPromise = false
+        @redraw()
+      
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
         @scope.$onRootScope Events.map.drawPolys.clear, =>
