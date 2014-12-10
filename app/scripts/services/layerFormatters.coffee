@@ -9,10 +9,11 @@ app.service 'LayerFormatters'.ourNs(), [
     colors[ParcelEnums.status.sold] = '#2c8aa7'
     colors[ParcelEnums.status.pending] = '#d48c0e'
     colors[ParcelEnums.status.forSale] = '#2fa02c'
-    colors['default'] = '#transparent' #or '#7e847f'?
+    colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
 
     Parcels:
       fill: (parcel) ->
+        return {} unless parcel
         color: colors[parcel.model.rm_status] || colors['default']
         opacity: '.65'
 
