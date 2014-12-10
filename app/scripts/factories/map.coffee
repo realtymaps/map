@@ -1,100 +1,95 @@
 app = require '../app.coffee'
 require './baseGoogleMap.coffee'
+require '../services/httpStatus.coffee'
+qs = require 'qs'
+encode = undefined
 ###
   Our Main Map Implementation
 ###
-require '../services/httpStatus.coffee'
-encode = undefined
-
-qs = require 'qs'
-
-
 app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$timeout', '$q', '$rootScope',
+  'uiGmapLogger', '$timeout', '$q', '$rootScope',    
   'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'Parcels'.ourNs(), 'ParcelEnums'.ourNs()
+  'LayerFormatters'.ourNs()
   ($log, $timeout, $q, $rootScope,
   GoogleMapApi, BaseGoogleMap,
   HttpStatus, Properties, Events,
-  Parcels, ParcelEnums) ->
+    LayerFormatters) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
-        $log.doLog = limits.options.doLog
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
-        @hash = ''
+
         @filters = ''
         # @filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
+        #TODO: This should come from frontend config
         @filterDrawDelay = 1000
+
         @filterDrawPromise = false
-        $rootScope.$watch('selectedFilters', @filter, true)
+        $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
           showWeather: false
-          map:
-            parcelBase: []
-            filterSummary: []
-            dragZoom:{}
-            changeZoom: (increment) ->
-              $scope.map.zoom += increment
-            doClusterMarkers: true
-            drawPolys:
-              draw: undefined
-              polygons: []
-              isEnabled: false
-            window: undefined
-            windowOptions:
-              forceClick: true
-            markers: []
-            parcels: Parcels
-            labelFromParcel: (p) ->
-              return {} unless p
-              icon: ' '
-              labelContent: p.street_address_num
-              labelAnchor: "0 0"
-              labelClass: "address-label"
 
-            clickedMarker: (gMarker, eventname, model) ->
-              $scope.map.window = model
+          #consider moving to layers
+          drawPolys:
+            draw: undefined
+            polygons: []
+            isEnabled: false
+
+          filterSummary: []
+          layers:
+            parcels: []
+            mlsListings: []
+            listingDetail: undefined
+
+          layerFormatters: LayerFormatters
+
+          dragZoom:{}
+          changeZoom: (increment) ->
+            $scope.zoom += increment
+          doClusterMarkers: true
+
+          clickedMarker: (gMarker, eventname, model) ->
+            $scope.layers.listingDetail = model
 
         @subscribe()
 
-        $log.info $scope.map
-        $log.info "map.center: #{$scope.map.center}"
+        $log.debug $scope.map
+        $log.debug "map center: #{$scope.center}"
 
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
-          @scope.map.dragZoom.options = getDragZoomOptions()
+          @scope.dragZoom.options = getDragZoomOptions()
 
-      redraw: () =>
-        if @scope.map.zoom > @scope.map.options.parcelsZoomThresh
-          Properties.getParcelBase(@hash).then (data) =>
-            @scope.map.parcelBase = data.data
-            @scope.map.markers = data.data
+      redraw: (paths) =>
+        if @scope.zoom > @scope.options.parcelsZoomThresh
+          hash = encode paths
+          Properties.getParcelBase(hash).then (data) =>
+            @scope.layers.parcels = data.data
+            #@scope.layers.mlsListings = data.data
         else
-          @scope.map.parcelBase.length = 0
-          @scope.map.markers.length = 0
+          @scope.layers.parcels.length = 0
+          #@scope.layers.mlsListings .length = 0
+
         if @filters
-          Properties.getFilterSummary(@hash, @filters).then (data) =>
-            @scope.map.filterSummary = data.data
+          Properties.getFilterSummary(hash, @filters).then (data) =>
+            @scope.filterSummary = data.data
         else
-          @scope.map.filterSummary.length = 0
+          @scope.filterSummary.length = 0
 
       draw: (event, paths) =>
-        if not paths and not @scope.map.drawPolys.isEnabled
-          paths = _.map @scope.map.bounds, (b) ->
+        if not paths and not @scope.drawPolys.isEnabled
+          paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
 
         return if not paths? or not paths.length > 0
 
-        @hash = encode paths
-        oldDoCluster = @scope.map.doClusterMarkers
-        @scope.map.doClusterMarkers = @map.zoom < @scope.map.options.clusteringThresh
-        @scope.map.markers = [] if oldDoCluster is not @scope.map.doClusterMarkers
-
-        @redraw()
+        oldDoCluster = @scope.doClusterMarkers
+        @scope.doClusterMarkers = if @scope.zoom < @scope.options.clusteringThresh then true else false
+        @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
+        @redraw(paths)
       
       filter: (newFilters, oldFilters) =>
         if not newFilters and not oldFilters then return
@@ -120,6 +115,9 @@ app.factory 'Map'.ourNs(), [
           else
             @filters = '&'+qs.stringify(selectedFilters)
         else
+          @scope.layers.parcels.length = 0
+          @scope.layers.mlsListings.length = 0
+
           @filters = null
         @filterDrawPromise = false
         @redraw()
@@ -127,16 +125,16 @@ app.factory 'Map'.ourNs(), [
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
         @scope.$onRootScope Events.map.drawPolys.clear, =>
-          @scope.map.drawPolys.polygons = []
+          @scope.drawPolys.polygons = []
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
-          @scope.map.drawPolys.isEnabled = isEnabled
+          @scope.drawPolys.isEnabled = isEnabled
           if isEnabled
-            @scope.map.markers = []
-            @scope.map.drawPolys.draw()
+            @scope.layers.mlsListings.length = 0
+            @scope.drawPolys.draw()
 
         @scope.$onRootScope Events.map.drawPolys.query, =>
-          polygons = @scope.map.drawPolys.polygons
+          polygons = @scope.drawPolys.polygons
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths

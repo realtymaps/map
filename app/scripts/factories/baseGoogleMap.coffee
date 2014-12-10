@@ -5,7 +5,9 @@ app = require '../app.coffee'
 
   For example if only update markers if dragging has really changed. Also checking for zoom deltas (tooManyZoomChanges)
 ###
-module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$timeout', ($log) ->
+module.exports = app.factory 'BaseGoogleMap'.ourNs(), [
+  'uiGmapLogger', 'uiGmapIsReady', '$timeout',
+  ($log, uiGmapIsReady, $timeout) ->
     class BaseGoogleMapCtrl extends BaseObject
       #all constructor arguments are for an instance (other stuff is singletons)
       constructor: (@scope, options, @zoomThresholdMill) ->
@@ -13,30 +15,17 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), ['uiGmapLogger','$http','$
         @hasRun = false;
         @zoomChangedTimeMilli = new Date().getTime()
         @activeMarker = undefined
-
+        self = @
         angular.extend @scope,
-          pageClass: 'page-map',
-          map:
-            bounds: {}
-            options: options
-            center: options.json.center
-            zoom: options.json.zoom,
-            dragging: false,
-            events:   #direct hook to google maps sdk events
-              tilesloaded: (map, eventName, originalEventArgs) =>
-                if !@hasRun
-                  @map = map
-                  @hasRun = true
-          markers: []
-
-        unBindWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) =>
-          return if (newValue == oldValue)
-          @draw? 'ready'
-        , true
-
-        @scope.$watch 'zoom', (newValue, oldValue) =>
-          return if (newValue == oldValue)
-          @draw? 'zoom' if !@scope.dragging and !@tooManyZoomChanges()
+          bounds: {}
+          options: options
+          center: options.json.center
+          zoom: options.json.zoom,
+          dragging: false,
+          events:
+            idle: ->
+              $timeout ->
+                self.draw? 'idle' if !self.scope.dragging and !self.tooManyZoomChanges()
 
         $log.info 'BaseGoogleMapCtrl: ' + @
 

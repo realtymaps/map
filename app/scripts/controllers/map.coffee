@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-require '../factories/mapOptions.coffee'
+require '../factories/mainOptions.coffee'
 require '../factories/map.coffee'
 
 ###
@@ -19,8 +19,10 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', 'Map'.ourNs(), 'MapOptions'.ourNs(), 'MapToggles'.ourNs()
+  '$scope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs()
   ($scope, Map, PromisedOptions, Toggles) ->
+    $scope.pageClass = 'page-map'
+
     PromisedOptions.then (options) ->
       map = unless map then new Map($scope, options) else map
     .catch (e) ->

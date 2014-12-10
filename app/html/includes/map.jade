@@ -1,39 +1,45 @@
-ui-gmap-google-map(center='map.center', zoom='map.zoom', draggable='true',
-  dragging='map.dragging', bounds='map.bounds', events='map.events', options='map.options',
-  pan='true', control='map.control', ng-cloak=''
+include ./map-toolbar.jade
+
+ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
+  dragging='dragging', bounds='bounds', events='events', options='options',
+  pan='true', control='control', ng-cloak=''
 )
 
-  //ui-gmap-layer(type='TrafficLayer', show='map.showTraffic')
-  //ui-gmap-layer(type='BicyclingLayer', show='map.showBicycling')
-  //ui-gmap-layer(namespace='weather', type='WeatherLayer', show='map.showWeather')
+  //ui-gmap-layer(type='TrafficLayer', show='showTraffic')
+  //ui-gmap-layer(type='BicyclingLayer', show='showBicycling')
+  //ui-gmap-layer(namespace='weather', type='WeatherLayer', show='showWeather')
   //two drag zooms for either keyboard or button
   
   ui-gmap-drag-zoom(keyboardkey='"alt"')
-  ui-gmap-drag-zoom(options='map.dragZoom.options')
+  ui-gmap-drag-zoom(options='dragZoom.options')
 
 
-  ui-gmap-markers(models='map.markers', coords='"self"',
-    idkey='"id"', click='map.clickedMarker', ng-cloak=''
-    options='map.labelFromParcel'
-    doCluster='map.doClusterMarkers')
+  //ui-gmap-markers(options='layerFormatters.MLS.labelFromPrice',
+  //  models='layers.mlsListings',
+  //  coords='"self"',
+  //  idkey='"id"',
+  //  click='clickedMarker',
+  //  ng-cloak='',
+  //  doCluster='doClusterMarkers')
 
-  ui-gmap-window(coords='map.window', options="map.windowOptions")
-    div(ng-cloak='') {{map.window}}
+  ui-gmap-window(coords='layers.listingDetail', forceClick="true")
+    div(ng-cloak='') {{layers.listingDetail}}
 
-  ui-gmap-polygons(models='map.parcelBase',
+  // BEGIN PARCEL DATA
+  ui-gmap-markers(options='layerFormatters.Parcels.labelFromStreetNum',
+    models='layers.parcels',
+    coords='"self"',
+    idkey='"rm_property_id"',
+    click='clickedMarker',
+    ng-cloak='')
+
+  ui-gmap-polygons(models='layers.parcels',
     idkey='"rm_property_id"'
     path='"geom_polys_json"',
-    fill="{color: '#CC6', opacity: '0.2'}",
-    stroke="{ color: '#444', weight: 3, opacity: '0.3' }",
+    fill="layerFormatters.Parcels.fill",
+    stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')
-  
-  ui-gmap-polygons(models='map.filterSummary',
-    idkey='"rm_property_id"'
-    path='"geom_polys_json"',
-    fill="map.parcels.fill",
-    stroke="{ color: '#000', weight: 2, opacity: '0.3' }",
-    visible='true', geodesic='true',
-    fit='false', editable='false', static='true', ng-cloak='')
+  //END PARCEL DATA
 
   include ./map-query-draw.jade
