@@ -16,7 +16,9 @@ flattenLonLat = (bounds) ->
     markers: '?, ?'
   _.reduce bounds, flattenLonLatImpl, init
 
-  
+# 40%
+_MARGIN = .4
+
 module.exports =
 
   decode: (param, boundsStr) ->
@@ -34,8 +36,16 @@ module.exports =
           results.sql = "ST_WITHIN(#{options.column}, ST_GeomFromText(MULTIPOLYGON(((#{boundsFlattened.markers}))), #{options.coordSys}))"
           results.bindings = boundsFlattened.bindings
         else
+          # whole map, so let's put a margin on each side
+          minLon = Math.min(bounds[0].lon, bounds[1].lon)
+          maxLon = Math.max(bounds[0].lon, bounds[1].lon)
+          marginLon = (maxLon - minLon)*_MARGIN
+          minLat = Math.min(bounds[0].lat, bounds[1].lat)
+          maxLat = Math.max(bounds[0].lat, bounds[1].lat)
+          marginLat = (maxLat - minLat)*_MARGIN
+          
           results.sql = "#{options.column} && ST_MakeEnvelope(?, ?, ?, ?, #{options.coordSys})"
-          results.bindings = [ bounds[1].lon, bounds[1].lat, bounds[0].lon, bounds[0].lat ]
+          results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
         return results
       .catch (err) ->
         return Promise.reject new ParamValidationError("problem processing decoded data", param, bounds)
