@@ -32,7 +32,7 @@ app.service 'LayerFormatters'.ourNs(), [
 
       labelFromStreetNum: (p) ->
         return {} unless p
-#        icon: ' '
+        icon: ' '
         labelContent: p.street_num
         labelAnchor: "0 0"
         labelClass: "address-label"

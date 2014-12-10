@@ -43,8 +43,6 @@ app.factory 'Map'.ourNs(), [
             $scope.zoom += increment
           doClusterMarkers: true
 
-
-
           clickedMarker: (gMarker, eventname, model) ->
             $scope.layers.listingDetail = model
 
@@ -73,13 +71,12 @@ app.factory 'Map'.ourNs(), [
 #        $log.debug "current zoom: " + @scope.zoom
 
         if @scope.zoom > @scope.options.parcelsZoomThresh
-          Properties.getMLS(hash)
-          .then (data) =>
-            @scope.layers.mlsListings = data.data
-#          .then =>
-#            Properties.getParcelsPolys(hash)
-#            .then (data) =>
-#              @scope.layers.parcels = data.data
+
+          Properties.getParcelsPolys(hash).then (data) =>
+            @scope.layers.parcels = data.data
+
+          Properties.getMLS(hash).then (data) =>
+              @scope.layers.mlsListings = data.data
         else
           @scope.layers.parcels.length = 0
           @scope.layers.mlsListings.length = 0
