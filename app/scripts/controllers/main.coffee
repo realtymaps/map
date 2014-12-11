@@ -1,4 +1,3 @@
-require '../factories/mainOptions.coffee'
 # see http://webpack.github.io/docs/context.html#require-context for documentation on the API being used below
 # JWI: I tried to make a requireDirectory() function to handle the code below, but it failed because of how the
 #      webpack parser works.  So, for now it will have to remain this small bit of copy-pasta.
@@ -18,8 +17,7 @@ for request in directoryContext.keys()
 app = require '../app.coffee'
 module.exports = app.controller 'MainCtrl'.ourNs(), [
   'uiGmapLogger', 'MainOptions'.ourNs(),
-  ($log, PromisedOptions) ->
-    PromisedOptions.then (limits) ->
-      $log.doLog = limits.options.doLog
-      $log.currentLevel = limits.options.logLevel
+  ($log, MainOptions) ->
+    $log.doLog = MainOptions.map.options.doLog
+    $log.currentLevel = MainOptions.map.options.logLevel
 ]
