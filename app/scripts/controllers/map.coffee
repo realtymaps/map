@@ -22,8 +22,7 @@ module.exports = app
   ($scope, Map, MainOptions, Toggles) ->
     $scope.pageClass = 'page-map'
 
-    if not map?
-      map = new Map($scope, MainOptions.map)
+    map = new Map($scope, MainOptions.map)
 
     $scope.Toggles = Toggles
 ]
