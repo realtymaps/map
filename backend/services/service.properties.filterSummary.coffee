@@ -41,7 +41,7 @@ required =
 
 module.exports = 
   
-  getFilterSummary: (filters) -> Promise.try () ->
+  getFilterSummary: (filters, limit = 600) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms)
     .then (filters) ->
 
@@ -62,9 +62,18 @@ module.exports =
       
       if filters.bathsMin?
         query.where("baths_full", '>=', filters.bathsMin)
-      
+
+      query.limit(limit) if limit
+
       query.then (data) ->
         data = data||[]        
         _.forEach data, (row) ->
+          #TODO: is there a better way to do this on the POSTGRES instead (escaping or something)?
+          row.geom_point_json = JSON.parse(row.geom_point_json)
           row.geom_polys_json = JSON.parse(row.geom_polys_json)
+
+        # currently we must have dupes in our database
+        # this is why we are having artifacts
+        data = _.uniq data, (row) ->
+          row.rm_property_id
         data

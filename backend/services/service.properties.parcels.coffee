@@ -34,4 +34,9 @@ module.exports =
           data = data||[]
           _.forEach data, (row) ->
             row.geom_polys_json = JSON.parse(row.geom_polys_json)
+
+          # currently we must have dupes in our database
+          # this is why we are having artifacts
+          data = _.uniq data, (row) ->
+            row.rm_property_id
           data

@@ -14,14 +14,14 @@ module.exports =
     zoomThresholdMilliSeconds: 1500
     options:
       doLog: true
-      logLevel: LOG_LEVELS.debug
+      logLevel: LOG_LEVELS.warn
       streetViewControl: false
       zoomControl: true
       panControl: false
       maxZoom: 20
       minZoom: 3
       parcelsZoomThresh: 17
-      clusteringThresh: 14
+      clusteringThresh: 17
       json:
         zoom: 15
         center:

@@ -1,6 +1,5 @@
 'use strict'
 
-require '../styles/common.styl'
 require '../../common/extensions/strings.coffee'
 # require './constants/parcel_enums.coffee'
 

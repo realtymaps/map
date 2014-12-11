@@ -16,10 +16,4 @@ for request in directoryContext.keys()
 
 # main app controller
 app = require '../app.coffee'
-module.exports = app.controller 'MainCtrl'.ourNs(), [
-  'uiGmapLogger', 'MainOptions'.ourNs(),
-  ($log, PromisedOptions) ->
-    PromisedOptions.then (limits) ->
-      $log.doLog = limits.options.doLog
-      $log.currentLevel = limits.options.logLevel
-]
+module.exports = app.controller 'MainCtrl'.ourNs(), [ -> ]

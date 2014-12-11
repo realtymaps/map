@@ -2,19 +2,20 @@ app = require '../app.coffee'
 require './baseGoogleMap.coffee'
 require '../services/httpStatus.coffee'
 qs = require 'qs'
+
 encode = undefined
 ###
   Our Main Map Implementation
 ###
 app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$timeout', '$q', '$rootScope',    
+  'uiGmapLogger', '$timeout', '$q', '$rootScope',
   'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'LayerFormatters'.ourNs()
+  'LayerFormatters'.ourNs(), 'ParcelEnums'.ourNs(),
   ($log, $timeout, $q, $rootScope,
-  GoogleMapApi, BaseGoogleMap,
-  HttpStatus, Properties, Events,
-    LayerFormatters) ->
+    GoogleMapApi, BaseGoogleMap,
+    HttpStatus, Properties, Events,
+    LayerFormatters, ParcelEnums) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -31,27 +32,29 @@ app.factory 'Map'.ourNs(), [
           showTraffic: true
           showWeather: false
 
-          #consider moving to layers
-          drawPolys:
-            draw: undefined
-            polygons: []
-            isEnabled: false
-
-          filterSummary: []
           layers:
             parcels: []
             mlsListings: []
             listingDetail: undefined
+            filterSummary: []
+            drawnPolys: []
 
-          layerFormatters: LayerFormatters
+        #consider moving to layers
+          drawUtil:
+            draw: undefined
+            isEnabled: false
 
-          dragZoom:{}
+          actions:
+            listing: (gMarker, eventname, model) ->
+              $scope.layers.listingDetail = model
+
+          formatters:
+            layer: LayerFormatters
+
+          dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
           doClusterMarkers: true
-
-          clickedMarker: (gMarker, eventname, model) ->
-            $scope.layers.listingDetail = model
 
         @subscribe()
 
@@ -64,40 +67,43 @@ app.factory 'Map'.ourNs(), [
           @scope.dragZoom.options = getDragZoomOptions()
 
       redraw: (paths) =>
+        hash = encode paths
         if @scope.zoom > @scope.options.parcelsZoomThresh
-          hash = encode paths
           Properties.getParcelBase(hash).then (data) =>
             @scope.layers.parcels = data.data
-            #@scope.layers.mlsListings = data.data
+            @scope.layers.mlsListings = data.data
         else
           @scope.layers.parcels.length = 0
-          #@scope.layers.mlsListings .length = 0
+          @scope.layers.mlsListings.length = 0
 
         if @filters
           Properties.getFilterSummary(hash, @filters).then (data) =>
-            @scope.filterSummary = data.data
+            @scope.layers.filterSummary = data.data
         else
-          @scope.filterSummary.length = 0
+          @scope.layers.filterSummary.length = 0
 
       draw: (event, paths) =>
-        if not paths and not @scope.drawPolys.isEnabled
+        @scope.doClusterMarkers = if @scope.zoom < @scope.options.clusteringThresh then true else false
+
+        if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
 
         return if not paths? or not paths.length > 0
 
         oldDoCluster = @scope.doClusterMarkers
-        @scope.doClusterMarkers = if @scope.zoom < @scope.options.clusteringThresh then true else false
+
         @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
         @redraw(paths)
-      
+
+      #TODO: all filter stuff should be moved to a baseClass, helper class or to its own controller
       filter: (newFilters, oldFilters) =>
         if not newFilters and not oldFilters then return
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
         @filterDrawPromise = $timeout(@filterImpl, @filterDrawDelay)
-        
-      filterImpl: () =>
+
+      filterImpl: =>
         if $rootScope.selectedFilters
           selectedFilters = _.clone($rootScope.selectedFilters)
           selectedFilters.status = []
@@ -113,7 +119,7 @@ app.factory 'Map'.ourNs(), [
           if selectedFilters.status.length == 0
             @filters = null
           else
-            @filters = '&'+qs.stringify(selectedFilters)
+            @filters = '&' + qs.stringify(selectedFilters)
         else
           @scope.layers.parcels.length = 0
           @scope.layers.mlsListings.length = 0
@@ -121,20 +127,22 @@ app.factory 'Map'.ourNs(), [
           @filters = null
         @filterDrawPromise = false
         @redraw()
-      
+
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
         @scope.$onRootScope Events.map.drawPolys.clear, =>
-          @scope.drawPolys.polygons = []
+          _.each @scope.layers, (layer, k) ->
+            return layer.length = 0 if layer? and _.isArray layer
+            layer = {}
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
-          @scope.drawPolys.isEnabled = isEnabled
+          @scope.drawUtil.isEnabled = isEnabled
           if isEnabled
             @scope.layers.mlsListings.length = 0
-            @scope.drawPolys.draw()
+            @scope.drawUtil.draw()
 
         @scope.$onRootScope Events.map.drawPolys.query, =>
-          polygons = @scope.drawPolys.polygons
+          polygons = @scope.layers.drawnPolys
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
