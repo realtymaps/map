@@ -1,6 +1,5 @@
 app = require '../app.coffee'
 
-require '../constants/parcel_enums.coffee'
 sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'

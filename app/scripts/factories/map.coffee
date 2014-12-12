@@ -58,10 +58,9 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
 
         @subscribe()
 
-      redraw: (paths) =>
-        hash = encode paths
+      redraw: () =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
-          Properties.getParcelBase(hash).then (data) =>
+          Properties.getParcelBase(@hash).then (data) =>
             @scope.layers.parcels = data.data
             @scope.layers.mlsListings = data.data
         else
@@ -69,7 +68,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           @scope.layers.mlsListings.length = 0
 
         if @filters
-          Properties.getFilterSummary(hash, @filters).then (data) =>
+          Properties.getFilterSummary(@hash, @filters).then (data) =>
             @scope.layers.filterSummary = data.data
         else
           @scope.layers.filterSummary.length = 0
@@ -86,7 +85,8 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         oldDoCluster = @scope.doClusterMarkers
 
         @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
-        @redraw(paths)
+        @hash = encode paths
+        @redraw()
 
       #TODO: all filter stuff should be moved to a baseClass, helper class or to its own controller
       filter: (newFilters, oldFilters) =>
@@ -115,7 +115,6 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         else
           @scope.layers.parcels.length = 0
           @scope.layers.mlsListings.length = 0
-
           @filters = null
         @filterDrawPromise = false
         @redraw()
