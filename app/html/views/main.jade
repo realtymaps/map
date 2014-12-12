@@ -29,8 +29,4 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           a(href="{{frontendRoutes.map}}")
           #btn
           | Go
-  div(ui-view="map", class="{{pageClass}}", ng-show="$state.includes('map')" ).page.ng-hide
-  div(ui-view="login", class="{{pageClass}}", ng-show="$state.includes('login')" ).page.ng-hide
-  div(ui-view="logout", class="{{pageClass}}", ng-show="$state.includes('logout')" ).page.ng-hide
-  div(ui-view="accessDenied", class="{{pageClass}}", ng-show="$state.includes('accessDenied')" ).page.ng-hide
-  div(ui-view="pageNotFound", class="{{pageClass}}", ng-show="$state.includes('pageNotFound')" ).page.ng-hide
+  div(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", class="{{pageClass}}", ng-show="$state.includes(state.name)" ).page.ng-hide
