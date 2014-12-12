@@ -46,6 +46,7 @@ app.service 'LayerFormatters'.ourNs(), [
         icon: ' '
         labelContent: formatMarkerContent 'default', parcel.street_address_num
         labelAnchor: "20 10"
+        zIndex: 0
 
     MLS:
       markerOptionsFromForSale: (mls) ->
@@ -55,5 +56,6 @@ app.service 'LayerFormatters'.ourNs(), [
           icon: markersIcon[mls.rm_status] or markersIcon['default']
           labelContent: formatStatusMarkerContent mls.rm_status, formattedPrice
           labelAnchor: "30 100"
+          zIndex: 1
         ret
 ]
