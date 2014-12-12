@@ -19,11 +19,14 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs()
-  ($scope, Map, PromisedOptions, Toggles) ->
+  '$scope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(), "uiGmapLogger",
+  ($scope, Map, PromisedOptions, Toggles, $log) ->
     $scope.pageClass = 'page-map'
 
     PromisedOptions.then (options) ->
+      $log.doLog = options.options.doLog
+      $log.currentLevel = options.options.logLevel
+
       map = unless map then new Map($scope, options) else map
     .catch (e) ->
       console.error e

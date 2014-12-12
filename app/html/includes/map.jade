@@ -1,3 +1,4 @@
+
 include ./map-toolbar.jade
 
 ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
@@ -9,37 +10,49 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   //ui-gmap-layer(type='BicyclingLayer', show='showBicycling')
   //ui-gmap-layer(namespace='weather', type='WeatherLayer', show='showWeather')
   //two drag zooms for either keyboard or button
-  
+
   ui-gmap-drag-zoom(keyboardkey='"alt"')
   ui-gmap-drag-zoom(options='dragZoom.options')
 
 
-  //ui-gmap-markers(options='layerFormatters.MLS.labelFromPrice',
-  //  models='layers.mlsListings',
-  //  coords='"self"',
-  //  idkey='"id"',
-  //  click='clickedMarker',
-  //  ng-cloak='',
-  //  doCluster='doClusterMarkers')
+  ui-gmap-markers(options='formatters.layer.MLS.markerOptionsFromForSale',
+    models='layers.filterSummary',
+    coords='"geom_point_json"',
+    idkey='"rm_property_id"',
+    click='actions.listing',
+    ng-cloak='',
+    doCluster='doClusterMarkers',
+    clusterOptions="{ignoreHidden: true,  styles: [{textSize: 26, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
+    "sans-serif', url:'assets/1418374195_Flatt3d-Building-64_1.png', width:'64', height:'64', textColor:'#32ffff'}]}")
 
-  ui-gmap-window(coords='layers.listingDetail', forceClick="true")
+    //clusterOptions="{title: 'Click to Zoom in to properties.', ignoreHidden: true, styles: [" +
+    //"{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', " +
+    //  "url:'assets/rmaps_geo_diagram_64_1.png', width:'64',height:'64',textColor:'white'},{anchorText: [2,0], " +
+    //  "textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/rmaps_geo_diagram_64_2.png', " +
+    //  "width:'64',height:'64',textColor:'white'}," +
+    //"{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif'," +
+    //  "url:'assets/rmaps_geo_diagram_64_3.png', width:'64',height:'64',textColor:'white'}" +
+    //"]}")
+
+  ui-gmap-window(coords='layers.listingDetail.geom_point_json', show="layers.listingDetail.show")
     div(ng-cloak='') {{layers.listingDetail}}
 
   // BEGIN PARCEL DATA
-  ui-gmap-markers(options='layerFormatters.Parcels.labelFromStreetNum',
+  ui-gmap-markers(options='formatters.layer.Parcels.labelFromStreetNum',
     models='layers.parcels',
     coords='"self"',
     idkey='"rm_property_id"',
-    click='clickedMarker',
+    click='actions.listing',
     ng-cloak='')
 
   ui-gmap-polygons(models='layers.parcels',
     idkey='"rm_property_id"'
     path='"geom_polys_json"',
-    fill="layerFormatters.Parcels.fill",
+    fill="formatters.layer.Parcels.fill",
     stroke="{ color: '#2c8aa7', weight: 3, opacity: '1.0' }",
     visible='true', geodesic='true',
     fit='false', editable='false', static='true', ng-cloak='')
   //END PARCEL DATA
 
   include ./map-query-draw.jade
+  ui-gmap-map-control(template='map-debug.tpl.html', position='top-right', index='1', controller='RealtyMaps-MapDebugCtrl')
