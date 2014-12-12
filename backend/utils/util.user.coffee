@@ -8,7 +8,6 @@ httpStatus = require '../../common/utils/httpStatus'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
-frontendRoutes = require '../../common/config/routes.frontend.coffee'
 
 
 # caches permission and group membership values on the user session; we could

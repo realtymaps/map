@@ -16,8 +16,8 @@ for request in directoryContext.keys()
 # main app controller
 app = require '../app.coffee'
 module.exports = app.controller 'MainCtrl'.ourNs(), [
-  'uiGmapLogger', 'MainOptions'.ourNs(),
-  ($log, MainOptions) ->
-    $log.doLog = MainOptions.map.options.doLog
-    $log.currentLevel = MainOptions.map.options.logLevel
+  '$state',
+  ($state) ->
+    #if $state.current.name == 'main'
+    #  $state.go("search")
 ]

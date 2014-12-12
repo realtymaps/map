@@ -6,24 +6,14 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$timeout', '$q', '$rootScope',    
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
-  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'LayerFormatters'.ourNs()
-  ($log, $timeout, $q, $rootScope,
-  GoogleMapApi, BaseGoogleMap,
-  HttpStatus, Properties, Events,
-    LayerFormatters) ->
+app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs()
+  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events, LayerFormatters, MainOptions) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
 
         @filters = ''
-        # @filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
-        #TODO: This should come from frontend config
-        @filterDrawDelay = 1000
-
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope = _.merge @scope,
@@ -95,7 +85,7 @@ app.factory 'Map'.ourNs(), [
         if not newFilters and not oldFilters then return
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-        @filterDrawPromise = $timeout(@filterImpl, @filterDrawDelay)
+        @filterDrawPromise = $timeout(@filterImpl, MainOptions.filterDrawDelay)
         
       filterImpl: () =>
         if $rootScope.selectedFilters

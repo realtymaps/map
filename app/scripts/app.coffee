@@ -18,6 +18,7 @@ app = window.angular.module appName, [
   'ui.bootstrap'
   'stateFiles'
   'ui.router'
+  'ct.ui.router.extras'
   'ngAnimate'
 ]
 

@@ -30,4 +30,8 @@ app.constant 'MainOptions'.ourNs(), do () ->
             longitude: -81.790809
     # do logging for local dev only
     doLog: (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
+    # logoutDelayMillis is how long to pause on the logout view before redirecting
+    logoutDelayMillis: 1500
+    # filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
+    filterDrawDelay: 1000
   }
