@@ -57,7 +57,7 @@ app.factory 'Map'.ourNs(), [
               if $scope.layers.listingDetail
                 $scope.layers.listingDetail.show = false
               model.show = true
-              $scope.$evalAsync($scope.layers.listingDetail = model)
+              $scope.layers.listingDetail = model
 
           formatters:
             layer: LayerFormatters
