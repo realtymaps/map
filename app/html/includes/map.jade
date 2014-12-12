@@ -22,11 +22,19 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     click='actions.listing',
     ng-cloak='',
     doCluster='doClusterMarkers',
-    clusterOptions="{ignoreHidden: true,  styles: [{textSize: 26, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/1418374195_Flatt3d-Building-64_1.png', width:'64', height:'64', textColor:'#32ffff'}]}")
-    //clusterOptions="{title: 'Click to Zoom in to properties.', ignoreHidden: true, imageExtension: 'png', styles: [{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/rmaps_geo_diagram_64_1.png', width:'64',height:'64',textColor:'white'},{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/rmaps_geo_diagram_64_2.png', width:'64',height:'64',textColor:'white'},{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/rmaps_geo_diagram_64_3.png', width:'64',height:'64',textColor:'white'}]}")
-    
+    clusterOptions="{ignoreHidden: true,  styles: [{textSize: 26, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
+    "sans-serif', url:'assets/1418374195_Flatt3d-Building-64_1.png', width:'64', height:'64', textColor:'#32ffff'}]}")
 
-  ui-gmap-window(coords='layers.listingDetail.geom_point_json', forceClick="true")
+    //clusterOptions="{title: 'Click to Zoom in to properties.', ignoreHidden: true, styles: [" +
+    //"{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', " +
+    //  "url:'assets/rmaps_geo_diagram_64_1.png', width:'64',height:'64',textColor:'white'},{anchorText: [2,0], " +
+    //  "textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif', url:'assets/rmaps_geo_diagram_64_2.png', " +
+    //  "width:'64',height:'64',textColor:'white'}," +
+    //"{anchorText: [2,0], textSize: 14, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, sans-serif'," +
+    //  "url:'assets/rmaps_geo_diagram_64_3.png', width:'64',height:'64',textColor:'white'}" +
+    //"]}")
+
+  ui-gmap-window(coords='layers.listingDetail.geom_point_json', show="layers.listingDetail.show")
     div(ng-cloak='') {{layers.listingDetail}}
 
   // BEGIN PARCEL DATA

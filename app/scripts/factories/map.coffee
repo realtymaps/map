@@ -19,8 +19,16 @@ app.factory 'Map'.ourNs(), [
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
+        GoogleMapApi.then (maps) =>
+          encode = maps.geometry.encoding.encodePath
+          maps.visualRefresh = true
+          @scope.dragZoom.options = Map.getDragZoomOptions()
+
+        $log.debug $scope.map
+        $log.debug "map center: #{$scope.center}"
 
         @filters = ''
+
         # @filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
         #TODO: This should come from frontend config
         @filterDrawDelay = 1000
@@ -39,13 +47,16 @@ app.factory 'Map'.ourNs(), [
             filterSummary: []
             drawnPolys: []
 
-        #consider moving to layers
           drawUtil:
             draw: undefined
             isEnabled: false
 
           actions:
             listing: (gMarker, eventname, model) ->
+              #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
+              if $scope.layers.listingDetail
+                $scope.layers.listingDetail.show = false
+              model.show = true
               $scope.layers.listingDetail = model
 
           formatters:
@@ -57,14 +68,6 @@ app.factory 'Map'.ourNs(), [
           doClusterMarkers: true
 
         @subscribe()
-
-        $log.debug $scope.map
-        $log.debug "map center: #{$scope.center}"
-
-        GoogleMapApi.then (maps) =>
-          encode = maps.geometry.encoding.encodePath
-          maps.visualRefresh = true
-          @scope.dragZoom.options = getDragZoomOptions()
 
       redraw: (paths) =>
         hash = encode paths
@@ -133,7 +136,7 @@ app.factory 'Map'.ourNs(), [
         @scope.$onRootScope Events.map.drawPolys.clear, =>
           _.each @scope.layers, (layer, k) ->
             return layer.length = 0 if layer? and _.isArray layer
-            layer = {}
+            layer = {}#this is when a layer is an object
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled
@@ -147,16 +150,5 @@ app.factory 'Map'.ourNs(), [
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
-    getDragZoomOptions = ->
-      visualEnabled: true,
-      visualPosition: google.maps.ControlPosition.LEFT,
-      visualPositionOffset: new google.maps.Size(25, 425),
-      visualPositionIndex: null,
-      #TODO: change this image, DAN?
-      visualSprite: "http://maps.gstatic.com/mapfiles/ftr/controls/dragzoom_btn.png",
-      visualSize: new google.maps.Size(20, 20),
-      visualTips:
-        off: "Turn on",
-        on: "Turn off"
     Map
 ]
