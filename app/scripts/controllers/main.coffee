@@ -15,9 +15,4 @@ for request in directoryContext.keys()
 
 # main app controller
 app = require '../app.coffee'
-module.exports = app.controller 'MainCtrl'.ourNs(), [
-  '$state',
-  ($state) ->
-    #if $state.current.name == 'main'
-    #  $state.go("search")
-]
+module.exports = app.controller 'MainCtrl'.ourNs(), [ -> ]

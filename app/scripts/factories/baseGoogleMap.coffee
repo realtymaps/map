@@ -10,6 +10,18 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), [
   ($log, uiGmapIsReady, $timeout) ->
     class BaseGoogleMapCtrl extends BaseObject
       #all constructor arguments are for an instance (other stuff is singletons)
+      @getDragZoomOptions = ->
+        visualEnabled: true,
+        visualPosition: google.maps.ControlPosition.LEFT,
+        visualPositionOffset: new google.maps.Size(25, 425),
+        visualPositionIndex: null,
+        #TODO: change this image, DAN?
+        visualSprite: "http://maps.gstatic.com/mapfiles/ftr/controls/dragzoom_btn.png",
+        visualSize: new google.maps.Size(20, 20),
+        visualTips:
+          off: "Turn on",
+          on: "Turn off"
+
       constructor: (@scope, options, @zoomThresholdMill) ->
         @map = {}
         @hasRun = false;
