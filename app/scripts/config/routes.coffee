@@ -25,7 +25,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     $stateProvider.state(state)
   
   
-  buildState null, 'main', url: frontendRoutes.index
+  buildState null, 'main', url: frontendRoutes.index, sticky: true
   buildState 'main', 'map', sticky:true, loginRequired:true
   buildState 'main', 'login'
   buildState 'main', 'logout'
