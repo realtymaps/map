@@ -26,6 +26,6 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
 
 app.run ["$rootScope", "authorization".ourNs(), ($rootScope, authorization) ->
   $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
-    authorization.authorize(toState, toParams)
+    authorization.authorize(toState, toParams, fromState, fromParams)
     return
 ]
