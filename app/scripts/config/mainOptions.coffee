@@ -25,4 +25,5 @@ app.constant 'MainOptions'.ourNs(), do () ->
     logoutDelayMillis: 1500
     # filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
     filterDrawDelay: 1000
+    isDev: isDev
   }
