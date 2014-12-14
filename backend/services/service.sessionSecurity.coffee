@@ -125,7 +125,11 @@ iterateSecurity = (req, res, security) ->
         # only if we detect that we successfully performed a save...
         setSecurityCookie(req, res, token, security.remember_me)
     .catch (err) ->
-      logger.warn "Error while iterating security token: #{err}"
+      ignore = "No rows were affected in the update"
+      if (err?.message?.substr(0, ignore.length) == ignore)
+        logger.debug "race condition encountered due to concurrent AJAX calls in a session, ignoring"
+      else
+        logger.error "Error while iterating security token: #{err}"
       return
 
 

@@ -13,7 +13,6 @@ base =
     LEVEL: 'info'
     FILE_AND_LINE: false
     LONG_STACK_TRACES: false
-    FRONT_END: false
   USER_DB:
     client: 'pg'
     connection: process.env.USER_DATABASE_URL
@@ -77,7 +76,6 @@ environmentConfig =
       LEVEL: 'sql'
       FILE_AND_LINE: true
       LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
-      FRONT_END: true
     USE_ERROR_HANDLER: true
 
   test: # test inherits from development below

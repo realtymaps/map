@@ -7,15 +7,9 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), [
-  'uiGmapLogger', '$timeout', '$q', '$rootScope',
-  'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
-  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(),
-  'LayerFormatters'.ourNs(), 'ParcelEnums'.ourNs(),
-  ($log, $timeout, $q, $rootScope,
-    GoogleMapApi, BaseGoogleMap,
-    HttpStatus, Properties, Events,
-    LayerFormatters, ParcelEnums) ->
+app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(), 'ParcelEnums'.ourNs()
+  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events, LayerFormatters, MainOptions, ParcelEnums) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -28,11 +22,6 @@ app.factory 'Map'.ourNs(), [
         $log.debug "map center: #{$scope.center}"
 
         @filters = ''
-
-        # @filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
-        #TODO: This should come from frontend config
-        @filterDrawDelay = 1000
-
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope = _.merge @scope,
@@ -69,10 +58,9 @@ app.factory 'Map'.ourNs(), [
 
         @subscribe()
 
-      redraw: (paths) =>
-        hash = encode paths
+      redraw: () =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
-          Properties.getParcelBase(hash).then (data) =>
+          Properties.getParcelBase(@hash).then (data) =>
             @scope.layers.parcels = data.data
             @scope.layers.mlsListings = data.data
         else
@@ -80,7 +68,7 @@ app.factory 'Map'.ourNs(), [
           @scope.layers.mlsListings.length = 0
 
         if @filters
-          Properties.getFilterSummary(hash, @filters).then (data) =>
+          Properties.getFilterSummary(@hash, @filters).then (data) =>
             @scope.layers.filterSummary = data.data
         else
           @scope.layers.filterSummary.length = 0
@@ -97,16 +85,17 @@ app.factory 'Map'.ourNs(), [
         oldDoCluster = @scope.doClusterMarkers
 
         @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
-        @redraw(paths)
+        @hash = encode paths
+        @redraw()
 
       #TODO: all filter stuff should be moved to a baseClass, helper class or to its own controller
       filter: (newFilters, oldFilters) =>
         if not newFilters and not oldFilters then return
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-        @filterDrawPromise = $timeout(@filterImpl, @filterDrawDelay)
-
-      filterImpl: =>
+        @filterDrawPromise = $timeout(@filterImpl, MainOptions.filterDrawDelay)
+        
+      filterImpl: () =>
         if $rootScope.selectedFilters
           selectedFilters = _.clone($rootScope.selectedFilters)
           selectedFilters.status = []
@@ -126,7 +115,6 @@ app.factory 'Map'.ourNs(), [
         else
           @scope.layers.parcels.length = 0
           @scope.layers.mlsListings.length = 0
-
           @filters = null
         @filterDrawPromise = false
         @redraw()

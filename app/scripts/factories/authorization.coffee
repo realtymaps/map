@@ -8,24 +8,24 @@ qs = require 'qs'
 
 
 app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".ourNs(), ($rootScope, $location, principal) ->
-  return authorize: (nextRoute) ->
+  return authorize: (toState, toParams, fromState, fromParams) ->
     principal.getIdentity().then (identity) ->
       if not principal.isAuthenticated()
-        if nextRoute?.$$route?.permissionsRequired || nextRoute?.$$route?.loginRequired
+        if toState?.permissionsRequired || toState?.loginRequired
           # user is not authenticated, but needs to be.
           # set the route they wanted as a query parameter
           # then, send them to the signin route so they can log in
-          $location.url frontendRoutes.login+'?'+qs.stringify(next: nextRoute.$$route.originalPath+'?'+qs.stringify(nextRoute.params))
+          $location.url frontendRoutes.login+'?'+qs.stringify(next: $location.path()+'?'+qs.stringify($location.search()))
           return
       
-      if not permissionsUtil.checkAllowed(nextRoute?.$$route?.permissionsRequired, identity?.permissions, console.log)
+      if not permissionsUtil.checkAllowed(toState?.permissionsRequired, identity?.permissions, console.log)
         # user is signed in but not authorized for desired state
         $location.path frontendRoutes.accessDenied
         return
 ]
 
 app.run ["$rootScope", "authorization".ourNs(), ($rootScope, authorization) ->
-  $rootScope.$on "$routeChangeStart", (event, nextRoute) ->
-    authorization.authorize(nextRoute)
+  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+    authorization.authorize(toState, toParams, fromState, fromParams)
     return
 ]

@@ -24,7 +24,7 @@ myCustomLevels =
     sql: 'magenta'
     debug: 'cyan'
     info: 'green'
-    warn: 'orange'
+    warn: 'yellow'
     error: 'red'
 
 # console.info config.LOGGING.LEVEL

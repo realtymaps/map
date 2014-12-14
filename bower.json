@@ -18,6 +18,7 @@
     "angular-google-maps": "git://github.com/realtymaps/angular-google-maps.git#beta",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
+    "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
     "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync.git"
   },
   "sofresh": [
@@ -28,7 +29,8 @@
     "angular-cookies",
     "angular-mocks",
     "angular-route",
-    "angular-animate"
+    "angular-animate",
+    "ui-router-extras"
     ],
   "overrides": {
     "dbsync": {
