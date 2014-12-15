@@ -32,11 +32,7 @@ module.exports =
 
         query.then (data) ->
           data = data||[]
-          _.forEach data, (row) ->
-            row.geom_polys_json = JSON.parse(row.geom_polys_json)
-            row.geom_point_json = JSON.parse(row.geom_point_json)
-          # currently we must have dupes in our database
-          # this is why we are having artifacts
+          # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
           data = _.uniq data, (row) ->
             row.rm_property_id
           data

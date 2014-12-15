@@ -16,8 +16,8 @@ flattenLonLat = (bounds) ->
     markers: '?, ?'
   _.reduce bounds, flattenLonLatImpl, init
 
-# 40%
-_MARGIN = .4
+# 50%
+_MARGIN = .5
 
 module.exports =
 

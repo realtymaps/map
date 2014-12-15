@@ -66,14 +66,8 @@ module.exports =
       query.limit(limit) if limit
 
       query.then (data) ->
-        data = data||[]        
-        _.forEach data, (row) ->
-          #TODO: is there a better way to do this on the POSTGRES instead (escaping or something)?
-          row.geom_point_json = JSON.parse(row.geom_point_json)
-          row.geom_polys_json = JSON.parse(row.geom_polys_json)
-
-        # currently we must have dupes in our database
-        # this is why we are having artifacts
+        data = data||[]
+        # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
         data = _.uniq data, (row) ->
           row.rm_property_id
         data
