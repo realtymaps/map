@@ -44,18 +44,28 @@ http://stackoverflow.com/questions/1554893/google-maps-api-v3-infowindow-not-siz
 
 windowColor = rgba(45,45,63,0.85)
 .custom-info-window
-  background: windowColor
-  color: white
-  padding: 5px
+  /*color: white*/
+  /*padding: 5px*/
   box-shadow: 3px 3px 10px windowColor
   border-radius: 5px
   width: 260px;
   /*margin-top: 15px;*/
   /*margin-left: -130px;*/
 
-.custom-info-window a
-  color: white;
-  text-decoration: underline
+.custom-info-window > .panel
+  background: rgba(0,0,0,0.0)
+  margin 0px
+.custom-info-window > .panel > .panel-heading
+  background-color #3276B1
+  border-color #3276B1
+
+.custom-info-window > .panel > .panel-body
+  background windowColor
+  color white
+
+/*.custom-info-window a*/
+  /*color: white;*/
+  /*text-decoration: underline*/
 
 /* info-box-tick / pin */
 /*.custom-info-window:after*/
