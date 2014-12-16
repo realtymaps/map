@@ -35,6 +35,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
 
           listingOptions:
             boxClass: 'custom-info-window'
+            closeBoxDiv: '<i" class="pull-right fa fa-close fa-3x" style="position: relative; cursor: pointer;"></i>'
           layers:
             parcels: []
             mlsListings: []
