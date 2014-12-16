@@ -21,7 +21,7 @@ app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'M
       principal.getIdentity()
       .then () ->
         if not principal.isAuthenticated()
-          delayedUrl($location.search('next') || frontendRoutes.index)
+          delayedUrl($location.search().next || frontendRoutes.index)
         else
           $http.get backendRoutes.logout
           .success (data, status) ->

@@ -30,6 +30,9 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
   buildState 'main', 'login'
   buildState 'main', 'logout'
   buildState 'main', 'accessDenied', controller: null
+  buildState 'main', 'authenticating', controller: null
+  
+  # this one has to be last, since it is a catch-all
   buildState 'main', 'pageNotFound', controller: null
 
   $urlRouterProvider.when '', frontendRoutes.index

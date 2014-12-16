@@ -10,6 +10,7 @@ permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
+userHandles = require '../routes/handles/handle.user'
 httpStatus = require '../../common/utils/httpStatus'
 
 
@@ -18,7 +19,7 @@ class SessionSecurityError extends Error
     @name = "SessionSecurityError"
     if @message
       if @invalidate is "nothing"
-         logger[loglevel] "SessionSecurityCheck: #{@message}"
+        logger[loglevel] "SessionSecurityCheck: #{@message}"
       else
         logger[loglevel] "SessionSecurityCheck: invalidation triggered at #{@invalidate} level: #{@message}"
 
@@ -185,7 +186,7 @@ module.exports = {
       if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
         logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
         if options.logoutOnFail
-          return userUtils.doLogout(req, res, next)
+          return userHandles.doLogout(req, res, next)
         else
           return next(status: httpStatus.UNAUTHORIZED, message: "You do not have permission to access this URI.")
       return process.nextTick(next)
