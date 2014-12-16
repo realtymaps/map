@@ -101,7 +101,7 @@ updateUserState = (session, partialState) -> Promise.try () ->
   delete partialState.id
   _.extend(session.state, partialState)
   UserState.forge(id: session.userid)
-  .save(partialState, {method: 'update', patch: true})
+  .save(session.state, {method: 'update'})
   .then (userState) ->
     if not userState
       return {}
