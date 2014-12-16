@@ -34,8 +34,14 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     //  "url:'assets/rmaps_geo_diagram_64_3.png', width:'64',height:'64',textColor:'white'}" +
     //"]}")
 
-  ui-gmap-window(coords='layers.listingDetail.geom_point_json', show="layers.listingDetail.show")
-    div(ng-cloak='') {{layers.listingDetail}}
+  ui-gmap-window(
+    coords='layers.listingDetail.geom_point_json'
+    show="layers.listingDetail.show"
+    closeClick="actions.closeListing"
+    options="listingOptions"
+    templateUrl='"map-smallDetails.tpl.html"'
+    templateParameter='layers.listingDetail'
+  )
 
   // BEGIN PARCEL DATA
   ui-gmap-markers(options='formatters.layer.Parcels.labelFromStreetNum',

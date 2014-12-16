@@ -7,9 +7,13 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
-  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(), 'ParcelEnums'.ourNs()
-  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events, LayerFormatters, MainOptions, ParcelEnums) ->
+app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
+  'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
+  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil',
+  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
+    HttpStatus, Properties, Events, LayerFormatters, MainOptions,
+    ParcelEnums, uiGmapUtil) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -29,6 +33,8 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           showTraffic: true
           showWeather: false
 
+          listingOptions:
+            boxClass: 'custom-info-window'
           layers:
             parcels: []
             mlsListings: []
@@ -41,12 +47,20 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
             isEnabled: false
 
           actions:
+            closeListing: ->
+              $scope.layers.listingDetail.show = false
+
             listing: (gMarker, eventname, model) ->
               #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
               if $scope.layers.listingDetail
                 $scope.layers.listingDetail.show = false
               model.show = true
               $scope.layers.listingDetail = model
+              offset = $scope.formatters.layer.MLS.getWindowOffset($scope.gMap, $scope.layers.listingDetail)
+              return unless offset
+              _.extend $scope.listingOptions,
+                pixelOffset: offset
+                disableAutoPan: true
 
           formatters:
             layer: LayerFormatters
@@ -55,6 +69,11 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           changeZoom: (increment) ->
             $scope.zoom += increment
           doClusterMarkers: true
+
+        @scope.$watch 'zoom', (newVal, oldVal) =>
+          #if there is a change close the listing view
+          #it keeps the map running better on zooming as the infobox doesn't seem to scale well
+          @scope.layers.listingDetail.show = false if newVal isnt oldVal
 
         @subscribe()
 
@@ -94,7 +113,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
         @filterDrawPromise = $timeout(@filterImpl, MainOptions.filterDrawDelay)
-        
+
       filterImpl: () =>
         if $rootScope.selectedFilters
           selectedFilters = _.clone($rootScope.selectedFilters)
@@ -124,7 +143,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         @scope.$onRootScope Events.map.drawPolys.clear, =>
           _.each @scope.layers, (layer, k) ->
             return layer.length = 0 if layer? and _.isArray layer
-            layer = {}#this is when a layer is an object
+            layer = {} #this is when a layer is an object
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled

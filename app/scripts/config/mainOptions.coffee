@@ -6,7 +6,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
     map:
       zoomThresholdMilliSeconds: 1500
       options:
-        logLevel: if isDev then 'debug' else 'error'
+        logLevel: if isDev then 'error' else 'error'
         streetViewControl: false
         zoomControl: true
         panControl: false
