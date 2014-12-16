@@ -7,6 +7,7 @@ casing = require 'case'
 app.service 'LayerFormatters'.ourNs(), [
   'uiGmapLogger', 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
   ($log, ParcelEnums, uiGmapUtil) ->
+    filterSummaryHash = {}
     colors = {}
     colors[ParcelEnums.status.sold] = '#2c8aa7'
     colors[ParcelEnums.status.pending] = '#d48c0e'
@@ -38,7 +39,7 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
-    getWindowOffset = (map, mls, width = 260) ->
+    getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
       point = getPixelFromLatLng(uiGmapUtil.getCoords(mls.geom_point_json), map)
@@ -50,14 +51,15 @@ app.service 'LayerFormatters'.ourNs(), [
       else if quadrant is "tl"
         offset = new google.maps.Size(0, 45)
       else if quadrant is "br"
-        offset = new google.maps.Size(-1 * width, -200)
-      else offset = new google.maps.Size(0, -200)  if quadrant is "bl"
+        offset = new google.maps.Size(-1 * width, -250)
+      else offset = new google.maps.Size(0, -250)  if quadrant is "bl"
       offset
 
     Parcels:
       fill: (parcel) ->
         return {} unless parcel
-        color: colors[parcel.model.rm_status] or colors['default']
+        model = if _.has filterSummaryHash, parcel.model.rm_property_id then filterSummaryHash[parcel.model.rm_property_id] else parcel.model
+        color: colors[model.rm_status] or colors['default']
         opacity: '.65'
 
       labelFromStreetNum: (parcel) ->
@@ -79,4 +81,7 @@ app.service 'LayerFormatters'.ourNs(), [
         ret
 
       getWindowOffset:getWindowOffset
+
+    updateFilterSummaryHash: (hash) ->
+      filterSummaryHash = hash
 ]

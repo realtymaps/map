@@ -1,8 +1,34 @@
 div( ng-controller='RealtyMaps-SmallDetailsCtrl' class="panel panel-primary" style="white-space:nowrap" ng-cloak)
   div(class="panel-heading") {{street_address_num}} {{street_address_name}}
   div(class="panel-body")
-    section Price: ${{price}}
-    section Beds: {{beds_total}}
-    section Baths: {{baths_total}}
-    section Year Built: {{year_built}}
-    section Acres: {{acres}}
+    table(class="table table-condensed table-hover")
+      tr
+        td Price:
+        td ${{price}}
+      tr
+        td Assessed Price:
+        td ${{local_assessed_value}}
+      tr
+        td Beds:
+        td {{beds_total}}
+      tr
+        td Baths:
+        td
+          section
+            p Total:
+            p {{baths_total}}
+          section
+            p Full:
+            p {{baths_full}}
+          section
+            p Half:
+            p {{baths_half}}
+      tr
+        td Year Built:
+        td {{year_built}}
+      tr
+        td Acres:
+        td {{acres}}
+      tr
+        td Finished SqFt:
+        td {{finished_sqft}}
