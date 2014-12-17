@@ -18,22 +18,21 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', '$rootScope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(), 'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
-  ($scope, $rootScope, Map, MainOptions, Toggles, principal, Events, ParcelEnums) ->
+  '$scope', '$rootScope', '$timeout', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(), 'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
+  ($scope, $rootScope, $timeout, Map, MainOptions, Toggles, principal, Events, ParcelEnums) ->
     
     $scope.pageClass = 'page-map'
 
-    map = new Map($scope, MainOptions.map)
-    
     restoreState = () ->
       principal.getIdentity()
       .then (identity) ->
+        mapOptions = _.clone(MainOptions.map)
         if not identity?.stateRecall
-          return
+          return mapOptions
         if identity.stateRecall.map_center
-          _.extend($scope.center, identity.stateRecall.map_center)
+          _.extend(mapOptions.options.json.center, identity.stateRecall.map_center)
         if identity.stateRecall.map_zoom
-          $scope.zoom = +identity.stateRecall.map_zoom
+          mapOptions.options.json.zoom = +identity.stateRecall.map_zoom
         if identity.stateRecall.filters
           filters = _.clone(identity.stateRecall.filters)
           statusList = filters.status || []
@@ -43,6 +42,10 @@ module.exports = app
           if not $rootScope.selectedFilters?
             $rootScope.selectedFilters = {}
           _.extend($rootScope.selectedFilters, filters)
+        return mapOptions
+      .then (mapOptions) ->
+        # wait to initialize map until we've merged state values into the initial options
+        map = new Map($scope, mapOptions)
 
     $scope.$onRootScope Events.principal.login.success, () ->
       restoreState()
