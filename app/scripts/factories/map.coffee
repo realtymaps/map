@@ -7,12 +7,17 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
-  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(), 'ParcelEnums'.ourNs()
-  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap, HttpStatus, Properties, Events, LayerFormatters, MainOptions, ParcelEnums) ->
+app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
+  'BaseGoogleMap'.ourNs(),
+  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
+  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil',
+  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
+    HttpStatus, Properties, Events, LayerFormatters, MainOptions,
+    ParcelEnums, uiGmapUtil) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
+        self = @
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
@@ -21,6 +26,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
 
+        @filterSummaryHash = {}
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
@@ -28,10 +34,14 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           control: {}
           showTraffic: true
           showWeather: false
+          showMarkers: true
 
+          listingOptions:
+            boxClass: 'custom-info-window'
+            closeBoxDiv: ' '
+#            closeBoxDiv: '<i" class="pull-right fa fa-close fa-3x" style="position: relative; cursor: pointer;"></i>'
           layers:
             parcels: []
-            mlsListings: []
             listingDetail: undefined
             filterSummary: []
             drawnPolys: []
@@ -41,12 +51,31 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
             isEnabled: false
 
           actions:
+            closeListing: ->
+              $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
             listing: (gMarker, eventname, model) ->
               #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
+              #model could be from parcel or from filter, but the end all be all data is in filter
+              unless model.rm_status
+                return if not  $scope.layers?.filterSummary? or @filterSummaryHash?
+                model = if _.has self.filterSummaryHash, model.rm_property_id then self.filterSummaryHash[model.rm_property_id] else null
+              return unless model
+
               if $scope.layers.listingDetail
                 $scope.layers.listingDetail.show = false
               model.show = true
               $scope.layers.listingDetail = model
+              offset = $scope.formatters.layer.MLS.getWindowOffset($scope.gMap, $scope.layers.listingDetail)
+              return unless offset
+              _.extend $scope.listingOptions,
+                pixelOffset: offset
+                disableAutoPan: true
+
+            listingEvents:
+              mouseover: (gMarker, eventname, model) ->
+                $scope.actions.listing(gMarker, eventname, model)
+              mouseout: (gMarker, eventname, model) ->
+                $scope.actions.closeListing()
 
           formatters:
             layer: LayerFormatters
@@ -56,20 +85,28 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
             $scope.zoom += increment
           doClusterMarkers: true
 
+        @scope.$watch 'zoom', (newVal, oldVal) =>
+          #if there is a change close the listing view
+          #it keeps the map running better on zooming as the infobox doesn't seem to scale well
+          if @scope.layers.listingDetail?
+            @scope.layers.listingDetail.show = false if newVal isnt oldVal
+
         @subscribe()
 
       redraw: () =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
+          @scope.showMarkers = false
           Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
-            @scope.layers.mlsListings = data.data
         else
           @scope.layers.parcels.length = 0
-          @scope.layers.mlsListings.length = 0
+          @scope.showMarkers = true
 
         if @filters
           Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
+            return unless data?.data?
             @scope.layers.filterSummary = data.data
+            @updateFilterSummaryHash()
         else
           @scope.layers.filterSummary.length = 0
 
@@ -95,8 +132,10 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
         @filterDrawPromise = $timeout(@filterImpl, MainOptions.filterDrawDelay)
-        
+
       filterImpl: () =>
+        @clearFilter()
+        @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         if $rootScope.selectedFilters
           selectedFilters = _.clone($rootScope.selectedFilters)
           selectedFilters.status = []
@@ -104,6 +143,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
             selectedFilters.status.push(ParcelEnums.status.forSale)
           if (selectedFilters.pending)
             selectedFilters.status.push(ParcelEnums.status.pending)
+            delete selectedFilters.pending
           if (selectedFilters.sold)
             selectedFilters.status.push(ParcelEnums.status.sold)
           delete selectedFilters.forSale
@@ -112,8 +152,6 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           delete selectedFilters.notForSale
           @filters = '&' + qs.stringify(selectedFilters)
         else
-          @scope.layers.parcels.length = 0
-          @scope.layers.mlsListings.length = 0
           @filters = null
         @filterDrawPromise = false
         @redraw()
@@ -123,7 +161,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
         @scope.$onRootScope Events.map.drawPolys.clear, =>
           _.each @scope.layers, (layer, k) ->
             return layer.length = 0 if layer? and _.isArray layer
-            layer = {}#this is when a layer is an object
+            layer = {} #this is when a layer is an object
 
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled
@@ -136,6 +174,17 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
+
+      updateFilterSummaryHash:  =>
+        @filterSummaryHash = {}
+        _.defer =>
+          @scope.layers.filterSummary.forEach (summary) =>
+            @filterSummaryHash[summary.rm_property_id] = summary
+          @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
+
+      clearFilter: =>
+        @scope.layers.filterSummary.length = 0
+        @updateFilterSummaryHash()
 
     Map
 ]

@@ -1,4 +1,4 @@
-@import "../common.styl"
+@require "../common"
 
 .angular-google-map-container
     height 100%
@@ -41,3 +41,30 @@ http://stackoverflow.com/questions/1554893/google-maps-api-v3-infowindow-not-siz
   overflow auto !important
   max-width 300px
   max-height 175px
+
+windowColor = rgba(45,45,63,0.85)
+.custom-info-window
+  /*color: white*/
+  /*padding: 5px*/
+  box-shadow: 3px 3px 10px windowColor
+  border-radius: 5px
+  width: 260px;
+  /*margin-top: 15px;*/
+  /*margin-left: -130px;*/
+
+/*.custom-info-window a*/
+  /*color: white;*/
+  /*text-decoration: underline*/
+
+/* info-box-tick / pin */
+/*.custom-info-window:after*/
+  /*content: '';*/
+  /*position: absolute;*/
+  /*border-style: solid;*/
+  /*border-width: 0 15px 15px;*/
+  /*border-color: rgba(0,0,0,0.5) transparent;*/
+  /*display: block;*/
+  /*width: 0;*/
+  /*z-index: 1;*/
+  /*top: -15px;*/
+  /*left: 118px;*/

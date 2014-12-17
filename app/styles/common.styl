@@ -1,15 +1,13 @@
-/* Set a basic variable */
-base-font-size = 12px
-
-/* Set a variable based on result of mixin call */
-body-background = invert(#ccc)
-
-/* Set color variables */
-main-dark-blue = #313145
-medium-blue = #2B72BE
-
-mainFont = "Helvetica Neue",Helvetica,Arial,sans-serif
+@import 'variables.styl'
 /* Set some basic rules */
+
+.centered{
+    position:relative;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%)
+}
+
 body
     height: 100%
     width: 100%
@@ -25,91 +23,7 @@ body
     padding: 40px 15px
     text-align: center
 
-@media (min-width: 768px)
-    .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand
-        margin-left: 0px
 
-
- /* Nav Bar */
-.navbar
-    background: main-dark-blue
-    border: none
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
-    font-weight: 100
-    font-size:23px
-    letter-spacing: .35em
-
-
-.navbar .navbar-text
-    color: #777777
-    font-weight: 100
-
-.navbar .navbar-nav > li > a
-    color: #FFFFFF
-    height:50px
-
-/* Small devices (tablets, 768px and up) */
-@media (min-width: 768px)
-    .navbar .navbar-nav .navbar-right
-        position:absolute;
-        right:0;
-
-
-
-.navbar .navbar-nav > li > a:hover,
-.navbar .navbar-nav > li > a:focus
-    color: #FFF
-    background-color: #0062A0
-    -webkit-transition:background-color 0.25s
-    -moz-transition:background-color 0.25s
-    transition:background-color 0.25s
-
-.navbar .navbar-nav > .active > a,
-.navbar .navbar-nav > .active > a:hover,
-.navbar.navbar-nav > .active > a:focus
-    color: #FFF
-    background-color: #45a0d9
-    -webkit-transition:background-color 0.25s
-    -moz-transition:background-color 0.25s
-    transition:background-color 0.25s
-
-
-.navbar-brand
-    font-size: 25px
-    line-height: 20px
-    color: #FFF !important
-    padding: 3px 5px 0 3px
-    letter-spacing: 4px
-    font-weight: 100
-    margin-right: 20px
-
- .navbar-brand img
-    height:45px
-    padding: 0px 8px
-
- .navbar-brand .logo-c1
-     color: #FFFFFF
-
- .navbar-brand .logo-c2
-     color: #45a0d9
-
- .navbar-toggle
-    background-color: #255992
-    border-color:transparent
-    height:50px
-    margin-top:0
-    margin-bottom: 0
-    border-radius: 0
-
-.navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
-    background-color: medium-blue
-
-.navbar-toggle
-    float: left
-    margin-left: 15px
-
-.navbar-toggle .icon-bar
-    height:4px
 
 #side-nav-container
     position:absolute

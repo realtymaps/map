@@ -13,3 +13,6 @@ String::space = ->
   @ + space
 
 String::EMPTY = ''
+
+String.orNA = (val) ->
+  val or 'N/A'

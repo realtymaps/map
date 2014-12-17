@@ -4,12 +4,11 @@ logger = require '../config/logger'
 userService = require '../services/service.user'
 permissionsService = require '../services/service.permissions'
 
-
 # caches permission and group membership values on the user session; we could
 # get into unexpected states if those values change during a session, so we
 # cache them instead of refreshing.  This means for certain kinds of changes
 # to a user account, we will either need to explicitly refresh these values,
-# or we'll need to log out the user and let them get refreshed when they log 
+# or we'll need to log out the user and let them get refreshed when they log
 # back in.
 cacheUserValues = (req) ->
   promises = []
@@ -34,9 +33,6 @@ cacheUserValues = (req) ->
   .catch (err) ->
     logger.error "error caching user values for user: #{req.user.username}"
     Promise.reject(err)
-
-    
-
 
 module.exports =
   cacheUserValues: cacheUserValues
