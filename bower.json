@@ -19,7 +19,8 @@
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
-    "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync.git"
+    "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync.git",
+    "fontawesome": "~4.2.0"
   },
   "sofresh": [
     "dbsync",
@@ -31,7 +32,7 @@
     "angular-route",
     "angular-animate",
     "ui-router-extras"
-    ],
+  ],
   "overrides": {
     "dbsync": {
       "ignore": "true"

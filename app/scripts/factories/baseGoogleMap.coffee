@@ -23,6 +23,9 @@ module.exports = app.factory 'BaseGoogleMap'.ourNs(), [
           on: "Turn off"
 
       constructor: (@scope, options, @zoomThresholdMill) ->
+        uiGmapIsReady.promise().then (instances) =>
+          @scope.gMap = instances[0]?.map
+
         @map = {}
         @hasRun = false;
         @zoomChangedTimeMilli = new Date().getTime()
