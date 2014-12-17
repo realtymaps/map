@@ -8,13 +8,13 @@ qs = require 'qs'
 
 app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".ourNs(), ($rootScope, $location, principal) ->
   
-  doPermsCheck = (toState, desiredLocation) ->
+  doPermsCheck = (toState, desiredLocation, goToLocation) ->
       
     if not principal.isAuthenticated()
       # user is not authenticated, but needs to be.
       # set the route they wanted as a query parameter
       # then, send them to the signin route so they can log in
-      $location.url frontendRoutes.login + if desiredLocation? then '?'+qs.stringify(next: desiredLocation) else ''
+      $location.url frontendRoutes.login + '?'+qs.stringify(next: desiredLocation)
       return
     
     if not principal.hasPermission(toState?.permissionsRequired)
@@ -22,7 +22,7 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
       $location.url frontendRoutes.accessDenied
       return
     
-    if desiredLocation?
+    if goToLocation
       $location.url desiredLocation
 
       
@@ -36,12 +36,12 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
 
     # if we can, do check now (synchronously)
     if principal.isIdentityResolved()
-      return doPermsCheck(toState)
+      return doPermsCheck(toState, desiredLocation, false)
     
     # otherwise, go to temporary view and do check ASAP
     $location.url frontendRoutes.authenticating
     principal.getIdentity().then () ->
-      return doPermsCheck(toState, desiredLocation)
+      return doPermsCheck(toState, desiredLocation, true)
 ]
 
 app.run ["$rootScope", "authorization".ourNs(), ($rootScope, authorization) ->
