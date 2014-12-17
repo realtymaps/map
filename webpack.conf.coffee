@@ -17,9 +17,10 @@ Config = (output, additionalPlugs) ->
       ]
     module:
       loaders: [
-        { test: /\.css$/, loader: 'style!css?sourceMap' }
-        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' }
-        { test: /\.scss$/, loader: "style!css?sourceMap!sass?outputStyle=expanded"}
+        { test: /\.css$/, loader: 'style!css' }
+#        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
+        { test: /\.styl$/, loader: 'style!css!stylus' }
+        { test: /\.scss$/, loader: "style!css!sass?outputStyle=expanded"}
         { test: /\.coffee$/, loader: 'coffee' }
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.jpg$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
