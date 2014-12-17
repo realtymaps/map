@@ -1,9 +1,6 @@
 'use strict'
 
 require '../../common/extensions/strings.coffee'
-# require './constants/parcel_enums.coffee'
-
-#console.log "ANGULAR: #{_.keys(angular)}"
 
 appName = 'app'.ourNs()
 console.info "AppName: #{appName}"

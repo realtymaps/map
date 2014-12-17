@@ -1,4 +1,5 @@
-@import '../variables.styl'
+@require '../variables'
+@require '../common'
 
 /* Filters Container
 ============================================================================= */
@@ -85,12 +86,8 @@
     width:35px
     height:100%
     font-size:1.3em
-    background-image: url("/assets/left-arrow-icon.png")
-    background-repeat:no-repeat
-    background-position:center center
     position:absolute
     right:-35px
-
 
 
 /* Small devices (tablets, 768px and up) */
@@ -136,7 +133,7 @@ End Results Container
 
 
 .filter-container .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default
-    color: #333;
-    background-color: rm-medium-blue;
-    border-color: #adadad;
+    color: #333
+    background-color: rm-medium-blue
+    border-color: #adadad
     color:#FFF
