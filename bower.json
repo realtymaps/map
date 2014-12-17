@@ -2,10 +2,9 @@
   "name": "mean.coffee",
   "version": "0.0.1",
   "dependencies": {
-    "jquery": "~2.1.1",
     "ns2": "~1.0.3",
-    "bootstrap": "~3.1.1",
-    "bootstrap-multiselect": "https://github.com/davidstutz/bootstrap-multiselect/archive/3294148e5dbe5b819fd60f4e7a0bfaa1318fcf59.zip",
+    "bootstrap-css-only": "~3.1.1",
+    "isteven-angular-multiselect": "~2.0.2",
     "lodash": "~2.4.1",
     "angular": "~1.3.4",
     "angular-resource": "~1.3.4",
@@ -13,7 +12,7 @@
     "angular-mocks": "~1.3.4",
     "angular-route": "~1.3.4",
     "angular-animate": "~1.3.4",
-    "angular-bootstrap": "~0.10.0",
+    "angular-bootstrap": "~0.11.0",
     "angular-ui-utils": "~0.1.1",
     "angular-google-maps": "git://github.com/realtymaps/angular-google-maps.git#beta",
     "angular-state-files": "*",
@@ -36,6 +35,11 @@
   "overrides": {
     "dbsync": {
       "ignore": "true"
+    },
+    "isteven-angular-multiselect": {
+      "dependencies": {
+        "angular": ">=1.2.0"
+      }
     }
   }
 }

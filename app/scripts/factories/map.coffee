@@ -25,6 +25,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
 
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
+        $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
 
         @filterSummaryHash = {}
         @filters = ''
