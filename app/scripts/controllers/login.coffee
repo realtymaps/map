@@ -19,12 +19,22 @@ module.exports = app.controller 'LoginCtrl'.ourNs(), [
 ]
 
 app.run ["$rootScope", "$location", "principal".ourNs(), ($rootScope, $location, principal) ->
-  $rootScope.$on "$routeChangeStart", (event, nextRoute) ->
-    # if we're entering the login state, and we're already logged in, we'll skip it
-    principal.getIdentity()
-    .then () ->
-      if nextRoute?.$$route?.originalPath == frontendRoutes.login && principal.isAuthenticated()
-        $location.url(nextRoute.params.next || frontendRoutes.map)
+  
+  doNextRedirect = (toState, nextLocation) ->
+    if principal.isAuthenticated()
+      $location.url(nextLocation || frontendRoutes.map)
+
+  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+
+    # if we're entering the login state...
+    if toState?.url != frontendRoutes.login
       return
-    return
+    
+    # ... and we're already logged in, we'll skip the login state (now or when we find out)
+    if principal.isIdentityResolved()
+      doNextRedirect(toState, $location.search().next)
+    else
+      principal.getIdentity()
+      .then () ->
+        doNextRedirect(toState, $location.search().next)
 ]

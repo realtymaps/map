@@ -17,7 +17,7 @@ transforms =
     validators.array(minLength: 2)
     validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
-  status:   validators.array(minLength: 1, subValidation: [ validators.string(forceLowerCase: true), validators.choice(choices: statuses) ])
+  status:   validators.array(subValidation: [ validators.string(forceLowerCase: true), validators.choice(choices: statuses) ])
   priceMin: [ validators.string(replace: [/[$,]/g, ""]), validators.float() ]
   priceMax: [ validators.string(replace: [/[$,]/g, ""]), validators.float() ]
   bedsMin:  validators.integer()
@@ -36,14 +36,19 @@ transforms =
 
 required =
   bounds: undefined
-  status: undefined
+  status: []
 
 
 module.exports = 
   
   getFilterSummary: (filters, limit = 600) -> Promise.try () ->
-    requestUtil.query.validateAndTransform(filters, transforms)
+    requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
+
+      # we allow the query to get here without error so we can save the filter state, but if there are no valid
+      # statuses specified, we want to shortcut out with no results
+      if filters.status.length == 0
+        return []
 
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
       query.whereRaw(filters.bounds.sql, filters.bounds.bindings)

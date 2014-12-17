@@ -17,6 +17,7 @@ module.exports =
 
   limits:               "#{apiBase}/limits"
   identity:             "#{apiBase}/identity"
+  updateState:          "#{apiBase}/identity/state"
   userPermissions:      "#{apiBase}/user_permissions/:id"
   groupPermissions:     "#{apiBase}/group_permissions/:id"
   login:                "#{apiBase}/login"
