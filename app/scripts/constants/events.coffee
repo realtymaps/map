@@ -6,3 +6,6 @@ app.constant 'events'.ourNs(),
       isEnabled: 'map.drawPolys.isEnabled'
       clear: 'map.drawPolys.clear'
       query:  'map.drawPolys.query'
+  principal:
+    login:
+      success: 'principal.login.success'

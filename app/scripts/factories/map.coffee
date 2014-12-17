@@ -24,7 +24,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           @scope.dragZoom.options = Map.getDragZoomOptions()
 
         $log.debug $scope.map
-        $log.debug "map center: #{$scope.center}"
+        $log.debug "map center: #{JSON.stringify($scope.center)}"
 
         @filterSummaryHash = {}
         @filters = ''
@@ -96,14 +96,14 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
       redraw: () =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
           @scope.showMarkers = false
-          Properties.getParcelBase(@hash).then (data) =>
+          Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
         else
           @scope.layers.parcels.length = 0
           @scope.showMarkers = true
 
         if @filters
-          Properties.getFilterSummary(@hash, @filters).then (data) =>
+          Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
             return unless data?.data?
             @scope.layers.filterSummary = data.data
             @updateFilterSummaryHash()
@@ -123,6 +123,7 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
 
         @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
         @hash = encode paths
+        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom)
         @redraw()
 
       #TODO: all filter stuff should be moved to a baseClass, helper class or to its own controller
@@ -140,17 +141,16 @@ app.factory 'Map'.ourNs(), ['uiGmapLogger', '$timeout', '$q', '$rootScope', 'uiG
           selectedFilters.status = []
           if (selectedFilters.forSale)
             selectedFilters.status.push(ParcelEnums.status.forSale)
-            delete selectedFilters.forSale
           if (selectedFilters.pending)
             selectedFilters.status.push(ParcelEnums.status.pending)
             delete selectedFilters.pending
           if (selectedFilters.sold)
-            selectedFilters.status.push(ParcelEnums.status.recentlySold)
-            delete selectedFilters.sold
-          if selectedFilters.status.length == 0
-            @filters = null
-          else
-            @filters = '&' + qs.stringify(selectedFilters)
+            selectedFilters.status.push(ParcelEnums.status.sold)
+          delete selectedFilters.forSale
+          delete selectedFilters.pending
+          delete selectedFilters.sold
+          delete selectedFilters.notForSale
+          @filters = '&' + qs.stringify(selectedFilters)
         else
           @filters = null
         @filterDrawPromise = false

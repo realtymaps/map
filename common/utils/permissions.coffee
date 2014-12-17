@@ -5,9 +5,7 @@
 #     with either "any" or "all" as a key and an array of strings as a value
 #   allowed:
 #     a map of permission codes to boolean values
-#   log:
-#     an optional logging function to call
-checkAllowed = (required, allowed, log) ->
+checkAllowed = (required, allowed) ->
   if not required
     return true
   if not allowed
@@ -20,7 +18,6 @@ checkAllowed = (required, allowed, log) ->
     # we only need one of the permissions in the array
     for permission in required.any
       if allowed[permission]
-        log?("access allowed because user has '#{permission}' permission")
         granted = true
         break
   else if required.all
@@ -28,7 +25,6 @@ checkAllowed = (required, allowed, log) ->
     granted = true
     for permission in required.all
       if not allowed[permission]
-        log?("access denied because user lacks '#{permission}' permission")
         granted = false
         break
   return granted

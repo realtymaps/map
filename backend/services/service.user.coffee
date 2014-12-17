@@ -3,14 +3,27 @@ bcrypt = require 'bcrypt'
 
 logger = require '../config/logger'
 User = require("../models/model.user")
+UserState = require("../models/model.userState")
 environmentSettingsService = require("../services/service.environmentSettings")
 
 
 getUser = (attributes) ->
-  return User.forge(attributes).fetch().then (user) -> return user.toJSON()
+  User.forge(attributes)
+  .fetch()
+  .then (user) ->
+    if not user
+      return {}
+    else
+      return user.toJSON()
 
 updateUser = (attributes) ->
-  return User.forge(attributes).save(attributes, patch: true).then (user) -> return user.toJSON()
+  User.forge(attributes)
+  .save(attributes, patch: true)
+  .then (user) ->
+    if not user
+      return {}
+    else
+      return user.toJSON()
 
 # this skeleton for handling password hashes will make it easier to migrate
 # hashes to a new algo if we ever need to
@@ -68,10 +81,55 @@ verifyPassword = (username, password) ->
         .then (hash) -> return updateUser(id: user.id, password: hash)
         .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
       return user
-        
+
+getUserState = (userId) ->
+  UserState.forge(id: userId)
+  .fetch()
+  .then (userState) ->
+    if not userState
+      UserState.forge({id: userId})
+      .save({id: userId}, {method: 'insert'})
+      .then () ->
+        return {}
+    else
+      result = userState.toJSON()
+      delete result.id
+      return result
+
+updateUserState = (session, partialState) -> Promise.try () ->
+  # need the id for lookup, so we don't want to allow it to be set this way
+  delete partialState.id
+  _.extend(session.state, partialState)
+  UserState.forge(id: session.userid)
+  .save(session.state, {method: 'update'})
+  .then (userState) ->
+    if not userState
+      return {}
+    else
+      result = userState.toJSON()
+      delete result.id
+      return result
+
+captureMapState = (req, res, next) ->
+  updateUserState(req.session, map_center: req.query.center, map_zoom: req.query.zoom)
+  .then () ->
+    next()
+
+captureMapFilterState = (req, res, next) ->
+  Promise.try () ->
+    filters = _.clone(req.query)
+    _.forEach ['center', 'zoom', 'bounds'], (removeParam) ->
+      delete filters[removeParam]
+    updateUserState(req.session, map_center: req.query.center, map_zoom: req.query.zoom, filters: filters)
+  .then () ->
+    next()
 
 module.exports = {
   getUser: getUser
   updateUser: updateUser
   verifyPassword: verifyPassword
+  getUserState: getUserState
+  updateUserState: updateUserState
+  captureMapState: captureMapState
+  captureMapFilterState: captureMapFilterState
 }
