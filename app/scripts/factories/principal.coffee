@@ -22,6 +22,7 @@ app.factory 'principal'.ourNs(), [
         _deferred = null
       if _authenticated
         $rootScope.$emit Events.principal.login.success
+
     unsetIdentity = () ->
       _identity = null
       _authenticated = false

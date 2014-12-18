@@ -9,7 +9,7 @@ module.exports = app.controller 'LoginCtrl'.ourNs(), [
   '$scope', '$http', '$location', "principal".ourNs(), ($scope, $http, $location, principal) ->
     $scope.form = {}
     $scope.doLoginPost = () ->
-      $scope.errorMessage = "";
+      $scope.errorMessage = ""
       $http.post backendRoutes.login, $scope.form
       .success (data, status) ->
         principal.setIdentity(data.identity)
