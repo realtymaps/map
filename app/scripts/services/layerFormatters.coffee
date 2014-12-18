@@ -5,7 +5,7 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.service 'LayerFormatters'.ourNs(), [
-  'uiGmapLogger', 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
   ($log, ParcelEnums, uiGmapUtil) ->
     filterSummaryHash = {}
     colors = {}

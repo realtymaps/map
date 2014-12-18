@@ -7,7 +7,7 @@ casing = require 'case'
 moment = require 'moment'
 
 module.exports =
-  app.controller 'SmallDetailsCtrl'.ourNs(), ['$scope', 'uiGmapLogger', ($scope, $log) ->
+  app.controller 'SmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), ($scope, $log) ->
     getPrice = (val) ->
       String.orNA if val then casing.upper numeral(val).format('0.00a'), '.' else null
 
