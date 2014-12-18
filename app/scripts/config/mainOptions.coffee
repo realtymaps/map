@@ -7,6 +7,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
       zoomThresholdMilliSeconds: 1500
       options:
         logLevel: if isDev then 'debug' else 'error'
+        disableDoubleClickZoom:true #does not work well with dblclick properties
         uiGmapLogLevel: 'error'
         streetViewControl: false
         zoomControl: true

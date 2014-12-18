@@ -5,15 +5,15 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.service 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
-  ($log, ParcelEnums, uiGmapUtil) ->
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
+  ($log, ParcelEnums, uiGmapUtil, Properties) ->
     filterSummaryHash = {}
+    propertySaveYellow = '#EFEE50'
     colors = {}
     colors[ParcelEnums.status.sold] = '#2c8aa7'
     colors[ParcelEnums.status.pending] = '#d48c0e'
     colors[ParcelEnums.status.forSale] = '#2fa02c'
     colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
-
 
     markersIcon = {}
     markersIcon[ParcelEnums.status.sold] = '../assets/map_marker_out_pink_64.png'
@@ -28,7 +28,6 @@ app.service 'LayerFormatters'.ourNs(), [
     markersBSLabel[ParcelEnums.status.forSale] = 'success'
     markersBSLabel['default'] = 'info'
 
-
     formatMarkerContent = (label, content) ->
       sprintf markerContentTemplate, label, content
 
@@ -38,6 +37,13 @@ app.service 'LayerFormatters'.ourNs(), [
     getPixelFromLatLng = (latLng, map) ->
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
+
+    getSavedColorProperty = (model) ->
+      props = Properties.getSavedProperties()
+      prop = props[model.rm_property_id] if _.has props, model.rm_property_id
+      if not prop or not prop.isSaved
+        return
+      propertySaveYellow
 
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
@@ -52,14 +58,17 @@ app.service 'LayerFormatters'.ourNs(), [
         offset = new google.maps.Size(0, 45)
       else if quadrant is "br"
         offset = new google.maps.Size(-1 * width, -250)
-      else offset = new google.maps.Size(0, -250)  if quadrant is "bl"
+      else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
       offset
 
     Parcels:
       fill: (parcel) ->
         return {} unless parcel
-        model = if _.has filterSummaryHash, parcel.model.rm_property_id then filterSummaryHash[parcel.model.rm_property_id] else parcel.model
-        color: colors[model.rm_status] or colors['default']
+        model = parcel.model
+        maybeSavedColor = getSavedColorProperty(model)
+        unless maybeSavedColor
+          model = if _.has filterSummaryHash, model.rm_property_id then filterSummaryHash[model.rm_property_id] else model
+        color:  maybeSavedColor or colors[model.rm_status] or colors['default']
         opacity: '.65'
 
       labelFromStreetNum: (parcel) ->

@@ -7,12 +7,13 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
+app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
+  'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil',
+  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     HttpStatus, Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil) ->
+    ParcelEnums, uiGmapUtil, FilterManager) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -30,6 +31,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
+        @scope.savedProperties = Properties.getSavedProperties()
+
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
@@ -46,6 +49,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             filterSummary: []
             drawnPolys: []
 
+          controls:
+            parcel: {}
+
           drawUtil:
             draw: undefined
             isEnabled: false
@@ -57,7 +63,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
               #model could be from parcel or from filter, but the end all be all data is in filter
               unless model.rm_status
-                return if not  $scope.layers?.filterSummary? or @filterSummaryHash?
+                return if not $scope.layers?.filterSummary? or @filterSummaryHash?
                 model = if _.has self.filterSummaryHash, model.rm_property_id then self.filterSummaryHash[model.rm_property_id] else null
               return unless model
 
@@ -76,6 +82,16 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 $scope.actions.listing(gMarker, eventname, model)
               mouseout: (gMarker, eventname, model) ->
                 $scope.actions.closeListing()
+              dblclick: (gObject, eventname, model) ->
+                return if gObject.labelClass?
+                saved = Properties.saveProperty(model)
+                return unless saved
+                saved.then ->
+                  opts = $scope.formatters.layer.Parcels.fill model: model
+                  #this is why this issue is proposed https://github.com/angular-ui/angular-google-maps/issues/1033
+                  gObject.setOptions
+                    fillColor: opts.color
+                    fillOpacity: opts.opacity
 
           formatters:
             layer: LayerFormatters
@@ -83,7 +99,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
-          doClusterMarkers: true
+          doClusterPriceMarkers: true
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
@@ -93,7 +109,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         @subscribe()
 
-      redraw: () =>
+      redraw: =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
           @scope.showMarkers = false
           Properties.getParcelBase(@hash, @mapState).then (data) =>
@@ -111,7 +127,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary.length = 0
 
       draw: (event, paths) =>
-        @scope.doClusterMarkers = if @scope.zoom < @scope.options.clusteringThresh then true else false
 
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
@@ -119,42 +134,20 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         return if not paths? or not paths.length > 0
 
-        oldDoCluster = @scope.doClusterMarkers
-
-        @scope.layers.mlsListings = [] if oldDoCluster is not @scope.doClusterMarkers
         @hash = encode paths
         @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom)
         @redraw()
 
-      #TODO: all filter stuff should be moved to a baseClass, helper class or to its own controller
       filter: (newFilters, oldFilters) =>
         if not newFilters and not oldFilters then return
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-        @filterDrawPromise = $timeout(@filterImpl, MainOptions.filterDrawDelay)
-
-      filterImpl: () =>
         @clearFilter()
-        @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
-        if $rootScope.selectedFilters
-          selectedFilters = _.clone($rootScope.selectedFilters)
-          selectedFilters.status = []
-          if (selectedFilters.forSale)
-            selectedFilters.status.push(ParcelEnums.status.forSale)
-          if (selectedFilters.pending)
-            selectedFilters.status.push(ParcelEnums.status.pending)
-            delete selectedFilters.pending
-          if (selectedFilters.sold)
-            selectedFilters.status.push(ParcelEnums.status.sold)
-          delete selectedFilters.forSale
-          delete selectedFilters.pending
-          delete selectedFilters.sold
-          delete selectedFilters.notForSale
-          @filters = '&' + qs.stringify(selectedFilters)
-        else
-          @filters = null
-        @filterDrawPromise = false
-        @redraw()
+        @filterDrawPromise = $timeout(=>
+          @filters = FilterManager.manage =>
+            @filterDrawPromise = false
+            @redraw()
+        , MainOptions.filterDrawDelay)
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
@@ -175,7 +168,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
-      updateFilterSummaryHash:  =>
+      updateFilterSummaryHash: =>
         @filterSummaryHash = {}
         _.defer =>
           @scope.layers.filterSummary.forEach (summary) =>
@@ -183,6 +176,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
 
       clearFilter: =>
+        @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
         @updateFilterSummaryHash()
 

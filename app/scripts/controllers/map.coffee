@@ -18,8 +18,10 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', '$rootScope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(), 'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
-  ($scope, $rootScope, Map, MainOptions, Toggles, principal, Events, ParcelEnums) ->
+  '$scope', '$rootScope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
+  'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
+  ($scope, $rootScope, Map, MainOptions, Toggles,
+  principal, Events, ParcelEnums, Properties) ->
     
     $scope.pageClass = 'page-map'
 
@@ -28,6 +30,8 @@ module.exports = app
       .then (identity) ->
         if not identity?.stateRecall
           return MainOptions.map
+        if identity.stateRecall.properties_selected
+          Properties.setSavedProperties identity.stateRecall.properties_selected
         if identity.stateRecall.map_center
           MainOptions.map.options.json.center = identity.stateRecall.map_center
         if identity.stateRecall.map_zoom
