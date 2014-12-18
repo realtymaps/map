@@ -3,9 +3,8 @@
 require '../../common/extensions/strings.coffee'
 
 appName = 'app'.ourNs()
-console.info "AppName: #{appName}"
+#console.info "AppName: #{appName}"
 
-#ns() ~ ui-gmap ~ uiGmap
 app = window.angular.module appName, [
   'uiGmapgoogle-maps'
   'ngCookies'

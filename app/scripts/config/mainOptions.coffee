@@ -7,6 +7,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
       zoomThresholdMilliSeconds: 1500
       options:
         logLevel: if isDev then 'debug' else 'error'
+        uiGmapLogLevel: 'error'
         streetViewControl: false
         zoomControl: true
         panControl: false
