@@ -7,8 +7,7 @@ encode = undefined
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
-  'BaseGoogleMap'.ourNs(),
+app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
   'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
