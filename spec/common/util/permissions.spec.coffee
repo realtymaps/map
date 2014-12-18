@@ -14,6 +14,20 @@ describe 'Permissions'.ourNs('Common'), ->
     @both = _.merge {}, @all, @any
 
   describe 'checkedAllowed', ->
+    describe 'any as string', ->
+      it 'has one', ->
+        @allowedMap =
+          tree: true
+        @subject.checkAllowed('tree', @allowedMap).should.be.ok
+      it 'has some', ->
+        @allowedMap =
+          tree: true
+          christmas: true
+        @subject.checkAllowed('christmas', @allowedMap).should.be.ok
+      it 'has none', ->
+        @allowedMap = {}
+        @subject.checkAllowed('christmas', @allowedMap).should.not.be.ok
+
     describe 'any', ->
       it 'has one', ->
         @allowedMap =
