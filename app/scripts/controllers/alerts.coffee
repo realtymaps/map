@@ -20,21 +20,27 @@ app = require '../app.coffee'
 # per-event, and 0 is not handled specially unlike TTL).
 # -------
 # Allowed properties of an emitted alert:
-#   id: this string is used to identify alerts that should be grouped together as repetitions
-#   ttlMillis: milliseconds until a visible alert will auto-dismiss (counted from its most recent repetition)
-#   quietMillis: milliseconds until a hidden alert will auto-dismiss (counted from its most recent repetition)
-#   type: a string that determines the colors used for the alert. There are 4 intended values, but this is not enforced;
-#     any string passed in this field will be prepended with "alert-" and applied as a class.  Styling for the 4 values
-#     below is in alerts.styl.  Default (pale) bootstrap versions of the below are vailable by removing the "rm-" prefix
-#     - "rm-danger": vivid red
-#     - "rm-warning": vivid yellow-orange
-#     - "rm-info": vivid blue
-#     - "rm-success": vivid green
+#   msg (required): the main body of the alert.  This can be HTML, but should consist only of inline or inline-block
+#     type formatting since it is all contained in a span.
+#   type: a string that determines the colors used for the alert; defaults to "rm-info". There are 4 intended values,
+#     but this is not enforced; any string passed in this field will be prepended with "alert-" and applied as a class.
+#     Styling for the 4 values below is in alerts.styl.  Default (pale) bootstrap versions of the below are vailable by
+#     removing the "rm-" prefix
+#       - "rm-danger": vivid red
+#       - "rm-warning": vivid yellow-orange
+#       - "rm-info": vivid blue
+#       - "rm-success": vivid green
+#   id: this string is used to identify alerts that should be grouped together as repetitions.  If no value is passed,
+#     a value is generated that will not be generated for any other anonymous alert.
+#   ttlMillis: milliseconds until a visible alert will auto-dismiss (counted from its most recent repetition); defaults
+#     to MainOpions.alerts.ttlMillis
+#   quietMillis: milliseconds until a hidden alert will auto-dismiss (counted from its most recent repetition); defaults
+#     to MainOpions.alerts.quietMillis
 ###
   
 module.exports = app.controller 'AlertsCtrl'.ourNs(), [
-  '$scope', '$timeout', 'events'.ourNs(), 'MainOptions'.ourNs(), '$interval',
-  ($scope, $timeout, Events, MainOptions, $interval) ->
+  '$scope', '$timeout', '$sce', 'events'.ourNs(), 'MainOptions'.ourNs(), 'Logger'.ourNs(), 
+  ($scope, $timeout, $sce, Events, MainOptions, $log) ->
     $scope.alerts = []
     alertsMap = {}
     anonymousAlertCounter = 1
@@ -98,6 +104,8 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
         alert.id = "__alert_#{anonymousAlertCounter++}__"
       # set some default values
       alert.reps = 0
+      if !alert.type?
+        alert.type = "rm-info"
       if !alert.ttlMillis?
         alert.ttlMillis = MainOptions.alert.ttlMillis
       if !alert.quietMillis?
@@ -109,10 +117,17 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       $scope.alerts.push(alert)
       alertsMap[alert.id] = alert
       
-    # this detects incoming alerts and passes them off for handling
-    $scope.$onRootScope Events.alert, (event, alert) ->
+    # this does some common alert handling and then branches based on whether the alert is a dupe
+    handleAlertEvent = (event, alert) ->
+      if !alert.msg
+        $log.warn "alert received with no message: #{JSON.stringify(alert,null,2)}\n from event: #{JSON.stringify(event,null,2)}"
+        return
+      alert.trustedMsg = $sce.trustAsHtml(alert.msg)
       if !alert.id? || !alertsMap[alert.id]
         handleNewAlert(alert)
       else
         handleDupeAlert(alert)
+
+    # this listens for incoming events and passes them off to the handler
+    $scope.$onRootScope Events.alert, handleAlertEvent
 ]
