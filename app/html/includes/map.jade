@@ -22,7 +22,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     events='actions.listingEvents'
     ng-cloak='',
     chunk='200'
-    doCluster='doClusterMarkers',
+    doCluster='true',
     clusterOptions="{ignoreHidden: true,  styles: [{textSize: 26, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
     "sans-serif', url:'assets/1418374195_Flatt3d-Building-64_1.png', width:'64', height:'64', textColor:'#32ffff'}]}")
 
@@ -53,6 +53,8 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     ng-cloak=''
     chunk='100')
 
+  // Would be nice to have just options without each individual attribute
+  //https://github.com/angular-ui/angular-google-maps/issues/1033
   ui-gmap-polygons(models='layers.parcels',
     idkey='"rm_property_id"'
     path='"geom_polys_json"',
@@ -61,7 +63,9 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     visible='true', geodesic='true',
     events='actions.listingEvents'
     fit='false', editable='false', static='true', ng-cloak=''
-    chunk='200')
+    chunk='150'
+    control='controls.parcel'
+    zIndex='2')
   //END PARCEL DATA
 
   include ./map-query-draw.jade
