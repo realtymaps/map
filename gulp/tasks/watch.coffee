@@ -6,7 +6,7 @@ gulp.task 'watch_rest', ->
   gulp.watch [
     path.scripts, path.styles, path.stylus,
     path.assets, path.common
-    path.index, path.stylus
+    path.index, path.stylus, path.stylusWatch
     path.jade, path.html
   ], ['build']
   gulp.watch ['app/**.*.coffee'], ['build']

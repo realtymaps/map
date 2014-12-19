@@ -1,4 +1,3 @@
-@import 'variables.styl'
 /* Set some basic rules */
 
 .centered{
@@ -15,14 +14,13 @@ body
     font: mainFont
     overflow: hidden
 
-/* Move down content because we have a fixed navbar that is 50px tall */
+/* Move down content because we have a fixed navbar */
 body
-    padding-top: 50px
+    padding-top: navbar-height
 
 .starter-template
     padding: 40px 15px
     text-align: center
-
 
 
 #side-nav-container
@@ -35,7 +33,7 @@ body
 .page
     bottom:0 
     position:absolute 
-    top:50px  
+    top:navbar-height
     width:100%
     background: main-dark-blue 
 

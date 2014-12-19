@@ -1,0 +1,12 @@
+div(class="{{pageClass}}", ng-show="$state.is('main')" ).page.ng-hide
+  section
+    .heroContainer
+      .heroImage
+        img(src="../../assets/logo.png")
+      .heroText
+        | Search &nbsp;| &nbsp; Map &nbsp;| &nbsp; Share &nbsp;| &nbsp; Communicate
+      #search-bar-main
+        input(id="target", placeholder="Enter a city, address, neighborhood etc...", type="text")/
+        a(href="{{frontendRoutes.map}}")
+        #btn
+        | Go
