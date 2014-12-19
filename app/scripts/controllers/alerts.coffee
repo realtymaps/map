@@ -27,7 +27,6 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
     # showing it again
     removeAlert = (alertId) ->
       alert = alertsMap[alertId]
-      console.log("@@@@@@@@@@@@@@@ removeAlert: #{JSON.stringify(alert,null,2)}")
       # if it has already been removed, don't do anything
       if !alert?
         return
@@ -76,7 +75,6 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       
     # this detects incoming alerts and passes them off for handling
     $scope.$onRootScope Events.alert, (event, alert) ->
-      console.log("@@@@@@@@@@@@@@@ handle: #{JSON.stringify(alert,null,2)}")
       if !alert.id? || !alertsMap[alert.id]
         handleNewAlert(alert)
       else
