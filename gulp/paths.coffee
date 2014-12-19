@@ -12,6 +12,7 @@ module.exports =
   scripts: 'app/scripts/**/*.*'
   styles: 'app/styles/*.css'
   stylus: 'app/styles/main.styl'
+  stylusWatch: 'app/styles/**/*.styl'
   bower: 'bower_components'
   common: 'common/**/*.*'
   svg: 'app/html/svg/*.svg'

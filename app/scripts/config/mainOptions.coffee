@@ -27,4 +27,10 @@ app.constant 'MainOptions'.ourNs(), do () ->
     # filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
     filterDrawDelay: 1000
     isDev: isDev
+    
+    alert:
+      # ttlMillis is the default for how long to display an alert before automatically hiding it
+      ttlMillis: 2*60*1000   # 2 minutes
+      # quietMillis is the default for how long is needed before we start to show a previously-closed alert if it happens again
+      quietMillis: 30*1000   # 30 seconds
   }

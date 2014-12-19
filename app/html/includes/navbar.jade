@@ -1,0 +1,18 @@
+div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+  .full-width.container
+    .navbar-header
+      button(type="button",data-toggle="collapse",data-target=".navbar-collapse").navbar-toggle
+        span.sr-only Toggle navigation
+        span.icon-bar
+        span.icon-bar
+        span.icon-bar
+      a(href="{{frontendRoutes.index}}", ng-hide="hide-nav").navbar-brand
+        img(src="/assets/logo.png")
+    .collapse.navbar-collapse
+      ul.nav.navbar-nav
+        li(ng-hide="hide-nav")
+          a(href="{{frontendRoutes.map}}") Map
+        li(ng-hide="principal.isAuthenticated()").navbar-right
+          a(href="{{frontendRoutes.login}}") Sign In
+        li.navbar-right.ng-hide(ng-show="principal.isAuthenticated()")
+          a(href="{{frontendRoutes.logout}}") Sign Out

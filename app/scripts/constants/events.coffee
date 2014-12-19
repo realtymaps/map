@@ -9,3 +9,4 @@ app.constant 'events'.ourNs(),
   principal:
     login:
       success: 'principal.login.success'
+  alert: 'alert'

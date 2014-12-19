@@ -23,6 +23,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       delete state.template
       delete state.controller
     $stateProvider.state(state)
+    state
   
   
   buildState null, 'main', url: frontendRoutes.index, sticky: true
