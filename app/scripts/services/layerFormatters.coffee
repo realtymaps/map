@@ -74,7 +74,7 @@ app.service 'LayerFormatters'.ourNs(), [
       labelFromStreetNum: (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: formatMarkerContent 'default', parcel.street_address_num
+        labelContent: "<h5>#{parcel.street_address_num}</h5>"
         labelAnchor: "20 10"
         zIndex: 0
 

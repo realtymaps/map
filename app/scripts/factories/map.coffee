@@ -99,7 +99,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
-          doClusterPriceMarkers: true
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
