@@ -4,25 +4,32 @@ app = require '../app.coffee'
 # alerts!
 # -------
 # In addition to alerts that will be automatically spawned based on metadata in API responses, you can create a new
-# alert on the frontend by emitting an alert event ($rootScope.$emit Events.alert, alertObj).  If a given type of alert
-# is spamming (based on id, as explained below), then all repetitions will be grouped into 1 alert; if that alert is
-# hidden by the user, it will stay hidden as long as the alert keeps spamming, but if it quits spamming for long enough
-# and then starts up again, it will show up as a new alert.
+# alert on the frontend by emitting an alert event.  If a given type of alert is spamming (based on id, as explained
+# below), then all repetitions will be grouped into 1 alert; if that alert is hidden by the user, it will stay hidden
+# as long as the alert keeps spamming, but if it quits spamming for long enough and then starts up again, it will show
+# up as a new alert.  Alerts can be programmatically hidden as well.
 # -------
-# An alert will then be shown via the 'main' state view, so they overlay any subviews from 'main' (and thus follow you
-# if you change view).  An alert will dismiss itself after a while (there is a default TTL value in MainOptions, which
-# can be overriden on a particular event; the special value 0 means not to auto-dismiss), or can be hidden before this
-# by clicking the X in the upper-right of the alert.  New alerts that have the same id as an existing alert replace that
+# An alert will be shown via the 'main' state view, so they overlay any subviews from 'main' (and thus follow you if you
+# change view).  An alert will dismiss itself after a while (there is a default TTL value in MainOptions, which can be
+# overriden on a particular event; the special value 0 means not to auto-dismiss), or can be hidden before this by
+# clicking the X in the upper-right of the alert.  New alerts that have the same id as an existing alert replace that
 # alert, resetting its dismissal timer, moving it to the end of the list, and incrementing its repetition counter,
 # similar to how Chrome's js console handles repeated console messages.  Once an alert has been hidden by a user, it
 # (and any alerts with the same id) will remain hidden; the alert will be dismissed once it has been hidden for a quiet
 # period without its repetition counter getting incremented (default value in MainOptions, but can be overriden
 # per-event, and 0 is not handled specially unlike TTL).
 # -------
+# To spawn an event, use:
+#   $rootScope.$emit Events.alert.spawn, alertObj
+# To hide an event, use:
+#   $rootScope.$emit Events.alert.hide, alertId
+# To dismiss an event, use:
+#   $rootScope.$emit Events.alert.dismiss, alertId
+# -------
 # Allowed properties of an emitted alert:
 #   msg (required): the main body of the alert.  This can be HTML, but should consist only of inline or inline-block
 #     type formatting since it is all contained in a span.
-#   type: a string that determines the colors used for the alert; defaults to "rm-info". There are 4 intended values,
+#   type: a string that determines the colors used for the alert; defaults to "rm-danger". There are 4 intended values,
 #     but this is not enforced; any string passed in this field will be prepended with "alert-" and applied as a class.
 #     Styling for the 4 values below is in alerts.styl.  Default (pale) bootstrap versions of the below are vailable by
 #     removing the "rm-" prefix
@@ -47,7 +54,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
     
     # when we hide an alert, we don't want to completely get rid of it -- we want to keep it around so we know not to
     # show similar alerts for a while.
-    $scope.hideAlert = (alertId) ->
+    hideAlert = (alertId) ->
       alert = alertsMap[alertId]
       # if it has already been removed or closed, don't do anything
       if !alert? || alert.closed
@@ -105,7 +112,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       # set some default values
       alert.reps = 0
       if !alert.type?
-        alert.type = "rm-info"
+        alert.type = "rm-danger"
       if !alert.ttlMillis?
         alert.ttlMillis = MainOptions.alert.ttlMillis
       if !alert.quietMillis?
@@ -118,7 +125,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       alertsMap[alert.id] = alert
       
     # this does some common alert handling and then branches based on whether the alert is a dupe
-    handleAlertEvent = (event, alert) ->
+    handleAlertSpawnEvent = (event, alert) ->
       if !alert.msg
         $log.warn "alert received with no message: #{JSON.stringify(alert,null,2)}\n from event: #{JSON.stringify(event,null,2)}"
         return
@@ -128,6 +135,9 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       else
         handleDupeAlert(alert)
 
-    # this listens for incoming events and passes them off to the handler
-    $scope.$onRootScope Events.alert, handleAlertEvent
+    # expose some functions via scope and event
+    $scope.hideAlert = hideAlert
+    $scope.$onRootScope Events.alert.spawn, handleAlertSpawnEvent
+    $scope.$onRootScope Events.alert.hide, (event, alertId) -> hideAlert(alertId)
+    $scope.$onRootScope Events.alert.dismiss, (event, alertId) -> removeAlert(alertId)
 ]

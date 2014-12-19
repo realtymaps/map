@@ -2,8 +2,9 @@ Promise = require "bluebird"
 filterSummaryService = require '../../services/service.properties.filterSummary'
 parcelService = require '../../services/service.properties.parcels'
 requestUtil = require '../../utils/util.http.request'
-status = require '../../../common/utils/httpStatus'
+httpStatus = require '../../../common/utils/httpStatus'
 logger = require '../../config/logger'
+ExpressResponse = require '../../utils/util.expressResponse'
 
 
 handleRoute = (res, next, serviceCall) ->
@@ -12,10 +13,10 @@ handleRoute = (res, next, serviceCall) ->
   .then (data) ->
     res.json(data)
   .catch requestUtil.query.ParamValidationError, (err) ->
-    next(status: status.BAD_REQUEST, message: err.message)
+    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
   .catch (err) ->
     logger.error err.stack||err.toString()
-    next(status: status.INTERNAL_SERVER_ERROR, message: err.message)
+    next(err)
 
 
 module.exports = 

@@ -7,6 +7,8 @@ dbs = require './dbs'
 logger = require './logger'
 auth = require '../utils/util.auth'
 uuid = require '../utils/util.uuid'
+ExpressResponse = require '../utils/util.expressResponse'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 # express midlewares
 helmet = require 'helmet'
@@ -27,13 +29,6 @@ status = require '../../common/utils/httpStatus'
 livereload = require "connect-livereload"
 
 app = express()
-
-# JWI: none of these are necessary
-# set port, routes, models and config paths
-#app.set 'port', config.PORT
-#app.set 'routes', path.join(config.ROOT_PATH, '/routes/')
-#app.set 'models', path.join(config.ROOT_PATH, '/data_access/models/')
-#app.set 'config', config
 
 
 # security headers
@@ -87,18 +82,21 @@ if config.PORT != config.PROD_PORT
 # bootstrap routes
 require("../routes")(app)
 
-nomsg = ""
+app.use (data, req, res, next) ->
+  if data instanceof ExpressResponse
+    # this response is intentional
+    payload = if data.payload? then data.payload else ""
+    analysis = analyzeValue(payload)
+    logger.error (JSON.stringify(analysis,null,2))
+    return res.status(data.status).send payload
 
-app.use (err, req, res, next) ->
-  if err.status?
-    #if we have a status then it is handled and not severe.
-    # send the Error code to client along with a possible message
-    msg = if err.message? then err.message else nomsg
-    return res.status(err.status).send msg
-
+  # otherwise, it's probably a thrown Error
+  analysis = analyzeValue(data)
   logger.error "uncaught error found by express:"
-  logger.error (if err.stack then ''+err.stack else ''+err)
-  res.status(status.INTERNAL_SERVER_ERROR).json(error: err.message)
+  logger.error (JSON.stringify(analysis,null,2))
+  res.status(status.INTERNAL_SERVER_ERROR).json alert:
+    msg: "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues, please let us know by emailing support@realtymaps.com, and giving us the following error message:<br/><code>#{data.message}</code>"
+    id: "500-#{req.path}"
   next()
 
 if config.USE_ERROR_HANDLER

@@ -3,9 +3,6 @@
     .logo.center-block
       img(src="/assets/logo.png")
   form.login(method="POST", ng-submit="doLoginPost()")
-    .errmsg-wrapper(ng-show="errorMessage")
-      .row.spacer
-        .col-md-4.col-md-offset-4.errmsg.danger {{errorMessage}} 
     .row.spacer
       .col-md-4.col-md-offset-4
         label(for="username") Username:

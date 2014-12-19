@@ -1,6 +1,4 @@
 app = require '../app.coffee'
-require './baseGoogleMap.coffee'
-require '../services/httpStatus.coffee'
 qs = require 'qs'
 
 encode = undefined
@@ -8,10 +6,10 @@ encode = undefined
   Our Main Map Implementation
 ###
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi', 'BaseGoogleMap'.ourNs(),
-  'HttpStatus'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
+  'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
-    HttpStatus, Properties, Events, LayerFormatters, MainOptions,
+    Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
