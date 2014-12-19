@@ -7,18 +7,14 @@ casing = require 'case'
 app.service 'LayerFormatters'.ourNs(), [
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
   ($log, ParcelEnums, uiGmapUtil, Properties) ->
+
     filterSummaryHash = {}
-    propertySaveYellow = '#EFEE50'
-    colors = {}
-    colors[ParcelEnums.status.sold] = '#2c8aa7'
-    colors[ParcelEnums.status.pending] = '#d48c0e'
-    colors[ParcelEnums.status.forSale] = '#2fa02c'
-    colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
 
     markersIcon = {}
     markersIcon[ParcelEnums.status.sold] = '../assets/map_marker_out_pink_64.png'
     markersIcon[ParcelEnums.status.pending] = '../assets/map_marker_out_azure_64.png'
     markersIcon[ParcelEnums.status.forSale] = '../assets/map_marker_out_green_64.png'
+    markersIcon['saved'] = '../assets/map_marker_in_blue.png' #will change later
     markersIcon['default'] = ''
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
@@ -38,13 +34,6 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
-    getSavedColorProperty = (model) ->
-      props = Properties.getSavedProperties()
-      prop = props[model.rm_property_id] if _.has props, model.rm_property_id
-      if not prop or not prop.isSaved
-        return
-      propertySaveYellow
-
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
@@ -61,36 +50,74 @@ app.service 'LayerFormatters'.ourNs(), [
       else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
       offset
 
-    Parcels:
-      fill: (parcel) ->
+
+    parcels = do ->
+
+      saveColor = '#EFEE50'
+      mouseOverColor = '#F8002E'
+      colors = {}
+      colors[ParcelEnums.status.sold] = '#2c8aa7'
+      colors[ParcelEnums.status.pending] = '#d48c0e'
+      colors[ParcelEnums.status.forSale] = '#2fa02c'
+      colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
+
+
+      getSavedColorProperty = (model) ->
+        props = Properties.getSavedProperties()
+        prop = props[model.rm_property_id] if _.has props, model.rm_property_id
+        if not prop or not prop.isSaved
+          return
+        saveColor
+
+      optsFromFillColor = (color) ->
+        fillColor: color
+
+      optsFromFill = (fillOpts) ->
+        fillColor: fillOpts.color
+        fillOpacity: fillOpts.opacity
+
+      fill = (parcel) ->
         return {} unless parcel
         model = parcel.model
         maybeSavedColor = getSavedColorProperty(model)
         unless maybeSavedColor
           model = if _.has filterSummaryHash, model.rm_property_id then filterSummaryHash[model.rm_property_id] else model
-        color:  maybeSavedColor or colors[model.rm_status] or colors['default']
-        opacity: '.65'
+        color: maybeSavedColor or colors[model.rm_status] or colors['default']
+        opacity: '.50'
 
-      labelFromStreetNum: (parcel) ->
+      labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
         labelContent: "<h5>#{parcel.street_address_num}</h5>"
         labelAnchor: "20 10"
         zIndex: 0
 
-    MLS:
+      fill: fill
+      labelFromStreetNum: labelFromStreetNum
+      optionsFromFill: (parcel) ->
+        optsFromFill fill(parcel)
+      mouseOverOptions: optsFromFillColor(mouseOverColor)
+
+    mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
         formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
+        maybeSaved = null
+        # maybeSaved = markersIcon['saved'] if _.has filterSummaryHash, mls.rm_property_id
         ret =
-          icon: markersIcon[mls.rm_status] or markersIcon['default']
+          icon: maybeSaved or markersIcon[mls.rm_status] or markersIcon['default']
           labelContent: formatStatusMarkerContent mls.rm_status, formattedPrice
           labelAnchor: "30 100"
           zIndex: 1
         ret
 
-      getWindowOffset:getWindowOffset
+      getWindowOffset: getWindowOffset
 
+
+    Parcels: parcels
+    MLS: mls
     updateFilterSummaryHash: (hash) ->
       filterSummaryHash = hash
+
+
 ]

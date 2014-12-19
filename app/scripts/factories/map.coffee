@@ -78,20 +78,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 disableAutoPan: true
 
             listingEvents:
-              mouseover: (gMarker, eventname, model) ->
-                $scope.actions.listing(gMarker, eventname, model)
-              mouseout: (gMarker, eventname, model) ->
-                $scope.actions.closeListing()
-              dblclick: (gObject, eventname, model) ->
+              mouseover: (gObject, eventname, model) ->
+                $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
+                gObject.setOptions($scope.formatters.layer.Parcels.mouseOverOptions)
+
+              mouseout: (gObject, eventname, model) ->
+                $scope.actions.closeListing()
+                return if gObject.labelClass?
+                childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+                gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+
+              dblclick: (gObject, eventname, model) ->
+                return if gObject.labelClass?#its a marker
                 saved = Properties.saveProperty(model)
                 return unless saved
                 saved.then ->
-                  opts = $scope.formatters.layer.Parcels.fill model: model
-                  #this is why this issue is proposed https://github.com/angular-ui/angular-google-maps/issues/1033
-                  gObject.setOptions
-                    fillColor: opts.color
-                    fillOpacity: opts.opacity
+                  childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+                  gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
 
           formatters:
             layer: LayerFormatters

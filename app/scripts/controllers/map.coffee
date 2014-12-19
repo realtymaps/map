@@ -22,7 +22,7 @@ module.exports = app
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
   ($scope, $rootScope, Map, MainOptions, Toggles,
   principal, Events, ParcelEnums, Properties) ->
-    
+
     $scope.pageClass = 'page-map'
 
     restoreState = () ->
@@ -30,8 +30,8 @@ module.exports = app
       .then (identity) ->
         if not identity?.stateRecall
           return MainOptions.map
-        if identity.stateRecall.properties_selected
-          Properties.setSavedProperties identity.stateRecall.properties_selected
+        # if identity.stateRecall.properties_selected
+        #   Properties.setSavedProperties identity.stateRecall.properties_selected
         if identity.stateRecall.map_center
           MainOptions.map.options.json.center = identity.stateRecall.map_center
         if identity.stateRecall.map_zoom
@@ -51,7 +51,7 @@ module.exports = app
 
     $scope.$onRootScope Events.principal.login.success, () ->
       restoreState()
-    
+
     if principal.isIdentityResolved() && principal.isAuthenticated()
       restoreState()
 

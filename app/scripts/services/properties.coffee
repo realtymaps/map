@@ -9,7 +9,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     savedProperties = {}
 
     principal.getIdentity().then (identity) ->
-      savedProperties = _.extend savedProperties, identity.stateRecall.savedProperties
+      savedProperties = _.extend savedProperties, identity.stateRecall.properties_selected
 
     getParcelBase: (hash, mapState) ->
       $http.get("#{backendRoutes.parcelBase}?bounds=#{hash}&#{mapState}")
