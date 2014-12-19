@@ -76,13 +76,16 @@ app.service 'LayerFormatters'.ourNs(), [
         fillColor: fillOpts.color
         fillOpacity: fillOpts.opacity
 
-      fill = (parcel) ->
+      fillColorFromState = (parcel) ->
         return {} unless parcel
         model = parcel.model
         maybeSavedColor = getSavedColorProperty(model)
         unless maybeSavedColor
           model = if _.has filterSummaryHash, model.rm_property_id then filterSummaryHash[model.rm_property_id] else model
-        color: maybeSavedColor or colors[model.rm_status] or colors['default']
+        maybeSavedColor or colors[model.rm_status]
+
+      fill = (parcel) ->
+        color: fillColorFromState(parcel) or colors['default']
         opacity: '.50'
 
       labelFromStreetNum = (parcel) ->
@@ -92,11 +95,15 @@ app.service 'LayerFormatters'.ourNs(), [
         labelAnchor: "20 10"
         zIndex: 0
 
+      #public
       fill: fill
       labelFromStreetNum: labelFromStreetNum
+
       optionsFromFill: (parcel) ->
         optsFromFill fill(parcel)
-      mouseOverOptions: optsFromFillColor(mouseOverColor)
+
+      mouseOverOptions: (parcel) ->
+        fillColorFromState(parcel) or optsFromFillColor(mouseOverColor)
 
     mls = do ->
       markerOptionsFromForSale: (mls) ->

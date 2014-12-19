@@ -30,6 +30,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
 
+        _saveProperty = (gObject, model) ->
+          #TODO: Need to debounce / throttle
+          saved = Properties.saveProperty(model)
+          return unless saved
+          saved.then ->
+            childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+            gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
@@ -53,7 +61,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             draw: undefined
             isEnabled: false
 
+          keys:
+            ctrlIsDown: false
+            cmdIsDown: false
+
           actions:
+            keyDown: (event) ->
+              $scope.keys.ctrlIsDown = event.ctrlKey
+              $scope.keys.cmdIsDown = event.keyIdentifier == 'Meta'
+            keyUp: (event) ->
+              $scope.keys.ctrlIsDown = event.ctrlKey
+              $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
+
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
             listing: (gMarker, eventname, model) ->
@@ -78,7 +97,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) ->
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
-                gObject.setOptions($scope.formatters.layer.Parcels.mouseOverOptions)
+                childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+                gObject.setOptions($scope.formatters.layer.Parcels.mouseOverOptions(childModel))
 
               mouseout: (gObject, eventname, model) ->
                 $scope.actions.closeListing()
@@ -86,13 +106,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
                 gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
 
+              click: (gObject, eventname, model) ->
+                $log.debug "click: #{JSON.stringify($scope.keys)}"
+                #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
+                #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
+                _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+
               dblclick: (gObject, eventname, model) ->
                 return if gObject.labelClass?#its a marker
-                saved = Properties.saveProperty(model)
-                return unless saved
-                saved.then ->
-                  childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-                  gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+                _saveProperty gObject, model
 
           formatters:
             layer: LayerFormatters
@@ -179,6 +201,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
         @updateFilterSummaryHash()
+
 
     Map
 ]
