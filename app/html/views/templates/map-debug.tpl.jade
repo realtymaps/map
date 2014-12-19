@@ -1,5 +1,6 @@
 div()
   span
     section zoom: {{$parent.$parent.$parent.zoom}}
-    section doClusterMarkers: {{$parent.$parent.$parent.$parent.doClusterMarkers}}
     section showMarkers: {{$parent.$parent.$parent.$parent.showMarkers}}
+    section Saved Properties:
+      div(ng-repeat="prop in $parent.$parent.$parent.$parent.savedProperties") {{prop.rm_property_id}}

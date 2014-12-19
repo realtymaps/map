@@ -97,6 +97,9 @@ getUserState = (userId) ->
       return result
 
 updateUserState = (session, partialState) -> Promise.try () ->
+  #TODO: we need to check partialState to make sure it is an object
+  #if not throw error or call next()
+
   # need the id for lookup, so we don't want to allow it to be set this way
   delete partialState.id
   _.extend(session.state, partialState)
