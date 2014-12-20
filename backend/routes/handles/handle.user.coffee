@@ -5,6 +5,8 @@ httpStatus = require '../../../common/utils/httpStatus'
 sessionSecurityService = require '../../services/service.sessionSecurity'
 userService = require '../../services/service.user'
 userUtils = require '../../utils/util.user'
+ExpressResponse = require '../../utils/util.expressResponse'
+alertIds = require '../../../common/utils/enums/util.enums.alertIds'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -20,6 +22,9 @@ doLogin = (req, res, next) -> Promise.try () ->
     promise = Promise.resolve()
 
   promise.then () ->
+    if !req.body.password
+      logger.debug "no password specified for login: #{req.body.username}"
+      return false
     logger.debug "attempting to do login for username: #{req.body.username}"
     userService.verifyPassword(req.body.username, req.body.password)
   .catch (err) ->
@@ -27,7 +32,10 @@ doLogin = (req, res, next) -> Promise.try () ->
     return false
   .then (user) ->
     if not user
-      return next(status: httpStatus.UNAUTHORIZED, message: {error: "Username and/or password does not match our records."})
+      return next new ExpressResponse(alert: {
+        msg: "Username and/or password does not match our records."
+        id: alertIds.loginFailure
+      }, httpStatus.UNAUTHORIZED)
     else
       req.user = user
       req.session.userid = user.id

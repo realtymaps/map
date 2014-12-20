@@ -12,6 +12,7 @@ permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
 userHandles = require '../routes/handles/handle.user'
 httpStatus = require '../../common/utils/httpStatus'
+ExpressResponse = require './util.expressResponse'
 
 
 class SessionSecurityError extends Error
@@ -158,7 +159,7 @@ module.exports = {
         if options.redirectOnFail
           return res.json(doLogin: true)
         else
-          return next(status: httpStatus.UNAUTHORIZED, message: "Please login to access this URI.")
+          return next new ExpressResponse(alert: {msg: "Please login to access #{req.path}."}, httpStatus.UNAUTHORIZED)
       return process.nextTick(next)
 
 # route-specific middleware that requires permissions set on the session,
@@ -188,6 +189,6 @@ module.exports = {
         if options.logoutOnFail
           return userHandles.doLogout(req, res, next)
         else
-          return next(status: httpStatus.UNAUTHORIZED, message: "You do not have permission to access this URI.")
+          return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, httpStatus.UNAUTHORIZED)
       return process.nextTick(next)
 }

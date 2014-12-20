@@ -2,4 +2,4 @@ div(ng-controller="RealtyMaps-AlertsCtrl").alerts-area
   alert(ng-repeat="alert in alerts",type="{{alert.type}}",close="hideAlert(alert.id)")
     span(ng-if="alert.reps")
       | ({{alert.reps+1}})&nbsp;&nbsp;
-    | {{alert.msg}}
+    span(ng-bind-html="alert.trustedMsg")

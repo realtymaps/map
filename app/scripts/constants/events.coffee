@@ -9,4 +9,7 @@ app.constant 'events'.ourNs(),
   principal:
     login:
       success: 'principal.login.success'
-  alert: 'alert'
+  alert:
+    spawn: 'alert.spawn'
+    hide: 'alert.hide'
+    dismiss: 'alert.dismiss'

@@ -30,7 +30,7 @@ updateUser = (attributes) ->
 preprocessHash = (password) ->
   Promise.try () ->
     hashData = {}
-    if password.indexOf("bcrypt$") is 0
+    if password?.indexOf("bcrypt$") == 0
       hashData.algo = 'bcrypt'
       hashData.hash = password.slice("bcrypt$".length)
       return environmentSettingsService.getSettings()
@@ -55,7 +55,7 @@ verifyPassword = (username, password) ->
   logger.debug "attempting to verify password for username: #{username}"
   getUser({ username: username })
   .then (user) ->
-    if not user
+    if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
       # to prevent timing attacks from determining validity of usernames
       return createPasswordHash(password).then (hash) -> return false

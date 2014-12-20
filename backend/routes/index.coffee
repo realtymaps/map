@@ -4,6 +4,8 @@ logger = require '../config/logger'
 attachRoutes = require('../utils/util.loaders.coffee').loadRoutes
 frontendRoutes = require '../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../common/config/routes.backend.coffee'
+httpStatus = require '../../common/utils/httpStatus.coffee'
+ExpressResponse = require '../utils/util.expressResponse'
 
 indexFilePath = path.normalize(__filename)
 
@@ -18,7 +20,7 @@ module.exports = (app) ->
   # this wildcard allows express to deal with any unknown api URL
   logger.infoRoute 'wildcard (backend)', backendRoutes.wildcard
   app.get backendRoutes.wildcard, (req, res, next) ->
-    next(status: 404, message: {error: "The resource #{req.path} was not found."})
+    next new ExpressResponse(alert: {msg: "Oops!  The API resource #{req.path} was not found.  Try reloading the page."}, httpStatus.NOT_FOUND)
 
   # this wildcard allows angular to deal with any URL that isn't an api URL
   logger.infoRoute 'wildcard (frontend)', frontendRoutes.wildcard
