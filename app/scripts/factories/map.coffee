@@ -87,7 +87,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 $scope.layers.listingDetail.show = false
               model.show = true
               $scope.layers.listingDetail = model
-              offset = $scope.formatters.layer.MLS.getWindowOffset($scope.gMap, $scope.layers.listingDetail)
+              offset = $scope.formatters.layer.MLS.getWindowOffset(self.gMap, $scope.layers.listingDetail)
               return unless offset
               _.extend $scope.listingOptions,
                 pixelOffset: offset
@@ -107,7 +107,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
 
               click: (gObject, eventname, model) ->
-                $log.debug "click: #{JSON.stringify($scope.keys)}"
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
@@ -133,10 +132,16 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       redraw: =>
         if @scope.zoom > @scope.options.parcelsZoomThresh
+          unless @scope.options.disableDoubleClickZoom
+            @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: true #new ref allows options watch to be kicked
+
           @scope.showMarkers = false
           Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
         else
+          if @scope.options.disableDoubleClickZoom
+            @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: false
+
           @scope.layers.parcels.length = 0
           @scope.showMarkers = true
 
