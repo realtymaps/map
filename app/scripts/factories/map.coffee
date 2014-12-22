@@ -131,12 +131,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @subscribe()
 
       redraw: =>
+        promises  = []
         if @scope.zoom > @scope.options.parcelsZoomThresh
           unless @scope.options.disableDoubleClickZoom
             @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: true #new ref allows options watch to be kicked
 
           @scope.showMarkers = false
-          Properties.getParcelBase(@hash, @mapState).then (data) =>
+          promises.push Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
         else
           if @scope.options.disableDoubleClickZoom
@@ -146,15 +147,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.showMarkers = true
 
         if @filters
-          Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
+          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
             return unless data?.data?
             @scope.layers.filterSummary = data.data
             @updateFilterSummaryHash()
         else
           @scope.layers.filterSummary.length = 0
 
-      draw: (event, paths) =>
+        $q.all(promises).then ->
+          $rootScope.isLoading = false
 
+      draw: (event, paths) =>
+        $rootScope.isLoading = true
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
