@@ -7,7 +7,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
       zoomThresholdMilliSeconds: 1500
       options:
         logLevel: if isDev then 'debug' else 'error'
-        disableDoubleClickZoom:true #does not work well with dblclick properties
+        disableDoubleClickZoom:false #does not work well with dblclick properties
         uiGmapLogLevel: 'error'
         streetViewControl: false
         zoomControl: true
@@ -28,7 +28,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
     # filterDrawDelay is how long to wait when filters are modified to see if more modifications are incoming before querying
     filterDrawDelay: 1000
     isDev: isDev
-    
+
     alert:
       # ttlMillis is the default for how long to display an alert before automatically hiding it
       ttlMillis: 2*60*1000   # 2 minutes

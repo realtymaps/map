@@ -3,5 +3,6 @@ div()
     section zoom: {{$parent.$parent.$parent.zoom}}
     section showMarkers: {{$parent.$parent.$parent.$parent.showMarkers}}
     section keys: {{$parent.$parent.$parent.$parent.keys}}
+    section disableDoubleClickZoom: {{$parent.$parent.$parent.$parent.options.disableDoubleClickZoom}}
     section Saved Properties:
       div(ng-repeat="prop in $parent.$parent.$parent.$parent.savedProperties") {{prop.rm_property_id}}
