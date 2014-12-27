@@ -15,6 +15,7 @@ app = window.angular.module appName, [
   'ui.router'
   'ct.ui.router.extras'
   'ngAnimate'
+  'infinite-scroll'
 ]
 
 module.exports = app

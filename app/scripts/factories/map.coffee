@@ -7,10 +7,10 @@ encode = undefined
 ###
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(),
+  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager) ->
+    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -43,6 +43,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showTraffic: true
           showWeather: false
           showMarkers: true
+
 
           listingOptions:
             boxClass: 'custom-info-window'
@@ -112,7 +113,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
 
               dblclick: (gObject, eventname, model) ->
-                return if gObject.labelClass?#its a marker
+                return if gObject.labelClass? #its a marker
                 _saveProperty gObject, model
 
           formatters:
@@ -121,6 +122,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
+
+        @scope.resultsFormatter = new ResultsFormatter($scope)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
@@ -175,7 +178,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
         @filterDrawPromise = $timeout(=>
-          @filters = FilterManager.manage =>
+          FilterManager.manage (filters) =>
+            @filters = filters
             @filterDrawPromise = false
             @redraw()
         , MainOptions.filterDrawDelay)
