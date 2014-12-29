@@ -4,7 +4,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
   return {
     map:
-      zoomThresholdMilliSeconds: 1500
+      zoomThresholdMilliSeconds: 800
       options:
         logLevel: if isDev then 'debug' else 'error'
         disableDoubleClickZoom:false #does not work well with dblclick properties
@@ -14,6 +14,11 @@ app.constant 'MainOptions'.ourNs(), do () ->
         panControl: false
         maxZoom: 20
         minZoom: 3
+        throttle:
+          eventPeriods:
+            mousewheel: 50 # ms - don't let pass more than one event every 50ms.
+            mousemove: 200 # ms - don't let pass more than one event every 200ms.
+          space: 2
         parcelsZoomThresh: 17
         clusteringThresh: 17
         json:

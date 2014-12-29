@@ -133,7 +133,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         @subscribe()
 
+      clearBurdenLayers: =>
+        unless @gMap.getZoom() > @scope.options.parcelsZoomThresh
+          @scope.layers.parcels.length = 0
+
       redraw: =>
+        @scope.zoom > @scope.options.parcelsZoomThresh
+        $timeout.cancel @allPromises if @allPromises
+
         promises  = []
         if @scope.zoom > @scope.options.parcelsZoomThresh
           unless @scope.options.disableDoubleClickZoom
@@ -146,7 +153,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           if @scope.options.disableDoubleClickZoom
             @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: false
 
-          @scope.layers.parcels.length = 0
+          @clearBurdenLayers()
           @scope.showMarkers = true
 
         if @filters
@@ -157,7 +164,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         else
           @scope.layers.filterSummary.length = 0
 
-        $q.all(promises).then ->
+        @allPromises = $q.all(promises).finally ->
           $rootScope.isLoading = false
 
       draw: (event, paths) =>
