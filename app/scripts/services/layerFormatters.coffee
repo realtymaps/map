@@ -54,10 +54,10 @@ app.service 'LayerFormatters'.ourNs(), [
     parcels = do ->
 
       saveColor = '#EFEE50'
-      mouseOverColor = '#F8002E'
+      mouseOverColor = '#d48c0e'
       colors = {}
-      colors[ParcelEnums.status.sold] = '#2c8aa7'
-      colors[ParcelEnums.status.pending] = '#d48c0e'
+      colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
+      colors[ParcelEnums.status.pending] = '#6C3DCA'
       colors[ParcelEnums.status.forSale] = '#2fa02c'
       colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
 

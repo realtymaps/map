@@ -9,8 +9,8 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
-    _forSaleClass[ParcelEnums.status.pending] = 'forSale'
-    _forSaleClass[ParcelEnums.status.forSale] = 'forSale'
+    _forSaleClass[ParcelEnums.status.pending] = 'pending'
+    _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
