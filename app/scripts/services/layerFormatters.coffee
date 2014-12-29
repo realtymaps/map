@@ -56,7 +56,7 @@ app.service 'LayerFormatters'.ourNs(), [
       saveColor = '#EFEE50'
       mouseOverColor = '#F8002E'
       colors = {}
-      colors[ParcelEnums.status.sold] = '#2c8aa7'
+      colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
       colors[ParcelEnums.status.pending] = '#d48c0e'
       colors[ParcelEnums.status.forSale] = '#2fa02c'
       colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?

@@ -99,13 +99,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
                 childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-                gObject.setOptions($scope.formatters.layer.Parcels.mouseOverOptions(childModel))
+                opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
+                gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
                 $scope.actions.closeListing()
                 return if gObject.labelClass?
                 childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-                gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+                opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
+                gObject.setOptions opts
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))

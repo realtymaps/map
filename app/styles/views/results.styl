@@ -66,7 +66,7 @@
     color: #929292
     padding: 8px
 
-#results-footer 
+#results-footer
     width: 100%
     background: #123D74
     height: 50px
@@ -87,7 +87,7 @@
     font-size:.8em
     height:65px
 
-.selectedCard 
+.selectedCard
     background-color:rgb(191, 255, 171) !important
     background-color:rgb(208, 255, 199) !important
 
@@ -138,7 +138,7 @@
 
 .card .info .title
     font-size: .5em
-    display: block 
+    display: block
     color:#6B6B6B
 
 
@@ -156,7 +156,7 @@
     display:inline-block
     width:70px
 
-    
+
 #results-footer .close
     float: right
     font-size: 45px
@@ -169,17 +169,17 @@
 
 
 /* Small devices (tablets, 768px and up) */
-@media (min-width: 768px)  
-    .results-container 
+@media (min-width: 768px)
+    .results-container
       width:350px
-    
+
     .results-container .close
-      display:none 
-    
+      display:none
+
     #results-list
       width:auto
 
-    .card 
+    .card
       font-size:.8em
       height:65px
 
@@ -187,37 +187,37 @@
       width:70px
       height:50px
       overflow:hidden
-      
+
     .card .info
       display:inline-block
       width:200px
-    
+
 
 /* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) 
-    .results-container 
+@media (min-width: 992px)
+    .results-container
       width:500px
-    
+
     #results-list
       width:auto
-    
-    .card 
+
+    .card
       font-size:1.0em
       height:95px
-    
+
     .card .photo img
       width:100px
       height:75px
       overflow:none
-      
+
     .card .info
       display:inline-block
       width:300px
-    
+
 
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
-    
+
 
 
 /*********************
@@ -239,7 +239,7 @@ End Results Container
 /*****************
 Detail Container
 *****************/
-.detail-container 
+.detail-container
     margin: 0 0 0 0px
     position: absolute
     z-index: 3
@@ -295,12 +295,16 @@ Detail Container
 .detail-container .property-status
     text-align: center
     color:#FFF
+
 .sold
-    background: rgb(211, 96, 96)
-    background: rgb(216, 216, 216)
+    background: rm-rm-property-sold-red
     color: #6F6F6F !important
+
 .forsale
-    background: rgb(100, 197, 100)
+    background: rm-highlight-green
+
+.saved
+  background rm-property-save-yello
 
 .detail-container .photo
     height:200px
@@ -308,14 +312,14 @@ Detail Container
 
 
 
-.detail-container .beds-baths-sqft 
+.detail-container .beds-baths-sqft
     text-align:left
 
 .detail-container .info .beds, .detail-container .info .baths, .detail-container .info .sqft, .detail-container .info .year
     font-size: 18px
 
 .detail-container .info .title
-    display: block 
+    display: block
     color:#6B6B6B
     font-size:14px
 
@@ -326,7 +330,7 @@ Detail Container
     font-size: 18px
     font-weight: 200
 
-#detail-footer 
+#detail-footer
     width: 100%
     background: rgb(162, 200, 226)
     height: 50px
@@ -335,48 +339,48 @@ Detail Container
 
 
 /* Small devices (tablets, 768px and up) */
-@media (min-width: 768px)  
-    
-    .detail-container 
+@media (min-width: 768px)
+
+    .detail-container
       width:350px
-   
+
 
     .detail-container .photo
-      height:300px 
-   
+      height:300px
+
 
     .detail-container .close
-      display:none 
-   
+      display:none
+
     .detail-container .address
       font-size:20px
-     
+
     .detail-container .price
       font-size:22px
       text-align:right
-   
+
 
     #detail-close
       display:block
-   
+
     #detail-list
       width:100%
-   
+
 
 
 
 /* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) 
-    
-    .detail-container 
+@media (min-width: 992px)
+
+    .detail-container
       width:500px
-  
+
     #detail-close
       display:block
-   
+
     #detail-list
       width:100%
-   
+
 
 /*****************
 End Detail Container
