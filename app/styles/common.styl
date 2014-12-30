@@ -1,11 +1,10 @@
 /* Set some basic rules */
 
-.centered{
-    position:relative;
-    top:50%;
-    left:50%;
-    transform:translate(-50%,-50%)
-}
+.centered
+  position:relative;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%)
 
 body
     height: 100%
@@ -31,11 +30,11 @@ body
 /* PAGES
 ============================================================================= */
 .page
-    bottom:0 
-    position:absolute 
+    bottom:0
+    position:absolute
     top:navbar-height
     width:100%
-    background: main-dark-blue 
+    background: main-dark-blue
 
 
 /* ANIMATIONS
@@ -45,23 +44,23 @@ body
     z-index:8888
     -webkit-animation:keepStill 0.5s both ease-in
     -moz-animation:keepStill 0.5s  both ease-in
-    animation:keepStill 0.5s  both ease-in  
+    animation:keepStill 0.5s  both ease-in
 
 .page.ng-enter
-    z-index:9999 
+    z-index:9999
     -webkit-animation:slideInUp 0.5s both ease-in
     -moz-animation:slideInUp 0.5s both ease-in
-    animation:slideInUp 0.5s both ease-in   
+    animation:slideInUp 0.5s both ease-in
 
 
 /* Slider Trays */
 #results-slide
     transition: 0.15s all ease-in-out
-
+    background-color white
 
 #results-slide.ng-hide-add, #results-slide.ng-hide-remove
-    display: block !important 
-    
+    display: block !important
+
 
 #results-slide.ng-hide-remove, #results-slide.ng-hide-add.ng-hide-add-active
     margin-right: -500px
@@ -77,8 +76,8 @@ body
 
 
 #filters-slide.ng-hide-add, #filters-slide.ng-hide-remove
-    display: block !important 
-    
+    display: block !important
+
 
 #filters-slide.ng-hide-remove, #filters-slide.ng-hide-add.ng-hide-add-active
     margin-left: -300px
@@ -208,7 +207,7 @@ body
 #search-bar-main #btn:hover
     background-color: medium-blue
 
-#search-bar-main #btn div 
+#search-bar-main #btn div
     font-size:20px
     text-align: center
     vertical-align: middle
@@ -278,7 +277,7 @@ body
 }
 
 @media (min-width: 1200px) {
-    
+
     .heroContainer {
         width:50%;
     }
@@ -321,3 +320,6 @@ checkbox(size)
 
 .light-message
   color: rm-light-gray
+
+.margin-10
+ margin 10px

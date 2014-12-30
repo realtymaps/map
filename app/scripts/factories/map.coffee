@@ -7,10 +7,10 @@ encode = undefined
 ###
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(),
+  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager) ->
+    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -43,6 +43,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showTraffic: true
           showWeather: false
           showMarkers: true
+
 
           listingOptions:
             boxClass: 'custom-info-window'
@@ -98,13 +99,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
                 childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-                gObject.setOptions($scope.formatters.layer.Parcels.mouseOverOptions(childModel))
+                opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
+                gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
                 $scope.actions.closeListing()
                 return if gObject.labelClass?
                 childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-                gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+                opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
+                gObject.setOptions opts
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
@@ -112,7 +115,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
 
               dblclick: (gObject, eventname, model) ->
-                return if gObject.labelClass?#its a marker
+                return if gObject.labelClass? #its a marker
                 _saveProperty gObject, model
 
           formatters:
@@ -122,6 +125,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           changeZoom: (increment) ->
             $scope.zoom += increment
 
+        @scope.resultsFormatter = new ResultsFormatter($scope)
+
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
@@ -130,31 +135,42 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         @subscribe()
 
+      clearBurdenLayers: =>
+        unless @gMap.getZoom() > @scope.options.parcelsZoomThresh
+          @scope.layers.parcels.length = 0
+
       redraw: =>
+        @scope.zoom > @scope.options.parcelsZoomThresh
+        $timeout.cancel @allPromises if @allPromises
+
+        promises  = []
         if @scope.zoom > @scope.options.parcelsZoomThresh
           unless @scope.options.disableDoubleClickZoom
             @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: true #new ref allows options watch to be kicked
 
           @scope.showMarkers = false
-          Properties.getParcelBase(@hash, @mapState).then (data) =>
+          promises.push Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
         else
           if @scope.options.disableDoubleClickZoom
             @scope.options = _.extend {}, @scope.options, disableDoubleClickZoom: false
 
-          @scope.layers.parcels.length = 0
+          @clearBurdenLayers()
           @scope.showMarkers = true
 
         if @filters
-          Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
+          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
             return unless data?.data?
             @scope.layers.filterSummary = data.data
             @updateFilterSummaryHash()
         else
           @scope.layers.filterSummary.length = 0
 
-      draw: (event, paths) =>
+        @allPromises = $q.all(promises).finally ->
+          $rootScope.isLoading = false
 
+      draw: (event, paths) =>
+        $rootScope.isLoading = true
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
@@ -171,7 +187,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
         @filterDrawPromise = $timeout(=>
-          @filters = FilterManager.manage =>
+          FilterManager.manage (filters) =>
+            @filters = filters
             @filterDrawPromise = false
             @redraw()
         , MainOptions.filterDrawDelay)

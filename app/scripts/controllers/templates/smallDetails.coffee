@@ -13,7 +13,7 @@ module.exports =
 
     $scope.street_address_num = String.orNA $scope.parameter.street_address_num
     $scope.street_address_name = String.orNA $scope.parameter.street_address_name
-    $scope.beds_total = String.orNA $scope.parameter.beds_total
+    $scope.beds_total = String.orNA $scope.parameter.bedrooms
     $scope.baths_full = String.orNA $scope.parameter.baths_full
     $scope.baths_half= String.orNA $scope.parameter.baths_half
     $scope.baths_total= String.orNA $scope.parameter.baths_total
@@ -22,5 +22,6 @@ module.exports =
     $scope.local_assessed_value = getPrice $scope.parameter.local_assessed_value
     $scope.year_built = if $scope.parameter.year_built then moment($scope.parameter.year_built).format('YYYY') else String.orNA $scope.parameter.year_built
     $scope.acres = String.orNA $scope.parameter.acres
+    $scope.rm_status = String.orNA $scope.parameter.rm_status
     , true
   ]
