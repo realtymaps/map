@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en" ng-app="RealtyMaps-app">
+
+<head>
+    <meta charset="utf-8">
+    <title>Results Tray Mock</title>
+    <base href="/"/>
+    <link rel="stylesheet" href="styles/vendor.css">
+</head>
+
+<body ng-controller="RealtyMaps-MockResultsTrayCtrl as results">
+
+<div ng-grid="results.gridOptions"></div>
+
+<script src="scripts/vendor.js"></script>
+<script type="application/javascript" src="{%=o.htmlWebpackPlugin.assets.main%}"></script>
+</body>
+</html>

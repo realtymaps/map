@@ -18,6 +18,7 @@ module.exports =
   svg: 'app/html/svg/*.svg'
   html: 'app/html/**/*.html'
   jade: 'app/html/**/*.jade'
+  mockIndexes: 'app/html/mocks'
   index: 'app/html/index.html'
   assets: 'app/assets/*'
   lib:

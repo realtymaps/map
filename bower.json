@@ -21,7 +21,8 @@
     "dbsync": "git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync.git",
     "fontawesome": "~4.2.0",
     "ng-infinite-scroller-origin": "~1.2.0",
-    "spinkit": "~1.0.0"
+    "spinkit": "~1.0.0",
+    "ng-grid": "~2.0.14"
   },
   "sofresh": [
     "dbsync",

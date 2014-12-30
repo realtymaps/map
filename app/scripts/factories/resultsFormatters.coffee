@@ -19,11 +19,25 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
         @scope.results = []
         @lastSummaryIndex = 0
         @origLen = 0
+
+
+        @scope.gridOptions =
+          data: 'results'
+          columnDefs: [
+            {field: 'resultsFormatter.getPrice(result.price)', displayName: 'Price'}
+            {field: 'resultsFormatter.orNa(result.bedrooms)',   displayName: 'Beds'}
+            {field: 'resultsFormatter.orNa(result.baths_total', displayName: 'Baths'}
+            {field: 'resultsFormatter.orNa(result.finished_sqft)', displayName: 'Sq Ft'}
+            {field: 'resultsFormatter.orNa(result.year_built)', displayName: 'Year'}
+          ]
+
+
         @scope.$watch 'layers.filterSummary', (newVal, oldVal) =>
           return if newVal == oldVal
           @lastSummaryIndex = 0
           @scope.results = []
           @loadMore()
+
 
       getCurbsideImage: (result) ->
         return 'http://placehold.it/100x75' unless result
