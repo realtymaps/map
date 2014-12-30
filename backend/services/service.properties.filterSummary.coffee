@@ -38,8 +38,6 @@ required =
   bounds: undefined
   status: []
 
-renderPdf = require '../utils/util.renderPdfFile'
-
 module.exports = 
   
   getFilterSummary: (filters, limit = 600) -> Promise.try () ->
