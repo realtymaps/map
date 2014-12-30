@@ -12,7 +12,7 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
       ul.nav.navbar-nav
         li(ng-hide="hide-nav")
           a(href="{{frontendRoutes.map}}") Map
-        li(ng-hide="principal.isAuthenticated()").navbar-right
+        li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.login}}") Sign In
-        li.navbar-right.ng-hide(ng-show="principal.isAuthenticated()")
+        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.logout}}") Sign Out

@@ -4,7 +4,7 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
-sqlHelpers = require './sql/sql.helpers.coffee'
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
 validators = requestUtil.query.validators

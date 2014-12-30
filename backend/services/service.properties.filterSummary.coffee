@@ -3,7 +3,7 @@ FilterSummary = require "../models/model.filterSummary"
 Promise = require "bluebird"
 logger = require '../config/logger'
 requestUtil = require '../utils/util.http.request'
-sqlHelpers = require './sql/sql.helpers.coffee'
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
 validators = requestUtil.query.validators
@@ -38,6 +38,7 @@ required =
   bounds: undefined
   status: []
 
+renderPdf = require '../utils/util.renderPdfFile'
 
 module.exports = 
   
