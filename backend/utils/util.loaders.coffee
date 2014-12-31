@@ -15,11 +15,17 @@ module.exports =
         logger.route " filePath: #{filePath}, \nfile: #{file}"
         logger.route " handles: #{filePath.contains('handles')}"
         require(filePath)?(app)
-  loadValidators: (directoryName) ->
+  loadSubmodules: (directoryName, regex) ->
     result = {}
     fs.readdirSync(directoryName).forEach (file) ->
-      match = (/^util\.validation\.(\w+)\.coffee$/).exec(file)
-      if (match)
+      submoduleHandle = null
+      if regex
+        match = regex.exec(file)
+        if (match)
+          submoduleHandle = match[1]
+      else
+        submoduleHandle = file
+      if submoduleHandle
         filePath = path.join directoryName, file
-        result[match[1]] = require(filePath)
+        result[submoduleHandle] = require(filePath)
     return result

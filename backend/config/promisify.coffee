@@ -1,5 +1,9 @@
 Promise = require "bluebird"
 
+
+module.exports = {}
+
+
 # Usually, something like the following will work:
 #   Promise.promisifyAll(require 'someLib')
 # which makes a promisified version of each exported function, using the
@@ -23,10 +27,8 @@ promisifySession = (req, res) -> Promise.try () ->
       promisifySession(req, res)
   Promise.resolve()
 
-module.exports = {
-  middleware:
-    promisifySession: promisifySession
-}
+module.exports.middleware =
+  promisifySession: promisifySession
 
 
 # this is a wrapper to provide the inverse of Promise.promisify via a call to
@@ -45,3 +47,9 @@ module.exports = {
 Promise.nodeifyWrapper = (func, options) ->
   return (args..., callback) ->
     func(args...).nodeify(callback, options)
+
+
+# promisify only the fs methods that use callbacks
+fs = require 'fs'
+Promise.promisifyAll fs, filter: (name, func, target) ->
+  return (name.slice(-4) != 'Sync' && name.indexOf('watch') == -1 && name.slice(6) != 'create')

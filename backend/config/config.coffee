@@ -51,6 +51,7 @@ base =
     PRE_FETCH: .1
   MEM_WATCH:
     IS_ON: false
+  TEMP_DIR: '/tmp'
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

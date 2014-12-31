@@ -30,7 +30,7 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           //-   .sk-cube
           //-   .sk-cube
           
-        li(ng-hide="principal.isAuthenticated()").navbar-right
+        li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.login}}") Sign In
-        li.navbar-right.ng-hide(ng-show="principal.isAuthenticated()")
+        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.logout}}") Sign Out

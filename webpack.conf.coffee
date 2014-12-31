@@ -9,6 +9,8 @@ Config = (output, additionalPlugs) ->
     devtool: '#eval'#'#eval-source-map' #eval is the fastest it is source map js, where eval-source-map is coffee and jade (ef that)
     resolve:
       modulesDirectories: ['bower_components','node_modules']
+    externals:
+      "pdfkit": "var PDFDocument"
     plugins: [
         new webpack.ResolverPlugin(
           new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(

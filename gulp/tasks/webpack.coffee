@@ -23,6 +23,7 @@ gulp.task 'webpack', ['otherAssets'], ->
     paths.stylus
     paths.jade
     paths.html
+    paths.webpackLibs
     paths.scripts
   ]
   .pipe plumber()
