@@ -52,6 +52,10 @@ base =
   MEM_WATCH:
     IS_ON: false
   TEMP_DIR: '/tmp'
+  LOB:
+    TEST_API_KEY: process.env.LOB_TEST_API_KEY
+    LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
+
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

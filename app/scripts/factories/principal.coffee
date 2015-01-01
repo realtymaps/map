@@ -53,7 +53,7 @@ app.factory 'principal'.ourNs(), [
       # otherwise, create a promise, retrieve the identity data from the server, update the identity object, and then resolve.
       _deferred = $q.defer();
       
-      $http.get(backendRoutes.identity)
+      $http.get(backendRoutes.user.identity)
       .success (data) ->
         setIdentity(data.identity)
       .error (err) ->

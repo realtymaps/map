@@ -13,10 +13,10 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       savedProperties = _.extend savedProperties, identity.stateRecall.properties_selected
 
     getParcelBase: (hash, mapState) ->
-      $http.get("#{backendRoutes.parcelBase}?bounds=#{hash}&#{mapState}", cache: true)
+      $http.get("#{backendRoutes.properties.parcelBase}?bounds=#{hash}&#{mapState}", cache: true)
 
     getFilterSummary: (hash, filters, mapState) ->
-      $http.get("#{backendRoutes.filterSummary}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
+      $http.get("#{backendRoutes.properties.filterSummary}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
 
     saveProperty: (model) =>
       return if not model or not model.rm_property_id
@@ -30,7 +30,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         delete savedProperties[rm_property_id]
 
       #post state to database
-      promise = $http.post(backendRoutes.updateState, properties_selected: savedProperties)
+      promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
       promise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
       promise
 

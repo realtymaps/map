@@ -2,10 +2,10 @@ Promise = require 'bluebird'
 moment = require 'moment'
 fs = require 'fs'
 config = require '../config/config'
-loadSubmodules = (require './util.loaders').loadSubmodules
+loaders = require './util.loaders'
 path = require 'path'
 
-documentTemplates = loadSubmodules(path.join(__dirname, '../../common/documentTemplates'), /^document\.(\w+)\.coffee$/)
+documentTemplates = loaders.loadSubmodules(path.join(__dirname, '../../common/documentTemplates'), /^document\.(\w+)\.coffee$/)
 
 module.exports = 
   toFile: (templateId, data, options = {}) -> Promise.try () ->

@@ -13,12 +13,13 @@ module.exports = app.controller 'LoginCtrl'.ourNs(), [
   ($rootScope, $scope, $http, $location, principal, Events) ->
     $scope.form = {}
     $scope.doLoginPost = () ->
-      $http.post backendRoutes.login, $scope.form
+      $http.post backendRoutes.user.login, $scope.form
       .success (data, status) ->
         if !httpStatus.isWithinOK status
           return
         $rootScope.$emit Events.alert.dismiss, alertIds.loginFailure
         principal.setIdentity(data.identity)
+        $location.replace()
         $location.url($location.search().next || frontendRoutes.map)
 ]
 
@@ -26,6 +27,7 @@ app.run ["$rootScope", "$location", "principal".ourNs(), ($rootScope, $location,
   
   doNextRedirect = (toState, nextLocation) ->
     if principal.isAuthenticated()
+      $location.replace()
       $location.url(nextLocation || frontendRoutes.map)
 
   $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
