@@ -146,5 +146,6 @@ forkStagingDb () {
     echo "fork name captured: $NEW_VARIABLE"
     
     # save the value in a config variable so we can remove it later
-    queueHerokuSetting "${DB_VARIABLE_BASE}_VARIABLE" "$NEW_VARIABLE"
+    # set the value immediately to help eliminate issues from canceled builds
+    heroku config:set ${DB_VARIABLE_BASE}_VARIABLE=$NEW_VARIABLE --app=$PROJECT
 }
