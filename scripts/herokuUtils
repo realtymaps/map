@@ -21,7 +21,7 @@ doHerokuSetup () {
 
 
 releaseForkMutex () {
-    heroku config:unset CIRCLECI_BUILD_FORKING CIRCLECI_BUILD_DEADLINE --app=$PROJECT
+    heroku config:unset CIRCLECI_BUILD_FORKING CIRCLECI_BUILD_DEADLINE CIRCLECI_BUILD_WAITING --app=$PROJECT
 }
 
 getForkMutex () {
@@ -31,7 +31,7 @@ getForkMutex () {
     
     NOW=`date '+%s'`
     #QUIET_PERIOD_END=$((NOW+60*2)) # 2 minutes quiet period
-    QUIET_PERIOD_END=$((NOW+1)) # 2 minutes quiet period
+    QUIET_PERIOD_END=$((NOW+15)) # 2 minutes quiet period
     MSG=""
     MSG_COUNT=0
     while [[ 0 ]]
