@@ -1,4 +1,5 @@
 
+
 doHerokuSetup () {
     HEROKU_SETTINGS=""
     HK_LOCATION=~/bin/hk
@@ -29,7 +30,8 @@ getForkMutex () {
     echo "Beginning quiet period as build $CIRCLE_BUILD_NUM..."
     
     NOW=`date '+%s'`
-    QUIET_PERIOD_END=$((NOW+60*2)) # 2 minutes quiet period
+    #QUIET_PERIOD_END=$((NOW+60*2)) # 2 minutes quiet period
+    QUIET_PERIOD_END=$((NOW+1)) # 2 minutes quiet period
     MSG=""
     MSG_COUNT=0
     while [[ 0 ]]
