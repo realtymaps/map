@@ -19,29 +19,31 @@ doHerokuSetup () {
 }
 
 
-releaseDeployMutex () {
-    heroku config:unset CIRCLECI_BUILD_DEPLOYING CIRCLECI_BUILD_DEADLINE --app=$PROJECT
+releaseForkMutex () {
+    heroku config:unset CIRCLECI_BUILD_FORKING CIRCLECI_BUILD_DEADLINE --app=$PROJECT
 }
 
-getDeployMutex () {
+getForkMutex () {
     # announce there is a build queued
     heroku config:set CIRCLECI_BUILD_WAITING=$CIRCLE_BUILD_NUM --app=$PROJECT
     echo "Beginning quiet period as build $CIRCLE_BUILD_NUM..."
     
     NOW=`date '+%s'`
-    QUIET_PERIOD_END=$((NOW+60*5)) # 5 minutes quiet period
+    QUIET_PERIOD_END=$((NOW+60*2)) # 2 minutes quiet period
+    MSG=""
+    MSG_COUNT=0
     while [[ 0 ]]
     do
-        sleep 60
+        sleep 10
         NOW=`date '+%s'`
         CURRENT_BUILD_WAITING=`heroku config:get CIRCLECI_BUILD_WAITING --app=$PROJECT`
         CURRENT_BUILD_FORCE=`heroku config:get CIRCLECI_BUILD_FORCE --app=$PROJECT`
-        CURRENT_BUILD_DEPLOYING=`heroku config:get CIRCLECI_BUILD_DEPLOYING --app=$PROJECT`
+        CURRENT_BUILD_FORKING=`heroku config:get CIRCLECI_BUILD_FORKING --app=$PROJECT`
         CURRENT_BUILD_DEADLINE=`heroku config:get CIRCLECI_BUILD_DEADLINE --app=$PROJECT`
         
         if [[ "$CURRENT_BUILD_FORCE" -eq $CIRCLE_BUILD_NUM ]]
         then
-            echo "Quiet period and existing deploys being ignored due to manual force flag."
+            echo "Quiet period and existing forks being ignored due to manual force flag."
             break
         fi
         
@@ -58,27 +60,40 @@ getDeployMutex () {
         
         if [[ $NOW -lt $QUIET_PERIOD_END ]]
         then
-            echo "... Still in quiet period ..."
+            if [[ "$MSG" != "quiet" || "$((MSG_COUNT % 6))" == "0" ]]
+            then
+                echo "... Still in quiet period ..."
+                MSG="quiet"
+                MSG_COUNT=1
+            else
+                MSG_COUNT=$((MSG_COUNT + 1))
+            fi
             continue
         fi
         
-        if [[ "$CURRENT_BUILD_DEPLOYING" == "" ]]
+        if [[ "$CURRENT_BUILD_FORKING" == "" ]]
         then
             break
         fi
         if [[ "$CURRENT_BUILD_DEADLINE" -gt $NOW ]]
         then
-            echo "... Waiting for build $CURRENT_BUILD_DEPLOYING to finish deploying ..."
+            if [[ "$MSG" != "fork" || "$((MSG_COUNT % 6))" == "0" ]]
+            then
+                echo "... Waiting for build $CURRENT_BUILD_FORKING to finish forking ..."
+                MSG="fork"
+                MSG_COUNT=1
+            else
+                MSG_COUNT=$((MSG_COUNT + 1))
+            fi
             continue
         fi
         
-        echo " ... Build $CURRENT_BUILD_DEPLOYING is in progress, but seems to have stalled out, deploying anyway."
+        echo " ... Build $CURRENT_BUILD_FORKING is in progress, but seems to have stalled out, deploying anyway."
+        break
     done
     
     echo "Beginning deployment for build $CIRCLE_BUILD_NUM."
-    heroku config:set CIRCLECI_BUILD_DEPLOYING=$CIRCLE_BUILD_NUM CIRCLECI_BUILD_DEADLINE=$((NOW+60*30)) --app=$PROJECT
-    
-    trap releaseDeployMutex EXIT
+    heroku config:set CIRCLECI_BUILD_FORKING=$CIRCLE_BUILD_NUM CIRCLECI_BUILD_DEADLINE=$((NOW+60*30)) --app=$PROJECT
 }
 
 queueHerokuSetting () {
@@ -107,43 +122,52 @@ setQueuedHerokuSettings () {
 
 
 forkStagingDb () {
-    DB_VARIABLE_BASE=$1
-    SOURCE_APP_NAME=$2
+    getForkMutex
+    (
+        DB_VARIABLE_BASE=$1
+        SOURCE_APP_NAME=$2
+        
+        echo "beginning fork of $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
+        
+        # first de-provision the old fork (if there is one)
+        OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
+        OLD_FORK="${OLD_FORK%_URI}"
+        OLD_FORK="${OLD_FORK%_URL}"
+        if [ -n "$OLD_FORK" ]
+        then
+            echo "de-provisioning previously forked db: $OLD_FORK"
+            heroku addons:remove ${OLD_FORK} --app=$PROJECT --confirm $PROJECT
+        else
+            echo "no previously forked db to worry about"
+        fi
+        
     
-    echo "beginning fork of $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
+        # fork a new copy
+        echo "forking new copy of ${DB_VARIABLE_BASE} from ${SOURCE_APP_NAME}"
     
-    # first de-provision the old fork (if there is one)
-    OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
-    OLD_FORK="${OLD_FORK%_URI}"
-    OLD_FORK="${OLD_FORK%_URL}"
-    if [ -n "$OLD_FORK" ]
+        # get the db url we want to fork
+        SOURCE_DB=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
+        echo "source db name: $SOURCE_DB"
+        SOURCE_DB_URL=`heroku config:get ${SOURCE_DB} --app=$SOURCE_APP_NAME`
+        echo "source db url: $SOURCE_DB_URL"
+    
+        
+        exec 5>&1
+        FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork ${SOURCE_DB_URL} --app=$PROJECT|tee >(cat - >&5))
+        exec 5>&-
+        
+        NEW_VARIABLE=`echo "$FORK_OUTPUT" | fgrep 'Attached as' | cut -f3 -d' '`
+        
+        echo "fork name captured: $NEW_VARIABLE"
+        
+        # save the value in a config variable so we can remove it later
+        # set the value immediately to help eliminate issues from canceled builds
+        heroku config:set ${DB_VARIABLE_BASE}_VARIABLE=$NEW_VARIABLE --app=$PROJECT
+    )
+    STATUS="$?"
+    releaseForkMutex
+    if [ "$STATUS" -ne "0" ]
     then
-        echo "de-provisioning previously forked db: $OLD_FORK"
-        heroku addons:remove ${OLD_FORK} --app=$PROJECT --confirm $PROJECT
-    else
-        echo "no previously forked db to worry about"
+        exit $STATUS
     fi
-    
-
-    # fork a new copy
-    echo "forking new copy of ${DB_VARIABLE_BASE} from ${SOURCE_APP_NAME}"
-
-    # get the db url we want to fork
-    SOURCE_DB=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
-    echo "source db name: $SOURCE_DB"
-    SOURCE_DB_URL=`heroku config:get ${SOURCE_DB} --app=$SOURCE_APP_NAME`
-    echo "source db url: $SOURCE_DB_URL"
-
-    
-    exec 5>&1
-    FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork ${SOURCE_DB_URL} --app=$PROJECT|tee >(cat - >&5))
-    exec 5>&-
-    
-    NEW_VARIABLE=`echo "$FORK_OUTPUT" | fgrep 'Attached as' | cut -f3 -d' '`
-    
-    echo "fork name captured: $NEW_VARIABLE"
-    
-    # save the value in a config variable so we can remove it later
-    # set the value immediately to help eliminate issues from canceled builds
-    heroku config:set ${DB_VARIABLE_BASE}_VARIABLE=$NEW_VARIABLE --app=$PROJECT
 }
