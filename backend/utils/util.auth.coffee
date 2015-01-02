@@ -10,7 +10,7 @@ permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
-userHandles = require '../routes/handles/handle.user'
+userHandles = require '../routes/route.user'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 
@@ -187,7 +187,7 @@ module.exports = {
       if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
         logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
         if options.logoutOnFail
-          return userHandles.doLogout(req, res, next)
+          return userHandles.logout(req, res, next)
         else
           return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, httpStatus.UNAUTHORIZED)
       return process.nextTick(next)

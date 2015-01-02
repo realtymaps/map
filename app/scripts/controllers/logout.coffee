@@ -16,6 +16,7 @@ app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'M
       minTimestamp = (+new Date)+MainOptions.logoutDelayMillis
       delayedUrl = (url) ->
         $timeout () ->
+          $location.replace()
           $location.url url
         , minTimestamp-(+new Date)
       principal.getIdentity()
@@ -23,7 +24,7 @@ app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'M
         if not principal.isAuthenticated()
           delayedUrl($location.search().next || frontendRoutes.index)
         else
-          $http.get backendRoutes.logout
+          $http.get backendRoutes.user.logout
           .success (data, status) ->
             principal.unsetIdentity()
             delayedUrl($location.search().next || frontendRoutes.index)

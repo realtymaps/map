@@ -23,7 +23,7 @@ methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
-promisifyMiddleware = require('./promisify').middleware
+promisify = require('./promisify')
 sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
 livereload = require "connect-livereload"
@@ -63,7 +63,7 @@ app.use session(config.SESSION)
 
 
 # promisify sessions
-app.use Promise.nodeifyWrapper(promisifyMiddleware.promisifySession)
+app.use Promise.nodeifyWrapper(promisify.sessionMiddleware)
 
 # do login session management
 app.use Promise.nodeifyWrapper(auth.setSessionCredentials)
@@ -95,7 +95,9 @@ app.use (data, req, res, next) ->
   logger.error "uncaught error found by express:"
   logger.error (JSON.stringify(analysis,null,2))
   res.status(status.INTERNAL_SERVER_ERROR).json alert:
-    msg: "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues, please let us know by emailing support@realtymaps.com, and giving us the following error message:<br/><code>#{data.message}</code>"
+    msg: "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues,
+          please let us know by emailing support@realtymaps.com, and giving us the following error
+          message:<br/><code>#{data.message}</code>"
     id: "500-#{req.path}"
   next()
 

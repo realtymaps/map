@@ -1,7 +1,7 @@
 Promise = require "bluebird"
 logger = require '../config/logger'
 ParamValidationError = require './validation/util.error.paramValidation'
-loadSubmodules = (require './util.loaders').loadSubmodules
+loaders = require './util.loaders'
 path = require 'path'
 doValidation = require './validation/util.impl.doValidation'
 
@@ -40,4 +40,4 @@ module.exports =
         return transformed
     
     ParamValidationError: ParamValidationError
-    validators: loadSubmodules(path.join(__dirname, 'validation'), /^util\.validation\.(\w+)\.coffee$/)
+    validators: loaders.loadSubmodules(path.join(__dirname, 'validation'), /^util\.validation\.(\w+)\.coffee$/)
