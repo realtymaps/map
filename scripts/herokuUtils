@@ -1,5 +1,4 @@
 
-
 doHerokuSetup () {
     HEROKU_SETTINGS=""
     HK_LOCATION=~/bin/hk
