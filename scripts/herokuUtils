@@ -19,7 +19,6 @@ doHerokuSetup () {
     queueHerokuSetting "IS_HEROKU" "1"
 }
 
-
 releaseForkMutex () {
     heroku config:unset CIRCLECI_BUILD_FORKING CIRCLECI_BUILD_DEADLINE CIRCLECI_BUILD_WAITING --app=$PROJECT
 }
