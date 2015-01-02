@@ -50,29 +50,31 @@ then
     source ./scripts/herokuUtils
     doHerokuSetup
     
-    getDeployMutex
-    (
-      if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
-      then
-          # this is a prod push
-          queueHerokuSetting "NODE_ENV" "production"
-      else
-          # this is a staging push
-          queueHerokuSetting "NODE_ENV" "staging"
-          # fork the user db
-          forkStagingDb "USER_DATABASE" "realtymaps-map"
-          
-          # note that for now, we're just re-using the property db (via the
-          # envSync script) since the map project isn't writing to it.  This
-          # may need to be adjusted later if we ever have breaking schema
-          # changes to that db that we need to manage
-          
-          echo "waiting for databases to finish forking..."
-          heroku pg:wait --app=$PROJECT
-      fi
-      
-      setQueuedHerokuSettings
-    )
+    if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
+    then
+        # this is a prod push
+        queueHerokuSetting "NODE_ENV" "production"
+    else
+        # only staging pushes need the quiet period, because prod pushes shouldn't be
+        # happening directly from dev commits, only from PR merges
+        getDeployMutex
+        (
+            # this is a staging push
+            queueHerokuSetting "NODE_ENV" "staging"
+            # fork the user db
+            forkStagingDb "USER_DATABASE" "realtymaps-map"
+            
+            # note that for now, we're just re-using the property db (via the
+            # envSync script) since the map project isn't writing to it.  This
+            # may need to be adjusted later if we ever have breaking schema
+            # changes to that db that we need to manage
+            
+            echo "waiting for databases to finish forking..."
+            heroku pg:wait --app=$PROJECT
+        )
+    fi
+    
+    setQueuedHerokuSettings
     STATUS="$?"
     if [ "$STATUS" -ne "0" ]
     then
