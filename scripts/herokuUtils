@@ -18,6 +18,7 @@ doHerokuSetup () {
     queueHerokuSetting "IS_HEROKU" "1"
 }
 
+
 releaseDeployMutex () {
     heroku config:unset CIRCLECI_BUILD_DEPLOYING CIRCLECI_BUILD_DEADLINE --app=$PROJECT
 }
