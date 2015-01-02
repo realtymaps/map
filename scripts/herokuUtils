@@ -132,9 +132,9 @@ forkStagingDb () {
 
     # get the db url we want to fork
     SOURCE_DB=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
-    echo "db name: $SOURCE_DB"
+    echo "source db name: $SOURCE_DB"
     SOURCE_DB_URL=`heroku config:get ${SOURCE_DB} --app=$SOURCE_APP_NAME`
-    echo "db url: $SOURCE_DB_URL"
+    echo "source db url: $SOURCE_DB_URL"
 
     
     exec 5>&1
