@@ -44,106 +44,39 @@ then
 fi
 
 
-setHerokuSetting () {
-    SETTING_NAME=$1
-    DESIRED_VALUE=$2
-    
-    echo "checking value of Heroku setting: $SETTING_NAME"
-    
-    CURRENT_SETTING=`heroku config:get $SETTING_NAME --app=$PROJECT`
-    if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
-    then
-        echo "current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
-        HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
-    else
-        echo "current value is correct ('$CURRENT_SETTING')"
-    fi
-}
-
-forkStagingDb () {
-    DB_VARIABLE_BASE=$1
-    SOURCE_APP_NAME=$2
-    
-    echo "beginning fork of $DB_VARIABLE_BASE from app: $SOURCE_APP_NAME"
-    
-    # first de-provision the old fork (if there is one)
-    OLD_FORK=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$PROJECT`
-    OLD_FORK="${OLD_FORK%_URI}"
-    OLD_FORK="${OLD_FORK%_URL}"
-    if [ -n "$OLD_FORK" ]
-    then
-        echo "de-provisioning previously forked db: $OLD_FORK"
-        heroku addons:remove ${OLD_FORK} --app=$PROJECT --confirm $PROJECT
-    else
-        echo "no previously forked db to worry about"
-    fi
-    
-
-    # fork a new copy
-    echo "forking new copy of ${DB_VARIABLE_BASE} from ${SOURCE_APP_NAME}"
-
-    # get the db url we want to fork
-    SOURCE_DB=`heroku config:get ${DB_VARIABLE_BASE}_VARIABLE --app=$SOURCE_APP_NAME`
-    echo "db name: $SOURCE_DB"
-    SOURCE_DB_URL=`heroku config:get ${SOURCE_DB} --app=$SOURCE_APP_NAME`
-    echo "db url: $SOURCE_DB_URL"
-
-    
-    exec 5>&1
-    FORK_OUTPUT=$(heroku addons:add heroku-postgresql:standard-0 --fork ${SOURCE_DB_URL} --app=$PROJECT|tee >(cat - >&5))
-    exec 5>&-
-    
-    NEW_VARIABLE=`echo "$FORK_OUTPUT" | fgrep 'Attached as' | cut -f3 -d' '`
-    
-    echo "fork name captured: $NEW_VARIABLE"
-    
-    # save the value in a config variable so we can remove it later
-    setHerokuSetting "${DB_VARIABLE_BASE}_VARIABLE" "$NEW_VARIABLE"
-}
-
-
 # pre-push tasks
 if [[ "$SERVICE" == "heroku" ]]
 then
-    HEROKU_SETTINGS=""
+    source ./scripts/pushToUtils
+    doHerokuSetup
     
-    # we have to give our heroku instance creds so it can access config
-    echo "retrieving Heroku creds"
-    HK_LOCATION=~/bin/hk
-    curl -sL -A "`uname -sp`" https://hk.heroku.com/hk.gz | zcat >$HK_LOCATION && chmod +x $HK_LOCATION
-    HEROKU_CREDS=`~/bin/hk creds`
-    HEROKU_USERNAME=`echo $HEROKU_CREDS | cut -f1 -d' '`
-    HEROKU_AUTH_TOKEN=`echo $HEROKU_CREDS | cut -f2 -d' '`
-    setHerokuSetting "HEROKU_USERNAME" "$HEROKU_USERNAME"    
-    setHerokuSetting "HEROKU_AUTH_TOKEN" "$HEROKU_AUTH_TOKEN"    
-    
-
-    # value needed by ./scripts/stopServe and maybe elsewhere
-    setHerokuSetting "IS_HEROKU" "1"
-    
-    if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
+    getDeployMutex
+    (
+      if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
+      then
+          # this is a prod push
+          queueHerokuSetting "NODE_ENV" "production"
+      else
+          # this is a staging push
+          queueHerokuSetting "NODE_ENV" "staging"
+          # fork the user db
+          forkStagingDb "USER_DATABASE" "realtymaps-map"
+          
+          # note that for now, we're just re-using the property db (via the
+          # envSync script) since the map project isn't writing to it.  This
+          # may need to be adjusted later if we ever have breaking schema
+          # changes to that db that we need to manage
+          
+          echo "waiting for databases to finish forking..."
+          heroku pg:wait --app=$PROJECT
+      fi
+      
+      setQueuedHerokuSettings
+    )
+    STATUS="$?"
+    if [ "$STATUS" -ne "0" ]
     then
-        # this is a prod push
-        setHerokuSetting "NODE_ENV" "production"
-    else
-        # this is a staging push
-        setHerokuSetting "NODE_ENV" "staging"
-        # fork the user db
-        forkStagingDb "USER_DATABASE" "realtymaps-map"
-        
-        # note that for now, we're just re-using the property db (via the
-        # envSync script) since the map project isn't writing to it.  This
-        # may need to be adjusted later if we ever have breaking schema
-        # changes to that db that we need to manage
-        
-        echo "waiting for databases to finish forking..."
-        heroku pg:wait --app=$PROJECT
-    fi
-    
-    if [ -n "$HEROKU_SETTINGS" ]
-    then
-        echo "setting config values:$HEROKU_SETTINGS"
-        heroku config:set $HEROKU_SETTINGS --app=$PROJECT
+        exit $STATUS
     fi
 fi
 
