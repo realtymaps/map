@@ -47,7 +47,7 @@ fi
 # pre-push tasks
 if [[ "$SERVICE" == "heroku" ]]
 then
-    source ./scripts/pushToUtils
+    source ./scripts/herokuUtils
     doHerokuSetup
     
     getDeployMutex
