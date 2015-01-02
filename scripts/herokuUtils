@@ -29,14 +29,23 @@ getDeployMutex () {
     echo "Beginning quiet period as build $CIRCLE_BUILD_NUM..."
     
     NOW=`date '+%s'`
-    QUIET_PERIOD_END=$((NOW+60*5)) # 5 minutes quiet period
+    QUIET_PERIOD_END=$((NOW+1)) # 5 minutes quiet period
+    #QUIET_PERIOD_END=$((NOW+60*5)) # 5 minutes quiet period
     while [[ 0 ]]
     do
-        sleep 60
+        sleep 1
+        #sleep 60
         NOW=`date '+%s'`
         CURRENT_BUILD_WAITING=`heroku config:get CIRCLECI_BUILD_WAITING --app=$PROJECT`
+        CURRENT_BUILD_FORCE=`heroku config:get CIRCLECI_BUILD_FORCE --app=$PROJECT`
         CURRENT_BUILD_DEPLOYING=`heroku config:get CIRCLECI_BUILD_DEPLOYING --app=$PROJECT`
         CURRENT_BUILD_DEADLINE=`heroku config:get CIRCLECI_BUILD_DEADLINE --app=$PROJECT`
+        
+        if [[ "$CURRENT_BUILD_FORCE" -eq $CIRCLE_BUILD_NUM ]]
+        then
+            echo "Quiet period and existing deploys being ignored due to manual force flag."
+            break
+        fi
         
         if [[ "$CURRENT_BUILD_WAITING" -gt $CIRCLE_BUILD_NUM ]]
         then
