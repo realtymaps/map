@@ -1,5 +1,4 @@
 module.exports =
-  wildcard:       '/*'
   index:          '/'
   login:          'login'
   logout:         'logout'

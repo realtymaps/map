@@ -27,8 +27,7 @@ promisifySession = (req, res) -> Promise.try () ->
       promisifySession(req, res)
   Promise.resolve()
 
-module.exports.middleware =
-  promisifySession: promisifySession
+module.exports.sessionMiddleware = promisifySession
 
 
 # this is a wrapper to provide the inverse of Promise.promisify via a call to
@@ -53,3 +52,14 @@ Promise.nodeifyWrapper = (func, options) ->
 fs = require 'fs'
 Promise.promisifyAll fs, filter: (name, func, target) ->
   return (name.slice(-4) != 'Sync' && name.indexOf('watch') == -1 && name.slice(6) != 'create')
+
+
+# a function to properly promisify an instantiated Lob object, since we can't promisify the module
+module.exports.lob = (Lob) ->
+  for submodule of Lob
+    if typeof(submodule) != 'object'
+      continue
+    for key,val of submodule
+      if typeof(val) != 'function'
+        continue
+      submodule[key+'Async'] = Promise.promisify(val, submodule)
