@@ -33,7 +33,7 @@ getDeployMutex () {
     #QUIET_PERIOD_END=$((NOW+60*5)) # 5 minutes quiet period
     while [[ 0 ]]
     do
-        sleep 1
+        sleep 2
         #sleep 60
         NOW=`date '+%s'`
         CURRENT_BUILD_WAITING=`heroku config:get CIRCLECI_BUILD_WAITING --app=$PROJECT`
