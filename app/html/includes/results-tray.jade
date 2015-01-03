@@ -14,35 +14,36 @@
                     button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'living_area'; reverse=true") Sq Ft
                     button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'year_built'; reverse=true") Year
                     button(id="results-sort-price", class="btn btn-default btn-xs", ng-click="predicate = 'display_price'; reverse=true") Price
-        #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
-            div(ng-repeat="result in results")
-                .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
-                    //.result-arrow
-                        .box Sold
-                        .arrow
-                    .photo()
-                        .sold
-                            img(src="{{resultsFormatter.getCurbsideImage(result)}}")
-                    .info
-                        .address {{result.street_address_num + " " + result.street_name + " " + result.street_type + " " + result.street_ord }}
-                        .price {{resultsFormatter.getPrice(result.price)}}
-                            .property-status(ng-class="resultsFormatter.getForSaleClass(result)") {{result.rm_status}}
-                        div
-                            .beds
-                                span.data {{resultsFormatter.orNa(result.bedrooms)}}
-                                span.title Beds
-                            .baths
-                                span.data {{resultsFormatter.orNa(result.baths_total)}}
-                                span.title Baths
-                            .sqft
-                                span.data {{resultsFormatter.orNa(result.finished_sqft)}}
-                                span.title Sq Ft
-                            .year
-                                span.data {{resultsFormatter.orNa(result.year_built)}}
-                                span.title Year
-                    .c
-                        //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
-
-        #results-footer
-            .close(ng-click="toggleNav('map')") x
-<!--End Results Container-->
+        #results-list(ng-grid="resultsGridOpts")
+//        #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
+//            div(ng-repeat="result in results")
+//                .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
+//                    //.result-arrow
+//                        .box Sold
+//                        .arrow
+//                    .photo()
+//                        .sold
+//                            img(src="{{resultsFormatter.getCurbsideImage(result)}}")
+//                    .info
+//                        .address {{result.street_address_num + " " + result.street_name + " " + result.street_type + " " + result.street_ord }}
+//                        .price {{resultsFormatter.getPrice(result.price)}}
+//                            .property-status(ng-class="resultsFormatter.getForSaleClass(result)") {{result.rm_status}}
+//                        div
+//                            .beds
+//                                span.data {{resultsFormatter.orNa(result.bedrooms)}}
+//                                span.title Beds
+//                            .baths
+//                                span.data {{resultsFormatter.orNa(result.baths_total)}}
+//                                span.title Baths
+//                            .sqft
+//                                span.data {{resultsFormatter.orNa(result.finished_sqft)}}
+//                                span.title Sq Ft
+//                            .year
+//                                span.data {{resultsFormatter.orNa(result.year_built)}}
+//                                span.title Year
+//                    .c
+//                        //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
+//
+//        #results-footer
+//            .close(ng-click="toggleNav('map')") x
+//<!--End Results Container-->

@@ -12,6 +12,9 @@ gulp.task 'clean', (done) ->
 gulp.task 'develop', ['clean'], ->
   gulp.start ['spec', 'express_spec', 'watch']
 
+gulp.task 'mock', ['clean'], ->
+  gulp.start ['specMock', 'jsonMock', 'express_spec', 'watch']
+
 gulp.task 'develop_no_spec', ['clean'], ->
   gulp.start ['build', 'express', 'watch']
 
