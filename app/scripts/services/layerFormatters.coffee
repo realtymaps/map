@@ -54,7 +54,7 @@ app.service 'LayerFormatters'.ourNs(), [
     parcels = do ->
 
       saveColor = '#EFEE50'
-      mouseOverColor = '#d48c0e'
+      mouseOverColor = 'rgba(0,0,0,.5)'
       colors = {}
       colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
