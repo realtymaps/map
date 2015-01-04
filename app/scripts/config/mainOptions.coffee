@@ -19,8 +19,8 @@ app.constant 'MainOptions'.ourNs(), do () ->
             mousewheel: 50 # ms - don't let pass more than one event every 50ms.
             mousemove: 200 # ms - don't let pass more than one event every 200ms.
           space: 2
-        parcelsZoomThresh: 17
-        clusteringThresh: 17
+        parcelsZoomThresh: 16
+        clusteringThresh: 16
         json:
           zoom: 15
           center:

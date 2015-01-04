@@ -11,11 +11,11 @@ app.service 'LayerFormatters'.ourNs(), [
     filterSummaryHash = {}
 
     markersIcon = {}
-    markersIcon[ParcelEnums.status.sold] = '../assets/map_marker_out_pink_64.png'
-    markersIcon[ParcelEnums.status.pending] = '../assets/map_marker_out_azure_64.png'
-    markersIcon[ParcelEnums.status.forSale] = '../assets/map_marker_out_green_64.png'
-    markersIcon['saved'] = '../assets/map_marker_in_blue.png' #will change later
-    markersIcon['default'] = ''
+    markersIcon[ParcelEnums.status.sold] = ' '
+    markersIcon[ParcelEnums.status.pending] = ' '
+    markersIcon[ParcelEnums.status.forSale] = ' '
+    markersIcon['saved'] = ' ' #will change later
+    markersIcon['default'] = ' '
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
     markersBSLabel = {}
@@ -108,7 +108,7 @@ app.service 'LayerFormatters'.ourNs(), [
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
+        formattedPrice = casing.upper numeral(mls.price).format('0.0a'), '.'
         maybeSaved = null
         # maybeSaved = markersIcon['saved'] if _.has filterSummaryHash, mls.rm_property_id
         ret =
