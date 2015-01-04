@@ -23,7 +23,7 @@
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
     "preinstall": "./scripts/preinstall",
-    "postinstall": "bowerfresh; bower install",
+    "postinstall": "bowerfresh && bower install",
     "clean": "gulp clean --exit && rm -rf node_modules bower_components"
   },
   "dependencies": {
@@ -105,6 +105,7 @@
     "karma-phantomjs-launcher": "0.1.4",
     "karma-webpack": "git://github.com/realtymaps/karma-webpack.git",
     "knex": "^0.6.22",
+    "lob": "^2.8.0",
     "lodash": "^2.4.1",
     "main-bower-files": "^2.0.0",
     "memoizee": "^0.3.7",
@@ -116,6 +117,7 @@
     "nodetime": "0.8.x",
     "ns2": "^1.0.3",
     "numeral": "^1.5.3",
+    "pdfkit": "^0.7.0",
     "pg": "^3.4.4",
     "pretty-hrtime": "^0.2.1",
     "qs": "^2.3.3",

@@ -14,15 +14,19 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
       # user is not authenticated, but needs to be.
       # set the route they wanted as a query parameter
       # then, send them to the signin route so they can log in
+      $location.replace()
       $location.url frontendRoutes.login + '?'+qs.stringify(next: desiredLocation)
       return
     
     if not principal.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
+      $location.replace()
       $location.url frontendRoutes.accessDenied
       return
     
     if goToLocation
+      if $location.path() == "/#{frontendRoutes.authenticating}"
+        $location.replace()
       $location.url desiredLocation
 
       
@@ -39,6 +43,7 @@ app.factory "authorization".ourNs(), ["$rootScope", "$location", "principal".our
       return doPermsCheck(toState, desiredLocation, false)
     
     # otherwise, go to temporary view and do check ASAP
+    $location.replace()
     $location.url frontendRoutes.authenticating
     principal.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)

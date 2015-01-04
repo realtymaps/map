@@ -10,6 +10,8 @@ dest =
 module.exports =
   spec: 'spec/**'
   scripts: 'app/scripts/**/*.*'
+  vendorLibs: 'app/lib/scripts/vendor/**/*.*'
+  webpackLibs: 'app/lib/scripts/webpack/**/*.*'
   styles: 'app/styles/*.css'
   stylus: 'app/styles/main.styl'
   stylusWatch: 'app/styles/**/*.styl'
