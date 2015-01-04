@@ -17,6 +17,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
     class ResultsFormatter
       constructor: (@scope) ->
         @scope.results = []
+        @scope.resultsAscending = true
         @scope.resultsPredicate = 'price'
         @lastSummaryIndex = 0
         @origLen = 0
@@ -26,6 +27,21 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
           @lastSummaryIndex = 0
           @scope.results = []
           @loadMore()
+
+      setResultsPredicate:(predicate) =>
+        @scope.resultsPredicate = predicate
+
+      getSorting: =>
+        if @scope.resultsAscending
+          "fa fa-chevron-circle-down"
+        else
+          "fa fa-chevron-circle-up"
+
+      getActiveSort:(toMatchSortStr) =>
+        if toMatchSortStr == @scope.resultsPredicate then 'active-sort' else ''
+
+      invertSorting: =>
+        @scope.resultsAscending = !@scope.resultsAscending
 
       getCurbsideImage: (result) ->
         return 'http://placehold.it/100x75' unless result
