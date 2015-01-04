@@ -17,6 +17,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
     class ResultsFormatter
       constructor: (@scope) ->
         @scope.results = []
+        @scope.resultsPredicate = 'price'
         @lastSummaryIndex = 0
         @origLen = 0
 
@@ -25,39 +26,6 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
           @lastSummaryIndex = 0
           @scope.results = []
           @loadMore()
-
-        @scope.resultsGridOpts =
-          rowHeight: 75
-#          showFooter: false
-          data: 'results'
-          rowTemplate: """
-            <div id='l-el{{row.getProperty(\"rm_property_id\")}}' class='card animated slide-down' ng-click='showDetails = !showDetails'>
-              <div ng-repeat="col in renderedColumns" ng-class="col.colIndex()" class="ngCell ">
-                <div class="ngVerticalBar" ng-style="{height: rowHeight}" ng-class="{ ngVerticalBarVisible: !$last }">
-                </div>
-                <div ng-cell></div>
-              </div>
-            </div>
-            """
-          columnDefs: [
-            {
-              field:'address', displayName: 'Address', cellTemplate: '<div class="address">{{row.entity[col.field]}}</div>'
-              width:110
-            }
-            {
-              field: 'photo', displayName: 'Photo',
-              cellTemplate: '<div class="photo"><img ng-src="{{row.entity[col.field]}}"></div>'
-              width: 100
-            }
-            {field: 'bedrooms', displayName: 'Beds', width:50}
-            {field: 'baths_total', displayName: 'Baths', width:50}
-            {field: 'finished_sqft', displayName: 'Sq Ft', width:50}
-            {field: 'year_built', displayName: 'Year', width:50}
-            {
-              field: 'price', displayName: 'Price',
-              cellTemplate: '<div class="price">{{row.entity[col.field]}}<div class="property-status"></div></div>'
-            }
-          ]
 
       getCurbsideImage: (result) ->
         return 'http://placehold.it/100x75' unless result
@@ -88,12 +56,6 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
           if @lastSummaryIndex > @scope.layers.filterSummary.length - 1
             break
           prop = @scope.layers.filterSummary[@lastSummaryIndex]
-          prop.address = prop.street_address_num + " " + prop.street_address_name
-          prop.price = @getPrice prop.price
-          prop.photo = @getCurbsideImage prop
-          ['bedrooms','baths_total', 'finished_sqft', 'year_built'].forEach (field) =>
-            prop[field] = @orNa prop[field]
-          prop.price = @getPrice prop.price
           @scope.results.push(prop) if prop
           @lastSummaryIndex += 1
 ]
