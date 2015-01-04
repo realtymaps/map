@@ -91,8 +91,8 @@ app.service 'LayerFormatters'.ourNs(), [
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: "<h5>#{parcel.street_address_num}</h5>"
-        labelAnchor: "20 10"
+        labelContent: "<span class='address-label'>#{parcel.street_address_num}</span>"
+        labelAnchor: "10 10"
         zIndex: 0
 
       #public
