@@ -53,13 +53,13 @@ app.service 'LayerFormatters'.ourNs(), [
 
     parcels = do ->
 
-      saveColor = '#EFEE50'
+      saveColor = '#F3F315'
       mouseOverColor = 'rgba(0,0,0,.5)'
       colors = {}
-      colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
+      colors[ParcelEnums.status.sold] = '#477bff'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
-      colors[ParcelEnums.status.forSale] = '#2fa02c'
-      colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
+      colors[ParcelEnums.status.forSale] = '#1fde12'
+      colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
 
 
       getSavedColorProperty = (model) ->
@@ -86,7 +86,7 @@ app.service 'LayerFormatters'.ourNs(), [
 
       fill = (parcel) ->
         color: fillColorFromState(parcel) or colors['default']
-        opacity: '.50'
+        opacity: '.70'
 
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
