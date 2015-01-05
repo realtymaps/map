@@ -1,0 +1,36 @@
+<!--Begin Layers Container-->
+.left-tray.navbar-below#filters-slide(ng-show="Toggles.showFilters" ng-controller="RealtyMaps-FiltersCtrl")
+    .tray-close#left-tray-close(ng-click="Toggles.showFilters = !Toggles.showFilters")
+     i.centered.fa.fa-chevron-left.fa-2x
+    
+    .inner
+        
+        //- TODO: hook up checkmark functionality
+        
+        ul
+            li(ng-click="toggleSold()")
+                .lp-check-icon(ng:class="{'active' : showSold }")
+                    include ../svg/checkmark.svg
+                    div(class="title") Sold
+                    div(class="colorLegend colorSold")
+            li(ng-click="toggleForSale()")
+                .lp-check-icon(ng:class="{'active' : showForSale}")
+                    include ../svg/checkmark.svg
+                    div(class="title") For Sale
+                    div(class="colorLegend colorForSale")
+            li(ng-click="toggleHouseNumbers()")
+                .lp-check-icon(ng:class="{'active' : showAddresses }")
+                    include ../svg/checkmark.svg
+                    div(class="title") Addresses
+            li(ng-click="togglePrices()")
+                .lp-check-icon(ng:class="{'active' : showPrices }")
+                    include ../svg/checkmark.svg
+                    div(class="title") Prices
+            li(ng-click="toggleStats()")
+                .lp-check-icon(ng:class="{'active' : showStats }")
+                    include ../svg/checkmark.svg
+                    div(class="title") Statistics
+
+
+
+<!--End Layers Container-->
