@@ -23,6 +23,6 @@ module.exports =
   "print font 1 (bolder)":      require("./daniel/Daniel-Black.coffee")
   "print font 2":               require("./bilbo/Bilbo-Regular.coffee")
   "print font 2 (fancy caps)":  require("./bilbo/BilboSwashCaps-Regular.coffee")
-  "print font 3":              require("./jenna-sue/JennaSue.coffee")
+  "print font 3":               require("./jenna-sue/JennaSue.coffee")
   "script font 1":              require("./kristi/Kristi.coffee")
   "script font 2":              require("./allura/Allura-Regular.coffee")
