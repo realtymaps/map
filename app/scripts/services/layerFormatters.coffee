@@ -8,20 +8,16 @@ app.service 'LayerFormatters'.ourNs(), [
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
   ($log, ParcelEnums, uiGmapUtil, Properties) ->
 
-    filterSummaryHash = {}
+    saveColor = '#EFEE50'
 
-    markersIcon = {}
-    markersIcon[ParcelEnums.status.sold] = '../assets/map_marker_out_pink_64.png'
-    markersIcon[ParcelEnums.status.pending] = '../assets/map_marker_out_azure_64.png'
-    markersIcon[ParcelEnums.status.forSale] = '../assets/map_marker_out_green_64.png'
-    markersIcon['saved'] = '../assets/map_marker_in_blue.png' #will change later
-    markersIcon['default'] = ''
+    filterSummaryHash = {}
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
     markersBSLabel = {}
     markersBSLabel[ParcelEnums.status.sold] = 'danger'
     markersBSLabel[ParcelEnums.status.pending] = 'warning'
     markersBSLabel[ParcelEnums.status.forSale] = 'success'
+    markersBSLabel['saved'] = 'saved-property'
     markersBSLabel['default'] = 'info'
 
     formatMarkerContent = (label, content) ->
@@ -50,29 +46,26 @@ app.service 'LayerFormatters'.ourNs(), [
       else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
       offset
 
+    getSavedColorProperty = (model) ->
+#      props = Properties.getSavedProperties()
+#      prop = props[model.rm_property_id] if _.has props, model.rm_property_id
+      if not model.savedDetails or not model.savedDetails.isSaved
+        return
+      saveColor
 
     parcels = do ->
-
-      saveColor = '#EFEE50'
-      mouseOverColor = '#d48c0e'
+      mouseOverColor = 'rgba(153, 152, 149, 0.79)'
       colors = {}
       colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
       colors[ParcelEnums.status.forSale] = '#2fa02c'
       colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
 
-
-      getSavedColorProperty = (model) ->
-        props = Properties.getSavedProperties()
-        prop = props[model.rm_property_id] if _.has props, model.rm_property_id
-        if not prop or not prop.isSaved
-          return
-        saveColor
-
-      optsFromFillColor = (color) ->
+      gFillColor = (color) ->
         fillColor: color
 
-      optsFromFill = (fillOpts) ->
+      # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
+      gOptsFromUiGmapFill = (fillOpts) ->
         fillColor: fillOpts.color
         fillOpacity: fillOpts.opacity
 
@@ -91,36 +84,34 @@ app.service 'LayerFormatters'.ourNs(), [
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: "<h5>#{parcel.street_address_num}</h5>"
-        labelAnchor: "20 10"
+        labelContent: "<h5>#{String.orNA parcel.street_address_num}</h5>"
+        labelAnchor: "20 0"
         zIndex: 0
 
-      #public
       fill: fill
       labelFromStreetNum: labelFromStreetNum
 
       optionsFromFill: (parcel) ->
-        optsFromFill fill(parcel)
+        gOptsFromUiGmapFill fill(parcel)
 
       mouseOverOptions: (parcel) ->
-        fillColorFromState(parcel) or optsFromFillColor(mouseOverColor)
+        fillColorFromState(parcel) or gFillColor(mouseOverColor)
 
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
-        maybeSaved = null
-        # maybeSaved = markersIcon['saved'] if _.has filterSummaryHash, mls.rm_property_id
+        formattedPrice = if not mls.price then String.orNA(mls.price) else casing.upper numeral(mls.price).format('0.00a'), '.'
+        savedStatus = 'saved' if getSavedColorProperty(mls)
         ret =
-          icon: maybeSaved or markersIcon[mls.rm_status] or markersIcon['default']
-          labelContent: formatStatusMarkerContent mls.rm_status, formattedPrice
-          labelAnchor: "30 100"
+          icon: ' '
+          labelContent: formatStatusMarkerContent(savedStatus or mls.rm_status, formattedPrice)
+          labelAnchor: "30 10"
           zIndex: 1
         ret
 
       getWindowOffset: getWindowOffset
 
-
+    #public
     Parcels: parcels
     MLS: mls
     updateFilterSummaryHash: (hash) ->

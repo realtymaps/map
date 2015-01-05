@@ -23,8 +23,8 @@ module.exports =
 
   filterSummary: (req, res, next) ->
     handleRoute res, next, () ->
-      filterSummaryService.getFilterSummary(req.query)
+      filterSummaryService.getFilterSummary(req.session.state, req.query)
 
   parcelBase: (req, res, next) ->
     handleRoute res, next, () ->
-      parcelService.getBaseParcelData(req.query)
+      parcelService.getBaseParcelData(req.session.state, req.query)

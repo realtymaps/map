@@ -5,6 +5,7 @@ logger = require '../config/logger'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+dataPropertyUtil = require '../utils/util.data.properties.coffee'
 
 validators = requestUtil.query.validators
 
@@ -41,7 +42,7 @@ required =
 
 module.exports = 
   
-  getFilterSummary: (filters, limit = 600) -> Promise.try () ->
+  getFilterSummary: (state, filters, limit = 600) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
@@ -68,11 +69,15 @@ module.exports =
       if filters.bathsMin?
         query.where("baths_full", '>=', filters.bathsMin)
 
-      query.limit(limit) if limit
+      if state and state.properties_selected
+        query.orWhereIn('rm_property_id', _.keys(state.properties_selected))
 
+      query.limit(limit) if limit
+      logger.sql query.toString()
       query.then (data) ->
         data = data||[]
         # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
         data = _.uniq data, (row) ->
           row.rm_property_id
+        data = dataPropertyUtil.joinSavedProperties(state,data)
         data

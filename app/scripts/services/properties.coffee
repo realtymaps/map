@@ -32,7 +32,8 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       #post state to database
       promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
       promise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
-      promise
+      promise.then  ->
+        prop
 
     getSavedProperties: ->
       savedProperties

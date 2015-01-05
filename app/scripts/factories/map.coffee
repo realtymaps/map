@@ -34,8 +34,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
           return unless saved
-          saved.then ->
+          saved.then (savedDetails) ->
             childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+            #setting savedDetails here as we know the save was successful (update the font end without query right away)
+            childModel.model.savedDetails = savedDetails
             gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
 
         @scope = _.merge @scope,
@@ -203,7 +205,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled
           if isEnabled
-            @scope.layers.mlsListings.length = 0
             @scope.drawUtil.draw()
 
         @scope.$onRootScope Events.map.drawPolys.query, =>

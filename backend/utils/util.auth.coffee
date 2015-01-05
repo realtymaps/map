@@ -49,6 +49,7 @@ module.exports = {
   
   # app-wide middleware to prevent session cloning/hijacking and implement remember_me functionality
   checkSessionSecurity: (req, res) ->
+    #TODO BREAK THIS UP!
     context = {}
     
     Promise.resolve()
