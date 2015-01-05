@@ -3,12 +3,12 @@
 #      webpack parser works.  So, for now it will have to remain this small bit of copy-pasta.
 
 # require() all modules in the config directory
-directoryContext = require.context("../config", true, /^\.\/.*\.coffee$/)
+directoryContext = require.context("../config", true, /\/.*\.coffee$/)
 for request in directoryContext.keys()
   directoryContext(request)
 
 # require() all modules in the runners directory
-directoryContext = require.context("../runners", true, /^\.\/.*\.coffee$/)
+directoryContext = require.context("../runners", true, /\/.*\.coffee$/)
 for request in directoryContext.keys()
   directoryContext(request)
 

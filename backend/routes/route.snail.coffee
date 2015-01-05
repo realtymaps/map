@@ -1,5 +1,6 @@
 Promise = require 'bluebird'
 ExpressResponse = require '../utils/util.expressResponse'
+config = require '../config/config'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
 httpStatus = require '../../common/utils/httpStatus'
 lobService = require '../services/service.lob.coffee'
@@ -13,7 +14,7 @@ module.exports =
     .catch (err) ->
       next new ExpressResponse(alert: msg: "Oops! We couldn't get a price quote for that right now. Please try again
                                             in a few minutes. If the problem continues, please let us know by emailing
-                                            support@realtymaps.com, and giving us the following error message:
+                                            #{config.SUPPORT_EMAIL}, and giving us the following error message:
                                             <br/><code>#{escape(err.message)}</code>", httpStatus.INTERNAL_SERVER_ERROR, true)
   send: (req, res, next) -> Promise.try () ->
     lobService.sendSnailMail(req.user.id, req.body.templateId, req.body)
@@ -22,6 +23,6 @@ module.exports =
     .catch (err) ->
       next new ExpressResponse(alert: msg: "Oops! We couldn't get a price quote for that right now. Please try again
                                             in a few minutes. If the problem continues, please let us know by emailing
-                                            support@realtymaps.com, and giving us the following error message:
+                                            #{config.SUPPORT_EMAIL}, and giving us the following error message:
                                             <br/><code>#{escape(err.message)}</code>", httpStatus.INTERNAL_SERVER_ERROR, true)
-    
+ 
