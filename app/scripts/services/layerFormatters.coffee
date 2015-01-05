@@ -11,11 +11,11 @@ app.service 'LayerFormatters'.ourNs(), [
     filterSummaryHash = {}
 
     markersIcon = {}
-    markersIcon[ParcelEnums.status.sold] = '../assets/map_marker_out_pink_64.png'
-    markersIcon[ParcelEnums.status.pending] = '../assets/map_marker_out_azure_64.png'
-    markersIcon[ParcelEnums.status.forSale] = '../assets/map_marker_out_green_64.png'
-    markersIcon['saved'] = '../assets/map_marker_in_blue.png' #will change later
-    markersIcon['default'] = ''
+    markersIcon[ParcelEnums.status.sold] = ' '
+    markersIcon[ParcelEnums.status.pending] = ' '
+    markersIcon[ParcelEnums.status.forSale] = ' '
+    markersIcon['saved'] = ' ' #will change later
+    markersIcon['default'] = ' '
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
     markersBSLabel = {}
@@ -34,6 +34,8 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
+    # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests. 
+    
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
@@ -42,24 +44,24 @@ app.service 'LayerFormatters'.ourNs(), [
       quadrant += (if (point.y > center.y) then "b" else "t")
       quadrant += (if (point.x < center.x) then "l" else "r")
       if quadrant is "tr"
-        offset = new google.maps.Size(-1 * width, 45)
+        offset = new google.maps.Size(-1 * width, -45)
       else if quadrant is "tl"
-        offset = new google.maps.Size(0, 45)
+        offset = new google.maps.Size(0, -45)
       else if quadrant is "br"
-        offset = new google.maps.Size(-1 * width, -250)
-      else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
+        offset = new google.maps.Size(-1 * width, -400)
+      else offset = new google.maps.Size(25, -400)  if quadrant is "bl"
       offset
 
 
     parcels = do ->
 
-      saveColor = '#EFEE50'
-      mouseOverColor = '#d48c0e'
+      saveColor = '#F3F315'
+      mouseOverColor = 'rgba(0,0,0,.5)'
       colors = {}
-      colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
+      colors[ParcelEnums.status.sold] = '#ff4a4a'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
-      colors[ParcelEnums.status.forSale] = '#2fa02c'
-      colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
+      colors[ParcelEnums.status.forSale] = '#1fde12'
+      colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
 
 
       getSavedColorProperty = (model) ->
@@ -86,13 +88,13 @@ app.service 'LayerFormatters'.ourNs(), [
 
       fill = (parcel) ->
         color: fillColorFromState(parcel) or colors['default']
-        opacity: '.50'
+        opacity: '.70'
 
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: "<h5>#{parcel.street_address_num}</h5>"
-        labelAnchor: "20 10"
+        labelContent: "<span class='address-label'>#{parcel.street_address_num}</span>"
+        labelAnchor: "10 10"
         zIndex: 0
 
       #public
@@ -108,7 +110,7 @@ app.service 'LayerFormatters'.ourNs(), [
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
+        formattedPrice = casing.upper numeral(mls.price).format('0.0a'), '.'
         maybeSaved = null
         # maybeSaved = markersIcon['saved'] if _.has filterSummaryHash, mls.rm_property_id
         ret =
