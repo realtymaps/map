@@ -96,7 +96,7 @@ app.use (data, req, res, next) ->
   logger.error (JSON.stringify(analysis,null,2))
   res.status(status.INTERNAL_SERVER_ERROR).json alert:
     msg: "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues,
-          please let us know by emailing support@realtymaps.com, and giving us the following error
+          please let us know by emailing #{config.SUPPORT_EMAIL}, and giving us the following error
           message:<br/><code>#{data.message}</code>"
     id: "500-#{req.path}"
   next()
