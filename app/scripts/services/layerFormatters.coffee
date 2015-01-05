@@ -34,6 +34,8 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
+    # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests. 
+    
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
@@ -56,7 +58,7 @@ app.service 'LayerFormatters'.ourNs(), [
       saveColor = '#F3F315'
       mouseOverColor = 'rgba(0,0,0,.5)'
       colors = {}
-      colors[ParcelEnums.status.sold] = '#477bff'
+      colors[ParcelEnums.status.sold] = '#ff4a4a'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
       colors[ParcelEnums.status.forSale] = '#1fde12'
       colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
