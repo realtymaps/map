@@ -4,4 +4,6 @@ gulp = require 'gulp'
 #dependency order is ok because fronendSpec needs build as well so build should happen first
 gulp.task 'spec', ['build', 'frontendSpec','backendSpec','gulpSpec']
 
+gulp.task 'specMock', ['webpackMock', 'frontendSpec','gulpSpec']
+
 gulp.task 'spec_watch', ['spec', 'watch']

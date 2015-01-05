@@ -8,23 +8,23 @@
             div(id="results-header-results-count")
                 .ng-cloak {{layers.filterSummary.length}} Results
             div(id="results-header-right")
-                span Sort by {{ showDetails }} |
+                span Sort by
                 .btn-group
-                    button(id="results-sort-beds", class="btn btn-default btn-xs", ng-click="predicate = 'beds'; reverse=true") Beds
-                    button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'living_area'; reverse=true") Sq Ft
-                    button(id="results-sort-sqft", class="btn btn-default btn-xs", ng-click="predicate = 'year_built'; reverse=true") Year
-                    button(id="results-sort-price", class="btn btn-default btn-xs", ng-click="predicate = 'display_price'; reverse=true") Price
+                    button(id="results-sort-beds" class="btn btn-default btn-xs" ng-click="resultsFormatter.setResultsPredicate('bedrooms'); reverse=resultsAscending" ng-class="resultsFormatter.getActiveSort('bedrooms')") Beds
+                    button(id="results-sort-sqft" class="btn btn-default btn-xs" ng-click="resultsFormatter.setResultsPredicate('finished_sqft'); reverse=resultsAscending" ng-class="resultsFormatter.getActiveSort('finished_sqft')") Sq Ft
+                    button(id="results-sort-sqft" class="btn btn-default btn-xs" ng-click="resultsFormatter.setResultsPredicate('year_built'); reverse=resultsAscending" ng-class="resultsFormatter.getActiveSort('year_built')") Year
+                    button(id="results-sort-price" class="btn btn-default btn-xs" ng-click="resultsFormatter.setResultsPredicate('price'); reverse=resultsAscending" ng-class="resultsFormatter.getActiveSort('price')") Price
+                i(class="results-sort-btn btn btn-default btn-xs" ng-class="resultsFormatter.getSorting()" ng-click="resultsFormatter.invertSorting(); reverse=resultsAscending")
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
-            div(ng-repeat="result in results")
+            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse")
                 .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
                     //.result-arrow
                         .box Sold
                         .arrow
                     .photo()
-                        .sold
-                            img(src="{{resultsFormatter.getCurbsideImage(result)}}")
+                        img(src="{{resultsFormatter.getCurbsideImage(result)}}")
                     .info
-                        .address {{result.street_address_num + " " + result.street_name + " " + result.street_type + " " + result.street_ord }}
+                        .address {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
                         .price {{resultsFormatter.getPrice(result.price)}}
                             .property-status(ng-class="resultsFormatter.getForSaleClass(result)") {{result.rm_status}}
                         div
@@ -40,9 +40,7 @@
                             .year
                                 span.data {{resultsFormatter.orNa(result.year_built)}}
                                 span.title Year
-                    .c
-                        //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
-
+                            //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
         #results-footer
             .close(ng-click="toggleNav('map')") x
 <!--End Results Container-->
