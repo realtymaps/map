@@ -42,12 +42,12 @@ app.service 'LayerFormatters'.ourNs(), [
       quadrant += (if (point.y > center.y) then "b" else "t")
       quadrant += (if (point.x < center.x) then "l" else "r")
       if quadrant is "tr"
-        offset = new google.maps.Size(-1 * width, 45)
+        offset = new google.maps.Size(-1 * width, -45)
       else if quadrant is "tl"
-        offset = new google.maps.Size(0, 45)
+        offset = new google.maps.Size(0, -45)
       else if quadrant is "br"
-        offset = new google.maps.Size(-1 * width, -250)
-      else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
+        offset = new google.maps.Size(-1 * width, -400)
+      else offset = new google.maps.Size(25, -400)  if quadrant is "bl"
       offset
 
 
