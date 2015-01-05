@@ -17,4 +17,3 @@ module.exports =
     .restore()
     .font(restoreFont, oldFontSize)
   inch: 72
- 
