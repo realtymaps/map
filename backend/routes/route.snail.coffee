@@ -21,7 +21,7 @@ module.exports =
     .then () ->
       next new ExpressResponse(alert: msg: "Success!  Your snail mail will go out in 2-3 business days.")
     .catch (err) ->
-      next new ExpressResponse(alert: msg: "Oops! We couldn't get a price quote for that right now. Please try again
+      next new ExpressResponse(alert: msg: "Oops! We couldn't send your mailing right now. Please try again
                                             in a few minutes. If the problem continues, please let us know by emailing
                                             #{config.SUPPORT_EMAIL}, and giving us the following error message:
                                             <br/><code>#{escape(err.message)}</code>", httpStatus.INTERNAL_SERVER_ERROR, true)

@@ -14,6 +14,7 @@ createNewPdfObject = (Lob, userId, templateId, data) -> Promise.try () ->
     Lob.objects.createAsync
       file: "@#{filename}"
       setting: 100
+      template: renderPdfFile.getLobTemplateId(templateId)
   .then (lobResponse) ->
     lobResponse.id
 
