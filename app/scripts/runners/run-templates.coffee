@@ -5,8 +5,8 @@ app = require '../app.coffee'
 #load all templates via webpack
 #then load them into the angular $templateCache
 app.run ['$templateCache', ($templateCache) ->
-  directoryContext = require.context("../../html/views/templates", true, /^\.\/.*\.tpl\.jade$/)
+  directoryContext = require.context("../../html/views/templates", true, /\/.*\.tpl\.jade$/)
   for request in directoryContext.keys()
-    name = /.*\/(.*)\.jade$/.exec(request)[1] + '.html'
+    name = /\/(.*)\.jade$/.exec(request)[1] + '.html'
     $templateCache.put name, directoryContext(request)
 ]

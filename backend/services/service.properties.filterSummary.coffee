@@ -38,6 +38,7 @@ required =
   bounds: undefined
   status: []
 
+
 module.exports = 
   
   getFilterSummary: (filters, limit = 600) -> Promise.try () ->

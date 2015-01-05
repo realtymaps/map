@@ -1,6 +1,7 @@
 moment = require 'moment'
 PDFDocument = require 'pdfkit'
 pdfUtils = require '../utils/util.pdf.coffee'
+fonts = require './signature-fonts/index.coffee'
 
 
 module.exports =
@@ -27,9 +28,9 @@ module.exports =
     .moveDown()
     .text("Sincerely,")
     .moveDown(0.5)
-    # we should be able to fork pdfkit and add our own fonts to it, so we can use a good script font for signatures
-    .font("Helvetica-BoldOblique", 20)
-    .text("   #{data.from.name}")
+    for fontName,font of fonts
+      doc.font(font.data, font.signatureSize)
+      .text("#{data.from.name}  (#{fontName})")
     
     doc.end()
  
