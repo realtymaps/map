@@ -11,24 +11,32 @@ Place for our custom Theming of bootstrap
 .panel
   background: rgba(0,0,0,0.0)
   margin 0
+  border-radius 0
+  border none
+  font-family "Helvetica Neue", Helvetica, Arial, sans-serif
 
 .panel > .panel-heading
-  background-color ourBlue
-  border-color ourBlue
+  background-color rm-medium-blue
+  border none
+  font-size 16px
+  border-radius 0
 
 .panel > .panel-body
   background windowColor
   color textColor
   padding 5px
+  font-size 14px
 
 .panel p
   margin 0px 0px 0px 0px
 .panel > .panel-body > .table tr,
 .panel > .panel-body > .table td
+  border-top: 1px solid rgba(255, 255, 255, 0.08)
   section > p
     display inline-block
   section > p+p /* NEXT P is margined from left to give right space*/
     margin-left 10px
+
 
 /* BEGIN Nav Bar */
 @media (min-width: 768px)
@@ -116,5 +124,9 @@ Place for our custom Theming of bootstrap
 
 .label-saved-property
   background-color rm-property-save-yello
-  color grey
+  color rm-property-save-bright-foreground
+
+.label-sale-property
+    background-color rm-highlight-green
+    color rm-property-save-bright-foreground
 /* END Nav Bar */

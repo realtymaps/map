@@ -8,7 +8,7 @@ app.service 'LayerFormatters'.ourNs(), [
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
   ($log, ParcelEnums, uiGmapUtil, Properties) ->
 
-    saveColor = '#EFEE50'
+    saveColor = '#F3F315'
 
     filterSummaryHash = {}
 
@@ -30,6 +30,7 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
+    # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
@@ -38,17 +39,15 @@ app.service 'LayerFormatters'.ourNs(), [
       quadrant += (if (point.y > center.y) then "b" else "t")
       quadrant += (if (point.x < center.x) then "l" else "r")
       if quadrant is "tr"
-        offset = new google.maps.Size(-1 * width, 45)
+        offset = new google.maps.Size(-1 * width, -45)
       else if quadrant is "tl"
-        offset = new google.maps.Size(0, 45)
+        offset = new google.maps.Size(0, -45)
       else if quadrant is "br"
-        offset = new google.maps.Size(-1 * width, -250)
-      else offset = new google.maps.Size(25, -250)  if quadrant is "bl"
+        offset = new google.maps.Size(-1 * width, -400)
+      else offset = new google.maps.Size(25, -400)  if quadrant is "bl"
       offset
 
     getSavedColorProperty = (model) ->
-#      props = Properties.getSavedProperties()
-#      prop = props[model.rm_property_id] if _.has props, model.rm_property_id
       if not model.savedDetails or not model.savedDetails.isSaved
         return
       saveColor
@@ -56,10 +55,10 @@ app.service 'LayerFormatters'.ourNs(), [
     parcels = do ->
       mouseOverColor = 'rgba(153, 152, 149, 0.79)'
       colors = {}
-      colors[ParcelEnums.status.sold] = 'rgb(211, 96, 96)'
+      colors[ParcelEnums.status.sold] = '#ff4a4a'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
-      colors[ParcelEnums.status.forSale] = '#2fa02c'
-      colors['default'] = 'rgba(105, 245, 233, 0.08)' #or '#7e847f'?
+      colors[ParcelEnums.status.forSale] = '#1fde12'
+      colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
 
       gFillColor = (color) ->
         fillColor: color
@@ -79,7 +78,7 @@ app.service 'LayerFormatters'.ourNs(), [
 
       fill = (parcel) ->
         color: fillColorFromState(parcel) or colors['default']
-        opacity: '.50'
+        opacity: '.70'
 
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
@@ -100,7 +99,7 @@ app.service 'LayerFormatters'.ourNs(), [
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = if not mls.price then String.orNA(mls.price) else casing.upper numeral(mls.price).format('0.00a'), '.'
+        formattedPrice = if not mls.price then String.orNA(mls.price) else casing.upper numeral(mls.price).format('0.0a'), '.'
         savedStatus = 'saved' if getSavedColorProperty(mls)
         ret =
           icon: ' '
