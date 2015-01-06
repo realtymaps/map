@@ -11,7 +11,7 @@ validators = requestUtil.query.validators
 
 statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
-transforms = 
+transforms =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
@@ -40,8 +40,8 @@ required =
   status: []
 
 
-module.exports = 
-  
+module.exports =
+
   getFilterSummary: (state, filters, limit = 600) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
@@ -53,7 +53,7 @@ module.exports =
 
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
       query.whereRaw(filters.bounds.sql, filters.bounds.bindings)
-      
+
       if filters.status.length == 1
         query.where('rm_status', filters.status[0])
       else if filters.status.length < statuses.length
@@ -62,31 +62,26 @@ module.exports =
       sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
       sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
       sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
-      
+
       if filters.bedsMin?
         query.where("bedrooms", '>=', filters.bedsMin)
-      
+
       if filters.bathsMin?
         query.where("baths_full", '>=', filters.bathsMin)
 
       if state and state.properties_selected
-        #TODO remove the keys that have isSaved false
-        #a lot of code for a simple parens logic
-        #where the above ands are SQL: ANDS or (bounds and rm_property_id in (someids))
-        #if we just use orWhereIn then all saved props are returned ignoring the bounds
-        rawBounds = filters.bounds.sql
-        filters.bounds.bindings.forEach (b) ->
-          rawBounds = rawBounds.replace('?', b )
-        isFirst = true
-        inIds = _.keys(state.properties_selected).reduce (prev, next) ->
-          if isFirst
-            isFirst = false
-            prev = "'#{prev}'"
-          "#{prev} , '#{next}'"
-        query.orWhereRaw("(#{rawBounds} and rm_property_id in (#{inIds}))")
+        #should we return saved properties that have isSaved false
+        #main reason in asking is because a property is still saved if it has notes but isSaved is false
+        #probably should consider removing isSaved and just consider it saved if it has notes.. not sure
+        #main reasoning on have it around when notes are still there is because if you come back to it later you still
+        #have notes and history about a prop (but you may not always want it highlighted on the map)
+        query.orWhere ->
+          @whereRaw(filters.bounds.sql, filters.bounds.bindings)
+          @where('rm_property_id', _.keys(state.properties_selected))
 
       query.limit(limit) if limit
-      logger.sql query.toString()
+      #logger.sql query.toString()
+
       query.then (data) ->
         data = data or []
         # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
