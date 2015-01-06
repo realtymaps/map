@@ -8,20 +8,16 @@ app.service 'LayerFormatters'.ourNs(), [
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
   ($log, ParcelEnums, uiGmapUtil, Properties) ->
 
-    filterSummaryHash = {}
+    saveColor = '#F3F315'
 
-    markersIcon = {}
-    markersIcon[ParcelEnums.status.sold] = ' '
-    markersIcon[ParcelEnums.status.pending] = ' '
-    markersIcon[ParcelEnums.status.forSale] = ' '
-    markersIcon['saved'] = ' ' #will change later
-    markersIcon['default'] = ' '
+    filterSummaryHash = {}
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
     markersBSLabel = {}
-    markersBSLabel[ParcelEnums.status.sold] = 'danger'
-    markersBSLabel[ParcelEnums.status.pending] = 'warning'
-    markersBSLabel[ParcelEnums.status.forSale] = 'success'
+    markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
+    markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
+    markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
+    markersBSLabel['saved'] = 'saved-property'
     markersBSLabel['default'] = 'info'
 
     formatMarkerContent = (label, content) ->
@@ -34,8 +30,7 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
-    # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests. 
-    
+    # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
     getWindowOffset = (map, mls, width = 290) ->
       return if not mls or not map
       center = getPixelFromLatLng(map.getCenter(), map)
@@ -52,29 +47,24 @@ app.service 'LayerFormatters'.ourNs(), [
       else offset = new google.maps.Size(25, -400)  if quadrant is "bl"
       offset
 
+    getSavedColorProperty = (model) ->
+      if not model.savedDetails or not model.savedDetails.isSaved
+        return
+      saveColor
 
     parcels = do ->
-
-      saveColor = '#F3F315'
-      mouseOverColor = 'rgba(0,0,0,.5)'
+      mouseOverColor = 'rgba(153, 152, 149, 0.79)'
       colors = {}
       colors[ParcelEnums.status.sold] = '#ff4a4a'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
       colors[ParcelEnums.status.forSale] = '#1fde12'
       colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
 
-
-      getSavedColorProperty = (model) ->
-        props = Properties.getSavedProperties()
-        prop = props[model.rm_property_id] if _.has props, model.rm_property_id
-        if not prop or not prop.isSaved
-          return
-        saveColor
-
-      optsFromFillColor = (color) ->
+      gFillColor = (color) ->
         fillColor: color
 
-      optsFromFill = (fillOpts) ->
+      # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
+      gOptsFromUiGmapFill = (fillOpts) ->
         fillColor: fillOpts.color
         fillOpacity: fillOpts.opacity
 
@@ -93,36 +83,34 @@ app.service 'LayerFormatters'.ourNs(), [
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: "<span class='address-label'>#{parcel.street_address_num}</span>"
-        labelAnchor: "10 10"
+        labelContent: "<h5>#{String.orNA parcel.street_address_num}</h5>"
+        labelAnchor: "20 0"
         zIndex: 0
 
-      #public
       fill: fill
       labelFromStreetNum: labelFromStreetNum
 
       optionsFromFill: (parcel) ->
-        optsFromFill fill(parcel)
+        gOptsFromUiGmapFill fill(parcel)
 
       mouseOverOptions: (parcel) ->
-        fillColorFromState(parcel) or optsFromFillColor(mouseOverColor)
+        fillColorFromState(parcel) or gFillColor(mouseOverColor)
 
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = casing.upper numeral(mls.price).format('0.0a'), '.'
-        maybeSaved = null
-        # maybeSaved = markersIcon['saved'] if _.has filterSummaryHash, mls.rm_property_id
+        formattedPrice = if not mls.price then String.orNA(mls.price) else casing.upper numeral(mls.price).format('0.0a'), '.'
+        savedStatus = 'saved' if getSavedColorProperty(mls)
         ret =
-          icon: maybeSaved or markersIcon[mls.rm_status] or markersIcon['default']
-          labelContent: formatStatusMarkerContent mls.rm_status, formattedPrice
-          labelAnchor: "30 100"
+          icon: ' '
+          labelContent: formatStatusMarkerContent(savedStatus or mls.rm_status, formattedPrice)
+          labelAnchor: "30 10"
           zIndex: 1
         ret
 
       getWindowOffset: getWindowOffset
 
-
+    #public
     Parcels: parcels
     MLS: mls
     updateFilterSummaryHash: (hash) ->

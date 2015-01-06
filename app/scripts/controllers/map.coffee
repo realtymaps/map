@@ -30,8 +30,6 @@ module.exports = app
       .then (identity) ->
         if not identity?.stateRecall
           return MainOptions.map
-        # if identity.stateRecall.properties_selected
-        #   Properties.setSavedProperties identity.stateRecall.properties_selected
         if identity.stateRecall.map_center
           MainOptions.map.options.json.center = identity.stateRecall.map_center
         if identity.stateRecall.map_zoom

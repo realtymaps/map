@@ -28,6 +28,11 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
           @scope.results = []
           @loadMore()
 
+      reset: =>
+        @scope.results = []
+        @lastSummaryIndex = 0
+        @loadMore()
+
       setResultsPredicate:(predicate) =>
         @scope.resultsPredicate = predicate
 
@@ -50,7 +55,8 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
 
       getForSaleClass: (result) ->
         return unless result
-        _forSaleClass[result.rm_status] or _forSaleClass['default']
+        soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
+        soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
 
       getPrice: (price) ->
         numeral(price).format('$0,0.00')
