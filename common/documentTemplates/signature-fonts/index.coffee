@@ -16,13 +16,18 @@
   within our application.  If you extract any of the fonts here for use in any way, you are still bound by the
   terms of the licenses associated with those fonts.
 ###
+  
+baseFont =
+  signatureSize: 22
+  angle: 0
+  xOffset: 10
 
 module.exports =
-  "print font 1":               require("./daniel/daniel.coffee")
-  "print font 1 (bold)":        require("./daniel/danielbd.coffee")
-  "print font 1 (bolder)":      require("./daniel/Daniel-Black.coffee")
-  "print font 2":               require("./bilbo/Bilbo-Regular.coffee")
-  "print font 2 (fancy caps)":  require("./bilbo/BilboSwashCaps-Regular.coffee")
-  "print font 3":               require("./jenna-sue/JennaSue.coffee")
-  "script font 1":              require("./kristi/Kristi.coffee")
-  "script font 2":              require("./allura/Allura-Regular.coffee")
+  "print font 1":               _.extend {}, baseFont, require("./daniel/daniel.coffee")
+  "print font 1 (bold)":        _.extend {}, baseFont, require("./daniel/danielbd.coffee")
+  "print font 1 (bolder)":      _.extend {}, baseFont, require("./daniel/Daniel-Black.coffee")
+  "print font 2":               _.extend {}, baseFont, require("./bilbo/Bilbo-Regular.coffee")
+  "print font 2 (fancy caps)":  _.extend {}, baseFont, require("./bilbo/BilboSwashCaps-Regular.coffee")
+  "print font 3":               _.extend {}, baseFont, require("./jenna-sue/JennaSue.coffee")
+  "script font 1":              _.extend {}, baseFont, require("./kristi/Kristi.coffee")
+  "script font 2":              _.extend {}, baseFont, require("./allura/Allura-Regular.coffee")

@@ -22,3 +22,5 @@ module.exports =
     new Promise (resolve, reject) ->
       stream.on 'finish', () -> resolve(filename)
       stream.on 'error', (err) -> reject(err)
+  getLobTemplateId: (templateId) ->
+    documentTemplates[templateId].lobTemplateId
