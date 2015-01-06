@@ -6,6 +6,7 @@ geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+dataPropertyUtil = require '../utils/util.data.properties.coffee'
 
 validators = requestUtil.query.validators
 
@@ -23,7 +24,7 @@ required =
 
 module.exports =
 
-  getBaseParcelData: (filters) -> Promise.try () ->
+  getBaseParcelData: (state, filters) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
@@ -35,4 +36,5 @@ module.exports =
           # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
           data = _.uniq data, (row) ->
             row.rm_property_id
+          data = dataPropertyUtil.joinSavedProperties(state,data)
           data

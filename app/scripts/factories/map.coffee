@@ -30,13 +30,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
 
+        _updateGObjects = (gObject, savedDetails, childModel) ->
+          #purpose to to take some sort of gObject and update its view immediately
+          childModel.model.savedDetails = savedDetails
+          if gObject.labelClass?
+            opts = $scope.formatters.layer.MLS.markerOptionsFromForSale childModel.model
+          else
+            opts =  $scope.formatters.layer.Parcels.optionsFromFill(childModel)
+          gObject.setOptions(opts) if opts
+          $scope.resultsFormatter?.reset()
+
         _saveProperty = (gObject, model) ->
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
           return unless saved
-          saved.then ->
+          saved.then (savedDetails) ->
             childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-            gObject.setOptions($scope.formatters.layer.Parcels.optionsFromFill(childModel))
+            #setting savedDetails here as we know the save was successful (update the font end without query right away)
+            _updateGObjects(gObject, savedDetails, childModel)
 
         @scope = _.merge @scope,
           control: {}
@@ -115,7 +126,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
 
               dblclick: (gObject, eventname, model) ->
-                return if gObject.labelClass? #its a marker
                 _saveProperty gObject, model
 
           formatters:
@@ -203,7 +213,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled
           if isEnabled
-            @scope.layers.mlsListings.length = 0
             @scope.drawUtil.draw()
 
         @scope.$onRootScope Events.map.drawPolys.query, =>

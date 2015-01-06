@@ -5,12 +5,13 @@ logger = require '../config/logger'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+dataPropertyUtil = require '../utils/util.data.properties.coffee'
 
 validators = requestUtil.query.validators
 
 statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
-transforms = 
+transforms =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
@@ -39,9 +40,9 @@ required =
   status: []
 
 
-module.exports = 
-  
-  getFilterSummary: (filters, limit = 600) -> Promise.try () ->
+module.exports =
+
+  getFilterSummary: (state, filters, limit = 600) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
@@ -52,7 +53,7 @@ module.exports =
 
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
       query.whereRaw(filters.bounds.sql, filters.bounds.bindings)
-      
+
       if filters.status.length == 1
         query.where('rm_status', filters.status[0])
       else if filters.status.length < statuses.length
@@ -61,18 +62,30 @@ module.exports =
       sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
       sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
       sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
-      
+
       if filters.bedsMin?
         query.where("bedrooms", '>=', filters.bedsMin)
-      
+
       if filters.bathsMin?
         query.where("baths_full", '>=', filters.bathsMin)
 
+      if state and state.properties_selected
+        #Should we return saved properties that have isSaved false?
+        #Main reason in asking is because a property is still saved if it has notes and isSaved is false.
+        #We should consider removing isSaved and just consider it saved if it has notes. (not sure about this)
+        #The main reason on having it around is because if you come back to it later you still
+        #have notes and history about a prop (but you may not always want it highlighted on the map)
+        query.orWhere ->
+          @whereRaw(filters.bounds.sql, filters.bounds.bindings)
+          @where('rm_property_id', _.keys(state.properties_selected))
+
       query.limit(limit) if limit
+      #logger.sql query.toString()
 
       query.then (data) ->
-        data = data||[]
+        data = data or []
         # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
         data = _.uniq data, (row) ->
           row.rm_property_id
+        data = dataPropertyUtil.joinSavedProperties(state,data)
         data
