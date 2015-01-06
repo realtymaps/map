@@ -17,7 +17,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
     class ResultsFormatter
       constructor: (@scope) ->
         @scope.results = []
-        @scope.resultsAscending = true
+        @scope.resultsAscending = false
         @scope.resultsPredicate = 'price'
         @lastSummaryIndex = 0
         @origLen = 0
