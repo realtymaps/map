@@ -70,12 +70,25 @@ module.exports =
         query.where("baths_full", '>=', filters.bathsMin)
 
       if state and state.properties_selected
-        query.orWhereIn('rm_property_id', _.keys(state.properties_selected))
+        #TODO remove the keys that have isSaved false
+        #a lot of code for a simple parens logic
+        #where the above ands are SQL: ANDS or (bounds and rm_property_id in (someids))
+        #if we just use orWhereIn then all saved props are returned ignoring the bounds
+        rawBounds = filters.bounds.sql
+        filters.bounds.bindings.forEach (b) ->
+          rawBounds = rawBounds.replace('?', b )
+        isFirst = true
+        inIds = _.keys(state.properties_selected).reduce (prev, next) ->
+          if isFirst
+            isFirst = false
+            prev = "'#{prev}'"
+          "#{prev} , '#{next}'"
+        query.orWhereRaw("(#{rawBounds} and rm_property_id in (#{inIds}))")
 
       query.limit(limit) if limit
       logger.sql query.toString()
       query.then (data) ->
-        data = data||[]
+        data = data or []
         # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
         data = _.uniq data, (row) ->
           row.rm_property_id

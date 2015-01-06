@@ -27,7 +27,8 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         savedProperties[rm_property_id] = prop
       else
         prop.isSaved = !prop.isSaved
-        delete savedProperties[rm_property_id]
+        unless prop.notes
+          delete savedProperties[rm_property_id]
 
       #post state to database
       promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)

@@ -28,6 +28,11 @@ app.factory 'ResultsFormatter'.ourNs(), ['Logger'.ourNs(), 'ParcelEnums'.ourNs()
           @scope.results = []
           @loadMore()
 
+      reset: =>
+        @scope.results = []
+        @lastSummaryIndex = 0
+        @loadMore()
+
       setResultsPredicate:(predicate) =>
         @scope.resultsPredicate = predicate
 

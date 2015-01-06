@@ -14,9 +14,9 @@ app.service 'LayerFormatters'.ourNs(), [
 
     markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
     markersBSLabel = {}
-    markersBSLabel[ParcelEnums.status.sold] = 'danger'
-    markersBSLabel[ParcelEnums.status.pending] = 'warning'
-    markersBSLabel[ParcelEnums.status.forSale] = 'success'
+    markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
+    markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
+    markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
     markersBSLabel['saved'] = 'saved-property'
     markersBSLabel['default'] = 'info'
 
