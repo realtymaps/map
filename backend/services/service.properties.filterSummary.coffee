@@ -70,10 +70,10 @@ module.exports =
         query.where("baths_full", '>=', filters.bathsMin)
 
       if state and state.properties_selected
-        #should we return saved properties that have isSaved false
-        #main reason in asking is because a property is still saved if it has notes but isSaved is false
-        #probably should consider removing isSaved and just consider it saved if it has notes.. not sure
-        #main reasoning on have it around when notes are still there is because if you come back to it later you still
+        #Should we return saved properties that have isSaved false?
+        #Main reason in asking is because a property is still saved if it has notes and isSaved is false.
+        #We should consider removing isSaved and just consider it saved if it has notes. (not sure about this)
+        #The main reason on having it around is because if you come back to it later you still
         #have notes and history about a prop (but you may not always want it highlighted on the map)
         query.orWhere ->
           @whereRaw(filters.bounds.sql, filters.bounds.bindings)
