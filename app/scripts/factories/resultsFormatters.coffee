@@ -4,8 +4,9 @@ sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 
-app.factory 'ResultsFormatter'.ourNs(), ['$timeout', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GeoJsonToGoogle'.ourNs(),
-  ($timeout, $log, ParcelEnums, GeoJsonToGoogle) ->
+app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GeoJsonToGoogle'.ourNs(),
+  ($timeout, $filter, $log, ParcelEnums, GeoJsonToGoogle) ->
+    _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
@@ -19,7 +20,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', 'Logger'.ourNs(), 'ParcelEn
         @mapCtrl.scope.results = []
         @mapCtrl.scope.resultsPotentialLength = undefined
         @mapCtrl.scope.resultsAscending = false
-        @mapCtrl.scope.resultsPredicate = 'price'
+        @setResultsPredicate('price')
         @lastSummaryIndex = 0
         @origLen = 0
 
@@ -29,14 +30,20 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', 'Logger'.ourNs(), 'ParcelEn
           @mapCtrl.scope.results = []
           @loadMore()
 
-      reset: ->
+      order: =>
+        @filterSummarySorted = _orderBy(
+          @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
+
+      reset:  ->
         @mapCtrl.scope.results = []
         @lastSummaryIndex = 0
         @mapCtrl.scope.resultsPotentialLength = undefined
+        @order()
         @loadMore()
 
       setResultsPredicate: (predicate) =>
         @mapCtrl.scope.resultsPredicate = predicate
+        @order()
 
       getSorting: =>
         if @mapCtrl.scope.resultsAscending
