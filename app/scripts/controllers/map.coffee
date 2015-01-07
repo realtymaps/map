@@ -19,9 +19,9 @@ module.exports = app
 ])
 
 .controller 'MapCtrl'.ourNs(), [
-  '$scope', '$rootScope', '$location', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
+  '$scope', '$rootScope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
-  ($scope, $rootScope, $location, Map, MainOptions, Toggles,
+  ($scope, $rootScope, Map, MainOptions, Toggles,
   principal, Events, ParcelEnums) ->
 
     $scope.pageClass = 'page-map'
