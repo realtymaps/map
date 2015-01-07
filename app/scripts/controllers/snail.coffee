@@ -14,8 +14,8 @@ rendered = false
 form = null
 
 module.exports = app.controller 'SnailCtrl'.ourNs(), [
-  '$scope', '$location', '$http', '$sce', '$timeout', 'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(),
-  ($scope, $location, $http, $sce, $timeout, RenderPdfBlob, documentTemplates, MainOptions) ->
+  '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', 'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(),
+  ($scope, $rootScope, $location, $http, $sce, $timeout, RenderPdfBlob, documentTemplates, MainOptions) ->
     $scope.documentTemplates = documentTemplates
     $scope.fonts = fonts
     $scope.placeholderValues =
@@ -55,13 +55,19 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         $scope.formReady = formReady
         
       doRender = () ->
+        renderPromise = null
         RenderPdfBlob.toBlobUrl($scope.form.style.template, snailData)
         .then (blob) ->
           $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
           rendered = true
+          $rootScope.loadingCount--
       if renderPromise
+        # replace the existing rendering call
         $timeout.cancel(renderPromise)
         renderPromise = null
+      else
+        # create a new one
+        $rootScope.loadingCount++
       renderPromise = $timeout(doRender, MainOptions.pdfRenderDelay)
     
     setWatch = () ->
