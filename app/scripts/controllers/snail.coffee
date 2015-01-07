@@ -45,14 +45,14 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       if !$scope.form?.style?.template
         $scope.formReady = false
         return
+      formReady = true
       for prop of $scope.form
-        formReady = true
         snailData[prop] = _.clone($scope.form[prop])
         _.extend snailData[prop], $scope.placeholderValues[prop], (formValue, placeholderValue) ->
           # if any fields aren't filled in, we're not ready
-          formReady &= !!formValue
+          formReady &&= !!formValue
           return formValue || "{{#{placeholderValue}}}"
-        $scope.formReady = formReady
+      $scope.formReady = formReady
         
       doRender = () ->
         renderPromise = null

@@ -38,7 +38,8 @@
           select#signature(ng-model="form.style.signature",ng-options='id as id for (id,font) in fonts')
         .form-group.row
           .col-sm-6
-            input(type="submit",value="Check Price",ng-disabled="true")
+            input(type="submit",value="Check Price",ng-disabled="!formReady")
+            | {{formReady}} {{!formReady}}
     .col-md-6
       .page-aspect-ratio-container
         iframe.pdf-preview(ng-src='{{pdfPreviewBlob}}').page-aspect-ratio
