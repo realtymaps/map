@@ -47,6 +47,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           saved.then (savedDetails) ->
             childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
             #setting savedDetails here as we know the save was successful (update the font end without query right away)
+            index = if childModel.model.index? then childModel.model.index else self.filterSummaryHash[childModel.model.rm_property_id]?.index
+            if index? #only has index if there is a filter object
+              match = self.scope.layers.filterSummary[index]
+              match.savedDetails = savedDetails if match?
+
+            #need to figure out a better way
+            self.updateFilterSummaryHash()
             _updateGObjects(gObject, savedDetails, childModel)
 
         @scope = _.merge @scope,
@@ -135,7 +142,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           changeZoom: (increment) ->
             $scope.zoom += increment
 
-        @scope.resultsFormatter = new ResultsFormatter($scope)
+        @scope.resultsFormatter = new ResultsFormatter(self)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
@@ -179,6 +186,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @allPromises = $q.all(promises)
 
       draw: (event, paths) =>
+        @scope.resultsFormatter?.reset()
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
@@ -222,7 +230,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
         _.defer =>
-          @scope.layers.filterSummary.forEach (summary) =>
+          @scope.layers.filterSummary.forEach (summary, index) =>
+            summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary
           @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
 

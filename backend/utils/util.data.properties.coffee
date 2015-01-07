@@ -7,5 +7,6 @@ module.exports =
     # passing on savedDetails including notes
     data.map (row) ->
       maybeProp = state.properties_selected[row.rm_property_id]
+      row.price = parseInt(row.price)
       row.savedDetails = if maybeProp then maybeProp else undefined
       row

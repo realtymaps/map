@@ -29,11 +29,12 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         prop.isSaved = !prop.isSaved
         unless prop.notes
           delete savedProperties[rm_property_id]
+          prop = undefined
 
       #post state to database
-      promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
-      promise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
-      promise.then  ->
+      $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
+      .error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
+      .then  ->
         prop
 
     getSavedProperties: ->
