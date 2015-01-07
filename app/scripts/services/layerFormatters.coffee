@@ -9,6 +9,7 @@ app.service 'LayerFormatters'.ourNs(), [
   ($log, ParcelEnums, uiGmapUtil, Properties) ->
 
     saveColor = '#F3F315'
+    mouseOverColor = 'rgba(153, 152, 149, 0.79)'
 
     filterSummaryHash = {}
 
@@ -18,6 +19,7 @@ app.service 'LayerFormatters'.ourNs(), [
     markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
     markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
     markersBSLabel['saved'] = 'saved-property'
+    markersBSLabel['hovered'] = 'hovered-property'
     markersBSLabel['default'] = 'info'
 
     formatMarkerContent = (label, content) ->
@@ -52,8 +54,11 @@ app.service 'LayerFormatters'.ourNs(), [
         return
       saveColor
 
+    getMouseOver = (model, toReturn = mouseOverColor) ->
+      return if not model or not model.isMousedOver
+      return toReturn
+
     parcels = do ->
-      mouseOverColor = 'rgba(153, 152, 149, 0.79)'
       colors = {}
       colors[ParcelEnums.status.sold] = '#ff4a4a'
       colors[ParcelEnums.status.pending] = '#6C3DCA'
@@ -73,8 +78,8 @@ app.service 'LayerFormatters'.ourNs(), [
         model = parcel.model
         maybeSavedColor = getSavedColorProperty(model)
         unless maybeSavedColor
-          model = if _.has filterSummaryHash, model.rm_property_id then filterSummaryHash[model.rm_property_id] else model
-        maybeSavedColor or colors[model.rm_status]
+          model = if _.has(filterSummaryHash, model.rm_property_id) then filterSummaryHash[model.rm_property_id] else model
+        getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
 
       fill = (parcel) ->
         color: fillColorFromState(parcel) or colors['default']
@@ -103,7 +108,7 @@ app.service 'LayerFormatters'.ourNs(), [
         savedStatus = 'saved' if getSavedColorProperty(mls)
         ret =
           icon: ' '
-          labelContent: formatStatusMarkerContent(savedStatus or mls.rm_status, formattedPrice)
+          labelContent: formatStatusMarkerContent(mls.isMousedOver or savedStatus or mls.rm_status, formattedPrice)
           labelAnchor: "30 10"
           zIndex: 1
         ret
