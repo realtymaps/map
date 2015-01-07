@@ -176,11 +176,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         else
           @scope.layers.filterSummary.length = 0
 
-        @allPromises = $q.all(promises).finally ->
-          $rootScope.isLoading = false
+        @allPromises = $q.all(promises)
 
       draw: (event, paths) =>
-        $rootScope.isLoading = true
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude

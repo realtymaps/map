@@ -16,9 +16,14 @@ app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'M
       minTimestamp = (+new Date)+MainOptions.logoutDelayMillis
       delayedUrl = (url) ->
         $timeout () ->
+          $rootScope.loadingCount--
           $location.replace()
           $location.url url
         , minTimestamp-(+new Date)
+      # this controller manages loadingCount manually because we're putting an artificial min delay on logout,
+      # so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the
+      # spinner go away more quickly
+      $rootScope.loadingCount++
       principal.getIdentity()
       .then () ->
         if not principal.isAuthenticated()
