@@ -39,7 +39,6 @@
         .form-group.row
           .col-sm-6
             input(type="submit",value="Check Price",ng-disabled="!formReady")
-            | {{formReady}} {{!formReady}}
     .col-md-6
       .page-aspect-ratio-container
         iframe.pdf-preview(ng-src='{{pdfPreviewBlob}}').page-aspect-ratio
