@@ -15,6 +15,8 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
+    resultEvents = ['dblclick', 'mouseover', 'mouseleave']
+
     class ResultsFormatter
       constructor: (@mapCtrl) ->
         @mapCtrl.scope.results = []
@@ -77,9 +79,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
       loadMore: =>
         if @loader
           $timeout.cancel @loader
-          @loader.finally @throttledLoadMore
-        else
-          @loader = $timeout @throttledLoadMore, 0
+        @loader = $timeout @throttledLoadMore
 
       throttledLoadMore: (amountToLoad = 10, loadedCtr = 0) =>
         _isWithinBounds = (prop) =>
@@ -93,6 +93,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
           @mapCtrl.scope.layers.filterSummary.forEach (prop) =>
             ctr += 1 if _isWithinBounds(prop)
           @mapCtrl.scope.resultsPotentialLength = ctr
+
         return if not @mapCtrl.scope.layers.filterSummary.length
         for i in [0..amountToLoad] by 1
           if @lastSummaryIndex > @mapCtrl.scope.layers.filterSummary.length - 1
@@ -104,8 +105,31 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
           if prop and _isWithinBounds(prop)
             @mapCtrl.scope.results.push(prop)
             loadedCtr += 1
+
           @lastSummaryIndex += 1
 
         if loadedCtr < amountToLoad and @lastSummaryIndex < @mapCtrl.scope.layers.filterSummary.length
           @throttledLoadMore(amountToLoad, loadedCtr)
+
+        if @oldEventsPromise?
+          $timeout.cancel @oldEventsPromise
+        @oldEventsPromise = $timeout ->
+          #finally , hook mouseover / mouseleave manually for performance
+          #use ng-init to pass in id name and class names of properties to keep loose coupling
+          resultEvents.forEach (eventName) =>
+            angular.element(document.getElementsByClassName('result-property ng-scope'))
+            .unbind(eventName)
+            .bind eventName, (event) =>
+              @[eventName](angular.element(event.srcElement).scope().result)
+
+      dblclick: (result) =>
+        @mapCtrl.selectedResult = result
+
+      mouseover: (result) =>
+        #not updating the polygon cause I think we really need access to its childModels / plurals
+        #notw add that to control on uigmap
+        result.isMousedOver = true
+
+      mouseleave: (result) =>
+        result.isMousedOver = undefined
 ]
