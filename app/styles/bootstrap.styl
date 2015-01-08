@@ -131,31 +131,31 @@ Place for our custom Theming of bootstrap
 .markerLabels .label
   position relative
   font-weight bold
-  color rm-main-dark-blue !important
+  color rm-main-dark-blue
   border  2px solid rm-main-dark-blue
   box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
 
 .markerLabels .label:after, .markerLabels .label:before 
-  top: 100%
-  left: 50%
-  border: solid transparent
-  content: " "
-  height: 0
-  width: 0
-  position: absolute
-  pointer-events: none
+  top 25px
+  left 50%
+  border solid transparent
+  content " "
+  height 0
+  width 0
+  position absolute
+  pointer-events none
 
 .markerLabels .label:before 
-  border-color: rgba(2, 59, 245, 0)
-  border-top-color: rm-main-dark-blue
-  border-width: 13px
-  margin-left: -13px
+  border-color rgba(2, 59, 245, 0)
+  border-top-color rm-main-dark-blue
+  border-width 13px
+  margin-left -13px
 
 
 .markerLabels .label:after 
-  border-color: rgba(213, 30, 30, 0)
-  border-width: 10px
-  margin-left: -10px
+  border-color rgba(213, 30, 30, 0)
+  border-width 10px
+  margin-left -10px
 
 .label-saved-property
   background-color rm-property-save-yello
@@ -165,15 +165,15 @@ Place for our custom Theming of bootstrap
   border-top-color rm-property-save-yello !important
 
 .label-sale-property
-  background-color rm-highlight-green
+  background-color rm-property-sale-green
   color rm-property-save-bright-foreground
 
 .label-sale-property:after
-  border-top-color rm-highlight-green !important
+  border-top-color rm-property-sale-green !important
 
 .label-sold-property
   background-color rm-property-sold-red
-  color rm-property-save-bright-foreground
+  color #FFF !important
 
 .label-sold-property:after
   border-top-color rm-property-sold-red !important
