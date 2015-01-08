@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# 4 weeks in seconds
-export THRESHOLD_WINDOW=$((4*7*24*60*60))
+# 2 weeks in seconds
+export THRESHOLD_WINDOW=$((2*7*24*60*60))
 # prefix for remotes
 export REMOTE_PREFIX="remotes/origin"
 # remote and local branches to exclude from pruning, just in case
