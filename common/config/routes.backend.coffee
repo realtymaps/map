@@ -1,13 +1,7 @@
 ###
 Object list of the defined routes. It's purpose is to keep the
-frontend and backend
+frontend and backend in sync
 ###
-keysToValue = require '../utils/util.keys_to_values.coffee'
-
-resource = keysToValue
-  county: undefined
-  mls: undefined
-  parcels: undefined
 
 apiBase = '/api'
 
@@ -28,5 +22,5 @@ module.exports =
     parcelBase:      "#{apiBase}/properties/parcel_base/"
     propertyDetails: "#{apiBase}/properties/property_details/" # not yet set up or fully specified
   snail:
-    quote:      "#{apiBase}/snail/quote"
-    send:       "#{apiBase}/snail/send"
+    quote:            "#{apiBase}/snail/quote"
+    send:             "#{apiBase}/snail/send"

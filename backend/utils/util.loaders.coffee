@@ -10,10 +10,14 @@ module.exports =
     normalizedRoutes = []
     for moduleId,routes of routesConfig
       routeModule = null
+      modulePath = path.join(dirname, "route.#{moduleId}.coffee")
       try
-        routeModule = require path.join(dirname, "route.#{moduleId}.coffee")
+        routeModule = require modulePath
       catch err
-        throw new Error "route module #{moduleId} not found"
+        msg = "error loading route module '#{moduleId}' from '#{modulePath}':"
+        logger.error(msg)
+        logger.error(err.stack)
+        throw new Error msg
     
       for routeId,options of routes
         route =

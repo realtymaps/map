@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 require '../factories/map.coffee'
+frontendRoutes = require '../../../common/config/routes.frontend.coffee'
 
 ###
   Our Main Map Controller, logic
@@ -19,9 +20,9 @@ module.exports = app
 
 .controller 'MapCtrl'.ourNs(), [
   '$scope', '$rootScope', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
-  'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
+  'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
   ($scope, $rootScope, Map, MainOptions, Toggles,
-  principal, Events, ParcelEnums, Properties) ->
+  principal, Events, ParcelEnums) ->
 
     $scope.pageClass = 'page-map'
 
@@ -52,6 +53,9 @@ module.exports = app
 
     if principal.isIdentityResolved() && principal.isAuthenticated()
       restoreState()
+    
+    $scope.sendSnail = (property) ->
+      $rootScope.$emit Events.snail.initiateSend, property
 
     $scope.Toggles = Toggles
 ]

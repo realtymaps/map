@@ -1,15 +1,19 @@
 app = require '../app.coffee'
+keysToValues = require '../../../common/utils/util.keysToValues.coffee'
 
 app.constant 'events'.ourNs(),
-  map:
-    drawPolys:
-      isEnabled: 'map.drawPolys.isEnabled'
-      clear: 'map.drawPolys.clear'
-      query:  'map.drawPolys.query'
-  principal:
-    login:
-      success: 'principal.login.success'
-  alert:
-    spawn: 'alert.spawn'
-    hide: 'alert.hide'
-    dismiss: 'alert.dismiss'
+  keysToValues
+    map:
+      drawPolys:
+        isEnabled: 1
+        clear: 1
+        query:  1
+    principal:
+      login:
+        success: 1
+    alert:
+      spawn: 1
+      hide: 1
+      dismiss: 1
+    snail:
+      initiateSend: 1

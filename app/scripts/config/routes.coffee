@@ -7,17 +7,17 @@ frontendRoutes = require '../../../common/config/routes.frontend.coffee'
 
 module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider', ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
 
-  buildState = (parent, name, overrides = {}) ->
+  buildState = (name, overrides = {}) ->
     state = 
       name:         name
-      parent:       parent
+      parent:       'main'
       url:          frontendRoutes[name],
       template:     require("../../html/views/#{name}.jade")
       controller:   "#{name[0].toUpperCase()}#{name.substr(1)}Ctrl".ourNs()
     _.extend(state, overrides)
-    if parent
+    if state.parent
       state.views = {}
-      state.views["#{name}@#{parent}"] =
+      state.views["#{name}@#{state.parent}"] =
         template: state.template
         controller: state.controller
       delete state.template
@@ -26,15 +26,16 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     state
   
   
-  buildState null, 'main', url: frontendRoutes.index, sticky: true
-  buildState 'main', 'map', sticky:true, loginRequired:true
-  buildState 'main', 'login'
-  buildState 'main', 'logout'
-  buildState 'main', 'accessDenied', controller: null
-  buildState 'main', 'authenticating', controller: null
+  buildState 'main', parent: null, url: frontendRoutes.index, sticky: true
+  buildState 'map', sticky:true, loginRequired:true
+  buildState 'login'
+  buildState 'logout'
+  buildState 'accessDenied', controller: null
+  buildState 'authenticating', controller: null
+  buildState 'snail', sticky: true
   
   # this one has to be last, since it is a catch-all
-  buildState 'main', 'pageNotFound', controller: null
+  buildState 'pageNotFound', controller: null
 
   $urlRouterProvider.when '', frontendRoutes.index
 ]
