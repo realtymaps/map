@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
 foreman run node-debug coffee backend/server.coffee --nodejs
