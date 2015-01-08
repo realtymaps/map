@@ -16,7 +16,7 @@ module.exports =
       catch err
         msg = "error loading route module '#{moduleId}' from '#{modulePath}':"
         logger.error(msg)
-        logger.error(error.stack)
+        logger.error(err.stack)
         throw new Error msg
     
       for routeId,options of routes
