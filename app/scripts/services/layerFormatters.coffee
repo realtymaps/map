@@ -109,7 +109,7 @@ app.service 'LayerFormatters'.ourNs(), [
         ret =
           icon: ' '
           labelContent: formatStatusMarkerContent(mls.isMousedOver or savedStatus or mls.rm_status, formattedPrice)
-          labelAnchor: "30 10"
+          labelAnchor: "30 50"
           zIndex: 1
         ret
 
