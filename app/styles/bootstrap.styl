@@ -9,7 +9,7 @@ Place for our custom Theming of bootstrap
   background-color: rgb(50,118,177,.90)
 
 .panel
-  background: rgba(0,0,0,0.0)
+  background: #FFF
   margin 0
   border-radius 0
   border none
@@ -18,20 +18,20 @@ Place for our custom Theming of bootstrap
 .panel > .panel-heading
   background-color rm-medium-blue
   border none
-  font-size 16px
+  font-size 18px
   border-radius 0
 
 .panel > .panel-body
-  background windowColor
-  color textColor
+  background #FFF
+  color #000
   padding 5px
-  font-size 14px
+  font-size 16px
 
 .panel p
   margin 0px 0px 0px 0px
 .panel > .panel-body > .table tr,
 .panel > .panel-body > .table td
-  border-top: 1px solid rgba(255, 255, 255, 0.08)
+  border-top: 1px solid rgba(0, 0, 0, 0.08)
   section > p
     display inline-block
   section > p+p /* NEXT P is margined from left to give right space*/
@@ -45,7 +45,7 @@ Place for our custom Theming of bootstrap
 
 
 .navbar
-  background: main-dark-blue
+  background: rm-main-dark-blue
   border: none
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
   font-weight: 100
@@ -113,7 +113,7 @@ Place for our custom Theming of bootstrap
   border-radius: 0
 
 .navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
-  background-color: medium-blue
+  background-color: rm-medium-blue-dark
 
 .navbar-toggle
   float: left
@@ -122,23 +122,61 @@ Place for our custom Theming of bootstrap
 .navbar-toggle .icon-bar
   height:4px
 
+/* END Nav Bar */
+
+
+.markerLabels
+  height 50px
+  .label
+    position relative
+    font-weight bold
+    color rm-main-dark-blue
+    border  2px solid rm-main-dark-blue
+    box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
+    &:after, &:before 
+      top 25px
+      left 50%
+      border solid transparent
+      content " "
+      height 0
+      width 0
+      position absolute
+      pointer-events none
+    &:before 
+      border-color transparent
+      border-top-color rm-main-dark-blue
+      border-width 13px
+      margin-left -13px
+    &:after 
+      border-color transparent
+      border-width 10px
+      margin-left -10px
+
 .label-saved-property
   background-color rm-property-save-yello
   color rm-property-save-bright-foreground
+  &:after
+    border-top-color rm-property-save-yello !important
 
 .label-sale-property
-  background-color rm-highlight-green
+  background-color rm-property-sale-green
   color rm-property-save-bright-foreground
+  &:after
+    border-top-color rm-property-sale-green !important
 
 .label-sold-property
   background-color rm-property-sold-red
-  color rm-property-save-bright-foreground
+  color #FFF !important
+  &:after
+    border-top-color rm-property-sold-red !important
 
 .label-pending-property
-  background-color rm-highlight-purple
-  color rm-light-gray
+    background-color rm-highlight-purple
+    color rm-light-gray
+    &:after
+      border-top-color rm-highlight-purple !important
 
 .label-hovered-property
   background-color rm-translucent-grey
   color rm-light-gray
-/* END Nav Bar */
+
