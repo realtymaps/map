@@ -19,13 +19,16 @@
                 i(class="results-sort-btn btn btn-default btn-xs" ng-class="resultsFormatter.getSorting()" ng-click="resultsFormatter.invertSorting(); reverse=resultsAscending")
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //ng-mouseover="resultsFormatter.mouseover(result)" ng-mouseout="resultsFormatter.mouseout(result)"
-            div(ng-repeat="result in results track by result.rm_property_id | orderBy:resultsPredicate:reverse" class="result-property")
+            
+            //DEBUG repeat
+            //div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
+            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
                 .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
                     //.result-arrow
                         .box Sold
                         .arrow
                     .photo()
-                        img(src="{{resultsFormatter.getCurbsideImage(result)}}")
+                        img(ng-src="{{resultsFormatter.getCurbsideImage(result)}}")
                     .info
                         .address {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
                         .price {{resultsFormatter.getPrice(result.price)}}

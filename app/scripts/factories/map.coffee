@@ -153,7 +153,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @subscribe()
 
       clearBurdenLayers: =>
-        unless @gMap.getZoom() > @scope.options.parcelsZoomThresh
+        if @gMap? not (@gMap.getZoom() > @scope.options.parcelsZoomThresh)
           @scope.layers.parcels.length = 0
 
       redraw: =>

@@ -3,10 +3,8 @@
     .tray-close-light#detail-close(ng-click="showDetails = !showDetails")
     #detail-list-inner
         #detail-list
-            .photo(streetview="{{ selectedResult.lat }},{{ selectedResult.lng }}")
-                //img(src="http://maps.googleapis.com/maps/api/streetview?size=500x300&location={{ selectedResult.lat }},{{ selectedResult.lng }}&fov=90&heading=235&pitch=10&sensor=false")
-                //img(src="http://maps.googleapis.com/maps/api/streetview?size=500x300&location={{ selectedResult.lat }},{{ selectedResult.lng }}&fov=90&heading=235&pitch=10&sensor=false")
-                <div id="pano" style="width: 100%;height:100%"></div>
+            .photo
+              img(ng-src="{{resultsFormatter.getStreetView(500,300)}}")
             .info.container
                 .row
                     .col-sm-8
