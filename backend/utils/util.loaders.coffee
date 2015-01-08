@@ -14,10 +14,8 @@ module.exports =
       try
         routeModule = require modulePath
       catch err
-        logger.error("-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-")
-        msg = "error loading route module '#{moduleId}' from '#{modulePath}':\n#{err.stack}\n#{err}"
+        msg = "error loading route module '#{moduleId}' from '#{modulePath}':\n#{err.stack}"
         logger.error(msg)
-        logger.error("-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-=*=-")
         throw new Error msg
     
       for routeId,options of routes
