@@ -26,7 +26,7 @@ run_express = (nodeArgs) ->
 gulp.task "express_spec", ['spec'], ->
   run_express()
 
-gulp.task "express", ->
+gulp.task "express", ['otherAssets'], ->
   run_express()
 
 gulp.task "express_debug", ->

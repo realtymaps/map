@@ -1,7 +1,6 @@
 Promise = require 'bluebird'
 ExpressResponse = require '../utils/util.expressResponse'
 config = require '../config/config'
-alertIds = require '../../common/utils/enums/util.enums.alertIds'
 httpStatus = require '../../common/utils/httpStatus'
 lobService = require '../services/service.lob.coffee'
 escape = require('escape-html');
