@@ -39,12 +39,12 @@ app.service 'LayerFormatters'.ourNs(), [
       quadrant += (if (point.y > center.y) then "b" else "t")
       quadrant += (if (point.x < center.x) then "l" else "r")
       if quadrant is "tr"
-        offset = new google.maps.Size(-1 * width, -45)
+        offset = new google.maps.Size(-1 * width, 20)
       else if quadrant is "tl"
-        offset = new google.maps.Size(0, -45)
+        offset = new google.maps.Size(30, 20)
       else if quadrant is "br"
-        offset = new google.maps.Size(-1 * width, -400)
-      else offset = new google.maps.Size(25, -400)  if quadrant is "bl"
+        offset = new google.maps.Size(-1 * width, -340)
+      else offset = new google.maps.Size(30, -340)  if quadrant is "bl"
       offset
 
     getSavedColorProperty = (model) ->
@@ -83,8 +83,8 @@ app.service 'LayerFormatters'.ourNs(), [
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
         icon: ' '
-        labelContent: "<h5>#{String.orNA parcel.street_address_num}</h5>"
-        labelAnchor: "20 0"
+        labelContent: "<span class='address-label'>#{String.orNA parcel.street_address_num}</span>"
+        labelAnchor: "10 10"
         zIndex: 0
 
       fill: fill
