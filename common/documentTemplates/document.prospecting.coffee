@@ -6,7 +6,7 @@ fonts = require './signature-fonts/index.coffee'
 
 module.exports =
   name: 'Prospecting Letter'
-  description: 'A basic letter to an owner of record about a property.'
+  description: 'A basic letter to an owner of record inquiring about a property.'
   # this denotes that this letter matches the template required to avoid paying for an extra "address page" from LOB
   lobTemplateId: 1
   render: (data, stream) ->

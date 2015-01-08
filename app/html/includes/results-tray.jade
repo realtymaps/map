@@ -30,6 +30,7 @@
                         .address {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
                         .price {{resultsFormatter.getPrice(result.price)}}
                             .property-status(ng-class="resultsFormatter.getForSaleClass(result)") {{result.rm_status}}
+                            button(type="button",ng-click="sendSnail(result)").snail.btn.btn-info Send Mailing 
                         div
                             .beds
                                 span.data {{resultsFormatter.orNa(result.bedrooms)}}

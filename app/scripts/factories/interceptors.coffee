@@ -31,3 +31,16 @@ app.factory 'AlertInterceptor'.ourNs(), [ '$rootScope', 'events'.ourNs(),
 .config ['$httpProvider', ($httpProvider) ->
   $httpProvider.interceptors.push 'AlertInterceptor'.ourNs()
 ]
+
+app.factory 'LoadingIconInterceptor'.ourNs(), [ '$rootScope',
+  ($rootScope) ->
+    'request': (request) ->
+      $rootScope.loadingCount++
+      request
+    'response': (response) ->
+      $rootScope.loadingCount--
+      response
+]
+.config ['$httpProvider', ($httpProvider) ->
+  $httpProvider.interceptors.push 'LoadingIconInterceptor'.ourNs()
+]

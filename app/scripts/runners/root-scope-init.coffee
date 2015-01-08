@@ -10,4 +10,5 @@ app.run ["$rootScope", "$state", "$stateParams", "principal".ourNs(), ($rootScop
   $rootScope.principal = principal
   $rootScope.$state = $state
   $rootScope.$stateParams = $stateParams
+  $rootScope.loadingCount = 0
 ]
