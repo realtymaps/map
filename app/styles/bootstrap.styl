@@ -127,63 +127,54 @@ Place for our custom Theming of bootstrap
 
 .markerLabels
   height 50px
-
-.markerLabels .label
-  position relative
-  font-weight bold
-  color rm-main-dark-blue
-  border  2px solid rm-main-dark-blue
-  box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
-
-.markerLabels .label:after, .markerLabels .label:before 
-  top 25px
-  left 50%
-  border solid transparent
-  content " "
-  height 0
-  width 0
-  position absolute
-  pointer-events none
-
-.markerLabels .label:before 
-  border-color rgba(2, 59, 245, 0)
-  border-top-color rm-main-dark-blue
-  border-width 13px
-  margin-left -13px
-
-
-.markerLabels .label:after 
-  border-color rgba(213, 30, 30, 0)
-  border-width 10px
-  margin-left -10px
+  .label
+    position relative
+    font-weight bold
+    color rm-main-dark-blue
+    border  2px solid rm-main-dark-blue
+    box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
+    &:after, &:before 
+      top 25px
+      left 50%
+      border solid transparent
+      content " "
+      height 0
+      width 0
+      position absolute
+      pointer-events none
+    &:before 
+      border-color transparent
+      border-top-color rm-main-dark-blue
+      border-width 13px
+      margin-left -13px
+    &:after 
+      border-color transparent
+      border-width 10px
+      margin-left -10px
 
 .label-saved-property
   background-color rm-property-save-yello
   color rm-property-save-bright-foreground
-
-.label-saved-property:after
-  border-top-color rm-property-save-yello !important
+  &:after
+    border-top-color rm-property-save-yello !important
 
 .label-sale-property
   background-color rm-property-sale-green
   color rm-property-save-bright-foreground
-
-.label-sale-property:after
-  border-top-color rm-property-sale-green !important
+  &:after
+    border-top-color rm-property-sale-green !important
 
 .label-sold-property
   background-color rm-property-sold-red
   color #FFF !important
-
-.label-sold-property:after
-  border-top-color rm-property-sold-red !important
+  &:after
+    border-top-color rm-property-sold-red !important
 
 .label-pending-property
     background-color rm-highlight-purple
     color rm-light-gray
-
-.label-pending-property:after
-  border-top-color rm-highlight-purple !important
+    &:after
+      border-top-color rm-highlight-purple !important
 
 .label-hovered-property
   background-color rm-translucent-grey
