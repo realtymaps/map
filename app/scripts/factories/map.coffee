@@ -47,8 +47,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           saved.then (savedDetails) ->
             childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
             #setting savedDetails here as we know the save was successful (update the font end without query right away)
-            match = self.scope.layers.filterSummary[childModel.model.index]
-            match.savedDetails = savedDetails if match? and match.rm_property_id == savedDetails.rm_property_id
+            index = if childModel.model.index? then childModel.model.index else self.filterSummaryHash[childModel.model.rm_property_id]?.index
+            if index? #only has index if there is a filter object
+              match = self.scope.layers.filterSummary[index]
+              match.savedDetails = savedDetails if match?
 
             #need to figure out a better way
             self.updateFilterSummaryHash()

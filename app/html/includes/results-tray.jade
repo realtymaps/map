@@ -18,7 +18,8 @@
                     button(id="results-sort-price" class="btn btn-default btn-xs" ng-click="resultsFormatter.setResultsPredicate('savedDetails.isSaved'); reverse=resultsAscending" ng-class="resultsFormatter.getActiveSort('savedDetails.isSaved')") Saved
                 i(class="results-sort-btn btn btn-default btn-xs" ng-class="resultsFormatter.getSorting()" ng-click="resultsFormatter.invertSorting(); reverse=resultsAscending")
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
-            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse")
+            //ng-mouseover="resultsFormatter.mouseover(result)" ng-mouseout="resultsFormatter.mouseout(result)"
+            div(ng-repeat="result in results track by result.rm_property_id | orderBy:resultsPredicate:reverse" class="result-property")
                 .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
                     //.result-arrow
                         .box Sold
