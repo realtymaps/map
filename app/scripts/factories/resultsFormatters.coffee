@@ -55,6 +55,9 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         @order()
         @loadMore()
 
+      invertSorting: =>
+        @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
+
       setResultsPredicate: (predicate) =>
         @mapCtrl.scope.resultsPredicate = predicate
         @order()
@@ -65,11 +68,15 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         else
           "fa fa-chevron-circle-up"
 
+      getCityStateZip:(result, prependProp = '') ->
+        return if not @mapCtrl.scope.Toggles.showResults or not result
+        vals = ['city','state','zip'].map (l) =>
+          @orNa result[prependProp + l]
+        # $log.debug vals
+        "#{vals[0]}, #{vals[1]} #{vals[2]}"
+
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
-
-      invertSorting: =>
-        @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
 
       getCurbsideImage: (result) ->
         return 'http://placehold.it/100x75' unless result
@@ -150,7 +157,8 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
             angular.element(document.getElementsByClassName('result-property ng-scope'))
             .unbind(eventName)
             .bind eventName, (event) =>
-              @[eventName](angular.element(event.srcElement).scope().result)
+              @[eventName](angular.element(event.target or event.srcElement).scope().result)
+              # if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
       dblclick: (result) =>
         @mapCtrl.scope.selectedResult = result
