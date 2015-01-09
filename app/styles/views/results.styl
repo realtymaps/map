@@ -73,6 +73,17 @@
     position: absolute
     bottom: 0px
 
+.result-property
+    height 95px
+    border-bottom-width 2px
+    border-bottom 1px solid #d9d9d9
+    transition .15s all ease-in-out
+    overflow hidden
+
+.result-property:hover
+    height 125px
+    box-shadow 0px 0px 20px -3px
+
 .card
     position: relative
     display: block
@@ -81,19 +92,12 @@
     padding: 10px
     height: 95px
     overflow: hidden
-    background-color: #fff
-    border-bottom-width: 2px
-    border-bottom: 1px solid #d9d9d9
     font-size:.8em
     height:65px
 
 .selectedCard
     background-color:rgb(191, 255, 171) !important
     background-color:rgb(208, 255, 199) !important
-
-
-.card:hover
-    background-color:rgba(153, 152, 149, 0.20) 
 
 .card .photo
     display: inline-block
@@ -104,9 +108,9 @@
 
 
 .card .property-status
-    text-align: center
-    color: #FFF
-    font-size: 11px
+    text-align right
+    color rm-main-dark-blue
+    font-size 15px
 
 .card .snail
     text-align: center
@@ -156,9 +160,9 @@
     color: #666
 
 
-.card .c
+.card-buttons
     display:inline-block
-    width:70px
+    padding 0 10px
 
 
 #results-footer .close
@@ -301,19 +305,16 @@ Detail Container
     color:#FFF
 
 .sold
-    background: rm-property-sold-red
-    color: rm-property-save-bright-foreground
+    color: rm-property-sold-red
 
 .forsale
-    background: rm-highlight-green
-    color: rm-property-save-bright-foreground
+    color rm-highlight-green
 
 .pending
-    background: rm-property-pending-purple
+    color: rm-property-pending-purple
 
 .saved
-  background: rm-property-save-yello
-  color: rm-property-save-bright-foreground
+  color: rm-property-save-yello
 
 .detail-container
   .photo
