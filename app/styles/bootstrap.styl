@@ -129,12 +129,13 @@ Place for our custom Theming of bootstrap
   height 50px
   .label
     position relative
+    font-size 12px
     font-weight bold
     color rm-main-dark-blue
-    border  2px solid rm-main-dark-blue
+    border  1px solid rm-marker-border
     box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
     &:after, &:before 
-      top 25px
+      top 22px
       left 50%
       border solid transparent
       content " "
@@ -144,9 +145,9 @@ Place for our custom Theming of bootstrap
       pointer-events none
     &:before 
       border-color transparent
-      border-top-color rm-main-dark-blue
-      border-width 13px
-      margin-left -13px
+      border-top-color rm-marker-border
+      border-width 11px
+      margin-left -11px
     &:after 
       border-color transparent
       border-width 10px
