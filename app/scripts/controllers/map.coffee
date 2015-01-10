@@ -24,7 +24,15 @@ module.exports = app
   ($scope, $rootScope, Map, MainOptions, Toggles,
   principal, Events, ParcelEnums) ->
 
-    $scope.pageClass = 'page-map'
+    #ng-inits or inits
+    #must be defined pronto as they will be skipped if you try to hook them to factories
+    $scope.resultsInit = (resultsListId,resultClass) ->
+      $scope.resultsListId = resultsListId
+      $scope.resultClass = resultClass
+
+    $scope.init = (pageClass) ->
+      $scope.pageClass = pageClass
+    #end inits
 
     restoreState = () ->
       principal.getIdentity()
@@ -53,7 +61,7 @@ module.exports = app
 
     if principal.isIdentityResolved() && principal.isAuthenticated()
       restoreState()
-    
+
     $scope.sendSnail = (property) ->
       $rootScope.$emit Events.snail.initiateSend, property
 
