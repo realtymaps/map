@@ -1,5 +1,4 @@
 app = require '../../app.coffee'
-require '../../runners/run-templates.coffee'
 
 sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
@@ -7,7 +6,7 @@ casing = require 'case'
 moment = require 'moment'
 
 module.exports =
-  app.controller 'SmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), ($scope, $log) ->
+  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), ($scope, $log) ->
     getPrice = (val) ->
       String.orNA if val then casing.upper numeral(val).format('0.00a'), '.' else null
 

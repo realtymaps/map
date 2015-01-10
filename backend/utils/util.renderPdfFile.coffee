@@ -11,7 +11,7 @@ module.exports =
   toFile: (templateId, data, options = {}) -> Promise.try () ->
     template = documentTemplates[templateId]
     if !template?
-      return Promise.reject("Bad templateId specified")
+      return Promise.reject("Bad templateId specified: #{templateId}")
     filename = "#{options.location||config.TEMP_DIR}/LOB_"
     if options.partialId
       filename += options.partialId+"_"

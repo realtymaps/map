@@ -88,4 +88,11 @@ module.exports =
         data = _.uniq data, (row) ->
           row.rm_property_id
         data = dataPropertyUtil.joinSavedProperties(state,data)
-        data
+        return data
+  
+  getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
+    query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
+    query.where(rm_property_id: rm_property_id)
+    query.limit(1)  # TODO: if there are multiple, we just grab one... revisit once we deal with multi-unti parcels
+    query.then (data) ->
+      return data?[0]
