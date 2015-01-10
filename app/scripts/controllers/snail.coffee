@@ -18,7 +18,6 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
    RenderPdfBlob, documentTemplates, MainOptions) ->
     
-    $scope.JSON = JSON
     $scope.data = data
     $scope.documentTemplates = documentTemplates
     $scope.fonts = fonts
