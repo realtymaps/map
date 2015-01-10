@@ -16,8 +16,9 @@ flattenLonLat = (bounds) ->
     markers: '?, ?'
   _.reduce bounds, flattenLonLatImpl, init
 
-# 50%
-_MARGIN = .5
+# MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
+#%50 is way too huge!
+_MARGIN = .10
 
 module.exports =
 
@@ -26,7 +27,7 @@ module.exports =
       geohash64.decode(boundsStr)
     .catch (err) ->
       Promise.reject new ParamValidationError("error decoding geohash string", param, boundsStr)
-  
+
   transformToRawSQL: (options = {}) ->
     (param, bounds) ->
       Promise.try () ->
@@ -43,7 +44,7 @@ module.exports =
           minLat = Math.min(bounds[0].lat, bounds[1].lat)
           maxLat = Math.max(bounds[0].lat, bounds[1].lat)
           marginLat = (maxLat - minLat)*_MARGIN
-          
+
           results.sql = "#{options.column} && ST_MakeEnvelope(?, ?, ?, ?, #{options.coordSys})"
           results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
         return results

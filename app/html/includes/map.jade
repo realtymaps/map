@@ -16,7 +16,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   ui-gmap-drag-zoom(options='dragZoom.options')
 
 
-  ui-gmap-markers(ng-if="showMarkers" options='formatters.layer.MLS.markerOptionsFromForSale',
+  ui-gmap-markers(ng-if="zoomLevelService.isPrice(zoom)" options='formatters.layer.MLS.markerOptionsFromForSale',
     models='layers.filterSummary',
     coords='"geom_point_json"',
     idkey='"rm_property_id"',
@@ -37,12 +37,13 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   )
 
   // BEGIN PARCEL DATA
-  ui-gmap-markers(options='formatters.layer.Parcels.labelFromStreetNum',
+  ui-gmap-markers(ng-if="zoomLevelService.isAddressParcel(zoom)" options='formatters.layer.Parcels.labelFromStreetNum',
     models='layers.parcels',
     coords='"geom_point_json"',
     idkey='"rm_property_id"',
     ng-cloak=''
-    chunk='400')
+    events='actions.listingEvents'
+    chunk='200')
 
   // Would be nice to have just options without each individual attribute
   //https://github.com/angular-ui/angular-google-maps/issues/1033
@@ -58,7 +59,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     chunk='300'
     cleanchunk='500'
     control='controls.parcel'
-    zIndex='2')
+    zIndex='10')
   //END PARCEL DATA
 
   include ./map-query-draw.jade

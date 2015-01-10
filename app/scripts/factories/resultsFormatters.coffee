@@ -15,7 +15,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
-    resultEvents = ['dblclick', 'mouseover', 'mouseleave']
+    resultEvents = ['click','dblclick', 'mouseover', 'mouseleave']
 
     class ResultsFormatter
       constructor: (@mapCtrl) ->
@@ -83,13 +83,18 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         lonLat = result.geom_point_json.coordinates
         "http://cbk0.google.com/cbk?output=thumbnail&w=100&h=75&ll=#{lonLat[1]},#{lonLat[0]}&thumb=1"
 
-      getStreetView: (width, height, fov = '90', heading = '235', pitch = '10', sensor = 'false') ->
+      getStreetView: (width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
+        # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama
+        # heading is better left as undefined as google figures out the best heading based on the lat lon target
+        # we might want to consider going through the api which will gives us URL
         selectedResult = @mapCtrl.scope.selectedResult
+        if heading
+          heading = "&heading=#{heading}"
         return unless selectedResult
         lonLat = selectedResult.geom_point_json.coordinates
         "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
         "&location=#{lonLat[1]},#{lonLat[0]}" +
-        "&fov=#{fov}&heading=#{heading}&pitch=#{pitch}&sensor=#{sensor}"
+        "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}"
 
       getForSaleClass: (result) ->
         return unless result
@@ -120,7 +125,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
 
       throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
         unless @resultsContainer
-          @resultsContainer = document.getElementById('results-list')
+          @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
         return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
@@ -154,15 +159,18 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
           #use ng-init to pass in id name and class names of properties to keep loose coupling
           #TODO use a performant directive
           resultEvents.forEach (eventName) =>
-            angular.element(document.getElementsByClassName('result-property ng-scope'))
+            angular.element(document.getElementsByClassName(@mapCtrl.scope.resultClass))
             .unbind(eventName)
             .bind eventName, (event) =>
               @[eventName](angular.element(event.target or event.srcElement).scope().result)
               # if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
-      dblclick: (result) =>
+      click: (result) =>
         @mapCtrl.scope.selectedResult = result
         @mapCtrl.scope.showDetails = true
+
+      dblclick: (result) =>
+        #TODO save result as a saved prop
 
       mouseover: (result) =>
         #not updating the polygon cause I think we really need access to its childModels / plurals
