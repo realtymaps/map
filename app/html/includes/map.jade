@@ -22,7 +22,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     idkey='"rm_property_id"',
     events='actions.listingEvents'
     ng-cloak='',
-    chunk='200'
+    chunk='false'
     doCluster='true',
     clusterOptions="{ignoreHidden: true, minimumClusterSize: 4,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
     "sans-serif', url:'assets/cluster_circle_blue_40.png', width:'40', height:'40', textColor:'#fff'}]}")
@@ -43,7 +43,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     idkey='"rm_property_id"',
     ng-cloak=''
     events='actions.listingEvents'
-    chunk='200')
+    chunk='50')
 
   // Would be nice to have just options without each individual attribute
   //https://github.com/angular-ui/angular-google-maps/issues/1033
@@ -56,8 +56,8 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     events='actions.listingEvents'
     fit='false', editable='false', ng-cloak=''
     static='true'
-    chunk='300'
-    cleanchunk='500'
+    chunk='false'
+    cleanchunk='800'
     control='controls.parcel'
     zIndex='10')
   //END PARCEL DATA

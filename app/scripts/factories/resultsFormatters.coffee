@@ -4,7 +4,8 @@ sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 
-app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GeoJsonToGoogle'.ourNs(),
+app.factory 'ResultsFormatter'.ourNs(), [
+  '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   ($timeout, $filter, $log, ParcelEnums, GeoJsonToGoogle) ->
     _orderBy = $filter('orderBy')
 
@@ -130,7 +131,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
         _isWithinBounds = (prop) =>
-          pointBounds = GeoJsonToGoogle.MultiPolygon.toBounds(prop.geom_polys_json)
+          pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
           isVisible = @mapCtrl.gMap.getBounds().intersects(pointBounds)
           return unless isVisible
           prop

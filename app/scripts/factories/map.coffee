@@ -8,28 +8,10 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
+  'GoogleService'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel) ->
-
-    _getCorrectModel = (model) ->
-      childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
-
-    _isGPoly = (gObject) ->
-      gObject.setPath?
-
-    _isGMarker = (gObject) ->
-      gObject.getAnimation?
-
-    _maybeHideAddressMarker = (gObject, $scope) ->
-      if ZoomLevel.isAddressParcel($scope.zoom)
-        if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
-          $scope.addressMarkerHovered.setVisible(true)
-      if ZoomLevel.isAddressParcel($scope.zoom) and _isGMarker(gObject)
-        $scope.addressMarkerHovered = gObject
-        gObject.setVisible(false)
-        return true
-      return false
+    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService) ->
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
@@ -51,6 +33,16 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
+
+        _maybeHideAddressMarker = (gObject) ->
+          if ZoomLevel.isAddressParcel($scope.zoom)
+            if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
+              $scope.addressMarkerHovered.setVisible(true)
+          if ZoomLevel.isAddressParcel($scope.zoom) and GoogleService.Map.isGMarker(gObject)
+            $scope.addressMarkerHovered = gObject
+            gObject.setVisible(false)
+            return true
+          return false
 
         _updateGObjects = (gObject, savedDetails, childModel) ->
           #purpose to to take some sort of gObject and update its view immediately
@@ -82,7 +74,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showTraffic: true
           showWeather: false
           showMarkers: true
-
 
           listingOptions:
             boxClass: 'custom-info-window'
@@ -135,29 +126,29 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             listingEvents:
               mouseover: (gObject, eventname, model) ->
-                return if _maybeHideAddressMarker(gObject, $scope)
+                return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
                 gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
                 $scope.actions.closeListing()
                 return if gObject.labelClass?
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
                 gObject.setOptions opts
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 return _saveProperty(gObject, childModel) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
               dblclick: (gObject, eventname, model) ->
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 _saveProperty gObject, childModel
 
           formatters:
@@ -261,7 +252,4 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
         @updateFilterSummaryHash()
-
-
-    Map
 ]

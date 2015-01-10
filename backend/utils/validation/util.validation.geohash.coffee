@@ -18,7 +18,7 @@ flattenLonLat = (bounds) ->
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 #%50 is way too huge!
-_MARGIN = .10
+_MARGIN = .25
 
 module.exports =
 
