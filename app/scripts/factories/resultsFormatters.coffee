@@ -19,12 +19,18 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
 
     class ResultsFormatter
       constructor: (@mapCtrl) ->
+        @mapCtrl.scope.resultsLimit = 10
         @mapCtrl.scope.results = []
         @mapCtrl.scope.resultsPotentialLength = undefined
         @mapCtrl.scope.resultsAscending = false
         @setResultsPredicate('price')
         @lastSummaryIndex = 0
         @origLen = 0
+        @postRepeat = null
+        @mapCtrl.scope.resultsRepeatPerf =
+          init: (postRepeat, scope) =>
+            @postRepeat = postRepeat
+          doDeleteLastTime: false
 
         @mapCtrl.scope.$watch 'layers.filterSummary', (newVal, oldVal) =>
           return if newVal == oldVal
@@ -32,16 +38,25 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
           @mapCtrl.scope.results = []
           @loadMore()
 
+        @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
+          return if newVal == oldVal
+          @loadMore()
+
       order: =>
         @filterSummarySorted = _orderBy(
           @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
 
       reset:  ->
+        @mapCtrl.scope.resultsLimit = 10
         @mapCtrl.scope.results = []
         @lastSummaryIndex = 0
         @mapCtrl.scope.resultsPotentialLength = undefined
+        @filterSummaryInBounds = undefined
         @order()
         @loadMore()
+
+      invertSorting: =>
+        @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
 
       setResultsPredicate: (predicate) =>
         @mapCtrl.scope.resultsPredicate = predicate
@@ -53,16 +68,28 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         else
           "fa fa-chevron-circle-up"
 
+      getCityStateZip:(result, prependProp = '') ->
+        return if not @mapCtrl.scope.Toggles.showResults or not result
+        vals = ['city','state','zip'].map (l) =>
+          @orNa result[prependProp + l]
+        # $log.debug vals
+        "#{vals[0]}, #{vals[1]} #{vals[2]}"
+
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
-
-      invertSorting: =>
-        @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
 
       getCurbsideImage: (result) ->
         return 'http://placehold.it/100x75' unless result
         lonLat = result.geom_point_json.coordinates
         "http://cbk0.google.com/cbk?output=thumbnail&w=100&h=75&ll=#{lonLat[1]},#{lonLat[0]}&thumb=1"
+
+      getStreetView: (width, height, fov = '90', heading = '235', pitch = '10', sensor = 'false') ->
+        selectedResult = @mapCtrl.scope.selectedResult
+        return unless selectedResult
+        lonLat = selectedResult.geom_point_json.coordinates
+        "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
+        "&location=#{lonLat[1]},#{lonLat[0]}" +
+        "&fov=#{fov}&heading=#{heading}&pitch=#{pitch}&sensor=#{sensor}"
 
       getForSaleClass: (result) ->
         return unless result
@@ -77,53 +104,65 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         String.orNA val
 
       loadMore: =>
+        #debugging
+        return unless @mapCtrl.scope.Toggles.showResults
+        @postRepeat.lastTime = new Date() if @postRepeat
+        #end debugging
         if @loader
           $timeout.cancel @loader
         @loader = $timeout @throttledLoadMore
 
-      throttledLoadMore: (amountToLoad = 10, loadedCtr = 0) =>
+      getAmountToLoad: _.memoize (totalHeight) ->
+        cardHeight = 95 #we really need to somehow combine css constants and js constants
+        numberOfCards = Math.round totalHeight / cardHeight
+        #min height to keep scrolling
+        numberOfCards
+
+      throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
+        unless @resultsContainer
+          @resultsContainer = document.getElementById('results-list')
+        return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
+        amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
+        return unless amountToLoad
         _isWithinBounds = (prop) =>
           pointBounds = GeoJsonToGoogle.MultiPolygon.toBounds(prop.geom_polys_json)
           isVisible = @mapCtrl.gMap.getBounds().intersects(pointBounds)
           return unless isVisible
           prop
 
-        unless @mapCtrl.scope.resultsPotentialLength
-          ctr = 0
-          @mapCtrl.scope.layers.filterSummary.forEach (prop) =>
-            ctr += 1 if _isWithinBounds(prop)
-          @mapCtrl.scope.resultsPotentialLength = ctr
+        unless @filterSummaryInBounds
+          @filterSummaryInBounds = @mapCtrl.scope.layers.filterSummary.map (prop) =>
+            if _isWithinBounds(prop)
+              return prop
+            return
+          @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
+          @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+        return unless @filterSummaryInBounds
 
-        return if not @mapCtrl.scope.layers.filterSummary.length
-        for i in [0..amountToLoad] by 1
-          if @lastSummaryIndex > @mapCtrl.scope.layers.filterSummary.length - 1
-            break
-          prop = @mapCtrl.scope.layers.filterSummary[@lastSummaryIndex]
+        if not @mapCtrl.scope.results.length # only do this once (per map bound)
+          @filterSummaryInBounds.forEach (summary) =>
+            @mapCtrl.scope.results.push summary
 
-          #this is done since we aggressively grab items outside what is visible
-          #this way the results align with what can be seen
-          if prop and _isWithinBounds(prop)
-            @mapCtrl.scope.results.push(prop)
-            loadedCtr += 1
+        @mapCtrl.scope.resultsLimit += amountToLoad
 
-          @lastSummaryIndex += 1
 
-        if loadedCtr < amountToLoad and @lastSummaryIndex < @mapCtrl.scope.layers.filterSummary.length
-          @throttledLoadMore(amountToLoad, loadedCtr)
-
-        if @oldEventsPromise?
-          $timeout.cancel @oldEventsPromise
-        @oldEventsPromise = $timeout ->
+        # if @oldEventsPromise?
+        #   $timeout.cancel @oldEventsPromise
+        # @oldEventsPromise = $timeout =>
+        _.defer =>
           #finally , hook mouseover / mouseleave manually for performance
           #use ng-init to pass in id name and class names of properties to keep loose coupling
+          #TODO use a performant directive
           resultEvents.forEach (eventName) =>
             angular.element(document.getElementsByClassName('result-property ng-scope'))
             .unbind(eventName)
             .bind eventName, (event) =>
-              @[eventName](angular.element(event.srcElement).scope().result)
+              @[eventName](angular.element(event.target or event.srcElement).scope().result)
+              # if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
       dblclick: (result) =>
-        @mapCtrl.selectedResult = result
+        @mapCtrl.scope.selectedResult = result
+        @mapCtrl.scope.showDetails = true
 
       mouseover: (result) =>
         #not updating the polygon cause I think we really need access to its childModels / plurals

@@ -153,7 +153,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @subscribe()
 
       clearBurdenLayers: =>
-        unless @gMap.getZoom() > @scope.options.parcelsZoomThresh
+        if @gMap? and not (@gMap.getZoom() > @scope.options.parcelsZoomThresh)
           @scope.layers.parcels.length = 0
 
       redraw: =>
@@ -230,6 +230,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
         _.defer =>
+          return unless @scope.layers.filterSummary
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary

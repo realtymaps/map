@@ -19,18 +19,20 @@
                 i(class="results-sort-btn btn btn-default btn-xs" ng-class="resultsFormatter.getSorting()" ng-click="resultsFormatter.invertSorting(); reverse=resultsAscending")
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //ng-mouseover="resultsFormatter.mouseover(result)" ng-mouseout="resultsFormatter.mouseout(result)"
-            div(ng-repeat="result in results track by result.rm_property_id | orderBy:resultsPredicate:reverse" class="result-property")
+            
+            //DEBUG repeat
+            //div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
+            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
                 .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
                     //.result-arrow
                         .box Sold
                         .arrow
                     .photo()
-                        img(src="{{resultsFormatter.getCurbsideImage(result)}}")
+                        img(ng-src="{{resultsFormatter.getCurbsideImage(result)}}")
                     .info
                         .address {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
                         .price {{resultsFormatter.getPrice(result.price)}}
-                            .property-status(ng-class="resultsFormatter.getForSaleClass(result)") {{result.rm_status}}
-                            button(type="button",ng-click="sendSnail(result)").snail.btn.btn-info Send Mailing 
+                            .property-status {{result.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(result)"></i>
                         div
                             .beds
                                 span.data {{resultsFormatter.orNa(result.bedrooms)}}
@@ -44,7 +46,11 @@
                             .year
                                 span.data {{resultsFormatter.orNa(result.year_built)}}
                                 span.title Year
-                            //button.btn.btn-default.btn-xs(style="z-index:100000000000000" selectMe="selectedCard") Save
+                .card-buttons
+                    button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")<i class="fa fa-envelope"></i> Send Mailing
+                    button.btn.btn-default.btn-xs() Save
+                    button.btn.btn-default.btn-xs() Do Something
+
         #results-footer
             .close(ng-click="toggleNav('map')") x
 <!--End Results Container-->

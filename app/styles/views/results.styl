@@ -73,6 +73,17 @@
     position: absolute
     bottom: 0px
 
+.result-property
+    height 95px
+    border-bottom-width 2px
+    border-bottom 1px solid #d9d9d9
+    transition .15s all ease-in-out
+    overflow hidden
+
+.result-property:hover
+    height 125px
+    box-shadow 0px 0px 20px -3px
+
 .card
     position: relative
     display: block
@@ -81,20 +92,12 @@
     padding: 10px
     height: 95px
     overflow: hidden
-    background-color: #fff
-    border-bottom-width: 2px
-    border-bottom: 1px solid #d9d9d9
     font-size:.8em
     height:65px
 
 .selectedCard
     background-color:rgb(191, 255, 171) !important
     background-color:rgb(208, 255, 199) !important
-
-
-.card:hover
-    background-color:rgba(153, 152, 149, 0.79) /* cornsilk */
-
 
 .card .photo
     display: inline-block
@@ -105,9 +108,9 @@
 
 
 .card .property-status
-    text-align: center
-    color: #FFF
-    font-size: 11px
+    text-align right
+    color rm-main-dark-blue
+    font-size 15px
 
 .card .snail
     text-align: center
@@ -157,9 +160,9 @@
     color: #666
 
 
-.card .c
+.card-buttons
     display:inline-block
-    width:70px
+    padding 0 10px
 
 
 #results-footer .close
@@ -302,38 +305,34 @@ Detail Container
     color:#FFF
 
 .sold
-    background: rm-property-sold-red
-    color: rm-property-save-bright-foreground
+    color: rm-property-sold-red
 
 .forsale
-    background: rm-highlight-green
-    color: rm-property-save-bright-foreground
+    color rm-highlight-green
 
 .pending
-    background: rm-property-pending-purple
+    color: rm-property-pending-purple
 
 .saved
-  background: rm-property-save-yello
-  color: rm-property-save-bright-foreground
+  color: rm-property-save-yello
 
-.detail-container .photo
+.detail-container
+  .photo
     height:200px
     background: no-repeat url("http://placehold.it/500x300&text=image%20not%20available")
 
-
-
-.detail-container .beds-baths-sqft
+  .beds-baths-sqft
     text-align:left
 
-.detail-container .info .beds, .detail-container .info .baths, .detail-container .info .sqft, .detail-container .info .year
+  .info .beds, .detail-container .info .baths, .detail-container .info .sqft, .detail-container .info .year
     font-size: 18px
 
-.detail-container .info .title
+ .info .title
     display: block
     color:#6B6B6B
     font-size:14px
 
-.detail-container .detail-section-title
+ .detail-section-title
     border-bottom: 1px solid #A7A7A7
     margin-top: 15px
     color: rgb(92, 92, 92)
