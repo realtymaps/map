@@ -6,7 +6,7 @@ casing = require 'case'
 
 app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GeoJsonToGoogle) ->
+  ($timeout, $filter, $log, ParcelEnums, GoogleService) ->
     _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
@@ -20,6 +20,15 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
     class ResultsFormatter
       constructor: (@mapCtrl) ->
+        @reset = _.debounce =>
+          @mapCtrl.scope.resultsLimit = 10
+          @mapCtrl.scope.results = []
+          @lastSummaryIndex = 0
+          @mapCtrl.scope.resultsPotentialLength = undefined
+          @filterSummaryInBounds = undefined
+          @order()
+          @loadMore()
+        , 5
         @mapCtrl.scope.resultsLimit = 10
         @mapCtrl.scope.results = []
         @mapCtrl.scope.resultsPotentialLength = undefined
@@ -46,15 +55,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
       order: =>
         @filterSummarySorted = _orderBy(
           @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
-
-      reset:  ->
-        @mapCtrl.scope.resultsLimit = 10
-        @mapCtrl.scope.results = []
-        @lastSummaryIndex = 0
-        @mapCtrl.scope.resultsPotentialLength = undefined
-        @filterSummaryInBounds = undefined
-        @order()
-        @loadMore()
 
       invertSorting: =>
         @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending

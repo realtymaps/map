@@ -8,10 +8,11 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(),
+  'GoogleService'.ourNs(), 'uiGmapPromise'
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService) ->
+    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
+    uiGmapPromise) ->
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
@@ -173,11 +174,19 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       redraw: =>
-        $timeout.cancel @allPromises if @allPromises
-
+        #notice $timeout.cancel only cancels promises created by $timeout
+        # it will not cancel promises via $http
+        @allPromises.cancel() if @allPromises
+        
         getParcels = =>
           promises.push Properties.getParcelBase(@hash, @mapState).then (data) =>
             @scope.layers.parcels = data.data
+
+        getFilterSummary = =>
+          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
+            return unless data?.data?
+            @scope.layers.filterSummary = data.data
+            @updateFilterSummaryHash()
 
         promises  = []
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
@@ -188,14 +197,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @clearBurdenLayers()
 
         if @filters
-          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
-            return unless data?.data?
-            @scope.layers.filterSummary = data.data
-            @updateFilterSummaryHash()
+          getFilterSummary()
         else
           @scope.layers.filterSummary.length = 0
 
-        @allPromises = $q.all(promises)
+        @allPromises = uiGmapPromise.ExposedPromise($q.all(promises))
 
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
