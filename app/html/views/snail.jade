@@ -1,10 +1,10 @@
 .container.spacer
   .row
     .col-md-6
-      form.comfy
+      form.comfy(method="POST", ng-submit="getPriceQuote()")
         .form-group
           label.sr-only(for="template") Letter template:
-          select#template(ng-model="form.style.template",ng-options='id as template.name for (id,template) in documentTemplates')
+          select#template(ng-model="form.style.templateId",ng-options='id as template.name for (id,template) in documentTemplates')
             option(value="") Please select a letter template to get started.
           .help-block
             span(ng-if="form.style.template") {{documentTemplates[form.style.template].description}}

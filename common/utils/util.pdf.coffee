@@ -16,4 +16,23 @@ module.exports =
     .text(name)
     .restore()
     .font(restoreFont, oldFontSize)
+  buildAddresses: (property) ->
+    ownerStreetAddress = "#{(property.owner_street_address_num||'')} #{(property.owner_street_address_name||'')} #{(property.owner_street_address_unit||'')}".trim()
+    addresses =
+      to:
+        name: property.owner_name
+        address_line1: property.owner_name2 || ownerStreetAddress
+        address_line2: if !property.owner_name2 then null else ownerStreetAddress
+        address_city: "#{property.owner_city}"
+        address_state: "#{property.owner_state}"
+        address_zip: "#{property.owner_zip}"
+      ref:
+        address_line1: "#{(property.street_address_num||'')} #{(property.street_address_name||'')} #{(property.street_address_unit||'')}".trim()
+        address_city: "#{property.city}"
+        address_state: "#{property.state}"
+        address_zip: "#{property.zip}"
+    # LOB can't handle null/undefined properties -- the key needs to be unset
+    if !addresses.to.address_line2
+      delete addresses.to.address_line2
+    return addresses
   inch: 72

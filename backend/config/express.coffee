@@ -85,9 +85,13 @@ require("../routes")(app)
 app.use (data, req, res, next) ->
   if data instanceof ExpressResponse
     # this response is intentional
+    if !status.isWithinOK(data.status)
+      # this is not strictly an error handler now, it is also used for routine final handling of a response,
+      # something not easily done with the standard way of using express -- so only log as an error if the
+      # status indicates that it is
+      analysis = analyzeValue(data)
+      logger.error (JSON.stringify(analysis,null,2))
     payload = if data.payload? then data.payload else ""
-    analysis = analyzeValue(payload)
-    logger.error (JSON.stringify(analysis,null,2))
     return res.status(data.status).send payload
 
   # otherwise, it's probably a thrown Error

@@ -1,21 +1,24 @@
 app = require '../app.coffee'
+fonts = require "../../../common/documentTemplates/signature-fonts/index.coffee"
 frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-backendRoutes = require '../../../common/config/routes.backend.coffee'
-alertIds = require '../../../common/utils/enums/util.enums.alertIds.coffee'
-httpStatus = require '../../../common/utils/httpStatus.coffee'
-fonts = require("../../../common/documentTemplates/signature-fonts/index.coffee")
+pdfUtils = require "../../../common/utils/util.pdf.coffee"
 
 
 setWatch = null
 clearWatch = null
 renderPromise = null
-snailData = {}
 rendered = false
-form = null
+data = 
+  snailData: {}
+  property: null
 
 module.exports = app.controller 'SnailCtrl'.ourNs(), [
-  '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', 'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(),
-  ($scope, $rootScope, $location, $http, $sce, $timeout, RenderPdfBlob, documentTemplates, MainOptions) ->
+  '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', '$modal',
+  'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(),
+  ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
+   RenderPdfBlob, documentTemplates, MainOptions) ->
+    
+    $scope.data = data
     $scope.documentTemplates = documentTemplates
     $scope.fonts = fonts
     $scope.placeholderValues =
@@ -35,20 +38,20 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       from: {}
       style:
         signature: 'print font 3'
-        template: null
+        templateId: null
     form = $scope.form
 
     updateBlob = (newValue, oldValue) ->
       if rendered
         $scope.pdfPreviewBlob = $sce.trustAsResourceUrl("about:blank")
         rendered = false
-      if !$scope.form?.style?.template
+      if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
       formReady = true
       for prop of $scope.form
-        snailData[prop] = _.clone($scope.form[prop])
-        _.extend snailData[prop], $scope.placeholderValues[prop], (formValue, placeholderValue) ->
+        $scope.data.snailData[prop] = _.clone($scope.form[prop])
+        _.extend $scope.data.snailData[prop], $scope.placeholderValues[prop], (formValue, placeholderValue) ->
           # if any fields aren't filled in, we're not ready
           formReady &&= !!formValue
           return formValue || "{{#{placeholderValue}}}"
@@ -56,7 +59,7 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         
       doRender = () ->
         renderPromise = null
-        RenderPdfBlob.toBlobUrl($scope.form.style.template, snailData)
+        RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
         .then (blob) ->
           $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
           rendered = true
@@ -75,26 +78,27 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       clearWatch = $scope.$watch 'form', updateBlob, true
     
     setWatch()
+
+    $scope.getPriceQuote = () ->
+      if !$scope.formReady
+        return
+      $scope.modalControl = {}
+      $modal.open
+        templateUrl: 'modal-snailPrice.tpl.html'
+        controller: 'ModalSnailPriceCtrl'.ourNs()
+        scope: $scope
+        keyboard: false
+        backdrop: 'static'
+        windowClass: 'snail-modal'
     
-    if !snailData.to
+    if !$scope.data.property
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
 ]
 app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), ($rootScope, $location, $timeout, Events) ->
   initiateSend = (property) ->
-    ownerStreetAddress = "#{(property.owner_street_address_num||'')} #{(property.owner_street_address_name||'')} #{(property.owner_street_address_unit||'')}".trim()
-    snailData.to =
-      name: property.owner_name
-      address_line1: property.owner_name2 || ownerStreetAddress
-      address_line2: if !property.owner_name2 then null else ownerStreetAddress
-      address_city: "#{property.owner_city}"
-      address_state: "#{property.owner_state}"
-      address_zip: "#{property.owner_zip}"
-    snailData.ref =
-      address_line1: "#{(property.street_address_num||'')} #{(property.street_address_name||'')} #{(property.street_address_unit||'')}".trim()
-      address_city: "#{property.city}"
-      address_state: "#{property.state}"
-      address_zip: "#{property.zip}"
+    data.property = property
+    _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
     $location.url frontendRoutes.snail
   $rootScope.$on Events.snail.initiateSend, (event, property) -> initiateSend(property)
