@@ -14,9 +14,10 @@ app.config([ '$provide', ($provide) ->
 
     $delegate
 ]])
-.config([ '$provide', '$qProvider', ($provide, $q) ->
+.config([ '$provide', '$qProvider', ($provide, $qProvider) ->
   # attempting to create a cancelable $http on all its functions
   $provide.decorator '$http', [ '$delegate', ($delegate) ->
+    $q = $qProvider.$get[2]()
     http = {}
     methods = ['get', 'delete', 'head', 'jsonp']
     dataMethods = ['post', 'put', 'patch']
@@ -34,7 +35,7 @@ app.config([ '$provide', ($provide) ->
       promise.cancel = ->
         canceller.resolve()
 
-      promise.reject ->
+      promise.catch ->
         #if $q.all rejects a collection of promises then we can cancel the http
         promise.cancel()
 
@@ -43,8 +44,20 @@ app.config([ '$provide', ($provide) ->
         promise.abort = angular.noop
         canceller = promise = http = null
 
-    allMethods.forEach (m) ->
-      $delegate[m] = http[m]
+    #pretty much straight copy paste from angular
+    methods.forEach (name) ->
+      $delegate[name] = (url, config) ->
+        $delegate angular.extend config or {},
+          method: name
+          url: url
 
-    return $delegate
+    dataMethods.forEach (name) ->
+      $delegate[name] = (url, data, config) ->
+        $delegate angular.extendconfig or {},
+          method: name
+          url: url
+          data: data
+
+
+    $delegate
 ]])
