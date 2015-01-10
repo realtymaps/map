@@ -12,7 +12,7 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
 
 
   _enumFromLevel = (currentLevel) ->
-    if currentLevel < _zoomThresh.price
+    if currentLevel <= _zoomThresh.price
       return _enum.price
     if currentLevel >= _zoomThresh.price and currentLevel < _zoomThresh.addressParcel
       return _enum.parcel
@@ -25,6 +25,15 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
   _is = (gMapOrInt, stateObj, stateToCheck) ->
     stateObj.zoomLevel = if _.isNumber(gMapOrInt) then _enumFromLevel(gMapOrInt) else _enumFromMap gMapOrInt
     stateToCheck == stateObj.zoomLevel
+
+  _dblClickZoom = do ->
+    _enableDisable = (scope, bool) ->
+      scope.options = _.extend {}, scope.options, disableDoubleClickZoom: bool
+    enable: (scope) ->
+      _enableDisable(scope, false) if scope.options.disableDoubleClickZoom
+    disable: (scope) ->
+      _enableDisable(scope, true) unless scope.options.disableDoubleClickZoom
+  #public
   Enum: _enum
   enumFromLevel: _enumFromLevel
   enumFromMap: _enumFromMap
@@ -36,4 +45,6 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
     _is(gMapOrInt, stateObj, _enum.parcel)
   isAddressParcel: (gMapOrInt, stateObj = {}) ->
     _is(gMapOrInt, stateObj, _enum.addressParcel)
+
+  dblClickZoom: _dblClickZoom
 ]

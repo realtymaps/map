@@ -170,6 +170,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         @mapCtrl.scope.showDetails = true
 
       dblclick: (result) =>
+        #TODO save result as a saved prop
 
       mouseover: (result) =>
         #not updating the polygon cause I think we really need access to its childModels / plurals

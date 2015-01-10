@@ -15,17 +15,25 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     _getCorrectModel = (model) ->
       childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
 
-    _dblClickZoom = do ->
-      _enableDisable = (scope, bool) ->
-        scope.options = _.extend {}, scope.options, disableDoubleClickZoom: bool
-      enable: (scope) ->
-        _enableDisable(scope, false) if scope.options.disableDoubleClickZoom
-      disable: (scope) ->
-        _enableDisable(scope, true) unless scope.options.disableDoubleClickZoom
+    _isGPoly = (gObject) ->
+      gObject.setPath?
+
+    _isGMarker = (gObject) ->
+      gObject.getAnimation?
+
+    _maybeHideAddressMarker = (gObject, $scope) ->
+      if ZoomLevel.isAddressParcel($scope.zoom)
+        if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
+          $scope.addressMarkerHovered.setVisible(true)
+      if ZoomLevel.isAddressParcel($scope.zoom) and _isGMarker(gObject)
+        $scope.addressMarkerHovered = gObject
+        gObject.setVisible(false)
+        return true
+      return false
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
-        $scope.debug = true
+        # $scope.debug = true
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel
         self = @
@@ -54,9 +62,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
-        _saveProperty = (gObject, model) ->
+        _saveProperty = (gObject, childModel) ->
           #TODO: Need to debounce / throttle
-          saved = Properties.saveProperty(model)
+          saved = Properties.saveProperty(childModel.model)
           return unless saved
           saved.then (savedDetails) ->
             #setting savedDetails here as we know the save was successful (update the font end without query right away)
@@ -127,6 +135,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             listingEvents:
               mouseover: (gObject, eventname, model) ->
+                return if _maybeHideAddressMarker(gObject, $scope)
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
                 childModel = _getCorrectModel model
@@ -144,7 +153,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 childModel = _getCorrectModel model
-                _saveProperty(gObject, model) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                return _saveProperty(gObject, childModel) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
               dblclick: (gObject, eventname, model) ->
@@ -180,11 +189,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.layers.parcels = data.data
 
         promises  = []
-        if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
-          _dblClickZoom.disable(@scope)
+        if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
+          ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           getParcels()
         else
-          _dblClickZoom.enable(@scope)
+          ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         if @filters

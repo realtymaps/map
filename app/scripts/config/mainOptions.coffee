@@ -21,7 +21,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
           space: 2
         zoomThresh:
           addressParcel: 18
-          price: 15
+          price: 16
           clustering: 17
         json:
           zoom: 15
