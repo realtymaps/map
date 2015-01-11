@@ -4,8 +4,9 @@ sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 
-app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GeoJsonToGoogle'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GeoJsonToGoogle) ->
+app.factory 'ResultsFormatter'.ourNs(), [
+  '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
+  ($timeout, $filter, $log, ParcelEnums, GoogleService) ->
     _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
@@ -19,6 +20,15 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
 
     class ResultsFormatter
       constructor: (@mapCtrl) ->
+        @reset = _.debounce =>
+          @mapCtrl.scope.resultsLimit = 10
+          @mapCtrl.scope.results = []
+          @lastSummaryIndex = 0
+          @mapCtrl.scope.resultsPotentialLength = undefined
+          @filterSummaryInBounds = undefined
+          @order()
+          @loadMore()
+        , 5
         @mapCtrl.scope.resultsLimit = 10
         @mapCtrl.scope.results = []
         @mapCtrl.scope.resultsPotentialLength = undefined
@@ -45,15 +55,6 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
       order: =>
         @filterSummarySorted = _orderBy(
           @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
-
-      reset:  ->
-        @mapCtrl.scope.resultsLimit = 10
-        @mapCtrl.scope.results = []
-        @lastSummaryIndex = 0
-        @mapCtrl.scope.resultsPotentialLength = undefined
-        @filterSummaryInBounds = undefined
-        @order()
-        @loadMore()
 
       invertSorting: =>
         @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
@@ -115,7 +116,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         #end debugging
         if @loader
           $timeout.cancel @loader
-        @loader = $timeout @throttledLoadMore
+        @loader = $timeout @throttledLoadMore, 20
 
       getAmountToLoad: _.memoize (totalHeight) ->
         cardHeight = 95 #we really need to somehow combine css constants and js constants
@@ -130,7 +131,7 @@ app.factory 'ResultsFormatter'.ourNs(), ['$timeout', '$filter', 'Logger'.ourNs()
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
         _isWithinBounds = (prop) =>
-          pointBounds = GeoJsonToGoogle.MultiPolygon.toBounds(prop.geom_polys_json)
+          pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
           isVisible = @mapCtrl.gMap.getBounds().intersects(pointBounds)
           return unless isVisible
           prop

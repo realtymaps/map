@@ -8,28 +8,29 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
+  'GoogleService'.ourNs(), 'uiGmapPromise'
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel) ->
+    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
+    uiGmapPromise) ->
 
-    _getCorrectModel = (model) ->
-      childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+    invokePropertyService = (mapFact, serviceName, cb) ->
+      myId = mapFact.drawPromisesIndex += 1
+      mapFact.drawPromisesMap.put myId,
+      Properties[serviceName](mapFact.hash, mapFact.mapState, mapFact.filters)
+      .then (data) =>
+        cb(mapFact, data.data) if data?
+      .finally =>
+        mapFact.drawPromisesMap.remove myId
 
-    _isGPoly = (gObject) ->
-      gObject.setPath?
-
-    _isGMarker = (gObject) ->
-      gObject.getAnimation?
-
-    _maybeHideAddressMarker = (gObject, $scope) ->
-      if ZoomLevel.isAddressParcel($scope.zoom)
-        if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
-          $scope.addressMarkerHovered.setVisible(true)
-      if ZoomLevel.isAddressParcel($scope.zoom) and _isGMarker(gObject)
-        $scope.addressMarkerHovered = gObject
-        gObject.setVisible(false)
-        return true
-      return false
+    getParcelBase = (mapFact) ->
+      invokePropertyService mapFact, 'getParcelBase', (mapFact, data) ->
+        mapFact.scope.layers.parcels = data
+    getFilterSummary = (mapFact) ->
+      invokePropertyService mapFact, 'getFilterSummary', (mapFact, data) ->
+        return unless data?
+        mapFact.scope.layers.filterSummary = data
+        mapFact.updateFilterSummaryHash()
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
@@ -37,6 +38,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel
         self = @
+        @drawPromisesMap = new PropMap()
+        @drawPromisesIndex = 0
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
@@ -51,6 +54,16 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
+
+        _maybeHideAddressMarker = (gObject) ->
+          if ZoomLevel.isAddressParcel($scope.zoom)
+            if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
+              $scope.addressMarkerHovered.setVisible(true)
+          if ZoomLevel.isAddressParcel($scope.zoom) and GoogleService.Map.isGMarker(gObject)
+            $scope.addressMarkerHovered = gObject
+            gObject.setVisible(false)
+            return true
+          return false
 
         _updateGObjects = (gObject, savedDetails, childModel) ->
           #purpose to to take some sort of gObject and update its view immediately
@@ -82,7 +95,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showTraffic: true
           showWeather: false
           showMarkers: true
-
 
           listingOptions:
             boxClass: 'custom-info-window'
@@ -135,29 +147,29 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             listingEvents:
               mouseover: (gObject, eventname, model) ->
-                return if _maybeHideAddressMarker(gObject, $scope)
+                return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
                 gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
                 $scope.actions.closeListing()
                 return if gObject.labelClass?
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
                 gObject.setOptions opts
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 return _saveProperty(gObject, childModel) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
               dblclick: (gObject, eventname, model) ->
-                childModel = _getCorrectModel model
+                childModel = GoogleService.UiMap.getCorrectModel model
                 _saveProperty gObject, childModel
 
           formatters:
@@ -182,29 +194,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       redraw: =>
-        $timeout.cancel @allPromises if @allPromises
+        if @drawPromisesMap.length
+          @drawPromisesMap.each (p) ->
+            p.cancel()
 
-        getParcels = =>
-          promises.push Properties.getParcelBase(@hash, @mapState).then (data) =>
-            @scope.layers.parcels = data.data
-
-        promises  = []
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          getParcels()
+          getParcelBase(@)
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         if @filters
-          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
-            return unless data?.data?
-            @scope.layers.filterSummary = data.data
-            @updateFilterSummaryHash()
+          getFilterSummary(@)
         else
           @scope.layers.filterSummary.length = 0
-
-        @allPromises = $q.all(promises)
 
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
@@ -223,12 +227,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
-        @filterDrawPromise = $timeout(=>
+        @filterDrawPromise = $timeout =>
           FilterManager.manage (filters) =>
             @filters = filters
             @filterDrawPromise = false
             @redraw()
-        , MainOptions.filterDrawDelay)
+        , MainOptions.filterDrawDelay
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
@@ -251,7 +255,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
         _.defer =>
-          return unless @scope.layers.filterSummary
+          return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary
@@ -261,7 +265,4 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
         @updateFilterSummaryHash()
-
-
-    Map
 ]
