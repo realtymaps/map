@@ -14,12 +14,32 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
     uiGmapPromise) ->
 
+    invokePropertyService = (mapFact, serviceName, cb) ->
+      myId = mapFact.drawPromisesIndex += 1
+      mapFact.drawPromisesMap.put myId,
+      Properties[serviceName](mapFact.hash, mapFact.mapState, mapFact.filters)
+      .then (data) =>
+        cb(mapFact, data.data) if data?
+      .finally =>
+        mapFact.drawPromisesMap.remove myId
+
+    getParcelBase = (mapFact) ->
+      invokePropertyService mapFact, 'getParcelBase', (mapFact, data) ->
+        mapFact.scope.layers.parcels = data
+    getFilterSummary = (mapFact) ->
+      invokePropertyService mapFact, 'getFilterSummary', (mapFact, data) ->
+        return unless data?
+        mapFact.scope.layers.filterSummary = data
+        mapFact.updateFilterSummaryHash()
+
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         # $scope.debug = true
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel
         self = @
+        @drawPromisesMap = new PropMap()
+        @drawPromisesIndex = 0
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
@@ -174,34 +194,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       redraw: =>
-        #notice $timeout.cancel only cancels promises created by $timeout
-        # it will not cancel promises via $http
-        @allPromises.cancel() if @allPromises
-        
-        getParcels = =>
-          promises.push Properties.getParcelBase(@hash, @mapState).then (data) =>
-            @scope.layers.parcels = data.data
+        if @drawPromisesMap.length
+          @drawPromisesMap.each (p) ->
+            p.cancel()
 
-        getFilterSummary = =>
-          promises.push Properties.getFilterSummary(@hash, @filters, @mapState).then (data) =>
-            return unless data?.data?
-            @scope.layers.filterSummary = data.data
-            @updateFilterSummaryHash()
-
-        promises  = []
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          getParcels()
+          getParcelBase(@)
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         if @filters
-          getFilterSummary()
+          getFilterSummary(@)
         else
           @scope.layers.filterSummary.length = 0
-
-        @allPromises = uiGmapPromise.ExposedPromise($q.all(promises))
 
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
@@ -220,12 +227,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
-        @filterDrawPromise = $timeout(=>
+        @filterDrawPromise = $timeout =>
           FilterManager.manage (filters) =>
             @filters = filters
             @filterDrawPromise = false
             @redraw()
-        , MainOptions.filterDrawDelay)
+        , MainOptions.filterDrawDelay
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
@@ -248,7 +255,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
         _.defer =>
-          return unless @scope.layers.filterSummary
+          return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary

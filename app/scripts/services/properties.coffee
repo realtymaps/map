@@ -15,7 +15,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     getParcelBase: (hash, mapState) ->
       $http.get("#{backendRoutes.properties.parcelBase}?bounds=#{hash}&#{mapState}", cache: true)
 
-    getFilterSummary: (hash, filters, mapState) ->
+    getFilterSummary: (hash, mapState, filters) ->
       $http.get("#{backendRoutes.properties.filterSummary}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
 
     saveProperty: (model) =>

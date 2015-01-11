@@ -116,7 +116,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #end debugging
         if @loader
           $timeout.cancel @loader
-        @loader = $timeout @throttledLoadMore
+        @loader = $timeout @throttledLoadMore, 20
 
       getAmountToLoad: _.memoize (totalHeight) ->
         cardHeight = 95 #we really need to somehow combine css constants and js constants
