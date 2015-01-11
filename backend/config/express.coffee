@@ -3,12 +3,14 @@ path = require 'path'
 Promise = require 'bluebird'
 
 config = require './config'
+commonConfig = require '../../common/config/commonConfig'
 dbs = require './dbs'
 logger = require './logger'
 auth = require '../utils/util.auth'
 uuid = require '../utils/util.uuid'
 ExpressResponse = require '../utils/util.expressResponse'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+escape = require('escape-html')
 
 # express midlewares
 helmet = require 'helmet'
@@ -82,6 +84,7 @@ if config.PORT != config.PROD_PORT
 # bootstrap routes
 require("../routes")(app)
 
+
 app.use (data, req, res, next) ->
   if data instanceof ExpressResponse
     # this response is intentional
@@ -99,9 +102,7 @@ app.use (data, req, res, next) ->
   logger.error "uncaught error found by express:"
   logger.error (JSON.stringify(analysis,null,2))
   res.status(status.INTERNAL_SERVER_ERROR).json alert:
-    msg: "Oops! Something unexpected happened! Please try again in a few minutes. If the problem continues,
-          please let us know by emailing #{config.SUPPORT_EMAIL}, and giving us the following error
-          message:<br/><code>#{data.message}</code>"
+    msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
     id: "500-#{req.path}"
   next()
 

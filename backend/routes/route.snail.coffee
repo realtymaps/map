@@ -1,10 +1,10 @@
 Promise = require 'bluebird'
 ExpressResponse = require '../utils/util.expressResponse'
-config = require '../config/config'
+commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
 lobService = require '../services/service.lob'
 filterSummaryService = require '../services/service.properties.filterSummary'
-escape = require('escape-html');
+escape = require('escape-html')
 pdfUtils = require '../../common/utils/util.pdf'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
@@ -12,16 +12,16 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 lookupErrorMessage =
   "Oops! We couldn't find the property you've selected.
   That really shouldn't happen; please try again in a few minutes. If the
-  problem continues, please let us know by emailing #{config.SUPPORT_EMAIL},
+  problem continues, please let us know by emailing #{commonConfig.SUPPORT_EMAIL},
   and giving us the following error message:"
 validationErrorMessage = (actionMsg) ->
   "Oops! We couldn't #{actionMsg}.  Please make sure you've
   entered a valid address.  If you're sure everything is correct, please let us know
-  by emailing #{config.SUPPORT_EMAIL}.  Here's an error message that might help:"
+  by emailing #{commonConfig.SUPPORT_EMAIL}.  Here's an error message that might help:"
 otherErrorMessage = (actionMsg) ->
   "Oops! We couldn't #{actionMsg} right now. Please try again
   in a few minutes. If the problem continues, please let us know by emailing
-  #{config.SUPPORT_EMAIL}, and giving us the following error message:"
+  #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
 getPropertyData = (rm_property_id) -> Promise.try () ->
   filterSummaryService.getSinglePropertySummary(rm_property_id)

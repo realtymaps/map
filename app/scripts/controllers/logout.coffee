@@ -7,8 +7,12 @@ backendRoutes = require '../../../common/config/routes.backend.coffee'
 ###
 module.exports = app.controller 'LogoutCtrl'.ourNs(), () ->
 
-app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'MainOptions'.ourNs(),
-  ($rootScope, $location, $http, $timeout, principal, MainOptions) ->
+# this controller manages loadingCount manually because we're putting an artificial min delay on logout,
+# so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the
+# spinner go away more quickly
+
+app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'MainOptions'.ourNs(), 'Spinner'.ourNs(),
+  ($rootScope, $location, $http, $timeout, principal, MainOptions, Spinner) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
       # if we're not entering the logout state, or if we're already on the logout page, don't do anything
       if toState.url != frontendRoutes.logout || fromState.url == frontendRoutes.logout
@@ -16,14 +20,11 @@ app.run ["$rootScope", "$location", "$http", "$timeout", "principal".ourNs(), 'M
       minTimestamp = (+new Date)+MainOptions.logoutDelayMillis
       delayedUrl = (url) ->
         $timeout () ->
-          $rootScope.loadingCount--
+          Spinner.decrementLoadingCount("logout")
           $location.replace()
           $location.url url
         , minTimestamp-(+new Date)
-      # this controller manages loadingCount manually because we're putting an artificial min delay on logout,
-      # so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the
-      # spinner go away more quickly
-      $rootScope.loadingCount++
+      Spinner.incrementLoadingCount("logout")
       principal.getIdentity()
       .then () ->
         if not principal.isAuthenticated()

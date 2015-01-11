@@ -14,9 +14,9 @@ data =
 
 module.exports = app.controller 'SnailCtrl'.ourNs(), [
   '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', '$modal',
-  'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(),
+  'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(), 'Spinner'.ourNs(),
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-   RenderPdfBlob, documentTemplates, MainOptions) ->
+   RenderPdfBlob, documentTemplates, MainOptions, Spinner) ->
     
     $scope.data = data
     $scope.documentTemplates = documentTemplates
@@ -63,14 +63,14 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         .then (blob) ->
           $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
           rendered = true
-          $rootScope.loadingCount--
+          Spinner.decrementLoadingCount("pdf rendering")
       if renderPromise
         # replace the existing rendering call
         $timeout.cancel(renderPromise)
         renderPromise = null
       else
         # create a new one
-        $rootScope.loadingCount++
+        Spinner.incrementLoadingCount("pdf rendering")
       renderPromise = $timeout(doRender, MainOptions.pdfRenderDelay)
     
     setWatch = () ->
