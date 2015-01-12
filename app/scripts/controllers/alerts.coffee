@@ -25,6 +25,8 @@ app = require '../app.coffee'
 #   $rootScope.$emit Events.alert.hide, alertId
 # To dismiss an event, use:
 #   $rootScope.$emit Events.alert.dismiss, alertId
+# To preemptively hide an event, use:
+#   $rootScope.$emit Events.alert.prevent, {id: alertId, quietMillis: quietTime}
 # -------
 # Allowed properties of an emitted alert:
 #   msg (required): the main body of the alert.  This can be HTML, but should consist only of inline or inline-block
@@ -51,7 +53,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
     $scope.alerts = []
     alertsMap = {}
     anonymousAlertCounter = 1
-    
+
     # when we hide an alert, we don't want to completely get rid of it -- we want to keep it around so we know not to
     # show similar alerts for a while.
     hideAlert = (alertId) ->
@@ -68,7 +70,24 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       if alert.expiration?
         $timeout.cancel(alert.expiration)
       alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
-    
+
+    # use this to preemtpively hide an alert that (maybe) hasn't been triggered yet
+    preventAlert = (alertInfo) ->
+      alert = alertsMap[alertInfo.id]
+      # if it exists already, just hide it as normal except use the new quiet time value
+      if alert?
+        alert.quietMillis = alertInfo.quietMillis
+        hideAlert(alertInfo.id)
+        return
+      
+      alert = _.clone(alertInfo)
+      # mark it as closed
+      alert.closed = true
+      # set an expiration timeout
+      alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
+      # put it in the mapping
+      alertsMap[alertInfo.id] = alert
+
     # this is what we call to remove a still-visible alert after a timeout, or to reset a closed alert so we can start
     # showing it again
     removeAlert = (alertId) ->
@@ -135,9 +154,9 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       else
         handleDupeAlert(alert)
 
-    # expose some functions via scope and event
-    $scope.hideAlert = hideAlert
+    # expose some functions via and event
     $scope.$onRootScope Events.alert.spawn, handleAlertSpawnEvent
     $scope.$onRootScope Events.alert.hide, (event, alertId) -> hideAlert(alertId)
     $scope.$onRootScope Events.alert.dismiss, (event, alertId) -> removeAlert(alertId)
+    $scope.$onRootScope Events.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)
 ]

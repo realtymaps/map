@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 qs = require 'qs'
+backendRoutes = require '../../../common/config/routes.backend.coffee'
 
 encode = undefined
 ###
@@ -14,20 +15,28 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
     uiGmapPromise) ->
 
-    invokePropertyService = (mapFact, serviceName, cb) ->
+    invokePropertyService = (mapFact, dataType, cb) ->
       myId = mapFact.drawPromisesIndex += 1
-      mapFact.drawPromisesMap.put myId,
-      Properties[serviceName](mapFact.hash, mapFact.mapState, mapFact.filters)
-      .then (data) =>
+      drawPromise = Properties.getPropertyData(dataType, mapFact.hash, mapFact.mapState, mapFact.filters)
+      if !drawPromise?
+        return
+      drawPromise.then (data) =>
         cb(mapFact, data.data) if data?
       .finally =>
         mapFact.drawPromisesMap.remove myId
+      mapFact.drawPromisesMap.put myId, () ->
+        # prevent alerts from the canceled $http call
+        $rootScope.$emit Events.alert.prevent,
+          id: "0-#{backendRoutes.properties[dataType]}"
+          quietMillis: MainOptions.alert.cancelQuietMillis
+        # do the cancel
+        drawPromise.cancel()
 
     getParcelBase = (mapFact) ->
-      invokePropertyService mapFact, 'getParcelBase', (mapFact, data) ->
+      invokePropertyService mapFact, 'parcelBase', (mapFact, data) ->
         mapFact.scope.layers.parcels = data
     getFilterSummary = (mapFact) ->
-      invokePropertyService mapFact, 'getFilterSummary', (mapFact, data) ->
+      invokePropertyService mapFact, 'filterSummary', (mapFact, data) ->
         return unless data?
         mapFact.scope.layers.filterSummary = data
         mapFact.updateFilterSummaryHash()
@@ -195,8 +204,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       redraw: =>
         if @drawPromisesMap.length
-          @drawPromisesMap.each (p) ->
-            p.cancel()
+          @drawPromisesMap.each (cancelHandler) ->
+            cancelHandler()
 
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)

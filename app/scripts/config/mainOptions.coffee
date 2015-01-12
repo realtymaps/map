@@ -42,4 +42,6 @@ app.constant 'MainOptions'.ourNs(), do () ->
       ttlMillis: 2*60*1000   # 2 minutes
       # quietMillis is the default for how long is needed before we start to show a previously-closed alert if it happens again
       quietMillis: 30*1000   # 30 seconds
+      # cancelQuietMillis is how long to prevent alerts when we expect an HTTP cancel
+      cancelQuietMillis: 1000 # 1 second, just in case of a really bogged down browser; on my laptop, only 8ms is necessary
   }
