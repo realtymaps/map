@@ -28,11 +28,30 @@ getPropertyData = (rm_property_id) -> Promise.try () ->
   .then (property) ->
     if property
       return property
-    return Promise.reject new ExpressResponse(errmsg: 
-                                                text: lookupErrorMessage
-                                                troubleshooting: "id: #{rm_property_id}",
-                                              httpStatus.INTERNAL_SERVER_ERROR)
+    return Promise.reject new ExpressResponse
+      errmsg: 
+        text: lookupErrorMessage
+        troubleshooting: "id: #{rm_property_id}",
+      httpStatus.INTERNAL_SERVER_ERROR
 
+generateErrorHandler = (actionMsg) ->
+  (err) ->
+    if err instanceof ExpressResponse
+      return err
+    console.error(analyzeValue(err))
+    if _.isArray err
+      return new ExpressResponse
+        errmsg:
+          text: validationErrorMessage(actionMsg)
+          troubleshooting: _.flatten(err, "message").join(" | "),
+        httpStatus.INTERNAL_SERVER_ERROR
+    new ExpressResponse
+      errmsg:
+        text: otherErrorMessage(actionMsg)
+        troubleshooting: "#{escape(err.message||err)}",
+      httpStatus.INTERNAL_SERVER_ERROR
+
+    
 module.exports =
   quote: (req, res, next) -> Promise.try () ->
     getPropertyData(req.body.rm_property_id)
@@ -40,19 +59,7 @@ module.exports =
       lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
     .then (price) ->
       new ExpressResponse(price: price)
-    .catch (err) ->
-      if err instanceof ExpressResponse
-        return err
-      console.error(analyzeValue(err))
-      if _.isArray err
-        return new ExpressResponse(errmsg:
-                                     text: validationErrorMessage("get a price quote for that mailing")
-                                     troubleshooting: _.flatten(err, "message").join(" | "),
-                                   httpStatus.INTERNAL_SERVER_ERROR)
-      new ExpressResponse(errmsg:
-                            text: otherErrorMessage("get a price quote for that mailing")
-                            troubleshooting: "#{escape(err.message||err)}",
-                          httpStatus.INTERNAL_SERVER_ERROR)
+    .catch generateErrorHandler("get a price quote for that mailing")
     .then (response) ->
       next(response)
   
@@ -62,18 +69,6 @@ module.exports =
       lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
     .then () ->
       new ExpressResponse({})
-    .catch (err) ->
-      if err instanceof ExpressResponse
-        return err
-      console.error(analyzeValue(err))
-      if _.isArray err
-        return new ExpressResponse(errmsg:
-                                     text: validationErrorMessage("send your mailing")
-                                     troubleshooting: _.flatten(err, "message").join(" | "),
-                                   httpStatus.INTERNAL_SERVER_ERROR)
-      new ExpressResponse(errmsg:
-                            text: otherErrorMessage("send your mailing")
-                            troubleshooting: "#{escape(err.message||err)}",
-                          httpStatus.INTERNAL_SERVER_ERROR)
+    .catch generateErrorHandler("send your mailing")
     .then (response) ->
       next(response)
