@@ -5,8 +5,8 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.service 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'Properties'.ourNs(),
-  ($log, ParcelEnums, uiGmapUtil, Properties) ->
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
+  ($log, ParcelEnums, uiGmapUtil) ->
 
     saveColor = '#F3F315'
     mouseOverColor = 'rgba(153, 152, 149, 0.79)'

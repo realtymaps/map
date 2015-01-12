@@ -19,6 +19,8 @@ app.factory 'RedirectInterceptor'.ourNs(), [ '$location', '$rootScope',
 
 app.factory 'AlertInterceptor'.ourNs(), [ '$rootScope', '$q', 'events'.ourNs(),
   ($rootScope, $q, Events) ->
+    defineNull = (value) ->
+      return if typeof value == 'undefined' then null else value
     handle = (response, error=false) ->
       if response.config?.alerts == false
         # we're explicitly not supposed to show an alert for this request according to the frontend
@@ -32,7 +34,7 @@ app.factory 'AlertInterceptor'.ourNs(), [ '$rootScope', '$q', 'events'.ourNs(),
       else if error
         alert =
           id: "#{response.status}-#{response.config?.url?.split('?')[0].split('#')[0]}"
-          msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status:response.status||null, data:response.data||null))
+          msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
         $rootScope.$emit Events.alert.spawn, alert
       return response
     'response': handle
@@ -43,7 +45,7 @@ app.factory 'AlertInterceptor'.ourNs(), [ '$rootScope', '$q', 'events'.ourNs(),
         return $q.reject(request)
       alert =
         id: "request-#{request.url?.split('?')[0].split('#')[0]}"
-        msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(url:request.status||null))
+        msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(url:defineNull(request.status)))
       $rootScope.$emit Events.alert.spawn, alert
       $q.reject(request)
 ]

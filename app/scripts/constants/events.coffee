@@ -15,5 +15,6 @@ app.constant 'events'.ourNs(),
       spawn: 1
       hide: 1
       dismiss: 1
+      prevent: 1
     snail:
       initiateSend: 1

@@ -12,13 +12,11 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     principal.getIdentity().then (identity) ->
       savedProperties = _.extend savedProperties, identity.stateRecall.properties_selected
 
-    getParcelBase: (hash, mapState) ->
-      return if !hash?
-      $http.get("#{backendRoutes.properties.parcelBase}?bounds=#{hash}&#{mapState}", cache: true)
-
-    getFilterSummary: (hash, mapState, filters) ->
-      return if !hash?
-      $http.get("#{backendRoutes.properties.filterSummary}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
+    # this convention for a combined service call helps elsewhere because we know how to get the path used
+    # by this call, which means we can do things with alerts related to it
+    getPropertyData: (pathId, hash, mapState, filters="") ->
+      return null if !hash?
+      $http.get("#{backendRoutes.properties[pathId]}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
 
     saveProperty: (model) =>
       return if not model or not model.rm_property_id
