@@ -97,6 +97,15 @@ module.exports = {
           if tokenHash == security.next_security_token
             # yay! this is what we hope to see most of the time
             return sessionSecurityService.iterateSecurity(req, res, security)
+          ###
+          # this is the original security logic...  the timeout stuff is breaking legitimate sessions.  We're removing
+          # the timeout for now...  if we bring it back, we should probably put the iteration logic at the end of the
+          # request handling rather than at the front, so we're less likely to hit problems due to overlapping AJAX
+          # calls that are recieved in 1 order and finished the other way around.  Even then, HTTP requests cancelled
+          # by the frontend might legitimately result in a lost token, so we need to continue to iterate the sequence
+          # on any accepted token.  I think it would work instead to kill off token #1 in this timeout situation, since
+          # the idea was to prevent a malicious user from just using the token from a couple steps behind without
+          # being noticed...
           validUpdateTimestamp = Date.now()-config.SESSION_SECURITY.window
           if security.updated_at < validUpdateTimestamp
             return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch (token timeout) for user #{req.user?.username} on session: #{context.sessionId}", "warn"))
@@ -108,6 +117,20 @@ module.exports = {
             # to be misbehaving on some race conditions... just to play it safe we'll allow it
             logger.warn "relied on previous security token for authentication for user #{req.user.username} on session: #{req.sessionID}...  is the server overloaded?"
             return Promise.resolve()
+          ###
+          previousTokenTimeout = Date.now()-security.updated_at > config.SESSION_SECURITY.window
+          if tokenHash == security.current_security_token
+            # ok, there were some simultaneous calls, we'll let it go
+            if (previousTokenTimeout)
+              logger.debug "relied on 1 step old security token, invalidating leading token" 
+            return sessionSecurityService.iterateSecurity(req, res, security, if previousTokenTimeout then 1 else 0)
+          if tokenHash == security.previous_security_token
+            # eh... it's possible this can happen, even though it would require the server 
+            # to be misbehaving on some race conditions... just to play it safe we'll allow it
+            if (previousTokenTimeout)
+              logger.debug "relied on 2 step old security token, invalidating leading 2 tokens"
+            logger.warn "relied on previous security token for authentication for user #{req.user.username} on session: #{req.sessionID}...  is the server overloaded?"
+            return sessionSecurityService.iterateSecurity(req, res, security, if previousTokenTimeout then 2 else 0)
           return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch for user #{req.user.username} on session: #{context.sessionId}", "warn"))
         else
           # this isn't a logged-in user, so validate only if remember_me was set, and only
