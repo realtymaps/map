@@ -263,7 +263,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
-        _.defer =>
+        @scope.$evalAsync =>
           return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
