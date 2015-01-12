@@ -102,9 +102,20 @@ getSecuritiesForSession = (sessionId) ->
 
 # alter the existing sessionSecurity object, since each token only gets used
 # once (with allowances made for AJAX-simultaneous requests)
-iterateSecurity = (req, res, security) ->
-  token = uuid.genToken()
-  hashToken(token, security.series_salt)
+iterateSecurity = (req, res, security, tokensToInvalidate=0) -> Promise.try () ->
+  if tokensToInvalidate == 0
+    currToken = security.next_security_token
+    prevToken = security.current_security_token
+  else if tokensToInvalidate == 1
+    # we've removed the "next" token from the sequence
+    currToken = security.current_security_token
+    prevToken = security.previous_security_token
+  else if tokensToInvalidate == 2
+    # we've removed the "next" and "current" tokens from the sequence
+    currToken = security.previous_security_token
+    prevToken = security.previous_security_token
+  newToken = uuid.genToken()
+  hashToken(newToken, security.series_salt)
   .then (tokenHash) ->
     SessionSecurity.where
       id: security.id
@@ -113,17 +124,17 @@ iterateSecurity = (req, res, security) ->
     .save
       # it seems we get an error if an "update" modifies 0 rows...
       next_security_token: tokenHash
-      current_security_token: security.next_security_token
-      previous_security_token: security.current_security_token
+      current_security_token: currToken
+      previous_security_token: prevToken
       , {method: "update", patch: true}
     .then () ->
       SessionSecurity.forge(id: security.id).fetch()
-    .then (new_security) ->
-        new_security.toJSON()
-    .then (new_security) ->
-      if new_security.next_security_token == tokenHash
+    .then (newSecurity) ->
+        newSecurity.toJSON()
+    .then (newSecurity) ->
+      if newSecurity.next_security_token == tokenHash
         # only if we detect that we successfully performed a save...
-        setSecurityCookie(req, res, token, security.remember_me)
+        setSecurityCookie(req, res, newToken, security.remember_me)
     .catch (err) ->
       ignore = "No rows were affected in the update"
       if (err?.message?.substr(0, ignore.length) == ignore)
