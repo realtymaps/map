@@ -12,24 +12,8 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
       ul.nav.navbar-nav
         li(ng-hide="hide-nav")
           a(href="{{frontendRoutes.map}}") Map
-        li(ng-if="loadingCount > 0")
-          //- .centered.sk-spinner.sk-spinner-rotating-plane
-          //- .sk-spinner.sk-spinner-wandering-cubes
-          //-   .sk-cube1
-          //-   .sk-cube2
-          .sk-spinner.sk-spinner-double-bounce 
-            .sk-double-bounce1
-            .sk-double-bounce2
-          //- .sk-spinner.sk-spinner-cube-grid
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          //-   .sk-cube
-          
+        li
+          include ./spinner.jade
         li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.login}}") Sign In
         li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
