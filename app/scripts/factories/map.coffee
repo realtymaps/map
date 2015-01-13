@@ -137,7 +137,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
-                if GoogleService.Map.isGPoly(gObject)
+                if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
                 return if gObject.labelClass?
                 childModel = GoogleService.UiMap.getCorrectModel model
