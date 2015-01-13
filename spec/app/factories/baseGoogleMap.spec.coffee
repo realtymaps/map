@@ -16,7 +16,6 @@ describe "BaseGoogleMap", ->
       @apiMock.mockEvent()
     ]
 
-    #console.info "after GoogleApiMock"
     @mocks =
       options:
         json:
@@ -28,7 +27,6 @@ describe "BaseGoogleMap", ->
 
     inject ["$rootScope", 'BaseGoogleMap'.ourNs(),
      ($rootScope, BaseGoogleMap) =>
-        #console.log "$rootScope: ", $rootScope
         @$rootScope = $rootScope
 
         @ctor = BaseGoogleMap

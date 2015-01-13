@@ -1,90 +1,137 @@
 /* Results Container
 ============================================================================= */
+propertyStatus()
+  .sold
+    color: rm-property-sold-red
+
+  .forsale
+    color rm-highlight-green
+
+  .pending
+    color: rm-property-pending-purple
+
+  .saved
+    color: rm-property-save-yello
+
+basicTitle()
+  display: block
+  color: #6B6B6B
+
+data()
+  .sqft .data, .year .data
+    font-size: .7em
+
+#results-header
+  width: 100%
+  background: white
+  height: 40px
+  position: absolute
+  top: 0px
+  border-bottom: 1px solid #CCC
+  z-index: 10000
+
+#results-header-results-count
+  float: left
+  width: 33%
+  background: #45a0d9
+  height: 100%
+  color: white
+  padding: 7px 10px
+  font-size: 18px
+
+#results-header-results-count-arrow
+  width: 0
+  height: 0
+  border-left: 10px solid transparent
+  border-right: 10px solid transparent
+  border-top: 10px solid #45a0d9
+  position: absolute
+  top: 39px
+  left: 10px
+
+#results-header-right
+  position: absolute
+  right: 20px
+  color: #929292
+  padding: 8px
+
+#results-footer
+  width: 100%
+  background: #123D74
+  height: 50px
+  position: absolute
+  bottom: 0px
+
+#results-close
+  float: left
+  width: 35px
+  height: 100%
+  font-size: 1.3em
+  position: absolute
+  left: -35px
+
+#results-footer .close
+  float: right
+  font-size: 45px
+  font-weight: 100
+  line-height: 1
+  color: #FFFFFF
+  text-shadow: 0 1px 0 #ffffff
+  opacity: 1.0
+  margin-right: 14px
 
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
 .results-container
-    margin: 0 0 0 0px
-    position: absolute
-    z-index: 2
-    bottom: 0
-    right: 0
-    width:100%
-    top: 0px
+  propertyStatus()
+  margin: 0 0 0 0px
+  position: absolute
+  z-index: 2
+  bottom: 0
+  right: 0
+  width: 100%
+  top: 0px
 
-#results-close
-    float:left
-    width:35px
-    height:100%
-    font-size:1.3em
-    position:absolute
-    left:-35px
+  .gridStyle
+    border: 1px solid rgb(212, 212, 212);
+    width: 400px;
+    height: 300px
 
-#results-list-inner
+  .results-sort-btn.fa
+    color: black
+    height 22px
+    margin-left 5px
+
+  /*.results-list-inner*/
+  /*button*/
+  .active-sort
+    background-color rm-medium-blue
+    color white
+
+  #results-list-inner
     float: left
 
-#results-list
+  #results-list
     overflow-y: auto
     position: absolute
     bottom: 50px
     top: 40px
-    width:100%
-    height:100%
+    width: 100%
+    height: 100%
     background-color white
 
-#results-header
-    width: 100%
-    background: white
-    height: 40px
-    position: absolute
-    top: 0px
-    border-bottom:1px solid #CCC
-    z-index: 10000
-
-#results-header-results-count
-    float: left
-    width: 33%
-    background: #45a0d9
-    height: 100%
-    color: white
-    padding: 7px 10px
-    font-size: 18px
-
-#results-header-results-count-arrow
-    width: 0
-    height: 0
-    border-left: 10px solid transparent
-    border-right: 10px solid transparent
-    border-top: 10px solid #45a0d9
-    position: absolute
-    top: 39px
-    left: 10px
-
-#results-header-right
-    position:absolute
-    right:20px
-    color: #929292
-    padding: 8px
-
-#results-footer
-    width: 100%
-    background: #123D74
-    height: 50px
-    position: absolute
-    bottom: 0px
-
-.result-property
+  .result-property
     height 95px
     border-bottom-width 2px
     border-bottom 1px solid #d9d9d9
     transition .15s all ease-in-out
     overflow hidden
 
-.result-property:hover
+  .result-property:hover
     height 125px
     background rm-results-hover
 
-.card
+  .card
     position: relative
     display: block
     cursor: pointer
@@ -92,187 +139,177 @@
     padding: 10px
     height: 95px
     overflow: hidden
-    font-size:.8em
-    height:65px
+    font-size: .8em
+    height: 65px
 
-.selectedCard
-    background-color:rgb(191, 255, 171) !important
-    background-color:rgb(208, 255, 199) !important
+  .selectedCard
+    background-color: rgb(191, 255, 171) !important
+    background-color: rgb(208, 255, 199) !important
 
-.card .photo
+  .card .photo
     display: inline-block
     width: 100px
     height: 75px
     float: left
     margin-right: 10px
 
-
-.card .property-status
+  .card .property-status
     text-align right
     color rm-main-dark-blue
     font-size 15px
 
-.card .snail
+  .card .snail
     text-align: center
     font-size: 11px
     padding: 1px 2px
     width: 100%
 
-.card .info
-    display:inline-block
+  .card .info
+    display: inline-block
     width: 200px
 
-
-.card .info .address
-    display:inline-block
+  .card .info .address
+    display: inline-block
     font-size: 1.3em
     color: #6B6B6B
 
-
-.card .info .price
+  .card .info .price
     position: absolute
     right: 10px
     display: inline-block
     font-size: 1.3em
     color: #0062A0
 
-
-.card .info .beds, .card .info .baths, .card .info .sqft, .card .info .year
+  .card .info .beds, .card .info .baths, .card .info .sqft, .card .info .year
     float: left
     width: 50px
-    font-size:1.5em
-    text-align:center
+    font-size: 1.5em
+    text-align: center
 
-
-.card .info .title
+  .card .info .title
     font-size: .5em
-    display: block
-    color:#6B6B6B
+    basicTitle()
 
-
-.card .info .sqft .data, .card .info .year .data
-    font-size: .7em
-
-
-.card.loading
+  .card.loading
+    background-color: rgb(203, 255, 218)
     background-color: rgb(203, 255, 218)
     font-size: 1.3em
     color: #666
 
-
-.card-buttons
-    display:inline-block
+  .card-buttons
+    display: inline-block
     padding 0 10px
 
-
-#results-footer .close
-    float: right
-    font-size: 45px
-    font-weight: 100
-    line-height: 1
-    color: #FFFFFF
-    text-shadow: 0 1px 0 #ffffff
-    opacity: 1.0
-    margin-right: 14px
-
+  .card .info
+    data()
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px)
-    .results-container
-      width:350px
+  .results-container
+    width: 350px
 
-    .results-container .close
-      display:none
+  .results-container .close
+    display: none
 
-    #results-list
-      width:100%
+  #results-list
+    width: 100%
 
-    .card
-      font-size:.8em
-      height:65px
+  .card
+    font-size: .8em
+    height: 65px
 
-    .card .photo img
-      width:70px
-      height:50px
-      overflow:hidden
+  .card .photo img
+    width: 70px
+    height: 50px
+    overflow: hidden
 
-    .card .info
-      display:inline-block
-      width:200px
-
+  .card .info
+    display: inline-block
+    width: 200px
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
-    .results-container
-      width:500px
+  .results-container
+    width: 500px
 
-    #results-list
-      width:100%
+  #results-list
+    width: 100%
 
-    .card
-      font-size:1.0em
-      height:95px
+  .card
+    font-size: 1.0em
+    height: 95px
 
-    .card .photo img
-      width:100px
-      height:75px
-      overflow:none
+  .card .photo img
+    width: 100px
+    height: 75px
+    overflow: none
 
-    .card .info
-      display:inline-block
-      width:300px
-
+  .card .info
+    display: inline-block
+    width: 300px
 
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
 
-
-
-/*********************
+/*********************************************************************************************************
 End Results Container
-**********************/
+**********************************************************************************************************/
 
 .tray-close
-    background-color:rgba(0,0,0,.45)
+  background-color: rgba(0, 0, 0, .45)
 
 .tray-close-light
-    background-color:rgba(0,0,0,.15)
+  background-color: rgba(0, 0, 0, .15)
 
 .tray-close:hover
-    background-color:rgba(0,0,0,.55)
+  background-color: rgba(0, 0, 0, .55)
 
 .tray-close-light:hover
-    background-color:rgba(0,0,0,.25)
+  background-color: rgba(0, 0, 0, .25)
 
 /*****************
 Detail Container
 *****************/
-.detail-container
-    margin: 0 0 0 0px
-    position: absolute
-    z-index: 3
-    bottom: 0
-    right: 0
-    width:100%
-    top: 0px
+#detail-list
+  .info .container
+    data()
 
 #detail-close
-    float:left
-    width:35px
-    height:100%
-    font-size:1.3em
-    background-image: url("/assets/right-arrow-icon.png")
-    background-repeat:no-repeat
-    background-position:center center
-    position:absolute
-    left:-35px
+  float: left
+  width: 35px
+  height: 100%
+  font-size: 1.3em
+  background-image: url("/assets/right-arrow-icon.png")
+  background-repeat: no-repeat
+  background-position: center center
+  position: absolute
+  left: -35px
 
+#detail-footer
+  width: 100%
+  background: rgb(162, 200, 226)
+  height: 50px
+  position: absolute
+  bottom: 0px
 
+detailData()
+  font-size 18px
 
-#detail-list-inner
+.detail-container
+  margin: 0 0 0 0px
+  position: absolute
+  z-index: 3
+  bottom: 0
+  right: 0
+  width: 100%
+  top: 0px
+
+  propertyStatus()
+
+  #detail-list-inner
     float: left
 
-#detail-list
+  #detail-list
     background: #FFF
     overflow-y: auto
     position: absolute
@@ -280,133 +317,93 @@ Detail Container
     top: 0px
     width: 100%
 
-.detail-container .info
-    margin-top:10px
+  .detail-title
+    basicTitle()
+    font-size 14px
+
+  .price
+    font-size: 20px
+    color: #0062A0
+    text-align: left
+  .address
+    font-size: 20px
+    color: #0062A0
+  .city-state-zip
+    font-size: 16px
+    color: #4D4D4D
+
+  .property-status
+    text-align: center
+    color: #FFF
+
+  .photo
+    height: 200px
+    background: no-repeat url("http://placehold.it/500x300&text=image%20not%20available")
+
+  .beds-baths-sqft
+    text-align: left
+
+  .info .data
+    detailData()
+
+  .info
+    margin-top: 10px
     margin-right: auto
     margin-left: auto
     padding-left: 15px
     padding-right: 15px
 
-.detail-container .address
-    font-size:20px
-    color: #0062A0
+  table
+    td:first-child
+      @extends .detail-container .detail-title
 
-.detail-container .city-state-zip
-    font-size:16px
-    color: #4D4D4D
+    td:nth-child(2)
+      detailData()
+      padding-right 300px
 
-.detail-container .price
-    font-size:20px
-    color: #0062A0
-    text-align:left
+.info .title
+  @extends .detail-container .detail-title
 
-.detail-container .property-status
-    text-align: center
-    color:#FFF
-
-.sold
-    color: rm-property-sold-red
-
-.forsale
-    color rm-highlight-green
-
-.pending
-    color: rm-property-pending-purple
-
-.saved
-  color: rm-property-save-yello
-
-.detail-container
-  .photo
-    height:200px
-    background: no-repeat url("http://placehold.it/500x300&text=image%20not%20available")
-
-  .beds-baths-sqft
-    text-align:left
-
-  .info .beds, .detail-container .info .baths, .detail-container .info .sqft, .detail-container .info .year
-    font-size: 18px
-
- .info .title
-    display: block
-    color:#6B6B6B
-    font-size:14px
-
- .detail-section-title
-    border-bottom: 1px solid #A7A7A7
-    margin-top: 15px
-    color: rgb(92, 92, 92)
-    font-size: 18px
-    font-weight: 200
-
-#detail-footer
-    width: 100%
-    background: rgb(162, 200, 226)
-    height: 50px
-    position: absolute
-    bottom: 0px
-
+.detail-section-title
+  border-bottom: 1px solid #A7A7A7
+  margin-top: 15px
+  color: rgb(92, 92, 92)
+  font-size: 18px
+  font-weight: 200
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px)
 
-    .detail-container
-      width:350px
+  .detail-container
+    width: 350px
+    .photo
+      height: 300px
+    .close
+      display: none
+    .address
+      font-size: 20px
+    .price
+      font-size: 22px
+      text-align: right
 
+  #detail-close
+    display: block
 
-    .detail-container .photo
-      height:300px
-
-
-    .detail-container .close
-      display:none
-
-    .detail-container .address
-      font-size:20px
-
-    .detail-container .price
-      font-size:22px
-      text-align:right
-
-
-    #detail-close
-      display:block
-
-    #detail-list
-      width:100%
-
-
-
+  #detail-list
+    width: 100%
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
 
-    .detail-container
-      width:500px
+  .detail-container
+    width: 500px
 
-    #detail-close
-      display:block
+  #detail-close
+    display: block
 
-    #detail-list
-      width:100%
+  #detail-list
+    width: 100%
 
-
-/*****************
+/*****************************************************************************************************
 End Detail Container
-*****************/
-
-.gridStyle
-    border: 1px solid rgb(212,212,212);
-    width: 400px;
-    height: 300px
-
-.results-sort-btn.fa
-    color: black
-    height 22px
-    margin-left 5px
-
-/*.results-list-inner*/
-    /*button*/
-.active-sort
-    background-color rm-medium-blue
-    color white
+*****************************************************************************************************/

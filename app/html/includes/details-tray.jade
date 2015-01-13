@@ -1,11 +1,10 @@
-<!--Begin Detail Container-->
 .navbar-below.detail-container#results-slide(ng-show="showDetails")
     .tray-close-light#detail-close(ng-click="showDetails = !showDetails")
-      i.centered.fa.fa-chevron-right.fa-2x
+        i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
             .photo
-              img(ng-src="{{resultsFormatter.getStreetView(500,300)}}")
+                img(ng-cloak ng-src="{{resultsFormatter.getStreetView(selectedResult,500,300)}}")
             .info.container
                 .row
                     .col-sm-8
@@ -13,7 +12,7 @@
                         .city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
                     .col-sm-4
                         .price {{resultsFormatter.getPrice(selectedResult.price)}}
-                      .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
+                        .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                     .col-sm-3.beds
@@ -36,16 +35,24 @@
 
                 .row.sale-info(ng-if="selectedResult.listing_age_days")
                     .col-sm-12.detail-section-title Historical Sales
-                    .col-sm-8( ng-if="selectedResult.listing_age_days" ng-cloak) days listed: {{selectedResult.listing_age_days.days}}
-                    .col-sm-8( ng-if="selectedResult.listing_age_full" ng-cloak) {{selectedResult.listing_age_full}}
-                    .col-sm-4(ng-if="selectedResult.close_date" ng-cloak) {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .col-sm-4(ng-if="selectedResult.close_price" ng-cloak) last sale: {{resultsFormatter.getPrice(selectedResult.close_price)}}
-                    .col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .col-sm-8 {{selectedResult.sale2_amount}}
-                    .col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .col-sm-8 {{selectedResult.sale3_amount}}
-                    .col-sm-4 {{selectedResult.sale4_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .col-sm-8 {{selectedResult.sale4_amount}}
+                    table.table.table-condensed.table-hover
+                        tr(ng-if="selectedResult.listing_age_days" ng-cloak)
+                            td Days Listed:
+                            td {{selectedResult.listing_age_days.days}}
+                        tr(ng-if="selectedResult.listing_age_full" ng-cloak)
+                            td Full Age Listed:
+                            td {{resultsFormatter.getInterval(selectedResult.listing_age_full)}}
+                        tr(ng-if="selectedResult.close_date" ng-cloak)
+                            td Close Date:
+                            td {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                        tr(ng-if="selectedResult.close_price" ng-cloak)
+                            td Close Price:
+                            td {{resultsFormatter.getPrice(selectedResult.close_price)}}
+                    //.col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    //.col-sm-8 {{selectedResult.sale2_amount}}
+                    //.col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    //.col-sm-8 {{selectedResult.sale3_amount}}
+                    //.col-sm-4 {{selectedResult.sale4_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    //.col-sm-8 {{selectedResult.sale4_amount}}
     #results-footer
         .close(click="toggleDetails()") x
-<!--End Details Container-->
