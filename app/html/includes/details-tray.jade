@@ -7,10 +7,10 @@
                 img(ng-cloak ng-src="{{resultsFormatter.getStreetView(selectedResult,500,300)}}")
             .info.container
                 .row
-                    .col-sm-8
+                    .col-sm-3
                         .address {{selectedResult.street_address_num + " " + selectedResult.street_address_name + " " + selectedResult.street_type }}
                         .city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
-                    .col-sm-4
+                    .col-sm-2
                         .price {{resultsFormatter.getPrice(selectedResult.price)}}
                         .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
                 .row.beds-baths-sqft
@@ -27,11 +27,19 @@
                     .col-sm-3.year
                         span.data {{resultsFormatter.orNa(selectedResult.year_built)}}
                         span.title Built
-                .row.owner-info
+                .row.owner-info(ng-if="selectedResult.owner_name || selectedResult.owner_name2 || selectedResult.owner_name")
                     .col-sm-12.detail-section-title Owner Info
-                    .col-sm-12 {{resultsFormatter.orNa(selectedResult.owner_name)}}
-                    .col-sm-12 {{resultsFormatter.orNa(selectedResult.owner_name2)}}
-                    .col-sm-12 {{resultsFormatter.getCityStateZip(selectedResult,'owner')}}
+                    .col-sm-12n(ng-if="selectedResult.owner_name") {{resultsFormatter.orNa(selectedResult.owner_name)}}
+                    .col-sm-12(ng-if="selectedResult.owner_name2") {{resultsFormatter.orNa(selectedResult.owner_name2)}}
+                    .col-sm-12(ng-if="selectedResult.owner_city || selectedResult.owner_state") {{resultsFormatter.getCityStateZip(selectedResult,'owner')}}
+                        .row
+                            .col-sm-12.data(ng-if="result.owner_street_address_num || result.owner_street_address_name"
+                        ng-cloak) {{result.owner_street_address_num + ' ' + result.owner_street_address_name}}
+                        .row
+                            .col-sm-3.data(ng-if="selectedResult.owner_city") {{selectedResult.owner_city + ","}}
+                            .col-sm-2.data(ng-if="selectedResult.owner_state") {{selectedResult.owner_state + ' ' + selectedResult.zip}}
+
+
 
                 .row.sale-info(ng-if="selectedResult.listing_age_days")
                     .col-sm-12.detail-section-title Historical Sales

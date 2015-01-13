@@ -5,9 +5,17 @@ qs = require 'qs'
 app.service 'FilterManager'.ourNs(), [
   '$rootScope', 'Logger'.ourNs(), 'ParcelEnums'.ourNs()
   ($rootScope, $log, ParcelEnums) ->
+
+    cleanClears = ->
+      #remove all null values to clear them
+      _.each $rootScope.selectedFilters, (v,k) ->
+        unless v?
+          delete $rootScope.selectedFilters[k]
+
     manage: (cb) =>
       filter = null
       if $rootScope.selectedFilters
+        cleanClears()
         selectedFilters = _.clone($rootScope.selectedFilters)
         selectedFilters.status = []
         if (selectedFilters.forSale)
@@ -21,6 +29,7 @@ app.service 'FilterManager'.ourNs(), [
         delete selectedFilters.pending
         delete selectedFilters.sold
         delete selectedFilters.notForSale
+
         filter = '&' + qs.stringify(selectedFilters)
       cb(filter)
       filter
