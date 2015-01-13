@@ -1,6 +1,6 @@
 div(class="{{pageClass}}", ng-show="$state.is('main')", ng-cloak).page
   section
-    .heroContainer
+    .heroContainer.center-on-page
       .heroImage
         img(src="../../assets/logo.png")
       .heroText
@@ -9,4 +9,4 @@ div(class="{{pageClass}}", ng-show="$state.is('main')", ng-cloak).page
         input(id="target", placeholder="Enter a city, address, neighborhood etc...", type="text")/
         a(href="{{frontendRoutes.map}}")
         #btn
-        | Go
+          div Go
