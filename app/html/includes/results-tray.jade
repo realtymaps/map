@@ -44,10 +44,11 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                         img(ng-cloak ng-src="{{resultsFormatter.getCurbsideImage(result)}}")
                     .info
                         .address(ng-if="result.street_address_num || result.street_address_name || result.street_type",ng-cloak)
-                        | {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
-                          .price(ng-cloak)
-                            .price-value {{resultsFormatter.getPrice(result.price)}}
-                            .property-status {{result.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(result)"></i>
+                            | {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
+                            .price(ng-cloak)
+                                .price-value {{resultsFormatter.getPrice(result.price)}}
+                                .property-status {{result.rm_status}}
+                                    i.fa.fa-square.fa-lg(ng-class="resultsFormatter.getForSaleClass(result)")
                         div
                             .beds
                                 span.data {{resultsFormatter.orNa(result.bedrooms)}}
