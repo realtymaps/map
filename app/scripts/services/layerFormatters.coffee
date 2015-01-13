@@ -91,6 +91,7 @@ app.service 'LayerFormatters'.ourNs(), [
         labelContent: "<span class='address-label'>#{String.orNA parcel.street_address_num}</span>"
         labelAnchor: "10 10"
         zIndex: 1
+        markerType: "streetNum"
 
       fill: fill
       labelFromStreetNum: labelFromStreetNum
@@ -111,6 +112,7 @@ app.service 'LayerFormatters'.ourNs(), [
           labelContent: formatStatusMarkerContent(mls.isMousedOver or savedStatus or mls.rm_status, formattedPrice)
           labelAnchor: "30 50"
           zIndex: 2
+          markerType: "price"
         ret
 
       getWindowOffset: getWindowOffset
