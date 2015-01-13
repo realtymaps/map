@@ -12,6 +12,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
     _forSaleClass[ParcelEnums.status.pending] = 'pending'
     _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
+    _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 

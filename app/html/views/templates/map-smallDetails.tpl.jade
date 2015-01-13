@@ -1,13 +1,13 @@
 div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" style="white-space:nowrap" ng-cloak)
-  div(class="panel-heading") {{street_address_num}} {{street_address_name}}
-  div(class="panel-body")
+  .panel-heading(ng-class="statusClass") {{street_address_num}} {{street_address_name}}
+  .panel-body
     table(class="table table-condensed table-hover")
       tr
-        td Price:
+        td {{rm_status=='recently sold'||rm_status=='not for sale'?'Sold':'Asking'}} Price:
         td ${{price}}
       tr
-          td Status:
-          td {{rm_status}}
+        td Status:
+        td {{rm_status}}
       tr
         td Assessed Price:
         td ${{local_assessed_value}}

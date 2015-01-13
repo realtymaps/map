@@ -14,9 +14,10 @@ app.service 'FilterManager'.ourNs(), [
           selectedFilters.status.push(ParcelEnums.status.forSale)
         if (selectedFilters.pending)
           selectedFilters.status.push(ParcelEnums.status.pending)
-          delete selectedFilters.pending
         if (selectedFilters.sold)
           selectedFilters.status.push(ParcelEnums.status.sold)
+        if (selectedFilters.notForSale)
+          selectedFilters.status.push(ParcelEnums.status.notForSale)
         delete selectedFilters.forSale
         delete selectedFilters.pending
         delete selectedFilters.sold

@@ -63,10 +63,10 @@ module.exports =
       sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
       sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 
-      if filters.bedsMin?
+      if filters.bedsMin
         query.where("bedrooms", '>=', filters.bedsMin)
 
-      if filters.bathsMin?
+      if filters.bathsMin
         query.where("baths_full", '>=', filters.bathsMin)
 
       if state and state.properties_selected

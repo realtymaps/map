@@ -5,10 +5,19 @@ numeral = require 'numeral'
 casing = require 'case'
 moment = require 'moment'
 
+
 module.exports =
-  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), ($scope, $log) ->
+  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), ($scope, $log, ParcelEnums) ->
+    colorClasses = {}
+    colorClasses[ParcelEnums.status.sold] = 'label-sold-property'
+    colorClasses[ParcelEnums.status.pending] = 'label-pending-property'
+    colorClasses[ParcelEnums.status.forSale] = 'label-sale-property'
+    colorClasses[ParcelEnums.status.notForSale] = 'label-notsale-property'
+
     getPrice = (val) ->
-      String.orNA if val then casing.upper numeral(val).format('0.00a'), '.' else null
+      String.orNA if val then casing.upper numeral(val).format('0,0'), ',' else null
+    getStatusClass = (status) ->
+      return colorClasses[status] || ''
 
     $scope.street_address_num = String.orNA $scope.parameter.street_address_num
     $scope.street_address_name = String.orNA $scope.parameter.street_address_name
@@ -22,5 +31,5 @@ module.exports =
     $scope.year_built = if $scope.parameter.year_built then moment($scope.parameter.year_built).format('YYYY') else String.orNA $scope.parameter.year_built
     $scope.acres = String.orNA $scope.parameter.acres
     $scope.rm_status = String.orNA $scope.parameter.rm_status
-    , true
+    $scope.statusClass = getStatusClass($scope.parameter.rm_status)
   ]
