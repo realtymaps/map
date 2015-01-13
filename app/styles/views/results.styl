@@ -1,6 +1,9 @@
 /* Results Container
 ============================================================================= */
 propertyStatus()
+  .property-status
+    color rm-main-dark-blue
+
   .sold
     color: rm-property-sold-red
 
@@ -122,7 +125,6 @@ data()
 
   .result-property
     height 95px
-    border-bottom-width 2px
     border-bottom 1px solid #d9d9d9
     transition .15s all ease-in-out
     overflow hidden
@@ -137,13 +139,11 @@ data()
     cursor: pointer
     width: 100%
     padding: 10px
-    height: 95px
     overflow: hidden
     font-size: .8em
-    height: 65px
+    height: 95px
 
   .selectedCard
-    background-color: rgb(191, 255, 171) !important
     background-color: rgb(208, 255, 199) !important
 
   .card .photo
@@ -155,7 +155,6 @@ data()
 
   .card .property-status
     text-align right
-    color rm-main-dark-blue
     font-size 15px
 
   .card .snail
@@ -325,16 +324,17 @@ detailData()
     font-size: 20px
     color: #0062A0
     text-align: left
+
   .address
     font-size: 20px
     color: #0062A0
+
   .city-state-zip
     font-size: 16px
     color: #4D4D4D
 
   .property-status
     text-align: center
-    color: #FFF
 
   .photo
     height: 200px
