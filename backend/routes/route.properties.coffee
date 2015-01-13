@@ -1,4 +1,5 @@
 Promise = require "bluebird"
+detailService = require '../services/service.properties.details.coffee'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'
 requestUtil = require '../utils/util.http.request'
@@ -28,3 +29,7 @@ module.exports =
   parcelBase: (req, res, next) ->
     handleRoute res, next, () ->
       parcelService.getBaseParcelData(req.session.state, req.query)
+
+  detail: (req, res, next) ->
+    handleRoute res, next, () ->
+      detailService.getDetail(req.session.state, req.query)
