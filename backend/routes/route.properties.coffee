@@ -32,4 +32,4 @@ module.exports =
 
   detail: (req, res, next) ->
     handleRoute res, next, () ->
-      detailService.getDetail(req.session.state, req.query)
+      detailService.getDetail(req.session.state, req.query, next)

@@ -77,7 +77,7 @@ module.exports =
         #have notes and history about a prop (but you may not always want it highlighted on the map)
         query.orWhere ->
           @whereRaw(filters.bounds.sql, filters.bounds.bindings)
-          @where('rm_property_id', _.keys(state.properties_selected))
+          @where( rm_property_id: _.keys(state.properties_selected))
 
       query.limit(limit) if limit
       #logger.sql query.toString()
@@ -89,7 +89,7 @@ module.exports =
           row.rm_property_id
         data = dataPropertyUtil.joinSavedProperties(state,data)
         return data
-  
+
   getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
     query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
     query.where(rm_property_id: rm_property_id)
