@@ -6,7 +6,8 @@ casing = require 'case'
 
 app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GoogleService) ->
+  'Properties'.ourNs(),
+  ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties) ->
     _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
@@ -167,7 +168,13 @@ app.factory 'ResultsFormatter'.ourNs(), [
               # if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
       click: (result) =>
+        #immediatley show something
         @mapCtrl.scope.selectedResult = result
+        #start getting more data
+        Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id)
+        .then (data) =>
+          angular.extend @mapCtrl.scope.selectedResult, data
+
         @mapCtrl.scope.showDetails = true
 
       dblclick: (result) =>
