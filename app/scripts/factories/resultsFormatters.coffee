@@ -1,13 +1,11 @@
 app = require '../app.coffee'
 
 sprintf = require('sprintf-js').sprintf
-numeral = require 'numeral'
-casing = require 'case'
 
 app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  'Properties'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties) ->
+  'Properties'.ourNs(), 'FormattersService'.ourNs(),
+  ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties, FormattersService) ->
     _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
@@ -17,10 +15,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
-    resultEvents = ['click','dblclick', 'mouseover', 'mouseleave']
+    resultEvents = ['click', 'dblclick', 'mouseover', 'mouseleave']
 
-    class ResultsFormatter
+    #TODO: BaseObject should really come from require not window.. same w/ PropMap
+    class ResultsFormatter extends BaseObject
+      @include FormattersService.Common
+      @include FormattersService.Google
       constructor: (@mapCtrl) ->
+        super()
         @reset = _.debounce =>
           @mapCtrl.scope.resultsLimit = 10
           @mapCtrl.scope.results = []
@@ -70,9 +72,9 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           "fa fa-chevron-circle-up"
 
-      getCityStateZip:(result, prependProp = '') ->
+      getCityStateZip: (result, prependProp = '') ->
         return if not @mapCtrl.scope.Toggles.showResults or not result
-        vals = ['city','state','zip'].map (l) =>
+        vals = ['city', 'state', 'zip'].map (l) =>
           @orNa result[prependProp + l]
         # $log.debug vals
         "#{vals[0]}, #{vals[1]} #{vals[2]}"
@@ -80,35 +82,11 @@ app.factory 'ResultsFormatter'.ourNs(), [
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
 
-      getCurbsideImage: (result) ->
-        return 'http://placehold.it/100x75' unless result
-        lonLat = result.geom_point_json.coordinates
-        "http://cbk0.google.com/cbk?output=thumbnail&w=100&h=75&ll=#{lonLat[1]},#{lonLat[0]}&thumb=1"
-
-      getStreetView: (width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
-        # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama
-        # heading is better left as undefined as google figures out the best heading based on the lat lon target
-        # we might want to consider going through the api which will gives us URL
-        selectedResult = @mapCtrl.scope.selectedResult
-        if heading
-          heading = "&heading=#{heading}"
-        return unless selectedResult
-        lonLat = selectedResult.geom_point_json.coordinates
-        "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
-        "&location=#{lonLat[1]},#{lonLat[0]}" +
-        "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}"
-
       getForSaleClass: (result) ->
         return unless result
-#        $log.debug "result: #{JSON.stringify(result)}"
+        #        $log.debug "result: #{JSON.stringify(result)}"
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
-
-      getPrice: (price) ->
-        numeral(price).format('$0,0.00')
-
-      orNa: (val) ->
-        String.orNA val
 
       loadMore: =>
         #debugging
@@ -124,6 +102,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
         numberOfCards = Math.round totalHeight / cardHeight
         #min height to keep scrolling
         numberOfCards
+
+      bindResultsListEvents: _.debounce ->
+        #TODO use a performant directive
+        resultEvents.forEach (eventName) =>
+          angular.element(document.getElementsByClassName(@mapCtrl.scope.resultClass))
+          .unbind(eventName)
+          .bind eventName, (event) =>
+            @[eventName](angular.element(event.target or event.srcElement).scope().result)
 
       throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
         unless @resultsContainer
@@ -151,21 +137,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
             @mapCtrl.scope.results.push summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
+        @bindResultsListEvents()
 
-
-        # if @oldEventsPromise?
-        #   $timeout.cancel @oldEventsPromise
-        # @oldEventsPromise = $timeout =>
-        _.defer =>
-          #finally , hook mouseover / mouseleave manually for performance
-          #use ng-init to pass in id name and class names of properties to keep loose coupling
-          #TODO use a performant directive
-          resultEvents.forEach (eventName) =>
-            angular.element(document.getElementsByClassName(@mapCtrl.scope.resultClass))
-            .unbind(eventName)
-            .bind eventName, (event) =>
-              @[eventName](angular.element(event.target or event.srcElement).scope().result)
-              # if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
       click: (result) =>
         #immediatley show something
