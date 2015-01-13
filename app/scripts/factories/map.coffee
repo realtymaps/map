@@ -158,7 +158,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             listingEvents:
               mouseover: (gObject, eventname, model) ->
-                return if _maybeHideAddressMarker(gObject)
+                #return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
                 childModel = GoogleService.UiMap.getCorrectModel model
@@ -166,7 +166,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
-                $scope.actions.closeListing()
+                if GoogleService.Map.isGPoly(gObject)
+                  $scope.actions.closeListing()
                 return if gObject.labelClass?
                 childModel = GoogleService.UiMap.getCorrectModel model
                 opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
