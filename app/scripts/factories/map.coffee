@@ -40,6 +40,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return unless data?
         mapFact.scope.layers.filterSummary = data
         mapFact.updateFilterSummaryHash()
+        mapFact.scope.$evalAsync () ->
+          mapFact.scope.resultsFormatter?.reset()
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
