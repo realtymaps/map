@@ -20,7 +20,7 @@ module.exports =
   properties:
     filterSummary:   "#{apiBase}/properties/filter_summary/"
     parcelBase:      "#{apiBase}/properties/parcel_base/"
-    detail:          "#{apiBase}/properties/detail/" # not yet set up or fully specified
+    detail:          "#{apiBase}/properties/detail/"
   snail:
     quote:            "#{apiBase}/snail/quote"
     send:             "#{apiBase}/snail/send"
