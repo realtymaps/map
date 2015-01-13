@@ -67,9 +67,9 @@ environmentConfig =
 
   development:
     USER_DB:
-      debug: true
+      debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:
-      debug: true
+      debug: false # set to true for verbose db logging on the properties db
     TRUST_PROXY: false
     SESSION:
       cookie:
