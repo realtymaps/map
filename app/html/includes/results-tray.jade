@@ -43,8 +43,9 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                     .photo()
                         img(ng-cloak ng-src="{{resultsFormatter.getCurbsideImage(result)}}")
                     .info
-                        .address {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
-                        .price(ng-cloak)
+                        .address(ng-if="result.street_address_num || result.street_address_name || result.street_type",ng-cloak)
+                        | {{result.street_address_num + " " + result.street_address_name + " " + result.street_type }}
+                          .price(ng-cloak)
                             .price-value {{resultsFormatter.getPrice(result.price)}}
                             .property-status {{result.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(result)"></i>
                         div

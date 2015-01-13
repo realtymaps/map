@@ -73,13 +73,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           "fa fa-chevron-circle-up"
 
-      getCityStateZip: (result, prependProp = '') ->
-        return if not @mapCtrl.scope.Toggles.showResults or not result
-        vals = ['city', 'state', 'zip'].map (l) =>
-          @orNa result[prependProp + l]
-        # $log.debug vals
-        "#{vals[0]}, #{vals[1]} #{vals[2]}"
-
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
 
