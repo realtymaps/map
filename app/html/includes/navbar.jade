@@ -6,13 +6,13 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         span.icon-bar
         span.icon-bar
         span.icon-bar
-      a(href="{{frontendRoutes.index}}", ng-hide="hide-nav").navbar-brand
+      a.navbar-hide(href="{{frontendRoutes.index}}", ng-hide="$state.is('main')").navbar-brand
         img(src="/assets/logo.png")
     .collapse.navbar-collapse
       ul.nav.navbar-nav
-        li(ng-hide="hide-nav")
+        li.navbar-hide(ng-hide="$state.is('main')")
           a(href="{{frontendRoutes.map}}") Map
-        li
+        li(ng-hide="$state.is('main')")
           include ./spinner.jade
         li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
           a(href="{{frontendRoutes.login}}") Sign In
