@@ -5,7 +5,7 @@ loaders = require '../utils/util.loaders'
 
 
 routesConfig =
-  
+
   wildcard:
     backend:
       method: 'all'
@@ -32,6 +32,11 @@ routesConfig =
         auth.requireLogin(redirectOnFail: true)
         userService.captureMapState
       ]
+    detail:
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        userService.captureMapState
+      ]
   version:
     version: {}
   snail:
@@ -47,7 +52,7 @@ module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
     logger.infoRoute "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     app[route.method](route.path, route.middleware..., route.handle)
-  
+
   logger.info '\n'
   logger.info "available routes: "
   app._router.stack.filter((r) ->

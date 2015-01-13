@@ -13,7 +13,7 @@
                         .city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
                     .col-sm-4
                         .price {{resultsFormatter.getPrice(selectedResult.price)}}
-                        .property-status(ng-class="{sold: selectedResult.propertyStatus == propertyStatusSold, forsale: selectedResult.propertyStatus == propertyStatusForSale}") {{selectedResult.propertyStatus}}
+                      .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                     .col-sm-3.beds
@@ -33,10 +33,13 @@
                     .col-sm-12 {{resultsFormatter.orNa(selectedResult.owner_name)}}
                     .col-sm-12 {{resultsFormatter.orNa(selectedResult.owner_name2)}}
                     .col-sm-12 {{resultsFormatter.getCityStateZip(selectedResult,'owner')}}
-                .row.sale-info
+
+                .row.sale-info(ng-if="selectedResult.listing_age_days")
                     .col-sm-12.detail-section-title Historical Sales
-                    .col-sm-4 {{selectedResult.sale1_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .col-sm-8 {{selectedResult.sale1_amount}}
+                    .col-sm-8( ng-if="selectedResult.listing_age_days" ng-cloak) days listed: {{selectedResult.listing_age_days.days}}
+                    .col-sm-8( ng-if="selectedResult.listing_age_full" ng-cloak) {{selectedResult.listing_age_full}}
+                    .col-sm-4(ng-if="selectedResult.close_date" ng-cloak) {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                    .col-sm-4(ng-if="selectedResult.close_price" ng-cloak) last sale: {{resultsFormatter.getPrice(selectedResult.close_price)}}
                     .col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     .col-sm-8 {{selectedResult.sale2_amount}}
                     .col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}

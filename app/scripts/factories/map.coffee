@@ -15,42 +15,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
     uiGmapPromise) ->
 
-    invokePropertyService = (mapFact, dataType, cb) ->
-      myId = mapFact.drawPromisesIndex += 1
-      drawPromise = Properties.getPropertyData(dataType, mapFact.hash, mapFact.mapState, mapFact.filters)
-      if !drawPromise?
-        return
-      drawPromise.then (data) =>
-        cb(mapFact, data.data) if data?
-      .finally =>
-        mapFact.drawPromisesMap.remove myId
-      mapFact.drawPromisesMap.put myId, () ->
-        # prevent alerts from the canceled $http call
-        $rootScope.$emit Events.alert.prevent,
-          id: "0-#{backendRoutes.properties[dataType]}"
-          quietMillis: MainOptions.alert.cancelQuietMillis
-        # do the cancel
-        drawPromise.cancel()
-
-    getParcelBase = (mapFact) ->
-      invokePropertyService mapFact, 'parcelBase', (mapFact, data) ->
-        mapFact.scope.layers.parcels = data
-    getFilterSummary = (mapFact) ->
-      invokePropertyService mapFact, 'filterSummary', (mapFact, data) ->
-        return unless data?
-        mapFact.scope.layers.filterSummary = data
-        mapFact.updateFilterSummaryHash()
-        mapFact.scope.$evalAsync () ->
-          mapFact.scope.resultsFormatter?.reset()
-
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         # $scope.debug = true
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel
         self = @
-        @drawPromisesMap = new PropMap()
-        @drawPromisesIndex = 0
+
         GoogleMapApi.then (maps) =>
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
@@ -206,19 +177,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       redraw: =>
-        if @drawPromisesMap.length
-          @drawPromisesMap.each (cancelHandler) ->
-            cancelHandler()
-
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          getParcelBase(@)
+          Properties.getParcelBase(@hash, @mapState).then (data) =>
+            return unless data?
+            @scope.layers.parcels = data
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         if @filters
-          getFilterSummary(@)
+          Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
+            return unless data?
+            @scope.layers.filterSummary = data
+            @updateFilterSummaryHash()
+            @scope.$evalAsync () =>
+              @scope.resultsFormatter?.reset()
+
         else
           @scope.layers.filterSummary.length = 0
 
