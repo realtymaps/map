@@ -1,16 +1,19 @@
 div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" style="white-space:nowrap" ng-cloak)
-  div(class="panel-heading") {{street_address_num}} {{street_address_name}}
-  div(class="panel-body")
+  .panel-heading(ng-class="statusClass") {{street_address_num}} {{street_address_name}}
+  .panel-body
     table(class="table table-condensed table-hover")
       tr
-        td Price:
-        td ${{price}}
+        td {{rm_status=='recently sold'||rm_status=='not for sale'?'Sold':'Asking'}} Price:
+        td {{price}}
       tr
-          td Status:
-          td {{rm_status}}
+        td Status:
+        td {{rm_status}}
       tr
-        td Assessed Price:
-        td ${{local_assessed_value}}
+        td Owner:
+        td {{owner_name}}
+          span(ng-if="owner_name2")
+            br/
+            | {{owner_name2}}
       tr
         td Beds:
         td {{beds_total}}
@@ -35,3 +38,6 @@ div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" 
       tr
         td Finished SqFt:
         td {{finished_sqft}}
+      tr
+        td Assessed Price:
+        td {{local_assessed_value}}

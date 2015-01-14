@@ -1,25 +1,45 @@
 memoize = require 'memoizee'
 
 _interval = (val, operator, beginTimeStamp, endTmeStamp, interval) ->
-  "make_negative_interval_null((#{endTmeStamp}::timestamp - #{beginTimeStamp}::timestamp)) #{operator} #{val} * INTERVAL '1 #{interval}'"
+  sql: "make_negative_interval_null((#{endTmeStamp}::timestamp - #{beginTimeStamp}::timestamp)) #{operator} ? * INTERVAL '1 #{interval}'"
+  bindings: [ val ]
 
 _days = (val, operator, beginTimeStamp, endTmeStamp) ->
   _interval val, operator, beginTimeStamp, endTmeStamp, 'day'
 
+_whereRawSafe = (query, rawSafe) ->
+  query.whereRaw rawSafe.sql, rawSafe.bindings
+_orWhereRawSafe = (query, rawSafe) ->
+  query.orWhere ()-> _whereRawSafe(@, rawSafe)
+
+
 module.exports =
 
   between: (query, column, min, max) ->
-    if min? and max?
+    if min and max
       query.whereBetween(column, [min, max])
-    else if min?
+    else if min
       query.where(column, '>=', min)
-    else if max?
+    else if max
       query.where(column, '<=', max)
+  
   tableName: memoize (model) ->
     model.query()._single.table
 
-  daysGreaterThan: (val, beginTimeStamp = 'close_date', endTmeStamp = 'listing_start_date') ->
-    _days(val, '>=', beginTimeStamp, endTmeStamp)
+  daysGreaterThan: (query, val, beginTimeStamp = 'close_date', endTmeStamp = 'listing_start_date') ->
+    _whereRawSafe query, _days(val, '>=', beginTimeStamp, endTmeStamp)
 
-  daysLessThan: (val, beginTimeStamp = 'close_date', endTmeStamp = 'listing_start_date') ->
-    _days(val, '>=', beginTimeStamp, endTmeStamp)
+  daysLessThan: (query, val, beginTimeStamp = 'close_date', endTmeStamp = 'listing_start_date') ->
+    _whereRawSafe query, _days(val, '<=', beginTimeStamp, endTmeStamp)
+
+  _whereRawSafe: _whereRawSafe
+  _orWhereRawSafe: _orWhereRawSafe
+
+  allPatternsInAnyColumn: (query, patterns, columns) ->
+    patterns.forEach (pattern) ->
+      query.where () ->
+        subquery = @
+        columns.forEach (column) ->
+          _orWhereRawSafe subquery,
+            sql: "#{column} ~* ?"
+            bindings: [ pattern ]

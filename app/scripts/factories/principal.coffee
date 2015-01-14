@@ -39,6 +39,8 @@ app.factory 'principal'.ourNs(), [
       return _authenticated && permissionsUtil.checkAllowed(required,_identity.permissions)
     isInGroup: (group) ->
       return _authenticated && _identity.groups[group]
+    isDebugEnvironment: () ->
+      return _authenticated && _identity.environment == 'development'
     setIdentity: setIdentity
     unsetIdentity: unsetIdentity
     getIdentity: () ->

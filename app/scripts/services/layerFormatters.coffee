@@ -18,6 +18,7 @@ app.service 'LayerFormatters'.ourNs(), [
     markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
     markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
     markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
+    markersBSLabel[ParcelEnums.status.notForSale] = 'notsale-property'
     markersBSLabel['saved'] = 'saved-property'
     markersBSLabel['hovered'] = 'hovered-property'
     markersBSLabel['default'] = 'info'
@@ -61,8 +62,9 @@ app.service 'LayerFormatters'.ourNs(), [
     parcels = do ->
       colors = {}
       colors[ParcelEnums.status.sold] = '#ff4a4a'
-      colors[ParcelEnums.status.pending] = '#6C3DCA'
+      colors[ParcelEnums.status.pending] = '#8C3DAA'
       colors[ParcelEnums.status.forSale] = '#1fde12'
+      colors[ParcelEnums.status.notForSale] = '#45a0d9'
       colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
 
       gFillColor = (color) ->
@@ -105,7 +107,14 @@ app.service 'LayerFormatters'.ourNs(), [
     mls = do ->
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
-        formattedPrice = if not mls.price then String.orNA(mls.price) else casing.upper numeral(mls.price).format('0.0a'), '.'
+        if not mls.price
+          formattedPrice = String.orNA(mls.price)
+        else if mls.price >= 1000000
+          formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
+        else
+          formattedPrice = casing.upper numeral(mls.price).format('0a'), '.'
+        formattedPrice = "$#{formattedPrice}"
+        
         savedStatus = 'saved' if getSavedColorProperty(mls)
         ret =
           icon: ' '
