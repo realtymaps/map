@@ -15,7 +15,7 @@ module.exports =
     colorClasses[ParcelEnums.status.notForSale] = 'label-notsale-property'
 
     getPrice = (val) ->
-      String.orNA if val then casing.upper numeral(val).format('0,0'), ',' else null
+      String.orNA if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
     getStatusClass = (status) ->
       return colorClasses[status] || ''
 

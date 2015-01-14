@@ -4,7 +4,7 @@ div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" 
     table(class="table table-condensed table-hover")
       tr
         td {{rm_status=='recently sold'||rm_status=='not for sale'?'Sold':'Asking'}} Price:
-        td ${{price}}
+        td {{price}}
       tr
         td Status:
         td {{rm_status}}
@@ -40,4 +40,4 @@ div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" 
         td {{finished_sqft}}
       tr
         td Assessed Price:
-        td ${{local_assessed_value}}
+        td {{local_assessed_value}}

@@ -6,66 +6,67 @@
         .row
             .col-sm-12
                 .checkbox-inline(ng-repeat="status in filterValues.propertyStatus")
-                    input.checkbox(ng-model="$root.selectedFilters[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}" class="{{status.value}}")
+                    input.checkbox(ng-model="selectedFilters[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}" class="{{status.value}}")
                     label(for="{{status.value}}") {{ status.label }}
 
         .row.title Basic Filters
         .row
             .col-sm-6
                 .label Beds
-                select(ng-model="$root.selectedFilters.bedsMin" ng-options='c.value as c.name for c in filterValues.beds')
+                select(ng-model="selectedFilters.bedsMin" ng-options='c.value as c.name for c in filterValues.beds')
 
 
             .col-sm-6
                 .label Baths
-                select(ng-model="$root.selectedFilters.bathsMin" ng-options='c.value as c.name for c in filterValues.baths')
-
-        .row
-            .col-sm-12
-                .label Price Min
-                .row
-                    .col-sm-9
-                        input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.priceMin")
-                    .col-sm-3
-                        .btn.btn-default.btn-sm(ng-click="$root.selectedFilters.priceMin = undefined") clear
-        .row
-            .col-sm-12
-                .label Price Max
-                .row
-                    .col-sm-9
-                        input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.priceMax")
-                    .col-sm-3
-                        .btn.btn-default.btn-sm(ng-click="$root.selectedFilters.priceMax = undefined") clear
+                select(ng-model="selectedFilters.bathsMin" ng-options='c.value as c.name for c in filterValues.baths')
 
         .row
             .col-sm-6
+                .label Price Min
+                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.priceMin = undefined") clear
+                input(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin")
+            .col-sm-6
+                .label Price Max
+                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.priceMax = undefined") clear
+                input(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax")
+        .row
+            .col-sm-6
                 .label Sqft Min
-                input(type="text" numeral format="0,0" ng-model="$root.selectedFilters.sqftMin")
+                input(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin")
 
 
             .col-sm-6
                 .label Sqft Max
-                input(type="text" numeral format="0,0" ng-model="$root.selectedFilters.sqftMax")
+                input(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax")
 
         .row
             .col-sm-6
                 .label Acres Min
-                select(ng-model="$root.selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
+                select(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
 
 
             .col-sm-6
                 .label Acres Max
-                select(ng-model="$root.selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
+                select(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
         .row.title Advanced Filters
         .row
             .col-sm-12
                 .label Owner Name
-                input(type="text",ng-model="$root.selectedFilters.ownerName")
+                input(type="text",ng-model="selectedFilters.ownerName")
         .row
             .col-sm-6
                 .label Days Listed Min
-                select(ng-model="$root.selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
+                select(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
             .col-sm-6
                 .label Days Listed Max
-                select(ng-model="$root.selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
+                select(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
+        .row(ng-if="principal.isDebugEnvironment()")
+            .col-sm-6
+                .label Close Price Min
+                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.closePriceMin = undefined") clear
+                input(type="text" numeral format="$0,0" ng-model="selectedFilters.closePriceMin")
+            .col-sm-6
+                .label Close Price Max
+                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.closePriceMax = undefined") clear
+                input(type="text" numeral format="$0,0" ng-model="selectedFilters.closePriceMax")

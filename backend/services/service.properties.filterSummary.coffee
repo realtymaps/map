@@ -13,6 +13,7 @@ statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
+  closePrice: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
@@ -65,6 +66,7 @@ module.exports =
         query.whereIn('rm_status', filters.status)
 
       sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
+      sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
       sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
       sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 

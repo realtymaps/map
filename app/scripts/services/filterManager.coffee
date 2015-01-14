@@ -6,17 +6,17 @@ app.service 'FilterManager'.ourNs(), [
   '$rootScope', 'Logger'.ourNs(), 'ParcelEnums'.ourNs()
   ($rootScope, $log, ParcelEnums) ->
 
-    cleanClears = ->
-      #remove all null values to clear them
-      _.each $rootScope.selectedFilters, (v,k) ->
-        unless v?
-          delete $rootScope.selectedFilters[k]
+    cleanFilters = (filters) ->
+      #remove all null, zero, and empty string values so we don't send them
+      _.each filters, (v,k) ->
+        if !v && v != false
+          delete filters[k]
 
     manage: (cb) =>
       filter = null
       if $rootScope.selectedFilters
-        cleanClears()
         selectedFilters = _.clone($rootScope.selectedFilters)
+        cleanFilters(selectedFilters)
         selectedFilters.status = []
         if (selectedFilters.forSale)
           selectedFilters.status.push(ParcelEnums.status.forSale)
