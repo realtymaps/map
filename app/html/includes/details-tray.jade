@@ -1,5 +1,5 @@
 .navbar-below.detail-container#results-slide(ng-show="showDetails")
-    .tray-close-light#detail-close(ng-click="showDetails = !showDetails")
+    .tray-close-light#detail-close(ng-click="showDetails = !showDetails" ng-cloak)
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
@@ -16,20 +16,34 @@
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                 .row
-                    .col-sm-3.beds
+                    .col-sm-3(ng-if="selectedResult.bedrooms" ng-cloak)
                         span.data {{resultsFormatter.orNa(selectedResult.bedrooms)}}
                         span.title Beds
-                    .col-sm-3.baths
+                    .col-sm-3(ng-if="selectedResult.baths_total" ng-cloak)
                         span.data {{resultsFormatter.orNa(selectedResult.baths_total)}}
                         span.title Baths
-                    .col-sm-3.sqft
+                    .col-sm-3(ng-if="selectedResult.finished_sqft" ng-cloak)
                         span.data {{resultsFormatter.orNa(selectedResult.finished_sqft)}}
                         span.title Sq Ft
-                    .col-sm-3.year
+                    .col-sm-3(ng-if="selectedResult.year_built" ng-cloak)
                         span.data {{resultsFormatter.getYear(selectedResult.year_built)}}
                         span.title Built
+                .row.tool
+                    .padding-top-10
+                        .col-sm-3(ng-if="selectedResult.acres" ng-cloak)
+                            span.data {{resultsFormatter.orNa(selectedResult.acres)}}
+                            span.title Acres
+                        .col-sm-3(ng-if="selectedResult.land_square_footage" ng-cloak)
+                            span.data {{selectedResult.land_square_footage}}
+                            span.title Lot SqFt
+                        .col-sm-3(ng-if="selectedResult.lot_front_footage" ng-cloak)
+                            span.data {{selectedResult.lot_front_footage}}
+                            span.title Front Ft
+                        .col-sm-3(ng-if="selectedResult.depth_footage" ng-cloak)
+                            span.data {{selectedResult.depth_footage}}
+                            span.title Depth Ft.
 
-                .row.sale-info(ng-if="selectedResult.property_information")
+                .row.sale-info(ng-if="selectedResult.property_information" ng-cloak)
                     .col-sm-12.detail-section-title Description
                     .row
                         .data {{selectedResult.property_information}}
