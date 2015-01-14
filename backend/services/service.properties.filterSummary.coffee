@@ -77,11 +77,13 @@ module.exports =
 
       if filters.ownerName
         # need to avoid any characters that have special meanings in regexes
-        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[, ]/), (result, partial) ->
-          if !partial
+        # then split on whitespace and commas to get chunks to search for
+        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\w]/), (result, chunk) ->
+          if !chunk
             return
           # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
-          result.push partial.replace(/(['-])/g, "[$1 ]?")
+          # since this is after the split, a space here will be an actual part of the search
+          result.push chunk.replace(/(['-])/g, "[$1 ]?")
         sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
       if filters.listedDaysMin?
