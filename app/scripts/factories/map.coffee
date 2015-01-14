@@ -17,6 +17,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
+        # deprecated: use principal.isDebugEnvironment() instead
         $scope.debug = true
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel

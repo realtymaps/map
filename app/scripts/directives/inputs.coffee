@@ -13,7 +13,9 @@ module.exports = app
         else
           format = ""
 
-        formattedVal = numeral(val).format("'" + format + "'")
+        formattedVal = ""
+        if val != "" && val != "$"
+          formattedVal = numeral(val).format("'" + format + "'")
         ngModelCtrl.$setViewValue formattedVal
         ngModelCtrl.$render()
         formattedVal
