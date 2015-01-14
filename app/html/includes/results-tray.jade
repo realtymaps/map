@@ -63,7 +63,9 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                                 span.data {{resultsFormatter.getYear(result.year_built)}}
                                 span.title Year
                 .card-buttons
-                    button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")<i class="fa fa-envelope"></i> Send Mailing
+                    button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")
+                      i.fa.fa-envelope
+                      | Send Mailing
                     button.btn.btn-default.btn-xs() Save
                     button.btn.btn-default.btn-xs() Do Something
 

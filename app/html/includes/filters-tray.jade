@@ -57,27 +57,11 @@
                 .label Acres Max
                 select(ng-model="$root.selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
-        .row.title Historical Filters
-        .row
-            .col-sm-6
-                .label Has Owner
-                select(ng-model="$root.selectedFilters.hasOwner" ng-options='c.value as c.name for c in filterValues.hasOwner')
+        .row.title Advanced Filters
         .row
             .col-sm-12
-                .label Close Price Min
-                .row
-                    .col-sm-9
-                        input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.closePriceMin")
-                    .col-sm-3
-                        .btn.btn-default.btn-sm(ng-click="$root.selectedFilters.closePriceMin = undefined") clear
-        .row
-            .col-sm-12
-                .label Close Price Max
-                .row
-                    .col-sm-9
-                        input(type="text" numeral format="$0,0[.]00" ng-model="$root.selectedFilters.closePriceMax")
-                    .col-sm-3
-                        .btn.btn-default.btn-sm(ng-click="$root.selectedFilters.closePriceMax = undefined") clear
+                .label Owner Name
+                input(type="text",ng-model="$root.selectedFilters.ownerName")
         .row
             .col-sm-6
                 .label Days Listed Min

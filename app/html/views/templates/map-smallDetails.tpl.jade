@@ -9,8 +9,11 @@ div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" 
         td Status:
         td {{rm_status}}
       tr
-        td Assessed Price:
-        td ${{local_assessed_value}}
+        td Owner:
+        td {{owner_name}}
+          span(ng-if="owner_name2")
+            br/
+            | {{owner_name2}}
       tr
         td Beds:
         td {{beds_total}}
@@ -35,3 +38,6 @@ div( ng-controller='RealtyMaps-MapSmallDetailsCtrl' class="panel panel-primary" 
       tr
         td Finished SqFt:
         td {{finished_sqft}}
+      tr
+        td Assessed Price:
+        td ${{local_assessed_value}}

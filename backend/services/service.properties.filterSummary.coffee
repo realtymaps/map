@@ -11,43 +11,41 @@ validators = requestUtil.query.validators
 
 statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
+minMaxValiations = {
+  price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
+  listedDays: validators.integer()
+  beds: validators.integer()
+  baths: validators.integer()
+  acres: validators.float()
+  sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+}
+otherValidations = {
+  bounds: [
+    validators.string(minLength: 1)
+    validators.geohash.decode
+    validators.array(minLength: 2)
+    validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
+  ]
+  status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
+                                            validators.choice(choices: statuses) ])
+  # need to avoid any characters that have special meanings in regexes
+  # TODO: perform similar name normalization on the names going into the db?  might need to store normalized version
+  # TODO: for searching and full version for displaying 
+  ownerName: validators.string(trim: true)
+}
 
-minMaxes = {}
-[
-  {name: 'price', validators: [validators.string(replace: [/[$,]/g, ""]), validators.float()]}
-  {name: 'closePrice', validators: [validators.string(replace: [/[$,]/g, ""]), validators.float()]}
-  {name: 'listedDays', validators: validators.integer()}
-  {name: 'beds', validators: validators.integer()}
-  {name: 'baths', validators: validators.integer()}
-  {name: 'acres', validators: validators.float()}
-  {name: 'sqft', validators: [ validators.string(replace: [/,/g, ""]), validators.integer() ]}
-].forEach (f) ->
-  ['Max', 'Min'].forEach (minMax) ->
-    minMaxes[f.name + minMax] = f.validators
 
-transforms =
-  _.extend minMaxes,
-    bounds: [
-      validators.string(minLength: 1)
-      validators.geohash.decode
-      validators.array(minLength: 2)
-      validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
-    ]
-    status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
-      validators.choice(choices: statuses) ])
-    hasOwner: [ validators.boolean() ]
+makeMinMaxes = (result, validators, name) ->
+  result["#{name}Min"] = validators
+  result["#{name}Max"] = validators
 
-# other fields we could have:
-#   close date (to remove the hardcoded "recently sold" logic and allow specification by time window)
-#   owner name
-#   bedsMax
-#   bathsMax
-#   bathsHalf[Min/Max]
-#   property type
+transforms = _.extend {}, otherValidations, _.transform(minMaxValiations, makeMinMaxes)
+
 
 required =
   bounds: undefined
   status: []
+  ownerName: ""
 
 
 module.exports =
@@ -62,7 +60,8 @@ module.exports =
         return []
 
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
-      query.whereRaw(filters.bounds.sql, filters.bounds.bindings)
+      # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
+      sqlHelpers._whereRawSafe(query, filters.bounds)
 
       if filters.status.length == 1
         query.where('rm_status', filters.status[0])
@@ -79,19 +78,17 @@ module.exports =
       if filters.bathsMin
         query.where("baths_full", '>=', filters.bathsMin)
 
-      if filters.hasOwner?
-        if filters.hasOwner
-          query.whereNotNull('owner_name')
-        else
-          query.whereNull('owner_name')
-
-      if filters.closePriceMin?
-        sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
+      if filters.ownerName
+        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[, ]/), (result, partial) ->
+          if !partial
+            return
+          result.push partial.replace(/(['-])/g, "[$1 ]?")
+        sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
       if filters.listedDaysMin?
-        query.whereRaw sqlHelpers.daysGreaterThan(filters.listedDaysMin)
+        sqlHelpers.daysGreaterThan(query, filters.listedDaysMin)
       if filters.listedDaysMax?
-        query.whereRaw sqlHelpers.daysLessThan(filters.listedDaysMax)
+        sqlHelpers.daysLessThan(query, filters.listedDaysMax)
 
       if state and state.properties_selected
         #Should we return saved properties that have isSaved false?
@@ -100,7 +97,7 @@ module.exports =
         #The main reason on having it around is because if you come back to it later you still
         #have notes and history about a prop (but you may not always want it highlighted on the map)
         query.orWhere ->
-          @whereRaw(filters.bounds.sql, filters.bounds.bindings)
+          sqlHelpers._whereRawSafe(@, filters.bounds)
           @where(rm_property_id: _.keys(state.properties_selected))
       query.limit(limit) if limit
       #logger.sql query.toString()

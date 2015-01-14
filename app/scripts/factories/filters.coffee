@@ -45,11 +45,6 @@ module.exports =
         { value: "0.9", name: ".90 acres" }
         { value: "1.0", name: "1.0 acres" }
       ]
-      hasOwner: [
-        { value: null, name: "clear" }
-        { value: 'true', name: "yes" }
-        { value: 'false', name: "no" }
-      ]
       listedDays: [
         { value: null, name: "clear" }
         { value: "15", name: "15+" }
