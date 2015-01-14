@@ -11,7 +11,7 @@ validators = requestUtil.query.validators
 
 statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
-minMaxValiations = {
+minMaxValidations = {
   price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
   listedDays: validators.integer()
   beds: validators.integer()
@@ -36,7 +36,7 @@ makeMinMaxes = (result, validators, name) ->
   result["#{name}Min"] = validators
   result["#{name}Max"] = validators
 
-transforms = _.extend {}, otherValidations, _.transform(minMaxValiations, makeMinMaxes)
+transforms = _.extend {}, otherValidations, _.transform(minMaxValidations, makeMinMaxes)
 
 
 required =
