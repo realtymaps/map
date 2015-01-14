@@ -7,14 +7,15 @@
                 img(ng-cloak ng-src="{{resultsFormatter.getStreetView(selectedResult,500,300)}}")
             .info.container
                 .row
-                    .col-sm-3
+                    .col-sm-6
                         .address {{selectedResult.street_address_num + " " + selectedResult.street_address_name + " " + selectedResult.street_type }}
                         .city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
-                    .col-sm-2
+                    .col-sm-6
                         .price {{resultsFormatter.getPrice(selectedResult.price)}}
                         .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
+                .row
                     .col-sm-3.beds
                         span.data {{resultsFormatter.orNa(selectedResult.bedrooms)}}
                         span.title Beds
@@ -25,37 +26,78 @@
                         span.data {{resultsFormatter.orNa(selectedResult.finished_sqft)}}
                         span.title Sq Ft
                     .col-sm-3.year
-                        span.data {{resultsFormatter.orNa(selectedResult.year_built)}}
+                        span.data {{resultsFormatter.getYear(selectedResult.year_built)}}
                         span.title Built
+
+                .row.sale-info(ng-if="selectedResult.property_information")
+                    .col-sm-12.detail-section-title Description
+                    .row
+                        .data {{selectedResult.property_information}}
+
                 .row.owner-info(ng-if="selectedResult.owner_name || selectedResult.owner_name2 || selectedResult.owner_name")
                     .col-sm-12.detail-section-title Owner Info
-                    .col-sm-12n(ng-if="selectedResult.owner_name") {{resultsFormatter.orNa(selectedResult.owner_name)}}
-                    .col-sm-12(ng-if="selectedResult.owner_name2") {{resultsFormatter.orNa(selectedResult.owner_name2)}}
-                    .col-sm-12(ng-if="selectedResult.owner_city || selectedResult.owner_state") {{resultsFormatter.getCityStateZip(selectedResult,'owner')}}
-                        .row
-                            .col-sm-12.data(ng-if="result.owner_street_address_num || result.owner_street_address_name"
-                        ng-cloak) {{result.owner_street_address_num + ' ' + result.owner_street_address_name}}
-                        .row
-                            .col-sm-3.data(ng-if="selectedResult.owner_city") {{selectedResult.owner_city + ","}}
-                            .col-sm-2.data(ng-if="selectedResult.owner_state") {{selectedResult.owner_state + ' ' + selectedResult.zip}}
+                    .row(ng-if="selectedResult.owner_name")
+                        .col-sm-6
+                            .title Current Owner:
+                        .col-sm-6
+                            .data {{resultsFormatter.orNa(selectedResult.owner_name)}}
+                        .row(ng-if="selectedResult.owner_city || selectedResult.owner_state")
+                            .col-sm-6
+                                .title.indent Address:
+                            .col-sm-6
+                                .row(ng-if="result.owner_street_address_num || result.owner_street_address_name" ng-cloak)
+                                    .col-sm-12
+                                        .data.resizable {{result.owner_street_address_num + ' ' + result.owner_street_address_name}}
+                                .row
+                                    .col-sm-6
+                                        .data(ng-if="selectedResult.owner_city") {{selectedResult.owner_city + ","}}
+                                    .col-sm-6
+                                        .data(ng-if="selectedResult.owner_state") {{selectedResult.owner_state + ' ' + selectedResult.zip}}
 
+                    .col-sm-12(ng-if="selectedResult.owner_name2")
+                        .col-sm-6
+                            .title Previous Owner:
+                        .col-sm-6
+                            .data {{resultsFormatter.orNa(selectedResult.owner_name2)}}
 
 
                 .row.sale-info(ng-if="selectedResult.listing_age_days")
                     .col-sm-12.detail-section-title Historical Sales
-                    table.table.table-condensed.table-hover
-                        tr(ng-if="selectedResult.listing_age_days" ng-cloak)
-                            td Days Listed:
-                            td {{selectedResult.listing_age_days.days}}
-                        tr(ng-if="selectedResult.listing_age_full" ng-cloak)
-                            td Full Age Listed:
-                            td {{resultsFormatter.getInterval(selectedResult.listing_age_full)}}
-                        tr(ng-if="selectedResult.close_date" ng-cloak)
-                            td Close Date:
-                            td {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                        tr(ng-if="selectedResult.close_price" ng-cloak)
-                            td Close Price:
-                            td {{resultsFormatter.getPrice(selectedResult.close_price)}}
+                    .row(ng-if="selectedResult.listing_age_days" ng-cloak)
+                        .col-sm-6
+                            .title Days Listed:
+                        .col-sm-6
+                            .data {{selectedResult.listing_age_days.days}}
+                    .row(ng-if="selectedResult.listing_age_full" ng-cloak)
+                        .col-sm-6
+                            .title Full Age Listed:
+                        .col-sm-6
+                            .data {{resultsFormatter.getInterval(selectedResult.listing_age_full)}}
+                    .row(ng-if="selectedResult.prior_sale_price" ng-cloak)
+                        .col-sm-6
+                            .title Prior Sale Price:
+                        .col-sm-6
+                            .data {{resultsFormatter.getPrice(selectedResult.prior_sale_price)}}
+                    .row(ng-if="selectedResult.original_price" ng-cloak)
+                        .col-sm-6
+                            .title Original Asking Price:
+                        .col-sm-6
+                            .data {{resultsFormatter.getPrice(selectedResult.original_price)}}
+                    .row(ng-if="selectedResult.mortgage_amount" ng-cloak)
+                        .col-sm-6
+                            .title Mortgage Amount:
+                        .col-sm-6
+                            .data {{resultsFormatter.getPrice(selectedResult.mortgage_amount)}}
+                    .row(ng-if="selectedResult.close_price" ng-cloak)
+                        .col-sm-6
+                            .title Close Price:
+                        .col-sm-6
+                            .data {{resultsFormatter.getPrice(selectedResult.close_price)}}
+                    .row(ng-if="selectedResult.close_date" ng-cloak)
+                        .col-sm-6
+                            .title Close Date:
+                        .col-sm-6
+                            .data {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     //.col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     //.col-sm-8 {{selectedResult.sale2_amount}}
                     //.col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}

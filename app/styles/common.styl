@@ -344,3 +344,30 @@ form.comfy
     checkbox(24px)
   .help-block
     color: #BBB
+    
+
+/*
+Holy crap stylus.. you need to be careful to not name functions anything close to real property names in css
+I recommend pre-pending all functions with fn
+*/
+fnText-overflow(verticy)
+  white-space: nowrap
+  overflow-{verticy}:hidden !important
+  text-overflow: ellipsis
+  if verticy == x
+    width: 100%
+  else
+    height: 100%
+  display: inline-block
+
+.text-overflow-x
+  fnText-overflow(x)
+
+.text-overflow-y
+  fnText-overflow(y)
+
+
+.text-wrap, .text-overflow-x:hover, .text-overflow-y:hover
+  overflow:auto !important
+  white-space: initial
+  text-overflow: initial
