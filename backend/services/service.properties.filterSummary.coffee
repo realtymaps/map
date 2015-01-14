@@ -28,9 +28,6 @@ otherValidations = {
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
                                             validators.choice(choices: statuses) ])
-  # need to avoid any characters that have special meanings in regexes
-  # TODO: perform similar name normalization on the names going into the db?  might need to store normalized version
-  # TODO: for searching and full version for displaying 
   ownerName: validators.string(trim: true)
 }
 
@@ -79,9 +76,11 @@ module.exports =
         query.where("baths_full", '>=', filters.bathsMin)
 
       if filters.ownerName
+        # need to avoid any characters that have special meanings in regexes
         patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[, ]/), (result, partial) ->
           if !partial
             return
+          # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
           result.push partial.replace(/(['-])/g, "[$1 ]?")
         sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
