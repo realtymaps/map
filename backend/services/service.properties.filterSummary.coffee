@@ -11,15 +11,16 @@ validators = requestUtil.query.validators
 
 statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
 
-minMaxValidations = {
+minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
-}
-otherValidations = {
+  
+otherValidations =
+  ownerName: validators.string(trim: true)
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
@@ -28,8 +29,6 @@ otherValidations = {
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
                                             validators.choice(choices: statuses) ])
-  ownerName: validators.string(trim: true)
-}
 
 
 makeMinMaxes = (result, validators, name) ->
