@@ -22,6 +22,7 @@ minMaxValidations =
   
 otherValidations =
   ownerName: validators.string(trim: true)
+  hasOwner: [ validators.boolean() ]
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
@@ -30,6 +31,7 @@ otherValidations =
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
                                             validators.choice(choices: statuses) ])
+
 
 
 makeMinMaxes = (result, validators, name) ->
@@ -75,6 +77,15 @@ module.exports =
 
       if filters.bathsMin
         query.where("baths_full", '>=', filters.bathsMin)
+
+      if filters.hasOwner
+        query.where ->
+          @whereNotNull('owner_name')
+          @orWhereNotNull('owner_name2')
+      else
+        query.where ->
+          @whereNull('owner_name')
+          @orWhereNull('owner_name2')
 
       if filters.ownerName
         # need to avoid any characters that have special meanings in regexes

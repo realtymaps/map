@@ -50,6 +50,7 @@
                 select(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
         .row.title Advanced Filters
+
         .row
             .col-sm-12
                 .label Owner Name
@@ -70,3 +71,7 @@
                 .label Close Price Max
                     //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.closePriceMax = undefined") clear
                 input(type="text" numeral format="$0,0" ng-model="selectedFilters.closePriceMax")
+        .row(ng-if="principal.isDebugEnvironment()")
+            .col-sm-6
+                .label Has Owner
+                select(ng-model="$root.selectedFilters.hasOwner" ng-options='c.value as c.name for c in filterValues.hasOwner')
