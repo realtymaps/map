@@ -46,9 +46,19 @@ module.exports =
       ]
       hasOwner: [
         { value: null, name: "clear" }
-        { value: true, name: "yes" }
-        { value: false, name: "no" }
-        
+        { value: 'true', name: "yes" }
+        { value: 'false', name: "no" }
+      ]
+      listedDays: [
+        { value: null, name: "clear" }
+        { value: "15", name: "15+" }
+        { value: "30", name: "30+" }
+        { value: "60", name: "60+" }
+        { value: "120", name: "120+"}
+        { value: "240", name: "240+"}
+        { value: "365", name: "1 year+"}
+        { value: "580", name: "~ 1.5 years+"}
+        { value: "730", name: "2 years+"}
       ]
 
     #TODO - add function to warn when Max and Min values are swapped.

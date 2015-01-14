@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 numeral = require 'numeral'
 casing = require 'case'
+moment = require 'moment'
 
 app.service 'FormattersService'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
   _json =
@@ -9,6 +10,9 @@ app.service 'FormattersService'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
   #public
   JSON: _json
   Common:
+    getYear:(time) ->
+      moment(time).format('YYYY')
+
     getPrice: (price) ->
       numeral(price).format('$0,0.00')
 
