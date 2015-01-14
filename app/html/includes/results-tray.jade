@@ -50,17 +50,17 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                             .property-status {{result.rm_status}}&nbsp;
                                 i.fa.fa-square.fa-lg(ng-class="resultsFormatter.getForSaleClass(result)")
                         div
-                            .beds
-                                span.data {{resultsFormatter.orNa(result.bedrooms)}}
+                            .beds(ng-if="result.bedrooms" ng-cloak)
+                                span.data {{result.bedrooms}}
                                 span.title Beds
-                            .baths
-                                span.data {{resultsFormatter.orNa(result.baths_total)}}
+                            .baths(ng-if="result.baths_total" ng-cloak)
+                                span.data {{result.baths_total}}
                                 span.title Baths
-                            .sqft
-                                span.data {{resultsFormatter.orNa(result.finished_sqft)}}
+                            .sqft(ng-if="result.finished_sqft" ng-cloak)
+                                span.data {{result.finished_sqft}}
                                 span.title Sq Ft
-                            .year
-                                span.data {{resultsFormatter.orNa(result.year_built)}}
+                            .year(ng-if="result.year_built" ng-cloak)
+                                span.data {{resultsFormatter.getYear(result.year_built)}}
                                 span.title Year
                 .card-buttons
                     button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")<i class="fa fa-envelope"></i> Send Mailing

@@ -40,7 +40,7 @@ app.factory 'PromiseThrottler'.ourNs(), [
 
         if !cancelablePromise?
           deferred.resolve()
-          nonCancelpromise
+          return nonCancelpromise
 
         cancelablePromise.then (data) ->
           deferred.resolve(data.data) if data?
