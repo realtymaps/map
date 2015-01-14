@@ -73,6 +73,26 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           "fa fa-chevron-circle-up"
 
+      getCurrentOwners:(result) ->
+        owners = []
+        owners.push result.owner_name if result.owner_name?
+        owners.push result.owner_name2  if result.owner_name2?
+
+        owners.reduce (prev, next) ->
+          return "#{next}" unless prev
+          "#{prev}, #{next}"
+        , ''
+
+
+      getCurrentOwnersTitle: (result) =>
+        title = "Current Owner"
+        return "#{title}'s" if @hasMultipleOwners(result)
+        title
+      hasMultipleOwners: (result) ->
+        if result.owner_name2? and result.owner_name?
+          return true
+        return false
+
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
 

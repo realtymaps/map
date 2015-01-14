@@ -54,9 +54,9 @@
                     .col-sm-12.detail-section-title Owner Info
                     .row(ng-if="selectedResult.owner_name")
                         .col-sm-6
-                            .title Current Owner:
+                            .title {{resultsFormatter.getCurrentOwnersTitle(selectedResult)}}:
                         .col-sm-6
-                            .data {{resultsFormatter.orNa(selectedResult.owner_name)}}
+                            .data {{resultsFormatter.getCurrentOwners(selectedResult)}}
                         .row(ng-if="selectedResult.owner_city || selectedResult.owner_state")
                             .col-sm-6
                                 .title.indent Address:
@@ -69,12 +69,6 @@
                                         .data(ng-if="selectedResult.owner_city") {{selectedResult.owner_city + ","}}
                                     .col-sm-6
                                         .data(ng-if="selectedResult.owner_state") {{selectedResult.owner_state + ' ' + selectedResult.zip}}
-
-                    .col-sm-12(ng-if="selectedResult.owner_name2")
-                        .col-sm-6
-                            .title Previous Owner:
-                        .col-sm-6
-                            .data {{resultsFormatter.orNa(selectedResult.owner_name2)}}
 
 
                 .row.sale-info(ng-if="selectedResult.listing_age_days")
