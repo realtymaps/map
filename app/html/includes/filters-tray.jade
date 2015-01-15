@@ -9,7 +9,7 @@
                     input.checkbox(ng-model="selectedFilters[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}" class="{{status.value}}")
                     label(for="{{status.value}}") {{ status.label }}
 
-        .row.title.text-center Basic Filters
+        .row.title Basic Filters
         .row
             .col-sm-6
                 .label Beds
@@ -47,7 +47,7 @@
                 .label Acres Max
                 select(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
-        .row.title.text-center Advanced Filters
+        .row.title Advanced Filters
 
         .row
             .col-sm-12
