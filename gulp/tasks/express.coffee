@@ -13,6 +13,7 @@ options =
     'bower_componets/**'
     'app/**'
     'dist/**/**'
+    '_public/**/**'
   ]
   delay: 1
   execMap:
