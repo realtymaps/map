@@ -50,7 +50,7 @@ ng-init="resultsInit('results-list')")
                             .price-value {{resultsFormatter.getPrice(result.price)}}
                             .property-status {{result.rm_status}}&nbsp;
                                 i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(result)"
-                                rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name="selectedResult")
+                                rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name="result")
                         div
                             .beds(ng-if="result.bedrooms" ng-cloak)
                                 span.data {{result.bedrooms}}

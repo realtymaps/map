@@ -56,16 +56,12 @@ $parseQuick = (dotPropString , scope) ->
         element.unbind eventName
 
       element.bind eventName, (event) ->
-        #get value from ctrl scope to push through a callback
-        atEvalCtrScope = angular.element(event.target or event.srcElement).scope()
-        value = $parseQuick scope.rmapsValueName, atEvalCtrScope
-        #get function to callback to
         fnNameToFind = attrs[directiveName]
         fn = $parseQuick fnNameToFind, elementScope.$parent
         $log.error "failed to find function for #{directiveName} to prop #{fnNameToFind}" unless fn
 
         callback = ->
-          fn value, $event: event
+          fn($parseQuick(scope.rmapsValueName, element.scope()), $event: event)
 
         if forceAsyncEvents[eventName] and $rootScope.$$phase
           scope.$evalAsync callback
