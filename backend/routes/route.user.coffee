@@ -7,6 +7,7 @@ userService = require '../services/service.user'
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
+config = require '../config/config'
 
 
 # handle login authentication, and do all the things needed for a new login session
@@ -79,6 +80,7 @@ identity = (req, res, next) ->
         permissions: req.session.permissions
         groups: req.session.groups
         stateRecall: req.session.state
+        environment: config.ENV
   else
     res.json
       identity: null

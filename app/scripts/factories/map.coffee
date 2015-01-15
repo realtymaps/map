@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../common/config/routes.backend.coffee'
+analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
 
 encode = undefined
 ###
@@ -17,7 +18,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
-        # $scope.debug = true
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         $scope.zoomLevelService = ZoomLevel
         self = @
@@ -175,28 +175,43 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       clearBurdenLayers: =>
         if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
           @scope.layers.parcels.length = 0
-
+          
       redraw: =>
+        # something is funky about the way we're handling our data, and it's causing weird race conditions
+        # so we're trying to avoid the races, and also using the control instead of the watched models
+        # this is probably not the best setup either, but it's the best I could do without major refactors
+        @waitToSetParcelData = true
+        @waitingData = null
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState).then (data) =>
             return unless data?
-            @scope.layers.parcels = data
+            if @waitToSetParcelData
+              @waitingData = data
+            else
+              @scope.controls.parcel.newModels(data)
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         if @filters
           Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
-            return unless data?
-            @scope.layers.filterSummary = data
-            @updateFilterSummaryHash()
-            @scope.$evalAsync () =>
-              @scope.resultsFormatter?.reset()
-
+            @handleFilterData(data)
         else
-          @scope.layers.filterSummary.length = 0
+          @handleFilterData([])
 
+      handleFilterData: (data) =>
+        return unless data?
+        @scope.layers.filterSummary = data
+        @updateFilterSummaryHash()
+        if @waitingData
+          @scope.controls.parcel.newModels(@waitingData)
+          @waitingData = null
+        @waitToSetParcelData = false
+        @scope.$evalAsync () =>
+          @scope.resultsFormatter?.reset()
+
+      
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
         if not paths and not @scope.drawUtil.isEnabled
@@ -241,12 +256,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
-        @scope.$evalAsync =>
-          return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
-          @scope.layers.filterSummary.forEach (summary, index) =>
-            summary.index = index
-            @filterSummaryHash[summary.rm_property_id] = summary
-          @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
+        return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
+        @scope.layers.filterSummary.forEach (summary, index) =>
+          summary.index = index
+          @filterSummaryHash[summary.rm_property_id] = summary
+        @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
 
       clearFilter: =>
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!

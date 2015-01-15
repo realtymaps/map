@@ -15,7 +15,9 @@ module.exports = (options = {}) ->
         return Promise.reject new ParamValidationError("string does not match regex: #{regex}", param, value)
     
     transformedValue = value
-    
+
+    if options.trim
+      transformedValue = transformedValue.trim()
     if options.replace?
       transformedValue = transformedValue.replace(options.replace[0], options.replace[1])
     if (options.forceLowerCase)

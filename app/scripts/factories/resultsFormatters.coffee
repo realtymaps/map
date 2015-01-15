@@ -12,6 +12,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
     _forSaleClass[ParcelEnums.status.pending] = 'pending'
     _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
+    _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
@@ -72,12 +73,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           "fa fa-chevron-circle-up"
 
-      getCityStateZip: (result, prependProp = '') ->
-        return if not @mapCtrl.scope.Toggles.showResults or not result
-        vals = ['city', 'state', 'zip'].map (l) =>
-          @orNa result[prependProp + l]
-        # $log.debug vals
-        "#{vals[0]}, #{vals[1]} #{vals[2]}"
+      getCurrentOwners:(result) ->
+        owners = []
+        owners.push result.owner_name if result.owner_name?
+        owners.push result.owner_name2  if result.owner_name2?
+
+        owners.reduce (prev, next) ->
+          return "#{next}" unless prev
+          "#{prev}, #{next}"
+        , ''
+
+
+      getCurrentOwnersTitle: (result) =>
+        title = "Current Owner"
+        return "#{title}'s" if @hasMultipleOwners(result)
+        title
+      hasMultipleOwners: (result) ->
+        if result.owner_name2? and result.owner_name?
+          return true
+        return false
 
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''

@@ -11,7 +11,12 @@
     left: 0px
     width:100%
     top: 0px
-    background-color: rm-medium-blue
+    background-color: rm-medium-blue-darker
+    
+    .btn-sm.filter-btn
+        padding: 1px 2px
+        line-height: 1.0
+        margin-left: 5px
 
     .row
         margin-bottom:20px
@@ -27,7 +32,11 @@
         display: block
         text-align: left
         margin-bottom:4px
-        display:block;
+
+    .title
+      @extends .filters-container .label
+      text-decoration: underline
+      font-size: 20px
 
     input[type="text"], select
         height: 35px
@@ -72,7 +81,11 @@
         background-color: rm-highlight-purple
         color: #FFF
         border-color: rm-highlight-purple
-    
+
+    input[type="checkbox"].checkbox.notForSale:checked + label
+        background-color: rm-highlight-blue
+        color: #FFF
+        border-color: rm-highlight-blue
 
     input[type="checkbox"].checkbox:disabled + label
         opacity: 0.5
@@ -131,6 +144,12 @@ End Results Container
 
 .filter-container .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default
     color: #333
-    background-color: rm-medium-blue
+    background-color: rm-medium-blue-darker
     border-color: #adadad
     color:#FFF
+
+.filters-container .checkbox-inline
+    padding-left: 0
+    margin-left: 19px
+    &:first-child
+        margin-left: 0
