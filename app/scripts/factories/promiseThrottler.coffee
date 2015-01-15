@@ -48,6 +48,7 @@ app.factory 'PromiseThrottler'.ourNs(), [
           promiseHash.remove myId
 
         promiseHash.put myId, () ->
+          ### these alerts won't be sent in the first place, now
           # prevent alerts from the canceled $http call
           if options.http?
             opts =
@@ -55,8 +56,9 @@ app.factory 'PromiseThrottler'.ourNs(), [
               quietMillis: MainOptions.alert.cancelQuietMillis
 
             $rootScope.$emit Events.alert.prevent, opts
+          ###
 
-            # do the cancel
+          # do the cancel
           cancelablePromise.cancel()
 
         deferred.promise #return a regular promise

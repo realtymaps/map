@@ -60,10 +60,10 @@ createNewSeries = (req, res, rememberMe) ->
 # make "room" for a new one
 ensureSessionCount = (req) -> Promise.try () ->
   if not req.user
-    logger.debug "ensureSessionCount: anonymous users don't get session-counted"
+    #logger.debug "ensureSessionCount: anonymous users don't get session-counted"
     return Promise.resolve()
   if req.session.permissions["unlimited_logins"]
-    logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
+    #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
   maxLoginsPromise = environmentSettingsService.getSettings()
   .then (settings) ->
@@ -83,7 +83,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     return sessionSecurities.toJSON()
   
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
-    logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
+    #logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
       sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
@@ -100,23 +100,15 @@ getSecuritiesForSession = (sessionId) ->
     return securities.toJSON()
 
 
-# alter the existing sessionSecurity object, since each token only gets used
-# once (with allowances made for AJAX-simultaneous requests)
-iterateSecurity = (req, res, security, tokensToInvalidate=0) -> Promise.try () ->
-  if tokensToInvalidate == 0
-    currToken = security.next_security_token
-    prevToken = security.current_security_token
-  else if tokensToInvalidate == 1
-    # we've removed the "next" token from the sequence
-    currToken = security.current_security_token
-    prevToken = security.previous_security_token
-  else if tokensToInvalidate == 2
-    # we've removed the "next" and "current" tokens from the sequence
-    currToken = security.previous_security_token
-    prevToken = security.previous_security_token
+remindSecurityCookie = (req, res, security) -> Promise.try () ->
+  setSecurityCookie(req, res, security.next_security_token, security.remember_me)
+
+# alter the existing sessionSecurity object
+iterateSecurity = (req, res, security) -> Promise.try () ->
   newToken = uuid.genToken()
   hashToken(newToken, security.series_salt)
   .then (tokenHash) ->
+    console.log("--------  tokenHash: "+tokenHash)
     SessionSecurity.where
       id: security.id
       # this next criterium ensures we don't clobber another update
@@ -124,8 +116,8 @@ iterateSecurity = (req, res, security, tokensToInvalidate=0) -> Promise.try () -
     .save
       # it seems we get an error if an "update" modifies 0 rows...
       next_security_token: tokenHash
-      current_security_token: currToken
-      previous_security_token: prevToken
+      current_security_token: security.next_security_token
+      previous_security_token: security.current_security_token
       , {method: "update", patch: true}
     .then () ->
       SessionSecurity.forge(id: security.id).fetch()
@@ -151,3 +143,4 @@ module.exports =
   getSecuritiesForSession: getSecuritiesForSession
   iterateSecurity: iterateSecurity
   hashToken: hashToken
+  remindSecurityCookie: remindSecurityCookie

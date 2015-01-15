@@ -31,7 +31,7 @@ app.factory 'AlertInterceptor'.ourNs(), [ '$rootScope', '$q', 'events'.ourNs(),
           return response
         # yay!  the backend wants us to show an alert!
         $rootScope.$emit Events.alert.spawn, response.data?.alert
-      else if error
+      else if error && response.status != 0  # status==0 is weird conditions that we probably don't want the user to see
         alert =
           id: "#{response.status}-#{response.config?.url?.split('?')[0].split('#')[0]}"
           msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
