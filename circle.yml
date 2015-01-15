@@ -1,6 +1,6 @@
 machine:
   node:
-    version: v0.10.31
+    version: v0.10.32
 
 deployment:
   prod:
