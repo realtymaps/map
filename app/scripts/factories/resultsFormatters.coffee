@@ -174,9 +174,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         @mapCtrl.scope.showDetails = true
 
-      dblclick: (result) =>
-        #TODO save result as a saved prop
-
       mouseover: (result) =>
         #not updating the polygon cause I think we really need access to its childModels / plurals
         #notw add that to control on uigmap

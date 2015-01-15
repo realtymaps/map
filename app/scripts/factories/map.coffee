@@ -49,7 +49,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         _updateGObjects = (gObject, savedDetails, childModel) ->
           #purpose to to take some sort of gObject and update its view immediately
           childModel.model.savedDetails = savedDetails
-          if gObject.labelClass?
+          if GoogleService.Map.isGMarker(gObject)
             opts = $scope.formatters.layer.MLS.markerOptionsFromForSale childModel.model
           else
             opts =  $scope.formatters.layer.Parcels.optionsFromFill(childModel)
@@ -69,6 +69,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             #need to figure out a better way
             self.updateFilterSummaryHash()
+            return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             _updateGObjects(gObject, savedDetails, childModel) if gObject
 
         @saveProperty = _saveProperty
@@ -152,7 +153,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
-              dblclick: (gObject, eventname, model) ->
+              dblclick: (gObject, eventname, model, events) ->
+                event = events[0]
+                if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
                 childModel = GoogleService.UiMap.getCorrectModel model
                 _saveProperty childModel, gObject
 

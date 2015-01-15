@@ -12,6 +12,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     detailThottler = new PromiseThrottler()
     filterThrottler = new PromiseThrottler()
     parcelThrottler = new PromiseThrottler()
+    saveThrottler = new PromiseThrottler()
 
     principal.getIdentity().then (identity) ->
       savedProperties = _.extend savedProperties, identity.stateRecall.properties_selected
@@ -48,8 +49,9 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
           prop = undefined
 
       #post state to database
-      $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
-      .error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
+      promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
+      saveThrottler.invokePromise promise
+      promise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
       .then  ->
         prop
 
