@@ -5,13 +5,14 @@ app = require '../app.coffee'
 
 app.factory 'Filters'.ourNs(), [ () =>
 
-  # query filters 
+  # query filters
   values:
     propertyStatus: [
       { label: "For Sale", value: "forSale" }
       { label: "Pending", value: "pending" }
       { label: "Sold", value: "sold" }
       { label: "Not For Sale", value:"notForSale" }
+      { label: "Saved", value:"saved" }
     ]
     beds: [
       { value: undefined, name: "" }

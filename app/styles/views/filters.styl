@@ -12,7 +12,7 @@
     width:100%
     top: 0px
     background-color: rm-medium-blue-darker
-    
+
     .btn-sm.filter-btn
         padding: 1px 2px
         line-height: 1.0
@@ -55,7 +55,7 @@
         position: relative;
         background-color: none
         border: 1px solid rm-translucent-white
-        
+
         /*label styling*/
         padding: 8px
         font-size: 16px
@@ -66,7 +66,7 @@
         white-space: nowrap
 
 
-    
+
     input[type="checkbox"].checkbox.forSale:checked + label
         background-color: rm-highlight-green
         color: #FFF
@@ -87,9 +87,14 @@
         color: #FFF
         border-color: rm-highlight-blue
 
+    input[type="checkbox"].checkbox.saved:checked + label
+      background-color: rm-highlight-yellow
+      color: #b6b6b6
+      border-color: rm-highlight-yellow
+
     input[type="checkbox"].checkbox:disabled + label
         opacity: 0.5
-    
+
 
 
 #filters-close
@@ -101,28 +106,28 @@
 
 
 /* Small devices (tablets, 768px and up) */
-@media (min-width: 768px)  
+@media (min-width: 768px)
 
-    
+
     .filters-container .close
-      display:none 
+      display:none
 
-    
+
 
 /* Medium devices (desktops, 992px and up) */
-@media (min-width: 992px) 
-    .filters-container 
-      width:400px
+@media (min-width: 992px)
+    .filters-container
+      width:500px
       left: 60px
-    
+
     #results-list
       width:auto
 
-    
+
 
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
-    
+
 
 
 /*********************

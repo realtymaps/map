@@ -9,7 +9,7 @@ dataPropertyUtil = require '../utils/util.data.properties.coffee'
 
 validators = requestUtil.query.validators
 
-statuses = ['for sale', 'recently sold', 'pending', 'not for sale']
+statuses = ['for sale', 'recently sold', 'pending', 'not for sale', 'saved']
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
@@ -61,6 +61,10 @@ module.exports =
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
       # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
       sqlHelpers._whereRawSafe(query, filters.bounds)
+
+      tempStatus = _.reject filters.status, (s) -> s == 'saved'
+      savedFilter = _.contains filters.status, 'saved'
+      filters.status = tempStatus
 
       if filters.status.length == 1
         query.where('rm_status', filters.status[0])
@@ -117,12 +121,19 @@ module.exports =
       
       #logger.sql query.toString()
 
+      logger.debug "savedFilter: #{savedFilter}"
+      logger.debug "filters.status: #{filters.status}"
+
       query.then (data) ->
         data = data or []
         # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
         data = _.uniq data, (row) ->
           row.rm_property_id
         data = dataPropertyUtil.joinSavedProperties(state, data)
+
+        if savedFilter
+          data = data.filter (d) ->
+            d.savedDetails?
         return data
 
   getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
