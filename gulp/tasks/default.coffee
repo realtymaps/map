@@ -10,7 +10,7 @@ gulp.task 'clean', (done) ->
 
 #gulp dependency hell
 gulp.task 'develop', ['clean'], ->
-  gulp.start ['spec', 'express_spec', 'watch']
+  gulp.start ['spec', 'express', 'watch']
 
 gulp.task 'mock', ['clean'], ->
   gulp.start ['specMock', 'jsonMock', 'express_spec', 'watch']

@@ -12,11 +12,13 @@ options =
     'node_modules/**'
     'bower_componets/**'
     'app/**'
-    'dist/**/**'
+    '_public/**'
+    'mean.coffee.log'
   ]
   delay: 1
   execMap:
     coffee: 'coffee'
+  verbose: false
 
 run_express = (nodeArgs) ->
   log "ENV Port in gulp: " + config.PORT
@@ -31,3 +33,4 @@ gulp.task "express", ['otherAssets'], ->
 
 gulp.task "express_debug", ->
   run_express ['--debug=9999']
+ 
