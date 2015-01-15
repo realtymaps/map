@@ -13,7 +13,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass[ParcelEnums.status.pending] = 'pending'
     _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
     _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
-    _forSaleClass['saved'] = 'saved'
+    _forSaleClass['saved'] = 'saved btn btn-default btn-xs'
     _forSaleClass['default'] = ''
 
     resultEvents = ['click', 'dblclick', 'mouseover', 'mouseleave']
@@ -83,6 +83,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
           "#{prev}, #{next}"
         , ''
 
+      isSavedResult:(result) ->
+        result.savedDetails?.isSaved == true
 
       getCurrentOwnersTitle: (result) =>
         title = "Current Owner"
@@ -174,4 +176,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       mouseleave: (result) =>
         result.isMousedOver = undefined
+
+      clickSaveResultFromList: (result) =>
 ]
