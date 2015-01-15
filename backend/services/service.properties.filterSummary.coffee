@@ -49,92 +49,90 @@ required =
 
 module.exports =
 
-  getFilterSummary: (state, filters, limit = 600) -> Promise.try () ->
-    requestUtil.query.validateAndTransform(filters, transforms, required)
+  getFilterSummary: (state, rawFilters, limit = 600) -> Promise.try () ->
+    
+    # note this is looking at the pre-transformed status filter
+    if !rawFilters.status?.length && (!state?.properties_selected || _.keys(state.properties_selected).length == 0)
+      #nothing to select, bail before we do any real work
+      return []
+      
+    requestUtil.query.validateAndTransform(rawFilters, transforms, required)
     .then (filters) ->
 
-      # we allow the query to get here without error so we can save the filter state, but if there are no valid
-      # statuses specified, we want to shortcut out with no results
-      if filters.status.length == 0
-        return []
-
       query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
+      query.limit(limit) if limit
+
       # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
       sqlHelpers._whereRawSafe(query, filters.bounds)
-
-      tempStatus = _.reject filters.status, (s) -> s == 'saved'
-      savedFilter = _.contains filters.status, 'saved'
-      filters.status = tempStatus
-
-      if filters.status.length == 1
-        query.where('rm_status', filters.status[0])
-      else if filters.status.length < statuses.length
-        query.whereIn('rm_status', filters.status)
-
-      sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
-      sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
-      sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
-      sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
-
-      if filters.bedsMin
-        query.where("bedrooms", '>=', filters.bedsMin)
-
-      if filters.bathsMin
-        query.where("baths_full", '>=', filters.bathsMin)
-
-      if filters.hasOwner?
-        if filters.hasOwner
-          query.where ->
-            @whereNotNull('owner_name')
-            @orWhereNotNull('owner_name2')
-        else
-          query.where ->
-            @whereNull('owner_name')
-            @orWhereNull('owner_name2')
-
-      if filters.ownerName
-        # need to avoid any characters that have special meanings in regexes
-        # then split on whitespace and commas to get chunks to search for
-        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
-          if !chunk
-            return
-          # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
-          # since this is after the split, a space here will be an actual part of the search
-          result.push chunk.replace(/(['-])/g, "[$1 ]?")
-        sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
-
-      if filters.listedDaysMin?
-        sqlHelpers.daysGreaterThan(query, filters.listedDaysMin)
-      if filters.listedDaysMax?
-        sqlHelpers.daysLessThan(query, filters.listedDaysMax)
-
-      if state and state.properties_selected
-        #Should we return saved properties that have isSaved false?
-        #Main reason in asking is because a property is still saved if it has notes and isSaved is false.
-        #We should consider removing isSaved and just consider it saved if it has notes. (not sure about this)
-        #The main reason on having it around is because if you come back to it later you still
-        #have notes and history about a prop (but you may not always want it highlighted on the map)
-        query.orWhere ->
-          sqlHelpers._whereRawSafe(@, filters.bounds)
-          @whereIn('rm_property_id', _.keys(state.properties_selected))
-      query.limit(limit) if limit
       
-      #logger.sql query.toString()
+      query.where () ->
 
-      logger.debug "savedFilter: #{savedFilter}"
-      logger.debug "filters.status: #{filters.status}"
+        if state?.properties_selected && _.keys(state.properties_selected).length > 0
+          #Should we return saved properties that have isSaved false?
+          #Main reason in asking is because a property is still saved if it has notes and isSaved is false.
+          #We should consider removing isSaved and just consider it saved if it has notes. (not sure about this)
+          #The main reason on having it around is because if you come back to it later you still
+          #have notes and history about a prop (but you may not always want it highlighted on the map)
+          sqlHelpers.whereIn(@, 'rm_property_id', _.keys(state.properties_selected))
 
-      query.then (data) ->
-        data = data or []
-        # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-        data = _.uniq data, (row) ->
-          row.rm_property_id
-        data = dataPropertyUtil.joinSavedProperties(state, data)
+        # if there are no statuses selected, then GTFO without any other querying for performance
+        if filters.status.length == 0
+          return
 
-        if savedFilter
-          data = data.filter (d) ->
-            d.savedDetails?
-        return data
+        # apply all other filters
+        @.orWhere () ->
+    
+          if filters.status.length < statuses.length
+            sqlHelpers.whereIn(@, 'rm_status', filters.status)
+    
+          sqlHelpers.between(@, 'price', filters.priceMin, filters.priceMax)
+          sqlHelpers.between(@, 'close_price', filters.closePriceMin, filters.closePriceMax)
+          sqlHelpers.between(@, 'finished_sqft', filters.sqftMin, filters.sqftMax)
+          sqlHelpers.between(@, 'acres', filters.acresMin, filters.acresMax)
+    
+          if filters.bedsMin
+            @.where("bedrooms", '>=', filters.bedsMin)
+    
+          if filters.bathsMin
+            @.where("baths_full", '>=', filters.bathsMin)
+    
+          if filters.hasOwner?
+            if filters.hasOwner
+              @.where ->
+                @whereNotNull('owner_name')
+                @orWhereNotNull('owner_name2')
+            else
+              @.where ->
+                @whereNull('owner_name')
+                @orWhereNull('owner_name2')
+    
+          if filters.ownerName
+            # need to avoid any characters that have special meanings in regexes
+            # then split on whitespace and commas to get chunks to search for
+            patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
+              if !chunk
+                return
+              # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
+              # since this is after the split, a space here will be an actual part of the search
+              result.push chunk.replace(/(['-])/g, "[$1 ]?")
+            sqlHelpers.allPatternsInAnyColumn(@, patterns, ['owner_name', 'owner_name2'])
+    
+          if filters.listedDaysMin?
+            sqlHelpers.daysGreaterThan(@, filters.listedDaysMin)
+          if filters.listedDaysMax?
+            sqlHelpers.daysLessThan(@, filters.listedDaysMax)
+      
+      logger.sql query.toString()
+      return query
+    .then (data) ->
+      if !data
+        return []
+      # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
+      data = _.uniq data, (row) ->
+        row.rm_property_id
+
+      dataPropertyUtil.joinSavedProperties(state, data)
+      return data
 
   getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
     query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
