@@ -8,8 +8,6 @@ _days = (val, operator, beginTimeStamp, endTmeStamp) ->
   _interval val, operator, beginTimeStamp, endTmeStamp, 'day'
 
 _whereRawSafe = (query, rawSafe) ->
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@ #{query}")
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@ #{JSON.stringify(rawSafe,null,2)}")
   query.whereRaw rawSafe.sql, rawSafe.bindings
   
 _orWhereRawSafe = (query, rawSafe) ->
