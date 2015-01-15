@@ -1,5 +1,5 @@
 .results-container.navbar-below#results-slide(ng-show="Toggles.showResults"
-ng-init="resultsInit('results-list','result-property ng-scope')")
+ng-init="resultsInit('results-list')")
     .tray-close#results-close(ng-click="Toggles.showResults = !Toggles.showResults")
         i.centered.fa.fa-chevron-right.fa-2x
     #results-list-inner
@@ -34,9 +34,10 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
 
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //DEBUG repeat
-            //div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
-            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
-                .card.animated.slide-down( id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails")
+            //div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
+            div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
+                .card( ng-class="resultsFormatter.maybeAnimate()" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
+                rmaps-click="resultsFormatter.click" rmaps-value-name="result")
                     //.result-arrow
                         .box Sold
                         .arrow
@@ -48,8 +49,8 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                         .price(ng-cloak)
                             .price-value {{resultsFormatter.getPrice(result.price)}}
                             .property-status {{result.rm_status}}&nbsp;
-                                i.fa.fa-square.fa-lg(ng-if="resultsFormatter.isSavedResult(result)" ng-class="resultsFormatter.getForSaleClass(result)" ng-click="resultsFormatter.clickSaveResultFromList(result)")
-                                i.fa.fa-square.fa-lg(ng-if="!resultsFormatter.isSavedResult(result)" ng-class="resultsFormatter.getForSaleClass(result)")
+                                i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(result)"
+                                rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name="selectedResult")
                         div
                             .beds(ng-if="result.bedrooms" ng-cloak)
                                 span.data {{result.bedrooms}}
@@ -71,4 +72,4 @@ ng-init="resultsInit('results-list','result-property ng-scope')")
                     button.btn.btn-default.btn-xs() Do Something
 
         #results-footer
-            .close(ng-click="toggleNav('map')") x
+            i.close.fa.fa-times.fa-3(ng-click="Toggles.showResults = false;")

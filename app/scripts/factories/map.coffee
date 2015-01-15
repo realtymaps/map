@@ -56,7 +56,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
-        _saveProperty = (gObject, childModel) ->
+        _saveProperty = (childModel, gObject) ->
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(childModel.model)
           return unless saved
@@ -69,7 +69,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             #need to figure out a better way
             self.updateFilterSummaryHash()
-            _updateGObjects(gObject, savedDetails, childModel)
+            _updateGObjects(gObject, savedDetails, childModel) if gObject
+
+        @saveProperty = _saveProperty
 
         @scope = _.merge @scope,
           control: {}
@@ -147,12 +149,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 childModel = GoogleService.UiMap.getCorrectModel model
-                return _saveProperty(gObject, childModel) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
               dblclick: (gObject, eventname, model) ->
                 childModel = GoogleService.UiMap.getCorrectModel model
-                _saveProperty gObject, childModel
+                _saveProperty childModel, gObject
 
           formatters:
             layer: LayerFormatters

@@ -13,7 +13,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass[ParcelEnums.status.pending] = 'pending'
     _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
     _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
-    _forSaleClass['saved'] = 'saved btn btn-default btn-xs'
+    _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
     resultEvents = ['click', 'dblclick', 'mouseover', 'mouseleave']
@@ -24,6 +24,16 @@ app.factory 'ResultsFormatter'.ourNs(), [
       @include FormattersService.Google
       constructor: (@mapCtrl) ->
         super()
+        @mapCtrl.scope.isScrolling = false
+
+        onScrolling = _.debounce ->
+          @mapCtrl.scope.isScrolling = true
+
+        window.onscroll = onScrolling
+        $timeout =>
+          @mapCtrl.scope.isScrolling = false if(@mapCtrl.scope.isScrolling)
+        , 100
+
         @reset = _.debounce =>
           @mapCtrl.scope.resultsLimit = 10
           @mapCtrl.scope.results = []
@@ -55,6 +65,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
           return if newVal == oldVal
           @loadMore()
+
+      ###
+      Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
+      ###
+      maybeAnimate: =>
+        "animated slide-down" if @mapCtrl.scope.isScrolling
 
       order: =>
         @filterSummarySorted = _orderBy(
@@ -119,14 +135,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #min height to keep scrolling
         numberOfCards
 
-      bindResultsListEvents: _.debounce ->
-        #TODO use a performant directive
-        resultEvents.forEach (eventName) =>
-          angular.element(document.getElementsByClassName(@mapCtrl.scope.resultClass))
-          .unbind(eventName)
-          .bind eventName, (event) =>
-            @[eventName](angular.element(event.target or event.srcElement).scope().result)
-
       throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
         unless @resultsContainer
           @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
@@ -153,7 +161,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
             @mapCtrl.scope.results.push summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
-        @bindResultsListEvents()
+#        @bindResultsListEvents()
 
 
       click: (result) =>
@@ -177,5 +185,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
       mouseleave: (result) =>
         result.isMousedOver = undefined
 
-      clickSaveResultFromList: (result) =>
+      clickSaveResultFromList: (result, eventOpts) =>
+        event = eventOpts.$event
+        if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
+        alert("saved")
+        #@mapCtrl.saveProperty result
+        #@reset()
 ]
