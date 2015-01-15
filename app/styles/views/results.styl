@@ -3,6 +3,10 @@
 listNormalWidth = 500px
 listMediaWidth = 350px
 
+savedButton()
+  .fa.fa-square.fa-lg.btn.btn-default.btn-xs
+    padding 1px 1px
+
 propertyStatus()
   .property-status
     color rm-main-dark-blue
@@ -93,6 +97,7 @@ data()
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
 .results-container
+  savedButton()
   propertyStatus()
   margin: 0 0 0 0px
   position: absolute
@@ -313,7 +318,9 @@ detailData()
 detailTitle()
   basicTitle()
   font-size 14px
+
 .detail-container
+  savedButton()
 
   /* bootstraps row col defaults */
   .row

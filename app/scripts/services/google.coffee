@@ -34,10 +34,10 @@ app.service 'GoogleService'.ourNs(), ->
 
   Map:
     isGPoly: (gObject) ->
-      gObject.setPath?
+      gObject?.setPath?
 
     isGMarker: (gObject) ->
-      gObject.getAnimation?
+      gObject?.getAnimation?
 
   UiMap:
     getCorrectModel: (model) ->

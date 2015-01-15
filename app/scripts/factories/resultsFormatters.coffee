@@ -24,6 +24,16 @@ app.factory 'ResultsFormatter'.ourNs(), [
       @include FormattersService.Google
       constructor: (@mapCtrl) ->
         super()
+        @mapCtrl.scope.isScrolling = false
+
+        onScrolling = _.debounce ->
+          @mapCtrl.scope.isScrolling = true
+
+        window.onscroll = onScrolling
+        $timeout =>
+          @mapCtrl.scope.isScrolling = false if(@mapCtrl.scope.isScrolling)
+        , 100
+
         @reset = _.debounce =>
           @mapCtrl.scope.resultsLimit = 10
           @mapCtrl.scope.results = []
@@ -56,6 +66,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
           return if newVal == oldVal
           @loadMore()
 
+      ###
+      Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
+      ###
+      maybeAnimate: =>
+        "animated slide-down" if @mapCtrl.scope.isScrolling
+
       order: =>
         @filterSummarySorted = _orderBy(
           @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
@@ -83,6 +99,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
           "#{prev}, #{next}"
         , ''
 
+      isSavedResult:(result) ->
+        result.savedDetails?.isSaved == true
 
       getCurrentOwnersTitle: (result) =>
         title = "Current Owner"
@@ -117,14 +135,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #min height to keep scrolling
         numberOfCards
 
-      bindResultsListEvents: _.debounce ->
-        #TODO use a performant directive
-        resultEvents.forEach (eventName) =>
-          angular.element(document.getElementsByClassName(@mapCtrl.scope.resultClass))
-          .unbind(eventName)
-          .bind eventName, (event) =>
-            @[eventName](angular.element(event.target or event.srcElement).scope().result)
-
       throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
         unless @resultsContainer
           @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
@@ -151,7 +161,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
             @mapCtrl.scope.results.push summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
-        @bindResultsListEvents()
+#        @bindResultsListEvents()
 
 
       click: (result) =>
@@ -164,9 +174,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         @mapCtrl.scope.showDetails = true
 
-      dblclick: (result) =>
-        #TODO save result as a saved prop
-
       mouseover: (result) =>
         #not updating the polygon cause I think we really need access to its childModels / plurals
         #notw add that to control on uigmap
@@ -174,4 +181,11 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       mouseleave: (result) =>
         result.isMousedOver = undefined
+
+      clickSaveResultFromList: (result, eventOpts) =>
+        event = eventOpts.$event
+        if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
+#        alert("saved #{result.rm_property_id} #{event}")
+        @mapCtrl.saveProperty(model: result)
+        @reset()
 ]

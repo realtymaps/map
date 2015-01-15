@@ -14,7 +14,8 @@
                         .price
                             span.price-label {{selectedResult.rm_status=='recently sold'||selectedResult.rm_status=='not for sale'?'sold':'asking'}}:&nbsp;
                             | {{resultsFormatter.getPrice(selectedResult.price)}}
-                        .property-status {{selectedResult.rm_status}} <i class="fa fa-square fa-lg" ng-class="resultsFormatter.getForSaleClass(selectedResult)"></i>
+                        .property-status.i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(selectedResult)"
+                        rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name="selectedResult")
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                 .row
@@ -115,4 +116,4 @@
                     //.col-sm-4 {{selectedResult.sale4_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     //.col-sm-8 {{selectedResult.sale4_amount}}
     #results-footer
-        .close(click="toggleDetails()") x
+        i.close.fa.fa-times.fa-3(ng-click="showDetails = !showDetails")

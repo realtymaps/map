@@ -26,9 +26,8 @@ module.exports = app
 
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
-    $scope.resultsInit = (resultsListId,resultClass) ->
+    $scope.resultsInit = (resultsListId) ->
       $scope.resultsListId = resultsListId
-      $scope.resultClass = resultClass
 
     $scope.init = (pageClass) ->
       $scope.pageClass = pageClass

@@ -50,14 +50,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         _updateGObjects = (gObject, savedDetails, childModel) ->
           #purpose to to take some sort of gObject and update its view immediately
           childModel.model.savedDetails = savedDetails
-          if gObject.labelClass?
+          if GoogleService.Map.isGMarker(gObject)
             opts = $scope.formatters.layer.MLS.markerOptionsFromForSale childModel.model
           else
             opts =  $scope.formatters.layer.Parcels.optionsFromFill(childModel)
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
-        _saveProperty = (gObject, childModel) ->
+        _saveProperty = (childModel, gObject) ->
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(childModel.model)
           return unless saved
@@ -70,7 +70,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             #need to figure out a better way
             self.updateFilterSummaryHash()
-            _updateGObjects(gObject, savedDetails, childModel)
+            return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
+            _updateGObjects(gObject, savedDetails, childModel) if gObject
+
+        @saveProperty = _saveProperty
 
         @scope = _.merge @scope,
           control: {}
@@ -148,12 +151,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 childModel = GoogleService.UiMap.getCorrectModel model
-                return _saveProperty(gObject, childModel) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
                 $scope.resultsFormatter.click(childModel.model)
 
-              dblclick: (gObject, eventname, model) ->
+              dblclick: (gObject, eventname, model, events) ->
+                event = events[0]
+                if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
                 childModel = GoogleService.UiMap.getCorrectModel model
-                _saveProperty gObject, childModel
+                _saveProperty childModel, gObject
 
           formatters:
             layer: LayerFormatters
