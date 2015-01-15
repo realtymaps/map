@@ -26,7 +26,7 @@ module.exports =
       .where(rm_property_id: request.rm_property_id)
       .limit(1)
 
-      logger.sql query.toString()
+      #logger.sql query.toString()
 
       query.then (data) ->
         if not data or not data.length
