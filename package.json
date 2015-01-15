@@ -104,7 +104,7 @@
     "karma-mocha": "^0.1.9",
     "karma-phantomjs-launcher": "0.1.4",
     "karma-webpack": "git://github.com/realtymaps/karma-webpack.git",
-    "knex": "^0.6.22",
+    "knex": "^0.7.3",
     "lob": "^2.8.0",
     "lodash": "^2.4.1",
     "main-bower-files": "^2.0.0",

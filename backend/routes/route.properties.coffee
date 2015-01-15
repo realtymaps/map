@@ -1,10 +1,10 @@
+logger = require '../config/logger'
 Promise = require "bluebird"
 detailService = require '../services/service.properties.details.coffee'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'
 requestUtil = require '../utils/util.http.request'
 httpStatus = require '../../common/utils/httpStatus'
-logger = require '../config/logger'
 ExpressResponse = require '../utils/util.expressResponse'
 
 

@@ -9,6 +9,7 @@ _days = (val, operator, beginTimeStamp, endTmeStamp) ->
 
 _whereRawSafe = (query, rawSafe) ->
   query.whereRaw rawSafe.sql, rawSafe.bindings
+  
 _orWhereRawSafe = (query, rawSafe) ->
   query.orWhere ()-> _whereRawSafe(@, rawSafe)
 
@@ -34,6 +35,13 @@ module.exports =
 
   _whereRawSafe: _whereRawSafe
   _orWhereRawSafe: _orWhereRawSafe
+  
+  whereIn: (query, column, values) ->
+    # this logic is necessary to avoid SQL parse errors
+    if values.length == 1
+      query.where(column, values[0])
+    else
+      query.whereIn(column, values)
 
   allPatternsInAnyColumn: (query, patterns, columns) ->
     patterns.forEach (pattern) ->

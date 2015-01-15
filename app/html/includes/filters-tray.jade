@@ -23,11 +23,9 @@
         .row
             .col-sm-6
                 .label Price Min
-                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.priceMin = undefined") clear
                 input(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin")
             .col-sm-6
                 .label Price Max
-                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.priceMax = undefined") clear
                 input(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax")
         .row
             .col-sm-6
@@ -65,11 +63,9 @@
         .row(ng-if="principal.isDebugEnvironment()")
             .col-sm-6
                 .label Close Price Min
-                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.closePriceMin = undefined") clear
                 input(type="text" numeral format="$0,0" ng-model="selectedFilters.closePriceMin")
             .col-sm-6
                 .label Close Price Max
-                    //.btn.btn-default.btn-sm.filter-btn(ng-click="selectedFilters.closePriceMax = undefined") clear
                 input(type="text" numeral format="$0,0" ng-model="selectedFilters.closePriceMax")
         .row(ng-if="principal.isDebugEnvironment()")
             .col-sm-6

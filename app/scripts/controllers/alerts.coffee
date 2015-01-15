@@ -154,7 +154,8 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       else
         handleDupeAlert(alert)
 
-    # expose some functions via and event
+    # expose some functions via scope and event
+    $scope.hideAlert = hideAlert # this is used by the alert close button
     $scope.$onRootScope Events.alert.spawn, handleAlertSpawnEvent
     $scope.$onRootScope Events.alert.hide, (event, alertId) -> hideAlert(alertId)
     $scope.$onRootScope Events.alert.dismiss, (event, alertId) -> removeAlert(alertId)

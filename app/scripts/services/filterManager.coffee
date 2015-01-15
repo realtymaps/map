@@ -26,13 +26,10 @@ app.service 'FilterManager'.ourNs(), [
           selectedFilters.status.push(ParcelEnums.status.sold)
         if (selectedFilters.notForSale)
           selectedFilters.status.push(ParcelEnums.status.notForSale)
-        if (selectedFilters.saved)
-          selectedFilters.status.push(ParcelEnums.status.saved)
         delete selectedFilters.forSale
         delete selectedFilters.pending
         delete selectedFilters.sold
         delete selectedFilters.notForSale
-        delete selectedFilters.saved
 
         filter = '&' + qs.stringify(selectedFilters)
       cb(filter)

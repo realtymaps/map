@@ -12,7 +12,6 @@ app.factory 'Filters'.ourNs(), [ () =>
       { label: "Pending", value: "pending" }
       { label: "Sold", value: "sold" }
       { label: "Not For Sale", value:"notForSale" }
-      { label: "Saved", value:"saved" }
     ]
     beds: [
       { value: undefined, name: "" }
