@@ -103,6 +103,7 @@ updateUserState = (session, partialState) -> Promise.try () ->
   # need the id for lookup, so we don't want to allow it to be set this way
   delete partialState.id
   _.extend(session.state, partialState)
+  session.saveAsync() # save immediately to prevent problems from overlapping AJAX calls
   UserState.forge(id: session.userid)
   .save(session.state, {method: 'update'})
   .then (userState) ->
