@@ -121,8 +121,8 @@ module.exports =
             sqlHelpers.daysGreaterThan(@, filters.listedDaysMin)
           if filters.listedDaysMax?
             sqlHelpers.daysLessThan(@, filters.listedDaysMax)
-      
-      logger.sql query.toString()
+                  
+      #logger.sql query.toString()
       return query
     .then (data) ->
       if !data

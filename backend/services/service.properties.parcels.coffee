@@ -28,13 +28,15 @@ module.exports =
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
-        query = db.knex.select().from(sqlHelpers.tableName(Parcel))
-        query.whereRaw(filters.bounds.sql, filters.bounds.bindings)
+      query = db.knex.select().from(sqlHelpers.tableName(Parcel))
+      sqlHelpers._whereRawSafe(query, filters.bounds)
+      #logger.sql query.toString()      
+      return query
 
-        query.then (data) ->
-          data = data||[]
-          # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-          data = _.uniq data, (row) ->
-            row.rm_property_id
-          data = dataPropertyUtil.joinSavedProperties(state,data)
-          data
+    .then (data) ->
+      data = data||[]
+      # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
+      data = _.uniq data, (row) ->
+        row.rm_property_id
+      dataPropertyUtil.joinSavedProperties(state,data)
+      data
