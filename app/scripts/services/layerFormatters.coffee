@@ -52,12 +52,15 @@ app.service 'LayerFormatters'.ourNs(), [
 
     getSavedColorProperty = (model) ->
       if not model.savedDetails or not model.savedDetails.isSaved
-        return
-      saveColor
+        return null
+      else
+        return saveColor
 
     getMouseOver = (model, toReturn = mouseOverColor) ->
-      return if not model or not model.isMousedOver
-      return toReturn
+      if not model or not model.isMousedOver
+        return null
+      else
+        return toReturn
 
     parcels = do ->
       colors = {}
@@ -77,12 +80,10 @@ app.service 'LayerFormatters'.ourNs(), [
 
       fillColorFromState = (parcel) ->
         return {} unless parcel
-        model = parcel.model
+        model = filterSummaryHash[parcel.model.rm_property_id] || parcel.model
         maybeSavedColor = getSavedColorProperty(model)
-        unless maybeSavedColor
-          model = if _.has(filterSummaryHash, model.rm_property_id) then filterSummaryHash[model.rm_property_id] else model
-        getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
-
+        return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
+  
       fill = (parcel) ->
         color: fillColorFromState(parcel) or colors['default']
         opacity: '.70'

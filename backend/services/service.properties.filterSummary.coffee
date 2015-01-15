@@ -78,19 +78,20 @@ module.exports =
       if filters.bathsMin
         query.where("baths_full", '>=', filters.bathsMin)
 
-      if filters.hasOwner
-        query.where ->
-          @whereNotNull('owner_name')
-          @orWhereNotNull('owner_name2')
-      else
-        query.where ->
-          @whereNull('owner_name')
-          @orWhereNull('owner_name2')
+      if filters.hasOwner?
+        if filters.hasOwner
+          query.where ->
+            @whereNotNull('owner_name')
+            @orWhereNotNull('owner_name2')
+        else
+          query.where ->
+            @whereNull('owner_name')
+            @orWhereNull('owner_name2')
 
       if filters.ownerName
         # need to avoid any characters that have special meanings in regexes
         # then split on whitespace and commas to get chunks to search for
-        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\w]/), (result, chunk) ->
+        patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
           if !chunk
             return
           # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
@@ -111,8 +112,9 @@ module.exports =
         #have notes and history about a prop (but you may not always want it highlighted on the map)
         query.orWhere ->
           sqlHelpers._whereRawSafe(@, filters.bounds)
-          @where(rm_property_id: _.keys(state.properties_selected))
+          @whereIn('rm_property_id', _.keys(state.properties_selected))
       query.limit(limit) if limit
+      
       #logger.sql query.toString()
 
       query.then (data) ->

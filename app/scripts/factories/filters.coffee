@@ -14,7 +14,7 @@ app.factory 'Filters'.ourNs(), [ () =>
       { label: "Not For Sale", value:"notForSale" }
     ]
     beds: [
-      { value: null, name: "" }
+      { value: undefined, name: "" }
       { value: "1", name: "1+" }
       { value: "2", name: "2+" }
       { value: "3", name: "3+" }
@@ -23,7 +23,7 @@ app.factory 'Filters'.ourNs(), [ () =>
       { value: "6", name: "6+" }
     ]
     baths: [
-      { value: null, name: "" }
+      { value: undefined, name: "" }
       { value: "1", name: "1+" }
       { value: "2", name: "2+" }
       { value: "3", name: "3+" }
@@ -32,7 +32,7 @@ app.factory 'Filters'.ourNs(), [ () =>
       { value: "6", name: "6+" }
     ]
     acresValues: [
-      { value: null, name: "" }
+      { value: undefined, name: "" }
       { value: "0.1", name: ".10 acres" }
       { value: "0.2", name: ".20 acres" }
       { value: "0.3", name: ".30 acres" }
@@ -45,12 +45,12 @@ app.factory 'Filters'.ourNs(), [ () =>
       { value: "1.0", name: "1.0 acres" }
     ]
     hasOwner: [
-      { value: null, name: "" }
+      { value: undefined, name: "" }
       { value: 'true', name: "yes" }
       { value: 'false', name: "no" }
     ]
     listedDays: [
-      { value: null, name: "" }
+      { value: undefined, name: "" }
       { value: "15", name: "15+" }
       { value: "30", name: "30+" }
       { value: "60", name: "60+" }
