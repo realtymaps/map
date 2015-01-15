@@ -14,8 +14,9 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     parcelThrottler = new PromiseThrottler()
     saveThrottler = new PromiseThrottler()
 
-    principal.getIdentity().then (identity) ->
-      savedProperties = _.extend savedProperties, identity.stateRecall.properties_selected
+    $rootScope.$onRootScope Events.principal.login.success, () ->
+      principal.getIdentity().then (identity) ->
+        savedProperties = _.extend {}, identity.stateRecall.properties_selected
 
     # this convention for a combined service call helps elsewhere because we know how to get the path used
     # by this call, which means we can do things with alerts related to it
