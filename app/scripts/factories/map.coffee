@@ -205,13 +205,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.filterSummary = data
         @updateFilterSummaryHash()
         if @waitingData
-          console.log("--------------------- going!")
-          #@scope.layers.parcels = @waitingData
           @scope.controls.parcel.newModels(@waitingData)
           @waitingData = null
         @waitToSetParcelData = false
         @scope.$evalAsync () =>
-          #@scope.controls.parcel.clean()
           @scope.resultsFormatter?.reset()
 
       
