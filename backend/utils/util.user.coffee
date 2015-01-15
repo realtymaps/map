@@ -28,8 +28,8 @@ cacheUserValues = (req) ->
       req.session.state = state
     promises.push statePromise
   return Promise.all(promises)
-  .then () ->
-    #logger.debug "all user values cached for user: #{req.user.username}"
+  #.then () ->
+  #  logger.debug "all user values cached for user: #{req.user.username}"
   .catch (err) ->
     logger.error "error caching user values for user: #{req.user.username}"
     Promise.reject(err)
