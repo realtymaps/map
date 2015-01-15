@@ -57,7 +57,7 @@ $parseQuick = (dotPropString , scope) ->
 
       element.bind eventName, (event) ->
         fnNameToFind = attrs[directiveName]
-        fn = $parseQuick fnNameToFind, elementScope.$parent
+        fn = $parseQuick fnNameToFind, elementScope
         $log.error "failed to find function for #{directiveName} to prop #{fnNameToFind}" unless fn
 
         callback = ->
