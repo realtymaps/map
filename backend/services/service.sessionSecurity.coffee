@@ -138,7 +138,7 @@ iterateSecurity = (req, res, security, tokensToInvalidate=0) -> Promise.try () -
     .catch (err) ->
       ignore = "No rows were affected in the update"
       if (err?.message?.substr(0, ignore.length) == ignore)
-        logger.debug "race condition encountered due to concurrent AJAX calls in a session, ignoring"
+        #logger.debug "race condition encountered due to concurrent AJAX calls in a session, ignoring"
       else
         logger.error "Error while iterating security token: #{err}"
       return
