@@ -18,7 +18,7 @@ ExpressResponse = require './util.expressResponse'
 class SessionSecurityError extends Error
   constructor: (@invalidate="nothing", @message, loglevel="error") ->
     @name = "SessionSecurityError"
-    if @message
+    if @message && loglevel
       if @invalidate is "nothing"
         logger[loglevel] "SessionSecurityCheck: #{@message}"
       else
@@ -52,13 +52,12 @@ module.exports = {
     #TODO BREAK THIS UP!
     context = {}
     
-    Promise.resolve()
-    .then () ->
+    Promise.try () ->
       cookie = req.signedCookies[config.SESSION_SECURITY.name]
       if not cookie
         if req.user
           return Promise.reject(new SessionSecurityError("user", "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", "warn"))
-        return Promise.reject(new SessionSecurityError("nothing", "no session security cookie found for anonymous user", "debug"))
+        return Promise.reject(new SessionSecurityError("nothing", "no session security cookie found for anonymous user", null))
       values = cookie.split('.')
       if values.length != 3
         if req.user
@@ -92,54 +91,28 @@ module.exports = {
       sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
       .then (tokenHash) ->
         if req.user
-          # this is a logged-in user, so validate on any of the 3 tokens (with
-          # time restriction on the later 2), and iterate only on the first
-          if tokenHash == security.next_security_token
-            # yay! this is what we hope to see most of the time
+          # this is a logged-in user, so validate on any of the 3 tokens, and iterate
+          # only if it's been a while since we gave out a new token
+          if tokenHash != security.next_security_token && tokenHash != security.current_security_token && tokenHash != security.previous_security_token
+            # oops, they've got a made-up or really old token, this shouldn't happen
+            console.log("========  tokenHash: "+tokenHash)
+            return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", "warn"))
+          # check if we need to iterate
+          if Date.now()-security.updated_at > config.SESSION_SECURITY.window
+            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  iterating! "+(new Date()))
             return sessionSecurityService.iterateSecurity(req, res, security)
-          ###
-          # this is the original security logic...  the timeout stuff is breaking legitimate sessions.  We're removing
-          # the timeout for now...  if we bring it back, we should probably put the iteration logic at the end of the
-          # request handling rather than at the front, so we're less likely to hit problems due to overlapping AJAX
-          # calls that are recieved in 1 order and finished the other way around.  Even then, HTTP requests cancelled
-          # by the frontend might legitimately result in a lost token, so we need to continue to iterate the sequence
-          # on any accepted token.  I think it would work instead to kill off token #1 in this timeout situation, since
-          # the idea was to prevent a malicious user from just using the token from a couple steps behind without
-          # being noticed...
-          validUpdateTimestamp = Date.now()-config.SESSION_SECURITY.window
-          if security.updated_at < validUpdateTimestamp
-            return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch (token timeout) for user #{req.user?.username} on session: #{context.sessionId}", "warn"))
-          if tokenHash == security.current_security_token
-            # ok, there were some simultaneous calls, we'll let it go
-            return Promise.resolve()
-          if tokenHash == security.previous_security_token
-            # eh... it's possible this can happen, even though it would require the server 
-            # to be misbehaving on some race conditions... just to play it safe we'll allow it
-            logger.warn "relied on previous security token for authentication for user #{req.user.username} on session: #{req.sessionID}...  is the server overloaded?"
-            return Promise.resolve()
-          ###
-          previousTokenTimeout = Date.now()-security.updated_at > config.SESSION_SECURITY.window
-          if tokenHash == security.current_security_token
-            # ok, there were some simultaneous calls, we'll let it go
-            if (previousTokenTimeout)
-              logger.debug "relied on 1 step old security token, invalidating leading token" 
-            return sessionSecurityService.iterateSecurity(req, res, security, if previousTokenTimeout then 1 else 0)
-          if tokenHash == security.previous_security_token
-            # eh... it's possible this can happen, even though it would require the server 
-            # to be misbehaving on some race conditions... just to play it safe we'll allow it
-            if (previousTokenTimeout)
-              logger.debug "relied on 2 step old security token, invalidating leading 2 tokens"
-            logger.warn "relied on previous security token for authentication for user #{req.user.username} on session: #{req.sessionID}...  is the server overloaded?"
-            return sessionSecurityService.iterateSecurity(req, res, security, if previousTokenTimeout then 2 else 0)
-          return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch for user #{req.user.username} on session: #{context.sessionId}", "warn"))
+          # if not, check if they need a "reminder"
+          if tokenHash != security.next_security_token
+            return sessionSecurityService.remindSecurityCookie(req, res, security)
+          # otherwise, we're good to go as-is
+          return
         else
-          # this isn't a logged-in user, so validate only if remember_me was set, and only
-          # on the first 2 tokens (with no time restriction); if we do validate, then we
-          # need to do some login work
+          # this isn't a logged-in user, so validate only if remember_me was set; if
+          # we do validate, then we need to do some login work
           if not security.remember_me
             return Promise.reject(new SessionSecurityError("security", "anonymous user with non-remember_me session security", "debug"))
-          if tokenHash != security.next_security_token && tokenHash != security.current_security_token
-            return Promise.reject(new SessionSecurityError("user", "cookie vs security token mismatch for user #{cookieValues.user_id} on session: #{context.sessionId}", "warn"))
+          if tokenHash != security.next_security_token && tokenHash != security.current_security_token && tokenHash != security.previous_security_token
+            return Promise.reject(new SessionSecurityError("user", "cookie vs security token mismatch for user #{cookieValues.user_id} on remember_me session: #{context.sessionId}", "warn"))
           req.session.userid = context.cookieValues.userId
           getSessionUser(req)
           .then (user) ->

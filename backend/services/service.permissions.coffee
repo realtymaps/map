@@ -25,7 +25,7 @@ getPermissionsForGroupId = (id) ->
     # we want to reformat this data as a hash of codenames to truthy values
     permissionsHash = _.reduce(group.related("permissions").toJSON(), hashifyPermissions, {})
     logger.info("permissions loaded for groupid #{id}")
-    logger.debug(JSON.stringify(permissionsHash, null, 2))
+    #logger.debug(JSON.stringify(permissionsHash, null, 2))
     return permissionsHash
   .catch (err) ->
     logger.error "error loading permissions for groupid #{id}: #{err}"
@@ -42,25 +42,25 @@ getPermissionsForUserId = (id) ->
       .then((permissions) -> return permissions.toJSON())
       .reduce(hashifyPermissions, {})
       .then (permissionsHash) ->
-        logger.debug "superuser permissions loaded for userid #{id}"
+        #logger.debug "superuser permissions loaded for userid #{id}"
         return permissionsHash
     else
       # grab the permissions on the user
       userPermissions = _.reduce(user.related('permissions').toJSON(), hashifyPermissions, {})
-      logger.debug "user permissions loaded for userid: #{id}"
+      #logger.debug "user permissions loaded for userid: #{id}"
       # grab the permissions on each group
       groupPermissions = user.related('groups')
       .mapThen((group) -> return group.id)
       .map(getPermissionsForGroupId)
       .then (groupPermissionsArray) -> 
-        logger.debug "group permissions loaded for userid #{id}"
+        #logger.debug "group permissions loaded for userid #{id}"
         return groupPermissionsArray
       # merge them all together
       return Promise.join userPermissions, groupPermissions, (userPermissions, groupPermissions) ->
         return _.merge(userPermissions, groupPermissions...)
   .then (permissionsHash) ->
-    logger.debug "all permissions loaded for userid #{id}:"
-    logger.debug JSON.stringify(permissionsHash, null, 2)
+    #logger.debug "all permissions loaded for userid #{id}:"
+    #logger.debug JSON.stringify(permissionsHash, null, 2)
     return permissionsHash
   .catch (err) ->
     logger.error "error loading permissions for userid #{id}"

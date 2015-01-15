@@ -23,7 +23,7 @@ hashifySettings = (hash, setting) ->
 
 
 getSettings = () ->
-  logger.debug "loading environment settings (#{config.ENV})"
+  #logger.debug "loading environment settings (#{config.ENV})"
 
   # we want to get the all_environments values first...
   defaultSettings = EnvironmentSetting.where(environment_name: "all_environments").fetchAll()
@@ -39,7 +39,7 @@ getSettings = () ->
     return _.merge(defaultSettings, specificSettings)
   .then (settings) ->
     logger.info "environment settings loaded (#{config.ENV})"
-    logger.debug JSON.stringify(settings, null, 2)
+    #logger.debug JSON.stringify(settings, null, 2)
     return settings
   .catch (err) ->
     logger.error "error loading environment settings (#{config.ENV})"

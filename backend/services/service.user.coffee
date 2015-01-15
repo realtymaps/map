@@ -46,13 +46,13 @@ createPasswordHash = (password) ->
   environmentSettingsService.getSettings()
   .then (settings) ->
     cost = settings["password hashing cost factor"]
-    logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
+    #logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
     return bcrypt.hashAsync(password, cost)
   .then (hash) -> return "bcrypt$#{hash}"
 
 
 verifyPassword = (username, password) ->
-  logger.debug "attempting to verify password for username: #{username}"
+  #logger.debug "attempting to verify password for username: #{username}"
   getUser({ username: username })
   .then (user) ->
     if not user or not user?.password
@@ -66,14 +66,14 @@ verifyPassword = (username, password) ->
       Promise.reject(err)
     .then (data) ->
       hashData = data
-      logger.debug "detected #{hashData.algo} password hash for username: #{username}"
+      #logger.debug "detected #{hashData.algo} password hash for username: #{username}"
       switch hashData.algo
         when "bcrypt"
           return bcrypt.compareAsync(password, hashData.hash)
     .then (match) ->
       if not match
         return Promise.reject("given password doesn't match hash for username: #{username}")
-      logger.debug "password verified for username: #{username}"
+      #logger.debug "password verified for username: #{username}"
       if hashData.needsUpdate
         # in the background, update this user's hash
         logger.info "updating password hash for username: #{username}"
