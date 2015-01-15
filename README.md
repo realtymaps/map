@@ -56,6 +56,11 @@ ___
       - actual build pack to use is here https://github.com/ryandotsmith/nginx-buildpack
 
 ___
+### LOCK DOWN
+`npm install -g npm-shrinkwrap`
+execute
+`npm-shrinkwrap`
+
 ### TODO
 
 - forever script + git hook for custom deployment
