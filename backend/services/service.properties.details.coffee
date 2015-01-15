@@ -20,18 +20,15 @@ module.exports =
   getDetail: (state, request, next) -> Promise.try () ->
     requestUtil.query.validateAndTransform(request, transforms, required)
     .then (request) ->
-      query = db.raw "SELECT * FROM v_property_details WHERE rm_property_id = #{request.rm_property_id} limit 1;"
 
-      #THIS SHOULD EFFIN WORK, but I am always getting an empty array
-      #HELP ME JOE
-      # query = db.knex
-      # .select().from(sqlHelpers.tableName(model))
-      # .where(rm_property_id: request.rm_property_id)
-      # .limit(1)
+      query = db.knex
+      .select().from(sqlHelpers.tableName(model))
+      .where(rm_property_id: request.rm_property_id)
+      .limit(1)
 
-      # logger.sql query.toString()
+      #logger.sql query.toString()
 
       query.then (data) ->
         if not data or not data.length
-          return next new ExpressResponse('not found', httpStatus.NOT_FOUND)
+          return next new ExpressResponse("property with id #{request.rm_property_id} not found", httpStatus.NOT_FOUND)
         return data[0]
