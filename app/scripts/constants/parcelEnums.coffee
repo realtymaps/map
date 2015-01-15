@@ -6,4 +6,3 @@ app.constant 'ParcelEnums'.ourNs(),
     sold: 'recently sold'
     pending: 'pending'
     forSale: 'for sale'
-    saved: 'saved'
