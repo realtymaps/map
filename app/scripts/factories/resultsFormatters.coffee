@@ -175,12 +175,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.showDetails = true
 
       mouseover: (result) =>
-        #not updating the polygon cause I think we really need access to its childModels / plurals
-        #notw add that to control on uigmap
         result.isMousedOver = true
+        @mapCtrl.updateAllLayersByModel(result)
 
       mouseleave: (result) =>
         result.isMousedOver = undefined
+        @mapCtrl.updateAllLayersByModel(result)
 
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event

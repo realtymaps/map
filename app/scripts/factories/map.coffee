@@ -57,6 +57,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
+        @updateAllLayersByModel = _updateAllLayersByModel = (model) ->
+          uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
+            opts = if GoogleService.Map.isGMarker(gObject) then $scope.formatters.layer.MLS.markerOptionsFromForSale(model)
+            else $scope.formatters.layer.Parcels.optionsFromFill(model)
+            gObject.setOptions opts
+          , ['streetNumMarkers']
+
         _saveProperty = (childModel, gObject) ->
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(childModel.model)
@@ -74,11 +81,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if gObject
               _updateGObjects(gObject, savedDetails, childModel)
             else
-              uiGmapControls.eachSpecificGObject childModel.model.rm_property_id, (gObject) ->
-                opts = if GoogleService.Map.isGMarker(gObject) then $scope.formatters.layer.MLS.markerOptionsFromForSale(childModel.model)
-                else $scope.formatters.layer.Parcels.optionsFromFill(childModel.model)
-                gObject.setOptions opts
-              , ['streetNumMarkers']
+              _updateAllLayersByModel childModel.model
 
         @saveProperty = _saveProperty
 
@@ -190,7 +193,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       clearBurdenLayers: =>
         if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
           @scope.layers.parcels.length = 0
-          
+
       redraw: =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
         # so we're trying to avoid the races, and also using the control instead of the watched models
