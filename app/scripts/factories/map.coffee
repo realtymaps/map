@@ -198,22 +198,16 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        if @filters
-          Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
-            @handleFilterData(data)
-        else
-          @handleFilterData([])
-
-      handleFilterData: (data) =>
-        return unless data?
-        @scope.layers.filterSummary = data
-        @updateFilterSummaryHash()
-        if @waitingData
-          @scope.controls.parcels.newModels(@waitingData)
-          @waitingData = null
-        @waitToSetParcelData = false
-        @scope.$evalAsync () =>
-          @scope.resultsFormatter?.reset()
+        Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
+          return unless data?
+          @scope.layers.filterSummary = data
+          @updateFilterSummaryHash()
+          if @waitingData
+            @scope.controls.parcel.newModels(@waitingData)
+            @waitingData = null
+          @waitToSetParcelData = false
+          @scope.$evalAsync () =>
+            @scope.resultsFormatter?.reset()
 
       
       draw: (event, paths) =>
@@ -234,8 +228,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
         @filterDrawPromise = $timeout =>
-          FilterManager.manage (filters) =>
-            @filters = filters
+          FilterManager.manage (@filters) =>
             @filterDrawPromise = false
             @redraw()
         , MainOptions.filterDrawDelay
