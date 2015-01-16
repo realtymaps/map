@@ -235,8 +235,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           $timeout.cancel(@filterDrawPromise)
         @clearFilter()
         @filterDrawPromise = $timeout =>
-          FilterManager.manage (filters) =>
-            @filters = filters
+          FilterManager.manage (@filters) =>
+            console.log("########################### "+@filters)
             @filterDrawPromise = false
             @redraw()
         , MainOptions.filterDrawDelay
