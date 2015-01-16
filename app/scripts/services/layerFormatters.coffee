@@ -84,7 +84,7 @@ app.service 'LayerFormatters'.ourNs(), [
         model = filterSummaryHash[parcel.rm_property_id] || parcel
         maybeSavedColor = getSavedColorProperty(model)
         return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
-  
+
       fill = (parcel) ->
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
         color: fillColorFromState(parcel) or colors['default']
@@ -118,11 +118,12 @@ app.service 'LayerFormatters'.ourNs(), [
         else
           formattedPrice = casing.upper numeral(mls.price).format('0a'), '.'
         formattedPrice = "$#{formattedPrice}"
-        
+
         savedStatus = 'saved' if getSavedColorProperty(mls)
+        hoveredStatus = 'hovered' if mls.isMousedOver
         ret =
           icon: ' '
-          labelContent: formatStatusMarkerContent(mls.isMousedOver or savedStatus or mls.rm_status, formattedPrice)
+          labelContent: formatStatusMarkerContent(hoveredStatus or savedStatus or mls.rm_status, formattedPrice)
           labelAnchor: "30 50"
           zIndex: 2
           markerType: "price"

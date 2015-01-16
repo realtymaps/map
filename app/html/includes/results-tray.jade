@@ -70,7 +70,7 @@ ng-init="resultsInit('results-list')")
                     button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")
                       i.fa.fa-envelope
                       | Send Mailing
-                    button.btn.btn-default.btn-xs() Save
+                    button.btn.btn-default.btn-xs(rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="result") Save
                     button.btn.btn-default.btn-xs() Do Something
 
         #results-footer
