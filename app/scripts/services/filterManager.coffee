@@ -31,7 +31,8 @@ app.service 'FilterManager'.ourNs(), [
         delete selectedFilters.sold
         delete selectedFilters.notForSale
 
-        filter = '&' + qs.stringify(selectedFilters)
-      cb(filter)
-      filter
+        filter = qs.stringify(selectedFilters)
+        if filter.length > 0
+          filter = '&' + filter
+        cb(filter)
 ]
