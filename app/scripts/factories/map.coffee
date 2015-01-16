@@ -14,7 +14,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls) ->
+    uiGmapPromise, uiGmapControls, ) ->
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
@@ -71,7 +71,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             #need to figure out a better way
             self.updateFilterSummaryHash()
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
-            _updateGObjects(gObject, savedDetails, childModel) if gObject
+            if gObject
+              _updateGObjects(gObject, savedDetails, childModel)
+            else
+              uiGmapControls.eachSpecificGObject childModel.model.rm_property_id, (gObject) ->
+                opts = if GoogleService.Map.isGMarker(gObject) then $scope.formatters.layer.MLS.markerOptionsFromForSale(childModel.model)
+                else $scope.formatters.layer.Parcels.optionsFromFill(childModel.model)
+                gObject.setOptions opts
+              , ['streetNumMarkers']
 
         @saveProperty = _saveProperty
 
@@ -91,7 +98,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             filterSummary: []
             drawnPolys: []
 
-          controls: uiGmapControls
+          controls:
+            parcels: {}
+            streetNumMarkers: {}
+            priceMarkers: {}
 
           drawUtil:
             draw: undefined
@@ -134,30 +144,30 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
                 return if gObject.labelClass?
-                childModel = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
+                model = GoogleService.UiMap.getCorrectModel model
+                opts = $scope.formatters.layer.Parcels.mouseOverOptions(model)
                 gObject.setOptions opts
 
               mouseout: (gObject, eventname, model) ->
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
                 return if gObject.labelClass?
-                childModel = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
+                model = GoogleService.UiMap.getCorrectModel model
+                opts = $scope.formatters.layer.Parcels.optionsFromFill(model)
                 gObject.setOptions opts
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                childModel = GoogleService.UiMap.getCorrectModel model
+                model = GoogleService.UiMap.getCorrectModel model
                 return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
-                $scope.resultsFormatter.click(childModel.model)
+                $scope.resultsFormatter.click(model)
 
               dblclick: (gObject, eventname, model, events) ->
                 event = events[0]
                 if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-                childModel = GoogleService.UiMap.getCorrectModel model
-                _saveProperty childModel, gObject
+                model = GoogleService.UiMap.getCorrectModel model
+                _saveProperty model, gObject
 
           formatters:
             layer: LayerFormatters
@@ -175,6 +185,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.layers.listingDetail.show = false if newVal isnt oldVal
 
         @subscribe()
+        uiGmapControls.init $scope.controls
 
       clearBurdenLayers: =>
         if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
@@ -203,7 +214,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
           if @waitingData
-            @scope.controls.parcel.newModels(@waitingData)
+            @scope.controls.parcels.newModels(@waitingData)
             @waitingData = null
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
