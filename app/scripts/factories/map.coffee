@@ -10,11 +10,11 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise'
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise) ->
+    uiGmapPromise, uiGmapControls) ->
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
@@ -91,8 +91,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             filterSummary: []
             drawnPolys: []
 
-          controls:
-            parcel: {}
+          controls: uiGmapControls
 
           drawUtil:
             draw: undefined
@@ -194,7 +193,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if @waitToSetParcelData
               @waitingData = data
             else
-              @scope.controls.parcel.newModels(data)
+              @scope.controls.parcels.newModels(data)
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -210,7 +209,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.filterSummary = data
         @updateFilterSummaryHash()
         if @waitingData
-          @scope.controls.parcel.newModels(@waitingData)
+          @scope.controls.parcels.newModels(@waitingData)
           @waitingData = null
         @waitToSetParcelData = false
         @scope.$evalAsync () =>
