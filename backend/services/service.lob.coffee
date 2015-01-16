@@ -6,10 +6,16 @@ renderPdfFile = require '../utils/util.renderPdfFile'
 fs = require 'fs'
 logger = require '../config/logger'
 
-testLob = promisify.lob(new LobFactory(config.LOB.TEST_API_KEY))
+
+testLob = new LobFactory(config.LOB.TEST_API_KEY)
+testLob.setVersion(config.LOB.API_VERSION)
 testLob.rm_type = 'test'
-liveLob = promisify.lob(new LobFactory(config.LOB.LIVE_API_KEY))
+promisify.lob(testLob) # can't promisify before setting the version, apparently
+liveLob = new LobFactory(config.LOB.LIVE_API_KEY)
+liveLob.setVersion(config.LOB.API_VERSION)
 liveLob.rm_type = 'live'
+promisify.lob(liveLob) # can't promisify before setting the version, apparently
+
 
 fileDisposer = (filename) ->
   fs.unlinkAsync(filename)
