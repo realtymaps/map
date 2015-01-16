@@ -63,5 +63,3 @@ module.exports.lob = (Lob) ->
       if typeof(val) != 'function'
         continue
       submodule[key+'Async'] = Promise.promisify(val, submodule)
-  return Lob
- 
