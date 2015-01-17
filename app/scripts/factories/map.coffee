@@ -10,12 +10,12 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(),
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapDataStructures',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls, ) ->
-
+    uiGmapPromise, uiGmapControls, uiGmapDataStructures) ->
+    Queue = uiGmapDataStructures.Queue
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -30,6 +30,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
+
+        _hoversQ = new Queue() #seems to be a google bug where mouse out is not always called
+        _cleanHovers = _.debounce ->
+          _.defer ->
+            while _hoversQ.size > 0
+              hovered =  _hoversQ.dequeue()
+              hovered.isMousedOver = undefined
+              _updateAllLayersByModel(hovered)
+              hovered =  null
+        _maybeCleanHovers = (model) ->
+          peeked = _hoversQ.peek()
+          _cleanHovers() if peeked? and peeked.rm_property_id != model.rm_property_id
 
         @filterSummaryHash = {}
         @filters = ''
@@ -146,18 +158,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) ->
                 #return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
-                return if gObject.labelClass?
                 model = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.mouseOverOptions(model)
-                gObject.setOptions opts
+                _maybeCleanHovers(model)
+                model.isMousedOver = true
+                _hoversQ.enqueue model
+                _updateAllLayersByModel(model)
 
               mouseout: (gObject, eventname, model) ->
+                model = GoogleService.UiMap.getCorrectModel model
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
-                return if gObject.labelClass?
-                model = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.optionsFromFill(model)
-                gObject.setOptions opts
+                model.isMousedOver = undefined
+                _updateAllLayersByModel(model)
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
