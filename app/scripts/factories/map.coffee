@@ -10,12 +10,12 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise'
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapDataStructures',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise) ->
-
+    uiGmapPromise, uiGmapControls, uiGmapDataStructures) ->
+    Queue = uiGmapDataStructures.Queue
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -30,6 +30,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
+
+        _hoversQ = new Queue() #seems to be a google bug where mouse out is not always called
+        _cleanHovers = _.debounce ->
+          _.defer ->
+            while _hoversQ.size > 0
+              hovered =  _hoversQ.dequeue()
+              hovered.isMousedOver = undefined
+              _updateAllLayersByModel(hovered)
+              hovered =  null
+        _maybeCleanHovers = (model) ->
+          peeked = _hoversQ.peek()
+          _cleanHovers() if peeked? and peeked.rm_property_id != model.rm_property_id
 
         @filterSummaryHash = {}
         @filters = ''
@@ -57,6 +69,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
+        @updateAllLayersByModel = _updateAllLayersByModel = (model) ->
+          uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
+            opts = if GoogleService.Map.isGMarker(gObject) then $scope.formatters.layer.MLS.markerOptionsFromForSale(model)
+            else $scope.formatters.layer.Parcels.optionsFromFill(model)
+            gObject.setOptions opts
+          , ['streetNumMarkers']
+
         _saveProperty = (childModel, gObject) ->
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(childModel.model)
@@ -71,7 +90,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             #need to figure out a better way
             self.updateFilterSummaryHash()
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
-            _updateGObjects(gObject, savedDetails, childModel) if gObject
+            if gObject
+              _updateGObjects(gObject, savedDetails, childModel)
+            else
+              _updateAllLayersByModel childModel.model
 
         @saveProperty = _saveProperty
 
@@ -92,7 +114,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             drawnPolys: []
 
           controls:
-            parcel: {}
+            parcels: {}
+            streetNumMarkers: {}
+            priceMarkers: {}
 
           drawUtil:
             draw: undefined
@@ -134,31 +158,31 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) ->
                 #return if _maybeHideAddressMarker(gObject)
                 $scope.actions.listing(gObject, eventname, model)
-                return if gObject.labelClass?
-                childModel = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.mouseOverOptions(childModel)
-                gObject.setOptions opts
+                model = GoogleService.UiMap.getCorrectModel model
+                _maybeCleanHovers(model)
+                model.isMousedOver = true
+                _hoversQ.enqueue model
+                _updateAllLayersByModel(model)
 
               mouseout: (gObject, eventname, model) ->
+                model = GoogleService.UiMap.getCorrectModel model
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
-                return if gObject.labelClass?
-                childModel = GoogleService.UiMap.getCorrectModel model
-                opts = $scope.formatters.layer.Parcels.optionsFromFill(childModel)
-                gObject.setOptions opts
+                model.isMousedOver = undefined
+                _updateAllLayersByModel(model)
 
               click: (gObject, eventname, model) ->
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                childModel = GoogleService.UiMap.getCorrectModel model
+                model = GoogleService.UiMap.getCorrectModel model
                 return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
-                $scope.resultsFormatter.click(childModel.model)
+                $scope.resultsFormatter.click(model)
 
               dblclick: (gObject, eventname, model, events) ->
                 event = events[0]
                 if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-                childModel = GoogleService.UiMap.getCorrectModel model
-                _saveProperty childModel, gObject
+                model = GoogleService.UiMap.getCorrectModel model
+                _saveProperty model, gObject
 
           formatters:
             layer: LayerFormatters
@@ -176,11 +200,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.layers.listingDetail.show = false if newVal isnt oldVal
 
         @subscribe()
+        uiGmapControls.init $scope.controls
 
       clearBurdenLayers: =>
         if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
           @scope.layers.parcels.length = 0
-          
+
       redraw: =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
         # so we're trying to avoid the races, and also using the control instead of the watched models
@@ -194,7 +219,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if @waitToSetParcelData
               @waitingData = data
             else
-              @scope.controls.parcel.newModels(data)
+              @scope.controls.parcels.newModels(data)
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -204,7 +229,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
           if @waitingData
-            @scope.controls.parcel.newModels(@waitingData)
+            @scope.controls.parcels.newModels(@waitingData)
             @waitingData = null
           @waitToSetParcelData = false
           @scope.$evalAsync () =>

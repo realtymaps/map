@@ -25,6 +25,10 @@ Converts all accepted directives format into proper directive name.
 directiveNormalize = (name) ->
   camelCase name.replace(PREFIX_REGEXP, "")
 
+capitalize = (str) ->
+  str.replace /^./, (match) ->
+    match.toUpperCase()
+
 # For events that might fire synchronously during DOM manipulation
 # we need to execute their event handlers asynchronously using $evalAsync,
 # so that they are not executed in an inconsistent state.
@@ -43,11 +47,11 @@ $parseQuick = (dotPropString , scope) ->
 .split(' ')
 .forEach (eventName) ->
   directiveName = directiveNormalize('rmaps-' + eventName)
+  valuePropName = 'rmapsValueName' + capitalize(eventName)
   eventDirectives[directiveName] = ['$parse', '$rootScope', 'Logger'.ourNs(), ($parse, $rootScope, $log) ->
 
     restrict: 'A'
-    scope:
-      'rmapsValueName': '@'
+#    scope: _scope
 
     link:(scope, element, attrs) ->
       elementScope = element.scope()
@@ -61,7 +65,7 @@ $parseQuick = (dotPropString , scope) ->
         $log.error "failed to find function for #{directiveName} to prop #{fnNameToFind}" unless fn
 
         callback = ->
-          fn($parseQuick(scope.rmapsValueName, element.scope()), $event: event)
+          fn($parseQuick(attrs[valuePropName], element.scope()), $event: event)
 
         if forceAsyncEvents[eventName] and $rootScope.$$phase
           scope.$evalAsync callback

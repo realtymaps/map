@@ -5,8 +5,8 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.service 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil",
-  ($log, ParcelEnums, uiGmapUtil) ->
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs()
+  ($log, ParcelEnums, uiGmapUtil, GoogleService) ->
 
     saveColor = '#F3F315'
     mouseOverColor = 'rgba(153, 152, 149, 0.79)'
@@ -80,16 +80,19 @@ app.service 'LayerFormatters'.ourNs(), [
 
       fillColorFromState = (parcel) ->
         return {} unless parcel
-        model = filterSummaryHash[parcel.model.rm_property_id] || parcel.model
+        parcel = GoogleService.UiMap.getCorrectModel(parcel)
+        model = filterSummaryHash[parcel.rm_property_id] || parcel
         maybeSavedColor = getSavedColorProperty(model)
         return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
-  
+
       fill = (parcel) ->
+        parcel = GoogleService.UiMap.getCorrectModel(parcel)
         color: fillColorFromState(parcel) or colors['default']
         opacity: '.70'
 
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
+        parcel = GoogleService.UiMap.getCorrectModel(parcel)
         icon: ' '
         labelContent: "<span class='address-label'>#{String.orNA parcel.street_address_num}</span>"
         labelAnchor: "10 10"
@@ -115,11 +118,12 @@ app.service 'LayerFormatters'.ourNs(), [
         else
           formattedPrice = casing.upper numeral(mls.price).format('0a'), '.'
         formattedPrice = "$#{formattedPrice}"
-        
+
         savedStatus = 'saved' if getSavedColorProperty(mls)
+        hoveredStatus = 'hovered' if mls.isMousedOver
         ret =
           icon: ' '
-          labelContent: formatStatusMarkerContent(mls.isMousedOver or savedStatus or mls.rm_status, formattedPrice)
+          labelContent: formatStatusMarkerContent(hoveredStatus or savedStatus or mls.rm_status, formattedPrice)
           labelAnchor: "30 50"
           zIndex: 2
           markerType: "price"

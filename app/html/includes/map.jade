@@ -16,17 +16,21 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   ui-gmap-drag-zoom(options='dragZoom.options')
 
 
-  ui-gmap-markers(ng-if="zoomLevelService.isPrice(zoom)" options='formatters.layer.MLS.markerOptionsFromForSale',
-    models='layers.filterSummary',
-    coords='"geom_point_json"',
-    idkey='"rm_property_id"',
+  ui-gmap-markers(
+    ng-if="zoomLevelService.isPrice(zoom)"
+    options='formatters.layer.MLS.markerOptionsFromForSale'
+    models='layers.filterSummary'
+    coords='"geom_point_json"'
+    idkey='"rm_property_id"'
     events='actions.listingEvents'
-    ng-cloak='',
+    ng-cloak=''
     chunk='false'
     cleanchunk='false'
-    doCluster='true',
+    doCluster='true'
+    control='controls.priceMarkers'
     clusterOptions="{ignoreHidden: true, minimumClusterSize: 4,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
-    "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}")
+    "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}"
+    modelsbyref='true')
 
   ui-gmap-window(
     coords='layers.listingDetail.geom_point_json'
@@ -38,28 +42,36 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
   )
 
   // BEGIN PARCEL DATA
-  ui-gmap-markers(ng-if="zoomLevelService.isAddressParcel(zoom)" options='formatters.layer.Parcels.labelFromStreetNum',
-    models='layers.parcels',
-    coords='"geom_point_json"',
-    idkey='"rm_property_id"',
+  ui-gmap-markers(
+    ng-if="zoomLevelService.isAddressParcel(zoom)"
+    options='formatters.layer.Parcels.labelFromStreetNum'
+    models='layers.parcels'
+    coords='"geom_point_json"'
+    idkey='"rm_property_id"'
     ng-cloak=''
+    control='controls.streetNumMarkers'
     events='actions.listingEvents'
+    modelsbyref='true'
     chunk='50')
 
   // Would be nice to have just options without each individual attribute
   //https://github.com/angular-ui/angular-google-maps/issues/1033
-  ui-gmap-polygons(models='layers.parcels',
+  ui-gmap-polygons(
+    models='layers.parcels'
     idkey='"rm_property_id"'
-    path='"geom_polys_json"',
-    fill="formatters.layer.Parcels.fill",
-    stroke="{ color: '#1269D8', weight: 1.5, opacity: '1.0' }",
-    visible='true', geodesic='true',
+    path='"geom_polys_json"'
+    fill="formatters.layer.Parcels.fill"
+    stroke="{ color: '#1269D8', weight: 1.5, opacity: '1.0' }"
+    visible='true'
+    geodesic='true'
     events='actions.listingEvents'
-    fit='false', editable='false', ng-cloak=''
+    fit='false'
+    editable='false'
+    ng-cloak=''
     static='true'
     chunk='false'
     cleanchunk='800'
-    control='controls.parcel'
+    control='controls.parcels'
     zIndex='10')
   //END PARCEL DATA
 

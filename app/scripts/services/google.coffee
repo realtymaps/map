@@ -41,4 +41,4 @@ app.service 'GoogleService'.ourNs(), ->
 
   UiMap:
     getCorrectModel: (model) ->
-      childModel = if model.model? then model else model: model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+      childModel = if model.model? then model.model else model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)

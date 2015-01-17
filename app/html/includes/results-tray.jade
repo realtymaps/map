@@ -37,7 +37,9 @@ ng-init="resultsInit('results-list')")
             //div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
             div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
                 .card( ng-class="resultsFormatter.maybeAnimate()" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
-                rmaps-click="resultsFormatter.click" rmaps-value-name="result")
+                rmaps-click="resultsFormatter.click" rmaps-value-name-click="result"
+                rmaps-mouseover="resultsFormatter.mouseover" rmaps-value-name-mouseover="result"
+                rmaps-mouseleave="resultsFormatter.mouseleave" rmaps-value-name-mouseleave="result")
                     //.result-arrow
                         .box Sold
                         .arrow
@@ -50,7 +52,7 @@ ng-init="resultsInit('results-list')")
                             .price-value {{resultsFormatter.getPrice(result.price)}}
                             .property-status {{result.rm_status}}&nbsp;
                                 i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(result)"
-                                rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name="result")
+                                rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="result")
                         div
                             .beds(ng-if="result.bedrooms" ng-cloak)
                                 span.data {{result.bedrooms}}
@@ -68,7 +70,7 @@ ng-init="resultsInit('results-list')")
                     button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")
                       i.fa.fa-envelope
                       | Send Mailing
-                    button.btn.btn-default.btn-xs() Save
+                    button.btn.btn-default.btn-xs(rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="result") Save
                     button.btn.btn-default.btn-xs() Do Something
 
         #results-footer
