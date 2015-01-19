@@ -117,14 +117,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             cmdIsDown: false
 
           actions:
-            keyDown: (event) ->
-              $scope.$evalAsync ->
-                $scope.keys.ctrlIsDown = event.ctrlKey
-                $scope.keys.cmdIsDown = event.keyIdentifier == 'Meta'
-            keyUp: (event) ->
-              $scope.$evalAsync ->
-                $scope.keys.ctrlIsDown = event.ctrlKey
-                $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
 
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
@@ -167,7 +159,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 model = GoogleService.UiMap.getCorrectModel model
-                return _saveProperty(model, gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                event = window.event
+                if event.ctrlKey or event.metaKey
+                  return _saveProperty(model, gObject)
                 $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
 
               dblclick: (gObject, eventname, model, events) ->
@@ -182,9 +176,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
-
-        window.onkeydown = @scope.actions.keyDown
-        window.onkeyup = @scope.actions.keyUp
 
         @scope.resultsFormatter = new ResultsFormatter(self)
 
