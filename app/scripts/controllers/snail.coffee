@@ -35,10 +35,22 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
     $scope.pdfPreviewBlob = $sce.trustAsResourceUrl("about:blank")
     $scope.formReady = false
     $scope.form =
-      from: {}
+      # instead of a blank form, use some fake default values for now 
+      #from: {}
+      from:
+        name: "Dan Sexton"
+        address_line1: "Paradise Realty of Naples"
+        address_line2: "201 Goodlette Rd S"
+        address_city: "Naples"
+        address_state: "FL"
+        address_zip: "34102"
+        phone: "(239) 877-7853"
+        email: "dan@mangrovebaynaples.com"
       style:
         signature: 'print font 3'
-        templateId: null
+        # preselect a template as well for now 
+        templateId: 'prospecting'
+        #templateId: null
     form = $scope.form
 
     updateBlob = (newValue, oldValue) ->
@@ -63,6 +75,8 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         .then (blob) ->
           $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
           rendered = true
+          Spinner.decrementLoadingCount("pdf rendering")
+        , () ->
           Spinner.decrementLoadingCount("pdf rendering")
       if renderPromise
         # replace the existing rendering call
@@ -95,7 +109,7 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
 ]
-app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), ($rootScope, $location, $timeout, Events) ->
+app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), 'Spinner'.ourNs(), ($rootScope, $location, $timeout, Events, Spinner) ->
   initiateSend = (property) ->
     data.property = property
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
@@ -110,4 +124,5 @@ app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), ($rootScope, $
       if renderPromise
         $timeout.cancel(renderPromise)
         renderPromise = null
+        Spinner.decrementLoadingCount("pdf rendering")
 ]

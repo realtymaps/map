@@ -13,7 +13,7 @@ transforms =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
-    validators.array(minLength: 2)
+    validators.array(minLength: 0)
     validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
 
@@ -27,7 +27,10 @@ module.exports =
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
-      query = db.knex.select().from(sqlHelpers.tableName(Parcel))
+      if filters.bounds == "dummy"
+        return []
+
+      query = db.knex.select(db.knex.raw('*, FALSE as "passedFilters"')).from(sqlHelpers.tableName(Parcel))
       sqlHelpers._whereRawSafe(query, filters.bounds)
       #logger.sql query.toString()      
       return query
