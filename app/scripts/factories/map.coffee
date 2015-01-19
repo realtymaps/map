@@ -177,9 +177,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           changeZoom: (increment) ->
             $scope.zoom += increment
 
-        window.onkeydown = @scope.actions.keyDown
-        window.onkeyup = @scope.actions.keyUp
-
         @scope.resultsFormatter = new ResultsFormatter(self)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
