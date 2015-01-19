@@ -30,7 +30,7 @@ module.exports =
       if filters.bounds == "dummy"
         return []
 
-      query = db.knex.select(db.knex.raw('*, FALSE as "passedFilters"')).from(sqlHelpers.tableName(Parcel))
+      query = sqlHelpers.select(db.knex, '*', false).from(sqlHelpers.tableName(Parcel))
       sqlHelpers._whereRawSafe(query, filters.bounds)
       #logger.sql query.toString()      
       return query

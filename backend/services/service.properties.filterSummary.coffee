@@ -61,7 +61,7 @@ module.exports =
         if filters.bounds == "dummy"
           return []
   
-        query = sqlHelpers.select(db.knex, "filter").from(sqlHelpers.tableName(FilterSummary))
+        query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(FilterSummary))
         query.limit(limit) if limit
   
         # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
@@ -124,10 +124,7 @@ module.exports =
         maybeProp = state.properties_selected[row.rm_property_id]
         if maybeProp
           row.savedDetails = maybeProp
-          row.passedFilters = true
           matchingSavedProps[row.rm_property_id] = true
-        else
-          row.passedFilters = true
       
       # now get data for any other saved properties and join saved props to them too
       missingProperties = _.filter _.keys(state.properties_selected), (rm_property_id) ->
@@ -135,11 +132,10 @@ module.exports =
       if missingProperties.length == 0
         # shortcut out if we've handled them all
         return filteredProperties
-      query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
+      query = sqlHelpers.select(db.knex, "filter", false).from(sqlHelpers.tableName(FilterSummary))
       query.limit(limit) if limit
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
       query.then (savedProperties) ->
         savedProperties.forEach (row) ->
           row.savedDetails = state.properties_selected[row.rm_property_id]
-          row.passedFilters = false
         return filteredProperties.concat(savedProperties)
