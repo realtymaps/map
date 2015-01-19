@@ -43,6 +43,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       if not prop
         prop = new Property(rm_property_id, true, false, undefined)
         savedProperties[rm_property_id] = prop
+        model.savedDetails = prop
       else
         prop.isSaved = !prop.isSaved
         unless prop.notes

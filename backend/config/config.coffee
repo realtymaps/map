@@ -32,7 +32,7 @@ base =
       maxAge: null
       secure: true
     name: "connect.sid"
-    resave: true
+    resave: false
     saveUninitialized: true
     unset: "destroy"
   SESSION_SECURITY:

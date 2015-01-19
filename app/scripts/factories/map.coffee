@@ -117,6 +117,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             cmdIsDown: false
 
           actions:
+            ###
+            # had to remove these, as they sometimes get stuck if you e.g. cmd-tab away -- the key down registers, but
+            # not the key up.  An acceptable solution might be to reset the flags on window blur.  A better solution is
+            # to find a way to get the native js event into the listingEvent callbacks, so we can just check key status
+            # when the event fires, which is way more full-proof
             keyDown: (event) ->
               $scope.$evalAsync ->
                 $scope.keys.ctrlIsDown = event.ctrlKey
@@ -125,6 +130,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               $scope.$evalAsync ->
                 $scope.keys.ctrlIsDown = event.ctrlKey
                 $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
+            ###
 
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
@@ -163,11 +169,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 model.isMousedOver = undefined
                 _updateAllLayersByModel(model)
 
-              click: (gObject, eventname, model) =>
+              click: (gObject, eventname, model, events) =>
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 model = GoogleService.UiMap.getCorrectModel model
-                return _saveProperty(model, gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                  return _saveProperty(model, gObject)
                 $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
 
               dblclick: (gObject, eventname, model, events) ->
