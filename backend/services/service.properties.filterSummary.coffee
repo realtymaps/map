@@ -106,7 +106,7 @@ module.exports =
         if filters.listedDaysMax
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
                     
-        logger.sql query.toString()
+        #logger.sql query.toString()
         return query
     .then (filteredProperties) ->
       if !filteredProperties?.length
