@@ -5,8 +5,8 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.service 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs()
-  ($log, ParcelEnums, uiGmapUtil, GoogleService) ->
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope'
+  ($log, ParcelEnums, uiGmapUtil, GoogleService, $rootScope) ->
 
     saveColor = '#F3F315'
     mouseOverColor = 'rgba(153, 152, 149, 0.79)'
@@ -32,6 +32,12 @@ app.service 'LayerFormatters'.ourNs(), [
     getPixelFromLatLng = (latLng, map) ->
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
+
+    isVisible = (model) ->
+      stat = casing.camel(model.rm_status)
+      ret = $rootScope.selectedFilters[stat] or model.savedDetails?.isSaved
+      ret = true unless ret?
+      ret
 
     # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
     getWindowOffset = (map, mls, width = 290) ->
@@ -86,8 +92,9 @@ app.service 'LayerFormatters'.ourNs(), [
         return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
 
       fill = (parcel) ->
+        notSavedNotInFilter = colors['default'] unless isVisible(parcel)
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
-        color: fillColorFromState(parcel) or colors['default']
+        color: notSavedNotInFilter or fillColorFromState(parcel) or colors['default']
         opacity: '.70'
 
       labelFromStreetNum = (parcel) ->
@@ -127,6 +134,7 @@ app.service 'LayerFormatters'.ourNs(), [
           labelAnchor: "30 50"
           zIndex: 2
           markerType: "price"
+          visible: isVisible(mls)
         ret
 
       getWindowOffset: getWindowOffset

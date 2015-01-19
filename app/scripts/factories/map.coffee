@@ -49,16 +49,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
 
-        _maybeHideAddressMarker = (gObject) ->
-          if ZoomLevel.isAddressParcel($scope.zoom)
-            if $scope.addressMarkerHovered? and gObject != $scope.addressMarkerHovered
-              $scope.addressMarkerHovered.setVisible(true)
-          if ZoomLevel.isAddressParcel($scope.zoom) and GoogleService.Map.isGMarker(gObject)
-            $scope.addressMarkerHovered = gObject
-            gObject.setVisible(false)
-            return true
-          return false
-
         _updateGObjects = (gObject, savedDetails, childModel) ->
           #purpose to to take some sort of gObject and update its view immediately
           childModel.model.savedDetails = savedDetails
@@ -86,7 +76,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
               match.savedDetails = savedDetails if match?
-
+              uiGmapControls.updateAllModels match
             #need to figure out a better way
             self.updateFilterSummaryHash()
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
