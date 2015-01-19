@@ -24,7 +24,7 @@ otherErrorMessage = (actionMsg) ->
   #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
 getPropertyData = (rm_property_id) -> Promise.try () ->
-  detailService.getDetail({rm_property_id: rm_property_id, columns: 'addresses'})
+  detailService.getDetail({rm_property_id: rm_property_id, columns: 'address'})
   .then (property) ->
     if property
       return property
@@ -56,6 +56,7 @@ module.exports =
   quote: (req, res, next) -> Promise.try () ->
     getPropertyData(req.body.rm_property_id)
     .then (property) ->
+      console.log("################## #{JSON.stringify(_.extend({}, pdfUtils.buildAddresses(property), req.body),null,2)}")
       lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
     .then (price) ->
       new ExpressResponse(price: price)

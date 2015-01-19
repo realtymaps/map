@@ -36,7 +36,7 @@ _columns =
   address: [
     'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
     'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
-    'zip',
+    'zip', 'owner_zip'
   ].join(', ')
   '*': '*'
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
