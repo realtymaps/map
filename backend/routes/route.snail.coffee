@@ -24,7 +24,7 @@ otherErrorMessage = (actionMsg) ->
   #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
 getPropertyData = (rm_property_id) -> Promise.try () ->
-  detailService.getDetail({rm_property_id: rm_property_id, columns: 'addresses'})
+  detailService.getDetail({rm_property_id: rm_property_id, columns: 'address'})
   .then (property) ->
     if property
       return property
