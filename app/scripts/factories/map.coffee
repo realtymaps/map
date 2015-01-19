@@ -49,13 +49,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
         @scope.savedProperties = Properties.getSavedProperties()
 
-        _updateGObjects = (gObject, savedDetails, childModel) ->
+        _updateGObjects = (gObject, savedDetails, model) ->
           #purpose to to take some sort of gObject and update its view immediately
-          childModel.model.savedDetails = savedDetails
+          model.savedDetails = savedDetails
           if GoogleService.Map.isGMarker(gObject)
-            opts = $scope.formatters.layer.MLS.markerOptionsFromForSale childModel.model
+            opts = $scope.formatters.layer.MLS.markerOptionsFromForSale model
           else
-            opts =  $scope.formatters.layer.Parcels.optionsFromFill(childModel)
+            opts =  $scope.formatters.layer.Parcels.optionsFromFill(model)
           gObject.setOptions(opts) if opts
           $scope.resultsFormatter?.reset()
 
@@ -66,13 +66,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             gObject.setOptions opts
           , ['streetNumMarkers']
 
-        _saveProperty = (childModel, gObject) ->
+        _saveProperty = (model, gObject) ->
           #TODO: Need to debounce / throttle
-          saved = Properties.saveProperty(childModel.model)
+          saved = Properties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) ->
             #setting savedDetails here as we know the save was successful (update the font end without query right away)
-            index = if childModel.model.index? then childModel.model.index else self.filterSummaryHash[childModel.model.rm_property_id]?.index
+            index = if model.index? then model.index else self.filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
               match.savedDetails = savedDetails if match?
@@ -81,9 +81,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             self.updateFilterSummaryHash()
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
-              _updateGObjects(gObject, savedDetails, childModel)
+              _updateGObjects(gObject, savedDetails, model)
             else
-              _updateAllLayersByModel childModel.model
+              _updateAllLayersByModel model
 
         @saveProperty = _saveProperty
 
@@ -118,11 +118,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
           actions:
             keyDown: (event) ->
-              $scope.keys.ctrlIsDown = event.ctrlKey
-              $scope.keys.cmdIsDown = event.keyIdentifier == 'Meta'
+              $scope.$evalAsync ->
+                $scope.keys.ctrlIsDown = event.ctrlKey
+                $scope.keys.cmdIsDown = event.keyIdentifier == 'Meta'
             keyUp: (event) ->
-              $scope.keys.ctrlIsDown = event.ctrlKey
-              $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
+              $scope.$evalAsync ->
+                $scope.keys.ctrlIsDown = event.ctrlKey
+                $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
 
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
@@ -180,6 +182,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
+
+        window.onkeydown = @scope.actions.keyDown
+        window.onkeyup = @scope.actions.keyUp
 
         @scope.resultsFormatter = new ResultsFormatter(self)
 

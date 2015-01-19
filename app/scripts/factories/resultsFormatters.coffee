@@ -202,7 +202,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 #        alert("saved #{result.rm_property_id} #{event}")
-        @mapCtrl.saveProperty(model: result).then =>
+        @mapCtrl.saveProperty(result).then =>
           @reset()
 
 ]

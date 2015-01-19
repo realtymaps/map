@@ -34,11 +34,12 @@ app.service 'LayerFormatters'.ourNs(), [
       point
 
     isVisible = (model) ->
+      return false unless model
       # by returning savedDetails.isSaved false instead of undefined it allows us to tell the difference
       # between parcels which do not have rm_status.
       # The alternative workaround is he use filtersSummary hashmap, or just use savedDetails.isSaved false.
       # depends on properties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
-      stat = casing.camel(model.rm_status)
+      stat = casing.camel(filterSummaryHash[model.rm_property_id]?.rm_status)
       ret = $rootScope.selectedFilters[stat] or model.savedDetails?.isSaved
       ret = true unless ret? #handles parcels (no rm_status)
       ret
@@ -96,8 +97,8 @@ app.service 'LayerFormatters'.ourNs(), [
         return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
 
       fill = (parcel) ->
-        notSavedNotInFilter = colors['default'] unless isVisible(parcel)
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
+        notSavedNotInFilter = colors['default'] unless isVisible(parcel)
         color: notSavedNotInFilter or fillColorFromState(parcel) or colors['default']
         opacity: '.70'
 
