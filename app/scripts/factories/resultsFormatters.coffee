@@ -158,7 +158,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           @filterSummaryInBounds.forEach (summary) =>
-            @mapCtrl.scope.results.push summary
+            @mapCtrl.scope.results.push summary if @mapCtrl.scope.formatters.layer.isVisible(summary)
 
         @mapCtrl.scope.resultsLimit += amountToLoad
 #        @bindResultsListEvents()
@@ -186,6 +186,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 #        alert("saved #{result.rm_property_id} #{event}")
-        @mapCtrl.saveProperty(model: result)
-        @reset()
+        @mapCtrl.saveProperty(model: result).then =>
+          @reset()
+
 ]
