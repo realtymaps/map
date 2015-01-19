@@ -56,7 +56,6 @@ module.exports =
   quote: (req, res, next) -> Promise.try () ->
     getPropertyData(req.body.rm_property_id)
     .then (property) ->
-      console.log("################## #{JSON.stringify(_.extend({}, pdfUtils.buildAddresses(property), req.body),null,2)}")
       lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
     .then (price) ->
       new ExpressResponse(price: price)
