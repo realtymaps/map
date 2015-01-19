@@ -1,5 +1,5 @@
 db = require('../config/dbs').properties
-model = require '../models/model.propertyDetail'
+FilterSummary = require '../models/model.filterSummary'
 Promise = require 'bluebird'
 logger = require '../config/logger'
 requestUtil = require '../utils/util.http.request'
@@ -8,8 +8,11 @@ validators = requestUtil.query.validators
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 
+columnSets = ['address', 'detail', 'all']
+
 transforms =
-  rm_property_id:  validators.string(minLength: 1)
+  rm_property_id: validators.string(minLength: 1)
+  columns: validators.choice(choices: columnSets)
 
 #required with default values
 required =
@@ -17,18 +20,16 @@ required =
 
 module.exports =
 
-  getDetail: (state, request, next) -> Promise.try () ->
+  getDetail: (request) -> Promise.try () ->
     requestUtil.query.validateAndTransform(request, transforms, required)
-    .then (request) ->
+    .then (parameters) ->
 
-      query = db.knex
-      .select().from(sqlHelpers.tableName(model))
-      .where(rm_property_id: request.rm_property_id)
+      query = sqlHelpers.select(db.knex, parameters.columns)
+      .from(sqlHelpers.tableName(FilterSummary))
+      .where(rm_property_id: parameters.rm_property_id)
       .limit(1)
 
       #logger.sql query.toString()
 
       query.then (data) ->
-        if not data or not data.length
-          return next new ExpressResponse("property with id #{request.rm_property_id} not found", httpStatus.NOT_FOUND)
-        return data[0]
+        return data?[0]

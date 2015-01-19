@@ -31,20 +31,9 @@ describe testScope, ->
       @subject = @tempSubject
 
     describe 'intervals', ->
-      it 'days', ->
-        test =
-          days: 12
-        @subject.getInterval(test).should.equal "#{@tempSubject.JSON.readable(test)}"
-
-      it 'months, days', ->
-        test =
-          months: 2
-          days: 12
-        @subject.getInterval(test).should.equal "#{@tempSubject.JSON.readable(test)}"
-
-      it 'years, months, days', ->
-        test =
-          years: 1
-          months: 2
-          days: 12
-        @subject.getInterval(test).should.equal "#{@tempSubject.JSON.readable(test)}"
+      it '2 units result', ->
+        @subject.humanizeDays(600).should.equal "about 1 year, 8 months"
+        @subject.humanizeDays(61).should.equal "2 months, 1 day"
+        @subject.humanizeDays(332).should.equal "11 months, 2 days"
+      it '1 unit result', ->
+        @subject.humanizeDays(732).should.equal "about 2 years"
