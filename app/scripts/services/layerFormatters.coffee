@@ -36,11 +36,11 @@ app.service 'LayerFormatters'.ourNs(), [
     isVisible = (model) ->
       return false unless model
       # by returning savedDetails.isSaved false instead of undefined it allows us to tell the difference
-      # between parcels which do not have rm_status.
-      # The alternative workaround is he use filtersSummary hashmap, or just use savedDetails.isSaved false.
+      # between parcels and markers. Where parcels do not have rm_status (always).
       # depends on properties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
-      stat = casing.camel(filterSummaryHash[model.rm_property_id]?.rm_status)
-      ret = $rootScope.selectedFilters[stat] or model.savedDetails?.isSaved
+      filterModel = filterSummaryHash[model.rm_property_id] or model
+      passed = if _.has(filterModel, "passedFilters") then filterModel.passedFilters else true
+      ret = passed or model.savedDetails?.isSaved
       ret = true unless ret? #handles parcels (no rm_status)
       ret
 
