@@ -57,17 +57,17 @@
                 .row.owner-info(ng-if="selectedResult.owner_name || selectedResult.owner_name2 || selectedResult.owner_name")
                     .col-sm-12.detail-section-title Owner Info
                     div(ng-if="selectedResult.owner_name")
-                        .col-sm-6
+                        .col-sm-4
                             .title {{resultsFormatter.getCurrentOwnersTitle(selectedResult)}}:
-                        .col-sm-6
+                        .col-sm-8
                             .data(ng-if="selectedResult.owner_name") {{selectedResult.owner_name}}
                                 span(ng-if="selectedResult.owner_name2")
                                     br/
                                     | {{selectedResult.owner_name2}}
                     div(ng-if="selectedResult.owner_city || selectedResult.owner_state")
-                        .col-sm-6
+                        .col-sm-4
                             .title Address:
-                        .col-sm-6
+                        .col-sm-8
                             div(ng-if="selectedResult.owner_street_address_num || selectedResult.owner_street_address_name" ng-cloak)
                                 .data {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
                                     br/
@@ -77,57 +77,57 @@
                 .row.listing-info(ng-if="resultsFormatter.showListingData(selectedResult)")
                     .col-sm-12.detail-section-title MLS Listing Info
                     .row(ng-if="selectedResult.listing_age" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Listed For:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.humanizeDays(selectedResult.listing_age) }}
                     .row(ng-if="selectedResult.original_price" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Original Asking Price:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.original_price)}}
                     .row(ng-if="selectedResult.mls_close_price" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Close Price:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.mls_close_price)}}
                     .row(ng-if="selectedResult.mls_close_date" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Close Date:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
                 .row.sale-info(ng-if="resultsFormatter.showSalesData(selectedResult)")
                     .col-sm-12.detail-section-title Historical Sales Info
                     .row(ng-if="selectedResult.mortgage_amount" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Mortgage Amount:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.mortgage_amount)}}
                     .row.divider(ng-if="selectedResult.mortgage_date" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Mortgage Date:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{selectedResult.mortgage_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     .row(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'sale_')" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Prior Sale Price:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.sale_price)}}
                     .row.divider(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'sale_')" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Prior Sale Date:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     .row(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'prior_sale_')" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Prior Sale Price:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.prior_sale_price)}}
                     .row.divider(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'prior_sale_')" ng-cloak)
-                        .col-sm-6
+                        .col-sm-4
                             .title Prior Sale Date:
-                        .col-sm-6
+                        .col-sm-8
                             .data {{selectedResult.prior_sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     //.col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                     //.col-sm-8 {{selectedResult.sale2_amount}}
