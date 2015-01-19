@@ -26,7 +26,7 @@ app.service 'uiGmapControls'.ourNs(), [ ->
       So here we update the state of a model without a watcher.
     ###
     updateAllModels: (toUpdate, id = 'rm_property_id') =>
-      @eachSpecificChildModel toUpdate[id], (childModel) ->
+      @eachSpecificChildModel toUpdate?[id], (childModel) ->
         childModel.model = toUpdate
   new Controls()
 

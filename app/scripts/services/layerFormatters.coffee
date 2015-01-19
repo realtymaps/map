@@ -39,10 +39,7 @@ app.service 'LayerFormatters'.ourNs(), [
       # between parcels and markers. Where parcels do not have rm_status (always).
       # depends on properties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
       filterModel = filterSummaryHash[model.rm_property_id] or model
-      passed = if _.has(filterModel, "passedFilters") then filterModel.passedFilters else true
-      ret = passed or model.savedDetails?.isSaved
-      ret = true unless ret? #handles parcels (no rm_status)
-      ret
+      return filterModel?.passedFilters || filterModel.savedDetails?.isSaved
 
     # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
     getWindowOffset = (map, mls, width = 290) ->

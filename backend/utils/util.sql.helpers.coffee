@@ -38,6 +38,7 @@ _columns =
     'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
     'zip',
   ].join(', ')
+  '*': '*'
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 
@@ -78,5 +79,8 @@ module.exports =
             sql: "#{column} ~* ?"
             bindings: [ pattern ]
 
-  select: (knex, which) ->
-    knex.select(knex.raw(_columns[which]))
+  select: (knex, which, passedFilters) ->
+    extra = ''
+    if passedFilters?
+      extra = ", #{passedFilters} as \"passedFilters\""
+    knex.select(knex.raw(_columns[which]+extra))
