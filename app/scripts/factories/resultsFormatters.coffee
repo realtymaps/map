@@ -134,7 +134,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       showIfDifferentFromMLS: (model, prefix) ->
         return if not model
         # differing prices or >= 30 days difference in sale date
-        !model.close_date || model[prefix+"price"] && model[prefix+"date"] && (Math.abs(new Date(model.close_date.toLocaleString()).getTime()-new Date(model[prefix+"date"].toLocaleString()).getTime() > 30*86400000) || (model[prefix+"price"] != model.close_price))
+        !model.close_date || model[prefix+"date"] && (Math.abs(new Date(model.close_date.toLocaleString()).getTime()-new Date(model[prefix+"date"].toLocaleString()).getTime() > 30*86400000) || (model[prefix+"price"] != model.close_price))
         
       loadMore: =>
         #debugging

@@ -36,6 +36,8 @@ app.service 'FormattersService'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
       moment(time).format('YYYY')
 
     getPrice: (price) ->
+      if !price
+        return 'N/A'
       numeral(price).format('$0,0')
 
     orNa: (val) ->
