@@ -117,20 +117,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             cmdIsDown: false
 
           actions:
-            ###
-            # had to remove these, as they sometimes get stuck if you e.g. cmd-tab away -- the key down registers, but
-            # not the key up.  An acceptable solution might be to reset the flags on window blur.  A better solution is
-            # to find a way to get the native js event into the listingEvent callbacks, so we can just check key status
-            # when the event fires, which is way more full-proof
-            keyDown: (event) ->
-              $scope.$evalAsync ->
-                $scope.keys.ctrlIsDown = event.ctrlKey
-                $scope.keys.cmdIsDown = event.keyIdentifier == 'Meta'
-            keyUp: (event) ->
-              $scope.$evalAsync ->
-                $scope.keys.ctrlIsDown = event.ctrlKey
-                $scope.keys.cmdIsDown = !(event.keyIdentifier == 'Meta')
-            ###
 
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
@@ -173,7 +159,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 model = GoogleService.UiMap.getCorrectModel model
-                if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                event = window.event
+                if event.ctrlKey or event.metaKey
                   return _saveProperty(model, gObject)
                 $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
 
