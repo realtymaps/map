@@ -25,7 +25,7 @@ otherValidations =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash.decode
-    validators.array(minLength: 2)
+    validators.array(minLength: 0)
     validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
@@ -58,6 +58,8 @@ module.exports =
         
       requestUtil.query.validateAndTransform(rawFilters, transforms, required)
       .then (filters) ->
+        if filters.bounds == "dummy"
+          return []
   
         query = sqlHelpers.select(db.knex, "filter").from(sqlHelpers.tableName(FilterSummary))
         query.limit(limit) if limit
@@ -124,6 +126,8 @@ module.exports =
           row.savedDetails = maybeProp
           row.passedFilters = true
           matchingSavedProps[row.rm_property_id] = true
+        else
+          row.passedFilters = true
       
       # now get data for any other saved properties and join saved props to them too
       missingProperties = _.filter _.keys(state.properties_selected), (rm_property_id) ->
@@ -139,11 +143,3 @@ module.exports =
           row.savedDetails = state.properties_selected[row.rm_property_id]
           row.passedFilters = false
         return filteredProperties.concat(savedProperties)
-
-
-  getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
-    query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
-    query.where(rm_property_id: rm_property_id)
-    query.limit(1) # TODO: if there are multiple, we just grab one... revisit once we deal with multi-untit parcels
-    query.then (data) ->
-      return data?[0]

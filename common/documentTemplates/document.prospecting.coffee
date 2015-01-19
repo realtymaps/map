@@ -2,6 +2,7 @@ moment = require 'moment'
 PDFDocument = require 'pdfkit'
 pdfUtils = require '../utils/util.pdf.coffee'
 fonts = require './signature-fonts/index.coffee'
+logo = require './temp.logo.coffee'
 
 
 module.exports =
@@ -41,6 +42,8 @@ module.exports =
       .text("Sincerely,")
       pdfUtils.renderSignature(doc, fonts[data.style.signature], "#{data.from.name}", "Helvetica")
       doc.text(data.from.name)
+      .moveDown()
+      .image(logo, 2.25*pdfUtils.inch, doc.y, width: 4*pdfUtils.inch)
       .moveDown(4)
       .text("If your property is currently listed by a Real Estate Broker, please disregard this message. It is
             not our intention to solicit the listings of other Real Estates Brokers.", align: 'justify')

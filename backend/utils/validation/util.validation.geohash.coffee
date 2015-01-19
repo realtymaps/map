@@ -31,6 +31,8 @@ module.exports =
   transformToRawSQL: (options = {}) ->
     (param, bounds) ->
       Promise.try () ->
+        if bounds.length < 2
+          return "dummy"
         results = {}
         if bounds.length > 2
           boundsFlattened = flattenLonLat(bounds)
