@@ -171,12 +171,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 model.isMousedOver = undefined
                 _updateAllLayersByModel(model)
 
-              click: (gObject, eventname, model) ->
+              click: (gObject, eventname, model) =>
                 #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                 #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                 model = GoogleService.UiMap.getCorrectModel model
-                return _saveProperty(childModel,gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
-                $scope.resultsFormatter.click(model)
+                return _saveProperty(model, gObject) if $scope.keys.ctrlIsDown or $scope.keys.cmdIsDown
+                $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
 
               dblclick: (gObject, eventname, model, events) ->
                 event = events[0]

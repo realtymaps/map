@@ -68,10 +68,9 @@ ng-init="resultsInit('results-list')")
                                 span.title Year
                 .card-buttons
                     button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(result)")
-                      i.fa.fa-envelope
+                      i.fa.fa-envelope &nbsp;
                       | Send Mailing
                     button.btn.btn-default.btn-xs(rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="result") Save
-                    button.btn.btn-default.btn-xs() Do Something
 
         #results-footer
             i.close.fa.fa-times.fa-3(ng-click="Toggles.showResults = false;")

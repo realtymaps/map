@@ -59,7 +59,7 @@ module.exports =
       requestUtil.query.validateAndTransform(rawFilters, transforms, required)
       .then (filters) ->
   
-        query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
+        query = sqlHelpers.select(db.knex, "filter").from(sqlHelpers.tableName(FilterSummary))
         query.limit(limit) if limit
   
         # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
@@ -99,10 +99,10 @@ module.exports =
             result.push chunk.replace(/(['-])/g, "[$1 ]?")
           sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
   
-        if filters.listedDaysMin?
-          sqlHelpers.daysGreaterThan(query, filters.listedDaysMin)
-        if filters.listedDaysMax?
-          sqlHelpers.daysLessThan(query, filters.listedDaysMax)
+        if filters.listedDaysMin
+          sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', ">=", filters.listedDaysMin)
+        if filters.listedDaysMax
+          sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
                     
         #logger.sql query.toString()
         return query
@@ -144,6 +144,6 @@ module.exports =
   getSinglePropertySummary: (rm_property_id) -> Promise.try () ->
     query = db.knex.select().from(sqlHelpers.tableName(FilterSummary))
     query.where(rm_property_id: rm_property_id)
-    query.limit(1) # TODO: if there are multiple, we just grab one... revisit once we deal with multi-unti parcels
+    query.limit(1) # TODO: if there are multiple, we just grab one... revisit once we deal with multi-untit parcels
     query.then (data) ->
       return data?[0]
