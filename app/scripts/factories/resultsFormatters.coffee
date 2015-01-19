@@ -89,22 +89,13 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           "fa fa-chevron-circle-up"
 
-      getCurrentOwners:(result) ->
-        owners = []
-        owners.push result.owner_name if result.owner_name?
-        owners.push result.owner_name2  if result.owner_name2?
-
-        owners.reduce (prev, next) ->
-          return "#{next}" unless prev
-          "#{prev}, #{next}"
-        , ''
-
       isSavedResult:(result) ->
         result.savedDetails?.isSaved == true
 
       getCurrentOwnersTitle: (result) =>
         title = "Current Owner"
-        return "#{title}'s" if @hasMultipleOwners(result)
+        if @hasMultipleOwners(result)
+          title += "s"
         title
       hasMultipleOwners: (result) ->
         if result.owner_name2? and result.owner_name?
@@ -120,6 +111,31 @@ app.factory 'ResultsFormatter'.ourNs(), [
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
 
+      getCityStateZip: (model, owner=false) ->
+        if !model?
+          return ""
+        if owner
+          prefix = "owner_"
+        csz = "#{model[prefix+"city"]}"
+        if model[prefix+"state"]
+          csz += ", #{model[prefix+"state"]}"
+        if model[prefix+"zip"]
+          csz += " #{model[prefix+"zip"]}"
+        return csz
+
+      showListingData: (model) ->
+        return if not model
+        model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
+      
+      showSalesData: (model) ->
+        return if not model
+        model.mortgage_amount || @showIfDifferentFromMLS(model,'sale_') || @showIfDifferentFromMLS(model,'prior_sale_')
+
+      showIfDifferentFromMLS: (model, prefix) ->
+        return if not model
+        # differing prices or >= 30 days difference in sale date
+        !model.close_date || model[prefix+"date"] && (Math.abs(new Date(model.close_date.toLocaleString()).getTime()-new Date(model[prefix+"date"].toLocaleString()).getTime() > 30*86400000) || (model[prefix+"price"] != model.close_price))
+        
       loadMore: =>
         #debugging
         return unless @mapCtrl.scope.Toggles.showResults
@@ -168,7 +184,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #immediatley show something
         @mapCtrl.scope.selectedResult = result
         #start getting more data
-        Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id)
+        Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
         .then (data) =>
           angular.extend @mapCtrl.scope.selectedResult, data
 

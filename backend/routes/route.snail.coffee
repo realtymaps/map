@@ -3,7 +3,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
 lobService = require '../services/service.lob'
-filterSummaryService = require '../services/service.properties.filterSummary'
+detailService = require '../services/service.properties.details'
 escape = require('escape-html')
 pdfUtils = require '../../common/utils/util.pdf'
 analyzeValue = require '../../common/utils/util.analyzeValue'
@@ -24,7 +24,7 @@ otherErrorMessage = (actionMsg) ->
   #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
 getPropertyData = (rm_property_id) -> Promise.try () ->
-  filterSummaryService.getSinglePropertySummary(rm_property_id)
+  detailService.getDetail({rm_property_id: rm_property_id, columns: 'addresses'})
   .then (property) ->
     if property
       return property

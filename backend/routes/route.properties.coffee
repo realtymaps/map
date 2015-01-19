@@ -1,6 +1,6 @@
 logger = require '../config/logger'
 Promise = require "bluebird"
-detailService = require '../services/service.properties.details.coffee'
+detailService = require '../services/service.properties.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'
 requestUtil = require '../utils/util.http.request'
@@ -32,4 +32,8 @@ module.exports =
 
   detail: (req, res, next) ->
     handleRoute res, next, () ->
-      detailService.getDetail(req.session.state, req.query, next)
+      detailService.getDetail(req.query)
+      .then (property) ->
+        if property
+          return property
+        return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND

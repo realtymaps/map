@@ -32,8 +32,8 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       parcelThrottler.invokePromise getPropertyData('parcelBase', hash, mapState, filters)
       , http: {route: backendRoutes.properties.parcelBase }
 
-    getPropertyDetail: (mapState, rm_property_id) ->
-      detailThottler.invokePromise $http.get("#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&#{mapState}", cache: true)
+    getPropertyDetail: (mapState, rm_property_id, column_set) ->
+      detailThottler.invokePromise $http.get("#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}&#{mapState}", cache: true)
       , http: {route: backendRoutes.properties.detail }
 
     saveProperty: (model) =>
