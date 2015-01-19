@@ -10,7 +10,7 @@ app.service 'Spinner'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
     loadingCount -= delta
     if loadingCount < 0
       loadingCount = 0
-  #$log.debug("decremented loadingCount by #{delta} (#{logMessage}): #{loadingCount}")
+    #$log.debug("decremented loadingCount by #{delta} (#{logMessage}): #{loadingCount}")
   getLoadingCount: () ->
     loadingCount
 ]

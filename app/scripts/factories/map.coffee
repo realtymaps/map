@@ -242,7 +242,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
 
-        return if not paths? or not paths.length > 0
+        return if not paths? or not paths.length > 1
 
         @hash = encode paths
         @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom)
