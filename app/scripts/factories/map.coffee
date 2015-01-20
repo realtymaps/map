@@ -30,6 +30,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
 
+        #seems to be a google bug where mouse out is not always called
+        @hovers = {}
+        _cleanHovers = _.debounce =>
+          $scope.$evalAsync =>
+            for own rm_property_id, model of @hovers
+              if @lastHoveredModel?.rm_property_id == rm_property_id
+                continue
+              model.isMousedOver = undefined
+              _updateAllLayersByModel(model)
+              delete @hovers[rm_property_id]
+        _maybeCleanHovers = (model) =>
+          keys = _.keys(@hovers)
+          if keys.length > 1 || keys.length == 1 && keys[0] != model.rm_property_id
+            _cleanHovers()
+
         @filterSummaryHash = {}
         @filters = ''
         @filterDrawPromise = false
@@ -66,11 +81,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               uiGmapControls.updateAllModels match
             #need to figure out a better way
             self.updateFilterSummaryHash()
+            _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
               _updateGObjects(gObject, savedDetails, model)
-            else
-              _updateAllLayersByModel model
 
         @saveProperty = _saveProperty
 
@@ -128,8 +142,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) =>
                 $scope.actions.listing(gObject, eventname, model)
                 model = GoogleService.UiMap.getCorrectModel model
-                if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
+                if GoogleService.Map.isGPoly(gObject)
                   model.isMousedOver = true
+                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
+                  model.isMousedOver = true
+                  @hovers[model.rm_property_id] = model
+                  @lastHoveredModel = model
+                  _maybeCleanHovers(model)
                 _updateAllLayersByModel(model)
 
               mouseout: (gObject, eventname, model) =>
@@ -137,6 +156,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
                   model.isMousedOver = undefined
+                  delete @hovers[model.rm_property_id]
                 _updateAllLayersByModel(model)
 
               click: (gObject, eventname, model) =>
