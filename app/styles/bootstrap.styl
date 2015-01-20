@@ -161,6 +161,11 @@ Place for our custom Theming of bootstrap
     color rm-property-save-bright-foreground
     &:after
       border-top-color rm-property-save-yello !important
+    &.label-hovered
+      background-color rm-saved-hover
+      &:after
+        color rm-saved-hover
+        border-top-color rm-saved-hover !important
   
   &.label-sale-property
   /.label-sale-property
@@ -168,6 +173,11 @@ Place for our custom Theming of bootstrap
     color rm-property-save-bright-foreground
     &:after
       border-top-color rm-property-sale-green !important
+    &.label-hovered
+      background-color rm-sale-hover
+      &:after
+        color rm-sale-hover
+        border-top-color rm-sale-hover !important
   
   &.label-sold-property
   /.label-sold-property
@@ -175,6 +185,11 @@ Place for our custom Theming of bootstrap
     color #FFF !important
     &:after
       border-top-color rm-property-sold-red !important
+    &.label-hovered
+      background-color rm-sold-hover
+      &:after
+        color rm-sold-hover
+        border-top-color rm-sold-hover !important
   
   &.label-pending-property
   /.label-pending-property
@@ -182,6 +197,11 @@ Place for our custom Theming of bootstrap
     color #FFF !important
     &:after
       border-top-color rm-highlight-purple !important
+    &.label-hovered
+      background-color rm-pending-hover
+      &:after
+        color rm-pending-hover
+        border-top-color rm-pending-hover !important
   
   &.label-notsale-property
   /.label-notsale-property
@@ -189,8 +209,8 @@ Place for our custom Theming of bootstrap
     color #FFF !important
     &:after
       border-top-color rm-highlight-blue !important
-  
-  &.label-hovered-property
-  /.label-hovered-property
-    background-color rm-translucent-grey
-    color rm-light-gray
+    &.label-hovered
+      background-color rm-notsale-hover
+      &:after
+        color rm-notsale-hover
+        border-top-color rm-notsale-hover !important

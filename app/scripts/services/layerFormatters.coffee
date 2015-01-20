@@ -8,26 +8,7 @@ app.service 'LayerFormatters'.ourNs(), [
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope'
   ($log, ParcelEnums, uiGmapUtil, GoogleService, $rootScope) ->
 
-    saveColor = '#F3F315'
-    mouseOverColor = 'rgba(153, 152, 149, 0.79)'
-
     filterSummaryHash = {}
-
-    markerContentTemplate = '<h4><span class="label label-%s">%s</span></h4>'
-    markersBSLabel = {}
-    markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
-    markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
-    markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
-    markersBSLabel[ParcelEnums.status.notForSale] = 'notsale-property'
-    markersBSLabel['saved'] = 'saved-property'
-    markersBSLabel['hovered'] = 'hovered-property'
-    markersBSLabel['default'] = 'info'
-
-    formatMarkerContent = (label, content) ->
-      sprintf markerContentTemplate, label, content
-
-    formatStatusMarkerContent = (status, content) ->
-      formatMarkerContent markersBSLabel[status] or markersBSLabel['default'], content
 
     getPixelFromLatLng = (latLng, map) ->
       point = map.getProjection().fromLatLngToPoint(latLng)
@@ -58,47 +39,44 @@ app.service 'LayerFormatters'.ourNs(), [
       else offset = new google.maps.Size(30, -340)  if quadrant is "bl"
       offset
 
-    getSavedColorProperty = (model) ->
-      if not model.savedDetails or not model.savedDetails.isSaved
-        return null
-      else
-        return saveColor
-
-    getMouseOver = (model, toReturn = mouseOverColor) ->
-      if not model or not model.isMousedOver
-        return null
-      else
-        return toReturn
-
     parcels = do ->
-      colors = {}
-      colors[ParcelEnums.status.sold] = '#ff4a4a'
-      colors[ParcelEnums.status.pending] = '#8C3DAA'
-      colors[ParcelEnums.status.forSale] = '#1fde12'
-      colors[ParcelEnums.status.notForSale] = '#45a0d9'
-      colors['default'] = 'rgba(105, 245, 233, 0.00)' #or '#7e847f'?
+      normalColors = {}
+      normalColors[ParcelEnums.status.sold] = '#FF4A4A'
+      normalColors[ParcelEnums.status.pending] = '#8C3DAA'
+      normalColors[ParcelEnums.status.forSale] = '#1FDE12'
+      normalColors[ParcelEnums.status.notForSale] = '#45A0D9'
+      normalColors['saved'] = '#F3F315'
+      normalColors['default'] = 'transparent'
 
-      gFillColor = (color) ->
-        fillColor: color
+      hoverColors = {}
+      hoverColors[ParcelEnums.status.sold] = '#A33'
+      hoverColors[ParcelEnums.status.pending] = '#537'
+      hoverColors[ParcelEnums.status.forSale] = '#191'
+      hoverColors[ParcelEnums.status.notForSale] = '#379'
+      hoverColors['saved'] = '#AA1'
+      hoverColors['default'] = 'rgba(153,153,153,.8)'
+      
 
       # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
       gOptsFromUiGmapFill = (fillOpts) ->
         fillColor: fillOpts.color
         fillOpacity: fillOpts.opacity
 
-      fillColorFromState = (parcel) ->
+      getFillColor = (parcel) ->
         return {} unless parcel
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
         model = filterSummaryHash[parcel.rm_property_id] || parcel
-        maybeSavedColor = getSavedColorProperty(model)
-        return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
+        
+        if model.savedDetails?.isSaved
+          status = 'saved'
+        else if model.passedFilters
+          status = model.rm_status
+        else
+          status = 'default'
 
-      fill = (parcel) ->
-        return {} unless parcel
-        parcel = GoogleService.UiMap.getCorrectModel(parcel)
-        notSavedNotInFilter = colors['default'] unless isVisible(parcel)
-        color: notSavedNotInFilter or fillColorFromState(parcel) or colors['default']
-        opacity: '.70'
+        colors = if parcel.isMousedOver then hoverColors else normalColors
+        color: colors[status]
+        opacity: '0.7'
 
       labelFromStreetNum = (parcel) ->
         return {} unless parcel
@@ -109,16 +87,20 @@ app.service 'LayerFormatters'.ourNs(), [
         zIndex: 1
         markerType: "streetNum"
 
-      fill: fill
+      fill: getFillColor
       labelFromStreetNum: labelFromStreetNum
 
       optionsFromFill: (parcel) ->
-        gOptsFromUiGmapFill fill(parcel)
-
-      mouseOverOptions: (parcel) ->
-        fillColorFromState(parcel) or gFillColor(mouseOverColor)
+        gOptsFromUiGmapFill getFillColor(parcel)
 
     mls = do ->
+      markersBSLabel = {}
+      markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
+      markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
+      markersBSLabel[ParcelEnums.status.forSale] = 'sale-property'
+      markersBSLabel[ParcelEnums.status.notForSale] = 'notsale-property'
+      markersBSLabel['saved'] = 'saved-property'
+
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
         if not mls.price
@@ -127,18 +109,23 @@ app.service 'LayerFormatters'.ourNs(), [
           formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
         else
           formattedPrice = casing.upper numeral(mls.price).format('0a'), '.'
-        formattedPrice = "$#{formattedPrice}"
 
-        savedStatus = 'saved' if getSavedColorProperty(mls)
-        hoveredStatus = 'hovered' if mls.isMousedOver
-        ret =
-          icon: ' '
-          labelContent: formatStatusMarkerContent(hoveredStatus or savedStatus or mls.rm_status, formattedPrice)
-          labelAnchor: "30 50"
-          zIndex: 2
-          markerType: "price"
-          visible: isVisible(mls)
-        ret
+        if mls.isMousedOver
+          hovered = ' label-hovered'
+        else
+          hovered = ''
+
+        if mls.savedDetails?.isSaved
+          status = 'saved'
+        else
+          status = mls.rm_status
+
+        icon: ' '
+        labelContent: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>$#{formattedPrice}</span></h4>"
+        labelAnchor: "30 50"
+        zIndex: 2
+        markerType: "price"
+        visible: isVisible(mls)
 
       getWindowOffset: getWindowOffset
 
