@@ -94,6 +94,7 @@ app.service 'LayerFormatters'.ourNs(), [
         return getMouseOver(model) or maybeSavedColor or colors[model.rm_status]
 
       fill = (parcel) ->
+        return {} unless parcel
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
         notSavedNotInFilter = colors['default'] unless isVisible(parcel)
         color: notSavedNotInFilter or fillColorFromState(parcel) or colors['default']
