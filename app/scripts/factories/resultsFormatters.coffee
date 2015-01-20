@@ -16,8 +16,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
-    resultEvents = ['click', 'dblclick', 'mouseover', 'mouseleave']
-
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter extends BaseObject
       @include FormattersService.Common
@@ -190,7 +188,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         @mapCtrl.scope.showDetails = true
 
-      mouseover: (result) =>
+      mouseenter: (result) =>
         result.isMousedOver = true
         @mapCtrl.updateAllLayersByModel(result)
 

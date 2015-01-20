@@ -10,12 +10,11 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapDataStructures',
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls, uiGmapDataStructures) ->
-    Queue = uiGmapDataStructures.Queue
+    uiGmapPromise, uiGmapControls) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -30,18 +29,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
-
-        _hoversQ = new Queue() #seems to be a google bug where mouse out is not always called
-        _cleanHovers = _.debounce ->
-          _.defer ->
-            while _hoversQ.size > 0
-              hovered =  _hoversQ.dequeue()
-              hovered.isMousedOver = undefined
-              _updateAllLayersByModel(hovered)
-              hovered =  null
-        _maybeCleanHovers = (model) ->
-          peeked = _hoversQ.peek()
-          _cleanHovers() if peeked? and peeked.rm_property_id != model.rm_property_id
 
         @filterSummaryHash = {}
         @filters = ''
@@ -121,7 +108,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
             listing: (gMarker, eventname, model) ->
-              #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
               #model could be from parcel or from filter, but the end all be all data is in filter
               unless model.rm_status
                 return if not $scope.layers?.filterSummary? or @filterSummaryHash?
@@ -139,20 +125,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 disableAutoPan: true
 
             listingEvents:
-              mouseover: (gObject, eventname, model) ->
-                #return if _maybeHideAddressMarker(gObject)
+              mouseover: (gObject, eventname, model) =>
                 $scope.actions.listing(gObject, eventname, model)
                 model = GoogleService.UiMap.getCorrectModel model
-                _maybeCleanHovers(model)
-                model.isMousedOver = true
-                _hoversQ.enqueue model
+                if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
+                  model.isMousedOver = true
                 _updateAllLayersByModel(model)
 
-              mouseout: (gObject, eventname, model) ->
+              mouseout: (gObject, eventname, model) =>
                 model = GoogleService.UiMap.getCorrectModel model
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
-                model.isMousedOver = undefined
+                  model.isMousedOver = undefined
                 _updateAllLayersByModel(model)
 
               click: (gObject, eventname, model) =>
