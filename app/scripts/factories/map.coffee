@@ -205,7 +205,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if @waitToSetParcelData
               @waitingData = data
             else
-              @scope.controls.parcels.newModels(data)
+              @scope.layers.parcels = data
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -215,7 +215,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
           if @waitingData
-            @scope.controls.parcels.newModels(@waitingData)
+            @scope.layers.parcels = @waitingData
             @waitingData = null
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
@@ -265,10 +265,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
-        return if not @scope.layers.filterSummary or not @scope.layers.filterSummary.length
-        @scope.layers.filterSummary.forEach (summary, index) =>
-          summary.index = index
-          @filterSummaryHash[summary.rm_property_id] = summary
+        if @scope.layers?.filterSummary? or @scope.layers.filterSummary.length
+          @scope.layers.filterSummary.forEach (summary, index) =>
+            summary.index = index
+            @filterSummaryHash[summary.rm_property_id] = summary
+        #need to always sync the formatters.layer hash
         @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
 
       clearFilter: =>
