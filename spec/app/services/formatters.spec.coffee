@@ -36,6 +36,8 @@ describe testScope, ->
         @subject.humanizeDays(61).should.equal "2 months, 1 day"
         @subject.humanizeDays(59).should.equal "1 month, 29 days"
         @subject.humanizeDays(332).should.equal "11 months, 2 days"
+        @subject.humanizeDays(720).should.equal "about 2 years"
+        @subject.humanizeDays(705).should.equal "about 1 year, 11 months"
         @subject.humanizeDays(0).should.equal "less than 1 day"
       it '1 unit result', ->
         @subject.humanizeDays(732).should.equal "about 2 years"
