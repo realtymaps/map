@@ -1,6 +1,6 @@
 Promise = require "bluebird"
 ParamValidationError = require './util.error.paramValidation'
-StringToBoolean = require '../util.stringToBoolean.coffee'
+StringToBoolean = require '../../../common/utils/util.stringToBoolean'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->

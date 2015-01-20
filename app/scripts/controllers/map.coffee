@@ -23,7 +23,6 @@ module.exports = app
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(),
   ($scope, $rootScope, Map, MainOptions, Toggles,
   principal, Events, ParcelEnums) ->
-
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
     $scope.resultsInit = (resultsListId) ->
@@ -50,6 +49,8 @@ module.exports = app
           if not $rootScope.selectedFilters?
             $rootScope.selectedFilters = {}
           _.extend($rootScope.selectedFilters, identity.stateRecall.filters)
+
+          MainOptions.map.toggles = if identity.stateRecall.map_toggles then new Toggles(identity.stateRecall.map_toggles) else new Toggles()
         return MainOptions.map
       .then (mapOptions) ->
         # wait to initialize map until we've merged state values into the initial options
@@ -63,6 +64,4 @@ module.exports = app
 
     $scope.sendSnail = (property) ->
       $rootScope.$emit Events.snail.initiateSend, property
-
-    $scope.Toggles = Toggles
 ]

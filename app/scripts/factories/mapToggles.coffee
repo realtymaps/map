@@ -1,11 +1,22 @@
 app = require '../app.coffee'
+StringToBoolean = require '../../../common/utils/util.stringToBoolean.coffee'
 
 app.factory 'MapToggles'.ourNs(), [ ->
 
-    showResults: false
-    showDetails: false
-    showFilters: false
+  (json) ->
+    @showResults
+    @showDetails = false
+    @showFilters = false
 
-    # TODO - add a function to manage which trays are opened / closed
+    @showAddresses = true
+    @showPrices = true
 
-  ]
+    @toggleAddresses = =>
+      @showAddresses = !@showAddresses
+    @togglePrices = ->
+      @showPrices = !@showPrices
+
+    if json?
+      _.extend @, StringToBoolean.booleanify(json)
+    @
+]

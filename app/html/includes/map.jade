@@ -17,7 +17,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
 
 
   ui-gmap-markers(
-    ng-if="zoomLevelService.isPrice(zoom)"
+    ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
     options='formatters.layer.MLS.markerOptionsFromForSale'
     models='layers.filterSummary'
     coords='"geom_point_json"'
@@ -43,7 +43,7 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
 
   // BEGIN PARCEL DATA
   ui-gmap-markers(
-    ng-if="zoomLevelService.isAddressParcel(zoom)"
+    ng-if="zoomLevelService.isAddressParcel(zoom) && Toggles.showAddresses;"
     options='formatters.layer.Parcels.labelFromStreetNum'
     models='layers.parcels'
     coords='"geom_point_json"'
