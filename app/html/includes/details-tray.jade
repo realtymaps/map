@@ -10,7 +10,7 @@
                     .col-sm-7
                         .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
                         //.city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
-                        button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(selectedResult)")
+                        button.snail.btn.btn-primary.btn-xs(ng-click="sendSnail(selectedResult)")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
                     .col-sm-5
