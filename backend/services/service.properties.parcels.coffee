@@ -31,7 +31,7 @@ module.exports =
         return []
 
       query = sqlHelpers.select(db.knex, '*', false).from(sqlHelpers.tableName(Parcel))
-      sqlHelpers._whereRawSafe(query, filters.bounds)
+      sqlHelpers.whereRawSafe(query, filters.bounds)
       #logger.sql query.toString()      
       return query
 

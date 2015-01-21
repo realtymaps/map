@@ -7,6 +7,22 @@ _whereRawSafe = (query, rawSafe) ->
 _orWhereRawSafe = (query, rawSafe) ->
   query.orWhere ()-> _whereRawSafe(@, rawSafe)
 
+_orderByRawSafe = (query, rawSafe) ->
+  query.orderByRaw rawSafe.sql, rawSafe.bindings
+
+_orOrderByRawSafe = (query, rawSafe) ->
+  query.orOrderByRaw ()-> _orderByRawSafe(@, rawSafe)
+
+_distanceFromPoint = (point, options = {}) ->
+  # order by distance from point
+  # http://boundlessgeo.com/2011/09/indexed-nearest-neighbour-search-in-postgis/
+  #geom <-> st_setsrid(st_makepoint(-90,40),4326)
+  sql: "#{options.column} <-> st_setsrid(st_makepoint(?,?),#{options.coordSys})"
+  bindings: [point.longitude, point.latitude]
+
+_orderByDistanceFromPoint = (point, options, query) ->
+  safe = _distanceFromPoint point, options
+  _orderByRawSafe query, safe
 
 _ageOrDaysFromStartToNow = (listingAge, beginDate) ->
   "COALESCE(#{listingAge}, now()::DATE - #{beginDate})"
@@ -60,9 +76,13 @@ module.exports =
       sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
       bindings: [ val ]
 
-  _whereRawSafe: _whereRawSafe
-  _orWhereRawSafe: _orWhereRawSafe
-  
+  whereRawSafe: _whereRawSafe
+  orWhereRawSafe: _orWhereRawSafe
+  orderByRawSafe: _orderByRawSafe
+  orOrderByRawSafe: _orOrderByRawSafe
+  distanceFromPoint:_distanceFromPoint
+  orderByDistanceFromPoint:_orderByDistanceFromPoint
+
   whereIn: (query, column, values) ->
     # this logic is necessary to avoid SQL parse errors
     if values.length == 1
@@ -84,3 +104,5 @@ module.exports =
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
     knex.select(knex.raw(_columns[which]+extra))
+
+
