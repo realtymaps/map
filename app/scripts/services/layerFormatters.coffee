@@ -55,7 +55,6 @@ app.service 'LayerFormatters'.ourNs(), [
       hoverColors[ParcelEnums.status.notForSale] = '#379'
       hoverColors['saved'] = '#AA1'
       hoverColors['default'] = 'rgba(153,153,153,.8)'
-      
 
       # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
       gOptsFromUiGmapFill = (fillOpts) ->
@@ -66,7 +65,7 @@ app.service 'LayerFormatters'.ourNs(), [
         return {} unless parcel
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
         model = filterSummaryHash[parcel.rm_property_id] || parcel
-        
+
         if model.savedDetails?.isSaved
           status = 'saved'
         else if model.passedFilters
@@ -87,8 +86,20 @@ app.service 'LayerFormatters'.ourNs(), [
         zIndex: 1
         markerType: "streetNum"
 
+      _strokeColor = "#1269D8"
+      _strokeWeight = 1.5
+
       fill: getFillColor
       labelFromStreetNum: labelFromStreetNum
+      strokeColor: _strokeColor
+      strokeWeight: _strokeWeight
+      style:
+        featureType: "administrative.land_parcel",
+        elementType: "geometry.stroke",
+        stylers: [
+          { "color": _strokeColor },
+          { "weight": _strokeWeight }
+        ]
 
       optionsFromFill: (parcel) ->
         gOptsFromUiGmapFill getFillColor(parcel)
