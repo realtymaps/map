@@ -43,12 +43,12 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       if not prop
         prop = new Property(rm_property_id, true, false, undefined)
         savedProperties[rm_property_id] = prop
-        model.savedDetails = prop
       else
         prop.isSaved = !prop.isSaved
         unless prop.notes
           delete savedProperties[rm_property_id]
           #main dependency is layerFormatters.isVisible
+      model.savedDetails = prop
 
       #post state to database
       promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)

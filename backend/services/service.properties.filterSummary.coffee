@@ -52,16 +52,20 @@ required =
 module.exports =
 
   getFilterSummary: (state, rawFilters, limit = 2000) ->
+    bounds = null;
     Promise.try () ->
       
       # note this is looking at the pre-transformed status filter
-      if !rawFilters.status?.length
-        #nothing to select, GTFO before we do any real work
+      if !rawFilters.status?.length && (!state?.properties_selected || _.size(state.properties_selected) == 0)
+        # we know there is absolutely nothing to select, GTFO before we do any real work
         return []
         
       requestUtil.query.validateAndTransform(rawFilters, transforms, required)
       .then (filters) ->
-        if filters.bounds == "dummy"
+        # save out for use with saved properties
+        bounds = filters.bounds
+        # shortcut out, this part won't yield anything
+        if filters.bounds == "dummy" || !filters.status.length
           return []
   
         query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(FilterSummary))
@@ -120,8 +124,8 @@ module.exports =
       return _.uniq filteredProperties, (row) ->
         row.rm_property_id
     .then (filteredProperties) ->
-      return filteredProperties if !state?.properties_selected || _.keys(state.properties_selected).length == 0
-
+      return filteredProperties if bounds == "dummy" || !state?.properties_selected || _.keys(state.properties_selected).length == 0
+      
       # joining saved props to the filter data for properties that passed the filters, keeping track of which
       # ones hit so we can do further processing on the others
       matchingSavedProps = {}
@@ -140,9 +144,10 @@ module.exports =
       query = sqlHelpers.select(db.knex, "filter", false).from(sqlHelpers.tableName(FilterSummary))
 
       if limit
-        logger.sql("filterSummary is being limited to: #{limit}")
+        #logger.sql("filterSummary is being limited to: #{limit}")
         query.limit(limit)
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
+      sqlHelpers.whereRawSafe(query, bounds)
       query.then (savedProperties) ->
         savedProperties.forEach (row) ->
           row.savedDetails = state.properties_selected[row.rm_property_id]
