@@ -97,7 +97,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           listingOptions:
             boxClass: 'custom-info-window'
             closeBoxDiv: ' '
-#            closeBoxDiv: '<i" class="pull-right fa fa-close fa-3x" style="position: relative; cursor: pointer;"></i>'
+
           layers:
             parcels: []
             listingDetail: undefined
@@ -174,6 +174,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 model = GoogleService.UiMap.getCorrectModel model
                 _saveProperty model, gObject
 
+          #TODO: move ResultsFormatter into here as result for consistency
           formatters:
             layer: LayerFormatters
 
@@ -193,8 +194,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         uiGmapControls.init $scope.controls
 
       clearBurdenLayers: =>
-        if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
+        if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope)
           @scope.layers.parcels.length = 0
+
+      maybeShowGoogleParcelLines: =>
+        if ZoomLevel.isParcel(@scope.zoom)
+          return if @didAddGParcelLinesStyle
+          @didAddGParcelLinesStyle = true
+          @scope.options.styles.push @scope.formatters.layer.Parcels.style
+        else
+          if @didAddGParcelLinesStyle
+            @scope.options.styles = _.without(@scope.options.styles, @scope.formatters.layer.Parcels.style)
+            @didAddGParcelLinesStyle = false
 
       redraw: =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
@@ -202,7 +213,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         # this is probably not the best setup either, but it's the best I could do without major refactors
         @waitToSetParcelData = true
         @waitingData = null
-        if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
+
+        @maybeShowGoogleParcelLines()
+        if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState).then (data) =>
             return unless data?
@@ -218,14 +231,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           return unless data?
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
+          #TODO: newModels should not have to be used (yes it does fix a bug / race case)
+          #using new models will cause a flicker as it erases and redraws all polys or markers
           if @waitingData
-            @scope.layers.parcels = @waitingData
+            @scope.controls.parcels.newModels @waitingData
             @waitingData = null
+          else if ZoomLevel.isParcel(@scope.zoom) #we are just getting the bare min for parcels and using googles polylines
+            @scope.controls.parcels.newModels data
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
             @scope.resultsFormatter?.reset()
 
-      
+
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
         if not paths and not @scope.drawUtil.isEnabled
