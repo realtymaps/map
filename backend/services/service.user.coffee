@@ -5,6 +5,7 @@ logger = require '../config/logger'
 User = require("../models/model.user")
 UserState = require("../models/model.userState")
 environmentSettingsService = require("../services/service.environmentSettings")
+StringToBoolean = require '../../common/utils/util.stringToBoolean'
 
 
 getUser = (attributes) ->
@@ -122,16 +123,26 @@ updateUserState = (session, partialState) -> Promise.try () ->
       return result
 
 captureMapState = (req, res, next) ->
-  updateUserState(req.session, map_center: req.query.center, map_zoom: req.query.zoom)
+  updateUserState(req.session,
+    map_center: req.query.center
+    map_zoom: req.query.zoom
+    map_toggles:  req.query.toggles
+  )
   .then () ->
     next()
 
 captureMapFilterState = (req, res, next) ->
   Promise.try () ->
     filters = _.clone(req.query)
-    _.forEach ['center', 'zoom', 'bounds'], (removeParam) ->
+    _.forEach ['center', 'zoom', 'bounds', 'toggles'], (removeParam) ->
       delete filters[removeParam]
-    updateUserState(req.session, map_center: req.query.center, map_zoom: req.query.zoom, filters: filters)
+
+    updateUserState(req.session,
+      map_center: req.query.center
+      map_zoom: req.query.zoom
+      map_toggles:  req.query.toggles
+      filters: filters
+    )
   .then () ->
     next()
 

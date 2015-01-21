@@ -18,6 +18,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
+        $scope.Toggles = limits.toggles
+
         $scope.zoomLevelService = ZoomLevel
         self = @
 
@@ -48,7 +50,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @filterSummaryHash = {}
         @filters = ''
         @filterDrawPromise = false
-        $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
+        $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
 
         _updateGObjects = (gObject, savedDetails, model) ->
@@ -93,6 +95,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showTraffic: true
           showWeather: false
           showMarkers: true
+
 
           listingOptions:
             boxClass: 'custom-info-window'
@@ -219,7 +222,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
           if @waitingData
-            @scope.layers.parcels = @waitingData
+            @scope.controls.parcels.newModels @waitingData
             @waitingData = null
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
@@ -235,7 +238,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return if not paths? or not paths.length > 1
 
         @hash = encode paths
-        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom)
+        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom, toggles: @scope.Toggles)
         @redraw()
 
       filter: (newFilters, oldFilters) =>
