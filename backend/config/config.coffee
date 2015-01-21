@@ -56,6 +56,8 @@ base =
     TEST_API_KEY: process.env.LOB_TEST_API_KEY
     LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
     API_VERSION: '2014-12-18'
+  MAP:
+    zoom_ordering_threshold: 17
 
 
 # this one's separated out so we can re-use the USER_DB.connection value
