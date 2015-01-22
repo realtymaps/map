@@ -23,7 +23,7 @@ app.factory 'MapToggles'.ourNs(), [ ->
     @toggleResults = =>
       if @showDetails
         @showDetails = false
-        @showResults = true unless @showResults #edge case (detail open from marker click w/ no results), if show leave it
+        @showResults = true
         return
       @showResults =  !@showResults
 
