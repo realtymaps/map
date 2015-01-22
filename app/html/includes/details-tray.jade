@@ -13,12 +13,14 @@
                         button.snail.btn.btn-info.btn-xs(ng-click="sendSnail(selectedResult)")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
+                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(selectedResult)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="selectedResult") {{resultsFormatter.isSavedResult(selectedResult) ? 'Saved' : 'Save'}}
                     .col-sm-5
                         .price(ng-if="selectedResult.price")
-                            span.price-label {{resultsFormatter.getPriceLabel(selectedResult.rm_status)}}:&nbsp;
+                            span.price-label {{resultsFormatter.getPriceLabel(selectedResult.rm_status)}}&nbsp;
                             | {{resultsFormatter.getPrice(selectedResult.price)}}
-                        .property-status.i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(selectedResult)"
-                        rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="selectedResult")
+                        .below-price
+                            .property-status(ng-class="'label-'+resultsFormatter.getForSaleClass(selectedResult,true)+'-property'") {{selectedResult.rm_status}}
+                            .sold-date.info.title(ng-if="resultsFormatter.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                 .row
