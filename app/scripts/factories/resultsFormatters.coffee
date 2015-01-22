@@ -2,6 +2,7 @@ app = require '../app.coffee'
 
 sprintf = require('sprintf-js').sprintf
 
+
 app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   'Properties'.ourNs(), 'FormattersService'.ourNs(),
@@ -108,6 +109,15 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #        $log.debug "result: #{JSON.stringify(result)}"
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        
+      getPriceLabel: (status, initialCap) ->
+        if (status=='recently sold'||status=='not for sale')
+          label = 'sold'
+        else
+          label = 'asking'
+        if initialCap
+          label = label[0].toUpperCase()+label.substr(1)
+        return label
 
       getCityStateZip: (model, owner=false) ->
         if !model?
@@ -122,17 +132,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return csz
 
       showListingData: (model) ->
-        return if not model
+        return false if not model
         model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
       
       showSalesData: (model) ->
-        return if not model
-        model.mortgage_amount || @showIfDifferentFromMLS(model,'sale_') || @showIfDifferentFromMLS(model,'prior_sale_')
+        return false if not model
+        model.mortgage_amount || model.mortgage_date || @showIfDifferentFrom(model, 'sale', 'mls_close') || @showIfDifferentFrom(model, 'prior_sale', 'mls_close')
 
-      showIfDifferentFromMLS: (model, prefix) ->
-        return if not model
+      showIfDifferentFrom: (model, prefix, differentFromPrefix) ->
+        return false if !model || !prefix || !differentFromPrefix
+        prefix += '_'
+        differentFromPrefix += '_'
         # differing prices or >= 30 days difference in sale date
-        !model.close_date || model[prefix+"date"] && (Math.abs(new Date(model.close_date.toLocaleString()).getTime()-new Date(model[prefix+"date"].toLocaleString()).getTime() > 30*86400000) || (model[prefix+"price"] != model.close_price))
+        if (model[prefix+"date"] && !model[differentFromPrefix+"date"]) || model[prefix+"price"] != model[differentFromPrefix+"price"]
+          return true
+        if !model[prefix+"date"]
+          return false
+        millis1 = new Date(model[differentFromPrefix+"date"].toLocaleString()).getTime()
+        millis2 = new Date(model[prefix+"date"].toLocaleString()).getTime()
+        return Math.abs(millis1-millis2) > 30*86400000
         
       loadMore: =>
         #debugging
