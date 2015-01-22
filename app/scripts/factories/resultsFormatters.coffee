@@ -109,6 +109,15 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #        $log.debug "result: #{JSON.stringify(result)}"
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        
+      getPriceLabel: (status, initialCap) ->
+        if (status=='recently sold'||status=='not for sale')
+          label = 'sold'
+        else
+          label = 'asking'
+        if initialCap
+          label = label[0].toUpperCase()+label.substr(1)
+        return label
 
       getCityStateZip: (model, owner=false) ->
         if !model?

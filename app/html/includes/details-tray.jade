@@ -15,7 +15,7 @@
                             | Send Mailing
                     .col-sm-5
                         .price(ng-if="selectedResult.price")
-                            span.price-label {{selectedResult.rm_status=='recently sold'||selectedResult.rm_status=='not for sale'?'sold':'asking'}}:&nbsp;
+                            span.price-label {{resultsFormatter.getPriceLabel(selectedResult.rm_status)}}:&nbsp;
                             | {{resultsFormatter.getPrice(selectedResult.price)}}
                         .property-status.i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(selectedResult)"
                         rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="selectedResult")
