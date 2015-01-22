@@ -204,7 +204,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         .then (data) =>
           angular.extend @mapCtrl.scope.selectedResult, data
 
-        @mapCtrl.scope.showDetails = true
+        @mapCtrl.scope.Toggles.showDetails = true
 
       mouseenter: (result) =>
         result.isMousedOver = true

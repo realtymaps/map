@@ -1,5 +1,5 @@
-.navbar-below.detail-container#results-slide(ng-show="showDetails")
-    .tray-close-light#detail-close(ng-click="showDetails = !showDetails" ng-cloak)
+.navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
+    .tray-close-light#detail-close(ng-click="Toggles.toggleDetails()" ng-cloak)
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list

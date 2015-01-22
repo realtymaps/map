@@ -1,6 +1,6 @@
 .results-container.navbar-below#results-slide(ng-show="Toggles.showResults"
 ng-init="resultsInit('results-list')")
-    .tray-close#results-close(ng-click="Toggles.showResults = !Toggles.showResults")
+    .tray-close#results-close(ng-click="Toggles.toggleResults()")
         i.centered.fa.fa-chevron-right.fa-2x
     #results-list-inner
         #results-header
