@@ -1,34 +1,6 @@
 .toolbar
     .layer-panel(ng-show="Toggles.showLayerPanel" id="layers-slide" ng-cloak)
-        .header Map Layers
-            .button(click ng-click="Toggles.showLayerPanel = !Toggles.showLayerPanel" type="button" class="fa fa-close pull-right" aria-hidden="true")
-        
-        //- TODO: hook up checkmark functionality
-        
-        ul
-            li(ng-click="toggleSold()")
-                .lp-check-icon(ng:class="{'active' : showSold }")
-                    include ../svg/checkmark.svg
-                    div(class="title") Sold
-                    div(class="colorLegend colorSold")
-            li(ng-click="toggleForSale()")
-                .lp-check-icon(ng:class="{'active' : showForSale}")
-                    include ../svg/checkmark.svg
-                    div(class="title") For Sale
-                    div(class="colorLegend colorForSale")
-            li(ng-click="toggleHouseNumbers()")
-                .lp-check-icon(ng:class="{'active' : showAddresses }")
-                    include ../svg/checkmark.svg
-                    div(class="title") Addresses
-            li(ng-click="togglePrices()")
-                .lp-check-icon(ng:class="{'active' : showPrices }")
-                    include ../svg/checkmark.svg
-                    div(class="title") Prices
-            li(ng-click="toggleStats()")
-                .lp-check-icon(ng:class="{'active' : showStats }")
-                    include ../svg/checkmark.svg
-                    div(class="title") Statistics
-
+        include ./layers-tray.jade
 
      .toolbar-layer-icon.icon(ng-click="Toggles.showLayerPanel = !Toggles.showLayerPanel" ng:class="{'active' : selectedNav=='filters' }" tool-tip placement="right" title="Layers")
         include ../svg/layers.svg

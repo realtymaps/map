@@ -2,13 +2,16 @@ db = require('../config/dbs').properties
 FilterSummary = require "../models/model.filterSummary"
 Promise = require "bluebird"
 logger = require '../config/logger'
+config = require '../config/config'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+filterStatuses = require '../enums/filterStatuses'
 
 validators = requestUtil.query.validators
 
-statuses = ['for sale', 'recently sold', 'pending', 'not for sale', 'saved']
+statuses = filterStatuses.keys
+filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.float()]
@@ -48,7 +51,7 @@ required =
 
 module.exports =
 
-  getFilterSummary: (state, rawFilters, limit = 600) ->
+  getFilterSummary: (state, rawFilters, limit = 2000) ->
     Promise.try () ->
       
       # note this is looking at the pre-transformed status filter
@@ -64,8 +67,7 @@ module.exports =
         query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(FilterSummary))
         query.limit(limit) if limit
   
-        # TODO: refactor geo validation so raw SQL generation happens in sqlHelpers and _whereRawSafe can be private
-        sqlHelpers._whereRawSafe(query, filters.bounds)
+        sqlHelpers.whereRawSafe(query, filters.bounds)
   
         if filters.status.length < statuses.length
           sqlHelpers.whereIn(query, 'rm_status', filters.status)
@@ -105,7 +107,10 @@ module.exports =
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', ">=", filters.listedDaysMin)
         if filters.listedDaysMax
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
-                    
+
+        if state.map_zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
+          sqlHelpers.orderByDistanceFromPoint(state.map_center, column: 'geom_point_raw', coordSys: coordSys.UTM, query)
+
         #logger.sql query.toString()
         return query
     .then (filteredProperties) ->
@@ -116,7 +121,7 @@ module.exports =
         row.rm_property_id
     .then (filteredProperties) ->
       return filteredProperties if !state?.properties_selected || _.keys(state.properties_selected).length == 0
-      
+
       # joining saved props to the filter data for properties that passed the filters, keeping track of which
       # ones hit so we can do further processing on the others
       matchingSavedProps = {}
@@ -133,7 +138,10 @@ module.exports =
         # shortcut out if we've handled them all
         return filteredProperties
       query = sqlHelpers.select(db.knex, "filter", false).from(sqlHelpers.tableName(FilterSummary))
-      query.limit(limit) if limit
+
+      if limit
+        logger.sql("filterSummary is being limited to: #{limit}")
+        query.limit(limit)
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
       query.then (savedProperties) ->
         savedProperties.forEach (row) ->

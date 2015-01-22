@@ -47,15 +47,18 @@ app.service 'FormattersService'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
       years = duration.get("years")
       months = duration.get("months")
       days = duration.get("days")
+      
+      if years > 0 and days >= 15
+        months++
+        days = 0
+      if months == 12
+        years++
+        months = 0
+      
       if years > 0
         result = "about #{_humanizePartial(years, "years")}"
         if months > 0
-          # the below is an awkward way to get the remaining duration excluding the partial above, but we can't trust
-          # duration math to be consistent any other way: https://github.com/moment/moment/issues/2166
-          duration = moment.duration
-            months: duration.get("months")
-            days : duration.get("days")
-          result += ", #{_humanize(duration)}"
+          result += ", #{_humanizePartial(months, "months")}"
       else if months > 0
         result = "#{_humanizePartial(months, "months")}"
         if days > 0

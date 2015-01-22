@@ -38,7 +38,7 @@ ng-init="resultsInit('results-list')")
             div(ng-repeat="result in results | orderBy:resultsPredicate:reverse | limitTo:resultsLimit" class="result-property")
                 .card( ng-class="resultsFormatter.maybeAnimate()" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
                 rmaps-click="resultsFormatter.click" rmaps-value-name-click="result"
-                rmaps-mouseover="resultsFormatter.mouseover" rmaps-value-name-mouseover="result"
+                rmaps-mouseenter="resultsFormatter.mouseenter" rmaps-value-name-mouseenter="result"
                 rmaps-mouseleave="resultsFormatter.mouseleave" rmaps-value-name-mouseleave="result")
                     //.result-arrow
                         .box Sold
@@ -65,7 +65,7 @@ ng-init="resultsInit('results-list')")
                                 span.title Sq Ft
                             .year(ng-if="result.year_built" ng-cloak)
                                 span.data {{resultsFormatter.getYear(result.year_built)}}
-                                span.title Year
+                                span.title Year Built
                 .card-buttons
                     button.snail.btn.btn-primary.btn-xs(ng-click="sendSnail(result)")
                       i.fa.fa-envelope &nbsp;

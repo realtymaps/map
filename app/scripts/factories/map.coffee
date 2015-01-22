@@ -10,15 +10,16 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapDataStructures',
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(),
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls, uiGmapDataStructures) ->
-    Queue = uiGmapDataStructures.Queue
+    uiGmapPromise, uiGmapControls) ->
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
+        $scope.Toggles = limits.toggles
+
         $scope.zoomLevelService = ZoomLevel
         self = @
 
@@ -31,22 +32,25 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
 
-        _hoversQ = new Queue() #seems to be a google bug where mouse out is not always called
-        _cleanHovers = _.debounce ->
-          _.defer ->
-            while _hoversQ.size > 0
-              hovered =  _hoversQ.dequeue()
-              hovered.isMousedOver = undefined
-              _updateAllLayersByModel(hovered)
-              hovered =  null
-        _maybeCleanHovers = (model) ->
-          peeked = _hoversQ.peek()
-          _cleanHovers() if peeked? and peeked.rm_property_id != model.rm_property_id
+        #seems to be a google bug where mouse out is not always called
+        @hovers = {}
+        _cleanHovers = _.debounce =>
+          $scope.$evalAsync =>
+            for own rm_property_id, model of @hovers
+              if @lastHoveredModel?.rm_property_id == rm_property_id
+                continue
+              model.isMousedOver = undefined
+              _updateAllLayersByModel(model)
+              delete @hovers[rm_property_id]
+        _maybeCleanHovers = (model) =>
+          keys = _.keys(@hovers)
+          if keys.length > 1 || keys.length == 1 && keys[0] != model.rm_property_id
+            _cleanHovers()
 
         @filterSummaryHash = {}
         @filters = ''
         @filterDrawPromise = false
-        $rootScope.$watch('selectedFilters', @filter, true) #TODO, WHY ROOTSCOPE?
+        $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
 
         _updateGObjects = (gObject, savedDetails, model) ->
@@ -79,11 +83,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               uiGmapControls.updateAllModels match
             #need to figure out a better way
             self.updateFilterSummaryHash()
+            _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
               _updateGObjects(gObject, savedDetails, model)
-            else
-              _updateAllLayersByModel model
 
         @saveProperty = _saveProperty
 
@@ -93,10 +96,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showWeather: false
           showMarkers: true
 
+
           listingOptions:
             boxClass: 'custom-info-window'
             closeBoxDiv: ' '
-#            closeBoxDiv: '<i" class="pull-right fa fa-close fa-3x" style="position: relative; cursor: pointer;"></i>'
+
           layers:
             parcels: []
             listingDetail: undefined
@@ -121,7 +125,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
             listing: (gMarker, eventname, model) ->
-              #TODO: maybe use a show attribute not on the model (dangerous two-way back to the database)
               #model could be from parcel or from filter, but the end all be all data is in filter
               unless model.rm_status
                 return if not $scope.layers?.filterSummary? or @filterSummaryHash?
@@ -139,20 +142,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 disableAutoPan: true
 
             listingEvents:
-              mouseover: (gObject, eventname, model) ->
-                #return if _maybeHideAddressMarker(gObject)
+              mouseover: (gObject, eventname, model) =>
                 $scope.actions.listing(gObject, eventname, model)
                 model = GoogleService.UiMap.getCorrectModel model
-                _maybeCleanHovers(model)
-                model.isMousedOver = true
-                _hoversQ.enqueue model
+                if GoogleService.Map.isGPoly(gObject)
+                  model.isMousedOver = true
+                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
+                  model.isMousedOver = true
+                  @hovers[model.rm_property_id] = model
+                  @lastHoveredModel = model
+                  _maybeCleanHovers(model)
                 _updateAllLayersByModel(model)
 
-              mouseout: (gObject, eventname, model) ->
+              mouseout: (gObject, eventname, model) =>
                 model = GoogleService.UiMap.getCorrectModel model
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   $scope.actions.closeListing()
-                model.isMousedOver = undefined
+                  model.isMousedOver = undefined
+                  delete @hovers[model.rm_property_id]
                 _updateAllLayersByModel(model)
 
               click: (gObject, eventname, model) =>
@@ -170,6 +177,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 model = GoogleService.UiMap.getCorrectModel model
                 _saveProperty model, gObject
 
+          #TODO: move ResultsFormatter into here as result for consistency
           formatters:
             layer: LayerFormatters
 
@@ -189,8 +197,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         uiGmapControls.init $scope.controls
 
       clearBurdenLayers: =>
-        if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope) and not ZoomLevel.isParcel(@gMap)
+        if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope)
           @scope.layers.parcels.length = 0
+
+      maybeShowGoogleParcelLines: =>
+        if ZoomLevel.isParcel(@scope.zoom)
+          return if @didAddGParcelLinesStyle
+          @didAddGParcelLinesStyle = true
+          @scope.options.styles.push @scope.formatters.layer.Parcels.style
+        else
+          if @didAddGParcelLinesStyle
+            @scope.options.styles = _.without(@scope.options.styles, @scope.formatters.layer.Parcels.style)
+            @didAddGParcelLinesStyle = false
 
       redraw: =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
@@ -198,7 +216,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         # this is probably not the best setup either, but it's the best I could do without major refactors
         @waitToSetParcelData = true
         @waitingData = null
-        if ZoomLevel.isAddressParcel(@scope.zoom, @scope) or ZoomLevel.isParcel(@scope.zoom)
+
+        @maybeShowGoogleParcelLines()
+        if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState).then (data) =>
             return unless data?
@@ -214,14 +234,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           return unless data?
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()
+          #TODO: newModels should not have to be used (yes it does fix a bug / race case)
+          #using new models will cause a flicker as it erases and redraws all polys or markers
           if @waitingData
-            @scope.layers.parcels = @waitingData
+            @scope.controls.parcels.newModels @waitingData
             @waitingData = null
+          else if ZoomLevel.isParcel(@scope.zoom) #we are just getting the bare min for parcels and using googles polylines
+            @scope.controls.parcels.newModels data
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
             @scope.resultsFormatter?.reset()
 
-      
+
       draw: (event, paths) =>
         @scope.resultsFormatter?.reset()
         if not paths and not @scope.drawUtil.isEnabled
@@ -231,7 +255,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return if not paths? or not paths.length > 1
 
         @hash = encode paths
-        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom)
+        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom, toggles: @scope.Toggles)
         @redraw()
 
       filter: (newFilters, oldFilters) =>
