@@ -10,7 +10,7 @@
         include ../svg/criteria.svg
         .toolbar-label Filters
 
-    .toolbar-results-icon.icon(ng-click="Toggles.showResults = !Toggles.showResults" ng:class="{'active' : selectedNav=='results' }" tool-tip placement="right" title="Results List")
+    .toolbar-results-icon.icon(ng-click="Toggles.toggleResults()" ng:class="{'active' : selectedNav=='results' }" tool-tip placement="right" title="Results List")
         include ../svg/results.svg
         .toolbar-label Results
 
