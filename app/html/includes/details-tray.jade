@@ -19,7 +19,7 @@
                             span.price-label {{resultsFormatter.getPriceLabel(selectedResult.rm_status)}}&nbsp;
                             | {{resultsFormatter.getPrice(selectedResult.price)}}
                         .below-price
-                            .property-status(ng-class="'label-'+resultsFormatter.getForSaleClass(selectedResult,true)+'-property'") {{selectedResult.rm_status}}
+                            .property-status(ng-class="resultsFormatter.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
                             .sold-date.info.title(ng-if="resultsFormatter.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info

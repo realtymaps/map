@@ -17,6 +17,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
+    _statusLabelClass = {}
+    _statusLabelClass[ParcelEnums.status.sold] = 'label-sold-property'
+    _statusLabelClass[ParcelEnums.status.pending] = 'label-pending-property'
+    _statusLabelClass[ParcelEnums.status.forSale] = 'label-sale-property'
+    _statusLabelClass[ParcelEnums.status.notForSale] = 'label-notsale-property'
+    _statusLabelClass['saved'] = 'label-saved-property'
+    _statusLabelClass['default'] = ''
+
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter extends BaseObject
       @include FormattersService.Common
@@ -104,11 +112,15 @@ app.factory 'ResultsFormatter'.ourNs(), [
       getActiveSort: (toMatchSortStr) =>
         if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
 
-      getForSaleClass: (result, ignoreSavedStatus=false) ->
+      getForSaleClass: (result) ->
         return unless result
-        #        $log.debug "result: #{JSON.stringify(result)}"
-        soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
+        soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        
+      getStatusLabelClass: (result, ignoreSavedStatus=false) ->
+        return unless result
+        soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
+        return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
 
       showSoldDate: (result) ->
         if !result
