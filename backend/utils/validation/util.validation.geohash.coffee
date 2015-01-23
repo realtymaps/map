@@ -31,6 +31,7 @@ module.exports =
   transformToRawSQL: (options = {}) ->
     (param, bounds) ->
       Promise.try () ->
+        # TODO: fix frontend so this hack isn't necessary to keep alerts away
         if bounds.length < 2
           return "dummy"
         results = {}

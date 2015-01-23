@@ -70,19 +70,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             gObject.setOptions opts
           , ['streetNumMarkers']
 
-        _saveProperty = (model, gObject) ->
+        _saveProperty = (model, gObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
           return unless saved
-          saved.then (savedDetails) ->
+          saved.then (savedDetails) =>
+            if @filterSummaryHash[model.rm_property_id]?
+              @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
+            if @lastHoveredModel?.rm_property_id == model.rm_property_id && !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
+              $scope.actions.closeListing()
             #setting savedDetails here as we know the save was successful (update the font end without query right away)
-            index = if model.index? then model.index else self.filterSummaryHash[model.rm_property_id]?.index
+            index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
               match.savedDetails = savedDetails if match?
               uiGmapControls.updateAllModels match
             #need to figure out a better way
-            self.updateFilterSummaryHash()
+            @updateFilterSummaryHash()
             _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
@@ -124,18 +128,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             closeListing: ->
               $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
-            listing: (gMarker, eventname, model) ->
+            listing: (gMarker, eventname, model) =>
               #model could be from parcel or from filter, but the end all be all data is in filter
-              unless model.rm_status
-                return if not $scope.layers?.filterSummary? or @filterSummaryHash?
-                model = if _.has self.filterSummaryHash, model.rm_property_id then self.filterSummaryHash[model.rm_property_id] else null
-              return unless model
+              if !model.rm_status
+                if !$scope.layers?.filterSummary? or !@filterSummaryHash?
+                  return
+                model = @filterSummaryHash?[model.rm_property_id] || model
+              # so we don't show the window on un-saved properties
+              if !$scope.formatters.layer.isVisible(model)
+                return
 
               if $scope.layers.listingDetail
                 $scope.layers.listingDetail.show = false
               model.show = true
               $scope.layers.listingDetail = model
-              offset = $scope.formatters.layer.MLS.getWindowOffset(self.gMap, $scope.layers.listingDetail)
+              offset = $scope.formatters.layer.MLS.getWindowOffset(@gMap, $scope.layers.listingDetail)
               return unless offset
               _.extend $scope.listingOptions,
                 pixelOffset: offset
@@ -145,12 +152,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) =>
                 $scope.actions.listing(gObject, eventname, model)
                 model = GoogleService.UiMap.getCorrectModel model
-                if GoogleService.Map.isGPoly(gObject)
-                  model.isMousedOver = true
+                @lastHoveredModel = model
+                model.isMousedOver = true
                 if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
                   model.isMousedOver = true
                   @hovers[model.rm_property_id] = model
-                  @lastHoveredModel = model
                   _maybeCleanHovers(model)
                 _updateAllLayersByModel(model)
 

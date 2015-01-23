@@ -1,5 +1,5 @@
-.navbar-below.detail-container#results-slide(ng-show="showDetails")
-    .tray-close-light#detail-close(ng-click="showDetails = !showDetails" ng-cloak)
+.navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
+    .tray-close-light#detail-close(ng-click="Toggles.toggleDetails()" ng-cloak)
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
@@ -13,12 +13,14 @@
                         button.snail.btn.btn-primary.btn-xs(ng-click="sendSnail(selectedResult)")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
+                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(selectedResult)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="selectedResult") {{resultsFormatter.isSavedResult(selectedResult) ? 'Saved' : 'Save'}}
                     .col-sm-5
                         .price(ng-if="selectedResult.price")
-                            span.price-label {{selectedResult.rm_status=='recently sold'||selectedResult.rm_status=='not for sale'?'sold':'asking'}}:&nbsp;
+                            span.price-label {{resultsFormatter.getPriceLabel(selectedResult.rm_status)}}&nbsp;
                             | {{resultsFormatter.getPrice(selectedResult.price)}}
-                        .property-status.i.fa.fa-square.fa-lg.btn.btn-default.btn-xs( ng-class="resultsFormatter.getForSaleClass(selectedResult)"
-                        rmaps-click="resultsFormatter.clickSaveResultFromList" rmaps-value-name-click="selectedResult")
+                        .below-price
+                            .property-status(ng-class="resultsFormatter.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
+                            .sold-date.info.title(ng-if="resultsFormatter.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
                 .row
@@ -95,7 +97,9 @@
                         .col-sm-4
                             .title Close Date:
                         .col-sm-8
-                            .data {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                            .data
+                                span(ng-if="selectedResult.mls_close_date") {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                                span(ng-if="!selectedResult.mls_close_date") N/A
 
                 .row.sale-info(ng-if="resultsFormatter.showSalesData(selectedResult)")
                     .col-sm-12.detail-section-title Historical Sales Info
@@ -109,31 +113,29 @@
                             .title Mortgage Date:
                         .col-sm-8
                             .data {{selectedResult.mortgage_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .row(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'sale_')" ng-cloak)
+                    .row(ng-if="resultsFormatter.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
                         .col-sm-4
                             .title Prior Sale Price:
                         .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.sale_price)}}
-                    .row.divider(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'sale_')" ng-cloak)
+                    .row.divider(ng-if="resultsFormatter.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
                         .col-sm-4
                             .title Prior Sale Date:
                         .col-sm-8
-                            .data {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    .row(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'prior_sale_')" ng-cloak)
+                            .data
+                                span(ng-if="selectedResult.sale_date") {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                                span(ng-if="!selectedResult.sale_date") N/A
+                    .row(ng-if="resultsFormatter.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && resultsFormatter.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
                         .col-sm-4
                             .title Prior Sale Price:
                         .col-sm-8
                             .data {{resultsFormatter.getPrice(selectedResult.prior_sale_price)}}
-                    .row.divider(ng-if="resultsFormatter.showIfDifferentFromMLS(selectedResult, 'prior_sale_')" ng-cloak)
+                    .row.divider(ng-if="resultsFormatter.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && resultsFormatter.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
                         .col-sm-4
                             .title Prior Sale Date:
                         .col-sm-8
-                            .data {{selectedResult.prior_sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    //.col-sm-4 {{selectedResult.sale2_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    //.col-sm-8 {{selectedResult.sale2_amount}}
-                    //.col-sm-4 {{selectedResult.sale3_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    //.col-sm-8 {{selectedResult.sale3_amount}}
-                    //.col-sm-4 {{selectedResult.sale4_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                    //.col-sm-8 {{selectedResult.sale4_amount}}
+                            .data
+                                span(ng-if="selectedResult.prior_sale_date") {{selectedResult.prior_sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                                span(ng-if="!selectedResult.prior_sale_date") N/A
     #results-footer
         i.close.fa.fa-times.fa-3(ng-click="showDetails = !showDetails")

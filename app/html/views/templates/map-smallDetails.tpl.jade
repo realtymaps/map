@@ -5,7 +5,7 @@
       tr
         td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{ baths_half > 0 ? '&nbsp;&nbsp;' + baths_half + ' Half Bath' : '' }} &nbsp; {{finished_sqft}} SqFt
       tr
-        td {{rm_status=='recently sold'||rm_status=='not for sale'?'Sold':'Asking'}} Price:
+        td {{priceLabel}} Price:
         td {{price}}
       tr
         td Status:

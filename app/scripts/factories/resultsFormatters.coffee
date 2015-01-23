@@ -2,6 +2,7 @@ app = require '../app.coffee'
 
 sprintf = require('sprintf-js').sprintf
 
+
 app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   'Properties'.ourNs(), 'FormattersService'.ourNs(),
@@ -15,6 +16,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
+
+    _statusLabelClass = {}
+    _statusLabelClass[ParcelEnums.status.sold] = 'label-sold-property'
+    _statusLabelClass[ParcelEnums.status.pending] = 'label-pending-property'
+    _statusLabelClass[ParcelEnums.status.forSale] = 'label-sale-property'
+    _statusLabelClass[ParcelEnums.status.notForSale] = 'label-notsale-property'
+    _statusLabelClass['saved'] = 'label-saved-property'
+    _statusLabelClass['default'] = ''
 
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter extends BaseObject
@@ -88,7 +97,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
           "fa fa-chevron-circle-up"
 
       isSavedResult:(result) ->
-        result.savedDetails?.isSaved == true
+        result?.savedDetails?.isSaved == true
 
       getCurrentOwnersTitle: (result) =>
         title = "Current Owner"
@@ -105,9 +114,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       getForSaleClass: (result) ->
         return unless result
-        #        $log.debug "result: #{JSON.stringify(result)}"
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
-        soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        
+      getStatusLabelClass: (result, ignoreSavedStatus=false) ->
+        return unless result
+        soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
+        return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
+
+      showSoldDate: (result) ->
+        if !result
+          return false
+        return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
+        
+      getPriceLabel: (status) ->
+        if (status=='recently sold'||status=='not for sale')
+          label = ''
+        else
+          label = 'asking:'
+        return label
 
       getCityStateZip: (model, owner=false) ->
         if !model?
@@ -122,17 +147,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return csz
 
       showListingData: (model) ->
-        return if not model
+        return false if not model
         model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
       
       showSalesData: (model) ->
-        return if not model
-        model.mortgage_amount || @showIfDifferentFromMLS(model,'sale_') || @showIfDifferentFromMLS(model,'prior_sale_')
+        return false if not model
+        model.mortgage_amount || model.mortgage_date || @showIfDifferentFrom(model, 'sale', 'mls_close') || @showIfDifferentFrom(model, 'prior_sale', 'mls_close')
 
-      showIfDifferentFromMLS: (model, prefix) ->
-        return if not model
+      showIfDifferentFrom: (model, prefix, differentFromPrefix) ->
+        return false if !model || !prefix || !differentFromPrefix
+        prefix += '_'
+        differentFromPrefix += '_'
         # differing prices or >= 30 days difference in sale date
-        !model.close_date || model[prefix+"date"] && (Math.abs(new Date(model.close_date.toLocaleString()).getTime()-new Date(model[prefix+"date"].toLocaleString()).getTime() > 30*86400000) || (model[prefix+"price"] != model.close_price))
+        if (model[prefix+"date"] && !model[differentFromPrefix+"date"]) || model[prefix+"price"] != model[differentFromPrefix+"price"]
+          return true
+        if !model[prefix+"date"]
+          return false
+        millis1 = new Date(model[differentFromPrefix+"date"].toLocaleString()).getTime()
+        millis2 = new Date(model[prefix+"date"].toLocaleString()).getTime()
+        return Math.abs(millis1-millis2) > 30*86400000
         
       loadMore: =>
         #debugging
@@ -186,7 +219,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         .then (data) =>
           angular.extend @mapCtrl.scope.selectedResult, data
 
-        @mapCtrl.scope.showDetails = true
+        @mapCtrl.scope.Toggles.showDetails = true
 
       mouseenter: (result) =>
         result.isMousedOver = true
