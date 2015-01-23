@@ -7,7 +7,7 @@
             .col-sm-12
                 .checkbox-inline(ng-repeat="status in filterValues.propertyStatus")
                     input.checkbox(ng-model="selectedFilters[status.value]" type="checkbox" id="{{status.value}}" value="{{status.value}}" class="{{status.value}}")
-                    label(for="{{status.value}}") {{ status.label }}
+                    label.status-filter(for="{{status.value}}") {{ status.label }}
 
         .row.title Basic Filters
         .row

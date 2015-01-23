@@ -17,6 +17,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
+    _statusLabelClass = {}
+    _statusLabelClass[ParcelEnums.status.sold] = 'label-sold-property'
+    _statusLabelClass[ParcelEnums.status.pending] = 'label-pending-property'
+    _statusLabelClass[ParcelEnums.status.forSale] = 'label-sale-property'
+    _statusLabelClass[ParcelEnums.status.notForSale] = 'label-notsale-property'
+    _statusLabelClass['saved'] = 'label-saved-property'
+    _statusLabelClass['default'] = ''
+
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter extends BaseObject
       @include FormattersService.Common
@@ -89,7 +97,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
           "fa fa-chevron-circle-up"
 
       isSavedResult:(result) ->
-        result.savedDetails?.isSaved == true
+        result?.savedDetails?.isSaved == true
 
       getCurrentOwnersTitle: (result) =>
         title = "Current Owner"
@@ -106,17 +114,24 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       getForSaleClass: (result) ->
         return unless result
-        #        $log.debug "result: #{JSON.stringify(result)}"
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
-        soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+        return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
         
-      getPriceLabel: (status, initialCap) ->
+      getStatusLabelClass: (result, ignoreSavedStatus=false) ->
+        return unless result
+        soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
+        return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
+
+      showSoldDate: (result) ->
+        if !result
+          return false
+        return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
+        
+      getPriceLabel: (status) ->
         if (status=='recently sold'||status=='not for sale')
-          label = 'sold'
+          label = ''
         else
-          label = 'asking'
-        if initialCap
-          label = label[0].toUpperCase()+label.substr(1)
+          label = 'asking:'
         return label
 
       getCityStateZip: (model, owner=false) ->

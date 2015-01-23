@@ -19,13 +19,11 @@ module.exports =
       String.orNA if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
     getStatusClass = (status) ->
       return colorClasses[status] || ''
-    getPriceLabel = (status, initialCap) ->
+    getPriceLabel = (status) ->
       if (status=='recently sold'||status=='not for sale')
-        label = 'sold'
+        label = 'Sold'
       else
-        label = 'asking'
-      if initialCap
-        label = label[0].toUpperCase()+label.substr(1)
+        label = 'Asking'
       return label
 
 
@@ -37,7 +35,7 @@ module.exports =
     $scope.baths_total= String.orNA $scope.parameter.baths_total
     $scope.finished_sqft= String.orNA $scope.parameter.finished_sqft
     $scope.price = getPrice $scope.parameter.price
-    $scope.priceLabel = getPriceLabel $scope.parameter.rm_status, true
+    $scope.priceLabel = getPriceLabel $scope.parameter.rm_status
     $scope.assessed_value = getPrice $scope.parameter.assessed_value
     $scope.year_built = if $scope.parameter.year_built then moment($scope.parameter.year_built).format('YYYY') else String.orNA $scope.parameter.year_built
     $scope.acres = String.orNA $scope.parameter.acres
