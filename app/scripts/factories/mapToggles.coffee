@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 StringToBoolean = require '../../../common/utils/util.stringToBoolean.coffee'
 
-app.factory 'MapToggles'.ourNs(), [ '$rootScope', ($rootScope) ->
+app.factory 'MapToggles'.ourNs(), [ () ->
 
   (json) ->
     @showResults = false
