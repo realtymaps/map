@@ -75,6 +75,15 @@ ui-gmap-google-map(center='center', zoom='zoom', draggable='true',
     zIndex='10')
   //END PARCEL DATA
 
+  ui-gmap-search-box(
+    options="searchbox.options"
+    template="searchbox.template"
+    events="searchbox.events"
+    parentdiv="searchbox.parent")
+    
   //include ./map-query-draw.jade
-  ui-gmap-map-control(ng-if="principal.isDebugEnvironment()" template='map-debug.tpl.html',
-  position='top-right', index='1', controller='RealtyMaps-MapDebugCtrl')
+  ui-gmap-map-control(
+    ng-if="principal.isDebugEnvironment()"
+    template='map-debug.tpl.html'
+    position='top-right', index='1'
+    controller='RealtyMaps-MapDebugCtrl')

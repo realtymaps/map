@@ -1,0 +1,46 @@
+/* Hero Container
+============================================================================= */
+.heroContainer
+    width 95%
+    height 350px
+    a
+        padding: 50px
+        display: block
+        cursor: pointer
+        $border-radius(25px)
+        &:hover
+            text-decoration: none
+            background-color: rgba(220,220,255,.1)
+            .heroText
+                color: #FFF
+
+.heroImage
+    width 100%
+    display block
+    margin 0 auto
+
+
+.heroImage img
+    width 100%
+
+.heroText
+    font-weight 100
+    font-size 15px
+    text-align center
+    letter-spacing .2em
+    margin 1.1363636363636365em 0 0 0
+    color rgba(255, 255, 255, 0.51)
+
+@media (min-width: 768px)
+    .heroContainer
+        width 80%;
+
+    .heroText
+        font-size 20px
+
+@media (min-width: 1200px)
+    .heroContainer
+        width 55%
+
+    .heroText
+        font-size 22px
