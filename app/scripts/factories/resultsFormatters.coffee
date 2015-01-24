@@ -212,14 +212,24 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
 
       click: (result) =>
-        #immediatley show something
-        @mapCtrl.scope.selectedResult = result
-        #start getting more data
-        Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
-        .then (data) =>
-          angular.extend @mapCtrl.scope.selectedResult, data
+        maybeFetchCb = (showDetails) =>
+          #start getting more data
+          if showDetails
+            Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
+            .then (data) =>
+              angular.extend @mapCtrl.scope.selectedResult, data
 
-        @mapCtrl.scope.Toggles.showDetails = true
+          @mapCtrl.scope.Toggles.showDetails = showDetails
+
+        #immediatley show something
+        if @mapCtrl.scope.selectedResult != result
+          @mapCtrl.scope.selectedResult = result
+          maybeFetchCb(true)
+        else
+          maybeFetchCb(false)
+          @mapCtrl.scope.selectedResult = undefined
+
+
 
       mouseenter: (result) =>
         result.isMousedOver = true

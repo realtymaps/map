@@ -4,6 +4,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
 
   map:
+    clickDelayMilliSeconds: 300
     zoomThresholdMilliSeconds: 800
     options:
       logLevel: if isDev then 'debug' else 'error'

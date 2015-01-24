@@ -32,6 +32,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.searchbox.setBiasBounds()
           , true
 
+        @singleClickCtrForDouble = 0
         $log.debug $scope.map
         $log.debug "map center: #{JSON.stringify($scope.center)}"
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
@@ -97,7 +98,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               _updateGObjects(gObject, savedDetails, model)
 
         @saveProperty = _saveProperty
-
+        #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @scope = _.merge @scope,
           control: {}
           showTraffic: true
@@ -123,10 +124,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           drawUtil:
             draw: undefined
             isEnabled: false
-
-          keys:
-            ctrlIsDown: false
-            cmdIsDown: false
 
           actions:
 
@@ -172,16 +169,26 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                   delete @hovers[model.rm_property_id]
                 _updateAllLayersByModel(model)
 
-              click: (gObject, eventname, model) =>
-                #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
-                #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                model = GoogleService.UiMap.getCorrectModel model
-                event = window.event
-                if event.ctrlKey or event.metaKey
-                  return _saveProperty(model, gObject)
-                $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
+              click: (gObject, eventname, model, events) =>
+                @lastEvent = 'click'
+                #delay click interaction to see if a dblclick came in
+                #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
+                event = events[0]
+                $timeout =>
+                  #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
+                  #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
+                  model = GoogleService.UiMap.getCorrectModel model
 
-              dblclick: (gObject, eventname, model, events) ->
+                  if event.ctrlKey or event.metaKey
+                    return _saveProperty(model, gObject)
+                  unless @lastEvent == 'dblclick'
+                    $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
+
+                , limits.clickDelayMilliSeconds
+
+
+              dblclick: (gObject, eventname, model, events) =>
+                @lastEvent = 'dblclick'
                 event = events[0]
                 if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
                 model = GoogleService.UiMap.getCorrectModel model
@@ -235,10 +242,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
           if @scope.layers.listingDetail?
             @scope.layers.listingDetail.show = false if newVal isnt oldVal
-
+        #END SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @subscribe()
         uiGmapControls.init $scope.controls
+        #END CONSTRUCTOR
 
+      #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
         if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope)
           @scope.layers.parcels.length = 0
@@ -343,4 +352,5 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
         @updateFilterSummaryHash()
+      #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
 ]
