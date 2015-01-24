@@ -51,6 +51,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           keys = _.keys(@hovers)
           if keys.length > 1 || keys.length == 1 && keys[0] != model.rm_property_id
             _cleanHovers()
+            
+        _handleMouseout = (model) =>
+          if @lastHoveredModel?.rm_property_id == model.rm_property_id
+            $scope.actions.closeListing()
+          model.isMousedOver = undefined
+          delete @hovers[model.rm_property_id]
+          delete @mouseoutDebounce[model.rm_property_id]
+          _updateAllLayersByModel(model)
+        @mouseoutDebounce = {}
 
         @filterSummaryHash = {}
         @filters = ''
@@ -156,18 +165,26 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 @lastHoveredModel = model
                 model.isMousedOver = true
                 if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
-                  model.isMousedOver = true
                   @hovers[model.rm_property_id] = model
                   _maybeCleanHovers(model)
+                if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
+                  $timeout.cancel(@mouseoutDebounce[model.rm_property_id].promise)
+                  delete @mouseoutDebounce[model.rm_property_id]
+                  for key of @mouseoutDebounce
+                    $timeout.cancel(@mouseoutDebounce[key].promise)
+                    _handleMouseout(@mouseoutDebounce[key].model)
                 _updateAllLayersByModel(model)
 
               mouseout: (gObject, eventname, model) =>
                 model = GoogleService.UiMap.getCorrectModel model
                 if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
-                  $scope.actions.closeListing()
-                  model.isMousedOver = undefined
-                  delete @hovers[model.rm_property_id]
-                _updateAllLayersByModel(model)
+                  if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
+                    $timeout.cancel(@mouseoutDebounce[model.rm_property_id].promise)
+                  @mouseoutDebounce[model.rm_property_id] = 
+                    model: model
+                    promise: $timeout(() =>
+                      _handleMouseout(model)
+                    , MainOptions.map.options.throttle.eventPeriods.mouseout)
 
               click: (gObject, eventname, model, events) =>
                 @lastEvent = 'click'
