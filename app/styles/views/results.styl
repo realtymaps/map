@@ -49,7 +49,7 @@ data()
      &:hover
      &:focus
      &:active
-       background-color: rm-property-save-yello
+       background-color: rm-btn-save-yellow
        color: rm-property-save-bright-foreground
 
 
@@ -167,7 +167,7 @@ data()
     background-color white
 
   .result-property
-    height 95px
+    height 125px
     border-bottom 1px solid #d9d9d9
     transition .15s all ease-in-out
     overflow hidden
@@ -177,68 +177,63 @@ data()
     background rm-results-hover
 
   .card
-    position: relative
-    display: block
-    cursor: pointer
-    width: 100%
-    padding: 10px
-    overflow: hidden
-    font-size: .8em
-    height: 95px
-
-  .save-button
-     margin-top: 4px
-     padding: 0 4px
+    position relative
+    display block
+    cursor pointer
+    width 100%
+    padding 10px
+    overflow hidden
+    font-size 16px
+    height 95px
 
   .property-status
-     padding: 1px 5px
+     padding 1px 5px
 
   .selectedCard
-    background-color: rgb(208, 255, 199) !important
+    background-color rgb(208, 255, 199) !important
 
-  .card .photo
-    display: inline-block
-    width: 100px
-    height: 75px
-    float: left
-    margin-right: 10px
+  .photo
+    display inline-block
+    width 100px
+    height 75px
+    float left
+    margin-right 10px
 
-  .card .snail
-    text-align: center
-    font-size: 11px
-    padding: 1px 2px
+  .snail
+    text-align center
+    font-size 11px
+    padding 1px 2px
 
-  .card .info
-    display: inline-block
-    width: 200px
+  .info
+    display inline-block
+    width 200px
 
-  .card .info .address
-    display: inline-block
-    font-size: 1.3em
-    color: #6B6B6B
-
-  .card .info .price
-    text-align: right
-    position: absolute
-    top: 4px
-    right: 10px
-    display: inline-block
-    font-size: 1.3em
-    color: #0062A0
-    span.price-label
-      font-size: 8px
+  .address
+    display inline-block
+    font-size 16px
+    color rm-medium-blue-darker
 
   .price
-    text-align: right
+    text-align right
+    position absolute
+    right 10px
+    display inline-block
+    font-size 16px
+    color rm-medium-blue-darker
+    span.price-label
+      font-size 8px
+
+  .price
+    text-align right
 
   .card .info .beds, .card .info .baths, .card .info .sqft, .card .info .year
-    float: left
-    width: 50px
-    font-size: 1.5em
-    text-align: center
+    float left
+    width 50px
+    font-size 20px
+    text-align center
 
   .card .info .title
-    font-size: .5em
+    font-size: 12px
     basicTitle()
 
   .card.loading
@@ -395,13 +390,13 @@ detailTitle()
     detailTitle()
 
   .price
-    font-size: 20px
-    color: #0062A0
-    text-align: left
+    font-size 20px
+    color rm-medium-blue-darker
+    text-align left
 
   .address
-    font-size: 20px
-    color: #0062A0
+    font-size 20px
+    color rm-medium-blue-darker
 
   .city-state-zip
     font-size: 16px
