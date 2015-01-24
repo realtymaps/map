@@ -16,3 +16,6 @@ String::EMPTY = ''
 
 String.orNA = (val) ->
   val or 'N/A'
+
+String.orDash = (val) ->
+  val or '-'

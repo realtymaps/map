@@ -3,6 +3,8 @@
   .panel-body
     table(class="table table-condensed table-hover")
       tr
+        td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt 
+      tr
         td {{priceLabel}} Price:
         td {{price}}
       tr
@@ -15,29 +17,11 @@
             br/
             | {{owner_name2}}
       tr
-        td Beds:
-        td {{beds_total}}
-      tr
-        td Baths:
-        td
-          section
-            p Total:
-            p {{baths_total}}
-          section
-            p Full:
-            p {{baths_full}}
-          section
-            p Half:
-            p {{baths_half}}
-      tr
         td Year Built:
         td {{year_built}}
       tr
         td Acres:
         td {{acres}}
-      tr
-        td Finished SqFt:
-        td {{finished_sqft}}
       tr
         td Assessed Value:
         td {{assessed_value}}
