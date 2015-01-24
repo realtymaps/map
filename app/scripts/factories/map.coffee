@@ -222,20 +222,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     longitude: place.geometry.location.lng()
                   @scope.zoom = 19
             setBiasBounds: () =>
-              swlat = @scope.bounds?.southwest?.latitude
-              if !swlat?
-                swlat = @scope.center.latitude-0.01
-              swlng = @scope.bounds?.southwest?.longitude
-              if !swlng?
-                swlng = @scope.center.longitude-0.01
-              sw = new google.maps.LatLng(swlat, swlng, true)
-              nelat = @scope.bounds?.northeast?.latitude
-              if !nelat?
-                nelat = @scope.center.latitude+0.01
-              nelng = @scope.bounds?.northeast?.longitude
-              if !nelng?
-                nelng = @scope.center.longitude+0.01
-              ne = new google.maps.LatLng(nelat, nelng, true)
+              sw = uiGmapUtil.getCoords(@scope.bounds?.southwest)
+              sw ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude-0.01, longitude: @scope.center.longitude-0.01)
+              ne = uiGmapUtil.getCoords(@scope.bounds?.northeast)
+              ne ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude+0.01, longitude: @scope.center.longitude+0.01)
               @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
 
         @scope.resultsFormatter = new ResultsFormatter(self)
