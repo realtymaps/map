@@ -182,99 +182,6 @@ body
 }
 
 
-/* Main Page
-============================================================================= */
-
-
-#search-bar-main
-    position relative
-    width 100%
-    margin-top 50px
-
-    input
-        width 100%
-        height 60px
-        bottom 50px
-        border none
-        background-color rgba(255,255,255,.10)
-        border-bottom 4px solid #FFF
-        padding 10px
-        font-size 15px
-        font-weight 100
-        letter-spacing 0.1em
-        color #FFF
-
-    #btn
-        color:#FFFFFF
-        width:56px
-        height:56px
-        background-color: rgba(255,255,255,.3)
-        top: 0px
-        right: 0px
-        position: absolute
-
-    #btn:hover
-        background-color: rm-medium-blue-dark
-
-    div
-        font-size 20px
-        text-align center
-        vertical-align middle
-        line-height 56px
-
-#search-bar
-    position absolute
-    z-index 10000000
-    box-shadow 0 2px 6px rgba(0,0,0,0.3),0 4px 15px -5px rgba(0,0,0,0.0)
-
-@media (min-width: 768px)
-    #search-bar-main input
-        font-size 18px
-        letter-spacing .2em
-
-@media (min-width: 1200px)
-    #search-bar-main input
-        font-size 20px
-
-
-
-/* Hero Container
-============================================================================= */
-.heroContainer
-    width 90%
-    height 350px
-
-.heroImage
-    width 100%
-    display block
-    margin 0 auto
-
-
-.heroImage img
-    width 100%
-
-.heroText
-    font-weight 100
-    font-size 15px
-    text-align center
-    letter-spacing .2em
-    margin 1.1363636363636365em 0 0 0
-    color rgba(255, 255, 255, 0.51)
-
-@media (min-width: 768px)
-    .heroContainer
-        width 75%;
-
-    .heroText
-        font-size 20px
-
-@media (min-width: 1200px)
-    .heroContainer
-        width 50%
-
-    .heroText
-        font-size 22px
-
 
 $border-radius()
   -webkit-border-radius arguments
@@ -353,24 +260,30 @@ form.comfy
 /*
 Holy crap stylus.. you need to be careful to not name functions anything close to real property names in css
 I recommend pre-pending all functions with fn
-JWI: I had been using the convention of starting with $ for functions and variables (see $border-radius() and
-     $scale() earlier in this file)-- stands out visually much better
+JWI: I had been using the convention of starting with $ for functions and variables (see $border-radius(), $scale(),
+     and $logo-height earlier in this file) -- it stands out visually much better.  We have a lot of variables now that
+     don't follow this convention, so that would be some effort at this point, but as I noted elsewhere we need to
+     change up our variable names anyway because they should have either scheme-descriptive names (like $rm-bright-yellow)
+     or semantic names (like $rm-saved-hover-text), not both (like $rm-saved-property-yellow).  Cleaning all that up
+     at the same time would be a good idea, and ideally setting things up in a 2-tiered approach so that we define a
+     color palate first ($rm-bright-yellow, $rm-dark-yellow, etc) then use that palate with semantic aliases or functions
+     ($rm-saved-status() which would set appropriate text color, bgcolor, color when combined with a .hover class, etc).
 */
-fnText-overflow(verticy)
+$text-overflow(dimension)
   white-space: nowrap
-  overflow-{verticy}:hidden !important
+  overflow-{dimension}:hidden !important
   text-overflow: ellipsis
-  if verticy == x
+  if dimension == x
     width: 100%
   else
     height: 100%
   display: inline-block
 
 .text-overflow-x
-  fnText-overflow(x)
+  $text-overflow(x)
 
 .text-overflow-y
-  fnText-overflow(y)
+  $text-overflow(y)
 
 
 .text-wrap, .text-overflow-x:hover, .text-overflow-y:hover

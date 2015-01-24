@@ -27,6 +27,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           encode = maps.geometry.encoding.encodePath
           maps.visualRefresh = true
           @scope.dragZoom.options = Map.getDragZoomOptions()
+          @scope.$watch 'bounds', (newVal, oldVal) =>
+            if newVal
+              @scope.searchbox.setBiasBounds()
+          , true
 
         @singleClickCtrForDouble = 0
         $log.debug $scope.map
@@ -197,6 +201,39 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
+            
+          searchbox:
+            template: 'map-searchbox.tpl.html'
+            parent: 'searchbox-container'
+            options:
+              bounds: {}
+            events:
+              places_changed: (searchBox) =>
+                places = searchBox.getPlaces()
+                if !places.length
+                  return
+                place = places[0]
+                if (place.formatted_address)
+                  document.getElementById('places-search-input').value = place.formatted_address
+                if place.geometry?.viewport
+                  @scope.bounds =
+                    northeast:
+                      latitude: place.geometry.viewport.getNorthEast().lat()
+                      longitude: place.geometry.viewport.getNorthEast().lng()
+                    southwest:
+                      latitude: place.geometry.viewport.getSouthWest().lat()
+                      longitude: place.geometry.viewport.getSouthWest().lng()
+                else
+                  @scope.center =
+                    latitude: place.geometry.location.lat()
+                    longitude: place.geometry.location.lng()
+                  @scope.zoom = 19
+            setBiasBounds: () =>
+              sw = uiGmapUtil.getCoords(@scope.bounds?.southwest)
+              sw ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude-0.01, longitude: @scope.center.longitude-0.01)
+              ne = uiGmapUtil.getCoords(@scope.bounds?.northeast)
+              ne ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude+0.01, longitude: @scope.center.longitude+0.01)
+              @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
 
         @scope.resultsFormatter = new ResultsFormatter(self)
 
