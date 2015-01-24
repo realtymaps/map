@@ -14,6 +14,10 @@
         include ../svg/results.svg
         .toolbar-label Results
 
+    .toolbar-zoomout-icon.icon(ng-click="Toggles.toggleSearch(true)" tool-tip placement="right" title="Search Bar")
+        include ../svg/search.svg
+        .toolbar-label Search Bar
+
     .toolbar-location-icon.icon(findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
         include ../svg/location.svg
         .toolbar-label Find Me
