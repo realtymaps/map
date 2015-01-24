@@ -8,29 +8,27 @@ ng-init="resultsInit('results-list')")
             div(id="results-header-results-count")
                 .ng-cloak {{resultsPotentialLength}} Results
             div(id="results-header-right")
-                span Sort by
+                span Sort by:&nbsp;
                 .btn-group
                     button(id="results-sort-beds" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setResultsPredicate('bedrooms'); reverse=resultsAscending"
-                    ng-class="resultsFormatter.getActiveSort('bedrooms')") Beds
+                    ng-click="resultsFormatter.setOrReverseResultsPredicate('bedrooms')"
+                    ng-class="resultsFormatter.getSortClass('bedrooms')") Beds
 
                     button(id="results-sort-sqft" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setResultsPredicate('finished_sqft'); reverse=resultsAscending"
-                    ng-class="resultsFormatter.getActiveSort('finished_sqft')") Sq Ft
+                    ng-click="resultsFormatter.setOrReverseResultsPredicate('finished_sqft')"
+                    ng-class="resultsFormatter.getSortClass('finished_sqft')") Sq Ft
 
-                    button(id="results-sort-sqft" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setResultsPredicate('year_built'); reverse=resultsAscending"
-                    ng-class="resultsFormatter.getActiveSort('year_built')") Year
-
-                    button(id="results-sort-price" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setResultsPredicate('price'); reverse=resultsAscending"
-                    ng-class="resultsFormatter.getActiveSort('price')") Price
+                    button(id="results-sort-year" class="btn btn-default btn-xs"
+                    ng-click="resultsFormatter.setOrReverseResultsPredicate('year_built')"
+                    ng-class="resultsFormatter.getSortClass('year_built')") Year
 
                     button(id="results-sort-price" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setResultsPredicate('savedDetails.isSaved'); reverse=resultsAscending"
-                    ng-class="resultsFormatter.getActiveSort('savedDetails.isSaved')") Saved
+                    ng-click="resultsFormatter.setOrReverseResultsPredicate('price')"
+                    ng-class="resultsFormatter.getSortClass('price')") Price
 
-                i(class="results-sort-btn btn btn-default btn-xs" ng-class="resultsFormatter.getSorting()" ng-click="resultsFormatter.invertSorting(); reverse=resultsAscending")
+                    button(id="results-sort-saved" class="btn btn-default btn-xs"
+                    ng-click="resultsFormatter.setOrReverseResultsPredicate('savedDetails.isSaved')"
+                    ng-class="resultsFormatter.getSortClass('savedDetails.isSaved')") Saved
 
         #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //DEBUG repeat

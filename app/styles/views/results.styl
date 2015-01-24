@@ -71,10 +71,13 @@ data()
   top: 0px
   border-bottom: 1px solid #CCC
   z-index: 10000
+  .active-sort.fa-chevron-circle-up::before
+  .active-sort.fa-chevron-circle-down::before
+      font: normal normal normal 12px/1 FontAwesome
+      margin-right: 3px
 
 #results-header-results-count
   float: left
-  width: 33%
   background: #45a0d9
   height: 100%
   color: white
@@ -93,7 +96,7 @@ data()
 
 #results-header-right
   position: absolute
-  right: 20px
+  right: 0
   color: #929292
   padding: 8px
 

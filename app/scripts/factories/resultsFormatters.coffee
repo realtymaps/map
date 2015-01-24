@@ -53,8 +53,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.resultsLimit = 10
         @mapCtrl.scope.results = []
         @mapCtrl.scope.resultsPotentialLength = undefined
-        @mapCtrl.scope.resultsAscending = false
-        @setResultsPredicate('price')
+        @mapCtrl.scope.resultsDescending = false
+        @setOrReverseResultsPredicate('price')
         @lastSummaryIndex = 0
         @origLen = 0
         @postRepeat = null
@@ -80,21 +80,17 @@ app.factory 'ResultsFormatter'.ourNs(), [
         "animated slide-down" if @mapCtrl.scope.isScrolling
 
       order: =>
-        @filterSummarySorted = _orderBy(
-          @mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsAscending)
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@ sort by: #{@mapCtrl.scope.resultsPredicate} (#{@mapCtrl.scope.resultsDescending})")
+        @filterSummarySorted = _orderBy(@mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsDescending)
+        console.log(JSON.stringify(_.pluck(@filterSummarySorted, "price"),null,2))
 
-      invertSorting: =>
-        @mapCtrl.scope.resultsAscending = !@mapCtrl.scope.resultsAscending
-
-      setResultsPredicate: (predicate) =>
-        @mapCtrl.scope.resultsPredicate = predicate
-        @order()
-
-      getSorting: =>
-        if @mapCtrl.scope.resultsAscending
-          "fa fa-chevron-circle-down"
+      setOrReverseResultsPredicate: (predicate) =>
+        if @mapCtrl.scope.resultsPredicate != predicate
+          @mapCtrl.scope.resultsPredicate = predicate
         else
-          "fa fa-chevron-circle-up"
+          # if they hit the same button again, invert the search order
+          @mapCtrl.scope.resultsDescending = !@mapCtrl.scope.resultsDescending
+        @order()
 
       isSavedResult:(result) ->
         result?.savedDetails?.isSaved == true
@@ -109,8 +105,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
           return true
         return false
 
-      getActiveSort: (toMatchSortStr) =>
-        if toMatchSortStr == @mapCtrl.scope.resultsPredicate then 'active-sort' else ''
+      getSortClass: (toMatchSortStr) =>
+        if toMatchSortStr != @mapCtrl.scope.resultsPredicate
+          return ''
+        sortClass = 'active-sort fa-chevron-circle-'
+        sortClass += if @mapCtrl.scope.resultsDescending then 'down' else 'up'
+        return sortClass
 
       getForSaleClass: (result) ->
         return unless result
