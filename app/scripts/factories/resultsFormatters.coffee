@@ -7,7 +7,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
   '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   'Properties'.ourNs(), 'FormattersService'.ourNs(),
   ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties, FormattersService) ->
-    _orderBy = $filter('orderBy')
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
@@ -47,7 +46,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
           @lastSummaryIndex = 0
           @mapCtrl.scope.resultsPotentialLength = undefined
           @filterSummaryInBounds = undefined
-          @order()
           @loadMore()
         , 5
         @mapCtrl.scope.resultsLimit = 10
@@ -79,18 +77,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
       maybeAnimate: =>
         "animated slide-down" if @mapCtrl.scope.isScrolling
 
-      order: =>
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@ sort by: #{@mapCtrl.scope.resultsPredicate} (#{@mapCtrl.scope.resultsDescending})")
-        @filterSummarySorted = _orderBy(@mapCtrl.scope.layers.filterSummary, @mapCtrl.scope.resultsPredicate, @mapCtrl.scope.resultsDescending)
-        console.log(JSON.stringify(_.pluck(@filterSummarySorted, "price"),null,2))
-
       setOrReverseResultsPredicate: (predicate) =>
         if @mapCtrl.scope.resultsPredicate != predicate
           @mapCtrl.scope.resultsPredicate = predicate
         else
           # if they hit the same button again, invert the search order
           @mapCtrl.scope.resultsDescending = !@mapCtrl.scope.resultsDescending
-        @order()
 
       isSavedResult:(result) ->
         result?.savedDetails?.isSaved == true
