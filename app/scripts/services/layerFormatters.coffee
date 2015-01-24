@@ -123,8 +123,10 @@ app.service 'LayerFormatters'.ourNs(), [
 
         if mls.isMousedOver
           hovered = ' label-hovered'
+          zIndex = 4
         else
           hovered = ''
+          zIndex = 2
 
         if mls.savedDetails?.isSaved
           status = 'saved'
@@ -134,7 +136,7 @@ app.service 'LayerFormatters'.ourNs(), [
         icon: ' '
         labelContent: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>$#{formattedPrice}</span></h4>"
         labelAnchor: "30 50"
-        zIndex: 2
+        zIndex: zIndex
         markerType: "price"
         visible: isVisible(mls)
 
