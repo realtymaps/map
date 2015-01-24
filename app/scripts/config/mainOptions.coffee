@@ -19,6 +19,7 @@ app.constant 'MainOptions'.ourNs(), do () ->
         eventPeriods:
           mousewheel: 50 # ms - don't let pass more than one event every 50ms.
           mousemove: 200 # ms - don't let pass more than one event every 200ms.
+          mouseout: 200
         space: 2
       zoomThresh:
         addressParcel: 18
@@ -171,9 +172,9 @@ app.constant 'MainOptions'.ourNs(), do () ->
   pdfRenderDelay: 250
 
   alert:
-  # ttlMillis is the default for how long to display an alert before automatically hiding it
+    # ttlMillis is the default for how long to display an alert before automatically hiding it
     ttlMillis: 2 * 60 * 1000   # 2 minutes
-  # quietMillis is the default for how long is needed before we start to show a previously-closed alert if it happens again
+    # quietMillis is the default for how long is needed before we start to show a previously-closed alert if it happens again
     quietMillis: 30 * 1000   # 30 seconds
-  # cancelQuietMillis is how long to prevent alerts when we expect an HTTP cancel
+    # cancelQuietMillis is how long to prevent alerts when we expect an HTTP cancel
     cancelQuietMillis: 1000 # 1 second, just in case of a really bogged down browser; on my laptop, only 8ms is necessary
