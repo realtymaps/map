@@ -79,8 +79,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         @updateAllLayersByModel = _updateAllLayersByModel = (model) ->
           uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
-            opts = if GoogleService.Map.isGMarker(gObject) then $scope.formatters.layer.MLS.markerOptionsFromForSale(model)
-            else $scope.formatters.layer.Parcels.optionsFromFill(model)
+            if GoogleService.Map.isGMarker(gObject)
+              opts = $scope.formatters.layer.MLS.markerOptionsFromForSale(model)
+            else
+              opts = $scope.formatters.layer.Parcels.optionsFromFill(model)
             gObject.setOptions opts
           , ['streetNumMarkers']
 
@@ -162,9 +164,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               mouseover: (gObject, eventname, model) =>
                 $scope.actions.listing(gObject, eventname, model)
                 model = GoogleService.UiMap.getCorrectModel model
+                if @lastHoveredModel && @lastHoveredModel?.rm_property_id != model.rm_property_id
+                  @lastHoveredModel.isMousedOver = undefined
                 @lastHoveredModel = model
                 model.isMousedOver = true
-                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
+                if GoogleService.Map.isGPoly(gObject) || GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
                   @hovers[model.rm_property_id] = model
                   _maybeCleanHovers(model)
                 if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
@@ -177,7 +181,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
               mouseout: (gObject, eventname, model) =>
                 model = GoogleService.UiMap.getCorrectModel model
-                if GoogleService.Map.isGPoly(gObject) || (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
+                if GoogleService.Map.isGPoly(gObject)
+                  _handleMouseout(model)
+                if (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
                   if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
                     $timeout.cancel(@mouseoutDebounce[model.rm_property_id].promise)
                   @mouseoutDebounce[model.rm_property_id] = 
@@ -358,7 +364,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
       updateFilterSummaryHash: =>
         @filterSummaryHash = {}
-        if @scope.layers?.filterSummary? or @scope.layers.filterSummary.length
+        if @scope.layers?.filterSummary? and @scope.layers.filterSummary.length
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary
