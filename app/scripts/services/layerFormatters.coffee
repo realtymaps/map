@@ -14,13 +14,14 @@ app.service 'LayerFormatters'.ourNs(), [
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
 
-    isVisible = (model) ->
-      return false unless model
+    isVisible = (model, requireFilterModel=false) ->
+      if !model || requireFilterModel && !filterSummaryHash[model.rm_property_id]
+        return false
       # by returning savedDetails.isSaved false instead of undefined it allows us to tell the difference
       # between parcels and markers. Where parcels do not have rm_status (always).
       # depends on properties.coffee saveProperty returning savedDetails.isSave of false or true (not undefined savedDetails)
       filterModel = filterSummaryHash[model.rm_property_id] or model
-      return filterModel?.passedFilters || filterModel.savedDetails?.isSaved
+      return filterModel.passedFilters || filterModel.savedDetails?.isSaved
 
     # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
     getWindowOffset = (map, mls, width = 290) ->
@@ -138,7 +139,7 @@ app.service 'LayerFormatters'.ourNs(), [
         labelAnchor: "30 50"
         zIndex: zIndex
         markerType: "price"
-        visible: isVisible(mls)
+        visible: isVisible(mls, true)
 
       getWindowOffset: getWindowOffset
 
