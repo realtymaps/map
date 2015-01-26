@@ -347,7 +347,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary
-        console.log("old: #{_.size(_oldHash)} / new: #{_.size(@filterSummaryHash)}")
         # get the models that are no longer in @filterSummaryHash, and make sure they update
         _.forEach _.omit(_oldHash, _.keys(@filterSummaryHash)), (model) =>
           model.passedFilters = undefined
