@@ -51,12 +51,23 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         # preselect a template as well for now 
         templateId: 'prospecting'
         #templateId: null
-    form = $scope.form
+    $scope.iframeIndex = 0
+    
+    renderError = () ->
+      Spinner.decrementLoadingCount("pdf rendering")
 
+    $scope.finishRender = () ->
+      $scope.iframeIndex = ($scope.iframeIndex+1)%2
+      Spinner.decrementLoadingCount("pdf rendering")
+
+    doRender = () ->
+      renderPromise = null
+      RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
+      .then (blob) ->
+        $scope["pdfPreviewBlob#{($scope.iframeIndex+1)%2}"] = $sce.trustAsResourceUrl(blob)
+      , renderError
+    
     updateBlob = (newValue, oldValue) ->
-      if rendered
-        $scope.pdfPreviewBlob = $sce.trustAsResourceUrl("about:blank")
-        rendered = false
       if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
@@ -69,15 +80,6 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
           return formValue || "{{#{placeholderValue}}}"
       $scope.formReady = formReady
         
-      doRender = () ->
-        renderPromise = null
-        RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
-        .then (blob) ->
-          $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
-          rendered = true
-          Spinner.decrementLoadingCount("pdf rendering")
-        , () ->
-          Spinner.decrementLoadingCount("pdf rendering")
       if renderPromise
         # replace the existing rendering call
         $timeout.cancel(renderPromise)
