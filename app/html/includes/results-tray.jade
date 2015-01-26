@@ -63,10 +63,10 @@ ng-init="resultsInit('results-list')")
                             .year(ng-if="result.year_built" ng-cloak)
                                 span.data {{resultsFormatter.getYear(result.year_built)}}
                                 span.title Year Built
-                .card-buttons
-                    button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result)")
-                        i.fa.fa-envelope &nbsp;
-                        | Send Mailing
-                    button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(result)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="result") {{resultsFormatter.isSavedResult(result) ? 'Saved' : 'Save'}}
+                    .card-buttons
+                        button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result)")
+                            i.fa.fa-envelope &nbsp;
+                            | Send Mailing
+                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(result)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="result") {{resultsFormatter.isSavedResult(result) ? 'Saved' : 'Save'}}
         #results-footer
             i.close.fa.fa-times.fa-3(ng-click="Toggles.showResults = false;")
