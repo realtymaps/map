@@ -3,8 +3,7 @@
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
-            .photo
-                img(ng-cloak ng-src="{{resultsFormatter.getStreetView(selectedResult,500,300)}}")
+            ui-gmap-street-view-panorama.photo(focalcoord="selectedResult.geom_point_json" radius="50")
             .info.container
                 .row
                     .col-sm-7
