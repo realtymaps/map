@@ -40,6 +40,7 @@ data()
 
 .save-button
    margin-left: 4px
+   font-size: 12px
    &:hover
    &:focus
    &:active
@@ -138,6 +139,10 @@ data()
   width: 100%
   top: 0px
 
+  .city-state-zip
+    font-size: 12px
+    color: #4D4D4D
+
   .gridStyle
     border: 1px solid rgb(212, 212, 212);
     width: 400px;
@@ -200,6 +205,9 @@ data()
     font-size 11px
     padding 1px 2px
 
+  .save-button
+     font-size: 11px
+
   .info
     display inline-block
     width 200px
@@ -243,8 +251,10 @@ data()
     color: #666
 
   .card-buttons
-    display: inline-block
-    padding 0
+    padding: 0
+    position: absolute
+    bottom: 7px
+    left: 9px
 
   .card .info
     data()
@@ -399,8 +409,12 @@ detailTitle()
     color rm-medium-blue-darker
 
   .city-state-zip
-    font-size: 16px
+    font-size: 14px
     color: #4D4D4D
+    margin-bottom: 10px
+    
+  .quick-summary .title
+    line-height: 0
 
   .photo
     height: 200px
