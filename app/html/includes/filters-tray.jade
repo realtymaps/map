@@ -1,5 +1,5 @@
 .filters-container.navbar-below#filters-slide(ng-show="Toggles.showFilters" ng-controller="RealtyMaps-FiltersCtrl")
-    .tray-close#filters-close(ng-click="Toggles.showFilters = !Toggles.showFilters")
+    .tray-close#filters-close(ng-click="Toggles.toggleFilters()")
      i.centered.fa.fa-chevron-left.fa-2x
 
     .inner
@@ -71,3 +71,5 @@
             .col-sm-6
                 .label Has Owner
                 select(ng-model="$root.selectedFilters.hasOwner" ng-options='c.value as c.name for c in filterValues.hasOwner')
+    #filter-footer
+        i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleFilters()")
