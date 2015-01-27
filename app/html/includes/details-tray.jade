@@ -53,7 +53,7 @@
                 .row.detailed_description(ng-if="selectedResult.property_information" ng-cloak)
                     .col-sm-12.detail-section-title Description
                     .row
-                        .data {{selectedResult.property_information}}
+                        .description {{selectedResult.property_information}}
 
                 .row.owner-info(ng-if="selectedResult.owner_name || selectedResult.owner_name2 || selectedResult.owner_name")
                     .col-sm-12.detail-section-title Owner Info
