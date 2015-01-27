@@ -69,4 +69,4 @@ ng-init="resultsInit('results-list')")
                             | Send Mailing
                         button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(result)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="result") {{resultsFormatter.isSavedResult(result) ? 'Saved' : 'Save'}}
         #results-footer
-            i.close.fa.fa-times.fa-3(ng-click="Toggles.showResults = false;")
+            i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleResults()")

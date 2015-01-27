@@ -205,9 +205,13 @@ data()
     width 200px
 
   .address
-    display inline-block
+    @extend .text-overflow-x
     font-size 16px
     color rm-medium-blue-darker
+    width: 175px
+
+  .address:hover
+    @extend .text-overflow-x:hover
 
   .price
     text-align right
@@ -404,6 +408,7 @@ detailTitle()
   .address
     font-size 20px
     color rm-medium-blue-darker
+    @extend .text-wrap
 
   .city-state-zip
     font-size: 16px
