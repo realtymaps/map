@@ -23,7 +23,7 @@
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
     "preinstall": "./scripts/preinstall",
-    "postinstall": "bower install",
+    "postinstall": "bowerfresh && bower install",
     "clean": "gulp clean --exit && rm -rf node_modules bower_components"
   },
   "dependencies": {
