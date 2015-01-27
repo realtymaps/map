@@ -1,13 +1,13 @@
-.container.spacer
+.container
   .row
-    .col-md-6
+    .col-md-6.spacer
       form.comfy(method="POST", ng-submit="getPriceQuote()")
         .form-group
           label.sr-only(for="template") Letter template:
           select#template(ng-model="form.style.templateId",ng-options='id as template.name for (id,template) in documentTemplates')
             option(value="") Please select a letter template to get started.
           .help-block
-            span(ng-if="form.style.template") {{documentTemplates[form.style.template].description}}
+            span(ng-if="form.style.templateId") {{documentTemplates[form.style.templateId].description}}
             | &nbsp;
         .form-group
           label.sr-only(for="realtor") {{placeholderValues.from.name}}
@@ -39,6 +39,8 @@
         .form-group.row
           .col-sm-6
             input(type="submit",value="Check Price",ng-disabled="!formReady")
-    .col-md-6
-      .page-aspect-ratio-container
-        iframe.pdf-preview(ng-src='{{pdfPreviewBlob}}').page-aspect-ratio
+    .col-md-6.spacer.position
+      .width-label {{documentTemplates[form.style.templateId].width}} inches
+      .height-label(ng-style="{width: getHeightRatio()}") {{documentTemplates[form.style.templateId].height}} inches
+      .aspect-ratio-container(ng-style="{'padding-bottom': getHeightRatio()}")
+        iframe.pdf-preview(ng-src='{{pdfPreviewBlob}}').aspect-ratio
