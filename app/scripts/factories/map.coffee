@@ -78,11 +78,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           saved = Properties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
+            #setting savedDetails here as we know the save was successful
             if @filterSummaryHash[model.rm_property_id]?
               @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
             if @lastHoveredModel?.rm_property_id == model.rm_property_id && !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
               $scope.actions.closeListing()
-            #setting savedDetails here as we know the save was successful (update the font end without query right away)
             index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
