@@ -225,6 +225,7 @@ form.comfy
   input[type=email]
   input[type=password]
   input[type=submit]
+  input[type=button]
   select
     padding: 8px
     color: black
@@ -232,7 +233,8 @@ form.comfy
     height: 35px
     $border-radius 5px
     border: 2px solid #AAA
-  input[type=submit]
+  input[type=submit],
+  input[type=button]
     background-color: grey
     color: white
     padding: 2px 6px 3px
@@ -246,8 +248,6 @@ form.comfy
       &:hover
         background-color: #556
         color: #777
-  .row.spacer
-    margin-top: 25px
   label
     font-size: 16px
     font-weight: normal
@@ -256,6 +256,8 @@ form.comfy
   .help-block
     color: #BBB
     
+.spacer
+  margin-top: 25px
 
 /*
 Holy crap stylus.. you need to be careful to not name functions anything close to real property names in css
@@ -290,3 +292,6 @@ $text-overflow(dimension)
   overflow:auto !important
   white-space: initial
   text-overflow: initial
+
+.position
+  position: relative
