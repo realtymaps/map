@@ -54,6 +54,8 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
     $scope.getHeightRatio = () ->
       template = $scope.documentTemplates[$scope.form.style.templateId]
       ''+(template.height/template.width*100)+'%'
+    $scope.cancel = () ->
+      $location.url(frontendRoutes.map)
 
     updateBlob = (newValue, oldValue) ->
       if rendered

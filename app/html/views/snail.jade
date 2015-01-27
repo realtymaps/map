@@ -37,8 +37,10 @@
           label.sr-only(for="signature") Signature font
           select#signature(ng-model="form.style.signature",ng-options='id as id for (id,font) in fonts')
         .form-group.row
-          .col-sm-6
-            input(type="submit",value="Check Price",ng-disabled="!formReady")
+            .col-sm-6
+                input(type="button",value="Cancel",ng-click="cancel()")
+            .col-sm-6
+                input(type="submit",value="Check Price",ng-disabled="!formReady")
     .col-md-6.spacer.position
       .width-label {{documentTemplates[form.style.templateId].width}} inches
       .height-label(ng-style="{width: getHeightRatio()}") {{documentTemplates[form.style.templateId].height}} inches
