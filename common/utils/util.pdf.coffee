@@ -1,3 +1,4 @@
+INCH_MULTIPLIER = 72
 
 module.exports =
   renderAddress: (doc, address) ->
@@ -35,4 +36,13 @@ module.exports =
     if !addresses.to.address_line2
       delete addresses.to.address_line2
     return addresses
-  inch: 72
+  inch: INCH_MULTIPLIER
+  buildPageOptions: (templateProps, options) ->
+    options = _.extend({}, templateProps, options)
+    result = {}
+    if options.margins?
+      result.margins = _.mapValues options.margins, (value) ->
+        value*INCH_MULTIPLIER
+    if options.width? && options.height?
+      result.size = [options.width*INCH_MULTIPLIER, options.height*INCH_MULTIPLIER]
+    result
