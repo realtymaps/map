@@ -8,7 +8,7 @@ validators = requestUtil.query.validators
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 
-columnSets = ['address', 'detail', 'all']
+columnSets = ['filter', 'address', 'detail', 'all']
 
 transforms =
   rm_property_id: validators.string(minLength: 1)

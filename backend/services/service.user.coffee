@@ -122,27 +122,31 @@ updateUserState = (session, partialState) -> Promise.try () ->
       delete result.id
       return result
 
-captureMapState = (req, res, next) ->
-  updateUserState(req.session,
-    map_center: req.query.center
-    map_zoom: req.query.zoom
-    map_toggles:  req.query.toggles
-  )
+captureMapState = (req, res, next) -> Promise.try () ->
+  stateUpdate = {}
+  if req.query.center?
+    stateUpdate.map_center = req.query.center
+  if req.query.zoom?
+    stateUpdate.map_zoom = req.query.zoom
+  if req.query.toggles?
+    stateUpdate.map_toggles = req.query.toggles
+  updateUserState(req.session, stateUpdate)
   .then () ->
     next()
 
-captureMapFilterState = (req, res, next) ->
-  Promise.try () ->
-    filters = _.clone(req.query)
-    _.forEach ['center', 'zoom', 'bounds', 'toggles'], (removeParam) ->
-      delete filters[removeParam]
+captureMapFilterState = (req, res, next) -> Promise.try () ->
+  filters = _.clone(req.query)
+  _.forEach ['center', 'zoom', 'bounds', 'toggles'], (removeParam) ->
+    delete filters[removeParam]
 
-    updateUserState(req.session,
-      map_center: req.query.center
-      map_zoom: req.query.zoom
-      map_toggles:  req.query.toggles
-      filters: filters
-    )
+  stateUpdate = {filters: filters}
+  if req.query.center?
+    stateUpdate.map_center = req.query.center
+  if req.query.zoom?
+    stateUpdate.map_zoom = req.query.zoom
+  if req.query.toggles?
+    stateUpdate.map_toggles = req.query.toggles
+  updateUserState(req.session, stateUpdate)
   .then () ->
     next()
 

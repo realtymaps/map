@@ -14,7 +14,7 @@ templateProps =
     bottom: 1
     left: 1
     right: 1
-  lobTemplateId: 1
+  lobTemplateId: 0
 
 render = (data, stream) ->
   try
