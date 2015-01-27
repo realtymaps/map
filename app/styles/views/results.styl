@@ -212,7 +212,7 @@ data()
   .price
     text-align right
     position absolute
-    right 10px
+    right 2.5px
     display inline-block
     font-size 16px
     color rm-medium-blue-darker
@@ -238,13 +238,13 @@ data()
 
   .card.loading
     background-color: rgb(203, 255, 218)
-    background-color: rgb(203, 255, 218)
     font-size: 1.3em
     color: #666
 
   .card-buttons
-    display: inline-block
     padding 0
+    $clearFix()
+    display block
 
   .card .info
     data()
@@ -271,7 +271,11 @@ data()
 
   .card .info
     display: inline-block
-    width: 200px
+    /*width: 200px*/
+  .info
+    margin-left -35px
+  .sort-by
+    display none
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
@@ -293,7 +297,10 @@ data()
   .card .info
     display: inline-block
     width: 300px
-
+  .info
+    margin-left 0px
+  .sort-by
+    display inline
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
 

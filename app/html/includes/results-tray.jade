@@ -8,7 +8,7 @@ ng-init="resultsInit('results-list')")
             div(id="results-header-results-count")
                 .ng-cloak {{resultsPotentialLength}} Results
             div(id="results-header-right")
-                span Sort by:&nbsp;
+                span.sort-by Sort by:&nbsp;
                 .btn-group
                     button(id="results-sort-beds" class="btn btn-default btn-xs"
                     ng-click="resultsFormatter.setOrReverseResultsPredicate('bedrooms')"

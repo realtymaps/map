@@ -23,7 +23,7 @@
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
     "preinstall": "./scripts/preinstall",
-    "postinstall": "bowerfresh && bower install",
+    "postinstall": "bower install",
     "clean": "gulp clean --exit && rm -rf node_modules bower_components"
   },
   "dependencies": {
@@ -114,6 +114,7 @@
     "mkdirp": "^0.5.0",
     "mocha": "1.21.x",
     "moment": "^2.8.4",
+    "nib": "1.0.4",
     "nodetime": "0.8.x",
     "ns2": "^1.0.3",
     "numeral": "^1.5.3",
@@ -133,7 +134,8 @@
     "sprintf-js": "^1.0.2",
     "stack-trace": "0.0.9",
     "style-loader": "git://github.com/realtymaps/style-loader.git",
-    "stylus-loader": "^0.4.0",
+    "stylus": "^0.49.3",
+    "stylus-loader": "^0.5.0",
     "supertest": "0.13.x",
     "through2": "^0.6.2",
     "url-loader": "^0.5.5",
