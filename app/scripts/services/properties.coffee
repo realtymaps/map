@@ -2,9 +2,9 @@ app = require '../app.coffee'
 backendRoutes = require '../../../common/config/routes.backend.coffee'
 
 
-app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'principal'.ourNs(),
+app.service 'Properties'.ourNs(), ['$rootScope', '$http', '$q', 'Property'.ourNs(), 'principal'.ourNs(),
   'events'.ourNs(), 'uiGmapPropMap', 'PromiseThrottler'.ourNs(),
-  ($rootScope, $http, Property, principal, Events, PropMap, PromiseThrottler) ->
+  ($rootScope, $http, $q, Property, principal, Events, PropMap, PromiseThrottler) ->
     #HASH to properties by rm_property_id
     #we may want to save details beyond just saving there fore it will be a hash pointing to an object
     savedProperties = {}
@@ -24,44 +24,52 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       return null if !hash?
       $http.get("#{backendRoutes.properties[pathId]}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
 
-    getFilterSummary: (hash, mapState, filters="") ->
-      filterThrottler.invokePromise getPropertyData('filterSummary', hash, mapState, filters)
-      , http: {route: backendRoutes.properties.filterSummary }
+    service = 
+      getFilterSummary: (hash, mapState, filters="") ->
+        filterThrottler.invokePromise getPropertyData('filterSummary', hash, mapState, filters)
+        , http: {route: backendRoutes.properties.filterSummary }
+  
+      getParcelBase: (hash, mapState, filters="") ->
+        parcelThrottler.invokePromise getPropertyData('parcelBase', hash, mapState, filters)
+        , http: {route: backendRoutes.properties.parcelBase }
+  
+      getPropertyDetail: (mapState, rm_property_id, column_set) ->
+        detailThottler.invokePromise $http.get("#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}&#{mapState}", cache: true)
+        , http: {route: backendRoutes.properties.detail }
+  
+      saveProperty: (model) =>
+        return if not model or not model.rm_property_id
+        rm_property_id = model.rm_property_id
+        prop = savedProperties[rm_property_id]
+        if not prop
+          prop = new Property(rm_property_id, true, false, undefined)
+          savedProperties[rm_property_id] = prop
+        else
+          prop.isSaved = !prop.isSaved
+          unless prop.notes
+            delete savedProperties[rm_property_id]
+            #main dependency is layerFormatters.isVisible
+        model.savedDetails = prop
 
-    getParcelBase: (hash, mapState, filters="") ->
-      parcelThrottler.invokePromise getPropertyData('parcelBase', hash, mapState, filters)
-      , http: {route: backendRoutes.properties.parcelBase }
+        if !model.rm_status
+          service.getPropertyDetail("", rm_property_id, "filter")
+          .then (data) =>
+            _.extend model, data
 
-    getPropertyDetail: (mapState, rm_property_id, column_set) ->
-      detailThottler.invokePromise $http.get("#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}&#{mapState}", cache: true)
-      , http: {route: backendRoutes.properties.detail }
+        #post state to database
+        statePromise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
+        saveThrottler.invokePromise statePromise
+        statePromise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
+        statePromise.then () ->
+          return prop
+  
+      getSavedProperties: ->
+        savedProperties
+  
+      setSavedProperties: (props) ->
+        savedProperties = props
 
-    saveProperty: (model) =>
-      return if not model or not model.rm_property_id
-      rm_property_id = model.rm_property_id
-      prop = savedProperties[rm_property_id]
-      if not prop
-        prop = new Property(rm_property_id, true, false, undefined)
-        savedProperties[rm_property_id] = prop
-      else
-        prop.isSaved = !prop.isSaved
-        unless prop.notes
-          delete savedProperties[rm_property_id]
-          #main dependency is layerFormatters.isVisible
-      model.savedDetails = prop
-
-      #post state to database
-      promise = $http.post(backendRoutes.user.updateState, properties_selected: savedProperties)
-      saveThrottler.invokePromise promise
-      promise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
-      .then  ->
-        prop
-
-    getSavedProperties: ->
-      savedProperties
-
-    setSavedProperties: (props) ->
-      savedProperties = props
-
-    savedProperties: savedProperties
+      savedProperties: savedProperties
+      
+    return service
 ]
