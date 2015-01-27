@@ -101,11 +101,7 @@ data()
   padding: 8px
 
 #results-footer
-  width: 100%
-  background: #123D74
-  height: 50px
-  position: absolute
-  bottom: 0px
+  $footer()
 
 #results-close
   float: left
@@ -116,14 +112,7 @@ data()
   left: -35px
 
 #results-footer .close
-  float: right
-  font-size: 45px
-  font-weight: 100
-  line-height: 1
-  color: #FFFFFF
-  text-shadow: 0 1px 0 #ffffff
-  opacity: 1.0
-  margin-right: 14px
+  $footerClose()
 
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
