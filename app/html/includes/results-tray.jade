@@ -51,7 +51,7 @@ ng-init="resultsInit('results-list')")
                             .price-value {{resultsFormatter.getPrice(result.price)}}
                             .property-status(ng-class="resultsFormatter.getStatusLabelClass(result,true)") {{result.rm_status}}
 
-                        .padding-left-5
+                        .quick-summary
                             .beds(ng-if="result.bedrooms" ng-cloak)
                                 span.data {{result.bedrooms}}
                                 span.title Beds
@@ -63,7 +63,7 @@ ng-init="resultsInit('results-list')")
                                 span.title Sq Ft
                             .year(ng-if="result.year_built" ng-cloak)
                                 span.data {{resultsFormatter.getYear(result.year_built)}}
-                                span.title Year Built
+                                span.title Built
                     .card-buttons
                         button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result)")
                             i.fa.fa-envelope &nbsp;
