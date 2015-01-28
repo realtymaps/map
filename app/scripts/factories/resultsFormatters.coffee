@@ -208,7 +208,9 @@ app.factory 'ResultsFormatter'.ourNs(), [
           if showDetails
             Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
             .then (data) =>
-              angular.extend @mapCtrl.scope.selectedResult, data
+              $timeout () =>
+                angular.extend @mapCtrl.scope.selectedResult, data
+              , 50
 
           @mapCtrl.scope.Toggles.showDetails = showDetails
 
