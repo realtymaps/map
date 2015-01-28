@@ -201,7 +201,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.resultsLimit += amountToLoad
 #        @bindResultsListEvents()
 
-
       click: (result) =>
         maybeFetchCb = (showDetails) =>
           #start getting more data
@@ -223,8 +222,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         else
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
-
-
 
       mouseenter: (result) =>
         result.isMousedOver = true
