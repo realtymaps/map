@@ -116,11 +116,11 @@ app.service 'LayerFormatters'.ourNs(), [
       markerOptionsFromForSale: (mls) ->
         return {} unless mls
         if not mls.price
-          formattedPrice = String.orNA(mls.price)
+          formattedPrice = " &nbsp; &nbsp; &nbsp;"
         else if mls.price >= 1000000
-          formattedPrice = casing.upper numeral(mls.price).format('0.00a'), '.'
+          formattedPrice = '$'+casing.upper numeral(mls.price).format('0.00a'), '.'
         else
-          formattedPrice = casing.upper numeral(mls.price).format('0a'), '.'
+          formattedPrice = '$'+casing.upper numeral(mls.price).format('0a'), '.'
 
         if mls.isMousedOver
           hovered = ' label-hovered'
@@ -135,7 +135,7 @@ app.service 'LayerFormatters'.ourNs(), [
           status = mls.rm_status
 
         icon: ' '
-        labelContent: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>$#{formattedPrice}</span></h4>"
+        labelContent: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
         labelAnchor: "30 50"
         zIndex: zIndex
         markerType: "price"
