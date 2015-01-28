@@ -31,6 +31,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if newVal
               @scope.searchbox.setBiasBounds()
           , true
+          @scope.satMap =
+            options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, @scope.options
+            bounds: {}
+            zoom: 20
 
         @singleClickCtrForDouble = 0
         $log.debug $scope.map
@@ -98,6 +102,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @saveProperty = _saveProperty
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @scope = _.merge @scope,
+          streetViewPanorama:
+            status: 'OK'
           control: {}
           showTraffic: true
           showWeather: false
@@ -172,19 +178,20 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 , limits.options.throttle.eventPeriods.mouseout
 
               click: (gObject, eventname, model, events) =>
-                @lastEvent = 'click'
-                #delay click interaction to see if a dblclick came in
-                #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
-                event = events[0]
-                $timeout =>
-                  #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
-                  #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                  model = GoogleService.UiMap.getCorrectModel model
-                  if event.ctrlKey or event.metaKey
-                    return _saveProperty(model, gObject)
-                  unless @lastEvent == 'dblclick'
-                    $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
-                , limits.clickDelayMilliSeconds
+                $scope.$evalAsync =>
+                  @lastEvent = 'click'
+                  #delay click interaction to see if a dblclick came in
+                  #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
+                  event = events[0]
+                  $timeout =>
+                    #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
+                    #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
+                    model = GoogleService.UiMap.getCorrectModel model
+                    if event.ctrlKey or event.metaKey
+                      return _saveProperty(model, gObject)
+                    unless @lastEvent == 'dblclick'
+                      $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
+                  , limits.clickDelayMilliSeconds
 
 
               dblclick: (gObject, eventname, model, events) =>

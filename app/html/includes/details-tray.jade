@@ -3,7 +3,12 @@
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
-            ui-gmap-street-view-panorama.photo(focalcoord="selectedResult.geom_point_json" radius="50")
+            .sk-spinner.sk-spinner-double-bounce
+                .sk-double-bounce1
+                .sk-double-bounce2
+            //background-color:transparent; must be here to override googles meddling where it forces style via element
+            ui-gmap-street-view-panorama(ng-cloak style="background-color:transparent;" ng-show="streetViewPanorama.status == 'OK'" focalcoord="selectedResult.geom_point_json" radius="50" imagestatus="streetViewPanorama.status")
+            include ./satilite-map.jade
             .info.container
                 .row
                     .col-sm-7

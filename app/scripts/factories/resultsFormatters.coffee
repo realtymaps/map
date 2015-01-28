@@ -201,26 +201,30 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.resultsLimit += amountToLoad
 #        @bindResultsListEvents()
 
-
       click: (result) =>
         maybeFetchCb = (showDetails) =>
           #start getting more data
           if showDetails
             Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
             .then (data) =>
-              angular.extend @mapCtrl.scope.selectedResult, data
+              $timeout () =>
+                angular.extend @mapCtrl.scope.selectedResult, data
+              , 50
 
           @mapCtrl.scope.Toggles.showDetails = showDetails
 
         #immediatley show something
+        @mapCtrl.scope.streetViewPanorama.status = 'OK'
+        @mapCtrl.scope.satMap.zoom = 20
+
         if @mapCtrl.scope.selectedResult != result
           @mapCtrl.scope.selectedResult = result
+          #set the zoom back so it always is close to the property
+          #immediatley turn off sat
           maybeFetchCb(true)
         else
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
-
-
 
       mouseenter: (result) =>
         result.isMousedOver = true
