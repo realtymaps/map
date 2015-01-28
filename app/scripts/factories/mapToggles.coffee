@@ -8,7 +8,6 @@ app.factory 'MapToggles'.ourNs(), [ () ->
     @showDetails = false
     @showFilters = false
     @showSearch = false
-    @showSatMap = false
 
     @showAddresses = true
     @showPrices = true
@@ -31,9 +30,6 @@ app.factory 'MapToggles'.ourNs(), [ () ->
 
     @toggleFilters = =>
       @showFilters = !@showFilters
-
-    @toggleFilters = =>
-      @showSatMap = !@showSatMap
 
     @toggleSearch = (val) =>
       if val?

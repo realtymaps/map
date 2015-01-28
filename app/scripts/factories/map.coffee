@@ -31,6 +31,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if newVal
               @scope.searchbox.setBiasBounds()
           , true
+          @scope.satMap =
+            options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, @scope.options
+            bounds: {}
+            zoom: 20
 
         @singleClickCtrForDouble = 0
         $log.debug $scope.map
@@ -98,7 +102,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @saveProperty = _saveProperty
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @scope = _.merge @scope,
-          streetViewImageStatus: 'OK'
+          streetViewPanorama:
+            status: 'OK'
           control: {}
           showTraffic: true
           showWeather: false
@@ -237,10 +242,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
 
         @scope.resultsFormatter = new ResultsFormatter(self)
-
-        @scope.satMap =
-          options: _.extend {}, @scope.map.options
-          bounds: {}
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view

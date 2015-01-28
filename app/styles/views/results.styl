@@ -349,7 +349,7 @@ Detail Container
 
 #detail-footer
   width: 100%
-  background: rgb(162, 200, 226)
+  background: rm-medium-blue-darker
   height: 50px
   position: absolute
   bottom: 0px
@@ -398,6 +398,27 @@ detailTitle()
     position: absolute
     bottom: 50px
     top: 0px
+
+  .sk-spinner.sk-spinner-double-bounce
+    /*make backgound via absolute*/
+    position absolute
+    top 17%
+    left 50%
+  .sk-spinner-double-bounce .sk-double-bounce1, .sk-spinner-double-bounce .sk-double-bounce2
+    background-color rm-medium-blue-darker
+
+  .angular-google-map-street-view-panorama
+    height 300px
+    display hidden
+  .angular-google-map
+    height 300px
+    display hidden
+  .angular-google-map-container
+    height 300px
+    width 100%
+    position absolute
+    top 0px
+    background #e3e1de
 
   .detail-title
     detailTitle()

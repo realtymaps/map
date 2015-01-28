@@ -1,5 +1,4 @@
-
-ui-gmap-google-map(ng-if="Toggles.showSatMap && streetViewImageStatus != 'OK'" center='selectedResult.geom_point_json', zoom='18',
+ui-gmap-google-map(ng-if="streetViewPanorama.status != 'OK'" center='selectedResult.geom_point_json', zoom='satMap.zoom',
   bounds='satMap.bounds' options='satMap.options',
   pan='true', control='control', ng-cloak=''
   tabindex='0'

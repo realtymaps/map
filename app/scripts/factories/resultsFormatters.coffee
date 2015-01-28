@@ -215,6 +215,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
         #immediatley show something
         if @mapCtrl.scope.selectedResult != result
           @mapCtrl.scope.selectedResult = result
+          #set the zoom back so it always is close to the property
+          #immediatley turn off sat
+          @mapCtrl.scope.streetViewPanorama.status = 'OK'
+          @mapCtrl.scope.satMap.zoom = 20
           maybeFetchCb(true)
         else
           maybeFetchCb(false)
