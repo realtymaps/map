@@ -3,7 +3,8 @@
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
-            ui-gmap-street-view-panorama.photo(focalcoord="selectedResult.geom_point_json" radius="50")
+            include ./satilite-map.jade
+            ui-gmap-street-view-panorama.photo(ng-if="streetViewImageStatus == 'OK'" focalcoord="selectedResult.geom_point_json" radius="50" imagestatus="streetViewImageStatus")
             .info.container
                 .row
                     .col-sm-7
