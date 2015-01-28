@@ -36,25 +36,27 @@ module.exports = app
       principal.getIdentity()
       .then (identity) ->
         if not identity?.stateRecall
-          return MainOptions.map
-        if identity.stateRecall.map_center
-          MainOptions.map.options.json.center = identity.stateRecall.map_center
-        if identity.stateRecall.map_zoom
-          MainOptions.map.options.json.zoom = +identity.stateRecall.map_zoom
+          return
+        $rootScope.selectedFilters = {}
         if identity.stateRecall.filters
           statusList = identity.stateRecall.filters.status || []
           delete identity.stateRecall.filters.status
           for key,status of ParcelEnums.status
             identity.stateRecall.filters[key] = (statusList.indexOf(status) > -1)
-          if not $rootScope.selectedFilters?
-            $rootScope.selectedFilters = {}
           _.extend($rootScope.selectedFilters, identity.stateRecall.filters)
-
-          MainOptions.map.toggles = if identity.stateRecall.map_toggles then new Toggles(identity.stateRecall.map_toggles) else new Toggles()
-        return MainOptions.map
-      .then (mapOptions) ->
-        # wait to initialize map until we've merged state values into the initial options
-        map = new Map($scope, mapOptions)
+        if map
+          if identity.stateRecall.map_center
+            $scope.center = identity.stateRecall.map_center
+          if identity.stateRecall.map_zoom
+            $scope.zoom = +identity.stateRecall.map_zoom
+          $scope.toggles = new Toggles(identity.stateRecall.map_toggles)
+        else
+          if identity.stateRecall.map_center
+            MainOptions.map.options.json.center = identity.stateRecall.map_center
+          if identity.stateRecall.map_zoom
+            MainOptions.map.options.json.zoom = +identity.stateRecall.map_zoom
+          MainOptions.map.toggles = new Toggles(identity.stateRecall.map_toggles)
+          map = new Map($scope, MainOptions.map)
 
     $scope.$onRootScope Events.principal.login.success, () ->
       restoreState()
