@@ -33,7 +33,7 @@ _columns =
   filter: [
     'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json',
     'geom_point_json', 'rm_status', 'owner_name', 'owner_name2', 'year_built', 'acres', 'finished_sqft', 'baths_full',
-    'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value'
+    'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip'
   ].join(', ')
   # columns returned for additional detail results
   detail: [

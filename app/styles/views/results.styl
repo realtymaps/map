@@ -40,6 +40,7 @@ data()
 
 .save-button
    margin-left: 4px
+   font-size: 12px
    &:hover
    &:focus
    &:active
@@ -101,11 +102,7 @@ data()
   padding: 8px
 
 #results-footer
-  width: 100%
-  background: #123D74
-  height: 50px
-  position: absolute
-  bottom: 0px
+  $footer()
 
 #results-close
   float: left
@@ -116,14 +113,7 @@ data()
   left: -35px
 
 #results-footer .close
-  float: right
-  font-size: 45px
-  font-weight: 100
-  line-height: 1
-  color: #FFFFFF
-  text-shadow: 0 1px 0 #ffffff
-  opacity: 1.0
-  margin-right: 14px
+  $footerClose()
 
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
@@ -137,6 +127,14 @@ data()
   right: 0
   width: 100%
   top: 0px
+
+  .city-state-zip
+    font-size: 12px
+    color: #4D4D4D
+    
+  .quick-summary
+    padding-left: 25px
+    margin-top: -5px
 
   .gridStyle
     border: 1px solid rgb(212, 212, 212);
@@ -166,13 +164,11 @@ data()
     background-color white
 
   .result-property
-    height 125px
+    height 120px
     border-bottom 1px solid #d9d9d9
-    transition .15s all ease-in-out
     overflow hidden
 
   .result-property:hover
-    height 125px
     background rm-results-hover
 
   .card
@@ -180,10 +176,9 @@ data()
     display block
     cursor pointer
     width 100%
-    padding 10px
-    overflow hidden
+    padding: 10px 10px 0 10px
     font-size 16px
-    height 95px
+    height: 100%
 
   .property-status
      padding 1px 5px
@@ -203,19 +198,26 @@ data()
     font-size 11px
     padding 1px 2px
 
+  .save-button
+     font-size: 11px
+
   .info
     display inline-block
     width 200px
 
   .address
-    display inline-block
+    @extend .text-overflow-x
     font-size 16px
     color rm-medium-blue-darker
+    width: 100%
+
+  .address:hover
+    @extend .text-overflow-x:hover
 
   .price
     text-align right
     position absolute
-    right 10px
+    right 5px
     display inline-block
     font-size 16px
     color rm-medium-blue-darker
@@ -225,25 +227,30 @@ data()
   .price
     text-align right
 
-  .card .info .beds, .card .info .baths, .card .info .sqft, .card .info .year
-    float left
-    width 50px
-    font-size 20px
-    text-align center
-
-  .card .info .title
-    font-size: 12px
-    basicTitle()
+  .info
+    .beds,
+    .baths,
+    .sqft,
+    .year
+      float left
+      width 50px
+      font-size 20px
+      text-align center
+    .title
+      font-size: 12px
+      line-height: 14px
+      basicTitle()
 
   .card.loading
-    background-color: rgb(203, 255, 218)
     background-color: rgb(203, 255, 218)
     font-size: 1.3em
     color: #666
 
   .card-buttons
-    display: inline-block
-    padding 0 10px
+    padding: 0
+    position: absolute
+    bottom: 7px
+    left: 9px
 
   .card .info
     data()
@@ -270,7 +277,11 @@ data()
 
   .card .info
     display: inline-block
-    width: 200px
+    /*width: 200px*/
+  .info
+    margin-left -35px
+  .sort-by
+    display none
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
@@ -292,7 +303,10 @@ data()
   .card .info
     display: inline-block
     width: 300px
-
+  .info
+    margin-left 0px
+  .sort-by
+    display inline
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
 
@@ -396,10 +410,15 @@ detailTitle()
   .address
     font-size 20px
     color rm-medium-blue-darker
+    @extend .text-wrap
 
   .city-state-zip
-    font-size: 16px
+    font-size: 14px
     color: #4D4D4D
+    margin-bottom: 10px
+    
+  .quick-summary .title
+    line-height: 0
 
   .photo
     height: 200px
@@ -414,6 +433,11 @@ detailTitle()
   .info, .data
     @extend .text-overflow-x
     detailData()
+
+  .description
+    @extend .detail-container .data
+    @extend .text-wrap
+    font-size: .8em
 
   .info
     margin-top: 10px

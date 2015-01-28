@@ -38,28 +38,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
 
         #seems to be a google bug where mouse out is not always called
-        @hovers = {}
-        _cleanHovers = _.debounce =>
-          $scope.$evalAsync =>
-            for own rm_property_id, model of @hovers
-              if @lastHoveredModel?.rm_property_id == rm_property_id
-                continue
-              model.isMousedOver = undefined
-              _updateAllLayersByModel(model)
-              delete @hovers[rm_property_id]
-        _maybeCleanHovers = (model) =>
-          keys = _.keys(@hovers)
-          if keys.length > 1 || keys.length == 1 && keys[0] != model.rm_property_id
-            _cleanHovers()
-            
         _handleMouseout = (model) =>
-          if @lastHoveredModel?.rm_property_id == model.rm_property_id
-            $scope.actions.closeListing()
+          if !model
+            return
+          $scope.actions.closeListing()
           model.isMousedOver = undefined
-          delete @hovers[model.rm_property_id]
-          delete @mouseoutDebounce[model.rm_property_id]
+          $timeout.cancel(@mouseoutDebounce)
+          @mouseoutDebounce = null
           _updateAllLayersByModel(model)
-        @mouseoutDebounce = {}
+        @mouseoutDebounce = null
 
         @filterSummaryHash = {}
         @filters = ''
@@ -91,11 +78,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           saved = Properties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
+            #setting savedDetails here as we know the save was successful
             if @filterSummaryHash[model.rm_property_id]?
               @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
             if @lastHoveredModel?.rm_property_id == model.rm_property_id && !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
               $scope.actions.closeListing()
-            #setting savedDetails here as we know the save was successful (update the font end without query right away)
             index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
@@ -139,7 +126,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           actions:
 
             closeListing: ->
-              $scope.layers.listingDetail.show = false if $scope.layers.listingDetail?
+              $scope.layers.listingDetail?.show = false
             listing: (gMarker, eventname, model) =>
               #model could be from parcel or from filter, but the end all be all data is in filter
               if !model.rm_status
@@ -162,35 +149,27 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
             listingEvents:
               mouseover: (gObject, eventname, model) =>
-                $scope.actions.listing(gObject, eventname, model)
+                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "streetNum"
+                  return
                 model = GoogleService.UiMap.getCorrectModel model
-                if @lastHoveredModel && @lastHoveredModel?.rm_property_id != model.rm_property_id
-                  @lastHoveredModel.isMousedOver = undefined
+                _lastHoveredModel = @lastHoveredModel
                 @lastHoveredModel = model
                 model.isMousedOver = true
-                if GoogleService.Map.isGPoly(gObject) || GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price"
-                  @hovers[model.rm_property_id] = model
-                  _maybeCleanHovers(model)
-                if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
-                  $timeout.cancel(@mouseoutDebounce[model.rm_property_id].promise)
-                  delete @mouseoutDebounce[model.rm_property_id]
-                  for key of @mouseoutDebounce
-                    $timeout.cancel(@mouseoutDebounce[key].promise)
-                    _handleMouseout(@mouseoutDebounce[key].model)
+                $timeout.cancel(@mouseoutDebounce)
+                @mouseoutDebounce = null
+                if _lastHoveredModel?.rm_property_id != model.rm_property_id
+                  _handleMouseout(_lastHoveredModel)
+                $scope.actions.listing(gObject, eventname, model)
                 _updateAllLayersByModel(model)
 
               mouseout: (gObject, eventname, model) =>
+                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "streetNum"
+                  return
                 model = GoogleService.UiMap.getCorrectModel model
-                if GoogleService.Map.isGPoly(gObject)
+                $timeout.cancel(@mouseoutDebounce)
+                @mouseoutDebounce = $timeout () =>
                   _handleMouseout(model)
-                if (GoogleService.Map.isGMarker(gObject) && gObject.markerType == "price")
-                  if @mouseoutDebounce[model.rm_property_id]?.model?.rm_property_id == model.rm_property_id
-                    $timeout.cancel(@mouseoutDebounce[model.rm_property_id].promise)
-                  @mouseoutDebounce[model.rm_property_id] = 
-                    model: model
-                    promise: $timeout(() =>
-                      _handleMouseout(model)
-                    , MainOptions.map.options.throttle.eventPeriods.mouseout)
+                , limits.options.throttle.eventPeriods.mouseout
 
               click: (gObject, eventname, model, events) =>
                 @lastEvent = 'click'
@@ -201,12 +180,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                   #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                   #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                   model = GoogleService.UiMap.getCorrectModel model
-
                   if event.ctrlKey or event.metaKey
                     return _saveProperty(model, gObject)
                   unless @lastEvent == 'dblclick'
                     $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
-
                 , limits.clickDelayMilliSeconds
 
 
@@ -363,17 +340,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @draw 'draw_tool', paths
 
       updateFilterSummaryHash: =>
+        #save the the old hash
+        _oldHash = @filterSummaryHash
         @filterSummaryHash = {}
         if @scope.layers?.filterSummary? and @scope.layers.filterSummary.length
           @scope.layers.filterSummary.forEach (summary, index) =>
             summary.index = index
             @filterSummaryHash[summary.rm_property_id] = summary
+        # get the models that are no longer in @filterSummaryHash, and make sure they update
+        _.forEach _.omit(_oldHash, _.keys(@filterSummaryHash)), (model) =>
+          model.passedFilters = undefined
+          @updateAllLayersByModel(model)
         #need to always sync the formatters.layer hash
         @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
+        _.forEach @filterSummaryHash, (summary) =>
+          @updateAllLayersByModel(summary)
 
       clearFilter: =>
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
         @scope.layers.filterSummary.length = 0
-        @updateFilterSummaryHash()
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
 ]

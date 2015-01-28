@@ -129,8 +129,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       getCityStateZip: (model, owner=false) ->
         if !model?
           return ""
-        if owner
-          prefix = "owner_"
+        prefix = if owner then "owner_" else ""
         csz = "#{model[prefix+"city"]}"
         if model[prefix+"state"]
           csz += ", #{model[prefix+"state"]}"

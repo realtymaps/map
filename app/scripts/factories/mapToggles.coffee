@@ -28,6 +28,9 @@ app.factory 'MapToggles'.ourNs(), [ () ->
         return
       @showResults =  !@showResults
 
+    @toggleFilters = =>
+      @showFilters = !@showFilters
+
     @toggleSearch = (val) =>
       if val?
         @showSearch = val

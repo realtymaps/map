@@ -49,8 +49,13 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       style:
         signature: 'print font 3'
         # preselect a template as well for now 
-        templateId: 'prospecting'
+        templateId: 'letter.prospecting'
         #templateId: null
+    $scope.getHeightRatio = () ->
+      template = $scope.documentTemplates[$scope.form.style.templateId]
+      ''+(template.height/template.width*100)+'%'
+    $scope.cancel = () ->
+      $location.url(frontendRoutes.map)
     $scope.iframeIndex = 0
     
     renderError = () ->

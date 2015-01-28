@@ -5,7 +5,7 @@ config = require '../config/config'
 loaders = require './util.loaders'
 path = require 'path'
 
-documentTemplates = loaders.loadSubmodules(path.join(__dirname, '../../common/documentTemplates'), /^document\.(\w+)\.coffee$/)
+documentTemplates = loaders.loadSubmodules(path.join(__dirname, '../../common/documentTemplates'), /^document\.(.+)\.coffee$/)
 
 module.exports = 
   toFile: (templateId, data, options = {}) -> Promise.try () ->

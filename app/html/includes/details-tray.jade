@@ -3,13 +3,12 @@
         i.centered.fa.fa-chevron-right.fa-2x
     #detail-list-inner
         #detail-list
-            .photo
-                img(ng-cloak ng-src="{{resultsFormatter.getStreetView(selectedResult,500,300)}}")
+            ui-gmap-street-view-panorama.photo(focalcoord="selectedResult.geom_point_json" radius="50")
             .info.container
                 .row
                     .col-sm-7
                         .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-                        //.city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
+                        .city-state-zip {{resultsFormatter.getCityStateZip(selectedResult)}}
                         button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(selectedResult)")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
@@ -23,7 +22,7 @@
                             .sold-date.info.title(ng-if="resultsFormatter.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                 .row.beds-baths-sqft
                     .col-sm-12.detail-section-title Property Info
-                .row
+                .row.quick-summary
                     .col-sm-3(ng-if="selectedResult.bedrooms" ng-cloak)
                         span.data {{resultsFormatter.orNa(selectedResult.bedrooms)}}
                         span.title Beds
@@ -36,8 +35,8 @@
                     .col-sm-3(ng-if="selectedResult.year_built" ng-cloak)
                         span.data {{resultsFormatter.getYear(selectedResult.year_built)}}
                         span.title Built
-                .row.tool
-                    .padding-top-10
+                .row.tool.quick-summary
+                    .padding-top-15
                         .col-sm-3(ng-if="selectedResult.acres" ng-cloak)
                             span.data {{resultsFormatter.orNa(selectedResult.acres)}}
                             span.title Acres
@@ -54,7 +53,7 @@
                 .row.detailed_description(ng-if="selectedResult.property_information" ng-cloak)
                     .col-sm-12.detail-section-title Description
                     .row
-                        .data {{selectedResult.property_information}}
+                        .description {{selectedResult.property_information}}
 
                 .row.owner-info(ng-if="selectedResult.owner_name || selectedResult.owner_name2 || selectedResult.owner_name")
                     .col-sm-12.detail-section-title Owner Info
@@ -138,4 +137,4 @@
                                 span(ng-if="selectedResult.prior_sale_date") {{selectedResult.prior_sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                                 span(ng-if="!selectedResult.prior_sale_date") N/A
     #results-footer
-        i.close.fa.fa-times.fa-3(ng-click="showDetails = !showDetails")
+        i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleDetails()")

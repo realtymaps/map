@@ -4,6 +4,9 @@
     .padding-top-{num}
       padding-top: unit(num, px)
 
+.padding-left-5
+  padding-left: 5px
+
 .centered
   position:relative;
   top:50%;
@@ -225,6 +228,7 @@ form.comfy
   input[type=email]
   input[type=password]
   input[type=submit]
+  input[type=button]
   select
     padding: 8px
     color: black
@@ -232,7 +236,8 @@ form.comfy
     height: 35px
     $border-radius 5px
     border: 2px solid #AAA
-  input[type=submit]
+  input[type=submit],
+  input[type=button]
     background-color: grey
     color: white
     padding: 2px 6px 3px
@@ -246,8 +251,6 @@ form.comfy
       &:hover
         background-color: #556
         color: #777
-  .row.spacer
-    margin-top: 25px
   label
     font-size: 16px
     font-weight: normal
@@ -256,6 +259,8 @@ form.comfy
   .help-block
     color: #BBB
     
+.spacer
+  margin-top: 25px
 
 /*
 Holy crap stylus.. you need to be careful to not name functions anything close to real property names in css
@@ -290,3 +295,34 @@ $text-overflow(dimension)
   overflow:auto !important
   white-space: initial
   text-overflow: initial
+
+.position
+  position: relative
+
+/*http://stackoverflow.com/questions/211383/which-method-of-clearfix-is-best*/
+$clearFix()
+  content:"";
+  display:table;
+  clear:both;
+
+for num in 5 10 15 20 25 30 35 40 45 50
+  for where in left right top bottom
+    .{where}-margin-{num}
+      margin-left unit(num,'px')
+
+$footer()
+  width: 100%
+  background: #123D74
+  height: 50px
+  position: absolute
+  bottom: 0px
+
+$footerClose()
+  float: right
+  font-size: 45px
+  font-weight: 100
+  line-height: 1
+  color: #FFFFFF
+  text-shadow: 0 1px 0 #ffffff
+  opacity: 1.0
+  margin-right: 14px
