@@ -38,8 +38,8 @@
                 .row.tool.quick-summary
                     .padding-top-15
                         .col-sm-3(ng-if="selectedResult.acres" ng-cloak)
-                            .data {{resultsFormatter.orNa(selectedResult.acres)}}
-                            .title Acres
+                            span.data {{resultsFormatter.orNa(selectedResult.acres)}}
+                            span.title Acres
                         .col-sm-3(ng-if="selectedResult.land_square_footage" ng-cloak)
                             span.data {{selectedResult.land_square_footage}}
                             span.title Lot SqFt
