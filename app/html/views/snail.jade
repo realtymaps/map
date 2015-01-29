@@ -42,7 +42,11 @@
             .col-sm-6
                 input(type="submit",value="Check Price",ng-disabled="!formReady")
     .col-md-6.spacer.position
-      .width-label {{documentTemplates[form.style.templateId].width}} inches
-      .height-label(ng-style="{width: getHeightRatio()}") {{documentTemplates[form.style.templateId].height}} inches
-      .aspect-ratio-container(ng-style="{'padding-bottom': getHeightRatio()}")
-        iframe.pdf-preview(ng-src='{{pdfPreviewBlob}}').aspect-ratio
+      .aspect-ratio-container(ng-style="{'padding-bottom': heightRatio0}", ng-class="{'hidden-buffer': iframeIndex%2!=0}")
+        .width-label {{width0}} inches
+        .height-label(ng-style="{width: heightRatio0}") {{height0}} inches
+        iframe.pdf-preview(ng-src='{{pdfPreviewBlob0}}',rmaps-onload="finishRender").aspect-ratio
+      .aspect-ratio-container(ng-style="{'padding-bottom': heightRatio1}", ng-class="{'hidden-buffer': iframeIndex%2!=1}")
+        .width-label {{width1}} inches
+        .height-label(ng-style="{width: heightRatio1}") {{height1}} inches
+        iframe.pdf-preview(ng-src='{{pdfPreviewBlob1}}',rmaps-onload="finishRender",rmaps-onerror="renderError").aspect-ratio

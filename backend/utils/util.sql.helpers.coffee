@@ -33,14 +33,15 @@ _columns =
   filter: [
     'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json',
     'geom_point_json', 'rm_status', 'owner_name', 'owner_name2', 'year_built', 'acres', 'finished_sqft', 'baths_full',
-    'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip'
+    'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
+    'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
+    'owner_zip'
   ].join(', ')
   # columns returned for additional detail results
   detail: [
-    'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
-    'owner_zip', 'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
+    'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
     'year_modified', 'ask_price', 'prior_sale_price', 'original_price', 'close_price', 'mortgage_amount',
-    'listing_start_date', 'close_date', 'city', 'state', 'zip', 'mortgage_date', 'recording_date', 'title_company_name',
+    'listing_start_date', 'close_date', 'mortgage_date', 'recording_date', 'title_company_name',
     'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc', 'heat',
     'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
     'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id',

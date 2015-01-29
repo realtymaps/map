@@ -12,6 +12,11 @@ directoryContext = require.context("../runners", true, /\/.*\.coffee$/)
 for request in directoryContext.keys()
   directoryContext(request)
 
+# require() all modules in the directives directory
+directoryContext = require.context("../directives", true, /\/.*\.coffee$/)
+for request in directoryContext.keys()
+  directoryContext(request)
+
 
 # main app controller
 app = require '../app.coffee'

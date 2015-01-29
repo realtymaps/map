@@ -15,9 +15,9 @@ events = [
 
 events.forEach (eventname) ->
   app.directive "rmapsOn#{eventname}", ->
-    scope:
-      callback: "&rmapsOn#{eventname}"
+    scope: false
     link: (scope, element, attrs) ->
+      callback = scope.$eval(attrs["rmapsOn#{eventname}"])
       element.on eventname, (event) ->
         ret = callback(event)
         scope.$evalAsync () ->
