@@ -1,23 +1,8 @@
-# see http://webpack.github.io/docs/context.html#require-context for documentation on the API being used below
-# JWI: I tried to make a util requireDirectory() function to handle things like this, but it failed because of how the
-#      webpack parser works.  So, for now it will have to remain this small bit of copy-pasta.
+###
+gulp-webpack is responsible for defining what files are being processed see
 
-# require() all modules in the config directory
-directoryContext = require.context("../config", true, /\/.*\.coffee$/)
-for request in directoryContext.keys()
-  directoryContext(request)
-
-# require() all modules in the runners directory
-directoryContext = require.context("../runners", true, /\/.*\.coffee$/)
-for request in directoryContext.keys()
-  directoryContext(request)
-
-# require() all modules in the directives directory
-directoryContext = require.context("../directives", true, /\/.*\.coffee$/)
-for request in directoryContext.keys()
-  directoryContext(request)
-
-
+See /gulp/task/webpack and see /gulp/paths.coffee 
+###
 # main app controller
 app = require '../app.coffee'
 module.exports = app.controller 'MainCtrl'.ourNs(), [ () ->
