@@ -11,6 +11,7 @@ rendered = false
 data = 
   snailData: {}
   property: null
+_setContextValues = null
 
 module.exports = app.controller 'SnailCtrl'.ourNs(), [
   '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', '$modal',
@@ -32,7 +33,6 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         phone: "Realtor's Phone Number"
         email: "Realtor's Email Address"
       style: {}
-    $scope.pdfPreviewBlob = $sce.trustAsResourceUrl("about:blank")
     $scope.formReady = false
     $scope.form =
       # instead of a blank form, use some fake default values for now 
@@ -51,16 +51,41 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         # preselect a template as well for now 
         templateId: 'letter.prospecting'
         #templateId: null
-    $scope.getHeightRatio = () ->
-      template = $scope.documentTemplates[$scope.form.style.templateId]
-      ''+(template.height/template.width*100)+'%'
     $scope.cancel = () ->
       $location.url(frontendRoutes.map)
+    $scope.iframeIndex = 0
+    
+    _setContextValues = (index, blob) ->
+      $scope["pdfPreviewBlob#{index}"] = $sce.trustAsResourceUrl(blob)
+      $scope["templateId#{index}"] = $scope.form.style.templateId
+      template = $scope.documentTemplates[$scope["templateId#{index}"]]
+      if template
+        $scope["width#{index}"] = template.width
+        $scope["height#{index}"] = template.height
+        $scope["heightRatio#{index}"] = ''+(template.height/template.width*100)+'%'
+      else
+        $scope["width#{index}"] = 0
+        $scope["height#{index}"] = 0
+        $scope["heightRatio#{index}"] = '0'
 
+    _setContextValues(0, "about:blank")
+    _setContextValues(1, "about:blank")
+
+    $scope.renderError = (reason) ->
+      Spinner.decrementLoadingCount("pdf rendering")
+
+    $scope.finishRender = () ->
+      $scope.iframeIndex = ($scope.iframeIndex+1)%2
+      Spinner.decrementLoadingCount("pdf rendering")
+
+    doRender = () ->
+      renderPromise = null
+      RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
+      .then (blob) ->
+        _setContextValues(($scope.iframeIndex+1)%2, blob)
+      , $scope.renderError
+    
     updateBlob = (newValue, oldValue) ->
-      if rendered
-        $scope.pdfPreviewBlob = $sce.trustAsResourceUrl("about:blank")
-        rendered = false
       if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
@@ -73,15 +98,6 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
           return formValue || "{{#{placeholderValue}}}"
       $scope.formReady = formReady
         
-      doRender = () ->
-        renderPromise = null
-        RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
-        .then (blob) ->
-          $scope.pdfPreviewBlob = $sce.trustAsResourceUrl(blob)
-          rendered = true
-          Spinner.decrementLoadingCount("pdf rendering")
-        , () ->
-          Spinner.decrementLoadingCount("pdf rendering")
       if renderPromise
         # replace the existing rendering call
         $timeout.cancel(renderPromise)
@@ -115,6 +131,8 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
 ]
 app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), 'Spinner'.ourNs(), ($rootScope, $location, $timeout, Events, Spinner) ->
   initiateSend = (property) ->
+    _setContextValues?(0, "about:blank")
+    _setContextValues?(1, "about:blank")
     data.property = property
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
