@@ -9,7 +9,7 @@ dest =
 
 module.exports =
   spec: 'spec/**'
-  scripts: 'app/scripts/**/*.*'
+  scripts: 'app/scripts/**/*'
   vendorLibs: 'app/lib/scripts/vendor/**/*.*'
   webpackLibs: 'app/lib/scripts/webpack/**/*.*'
   styles: 'app/styles/*.css'
