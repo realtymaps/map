@@ -6,7 +6,7 @@ logo = require './temp.logo.coffee'
 
 templateProps =
   name: 'Letter: Prospecting'
-  description: 'A letter to an owner of record inquiring about listing a property.'
+  description: 'A letter to an owner of record inquiring about a property.'
   width: 8.5
   height: 11
   margins:
