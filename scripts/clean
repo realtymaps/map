@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
 
-rm -rf ./dist
+rm -rf ./_public
 rm -rf ./bower_components
 rm -rf ./node_modules
