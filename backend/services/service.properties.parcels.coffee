@@ -5,16 +5,14 @@ logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 
 validators = requestUtil.query.validators
 
 transforms =
   bounds: [
     validators.string(minLength: 1)
-    validators.geohash.decode
+    validators.geohash
     validators.array(minLength: 0)
-    validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
 
 required =
@@ -27,11 +25,9 @@ module.exports =
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
-      if filters.bounds == "dummy"
-        return []
-
       query = sqlHelpers.select(db.knex, '*', false).from(sqlHelpers.tableName(Parcel))
-      sqlHelpers.whereRawSafe(query, filters.bounds)
+      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
+      
       #logger.sql query.toString()      
       return query
 
