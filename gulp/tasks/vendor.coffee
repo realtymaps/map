@@ -1,6 +1,5 @@
 gulp = require 'gulp'
 log = require('gulp').log
-sass = require 'gulp-sass'
 gulpif = require 'gulp-if'
 size = require 'gulp-size'
 es = require 'event-stream'
@@ -19,7 +18,6 @@ vendorFontsPipe = require '../pipeline/fonts/vendor'
 gulp.task 'vendor_css', ->
   gulp.src(vendorCssPipe)
   .pipe plumber()
-  .pipe(gulpif(/[.]scss$/, sass()))
   .pipe(onlyDirs es)
   .pipe(concat 'vendor.css')
   .pipe(gulp.dest paths.destFull.styles)

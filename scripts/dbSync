@@ -13,8 +13,8 @@ fi
 if [[ "$1" == "--refresh" ]]
 then
     # this will do more than we need it to, but it needs to happen
-    bowerfresh
     bower install
+    bower update
 fi
 ./bower_components/dbsync/doFlyway.sh userManagement "$USER_DATABASE_URL" false migrate
 ./bower_components/dbsync/doFlyway.sh propertyData "$PROPERTY_DATABASE_URL" false migrate

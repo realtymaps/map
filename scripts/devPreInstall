@@ -1,7 +1,4 @@
 #!/bin/bash
-if ! hash bowerfresh &> /dev/null || [[ $IS_HEROKU = 1 ]];then
-  npm install -g bowerfresh@0.0.1
-fi
 
 #TODO figure out why this is rejecting git projects
 #if ! hash npm-shrinkwrap &> /dev/null || [[ $IS_HEROKU = 1 ]];then
@@ -21,4 +18,3 @@ fi
 if ! hash karma &> /dev/null || [[ $IS_HEROKU = 1 ]];then
   npm install -g karma
 fi
-
