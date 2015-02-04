@@ -30,7 +30,7 @@ ui-gmap-google-map(center='center', zoom='zoom',
     control='controls.priceMarkers'
     clusterOptions="{ignoreHidden: true, minimumClusterSize: 4,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
     "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}"
-    modelsbyref='true')
+    modelsbyref='false')
 
   ui-gmap-window(
     coords='layers.listingDetail.geom_point_json'
@@ -51,7 +51,7 @@ ui-gmap-google-map(center='center', zoom='zoom',
     ng-cloak=''
     control='controls.streetNumMarkers'
     events='actions.listingEvents'
-    modelsbyref='true'
+    modelsbyref='false'
     chunk='50')
 
   // Would be nice to have just options without each individual attribute
