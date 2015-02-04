@@ -1,4 +1,21 @@
 memoize = require 'memoizee'
+coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
+
+
+
+# MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
+_MARGIN = .25
+
+_flattenLonLatImpl = (all, next) ->
+  all.bindings.push(next.lon, next.lat)
+  all.markers += ", ?, ?"
+  return all
+
+_flattenLonLat = (bounds) ->
+  # flatten the last point as the initial value for reduce
+  _.reduce bounds, _flattenLonLatImpl,
+    bindings: [bounds[bounds.length-1].lon, bounds[bounds.length-1].lat]
+    markers: '?, ?'
 
 
 _whereRawSafe = (query, rawSafe) ->
@@ -9,20 +26,6 @@ _orWhereRawSafe = (query, rawSafe) ->
 
 _orderByRawSafe = (query, rawSafe) ->
   query.orderByRaw rawSafe.sql, rawSafe.bindings
-
-_orOrderByRawSafe = (query, rawSafe) ->
-  query.orOrderByRaw ()-> _orderByRawSafe(@, rawSafe)
-
-_distanceFromPoint = (point, options = {}) ->
-  # order by distance from point
-  # http://boundlessgeo.com/2011/09/indexed-nearest-neighbour-search-in-postgis/
-  #geom <-> st_setsrid(st_makepoint(-90,40),4326)
-  sql: "#{options.column} <-> st_setsrid(st_makepoint(?,?),#{options.coordSys})"
-  bindings: [point.longitude, point.latitude]
-
-_orderByDistanceFromPoint = (point, options, query) ->
-  safe = _distanceFromPoint point, options
-  _orderByRawSafe query, safe
 
 _ageOrDaysFromStartToNow = (listingAge, beginDate) ->
   "COALESCE(#{listingAge}, now()::DATE - #{beginDate})"
@@ -77,12 +80,13 @@ module.exports =
       sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
       bindings: [ val ]
 
-  whereRawSafe: _whereRawSafe
-  orWhereRawSafe: _orWhereRawSafe
-  orderByRawSafe: _orderByRawSafe
-  orOrderByRawSafe: _orOrderByRawSafe
-  distanceFromPoint:_distanceFromPoint
-  orderByDistanceFromPoint:_orderByDistanceFromPoint
+  orderByDistanceFromPoint: (query, column, point) ->
+    # order by distance from point
+    # http://boundlessgeo.com/2011/09/indexed-nearest-neighbour-search-in-postgis/
+    #geom <-> st_setsrid(st_makepoint(-90,40),4326)
+    _orderByRawSafe query,
+      sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
+      bindings: [point.longitude, point.latitude]
 
   whereIn: (query, column, values) ->
     # this logic is necessary to avoid SQL parse errors
@@ -107,3 +111,22 @@ module.exports =
     knex.select(knex.raw(_columns[which]+extra))
 
 
+  whereInBounds: (query, column, bounds) ->
+    results = {}
+    if bounds.length > 2
+      # it must be a user-specified boundary
+      boundsFlattened = _flattenLonLat(bounds)
+      results.sql = "ST_WITHIN(#{column}, ST_GeomFromText(MULTIPOLYGON(((#{boundsFlattened.markers}))), #{coordSys.UTM}))"
+      results.bindings = boundsFlattened.bindings
+    else
+      # it's the whole map, so let's put a margin on each side
+      minLon = Math.min(bounds[0].lon, bounds[1].lon)
+      maxLon = Math.max(bounds[0].lon, bounds[1].lon)
+      marginLon = (maxLon - minLon)*_MARGIN
+      minLat = Math.min(bounds[0].lat, bounds[1].lat)
+      maxLat = Math.max(bounds[0].lat, bounds[1].lat)
+      marginLat = (maxLat - minLat)*_MARGIN
+
+      results.sql = "#{column} && ST_MakeEnvelope(?, ?, ?, ?, #{coordSys.UTM})"
+      results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
+    _whereRawSafe query, results

@@ -5,7 +5,6 @@ logger = require '../config/logger'
 config = require '../config/config'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 filterStatuses = require '../enums/filterStatuses'
 
 validators = requestUtil.query.validators
@@ -27,9 +26,8 @@ otherValidations =
   hasOwner: [ validators.boolean() ]
   bounds: [
     validators.string(minLength: 1)
-    validators.geohash.decode
+    validators.geohash
     validators.array(minLength: 0)
-    validators.geohash.transformToRawSQL(column: 'geom_polys_raw', coordSys: coordSys.UTM)
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
                                             validators.choice(choices: statuses) ])
@@ -65,13 +63,13 @@ module.exports =
         # save out for use with saved properties
         bounds = filters.bounds
         # shortcut out, this part won't yield anything
-        if filters.bounds == "dummy" || !filters.status.length
+        if !filters.status.length
           return []
   
         query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(FilterSummary))
         query.limit(limit) if limit
-  
-        sqlHelpers.whereRawSafe(query, filters.bounds)
+
+        sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
   
         if filters.status.length < statuses.length
           sqlHelpers.whereIn(query, 'rm_status', filters.status)
@@ -113,8 +111,8 @@ module.exports =
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
 
         if state.map_zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
-          sqlHelpers.orderByDistanceFromPoint(state.map_center, column: 'geom_point_raw', coordSys: coordSys.UTM, query)
-
+          sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', state.map_center)
+          
         #logger.sql query.toString()
         return query
     .then (filteredProperties) ->
@@ -124,7 +122,7 @@ module.exports =
       return _.uniq filteredProperties, (row) ->
         row.rm_property_id
     .then (filteredProperties) ->
-      return filteredProperties if bounds == "dummy" || !state?.properties_selected || _.keys(state.properties_selected).length == 0
+      return filteredProperties if !state?.properties_selected || _.keys(state.properties_selected).length == 0
       
       # joining saved props to the filter data for properties that passed the filters, keeping track of which
       # ones hit so we can do further processing on the others
@@ -147,7 +145,7 @@ module.exports =
         #logger.sql("filterSummary is being limited to: #{limit}")
         query.limit(limit)
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
-      sqlHelpers.whereRawSafe(query, bounds)
+      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
       query.then (savedProperties) ->
         savedProperties.forEach (row) ->
           row.savedDetails = state.properties_selected[row.rm_property_id]
