@@ -23,17 +23,6 @@
     "ng-infinite-scroller-origin": "~1.2.0",
     "spinkit": "~1.0.0"
   },
-  "sofresh": [
-    "dbsync",
-    "angular-google-maps",
-    "angular",
-    "angular-resource",
-    "angular-cookies",
-    "angular-mocks",
-    "angular-route",
-    "angular-animate",
-    "ui-router-extras"
-  ],
   "overrides": {
     "dbsync": {
       "ignore": "true"

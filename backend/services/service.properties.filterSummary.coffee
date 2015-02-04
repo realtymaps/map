@@ -145,7 +145,7 @@ module.exports =
         #logger.sql("filterSummary is being limited to: #{limit}")
         query.limit(limit)
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
-      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
+      sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
       query.then (savedProperties) ->
         savedProperties.forEach (row) ->
           row.savedDetails = state.properties_selected[row.rm_property_id]
