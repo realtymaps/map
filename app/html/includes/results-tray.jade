@@ -65,7 +65,7 @@ ng-init="resultsInit('results-list')")
                                 span.data {{resultsFormatter.getYear(result.year_built)}}
                                 span.title Built
                     .card-buttons
-                        button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result)")
+                        button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result); $event.stopPropagation()")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
                         button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(result)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="result") {{resultsFormatter.isSavedResult(result) ? 'Saved' : 'Save'}}

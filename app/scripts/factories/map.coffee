@@ -32,9 +32,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.searchbox.setBiasBounds()
           , true
           @scope.satMap =
-            options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, @scope.options
+            options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, self.scope.options
             bounds: {}
             zoom: 20
+            control: {}
+            init: ->
+              $timeout ->
+                gSatMap = self.scope.satMap.control.getGMap()
+                google.maps.event.trigger(gSatMap, 'resize')
+              , 500
 
         @singleClickCtrForDouble = 0
         $log.debug $scope.map
@@ -190,7 +196,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     if event.ctrlKey or event.metaKey
                       return _saveProperty(model, gObject)
                     unless @lastEvent == 'dblclick'
-                      $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model)
+                      $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model, window.event, 'map')
                   , limits.clickDelayMilliSeconds
 
 
