@@ -1,7 +1,7 @@
-div(ng-if="streetViewPanorama.status != 'OK'")
+div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK'")
     ui-gmap-google-map(center='selectedResult.geom_point_json', zoom='satMap.zoom',
       bounds='satMap.bounds' options='satMap.options',
-      pan='true', control='control', ng-cloak=''
+      control='satMap.control', ng-cloak=''
       tabindex='0'
     )
       // BEGIN PARCEL DATA

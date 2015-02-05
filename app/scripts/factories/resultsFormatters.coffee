@@ -201,7 +201,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.resultsLimit += amountToLoad
 #        @bindResultsListEvents()
 
-      click: (result) =>
+      click: (result, event, context) =>
         maybeFetchCb = (showDetails) =>
           #start getting more data
           if showDetails
@@ -217,7 +217,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.streetViewPanorama.status = 'OK'
         @mapCtrl.scope.satMap.zoom = 20
 
-        if @mapCtrl.scope.selectedResult != result
+        if @mapCtrl.scope.selectedResult != result or not context
           @mapCtrl.scope.selectedResult = result
           #set the zoom back so it always is close to the property
           #immediatley turn off sat
