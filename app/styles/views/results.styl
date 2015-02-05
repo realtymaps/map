@@ -35,6 +35,24 @@ data()
   .sqft .data, .year .data
     font-size: .7em
 
+$fnOverrideSliderBackgroundColor()
+  background-color: rm-translucent-white
+
+#results-slide
+  transition: 0.15s all ease-in-out
+
+#results-slide.ng-hide-add, #results-slide.ng-hide-remove
+  display: block !important
+
+
+#results-slide.ng-hide-remove, #results-slide.ng-hide-add.ng-hide-add-active
+  margin-right: -500px
+  opacity: 1
+
+#results-slide.ng-hide-remove.ng-hide-remove-active, #results-slide.ng-hide-add
+  margin-right: 0
+  opacity: 1
+
 .below-price
     text-align: right
 
@@ -97,7 +115,7 @@ data()
 
 #results-header-right
   position: absolute
-  right: 0
+  right: 60px
   color: #929292
   padding: 8px
 
@@ -118,15 +136,15 @@ data()
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
 .results-container
+  .sort-by
+    display none
+  @extends .slide-out-container
   savedButton()
   propertyStatus()
-  margin: 0 0 0 0px
-  position: absolute
-  z-index: 2
+  $fnMobileToolbarPadding()
+  padding-left 41px
   bottom: 0
   right: 0
-  width: 100%
-  top: 0px
 
   .city-state-zip
     font-size: 12px
@@ -154,6 +172,7 @@ data()
 
   #results-list-inner
     float: left
+    $fnOverrideSliderBackgroundColor()
 
   #results-list
     overflow-y: auto
@@ -217,7 +236,7 @@ data()
   .price
     text-align right
     position absolute
-    right 5px
+    right 50px
     display inline-block
     font-size 16px
     color rm-medium-blue-darker
@@ -259,9 +278,14 @@ data()
 @media (min-width: 768px)
   .results-container
     width: listMediaWidth
+    $fnRevertToolbarPadding()
+    .price
+      right 5px
+    .close
+      display: none
 
-  .results-container .close
-    display: none
+  #results-header-right
+    right: 0px
 
   #results-list
     width: 100%
@@ -280,13 +304,13 @@ data()
     /*width: 200px*/
   .info
     margin-left -35px
-  .sort-by
-    display none
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
   .results-container
     width: listNormalWidth
+    .sort-by
+      display inline
 
   #results-list
     width: 100%
@@ -305,8 +329,6 @@ data()
     width: 300px
   .info
     margin-left 0px
-  .sort-by
-    display inline
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
 
@@ -330,6 +352,7 @@ End Results Container
 Detail Container
 *****************/
 #detail-list
+  width:100%
   .container
     width: 100%
 
@@ -353,6 +376,8 @@ Detail Container
   height: 50px
   position: absolute
   bottom: 0px
+  .close
+    $footerClose()
 
 detailData()
   font-size 18px
@@ -363,7 +388,13 @@ detailTitle()
 
 .detail-container
   savedButton()
-     
+  $fnMobileToolbarPadding()
+  padding-left 41px
+  @extends .slide-out-container
+  z-index: 3
+  bottom: 0
+  right: 0
+
   .sold-date.info.title
       margin: 0
 
@@ -376,14 +407,6 @@ detailTitle()
       padding-left: 0px
       padding-right: 0px
 
-  margin: 0 0 0 0px
-  position: absolute
-  z-index: 3
-  bottom: 0
-  right: 0
-  width: 100%
-  top: 0px
-
   propertyStatus()
 
   .indent
@@ -391,6 +414,7 @@ detailTitle()
 
   #detail-list-inner
     float: left
+    $fnOverrideSliderBackgroundColor()
 
   #detail-list
     background: #FFF
@@ -499,21 +523,15 @@ detailTitle()
   #detail-close
     display: block
 
-  #detail-list
-    width: 100%
-
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
 
   .detail-container
     width: listNormalWidth
+    $fnRevertToolbarPadding()
 
   #detail-close
     display: block
-
-  #detail-list
-    width: 100%
-
 /*****************************************************************************************************
 End Detail Container
 *****************************************************************************************************/
