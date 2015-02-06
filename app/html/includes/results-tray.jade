@@ -11,45 +11,45 @@ ng-init="resultsInit('results-list')")
                 span.sort-by Sort by:&nbsp;
                 .btn-group
                     button(id="results-sort-beds" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setOrReverseResultsPredicate('bedrooms')"
-                    ng-class="resultsFormatter.getSortClass('bedrooms')") Beds
+                    ng-click="formatters.results.setOrReverseResultsPredicate('bedrooms')"
+                    ng-class="formatters.results.getSortClass('bedrooms')") Beds
 
                     button(id="results-sort-sqft" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setOrReverseResultsPredicate('finished_sqft')"
-                    ng-class="resultsFormatter.getSortClass('finished_sqft')") Sq Ft
+                    ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')"
+                    ng-class="formatters.results.getSortClass('finished_sqft')") Sq Ft
 
                     button(id="results-sort-year" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setOrReverseResultsPredicate('year_built')"
-                    ng-class="resultsFormatter.getSortClass('year_built')") Year
+                    ng-click="formatters.results.setOrReverseResultsPredicate('year_built')"
+                    ng-class="formatters.results.getSortClass('year_built')") Year
 
                     button(id="results-sort-price" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setOrReverseResultsPredicate('price')"
-                    ng-class="resultsFormatter.getSortClass('price')") Price
+                    ng-click="formatters.results.setOrReverseResultsPredicate('price')"
+                    ng-class="formatters.results.getSortClass('price')") Price
 
                     button(id="results-sort-saved" class="btn btn-default btn-xs"
-                    ng-click="resultsFormatter.setOrReverseResultsPredicate('savedDetails.isSaved')"
-                    ng-class="resultsFormatter.getSortClass('savedDetails.isSaved')") Saved
+                    ng-click="formatters.results.setOrReverseResultsPredicate('savedDetails.isSaved')"
+                    ng-class="formatters.results.getSortClass('savedDetails.isSaved')") Saved
 
-        #results-list(infinite-scroll='resultsFormatter.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
+        #results-list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //DEBUG repeat
             //div(ng-repeat="result in results | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
             div(ng-repeat="result in results | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property")
-                .card( ng-class="resultsFormatter.maybeAnimate()" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
-                rmaps-click="resultsFormatter.click" rmaps-value-name-click="result"
-                rmaps-mouseenter="resultsFormatter.mouseenter" rmaps-value-name-mouseenter="result"
-                rmaps-mouseleave="resultsFormatter.mouseleave" rmaps-value-name-mouseleave="result")
+                .card( ng-class="formatters.results.maybeAnimate()" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
+                rmaps-click="formatters.results.click" rmaps-value-name-click="result"
+                rmaps-mouseenter="formatters.results.mouseenter" rmaps-value-name-mouseenter="result"
+                rmaps-mouseleave="formatters.results.mouseleave" rmaps-value-name-mouseleave="result")
                     //.result-arrow
                         .box Sold
                         .arrow
                     .photo()
-                        img(ng-cloak ng-src="{{resultsFormatter.getCurbsideImage(result)}}")
+                        img(ng-cloak ng-src="{{formatters.results.getCurbsideImage(result)}}")
                     .info
                         .address(ng-if="result.street_address_num || result.street_address_name || result.street_address_unit",ng-cloak)
                             | {{result.street_address_num}} {{result.street_address_name}} {{result.street_address_unit}}
-                            .city-state-zip {{resultsFormatter.getCityStateZip(result)}}
+                            .city-state-zip {{formatters.results.getCityStateZip(result)}}
                         .price(ng-cloak)
-                            .price-value {{resultsFormatter.getPrice(result.price)}}
-                            .property-status(ng-class="resultsFormatter.getStatusLabelClass(result,true)") {{result.rm_status}}
+                            .price-value {{formatters.results.getPrice(result.price)}}
+                            .property-status(ng-class="formatters.results.getStatusLabelClass(result,true)") {{result.rm_status}}
 
                         .quick-summary
                             .beds(ng-if="result.bedrooms" ng-cloak)
@@ -62,12 +62,12 @@ ng-init="resultsInit('results-list')")
                                 span.data {{result.finished_sqft}}
                                 span.title Sq Ft
                             .year(ng-if="result.year_built" ng-cloak)
-                                span.data {{resultsFormatter.getYear(result.year_built)}}
+                                span.data {{formatters.results.getYear(result.year_built)}}
                                 span.title Built
                     .card-buttons
                         button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result); $event.stopPropagation()")
                             i.fa.fa-envelope &nbsp;
                             | Send Mailing
-                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':resultsFormatter.isSavedResult(result)}",rmaps-click="resultsFormatter.clickSaveResultFromList",rmaps-value-name-click="result") {{resultsFormatter.isSavedResult(result) ? 'Saved' : 'Save'}}
+                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':formatters.results.isSavedResult(result)}",rmaps-click="formatters.results.clickSaveResultFromList",rmaps-value-name-click="result") {{formatters.results.isSavedResult(result) ? 'Saved' : 'Save'}}
         #results-footer
             i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleResults()")

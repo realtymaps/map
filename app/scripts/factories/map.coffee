@@ -72,7 +72,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           else
             opts =  $scope.formatters.layer.Parcels.optionsFromFill(model)
           gObject.setOptions(opts) if opts
-          $scope.resultsFormatter?.reset()
+          $scope.formatters.results?.reset()
 
         @updateAllLayersByModel = _updateAllLayersByModel = (model) ->
           uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
@@ -185,7 +185,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
               click: (gObject, eventname, model, events) =>
                 $scope.$evalAsync =>
-                  @lastEvent = 'click'
                   #delay click interaction to see if a dblclick came in
                   #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
                   event = events[0]
@@ -196,9 +195,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     if event.ctrlKey or event.metaKey
                       return _saveProperty(model, gObject)
                     unless @lastEvent == 'dblclick'
-                      $scope.resultsFormatter.click(@filterSummaryHash[model.rm_property_id]||model, window.event, 'map')
+                      $scope.formatters.results.click(@filterSummaryHash[model.rm_property_id]||model, window.event, 'map')
                   , limits.clickDelayMilliSeconds
-
 
               dblclick: (gObject, eventname, model, events) =>
                 @lastEvent = 'dblclick'
@@ -206,15 +204,20 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
                 model = GoogleService.UiMap.getCorrectModel model
                 _saveProperty model, gObject
+                $timeout =>
+                  #cleanup
+                  @lastEvent = undefined
+                , limits.clickDelayMilliSeconds + 100
 
           #TODO: move ResultsFormatter into here as result for consistency
           formatters:
             layer: LayerFormatters
+            results: new ResultsFormatter(self)
 
           dragZoom: {}
           changeZoom: (increment) ->
             $scope.zoom += increment
-            
+
           searchbox:
             template: 'map-searchbox.tpl.html'
             parent: 'searchbox-container'
@@ -247,8 +250,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               ne = uiGmapUtil.getCoords(@scope.bounds?.northeast)
               ne ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude+0.01, longitude: @scope.center.longitude+0.01)
               @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
-
-        @scope.resultsFormatter = new ResultsFormatter(self)
 
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
@@ -308,11 +309,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.controls.parcels.newModels data
           @waitToSetParcelData = false
           @scope.$evalAsync () =>
-            @scope.resultsFormatter?.reset()
+            @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>
-        @scope.resultsFormatter?.reset()
+        @scope.formatters.results?.reset()
         if not paths and not @scope.drawUtil.isEnabled
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
