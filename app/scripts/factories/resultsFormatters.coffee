@@ -130,7 +130,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.center =
           latitude: latLng.lat()
           longitude: latLng.lng()
-        zoomLevel = if @mapCtrl.scope.zoom > 18 then @mapCtrl.scope.zoom else 18
+        zoomLevel = @mapCtrl.scope.options.zoomThresh.addressParcel
+        zoomLevel = @mapCtrl.scope.zoom if @mapCtrl.scope.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
         @mapCtrl.scope.zoom = zoomLevel
 
       getPriceLabel: (status) ->
