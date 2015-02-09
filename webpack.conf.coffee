@@ -31,7 +31,14 @@ Config = (output, additionalPlugs) ->
         { test: /\.eot$/, loader: "file?prefix=font/" }
         { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
         { test: /\.html$/, loader: "html?attrs=img:src" }
-      ] 
+      ]
+      postLoaders: [
+        {
+          test: /\.js$/
+          exclude: /\/(node_modules|bower_components)\//
+          loader: 'autopolyfiller?{ browsers: [ "last 2 versions", "ie >= 9" ] }'
+        }
+      ]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"
     obj.output = output

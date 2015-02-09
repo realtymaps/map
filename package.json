@@ -27,6 +27,7 @@
   },
   "dependencies": {
     "async": "^0.9.0",
+    "autopolyfiller-loader": "^0.2.1",
     "base64url": "0.0.6",
     "bcrypt": "^0.8.0",
     "bluebird": "^2.3.2",
@@ -102,6 +103,7 @@
     "karma-phantomjs-launcher": "0.1.4",
     "karma-webpack": "git://github.com/realtymaps/karma-webpack.git",
     "knex": "^0.7.3",
+    "loader-utils": "^0.2.6",
     "lob": "^2.9.1",
     "lodash": "^2.4.1",
     "main-bower-files": "^2.0.0",
@@ -127,6 +129,7 @@
     "should": "^4.0.4",
     "sinon": "^1.10.3",
     "sleep": "^1.1.8",
+    "source-map": "^0.1.43",
     "sprintf-js": "^1.0.2",
     "stack-trace": "0.0.9",
     "style-loader": "git://github.com/realtymaps/style-loader.git",
