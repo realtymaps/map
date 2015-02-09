@@ -6,10 +6,10 @@ sprintf = require('sprintf-js').sprintf
 app.factory 'ResultsFormatter'.ourNs(), [
   '$rootScope', '$timeout', '$filter',
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil',
+  'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
   ($rootScope, $timeout, $filter,
   $log, ParcelEnums, GoogleService,
-  Properties, FormattersService, uiGmapGmapUtil) ->
+  Properties, FormattersService, uiGmapGmapUtil, Events) ->
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
