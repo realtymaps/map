@@ -321,6 +321,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return if not paths? or not paths.length > 1
 
         @hash = encode paths
+        centerToSave = undefined
+
+        if @scope.center?.latitude? and @scope.center?.longitude?
+          centerToSave = @scope.center
+        else if @scope.center?.lat? and @scope.center?.lng?
+          centerToSave =
+            latitude: @scope.center.lat()
+            longitude: @scope.center.lng()
+        else
+          #fallback to saftey and save a good center
+          centerToSave = MainOptions.map.json.center
+
         @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom, toggles: @scope.Toggles)
         @redraw()
 

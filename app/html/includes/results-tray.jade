@@ -1,3 +1,4 @@
+include ./mixins/result-buttons.jade
 .results-container.navbar-below#results-slide(ng-show="Toggles.showResults"
 ng-init="resultsInit('results-list')")
     .tray-close#results-close(ng-click="Toggles.toggleResults()")
@@ -65,9 +66,6 @@ ng-init="resultsInit('results-list')")
                                 span.data {{formatters.results.getYear(result.year_built)}}
                                 span.title Built
                     .card-buttons
-                        button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(result); $event.stopPropagation()")
-                            i.fa.fa-envelope &nbsp;
-                            | Send Mailing
-                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':formatters.results.isSavedResult(result)}",rmaps-click="formatters.results.clickSaveResultFromList",rmaps-value-name-click="result") {{formatters.results.isSavedResult(result) ? 'Saved' : 'Save'}}
+                      mixin resultButtons('result')
         #results-footer
             i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleResults()")

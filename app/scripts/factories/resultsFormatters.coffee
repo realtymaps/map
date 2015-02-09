@@ -4,9 +4,12 @@ sprintf = require('sprintf-js').sprintf
 
 
 app.factory 'ResultsFormatter'.ourNs(), [
-  '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  'Properties'.ourNs(), 'FormattersService'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties, FormattersService) ->
+  '$rootScope', '$timeout', '$filter',
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
+  'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil',
+  ($rootScope, $timeout, $filter,
+  $log, ParcelEnums, GoogleService,
+  Properties, FormattersService, uiGmapGmapUtil) ->
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
@@ -108,17 +111,28 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return unless result
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
-        
+
       getStatusLabelClass: (result, ignoreSavedStatus=false) ->
         return unless result
         soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
         return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
 
       showSoldDate: (result) ->
-        if !result
-          return false
+        return false unless result
         return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
-        
+
+      sendSnail: (result) ->
+        $rootScope.$emit Events.snail.initiateSend, result
+
+      zoomTo: (result) =>
+        return if !result or not result.geom_point_json?
+        latLng = uiGmapGmapUtil.getCoords result.geom_point_json
+        @mapCtrl.scope.center =
+          latitude: latLng.lat()
+          longitude: latLng.lng()
+        zoomLevel = if @mapCtrl.scope.zoom > 18 then @mapCtrl.scope.zoom else 18
+        @mapCtrl.scope.zoom = zoomLevel
+
       getPriceLabel: (status) ->
         if (status=='recently sold'||status=='not for sale')
           label = ''
@@ -140,7 +154,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       showListingData: (model) ->
         return false if not model
         model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
-      
+
       showSalesData: (model) ->
         return false if not model
         model.mortgage_amount || model.mortgage_date || @showIfDifferentFrom(model, 'sale', 'mls_close') || @showIfDifferentFrom(model, 'prior_sale', 'mls_close')
@@ -157,7 +171,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         millis1 = new Date(model[differentFromPrefix+"date"].toLocaleString()).getTime()
         millis2 = new Date(model[prefix+"date"].toLocaleString()).getTime()
         return Math.abs(millis1-millis2) > 30*86400000
-        
+
       loadMore: =>
         #debugging
         return unless @mapCtrl.scope.Toggles.showResults

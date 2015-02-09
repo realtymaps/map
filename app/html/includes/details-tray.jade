@@ -1,3 +1,4 @@
+include ./mixins/result-buttons.jade
 .navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
     .tray-close-light#detail-close(ng-click="Toggles.toggleDetails()" ng-cloak)
         i.centered.fa.fa-chevron-right.fa-2x
@@ -14,10 +15,7 @@
                     .col-sm-7
                         .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
                         .city-state-zip {{formatters.results.getCityStateZip(selectedResult)}}
-                        button.snail.btn.btn-primary-outline.btn-xs(ng-click="sendSnail(selectedResult); $event.stopPropagation()")
-                            i.fa.fa-envelope &nbsp;
-                            | Send Mailing
-                        button.save-button.btn.btn-default.btn-xs(ng-class="{'label-saved-property':formatters.results.isSavedResult(selectedResult)}",rmaps-click="formatters.results.clickSaveResultFromList",rmaps-value-name-click="selectedResult") {{formatters.results.isSavedResult(selectedResult) ? 'Saved' : 'Save'}}
+                        mixin resultButtons('selectedResult')
                     .col-sm-5
                         .price(ng-if="selectedResult.price")
                             span.price-label {{formatters.results.getPriceLabel(selectedResult.rm_status)}}&nbsp;
