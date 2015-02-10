@@ -34,18 +34,6 @@ gulp.task 'webpack', ['otherAssets'], ->
   .pipe plumber()
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
-###
-autopolyfill-loader, looking at lines 22~25 look to be invalid
-the 'polyfill/source path does not exist under polyfill-service at all'
-lastly the polyfill-service is deprecated (see https://github.com/deepsweet/autopolyfiller-loader/issues/1)
-and is now at. I tried to update the dependencies with a realtymaps/autopolyfiller-loader but
-i get callstack out of memory errors.
-polyfills.forEach(function(polyfill) {
-    inject += 'require("' + require.resolve('polyfill/source/' + polyfill) + '");';
-    inject += '\n';
-});
-###
-#paths.destFull.scripts + '/**/*' #for postLoader to polyfill the (FAILS via vendor.js PROMISE not found)
 
 gulp.task 'webpackMock', ['otherAssets'], ->
   gulp.src [

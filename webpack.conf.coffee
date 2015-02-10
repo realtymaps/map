@@ -19,7 +19,7 @@ Config = (output, additionalPlugs) ->
       ]
     module:
       loaders: [
-        { test: /\.css$/, loader: 'style!css' }
+        { test: /\.css$/, loader: 'style!css!autoprefixer?browsers=last 2 version' }
 #        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
         { test: /\.styl$/, loader: 'style!css!stylus' }
         { test: /\.coffee$/, loader: 'coffee' }
