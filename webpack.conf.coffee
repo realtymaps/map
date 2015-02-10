@@ -1,7 +1,5 @@
 webpack = require 'webpack'
 _ = require 'lodash'
-autoprefixer = require 'autoprefixer-core'
-csswring     = require 'csswring'
 
 Config = (output, additionalPlugs) ->
   obj =
@@ -34,14 +32,6 @@ Config = (output, additionalPlugs) ->
         { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
         { test: /\.html$/, loader: "html?attrs=img:src" }
       ]
-      postLoaders: [
-        {
-          test: /\.js$/
-          exclude: /\/(node_modules|bower_components)\//
-          loader: 'autopolyfiller?{ browsers: [ "last 2 versions", "ie >= 9" ] }'
-        }
-      ]
-    postcss: [autoprefixer, csswring]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"
     obj.output = output
