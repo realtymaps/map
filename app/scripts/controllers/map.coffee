@@ -46,13 +46,17 @@ module.exports = app
           _.extend($rootScope.selectedFilters, identity.stateRecall.filters)
         if map
           if identity.stateRecall.map_center
-            $scope.center = identity.stateRecall.map_center
+            $scope.center = identity.stateRecall.map_center or MainOptions.map.options.json.center
           if identity.stateRecall.map_zoom
             $scope.zoom = +identity.stateRecall.map_zoom
           $scope.toggles = new Toggles(identity.stateRecall.map_toggles)
         else
-          if identity.stateRecall.map_center
-            MainOptions.map.options.json.center = identity.stateRecall.map_center
+          if identity.stateRecall.map_center and
+            identity.stateRecall.map_center.latitude? and
+            identity.stateRecall.map_center.latitude != "NaN" and
+            identity.stateRecall.map_center.longitude? and
+            identity.stateRecall.map_center.longitude != "NaN"
+              MainOptions.map.options.json.center = identity.stateRecall.map_center
           if identity.stateRecall.map_zoom
             MainOptions.map.options.json.zoom = +identity.stateRecall.map_zoom
           MainOptions.map.toggles = new Toggles(identity.stateRecall.map_toggles)
@@ -63,7 +67,4 @@ module.exports = app
 
     if principal.isIdentityResolved() && principal.isAuthenticated()
       restoreState()
-
-    $scope.sendSnail = (property) ->
-      $rootScope.$emit Events.snail.initiateSend, property
 ]

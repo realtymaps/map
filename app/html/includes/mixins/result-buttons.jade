@@ -1,0 +1,14 @@
+mixin resultButtons(resultName)
+  button.snail.btn.btn-primary-outline.btn-xs(
+  ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
+      i.fa.fa-map-marker &nbsp;
+      | Zoom To
+  button.snail.btn.btn-primary-outline.btn-xs(
+  ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
+      i.fa.fa-envelope &nbsp;
+      | Send Mailing
+      
+  button.save-button.btn.btn-default.btn-xs(
+  ng-class="{'label-saved-property':formatters.results.isSavedResult(#{resultName})}",
+  rmaps-click="formatters.results.clickSaveResultFromList",
+  rmaps-value-name-click="#{resultName}") {{formatters.results.isSavedResult(#{resultName}) ? 'Saved' : 'Save'}}
