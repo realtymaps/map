@@ -58,7 +58,9 @@ base =
     API_VERSION: '2014-12-18'
   MAP:
     zoom_ordering_threshold: 17
-
+  NEWRELIC:
+    STAGING_API_KEY: process.env.NEWRELIC_STAGING_API_KEY
+    LIVE_API_KEY: process.env.NEWRELIC_LIVE_API_KEY
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

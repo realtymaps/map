@@ -1,3 +1,4 @@
+require 'newrelic'
 global._ = require 'lodash'
 
 config = require './config/config'
