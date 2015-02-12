@@ -220,7 +220,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
         maybeFetchCb = (showDetails) =>
           #start getting more data
           if showDetails
-            Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
+            Properties.getPropertyDetail(@mapCtrl.refreshState(
+              map_results:
+                selectedResultId: result.rm_property_id)
+            , result.rm_property_id, if result.rm_status then "detail" else "all")
             .then (data) =>
               return unless data
               $timeout () =>
