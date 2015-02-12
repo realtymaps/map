@@ -34,6 +34,7 @@ module.exports = (config, webpackConf) ->
 
 # list of files / patterns to load in the browser
   files: [
+    '../node_modules/phantomjs-polyfill/bind-polyfill.js'
     '../_public/scripts/vendor.js'
     '../_public/styles/vendor.css'
     '../_public/scripts/main.wp.js'
