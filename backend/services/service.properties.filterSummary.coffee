@@ -1,5 +1,5 @@
 db = require('../config/dbs').properties
-FilterSummary = require "../models/model.filterSummary"
+PropertyDetails = require "../models/model.propertyDetails.coffee"
 Promise = require "bluebird"
 logger = require '../config/logger'
 config = require '../config/config'
@@ -66,7 +66,7 @@ module.exports =
         if !filters.status.length
           return []
   
-        query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(FilterSummary))
+        query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(PropertyDetails))
         query.limit(limit) if limit
 
         sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
@@ -139,10 +139,10 @@ module.exports =
       if missingProperties.length == 0
         # shortcut out if we've handled them all
         return filteredProperties
-      query = sqlHelpers.select(db.knex, "filter", false).from(sqlHelpers.tableName(FilterSummary))
+      query = sqlHelpers.select(db.knex, "filter", false).from(sqlHelpers.tableName(PropertyDetails))
 
       if limit
-        #logger.sql("filterSummary is being limited to: #{limit}")
+        #logger.sql("PropertyDetails is being limited to: #{limit}")
         query.limit(limit)
       sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
       sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)

@@ -1,5 +1,5 @@
 db = require('../config/dbs').properties
-FilterSummary = require '../models/model.filterSummary'
+PropertyDetails = require '../models/model.propertyDetails.coffee'
 Promise = require 'bluebird'
 logger = require '../config/logger'
 requestUtil = require '../utils/util.http.request'
@@ -25,7 +25,7 @@ module.exports =
     .then (parameters) ->
 
       query = sqlHelpers.select(db.knex, parameters.columns)
-      .from(sqlHelpers.tableName(FilterSummary))
+      .from(sqlHelpers.tableName(PropertyDetails))
       .where(rm_property_id: parameters.rm_property_id)
       .limit(1)
 
