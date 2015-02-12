@@ -9,7 +9,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
     #we may want to save details beyond just saving there fore it will be a hash pointing to an object
     savedProperties = {}
 
-    detailThottler = new PromiseThrottler()
+    detailThrottler = new PromiseThrottler()
     filterThrottler = new PromiseThrottler()
     parcelThrottler = new PromiseThrottler()
     saveThrottler = new PromiseThrottler()
@@ -34,7 +34,9 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         , http: {route: backendRoutes.properties.parcelBase }
   
       getPropertyDetail: (mapState, rm_property_id, column_set) ->
-        detailThottler.invokePromise $http.get("#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}&#{mapState}", cache: true)
+        mapStateStr = if mapState? then "&#{mapState}" else ''
+        url = "#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}#{mapStateStr}"
+        detailThrottler.invokePromise $http.get(url, cache: true)
         , http: {route: backendRoutes.properties.detail }
   
       saveProperty: (model) =>

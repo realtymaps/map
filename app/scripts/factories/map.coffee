@@ -321,6 +321,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return if not paths? or not paths.length > 1
 
         @hash = encode paths
+
+        @refreshState()
+        @redraw()
+
+      getMapStateObj: =>
         centerToSave = undefined
 
         if @scope.center?.latitude? and @scope.center?.longitude?
@@ -333,8 +338,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           #fallback to saftey and save a good center
           centerToSave = MainOptions.map.json.center
 
-        @mapState = qs.stringify(center: @scope.center, zoom: @scope.zoom, toggles: @scope.Toggles)
-        @redraw()
+        stateObj =
+          map_position:
+            center: centerToSave
+            zoom: @scope.zoom
+          map_toggles: @scope.Toggles or {}
+
+        if @scope.selectedResult? and @scope.selectedResult.rm_property_id?
+          _.extend stateObj,
+            map_results:
+              selectedResultId: @scope.selectedResult.rm_property_id
+        stateObj
+
+      refreshState: (overrideObj = {}) =>
+        @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
+        @mapState
 
       filter: (newFilters, oldFilters) =>
         if not newFilters and not oldFilters then return
