@@ -25,7 +25,7 @@ module.exports =
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
-      query = sqlHelpers.select(db.knex, '*', false).from(sqlHelpers.tableName(Parcel))
+      query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
       sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
       
       #logger.sql query.toString()      

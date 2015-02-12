@@ -40,6 +40,6 @@ if [[ "$NODE_ENV" == "production" ]]; then
     localSync "PROPERTY_DATABASE"
 elif [[ "$NODE_ENV" == "staging" ]]; then
     localSync "USER_DATABASE"
-    remoteSync "PROPERTY_DATABASE" "$thisApp"
+    #remoteSync "PROPERTY_DATABASE" "$thisApp"
+    localSync "PROPERTY_DATABASE"
 fi
-# nothing needed
