@@ -20,7 +20,7 @@ minMaxValidations =
   baths: validators.integer()
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
-  
+
 otherValidations =
   ownerName: validators.string(trim: true)
   hasOwner: [ validators.boolean() ]
@@ -52,12 +52,12 @@ module.exports =
   getFilterSummary: (state, rawFilters, limit = 2000) ->
     bounds = null;
     Promise.try () ->
-      
+
       # note this is looking at the pre-transformed status filter
       if !rawFilters.status?.length && (!state?.properties_selected || _.size(state.properties_selected) == 0)
         # we know there is absolutely nothing to select, GTFO before we do any real work
         return []
-        
+
       requestUtil.query.validateAndTransform(rawFilters, transforms, required)
       .then (filters) ->
         # save out for use with saved properties
@@ -70,21 +70,21 @@ module.exports =
         query.limit(limit) if limit
 
         sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-  
+
         if filters.status.length < statuses.length
           sqlHelpers.whereIn(query, 'rm_status', filters.status)
-  
+
         sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
         sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
         sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
         sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
-  
+
         if filters.bedsMin
           query.where("bedrooms", '>=', filters.bedsMin)
-  
+
         if filters.bathsMin
           query.where("baths_full", '>=', filters.bathsMin)
-  
+
         if filters.hasOwner?
           # only checking owner_name here and now owner_name2 because we do normalization in the property summary
           # table that ensures we never have owner_name2 if we don't have owner_name -- therefore checking
@@ -93,7 +93,7 @@ module.exports =
             query.whereNotNull('owner_name')
           else
             query.whereNull('owner_name')
-  
+
         if filters.ownerName
           # need to avoid any characters that have special meanings in regexes
           # then split on whitespace and commas to get chunks to search for
@@ -104,15 +104,15 @@ module.exports =
             # since this is after the split, a space here will be an actual part of the search
             result.push chunk.replace(/(['-])/g, "[$1 ]?")
           sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
-  
+
         if filters.listedDaysMin
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', ">=", filters.listedDaysMin)
         if filters.listedDaysMax
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
 
-        if state.map_zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
-          sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', state.map_center)
-          
+        if state.map_position.zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
+          sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', state.map_position.center)
+
         #logger.sql query.toString()
         return query
     .then (filteredProperties) ->
@@ -123,7 +123,7 @@ module.exports =
         row.rm_property_id
     .then (filteredProperties) ->
       return filteredProperties if !state?.properties_selected || _.keys(state.properties_selected).length == 0
-      
+
       # joining saved props to the filter data for properties that passed the filters, keeping track of which
       # ones hit so we can do further processing on the others
       matchingSavedProps = {}
@@ -132,7 +132,7 @@ module.exports =
         if maybeProp
           row.savedDetails = maybeProp
           matchingSavedProps[row.rm_property_id] = true
-      
+
       # now get data for any other saved properties and join saved props to them too
       missingProperties = _.filter _.keys(state.properties_selected), (rm_property_id) ->
         !matchingSavedProps[rm_property_id]
