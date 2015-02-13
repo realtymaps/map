@@ -1,6 +1,9 @@
 var api_key = process.env.NEWRELIC_LIVE_API_KEY;
-if(process.env.NODE_ENV !== 'production')
+var appName = '';
+if(process.env.NODE_ENV !== 'production'){
   api_key = process.env.NEWRELIC_STAGING_API_KEY;
+  appName = 'staging'
+}
 
 /**
  * New Relic agent configuration.
@@ -12,7 +15,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : ['realtymaps-map'],
+  app_name : [appName + 'realtymaps-map'],
   /**
    * Your New Relic license key.
    */
