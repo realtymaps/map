@@ -137,7 +137,7 @@ _filtersToRemove = _userStateCols.concat(['bounds'])
 _commonCaptureState = (req, stateUpdate = {}) ->
   hasSomeState = false
   _userStateCols.forEach (col) ->
-    stateUpdate[col] = req.query[col]
+    stateUpdate[col] = req.query[col] if req.query[col]?
     hasSomeState = true if stateUpdate[col]?
 
   if hasSomeState
