@@ -58,7 +58,9 @@ _columns =
     'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
     'zip', 'owner_zip'
   ].join(', ')
-  '*': '*'
+  parcel: [
+    'rm_property_id', 'street_address_num', 'geom_polys_json', 'geom_point_json'
+  ].join(', ')
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 

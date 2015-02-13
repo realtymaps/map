@@ -25,6 +25,14 @@ fi
 
 SERVICE="$1"
 PROJECT="$2"
+if [[ "$CIRCLE_BRANCH" != "master" ]]
+then
+    PREFIX=`echo "$CIRCLE_BRANCH" | cut -d '/' -f 2`
+    if [[ "$PREFIX" != "" ]]
+    then
+        PROJECT="$PREFIX-$PROJECT"
+    fi
+fi
 DESTINATION="$3"
 if [ -z "$DESTINATION" ]
 then
@@ -63,10 +71,10 @@ then
         # envSync script) since the map project isn't writing to it.  This
         # may need to be adjusted later if we ever have breaking schema
         # changes to that db that we need to manage
-        forkStagingDb "USER_DATABASE" "realtymaps-map"
+        #forkStagingDb "USER_DATABASE" "realtymaps-map"
         
-        echo "waiting for databases to finish forking..."
-        heroku pg:wait --app=$PROJECT
+        #echo "waiting for databases to finish forking..."
+        #heroku pg:wait --app=$PROJECT
     fi
     
     setQueuedHerokuSettings
