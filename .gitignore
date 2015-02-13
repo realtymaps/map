@@ -22,3 +22,4 @@ dist/
 nginx/var/
 nginx/**/
 mean.coffee.log
+newrelic_agent.log
