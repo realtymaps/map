@@ -25,6 +25,14 @@ fi
 
 SERVICE="$1"
 PROJECT="$2"
+if [[ "$CIRCLE_BRANCH" != "master" ]]
+then
+    PREFIX=`echo "$CIRCLE_BRANCH" | cut -d '/' -f 2`
+    if [[ "$PREFIX" != "" ]]
+    then
+        PROJECT="$PREFIX-$PROJECT"
+    fi
+fi
 DESTINATION="$3"
 if [ -z "$DESTINATION" ]
 then
