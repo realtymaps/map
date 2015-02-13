@@ -1,8 +1,11 @@
 var api_key = process.env.NEWRELIC_LIVE_API_KEY;
-var appName = '';
+var appName, instanceName = '';
 if(process.env.NODE_ENV !== 'production'){
   api_key = process.env.NEWRELIC_STAGING_API_KEY;
-  appName = 'staging'
+  instanceName = process.env.INSTANCE_NAME
+  if(instanceName !== null || instanceName !== undefined)
+    instanceName += '-'
+  appName = instanceName + 'staging-'
 }
 
 /**
