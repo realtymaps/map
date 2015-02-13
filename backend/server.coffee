@@ -1,7 +1,9 @@
-require 'newrelic'
+
 global._ = require 'lodash'
 
 config = require './config/config'
+require('newrelic') if config.ENV != 'development'
+
 require '../common/extensions/strings'
 
 # monitoring with nodetime

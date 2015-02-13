@@ -1,17 +1,27 @@
 var api_key = process.env.NEWRELIC_LIVE_API_KEY;
 var appName, instanceName = '';
+if(process.env.NODE_ENV === 'development') return;
+
 if(process.env.NODE_ENV !== 'production'){
   api_key = process.env.NEWRELIC_STAGING_API_KEY;
-  instanceName = process.env.INSTANCE_NAME
+  if(!api_key){
+    throw("NEWRELIC_STAGING_API_KEY not defined! Please add it to your HEROKU APP's ENV VARS");
+    return;
+  }
+  instanceName = process.env.INSTANCE_NAME;
   if(instanceName !== null || instanceName !== undefined)
-    instanceName += '-'
+    instanceName += '-';
   //we should possibly throw and exit the application if instanceName is null/undefined here
   //this way we can avoid duplicate staging apps in the APM manager of newrelic
   //otherwise this will become a maintance hell
   // FYI to delete the app you need to have OWNER heroku privledges and the heroku app must be shut down
   // it takes a few minutes for NEWRELIC to decide that it is down (GREYED out)
   // https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/removing-applications-servers#ui-settings
-  appName = instanceName + 'staging-'
+  if(!instanceName){
+      throw("INSTANCE_NAME not defined! Please add it to your HEROKU APP's ENV VARS");
+    return;
+  }
+  appName = instanceName + 'staging-';
 }
 
 /**
