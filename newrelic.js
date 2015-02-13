@@ -18,7 +18,7 @@ if(process.env.NODE_ENV !== 'production'){
   // it takes a few minutes for NEWRELIC to decide that it is down (GREYED out)
   // https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/removing-applications-servers#ui-settings
   if(!instanceName){
-      throw("INSTANCE_NAME not defined! Please add it to your HEROKU APP's ENV VARS");
+    throw("INSTANCE_NAME not defined! Please add it to your HEROKU APP's ENV VARS");
     return;
   }
   appName = instanceName + 'staging-';
