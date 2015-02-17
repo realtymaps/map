@@ -2,7 +2,9 @@
 global._ = require 'lodash'
 
 config = require './config/config'
-config.NEW_RELIC.maybeLoad()
+
+if config.NEW_RELIC.RUN
+  require 'newrelic'
 
 require '../common/extensions/strings'
 
