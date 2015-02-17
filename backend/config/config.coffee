@@ -59,7 +59,7 @@ base =
   MAP:
     zoom_ordering_threshold: 17
   NEW_RELIC:
-    API_KEY: process.env.NEWRELIC_API_KEY
+    API_KEY: process.env.NEW_RELIC_API_KEY
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

@@ -1,4 +1,4 @@
-var api_key = process.env.NEWRELIC_API_KEY;
+var api_key = process.env.NEW_RELIC_API_KEY;
 var appName, instanceName = '';
 if(process.env.NODE_ENV === 'development') return;
 
