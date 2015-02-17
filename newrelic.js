@@ -1,14 +1,12 @@
 var config = require('./backend/config/config');
 var api_key = config.NEW_RELIC.API_KEY;
-var appName, instanceName = '';
-
-if(!config.NEW_RELIC.IS_ALLOWED) return;
+var appName = config.NEW_RELIC.APP_NAME;
 
 if(!api_key)
-  throw("NEWRELIC_API_KEY not defined! Please add it to your HEROKU APP's ENV VARS");
+  throw("NEWRELIC_API_KEY not defined! Please add it to your Heroku app's config vars or your .env file.");
 
-if(!config.NEW_RELIC.APP_NAME)
-  throw("config.NEW_RELIC.APP_NAME not defined!");
+if(!appName)
+  throw("config.NEW_RELIC.APP_NAME not defined! Please define INSTANCE_NAME in your Heroku app's config vars or your .env file.");
 
 /**
  * New Relic agent configuration.
@@ -20,7 +18,7 @@ exports.config = {
   /**
    * Array of application names.
    */
-  app_name : [config.NEW_RELIC.APP_NAME],
+  app_name : [appName],
   /**
    * Your New Relic license key.
    */
