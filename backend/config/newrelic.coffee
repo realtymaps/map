@@ -5,7 +5,6 @@ module.exports = (environment) ->
     require('newrelic') if canRunNewRelic
   IS_ALLOWED: canRunNewRelic
   APP_NAME: do ->
-    #should this be in newrelic.js seems like a lot of responsibility for this file
     appName = 'realtymaps-map'
     return appName if environment == 'production'
 
@@ -13,7 +12,6 @@ module.exports = (environment) ->
     instanceName += '-' if instanceName?
 
     ###
-      We should possibly throw and exit the application if instanceName is null/undefined here.
     This way we can avoid duplicate staging apps in the APM manager of New Relic
     otherwise this will become a maintenance hell.
 
