@@ -28,6 +28,5 @@ module.exports = (environment) ->
     ###
     unless instanceName
       msg = "INSTANCE_NAME not defined! Please add it to your HEROKU APP's ENV VARS"
-      console.error msg
-      throw msg
+      console.warn msg
     appName = instanceName + 'staging-' + appName
