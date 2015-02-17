@@ -1,22 +1,29 @@
-var api_key = process.env.NEWRELIC_LIVE_API_KEY;
+var api_key = process.env.NEWRELIC_API_KEY;
 var appName, instanceName = '';
 if(process.env.NODE_ENV === 'development') return;
 
 if(process.env.NODE_ENV !== 'production'){
-  api_key = process.env.NEWRELIC_STAGING_API_KEY;
   if(!api_key){
-    throw("NEWRELIC_STAGING_API_KEY not defined! Please add it to your HEROKU APP's ENV VARS");
+    throw("NEWRELIC_API_KEY not defined! Please add it to your HEROKU APP's ENV VARS");
     return;
   }
   instanceName = process.env.INSTANCE_NAME;
   if(instanceName !== null || instanceName !== undefined)
     instanceName += '-';
-  //we should possibly throw and exit the application if instanceName is null/undefined here
-  //this way we can avoid duplicate staging apps in the APM manager of newrelic
-  //otherwise this will become a maintance hell
-  // FYI to delete the app you need to have OWNER heroku privledges and the heroku app must be shut down
-  // it takes a few minutes for NEWRELIC to decide that it is down (GREYED out)
-  // https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/removing-applications-servers#ui-settings
+  /*
+  We should possibly throw and exit the application if instanceName is null/undefined here.
+  This way we can avoid duplicate staging apps in the APM manager of New Relic
+  otherwise this will become a maintenance hell.
+
+  Also developers should limit their staging to 1 Dyno of the smallest size too keep cost down.
+  Especially if New Relic is pinging it often.
+
+
+   Maintenance (new relic):
+   FYI to delete the app you need to have OWNER heroku privileges and the Heroku app must be shut down
+   it takes a few minutes for New Relic to decide that it is down (GREYED out)
+   https://docs.newrelic.com/docs/apm/new-relic-apm/maintenance/removing-applications-servers#ui-settings
+  */
   if(!instanceName){
     throw("INSTANCE_NAME not defined! Please add it to your HEROKU APP's ENV VARS");
     return;
