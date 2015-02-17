@@ -10,8 +10,8 @@ module.exports = (environment) ->
     return appName if environment == 'production'
 
     instanceName = process.env.INSTANCE_NAME
-    unless instanceName?
-      instanceName += '-'
+    instanceName += '-' if instanceName?
+
     ###
       We should possibly throw and exit the application if instanceName is null/undefined here.
     This way we can avoid duplicate staging apps in the APM manager of New Relic
