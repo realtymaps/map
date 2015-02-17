@@ -2,7 +2,7 @@
 global._ = require 'lodash'
 
 config = require './config/config'
-require('newrelic') if config.ENV != 'development'
+config.NEW_RELIC.maybeLoad()
 
 require '../common/extensions/strings'
 

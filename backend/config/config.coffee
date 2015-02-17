@@ -2,9 +2,11 @@ _ = require 'lodash'
 path = require 'path'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
+environment = process.env.NODE_ENV || 'development'
+
 base =
   PROD_PORT: 80
-  ENV: process.env.NODE_ENV || 'development'
+  ENV: environment
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
   PORT: process.env.PORT || 4000
@@ -58,8 +60,8 @@ base =
     API_VERSION: '2014-12-18'
   MAP:
     zoom_ordering_threshold: 17
-  NEW_RELIC:
-    API_KEY: process.env.NEW_RELIC_API_KEY
+  NEW_RELIC: do ->
+    require('./newrelic')(environment)
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
