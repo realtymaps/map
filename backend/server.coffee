@@ -1,6 +1,9 @@
+
 global._ = require 'lodash'
 
 config = require './config/config'
+config.NEW_RELIC.maybeLoad()
+
 require '../common/extensions/strings'
 
 # monitoring with nodetime
