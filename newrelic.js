@@ -13,7 +13,7 @@ We use a different INSTANCE_NAME for each staging/dev instance, that way we can 
 of New Relic -- otherwise this would become a maintenance hell.
 
 Developers should limit their staging to 1 Dyno of the smallest size to keep cost down, especially when new relic is
-pinging the app (whcih will keep it from sleeping).
+pinging the app (which will keep it from sleeping).
 
 Maintenance:
   FYI to delete an app from new relic, you need to have OWNER heroku privileges and the Heroku app must be shut down
