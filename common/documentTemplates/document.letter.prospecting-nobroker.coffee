@@ -15,6 +15,9 @@ templateProps =
     left: 1
     right: 1
   lobTemplateId: 0
+  optionalFields:
+    from:
+      address_line1: true
 
 render = (data, stream) ->
   try

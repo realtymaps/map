@@ -104,7 +104,7 @@
     "karma-webpack": "git://github.com/realtymaps/karma-webpack.git",
     "knex": "^0.7.3",
     "lob": "^2.9.1",
-    "lodash": "^2.4.1",
+    "lodash": "~2.4.1",
     "main-bower-files": "^2.0.0",
     "memoizee": "^0.3.7",
     "memwatch": "0.2.x",
@@ -144,9 +144,7 @@
   },
   "devDependencies": {
     "karma-chai": "^0.1.0",
-    "karma-coverage": "https://github.com/realtymaps/karma-coverage/archive/master.tar.gz",
     "karma-mocha-reporter": "^0.3.1",
-    "phantomjs-polyfill": "0.0.1",
-    "should": "^4.0.4"
+    "phantomjs-polyfill": "0.0.1"
   }
 }
