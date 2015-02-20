@@ -22,7 +22,7 @@ gulp.task 'karma', ['build'], (done) ->
     log "Karma Callback Code: #{code}"
     done(code)
 
-  log "#{realtymaps.dashes} Karma Setup #{realtymaps.dashes}"
+  log "-- Karma Setup --"
   try
     karma.start
       configFile: karmaConf
