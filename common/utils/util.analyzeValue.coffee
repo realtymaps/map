@@ -35,4 +35,4 @@ analyzeValue = (value) ->
   
   return result
 
-module.exports = analyzeValue 
+module.exports = analyzeValue
