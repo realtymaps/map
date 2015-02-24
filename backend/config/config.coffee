@@ -60,6 +60,7 @@ base =
   MAP:
     zoom_ordering_threshold: 17
   NEW_RELIC:
+    LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
 
 # this one's separated out so we can re-use the USER_DB.connection value
@@ -89,6 +90,7 @@ environmentConfig =
     USE_ERROR_HANDLER: true
     NEW_RELIC:
       RUN: false # can be flipped to true if needed for troubleshooting or testing
+      LOGLEVEL: 'debug'
       APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null 
 
   test: # test inherits from development below
@@ -113,6 +115,7 @@ environmentConfig =
         secure: false
     NEW_RELIC:
       RUN: true
+      LOGLEVEL: 'debug'
       APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
