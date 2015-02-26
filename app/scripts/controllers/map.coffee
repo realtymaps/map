@@ -12,8 +12,8 @@ module.exports = app
 
 app.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
   GoogleMapApi.configure
-  # key: 'your api key',
-    v: '3.17' #note 3.16 is slow and buggy on markers
+    # key: 'your api key',
+    v: '3.18'
     libraries: 'visualization,geometry,places'
 ])
 
