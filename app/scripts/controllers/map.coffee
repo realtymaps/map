@@ -66,7 +66,7 @@ module.exports = app
           MainOptions.map.toggles = new Toggles(identity.stateRecall.map_toggles)
           map = new Map($scope, MainOptions.map)
 
-          if identity.stateRecall.map_results? and map?
+          if identity.stateRecall.map_results?.selectedResultId? and map?
             $log.debug "attempting to reinstate selectedResult"
             Properties.getPropertyDetail(null,
               identity.stateRecall.map_results.selectedResultId,"all")
