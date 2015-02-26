@@ -10,7 +10,7 @@ config = require '../config/config'
 dbs = require '../config/dbs'
 
 
-CLEAN_SESSION_SECURITY = 'DELETE FROM session_security WHERE session_id IN (SELECT session_id FROM session_security LEFT JOIN session ON session.sid=session_security.session_id WHERE sid IS NULL);'
+CLEAN_SESSION_SECURITY = "DELETE FROM session_security WHERE app = '#{config.SESSION_SECURITY.app}' AND session_id IN (SELECT session_id FROM session_security LEFT JOIN session ON session.sid=session_security.session_id WHERE sid IS NULL);"
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -45,10 +45,11 @@ createNewSeries = (req, res, rememberMe) ->
         session_id: req.sessionID
         remember_me: rememberMe
         series_salt: salt
+        app: config.SESSION_SECURITY.app
         # here we store the hash, not the token, for the same reason you do
         # that with passwords -- someone who gets some db data they shouldn't
         # won't be able to use it to log in as someone else (easily)
-        next_security_token: tokenHash
+        token: tokenHash
       return security
   .then (security) ->
     SessionSecurity.forge(security).save()
@@ -78,7 +79,7 @@ ensureSessionCount = (req) -> Promise.try () ->
 
   sessionSecuritiesPromise = dbs.users.raw(CLEAN_SESSION_SECURITY)
   .then () ->
-    SessionSecurity.where(user_id: req.user.id).fetchAll()
+    SessionSecurity.where(user_id: req.user.id, app: config.SESSION_SECURITY.app).fetchAll()
   .then (sessionSecurities) ->
     return sessionSecurities.toJSON()
   
@@ -87,53 +88,17 @@ ensureSessionCount = (req) -> Promise.try () ->
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
       sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
-      SessionSecurity.knex().where('session_id', 'in', sessionIdsToDelete).del()
+      SessionSecurity.knex().whereIn('session_id', sessionIdsToDelete).where(app: config.SESSION_SECURITY.app).del()
 
 
 deleteSecurities = (criteria) ->
-  SessionSecurity.knex().where(criteria).del()
+  SessionSecurity.knex().where(criteria).where(app: config.SESSION_SECURITY.app).del()
 
 
 getSecuritiesForSession = (sessionId) ->
-  SessionSecurity.where(session_id: sessionId).fetchAll()
+  SessionSecurity.where(session_id: sessionId).where(app: config.SESSION_SECURITY.app).fetchAll()
   .then (securities) ->
     return securities.toJSON()
-
-
-remindSecurityCookie = (req, res, security) -> Promise.try () ->
-  setSecurityCookie(req, res, security.next_security_token, security.remember_me)
-
-# alter the existing sessionSecurity object
-iterateSecurity = (req, res, security) -> Promise.try () ->
-  newToken = uuid.genToken()
-  hashToken(newToken, security.series_salt)
-  .then (tokenHash) ->
-    console.log("--------  tokenHash: "+tokenHash)
-    SessionSecurity.where
-      id: security.id
-      # this next criterium ensures we don't clobber another update
-      next_security_token: security.next_security_token
-    .save
-      # it seems we get an error if an "update" modifies 0 rows...
-      next_security_token: tokenHash
-      current_security_token: security.next_security_token
-      previous_security_token: security.current_security_token
-      , {method: "update", patch: true}
-    .then () ->
-      SessionSecurity.forge(id: security.id).fetch()
-    .then (newSecurity) ->
-        newSecurity.toJSON()
-    .then (newSecurity) ->
-      if newSecurity.next_security_token == tokenHash
-        # only if we detect that we successfully performed a save...
-        setSecurityCookie(req, res, newToken, security.remember_me)
-    .catch (err) ->
-      ignore = "No rows were affected in the update"
-      if (err?.message?.substr(0, ignore.length) == ignore)
-        #logger.debug "race condition encountered due to concurrent AJAX calls in a session, ignoring"
-      else
-        logger.error "Error while iterating security token: #{err}"
-      return
 
 
 module.exports =
@@ -141,6 +106,4 @@ module.exports =
   ensureSessionCount: ensureSessionCount
   deleteSecurities: deleteSecurities
   getSecuritiesForSession: getSecuritiesForSession
-  iterateSecurity: iterateSecurity
   hashToken: hashToken
-  remindSecurityCookie: remindSecurityCookie

@@ -38,7 +38,7 @@ base =
     unset: "destroy"
   SESSION_SECURITY:
     name: "anticlone"
-    window: 60*1000 # 1 minute
+    app: "map"
     rememberMeAge: 30*24*60*60*1000 # 30 days
     cookie:
       httpOnly: true

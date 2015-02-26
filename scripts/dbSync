@@ -1,6 +1,13 @@
 #!/bin/bash
 set -e
 
+
+if [[ "$SKIP_DBSYNC" == "true" ]]
+then
+    exit 0
+fi
+
+
 if [ ! -n "$IS_HEROKU" ]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"

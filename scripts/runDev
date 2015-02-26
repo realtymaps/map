@@ -1,13 +1,29 @@
 #!/bin/bash
 set -e
 
-if [[ "$1" == "--clean" || "$2" == "--clean" ]]
+for ((i=1; i<=$#; i++))
+do
+    case "${!i}" in
+        --clean)
+            DO_CLEAN=true
+            DO_INSTALL=true
+            ;;
+        --install)
+            DO_INSTALL=true
+            ;;
+        --skip-dbsync)
+            export SKIP_DBSYNC=true
+            ;;
+    esac
+done
+
+
+if [[ "$DO_CLEAN" == "true" ]]
 then
-  INSTALL=1
   foreman run npm run clean
 fi
 
-if [[ "$1" == "--install" || "$2" == "--install" || "$INSTALL" == "1" ]]
+if [[ "$DO_INSTALL" == "true" ]]
 then
   foreman run npm install
 fi
