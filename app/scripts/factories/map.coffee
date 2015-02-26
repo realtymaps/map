@@ -130,6 +130,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             parcels: {}
             streetNumMarkers: {}
             priceMarkers: {}
+            streetView: {}
 
           drawUtil:
             draw: undefined
@@ -318,7 +319,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           paths = _.map @scope.bounds, (b) ->
             new google.maps.LatLng b.latitude, b.longitude
 
-        return if not paths? or not paths.length > 1
+        if !paths? || paths.length < 2 || (paths.length == 2 && _.isEqual(paths...))
+          return
 
         @hash = encode paths
 

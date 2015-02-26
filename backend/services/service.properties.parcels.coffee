@@ -12,7 +12,7 @@ transforms =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash
-    validators.array(minLength: 0)
+    validators.array(minLength: 2)
   ]
 
 required =

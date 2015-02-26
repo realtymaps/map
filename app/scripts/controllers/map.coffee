@@ -10,15 +10,14 @@ map = undefined
 
 module.exports = app
 
-.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
+app.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
   GoogleMapApi.configure
   # key: 'your api key',
     v: '3.17' #note 3.16 is slow and buggy on markers
     libraries: 'visualization,geometry,places'
-
 ])
 
-.controller 'MapCtrl'.ourNs(), [
+app.controller 'MapCtrl'.ourNs(), [
   '$scope', '$rootScope', '$timeout', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
   'Logger'.ourNs(),
@@ -78,4 +77,29 @@ module.exports = app
 
     if principal.isIdentityResolved() && principal.isAuthenticated()
       restoreState()
+]
+
+# fix google map views after changing back to map state
+app.run ["$rootScope", "$timeout",
+  ($rootScope, $timeout) ->
+    $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+      # if we're not entering the map state, or if we're already on the map state, don't do anything
+      if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
+        return
+
+      console.log("============================================")
+      $timeout () ->
+        # main map
+        gMap = map?.scope.control.getGMap?()
+        if gMap?
+          google.maps.event.trigger(gMap, 'resize')
+        # satellite view map
+        gSatMap = map?.scope.satMap?.control.getGMap?()
+        if gSatMap?
+          google.maps.event.trigger(gSatMap, 'resize')
+        # street view map -- TODO: this doesn't work for street view, not sure why
+        gStrMap = map?.scope.controls.streetView.getGObject?()
+        if gStrMap?
+          google.maps.event.trigger(gStrMap, 'resize')
+      , 500
 ]
