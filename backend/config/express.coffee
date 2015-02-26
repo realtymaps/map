@@ -70,7 +70,7 @@ app.use Promise.nodeifyWrapper(promisify.sessionMiddleware)
 app.use Promise.nodeifyWrapper(auth.setSessionCredentials)
 
 # do session security checks
-#app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
+app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 
 # enable flash messages
 app.use connectFlash()

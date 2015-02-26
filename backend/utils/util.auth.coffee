@@ -47,9 +47,8 @@ module.exports = {
       logger.error "error while setting session data on request"
       Promise.reject(err)
   
-  # app-wide middleware to prevent session cloning/hijacking and implement remember_me functionality
+  # app-wide middleware to implement remember_me functionality
   checkSessionSecurity: (req, res) ->
-    #TODO BREAK THIS UP!
     context = {}
     
     Promise.try () ->
@@ -57,7 +56,7 @@ module.exports = {
       if not cookie
         if req.user
           return Promise.reject(new SessionSecurityError("user", "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", "warn"))
-        return Promise.reject(new SessionSecurityError("nothing", "no session security cookie found for anonymous user", null))
+        return Promise.reject(new SessionSecurityError("nothing", "no session security cookie found for anonymous user", false))
       values = cookie.split('.')
       if values.length != 3
         if req.user
@@ -84,34 +83,23 @@ module.exports = {
       if req.user
         return Promise.reject(new SessionSecurityError("session", "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", "warn"))
       else
-        return Promise.reject(new SessionSecurityError("nothing", "anonymous user with no session security", "debug"))
+        return Promise.reject(new SessionSecurityError("nothing", "anonymous user with no session security", false))
     .then (security) ->
       if context.cookieValues.userId != security.user_id
         return Promise.reject(new SessionSecurityError("session", "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}"))
       sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
       .then (tokenHash) ->
         if req.user
-          # this is a logged-in user, so validate on any of the 3 tokens, and iterate
-          # only if it's been a while since we gave out a new token
-          if tokenHash != security.next_security_token && tokenHash != security.current_security_token && tokenHash != security.previous_security_token
-            # oops, they've got a made-up or really old token, this shouldn't happen
-            console.log("========  tokenHash: "+tokenHash)
+          # this is a logged-in user, so validate
+          if tokenHash != security.token
             return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", "warn"))
-          # check if we need to iterate
-          if Date.now()-security.updated_at > config.SESSION_SECURITY.window
-            console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!  iterating! "+(new Date()))
-            return sessionSecurityService.iterateSecurity(req, res, security)
-          # if not, check if they need a "reminder"
-          if tokenHash != security.next_security_token
-            return sessionSecurityService.remindSecurityCookie(req, res, security)
-          # otherwise, we're good to go as-is
           return
         else
           # this isn't a logged-in user, so validate only if remember_me was set; if
           # we do validate, then we need to do some login work
           if not security.remember_me
             return Promise.reject(new SessionSecurityError("security", "anonymous user with non-remember_me session security", "debug"))
-          if tokenHash != security.next_security_token && tokenHash != security.current_security_token && tokenHash != security.previous_security_token
+          if tokenHash != security.token
             return Promise.reject(new SessionSecurityError("user", "cookie vs security token mismatch for user #{cookieValues.user_id} on remember_me session: #{context.sessionId}", "warn"))
           req.session.userid = context.cookieValues.userId
           getSessionUser(req)
