@@ -87,16 +87,11 @@ app.run ["$rootScope", "$timeout",
       if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
         return
 
-      console.log("============================================")
       $timeout () ->
         # main map
-        gMap = map?.scope.control.getGMap?()
-        if gMap?
-          google.maps.event.trigger(gMap, 'resize')
+        map?.scope.control.refresh?()
         # satellite view map
-        gSatMap = map?.scope.satMap?.control.getGMap?()
-        if gSatMap?
-          google.maps.event.trigger(gSatMap, 'resize')
+        map?.scope.satMap?.control.refresh?()
         # street view map -- TODO: this doesn't work for street view, not sure why
         gStrMap = map?.scope.controls.streetView.getGObject?()
         if gStrMap?
