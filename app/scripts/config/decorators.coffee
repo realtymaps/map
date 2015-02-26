@@ -40,8 +40,6 @@ app.config([ '$provide', ($provide) ->
       promise.cancel = ->
         canceller.resolve()
 
-
-
       promise.catch ->
         #if $q.all rejects a collection of promises then we can cancel the http
         promise.cancel()
