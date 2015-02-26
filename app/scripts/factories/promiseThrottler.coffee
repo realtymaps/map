@@ -2,8 +2,8 @@ app = require '../app.coffee'
 
 
 app.factory 'PromiseThrottler'.ourNs(), [
-  'Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'events'.ourNs(), 'MainOptions'.ourNs(),
-  ($log, $timeout, $q, $rootScope, Events, MainOptions) ->
+  'Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'events'.ourNs(), 'MainOptions'.ourNs(), 'uiGmapPropMap',
+  ($log, $timeout, $q, $rootScope, Events, MainOptions, PropMap) ->
 
     defaultName = 'PromiseThrottler'
     defaultNameIndex = 0
