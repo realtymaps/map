@@ -13,7 +13,8 @@ app.config([ '$provide', ($provide) ->
       enumerable: false
 
     $delegate
-]])
+  ]
+])
 .config([ '$provide', ($provide) ->
   # attempting to create a cancelable $http on all its functions
   $provide.decorator '$http', [ '$delegate', '$q', ($delegate, $q) ->
@@ -28,11 +29,18 @@ app.config([ '$provide', ($provide) ->
     $delegate = (requestConfig) ->
       canceller = $q.defer()
       angular.extend requestConfig, timeout: canceller.promise
+      #eliminates the protocol error and allows the client library to handle the error easily
+      #through catch and keeps the callstack traceable
+      if !requestConfig? or !requestConfig.url?
+        canceller.reject("invalid requestConfig #{JSON.stringify(requestConfig)}")
+        return canceller.promise
       promise = http.root(requestConfig)
       #TODO: could override promise with another to return data instead data.data (less annoying)
 
       promise.cancel = ->
         canceller.resolve()
+
+
 
       promise.catch ->
         #if $q.all rejects a collection of promises then we can cancel the http
