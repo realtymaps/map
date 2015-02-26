@@ -27,7 +27,7 @@ otherValidations =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash
-    validators.array(minLength: 0)
+    validators.array(minLength: 2)
   ]
   status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
                                             validators.choice(choices: statuses) ])
