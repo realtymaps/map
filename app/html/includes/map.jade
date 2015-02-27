@@ -75,7 +75,11 @@ ui-gmap-google-map(center='center', zoom='zoom',
     zIndex='10')
   //END PARCEL DATA
 
+  // SearchBox in ui-gmap does not check if the template url is defined prior to grabbing it
+  // reported issue to https://github.com/angular-ui/angular-google-maps/issues/1187
+  // ng-if here prevents loading the search-box until a template is valid
   ui-gmap-search-box(
+    ng-if="searchbox.template"
     options="searchbox.options"
     template="searchbox.template"
     events="searchbox.events"
