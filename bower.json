@@ -14,7 +14,7 @@
     "angular-animate": "~1.3.4",
     "angular-bootstrap": "~0.11.0",
     "angular-ui-utils": "~0.1.1",
-    "angular-google-maps": "git://github.com/realtymaps/angular-google-maps.git#beta",
+    "angular-google-maps": "2.1.0-X.0",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
