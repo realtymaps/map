@@ -53,8 +53,6 @@ data()
        background-color: rm-btn-save-yellow
        color: rm-property-save-bright-foreground
 
-
-
 .property-status
    $border-radius(3px)
    padding: 2px 6px
@@ -131,7 +129,7 @@ data()
   .city-state-zip
     font-size: 12px
     color: #4D4D4D
-    
+
   .quick-summary
     padding-left: 25px
     margin-top: -5px
@@ -168,8 +166,11 @@ data()
     border-bottom 1px solid #d9d9d9
     overflow hidden
 
-  .result-property:hover
+  .result-property-hovered
     background rm-results-hover
+
+  .result-property:hover
+    @extend .results-container .result-property-hovered
 
   .card
     position relative
@@ -363,7 +364,7 @@ detailTitle()
 
 .detail-container
   savedButton()
-     
+
   .sold-date.info.title
       margin: 0
 
@@ -437,7 +438,7 @@ detailTitle()
     font-size: 14px
     color: #4D4D4D
     margin-bottom: 10px
-    
+
   .quick-summary .title
     line-height: 0
 
@@ -468,7 +469,7 @@ detailTitle()
 
   .info .title
     detailTitle()
-    
+
   .divider
     border-bottom: 1px dashed #CCC
 
