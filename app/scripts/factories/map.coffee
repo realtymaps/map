@@ -83,6 +83,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             gObject.setOptions opts
           , ['streetNumMarkers']
 
+        _isModelInFilterSummary = (model) ->
+          model.index?
+
+        # BEGIN POSSIBLE PropertySave SERVICE
+        _maybeRemoveFilterSummaryObjects = (savedDetails, index, model) =>
+          isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
+          if isEmptysFilterCanErase and index?
+            model.isMousedOver = undefined
+            prevLen = @scope.layers.filterSummary.length
+            @scope.layers.filterSummary.splice(index,1)
+            delete model.index if prevLen != @scope.layers.filterSummary.length
+
+        _maybeRefreshFilterSummary = (savedDetails, model) =>
+          if savedDetails.isSaved and !_isModelInFilterSummary(model)
+            @redraw()
         _saveProperty = (model, gObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
@@ -91,19 +106,25 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             #setting savedDetails here as we know the save was successful
             if @filterSummaryHash[model.rm_property_id]?
               @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
-            if @lastHoveredModel?.rm_property_id == model.rm_property_id && !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
+            if @lastHoveredModel?.rm_property_id == model.rm_property_id and !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
               $scope.actions.closeListing()
             index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
               match.savedDetails = savedDetails if match?
               uiGmapControls.updateAllModels match
+
+            _maybeRemoveFilterSummaryObjects(savedDetails, index, model)
+            _maybeRefreshFilterSummary(savedDetails,model)
+
             #need to figure out a better way
+            #best way is to refactor / add ui-gmap to iterate over objects
             @updateFilterSummaryHash()
             _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
               _updateGObjects(gObject, savedDetails, model)
+        # END POSSIBLE PropertySave SERVICE
 
         @saveProperty = _saveProperty
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
