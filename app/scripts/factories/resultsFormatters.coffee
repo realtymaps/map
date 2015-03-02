@@ -82,6 +82,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
           return if newVal == oldVal
           @loadMore()
 
+      getResultsArray: =>
+        _.values @mapCtrl.scope.results
       ###
       Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
       ###
