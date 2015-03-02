@@ -20,25 +20,25 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
 
     # this convention for a combined service call helps elsewhere because we know how to get the path used
     # by this call, which means we can do things with alerts related to it
-    getPropertyData = (pathId, hash, mapState, filters="") ->
+    getPropertyData = (pathId, hash, mapState, filters="", cache = true) ->
       return null if !hash?
-      $http.get("#{backendRoutes.properties[pathId]}?bounds=#{hash}#{filters}&#{mapState}", cache: true)
+      $http.get("#{backendRoutes.properties[pathId]}?bounds=#{hash}#{filters}&#{mapState}", cache: cache)
 
-    service = 
-      getFilterSummary: (hash, mapState, filters="") ->
-        filterThrottler.invokePromise getPropertyData('filterSummary', hash, mapState, filters)
+    service =
+      getFilterSummary: (hash, mapState, filters="", cache = true) ->
+        filterThrottler.invokePromise getPropertyData('filterSummary', hash, mapState, filters, cache)
         , http: {route: backendRoutes.properties.filterSummary }
-  
-      getParcelBase: (hash, mapState, filters="") ->
-        parcelThrottler.invokePromise getPropertyData('parcelBase', hash, mapState, filters)
+
+      getParcelBase: (hash, mapState, cache = true) ->
+        parcelThrottler.invokePromise getPropertyData('parcelBase', hash, mapState, filters = '', cache)
         , http: {route: backendRoutes.properties.parcelBase }
-  
-      getPropertyDetail: (mapState, rm_property_id, column_set) ->
+
+      getPropertyDetail: (mapState, rm_property_id, column_set, cache = true) ->
         mapStateStr = if mapState? then "&#{mapState}" else ''
         url = "#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}#{mapStateStr}"
-        detailThrottler.invokePromise $http.get(url, cache: true)
+        detailThrottler.invokePromise $http.get(url, cache: cache)
         , http: {route: backendRoutes.properties.detail }
-  
+
       saveProperty: (model) =>
         return if not model or not model.rm_property_id
         rm_property_id = model.rm_property_id
@@ -64,14 +64,14 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         statePromise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
         statePromise.then () ->
           return prop
-  
+
       getSavedProperties: ->
         savedProperties
-  
+
       setSavedProperties: (props) ->
         savedProperties = props
 
       savedProperties: savedProperties
-      
+
     return service
 ]

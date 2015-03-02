@@ -89,6 +89,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         # BEGIN POSSIBLE PropertySave SERVICE
         _maybeRemoveFilterSummaryObjects = (savedDetails, index, model) =>
           isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
+
           if isEmptysFilterCanErase and index?
             model.isMousedOver = undefined
             prevLen = @scope.layers.filterSummary.length
@@ -97,7 +98,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         _maybeRefreshFilterSummary = (savedDetails, model) =>
           if savedDetails.isSaved and !_isModelInFilterSummary(model)
-            @redraw()
+            @redraw(cache = false)
+
         _saveProperty = (model, gObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
@@ -297,7 +299,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.options.styles = _.without(@scope.options.styles, @scope.formatters.layer.Parcels.style)
             @didAddGParcelLinesStyle = false
 
-      redraw: =>
+      redraw: (cache = true) =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
         # so we're trying to avoid the races, and also using the control instead of the watched models
         # this is probably not the best setup either, but it's the best I could do without major refactors
@@ -307,7 +309,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @maybeShowGoogleParcelLines()
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          Properties.getParcelBase(@hash, @mapState).then (data) =>
+          Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             if @waitToSetParcelData
               @waitingData = data
@@ -317,7 +319,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
+        Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()

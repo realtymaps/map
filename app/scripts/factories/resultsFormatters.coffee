@@ -271,7 +271,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
+        wasSaved = result.savedDetails.isSaved
         @mapCtrl.saveProperty(result).then =>
           @reset()
+          if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
 
 ]
