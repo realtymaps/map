@@ -27,6 +27,13 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _statusLabelClass['saved'] = 'label-saved-property'
     _statusLabelClass['default'] = ''
 
+    _resultOrModel = (result, model, resultsHash) ->
+      if result
+        return result
+      if !model or !model?.rm_property_id or !resultsHash
+        return undefined
+      resultsHash[model.rm_property_id]
+
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter extends BaseObject
       @include FormattersService.Common
@@ -45,14 +52,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         @reset = _.debounce =>
           @mapCtrl.scope.resultsLimit = 10
-          @mapCtrl.scope.results = []
+          @mapCtrl.scope.results = {}
           @lastSummaryIndex = 0
           @mapCtrl.scope.resultsPotentialLength = undefined
           @filterSummaryInBounds = undefined
           @loadMore()
         , 5
         @mapCtrl.scope.resultsLimit = 10
-        @mapCtrl.scope.results = []
+        @mapCtrl.scope.results = {}
         @mapCtrl.scope.resultsPotentialLength = undefined
         @mapCtrl.scope.resultsDescending = false
         @setOrReverseResultsPredicate('price')
@@ -67,7 +74,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.$watch 'layers.filterSummary', (newVal, oldVal) =>
           return if newVal == oldVal
           @lastSummaryIndex = 0
-          @mapCtrl.scope.results = []
+          #what is special about this case where we do not use reset??
+          @mapCtrl.scope.results = {}
           @loadMore()
 
         @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
@@ -77,8 +85,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
       ###
       Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
       ###
-      maybeAnimate: =>
-        "animated slide-down" if @mapCtrl.scope.isScrolling
+      getAdditionalClasses: (result) =>
+        classes = ""
+        classes += "result-property-hovered" if result?.isMousedOver
+        classes
 
       setOrReverseResultsPredicate: (predicate) =>
         if @mapCtrl.scope.resultsPredicate != predicate
@@ -207,14 +217,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
             return
           @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
-        return unless @filterSummaryInBounds
+        return if !@filterSummaryInBounds or !@filterSummaryInBounds.length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           @filterSummaryInBounds.forEach (summary) =>
-            @mapCtrl.scope.results.push summary if @mapCtrl.scope.formatters.layer.isVisible(summary)
+            if @mapCtrl.scope.formatters.layer.isVisible(summary)
+              @mapCtrl.scope.results[summary.rm_property_id] = summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
-#        @bindResultsListEvents()
 
       click: (result, event, context) =>
         maybeFetchCb = (showDetails) =>
@@ -245,13 +255,18 @@ app.factory 'ResultsFormatter'.ourNs(), [
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
 
-      mouseenter: (result) =>
-        result.isMousedOver = true
+      #public but _ to discuourage use externally
+      _handleMouseState: (result, model, state = undefined) =>
+        result = _resultOrModel(result, model, @mapCtrl.scope.results)
+        return unless result
+        result.isMousedOver = state
         @mapCtrl.updateAllLayersByModel(result)
 
-      mouseleave: (result) =>
-        result.isMousedOver = undefined
-        @mapCtrl.updateAllLayersByModel(result)
+      mouseenter: (result, model) =>
+        @_handleMouseState(result, model, true)
+
+      mouseleave: (result, model) =>
+        @_handleMouseState(result, model)
 
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event

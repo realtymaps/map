@@ -55,7 +55,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           model.isMousedOver = undefined
           $timeout.cancel(@mouseoutDebounce)
           @mouseoutDebounce = null
-          _updateAllLayersByModel(model)
+          $scope.formatters.results.mouseleave(null, model)
         @mouseoutDebounce = null
 
         @filterSummaryHash = {}
@@ -115,7 +115,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           showWeather: false
           showMarkers: true
 
-
           listingOptions:
             boxClass: 'custom-info-window'
             closeBoxDiv: ' '
@@ -173,7 +172,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 if _lastHoveredModel?.rm_property_id != model.rm_property_id
                   _handleMouseout(_lastHoveredModel)
                 $scope.actions.listing(gObject, eventname, model)
-                _updateAllLayersByModel(model)
+                $scope.formatters.results.mouseenter(null, model)
 
               mouseout: (gObject, eventname, model) =>
                 if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "streetNum"
