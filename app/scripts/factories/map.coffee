@@ -83,6 +83,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             gObject.setOptions opts
           , ['streetNumMarkers']
 
+        _isModelInFilterSummary = (model) ->
+          model.index?
+
+        # BEGIN POSSIBLE PropertySave SERVICE
+        _maybeRemoveFilterSummaryObjects = (savedDetails, index, model) =>
+          isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
+
+          if isEmptysFilterCanErase and index?
+            model.isMousedOver = undefined
+            prevLen = @scope.layers.filterSummary.length
+            @scope.layers.filterSummary.splice(index,1)
+            delete model.index if prevLen != @scope.layers.filterSummary.length
+
+        _maybeRefreshFilterSummary = (savedDetails, model) =>
+          if savedDetails.isSaved and !_isModelInFilterSummary(model)
+            @redraw(cache = false)
+
         _saveProperty = (model, gObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
@@ -91,19 +108,25 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             #setting savedDetails here as we know the save was successful
             if @filterSummaryHash[model.rm_property_id]?
               @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
-            if @lastHoveredModel?.rm_property_id == model.rm_property_id && !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
+            if @lastHoveredModel?.rm_property_id == model.rm_property_id and !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
               $scope.actions.closeListing()
             index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
             if index? #only has index if there is a filter object
               match = self.scope.layers.filterSummary[index]
               match.savedDetails = savedDetails if match?
               uiGmapControls.updateAllModels match
+
+            _maybeRemoveFilterSummaryObjects(savedDetails, index, model)
+            _maybeRefreshFilterSummary(savedDetails,model)
+
             #need to figure out a better way
+            #best way is to refactor / add ui-gmap to iterate over objects
             @updateFilterSummaryHash()
             _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
               _updateGObjects(gObject, savedDetails, model)
+        # END POSSIBLE PropertySave SERVICE
 
         @saveProperty = _saveProperty
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
@@ -276,7 +299,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scope.options.styles = _.without(@scope.options.styles, @scope.formatters.layer.Parcels.style)
             @didAddGParcelLinesStyle = false
 
-      redraw: =>
+      redraw: (cache = true) =>
         # something is funky about the way we're handling our data, and it's causing weird race conditions
         # so we're trying to avoid the races, and also using the control instead of the watched models
         # this is probably not the best setup either, but it's the best I could do without major refactors
@@ -286,7 +309,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @maybeShowGoogleParcelLines()
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          Properties.getParcelBase(@hash, @mapState).then (data) =>
+          Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             if @waitToSetParcelData
               @waitingData = data
@@ -296,7 +319,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        Properties.getFilterSummary(@hash, @mapState, @filters).then (data) =>
+        Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
           @scope.layers.filterSummary = data
           @updateFilterSummaryHash()

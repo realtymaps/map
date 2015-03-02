@@ -82,6 +82,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
           return if newVal == oldVal
           @loadMore()
 
+      getResultsArray: =>
+        _.values @mapCtrl.scope.results
       ###
       Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
       ###
@@ -217,7 +219,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
             return
           @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
-        return if !@filterSummaryInBounds or !@filterSummaryInBounds.length
+        return unless @filterSummaryInBounds?.length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           @filterSummaryInBounds.forEach (summary) =>
@@ -271,8 +273,10 @@ app.factory 'ResultsFormatter'.ourNs(), [
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-#        alert("saved #{result.rm_property_id} #{event}")
+        wasSaved = result.savedDetails.isSaved
         @mapCtrl.saveProperty(result).then =>
           @reset()
+          if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
 
 ]
