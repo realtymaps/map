@@ -219,7 +219,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
             return
           @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
-        return if !@filterSummaryInBounds or !@filterSummaryInBounds.length
+        return unless @filterSummaryInBounds?.length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           @filterSummaryInBounds.forEach (summary) =>
