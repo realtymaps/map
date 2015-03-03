@@ -33,8 +33,8 @@ ng-init="resultsInit('results-list')")
 
         #results-list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
             //DEBUG repeat
-            //div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property")
-            div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
+            //div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
+            div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property")
 
                 .card( ng-class="formatters.results.getAdditionalClasses(result)" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
                 rmaps-click="formatters.results.click" rmaps-value-name-click="result"

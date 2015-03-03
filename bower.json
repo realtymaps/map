@@ -17,7 +17,7 @@
     "angular-google-maps": "2.1.0-X.0",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
-    "rmaps-angular-utils": "https://github.com/realtymaps/rmaps-angular-utils/archive/master.zip",
+    "rmaps-angular-utils": "1.0.0",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
     "fontawesome": "~4.2.0",
     "ng-infinite-scroller-origin": "~1.2.0",
