@@ -15,9 +15,7 @@ gulp.task 'coverage', ["spec"],->
 
 karmaConf = require.resolve('../../karma/karma.conf.coffee')
 
-
-
-gulp.task 'karma', ['build'], (done) ->
+karmaRunner = (done) ->
   karma_callback = (code) =>
     log "Karma Callback Code: #{code}"
     done(code)
@@ -31,6 +29,12 @@ gulp.task 'karma', ['build'], (done) ->
   catch e
     log "KARMA ERROR: #{e}"
     done(e)
-  
+
+
+gulp.task 'karma', ['build'], (done) ->
+  karmaRunner(done)
+
+gulp.task 'karmaOnly', (done) ->
+  karmaRunner(done)
 
 gulp.task 'frontendSpec', ['karma']

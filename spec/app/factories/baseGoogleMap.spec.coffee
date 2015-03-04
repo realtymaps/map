@@ -26,7 +26,7 @@ describe "BaseGoogleMap", ->
       zoomThresholdMilli: 1000
 
     inject ["$rootScope", 'BaseGoogleMap'.ourNs(),
-     ($rootScope, BaseGoogleMap) =>
+      ($rootScope, BaseGoogleMap) =>
         @$rootScope = $rootScope
 
         @ctor = BaseGoogleMap
@@ -38,4 +38,4 @@ describe "BaseGoogleMap", ->
     @ctor.should.be.ok
 
   it 'subject can be created', ->
-    @subject.should.beok
+    @subject.should.be.ok
