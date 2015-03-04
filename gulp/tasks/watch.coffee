@@ -8,12 +8,12 @@ gulp.task 'watch_rest', ->
     path.assets, path.common
     path.index, path.stylus, path.stylusWatch
     path.jade, path.html
-  ], ['build']
-  gulp.watch ['app/**.*.coffee'], ['build']
+  ], ['webpack']
+  gulp.watch ['app/**.*.coffee'], ['webpack']
   gulp.watch path.bower, ['vendor']
 
 specCommon = "spec/common/**/*.coffee"
-gulp.task 'watch', gulp.series 'watch_rest', ->
+gulp.task 'watch', gulp.parallel 'watch_rest', ->
   # setTimeout ->
   gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], ['gulpSpec']
   gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon],

@@ -23,7 +23,7 @@ karmaRunner = (done) ->
     done(e)
 
 
-gulp.task 'karma', gulp.series 'build', (done) ->
+gulp.task 'karma', (done) ->
   karmaRunner(done)
 
 gulp.task 'karmaOnly', (done) ->

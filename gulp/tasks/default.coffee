@@ -13,13 +13,15 @@ gulp.task 'clean', (done) ->
   del ['_public'], done
 
 #gulp dependency hell
-gulp.task 'develop', gulp.series 'clean', 'spec', 'express', 'watch'
+gulp.task 'express_watch', gulp.series 'express', 'watch'
 
-gulp.task 'mock', gulp.series 'clean', 'specMock', 'jsonMock', 'spec', 'express', 'watch'
+gulp.task 'develop', gulp.series 'clean', 'spec', 'express_watch'
 
-gulp.task 'develop_no_spec', gulp.series 'clean', 'build', 'express', 'watch'
+gulp.task 'mock', gulp.series 'clean', 'specMock', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series 'clean', 'build', 'express'
+gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'express', 'watch'
+
+gulp.task 'prod', gulp.series 'clean', 'webpack', 'express'
 
 gulp.task 'default', gulp.parallel 'develop'
 

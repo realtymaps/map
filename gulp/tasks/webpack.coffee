@@ -22,7 +22,7 @@ mockConf = configFact(output, mockIndexes.map (fileName) ->
     filename: "mocks/#{fileName}"
 )
 
-gulp.task 'webpack', gulp.series 'otherAssets', ->
+gulp.task 'webpack', gulp.parallel 'otherAssets', ->
   gulp.src [
     paths.assets
     paths.styles
@@ -36,7 +36,7 @@ gulp.task 'webpack', gulp.series 'otherAssets', ->
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
 
-gulp.task 'webpackMock', gulp.series 'otherAssets', ->
+gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
   gulp.src [
     paths.assets
     paths.styles
