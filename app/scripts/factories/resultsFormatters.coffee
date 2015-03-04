@@ -136,12 +136,16 @@ app.factory 'ResultsFormatter'.ourNs(), [
       sendSnail: (result) ->
         $rootScope.$emit Events.snail.initiateSend, result
 
-      zoomTo: (result) =>
+      centerOn: (result) =>
+        @zoomTo(result,false)
+
+      zoomTo: (result, doChangeZoom = true) =>
         return if !result or not result.geom_point_json?
         latLng = uiGmapGmapUtil.getCoords result.geom_point_json
         @mapCtrl.scope.center =
           latitude: latLng.lat()
           longitude: latLng.lng()
+        return unless doChangeZoom
         zoomLevel = @mapCtrl.scope.options.zoomThresh.addressParcel
         zoomLevel = @mapCtrl.scope.zoom if @mapCtrl.scope.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
         @mapCtrl.scope.zoom = zoomLevel
@@ -243,6 +247,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
               , 50
 
           @mapCtrl.scope.Toggles.showDetails = showDetails
+          @centerOn(result) if showDetails
 
         #immediatley show something
         @mapCtrl.scope.streetViewPanorama.status = 'OK'
