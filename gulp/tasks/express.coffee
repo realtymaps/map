@@ -20,16 +20,15 @@ options =
     coffee: 'coffee'
   verbose: false
 
-run_express = (nodeArgs) ->
+run_express = (done, nodeArgs) ->
   log "ENV Port in gulp: " + config.PORT
   options.nodeArgs = nodeArgs if nodeArgs
   nodemon options
+  done()
 
-gulp.task "express_spec", ['spec'], ->
-  run_express()
 
-gulp.task "express", ['otherAssets'], ->
-  run_express()
+gulp.task "express", gulp.parallel 'otherAssets', (done) ->
+  run_express(done)
 
-gulp.task "express_debug", ->
-  run_express ['--debug=9999']
+gulp.task "express_debug", (done) ->
+  run_express done, ['--debug=9999']

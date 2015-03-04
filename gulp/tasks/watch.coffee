@@ -13,7 +13,7 @@ gulp.task 'watch_rest', ->
   gulp.watch path.bower, ['vendor']
 
 specCommon = "spec/common/**/*.coffee"
-gulp.task 'watch', ['watch_rest'], ->
+gulp.task 'watch', gulp.series 'watch_rest', ->
   # setTimeout ->
   gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], ['gulpSpec']
   gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon],

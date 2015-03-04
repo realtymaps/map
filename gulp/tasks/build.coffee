@@ -1,5 +1,4 @@
 gulp = require 'gulp'
+require './webpack'
 
-gulp.task 'build', ['webpack'], ->
-
-gulp.task 'scripts', ['build']
+gulp.task 'build', gulp.parallel 'webpack'

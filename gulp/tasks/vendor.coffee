@@ -36,4 +36,4 @@ gulp.task 'vendor_scripts', ->
   .pipe(gulp.dest paths.destFull.scripts)
 
 
-gulp.task 'vendor', ['vendor_scripts', 'vendor_css', 'vendor_fonts']
+gulp.task 'vendor', gulp.parallel 'vendor_scripts', 'vendor_css', 'vendor_fonts'

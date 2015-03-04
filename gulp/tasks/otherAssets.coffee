@@ -1,7 +1,8 @@
 gulp = require('gulp');
+require './vendor'
 path = require '../paths'
 
-gulp.task 'otherAssets', ['vendor'], ->
+gulp.task 'otherAssets', gulp.series 'vendor', ->
   # this is partially redundnat with webpack, but we go ahead and do it anyway
   # so we don't have to think about it
   gulp.src path.assets
