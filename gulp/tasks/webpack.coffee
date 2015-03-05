@@ -1,4 +1,5 @@
 gulp = require 'gulp'
+require './otherAssets'
 gWebpack = require 'gulp-webpack'
 HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
@@ -21,7 +22,7 @@ mockConf = configFact(output, mockIndexes.map (fileName) ->
     filename: "mocks/#{fileName}"
 )
 
-gulp.task 'webpack', ['otherAssets'], ->
+gulp.task 'webpack', gulp.parallel 'otherAssets', ->
   gulp.src [
     paths.assets
     paths.styles
@@ -35,7 +36,7 @@ gulp.task 'webpack', ['otherAssets'], ->
   .pipe(gWebpack conf)
   .pipe(gulp.dest(paths.dest.root))
 
-gulp.task 'webpackMock', ['otherAssets'], ->
+gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
   gulp.src [
     paths.assets
     paths.styles

@@ -1,9 +1,21 @@
 gulp = require 'gulp'
+require './webpack'
+require './karma'
+require './mocha'
+require './watch'
 
 #karma, then mocha (backendSpec, gulpSpec)
 #dependency order is ok because fronendSpec needs build as well so build should happen first
-gulp.task 'spec', ['build', 'frontendSpec','backendSpec','gulpSpec']
+gulp.task 'specs', gulp.parallel 'backendSpec','gulpSpec', 'frontendSpec'
 
-gulp.task 'specMock', ['webpackMock', 'frontendSpec','gulpSpec']
+gulp.task 'spec', gulp.series 'webpack', 'specs'
 
-gulp.task 'spec_watch', ['spec', 'watch']
+gulp.task 'specMock', gulp.series 'webpackMock','gulpSpec', 'frontendSpec'
+
+#front end coverage
+gulp.task 'coverage', gulp.series "spec", ->
+  gulp.src('')
+  .pipe plumber()
+  .pipe open '',
+    url: "http://localhost:3000/coverage/chrome/index.html"
+    app: "Google Chrome" #osx , linux: google-chrome, windows: chrome
