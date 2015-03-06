@@ -14,7 +14,6 @@ div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.
         coords='"geom_point_json"'
         idkey='"rm_property_id"'
         ng-cloak=''
-        control='controls.streetNumMarkers'
         events='actions.listingEvents'
         modelsbyref='true'
         chunk='50')
@@ -37,6 +36,6 @@ div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.
         static='true'
         chunk='false'
         cleanchunk='800'
-        control='controls.parcels'
+        control='controls.satParcels'
         zIndex='10')
       //END PARCEL DATA

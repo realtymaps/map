@@ -57,6 +57,7 @@ ui-gmap-google-map(center='center', zoom='zoom',
 
   // Would be nice to have just options without each individual attribute
   //https://github.com/angular-ui/angular-google-maps/issues/1033
+  //dorebuildall="true"
   ui-gmap-polygons(
     ng-if="(zoomLevelService.isAddressParcel(zoom) || zoomLevelService.isParcel(zoom)) && Toggles.showAddresses;"
     models='layers.filterSummary'

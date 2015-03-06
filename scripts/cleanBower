@@ -1,6 +1,7 @@
 #!/bin/bash
 set -e
 
+./scripts/freshUIGmap
 rm -rf ./bower_components
 
 bower install

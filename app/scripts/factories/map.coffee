@@ -150,6 +150,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
           controls:
             parcels: {}
+            satParcels: {}
             streetNumMarkers: {}
             priceMarkers: {}
             streetView: {}
