@@ -10,6 +10,11 @@ app.service 'LayerFormatters'.ourNs(), [
 
     filterSummaryHash = {}
 
+    renderCounters =
+      fill:
+        directive: 0
+        control: 0
+
     getPixelFromLatLng = (latLng, map) ->
       point = map.getProjection().fromLatLngToPoint(latLng)
       point
@@ -62,7 +67,10 @@ app.service 'LayerFormatters'.ourNs(), [
         fillColor: fillOpts.color
         fillOpacity: fillOpts.opacity
 
-      getFillColor = (parcel) ->
+      getFillColor = (parcel, logged) ->
+        unless logged
+          renderCounters.fill.control += 1
+          $log.info "fill: from control @ count: #{renderCounters.fill.control}"
         return {} unless parcel
         parcel = GoogleService.UiMap.getCorrectModel(parcel)
         model = filterSummaryHash[parcel.rm_property_id] || parcel
@@ -90,7 +98,11 @@ app.service 'LayerFormatters'.ourNs(), [
       _strokeColor = "#1269D8"
       _strokeWeight = 1.5
 
-      fill: getFillColor
+      fill: (parcel) ->
+        return unless parcel?.rm_property_id?
+        renderCounters.fill.directive += 1
+        $log.info "fill: from directive @ count: #{renderCounters.fill.directive}, id: #{parcel.rm_property_id}"
+        getFillColor(parcel, logged = true)
       labelFromStreetNum: labelFromStreetNum
       strokeColor: _strokeColor
       strokeWeight: _strokeWeight

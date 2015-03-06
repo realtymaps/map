@@ -35,11 +35,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
       resultsHash[model.rm_property_id]
 
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
-    class ResultsFormatter extends BaseObject
-      @include FormattersService.Common
-      @include FormattersService.Google
+    class ResultsFormatter
+
       constructor: (@mapCtrl) ->
-        super()
+        _.extend @, FormattersService.Common
+        _.extend @, FormattersService.Google
+
         @mapCtrl.scope.isScrolling = false
 
         onScrolling = _.debounce ->
@@ -278,7 +279,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-        wasSaved = result.savedDetails.isSaved
+        wasSaved = result?.savedDetails?.isSaved
         @mapCtrl.saveProperty(result).then =>
           @reset()
           if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]

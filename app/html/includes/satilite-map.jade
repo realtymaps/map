@@ -1,4 +1,6 @@
-div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK'")
+//NOTE THIS CONTROL COULD PROBABLY BE SPED UP TO IF IT HAD IT"S own bounds / controller
+//Currently this is sharing data with the main map
+div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.showDetails")
     ui-gmap-google-map(center='selectedResult.geom_point_json', zoom='satMap.zoom',
       bounds='satMap.bounds' options='satMap.options',
       control='satMap.control', ng-cloak=''
@@ -6,6 +8,7 @@ div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK'")
     )
       // BEGIN PARCEL DATA
       ui-gmap-markers(
+        ng-if="streetViewPanorama.status != 'OK'"
         options='formatters.layer.Parcels.labelFromStreetNum'
         models='layers.parcels'
         coords='"geom_point_json"'
@@ -19,7 +22,8 @@ div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK'")
       // Would be nice to have just options without each individual attribute
       //https://github.com/angular-ui/angular-google-maps/issues/1033
       ui-gmap-polygons(
-        models='layers.parcels'
+        ng-if="streetViewPanorama.status != 'OK'"
+        models='layers.filterSummary'
         idkey='"rm_property_id"'
         path='"geom_polys_json"'
         fill="formatters.layer.Parcels.fill"

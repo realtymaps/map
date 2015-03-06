@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+
+rm -rf ./bower_components
+
+bower install

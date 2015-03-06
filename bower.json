@@ -2,7 +2,6 @@
   "name": "mean.coffee",
   "version": "0.0.1",
   "dependencies": {
-    "ns2": "~1.0.3",
     "bootstrap-css-only": "~3.1.1",
     "isteven-angular-multiselect": "~2.0.2",
     "lodash": "~2.4.1",
@@ -14,7 +13,7 @@
     "angular-animate": "~1.3.4",
     "angular-bootstrap": "~0.11.0",
     "angular-ui-utils": "~0.1.1",
-    "angular-google-maps": "2.1.0-X.0",
+    "angular-google-maps": "https://github.com/nmccready/angular-google-maps/archive/bug/2.1.X/1204/polygons_eval_too_much.zip",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
     "rmaps-angular-utils": "1.0.0",

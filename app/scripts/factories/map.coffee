@@ -290,7 +290,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       maybeShowGoogleParcelLines: =>
-        if ZoomLevel.isParcel(@scope.zoom)
+        if ZoomLevel.isParcel(@scope.zoom) or ZoomLevel.isAddressParcel(@scope.zoom)
           return if @didAddGParcelLinesStyle
           @didAddGParcelLinesStyle = true
           @scope.options.styles.push @scope.formatters.layer.Parcels.style
@@ -300,21 +300,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @didAddGParcelLinesStyle = false
 
       redraw: (cache = true) =>
-        # something is funky about the way we're handling our data, and it's causing weird race conditions
-        # so we're trying to avoid the races, and also using the control instead of the watched models
-        # this is probably not the best setup either, but it's the best I could do without major refactors
-        @waitToSetParcelData = true
-        @waitingData = null
-
+        #consider renaming parcels to addresses as that is all they are used for now
         @maybeShowGoogleParcelLines()
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
-            if @waitToSetParcelData
-              @waitingData = data
-            else
-              @scope.layers.parcels = data
+            @scope.layers.parcels = data
+            $log.debug "addresses count to draw: #{data.length}"
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -322,15 +315,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
           @scope.layers.filterSummary = data
-          @updateFilterSummaryHash()
-          #TODO: newModels should not have to be used (yes it does fix a bug / race case)
-          #using new models will cause a flicker as it erases and redraws all polys or markers
-          if @waitingData
-            @scope.controls.parcels.newModels @waitingData
-            @waitingData = null
-          else if ZoomLevel.isParcel(@scope.zoom) #we are just getting the bare min for parcels and using googles polylines
-            @scope.controls.parcels.newModels data
-          @waitToSetParcelData = false
+          $log.debug "filters (poly price) count to draw: #{data.length}"
+          @updateFilterSummaryHash(false)
+
           @scope.$evalAsync () =>
             @scope.formatters.results?.reset()
 
@@ -407,7 +394,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
-      updateFilterSummaryHash: =>
+      updateFilterSummaryHash: (doUpdateView = true) =>
         #save the the old hash
         _oldHash = @filterSummaryHash
         @filterSummaryHash = {}
@@ -421,8 +408,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @updateAllLayersByModel(model)
         #need to always sync the formatters.layer hash
         @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
-        _.forEach @filterSummaryHash, (summary) =>
-          @updateAllLayersByModel(summary)
+        if doUpdateView
+          _.forEach @filterSummaryHash, (summary) =>
+            @updateAllLayersByModel(summary)
 
       clearFilter: =>
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
