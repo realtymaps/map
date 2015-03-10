@@ -2,6 +2,6 @@
 set -e
 
 bower cache clean $1
-rm -rf ./bower_components
+rm -rf ./bower_components/$1
 
 bower install
