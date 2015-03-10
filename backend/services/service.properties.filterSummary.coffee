@@ -1,11 +1,12 @@
 db = require('../config/dbs').properties
-PropertyDetails = require "../models/model.propertyDetails.coffee"
+PropertyDetails = require "../models/model.propertyDetails"
 Promise = require "bluebird"
 logger = require '../config/logger'
 config = require '../config/config'
 requestUtil = require '../utils/util.http.request'
-sqlHelpers = require './../utils/util.sql.helpers.coffee'
+sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
+arrayToObject = require '../../common/utils/util.simpleIdObject'
 
 validators = requestUtil.query.validators
 
@@ -150,3 +151,5 @@ module.exports =
         savedProperties.forEach (row) ->
           row.savedDetails = state.properties_selected[row.rm_property_id]
         return filteredProperties.concat(savedProperties)
+    .then (filteredProperties) ->
+      arrayToObject(filteredProperties)

@@ -5,6 +5,8 @@ logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
+arrayToObject = require '../../common/utils/util.simpleIdObject'
+
 
 validators = requestUtil.query.validators
 
@@ -36,3 +38,5 @@ module.exports =
       # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
       return _.uniq data, (row) ->
         row.rm_property_id
+    .then (data) ->
+      arrayToObject(data)
