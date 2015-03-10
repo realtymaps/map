@@ -5,7 +5,7 @@ logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-arrayToObject = require '../../common/utils/util.simpleIdObject'
+indexBy = require '../../common/utils/util.indexByWLength'
 
 
 validators = requestUtil.query.validators
@@ -39,4 +39,4 @@ module.exports =
       return _.uniq data, (row) ->
         row.rm_property_id
     .then (data) ->
-      arrayToObject(data)
+      indexBy(data)

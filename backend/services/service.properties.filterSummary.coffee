@@ -6,7 +6,7 @@ config = require '../config/config'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
-arrayToObject = require '../../common/utils/util.simpleIdObject'
+indexBy = require '../../common/utils/util.indexByWLength'
 
 validators = requestUtil.query.validators
 
@@ -152,4 +152,4 @@ module.exports =
           row.savedDetails = state.properties_selected[row.rm_property_id]
         return filteredProperties.concat(savedProperties)
     .then (filteredProperties) ->
-      arrayToObject(filteredProperties)
+      indexBy(filteredProperties)
