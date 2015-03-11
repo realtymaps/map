@@ -3,7 +3,7 @@ var api_key = config.NEW_RELIC.API_KEY;
 var appName = config.NEW_RELIC.APP_NAME;
 
 if(!api_key)
-  throw("NEWRELIC_API_KEY not defined! Please add it to your Heroku app's config vars or your .env file.");
+  throw("config.NEW_RELIC.API_KEY not defined! Please define NEW_RELIC_API_KEY in your Heroku app's config vars or your .env file.");
 
 if(!appName)
   throw("config.NEW_RELIC.APP_NAME not defined! Please define INSTANCE_NAME in your Heroku app's config vars or your .env file.");

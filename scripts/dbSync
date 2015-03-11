@@ -15,7 +15,4 @@ then
 fi
 
 
-echo "Ensuring fresh copy of dbsync2:"
-npm install git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync2.git --force --silent
-
-./node_modules/dbsync2/scripts/syncAll $1
+./node_modules/rmaps_scripts/database/syncAll $1
