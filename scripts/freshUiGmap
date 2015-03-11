@@ -1,6 +1,0 @@
-#!/bin/bash
-set -e
-bower cache clean angular-google-maps
-rm -rf ./bower_components/angular-google-maps
-bower install
-exit 0

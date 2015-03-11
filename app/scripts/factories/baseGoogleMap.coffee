@@ -8,7 +8,7 @@ app = require '../app.coffee'
 module.exports = app.factory 'BaseGoogleMap'.ourNs(), [
   'Logger'.ourNs(), 'uiGmapIsReady', '$timeout',
   ($log, uiGmapIsReady, $timeout) ->
-    class BaseGoogleMapCtrl extends BaseObject
+    class BaseGoogleMapCtrl
       last =
         time: new Date() # last time we let an event pass.
         x: -100 # last x position af the event that passed.
