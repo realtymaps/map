@@ -4,10 +4,12 @@ StringToBoolean = require '../../../common/utils/util.stringToBoolean.coffee'
 app.factory 'MapToggles'.ourNs(), [ () ->
 
   (json) ->
+    _locationCb = null
     @showResults = false
     @showDetails = false
     @showFilters = false
     @showSearch = false
+    @isFetchingLocation = false
 
     @showAddresses = true
     @showPrices = true
@@ -40,6 +42,15 @@ app.factory 'MapToggles'.ourNs(), [ () ->
       if @showSearch
         # let angular have a chance to attach the input box...
         document.getElementById('places-search-input')?.focus()
+
+    @setLocationCb = (cb) ->
+      _locationCb = cb
+
+    @toggleLocation = =>
+      @isFetchingLocation = true
+      navigator.geolocation.getCurrentPosition (location) =>
+        @isFetchingLocation = false
+        _locationCb(location)
 
     if json?
       _.extend @, StringToBoolean.booleanify(json)
