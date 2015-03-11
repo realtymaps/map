@@ -16,4 +16,4 @@ gulp.task 'backendSpec', ->
 gulp.task 'gulpSpec', ->
   runMocha  'spec/gulp/**/*spec*'
 
-gulp.task 'mocha', ['backendSpec']
+gulp.task 'mocha', gulp.parallel 'backendSpec'

@@ -9,9 +9,7 @@ getFunctionName = (funcString) ->
 analyzeValue = (value) ->
   result = {}
   result.type = typeof(value)
-  if result.type == 'undefined'
-    # do nothing
-  else if value == null
+  if value == null
     result.type = 'null'
   else if result.type == 'function'
     result.verbose = value.toString()
@@ -30,9 +28,11 @@ analyzeValue = (value) ->
       result.details = JSON.stringify value
   else if result.type == 'string'
     result.details = JSON.stringify value
+  else if result.type == 'undefined'
+    # do nothing
   else # boolean, number, or symbol
     result.details = ''+value
   
   return result
 
-module.exports = analyzeValue 
+module.exports = analyzeValue

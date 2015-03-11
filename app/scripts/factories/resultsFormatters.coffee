@@ -4,9 +4,12 @@ sprintf = require('sprintf-js').sprintf
 
 
 app.factory 'ResultsFormatter'.ourNs(), [
-  '$timeout', '$filter', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
-  'Properties'.ourNs(), 'FormattersService'.ourNs(),
-  ($timeout, $filter, $log, ParcelEnums, GoogleService, Properties, FormattersService) ->
+  '$rootScope', '$timeout', '$filter',
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
+  'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
+  ($rootScope, $timeout, $filter,
+  $log, ParcelEnums, GoogleService,
+  Properties, FormattersService, uiGmapGmapUtil, Events) ->
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
@@ -24,12 +27,26 @@ app.factory 'ResultsFormatter'.ourNs(), [
     _statusLabelClass['saved'] = 'label-saved-property'
     _statusLabelClass['default'] = ''
 
+    _resultOrModel = (result, model, resultsHash) ->
+      if result
+        return result
+      if !model or !model?.rm_property_id or !resultsHash
+        return undefined
+      resultsHash[model.rm_property_id]
+
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
-    class ResultsFormatter extends BaseObject
-      @include FormattersService.Common
-      @include FormattersService.Google
+    class ResultsFormatter
+
+      _isWithinBounds = (map, prop) =>
+        pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
+        isVisible = map.getBounds().intersects(pointBounds)
+        return unless isVisible
+        prop
+
       constructor: (@mapCtrl) ->
-        super()
+        _.extend @, FormattersService.Common
+        _.extend @, FormattersService.Google
+
         @mapCtrl.scope.isScrolling = false
 
         onScrolling = _.debounce ->
@@ -42,14 +59,14 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         @reset = _.debounce =>
           @mapCtrl.scope.resultsLimit = 10
-          @mapCtrl.scope.results = []
+          @mapCtrl.scope.results = {}
           @lastSummaryIndex = 0
           @mapCtrl.scope.resultsPotentialLength = undefined
           @filterSummaryInBounds = undefined
           @loadMore()
         , 5
         @mapCtrl.scope.resultsLimit = 10
-        @mapCtrl.scope.results = []
+        @mapCtrl.scope.results = {}
         @mapCtrl.scope.resultsPotentialLength = undefined
         @mapCtrl.scope.resultsDescending = false
         @setOrReverseResultsPredicate('price')
@@ -64,18 +81,23 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.$watch 'layers.filterSummary', (newVal, oldVal) =>
           return if newVal == oldVal
           @lastSummaryIndex = 0
-          @mapCtrl.scope.results = []
+          #what is special about this case where we do not use reset??
+          @mapCtrl.scope.results = {}
           @loadMore()
 
         @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
           return if newVal == oldVal
           @loadMore()
 
+      getResultsArray: =>
+        _.values @mapCtrl.scope.results
       ###
       Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
       ###
-      maybeAnimate: =>
-        "animated slide-down" if @mapCtrl.scope.isScrolling
+      getAdditionalClasses: (result) =>
+        classes = ""
+        classes += "result-property-hovered" if result?.isMousedOver
+        classes
 
       setOrReverseResultsPredicate: (predicate) =>
         if @mapCtrl.scope.resultsPredicate != predicate
@@ -108,19 +130,35 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return unless result
         soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
         return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
-        
+
       getStatusLabelClass: (result, ignoreSavedStatus=false) ->
         return unless result
         soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
         return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
 
       showSoldDate: (result) ->
-        if !result
-          return false
+        return false unless result
         return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
-        
+
+      sendSnail: (result) ->
+        $rootScope.$emit Events.snail.initiateSend, result
+
+      centerOn: (result) =>
+        @zoomTo(result,false)
+
+      zoomTo: (result, doChangeZoom = true) =>
+        return if !result or not result.geom_point_json?
+        latLng = uiGmapGmapUtil.getCoords result.geom_point_json
+        @mapCtrl.scope.center =
+          latitude: latLng.lat()
+          longitude: latLng.lng()
+        return unless doChangeZoom
+        zoomLevel = @mapCtrl.scope.options.zoomThresh.addressParcel
+        zoomLevel = @mapCtrl.scope.zoom if @mapCtrl.scope.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
+        @mapCtrl.scope.zoom = zoomLevel
+
       getPriceLabel: (status) ->
-        if (status=='recently sold'||status=='not for sale')
+        if (status =='recently sold'|| status=='not for sale')
           label = ''
         else
           label = 'asking:'
@@ -140,7 +178,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       showListingData: (model) ->
         return false if not model
         model.listing_age!=null || model.mls_close_date || model.original_price || model.mls_close_price
-      
+
       showSalesData: (model) ->
         return false if not model
         model.mortgage_amount || model.mortgage_date || @showIfDifferentFrom(model, 'sale', 'mls_close') || @showIfDifferentFrom(model, 'prior_sale', 'mls_close')
@@ -157,7 +195,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         millis1 = new Date(model[differentFromPrefix+"date"].toLocaleString()).getTime()
         millis2 = new Date(model[prefix+"date"].toLocaleString()).getTime()
         return Math.abs(millis1-millis2) > 30*86400000
-        
+
       loadMore: =>
         #debugging
         return unless @mapCtrl.scope.Toggles.showResults
@@ -179,39 +217,40 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
-        _isWithinBounds = (prop) =>
-          pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
-          isVisible = @mapCtrl.gMap.getBounds().intersects(pointBounds)
-          return unless isVisible
-          prop
 
-        unless @filterSummaryInBounds
-          @filterSummaryInBounds = @mapCtrl.scope.layers.filterSummary.map (prop) =>
-            if _isWithinBounds(prop)
-              return prop
-            return
-          @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
+        if !@filterSummaryInBounds and @mapCtrl.scope.layers.filterSummary?.length
+          @filterSummaryInBounds = []
+          @mapCtrl.scope.layers.filterSummary.forEach (prop) =>
+            return unless prop
+            @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.gMap, prop)
+
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
-        return unless @filterSummaryInBounds
+
+        return unless @filterSummaryInBounds?.length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           @filterSummaryInBounds.forEach (summary) =>
-            @mapCtrl.scope.results.push summary if @mapCtrl.scope.formatters.layer.isVisible(summary)
+            if @mapCtrl.scope.formatters.layer.isVisible(summary)
+              @mapCtrl.scope.results[summary.rm_property_id] = summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
-#        @bindResultsListEvents()
 
       click: (result, event, context) =>
         maybeFetchCb = (showDetails) =>
           #start getting more data
           if showDetails
-            Properties.getPropertyDetail(@mapCtrl.mapState, result.rm_property_id, if result.rm_status then "detail" else "all")
+            Properties.getPropertyDetail(@mapCtrl.refreshState(
+              map_results:
+                selectedResultId: result.rm_property_id)
+            , result.rm_property_id, if result.rm_status then "detail" else "all")
             .then (data) =>
+              return unless data
               $timeout () =>
                 angular.extend @mapCtrl.scope.selectedResult, data
               , 50
 
           @mapCtrl.scope.Toggles.showDetails = showDetails
+          @centerOn(result) if showDetails
 
         #immediatley show something
         @mapCtrl.scope.streetViewPanorama.status = 'OK'
@@ -226,19 +265,26 @@ app.factory 'ResultsFormatter'.ourNs(), [
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
 
-      mouseenter: (result) =>
-        result.isMousedOver = true
+      #public but _ to discuourage use externally
+      _handleMouseState: (result, model, state = undefined) =>
+        result = _resultOrModel(result, model, @mapCtrl.scope.results)
+        return unless result
+        result.isMousedOver = state
         @mapCtrl.updateAllLayersByModel(result)
 
-      mouseleave: (result) =>
-        result.isMousedOver = undefined
-        @mapCtrl.updateAllLayersByModel(result)
+      mouseenter: (result, model) =>
+        @_handleMouseState(result, model, true)
+
+      mouseleave: (result, model) =>
+        @_handleMouseState(result, model)
 
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-#        alert("saved #{result.rm_property_id} #{event}")
+        wasSaved = result?.savedDetails?.isSaved
         @mapCtrl.saveProperty(result).then =>
           @reset()
+          if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
 
 ]

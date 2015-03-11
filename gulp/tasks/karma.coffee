@@ -5,24 +5,14 @@ concat = require 'gulp-concat'
 log = require('gulp-util').log
 plumber = require 'gulp-plumber'
 
-gulp.task 'coverage', ["spec"],->
-  gulp.src('')
-  .pipe plumber()
-  .pipe open '',
-    url: "http://localhost:3000/coverage/chrome/index.html"
-    app: "Google Chrome" #osx , linux: google-chrome, windows: chrome
-
-
 karmaConf = require.resolve('../../karma/karma.conf.coffee')
 
-
-
-gulp.task 'karma', ['build'], (done) ->
+karmaRunner = (done) ->
   karma_callback = (code) =>
     log "Karma Callback Code: #{code}"
     done(code)
 
-  log "#{realtymaps.dashes} Karma Setup #{realtymaps.dashes}"
+  log "-- Karma Setup --"
   try
     karma.start
       configFile: karmaConf
@@ -31,6 +21,12 @@ gulp.task 'karma', ['build'], (done) ->
   catch e
     log "KARMA ERROR: #{e}"
     done(e)
-  
 
-gulp.task 'frontendSpec', ['karma']
+
+gulp.task 'karma', (done) ->
+  karmaRunner(done)
+
+gulp.task 'karmaOnly', (done) ->
+  karmaRunner(done)
+
+gulp.task 'frontendSpec', gulp.parallel 'karma'

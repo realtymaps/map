@@ -1,18 +1,21 @@
 #!/bin/bash
 set -e
 
+
+if [[ "$SKIP_DBSYNC" == "true" ]]
+then
+    exit 0
+fi
+
+
 if [ ! -n "$IS_HEROKU" ]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/.."
 fi
 
-# needed if we need to update the jars, they are in github so no need to bundle
-# ./bower_components/dbsync/bundle
 
-if [[ "$1" == "--refresh" ]]
-then
-    bower update
-fi
-./bower_components/dbsync/doFlyway.sh userManagement "$USER_DATABASE_URL" false migrate
-./bower_components/dbsync/doFlyway.sh propertyData "$PROPERTY_DATABASE_URL" false migrate
+echo "Ensuring fresh copy of dbsync2:"
+npm install git+https://9749fad624f556150bf5c32061930fd05c021d7d:x-oauth-basic@github.com/realtymaps/dbsync2.git --force --silent
+
+./node_modules/dbsync2/scripts/syncAll $1

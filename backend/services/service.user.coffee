@@ -100,17 +100,18 @@ getUserState = (userId) ->
 updateUserState = (session, partialState) -> Promise.try () ->
   # need the id for lookup, so we don't want to allow it to be set this way
   delete partialState.id
-  
+
   #avoid unnecessary saves as there is the possibility for race conditions
   needsSave = false
   for key,part of partialState
     if !_.isEqual part, session.state[key]
       needsSave = true
       break
+#  logger.debug "service.user needsSave: #{needsSave}"
   if needsSave
     _.extend(session.state, partialState)
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
-  
+
   # now save to the global state
   UserState.forge(id: session.userid)
   .save(session.state, {method: 'update'})
@@ -122,31 +123,38 @@ updateUserState = (session, partialState) -> Promise.try () ->
       delete result.id
       return result
 
+###
+map_position -  is to hold center, zoom, bounds.., altitude.. any kind of position relative map info
+map_results =
+  selectedResult: {}
+  results: [] #maybe
+NOTE: IF columns for user_state need to be deleted Session.state should be purged! Otherwise,
+  a invalid bookshelf object of old state will be queried.
+###
+_userStateCols = ['map_position', 'map_toggles', 'map_results']
+_filtersToRemove = _userStateCols.concat(['bounds'])
+
+_commonCaptureState = (req, stateUpdate = {}) ->
+  hasSomeState = false
+  _userStateCols.forEach (col) ->
+    stateUpdate[col] = req.query[col] if req.query[col]?
+    hasSomeState = true if stateUpdate[col]?
+
+  if hasSomeState
+    updateUserState(req.session, stateUpdate)
+  else
+    Promise.resolve({})
+
 captureMapState = (req, res, next) -> Promise.try () ->
-  stateUpdate = {}
-  if req.query.center?
-    stateUpdate.map_center = req.query.center
-  if req.query.zoom?
-    stateUpdate.map_zoom = req.query.zoom
-  if req.query.toggles?
-    stateUpdate.map_toggles = req.query.toggles
-  updateUserState(req.session, stateUpdate)
+  _commonCaptureState(req)
   .then () ->
     next()
 
 captureMapFilterState = (req, res, next) -> Promise.try () ->
   filters = _.clone(req.query)
-  _.forEach ['center', 'zoom', 'bounds', 'toggles'], (removeParam) ->
+  _filtersToRemove.forEach (removeParam) ->
     delete filters[removeParam]
-
-  stateUpdate = {filters: filters}
-  if req.query.center?
-    stateUpdate.map_center = req.query.center
-  if req.query.zoom?
-    stateUpdate.map_zoom = req.query.zoom
-  if req.query.toggles?
-    stateUpdate.map_toggles = req.query.toggles
-  updateUserState(req.session, stateUpdate)
+  _commonCaptureState(req, filters: filters)
   .then () ->
     next()
 

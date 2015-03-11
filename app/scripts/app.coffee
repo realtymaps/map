@@ -7,6 +7,7 @@ appName = 'app'.ourNs()
 
 app = window.angular.module appName, [
   'uiGmapgoogle-maps'
+  'rmaps-utils'
   'ngCookies'
   'ngResource'
   'ngRoute'

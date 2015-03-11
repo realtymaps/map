@@ -13,7 +13,7 @@ module.exports =
       $http.get('mocks/filter_summary.json')
       .then (data) ->
         $scope.layers.filterSummary = data.data
-
-      $scope.resultsFormatter = new ResultsFormatter($scope)
-      $scope.resultsFormatter.loadMore()
+      $scope.formatters = angular.extend $scope.formatters or {},
+        results: new ResultsFormatter($scope)
+      $scope.formatters.results.loadMore()
   ]

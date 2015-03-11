@@ -2,6 +2,7 @@ _ = require 'lodash'
 path = require 'path'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
+
 base =
   PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
@@ -37,7 +38,7 @@ base =
     unset: "destroy"
   SESSION_SECURITY:
     name: "anticlone"
-    window: 60*1000 # 1 minute
+    app: "map"
     rememberMeAge: 30*24*60*60*1000 # 30 days
     cookie:
       httpOnly: true
@@ -58,7 +59,9 @@ base =
     API_VERSION: '2014-12-18'
   MAP:
     zoom_ordering_threshold: 17
-
+  NEW_RELIC:
+    LOGLEVEL: 'info'
+    API_KEY: process.env.NEW_RELIC_API_KEY
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
@@ -85,6 +88,10 @@ environmentConfig =
       FILE_AND_LINE: true
       LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
     USE_ERROR_HANDLER: true
+    NEW_RELIC:
+      RUN: false # can be flipped to true if needed for troubleshooting or testing
+      LOGLEVEL: 'debug'
+      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null 
 
   test: # test inherits from development below
     LOGGING:
@@ -106,6 +113,10 @@ environmentConfig =
     SESSION_SECURITY:
       cookie:
         secure: false
+    NEW_RELIC:
+      RUN: true
+      LOGLEVEL: 'debug'
+      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
     DB_CACHE_TIMES:
@@ -121,11 +132,9 @@ environmentConfig =
     SESSION_SECURITY:
       cookie:
         secure: false
-    # we probably want this for production, but we need to get it set up with
-    # an API key first
-    #NODETIME:
-    #  accountKey: "ENTER-A-VALID-KEY-HERE"
-    #  appName: 'mean.coffee'
+    NEW_RELIC:
+      RUN: true
+      APP_NAME: "realtymaps-map"
 
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 

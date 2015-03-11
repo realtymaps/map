@@ -5,6 +5,8 @@ logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
+indexBy = require '../../common/utils/util.indexByWLength'
+
 
 validators = requestUtil.query.validators
 
@@ -12,7 +14,7 @@ transforms =
   bounds: [
     validators.string(minLength: 1)
     validators.geohash
-    validators.array(minLength: 0)
+    validators.array(minLength: 2)
   ]
 
 required =
@@ -25,7 +27,7 @@ module.exports =
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
 
-      query = sqlHelpers.select(db.knex, '*', false).from(sqlHelpers.tableName(Parcel))
+      query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
       sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
       
       #logger.sql query.toString()      
@@ -36,3 +38,5 @@ module.exports =
       # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
       return _.uniq data, (row) ->
         row.rm_property_id
+    .then (data) ->
+      indexBy(data)
