@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "./scripts/serve",
-    "dbsync": "./scripts/dbsync",
+    "dbsync": "./scripts/dbSync",
     "gulp": "gulp",
     "gulp-build": "gulp build",
     "test-frontend": "gulp frontendSpec",
