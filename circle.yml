@@ -9,13 +9,13 @@ deployment:
       # the pushTo script contains a safety check; it won't actually do
       # anything if CircleCI is running on master of any fork other than the
       # main realtymaps repo.  It also sets some environment variables
-      - ./scripts/pushTo heroku realtymaps-map:
+      - ./node_modules/rmaps-scripts/misc/pushTo heroku realtymaps-map --dbsync:
           timeout: 600
-      - ./scripts/pushTo github realtymapsDev/map:
+      - ./node_modules/rmaps-scripts/misc/pushTo github realtymapsDev/map:
           timeout: 300
 
   staging:
     branch: /dev\/.*\/.*/
     commands:
-      - ./scripts/pushTo heroku realtymaps-map:
+      - ./node_modules/rmaps-scripts/misc/pushTo heroku realtymaps-map --dbsync:
           timeout: 600

@@ -28,4 +28,4 @@ then
   foreman run npm install
 fi
 
-foreman start -c web=1,dbsync=0
+foreman start -c web=1
