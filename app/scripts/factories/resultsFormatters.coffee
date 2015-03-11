@@ -35,11 +35,18 @@ app.factory 'ResultsFormatter'.ourNs(), [
       resultsHash[model.rm_property_id]
 
     #TODO: BaseObject should really come from require not window.. same w/ PropMap
-    class ResultsFormatter extends BaseObject
-      @include FormattersService.Common
-      @include FormattersService.Google
+    class ResultsFormatter
+
+      _isWithinBounds = (map, prop) =>
+        pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
+        isVisible = map.getBounds().intersects(pointBounds)
+        return unless isVisible
+        prop
+
       constructor: (@mapCtrl) ->
-        super()
+        _.extend @, FormattersService.Common
+        _.extend @, FormattersService.Google
+
         @mapCtrl.scope.isScrolling = false
 
         onScrolling = _.debounce ->
@@ -151,7 +158,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         @mapCtrl.scope.zoom = zoomLevel
 
       getPriceLabel: (status) ->
-        if (status=='recently sold'||status=='not for sale')
+        if (status =='recently sold'|| status=='not for sale')
           label = ''
         else
           label = 'asking:'
@@ -210,19 +217,15 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
-        _isWithinBounds = (prop) =>
-          pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
-          isVisible = @mapCtrl.gMap.getBounds().intersects(pointBounds)
-          return unless isVisible
-          prop
 
-        unless @filterSummaryInBounds
-          @filterSummaryInBounds = @mapCtrl.scope.layers.filterSummary.map (prop) =>
-            if _isWithinBounds(prop)
-              return prop
-            return
-          @filterSummaryInBounds = @filterSummaryInBounds.filter(Boolean) #remove nulls
+        if !@filterSummaryInBounds and @mapCtrl.scope.layers.filterSummary?.length
+          @filterSummaryInBounds = []
+          @mapCtrl.scope.layers.filterSummary.forEach (prop) =>
+            return unless prop
+            @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.gMap, prop)
+
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+
         return unless @filterSummaryInBounds?.length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
@@ -278,7 +281,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
         if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-        wasSaved = result.savedDetails.isSaved
+        wasSaved = result?.savedDetails?.isSaved
         @mapCtrl.saveProperty(result).then =>
           @reset()
           if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]

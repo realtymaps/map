@@ -10,11 +10,13 @@ encode = undefined
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(),
+  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapObjectIterators',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls) ->
+    uiGmapPromise, uiGmapControls, uiGmapObjectIterators) ->
+
+
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
@@ -58,7 +60,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           $scope.formatters.results.mouseleave(null, model)
         @mouseoutDebounce = null
 
-        @filterSummaryHash = {}
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
@@ -87,14 +88,13 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           model.index?
 
         # BEGIN POSSIBLE PropertySave SERVICE
-        _maybeRemoveFilterSummaryObjects = (savedDetails, index, model) =>
+        _maybeRemoveFilterSummaryObjects = (savedDetails, model) =>
           isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
 
-          if isEmptysFilterCanErase and index?
+          if isEmptysFilterCanErase
             model.isMousedOver = undefined
-            prevLen = @scope.layers.filterSummary.length
-            @scope.layers.filterSummary.splice(index,1)
-            delete model.index if prevLen != @scope.layers.filterSummary.length
+            delete @scope.layers.filterSummary[model.rm_property_id]
+            @scope.layers.filterSummary.length -= 1
 
         _maybeRefreshFilterSummary = (savedDetails, model) =>
           if savedDetails.isSaved and !_isModelInFilterSummary(model)
@@ -106,22 +106,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           return unless saved
           saved.then (savedDetails) =>
             #setting savedDetails here as we know the save was successful
-            if @filterSummaryHash[model.rm_property_id]?
-              @filterSummaryHash[model.rm_property_id].savedDetails = savedDetails
-            if @lastHoveredModel?.rm_property_id == model.rm_property_id and !$scope.formatters.layer.isVisible(@filterSummaryHash[model.rm_property_id])
-              $scope.actions.closeListing()
-            index = if model.index? then model.index else @filterSummaryHash[model.rm_property_id]?.index
-            if index? #only has index if there is a filter object
-              match = self.scope.layers.filterSummary[index]
-              match.savedDetails = savedDetails if match?
-              uiGmapControls.updateAllModels match
+            if @scope.layers.filterSummary[model.rm_property_id]?
+              @scope.layers.filterSummary[model.rm_property_id].savedDetails = savedDetails
 
-            _maybeRemoveFilterSummaryObjects(savedDetails, index, model)
+            if @lastHoveredModel?.rm_property_id == model.rm_property_id and
+            !$scope.formatters.layer.isVisible(@scope.layers.filterSummary[model.rm_property_id])
+              $scope.actions.closeListing()
+
+
+            match = @scope.layers.filterSummary[model.rm_property_id]
+            match.savedDetails = savedDetails if match?
+            uiGmapControls.updateAllModels match
+
+            _maybeRemoveFilterSummaryObjects(savedDetails, model)
             _maybeRefreshFilterSummary(savedDetails,model)
 
-            #need to figure out a better way
-            #best way is to refactor / add ui-gmap to iterate over objects
-            @updateFilterSummaryHash()
             _updateAllLayersByModel model # need this here for immediate coloring of the parcel
             return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
             if gObject
@@ -143,13 +142,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             closeBoxDiv: ' '
 
           layers:
-            parcels: []
+            parcels: {}
+            filterSummary: {}
             listingDetail: undefined
-            filterSummary: []
             drawnPolys: []
 
           controls:
             parcels: {}
+            satParcels: {}
             streetNumMarkers: {}
             priceMarkers: {}
             streetView: {}
@@ -165,9 +165,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             listing: (gMarker, eventname, model) =>
               #model could be from parcel or from filter, but the end all be all data is in filter
               if !model.rm_status
-                if !$scope.layers?.filterSummary? or !@filterSummaryHash?
+                if !$scope.layers?.filterSummary?.length
                   return
-                model = @filterSummaryHash?[model.rm_property_id] || model
+                model = @$scope.layers.filterSummary?[model.rm_property_id] || model
               # so we don't show the window on un-saved properties
               if !$scope.formatters.layer.isVisible(model)
                 return
@@ -218,7 +218,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     if event.ctrlKey or event.metaKey
                       return _saveProperty(model, gObject)
                     unless @lastEvent == 'dblclick'
-                      $scope.formatters.results.click(@filterSummaryHash[model.rm_property_id]||model, window.event, 'map')
+                      $scope.formatters.results.click(@scope.layers.filterSummary[model.rm_property_id]||model, window.event, 'map')
                   , limits.clickDelayMilliSeconds
 
               dblclick: (gObject, eventname, model, events) =>
@@ -232,9 +232,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                   @lastEvent = undefined
                 , limits.clickDelayMilliSeconds + 100
 
-          #TODO: move ResultsFormatter into here as result for consistency
           formatters:
-            layer: LayerFormatters
+            layer: LayerFormatters(self)
             results: new ResultsFormatter(self)
 
           dragZoom: {}
@@ -290,7 +289,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           @scope.layers.parcels.length = 0
 
       maybeShowGoogleParcelLines: =>
-        if ZoomLevel.isParcel(@scope.zoom)
+        if ZoomLevel.isParcel(@scope.zoom) or ZoomLevel.isAddressParcel(@scope.zoom)
           return if @didAddGParcelLinesStyle
           @didAddGParcelLinesStyle = true
           @scope.options.styles.push @scope.formatters.layer.Parcels.style
@@ -300,37 +299,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @didAddGParcelLinesStyle = false
 
       redraw: (cache = true) =>
-        # something is funky about the way we're handling our data, and it's causing weird race conditions
-        # so we're trying to avoid the races, and also using the control instead of the watched models
-        # this is probably not the best setup either, but it's the best I could do without major refactors
-        @waitToSetParcelData = true
-        @waitingData = null
-
+        #consider renaming parcels to addresses as that is all they are used for now
         @maybeShowGoogleParcelLines()
         if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
-            if @waitToSetParcelData
-              @waitingData = data
-            else
-              @scope.layers.parcels = data
+            @scope.layers.parcels = uiGmapObjectIterators.slapAll data
+            $log.debug "addresses count to draw: #{data.length}"
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
-          @scope.layers.filterSummary = data
-          @updateFilterSummaryHash()
-          #TODO: newModels should not have to be used (yes it does fix a bug / race case)
-          #using new models will cause a flicker as it erases and redraws all polys or markers
-          if @waitingData
-            @scope.controls.parcels.newModels @waitingData
-            @waitingData = null
-          else if ZoomLevel.isParcel(@scope.zoom) #we are just getting the bare min for parcels and using googles polylines
-            @scope.controls.parcels.newModels data
-          @waitToSetParcelData = false
+          @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
+          $log.debug "filters (poly price) count to draw: #{data.length}"
+
           @scope.$evalAsync () =>
             @scope.formatters.results?.reset()
 
@@ -406,23 +391,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
-
-      updateFilterSummaryHash: =>
-        #save the the old hash
-        _oldHash = @filterSummaryHash
-        @filterSummaryHash = {}
-        if @scope.layers?.filterSummary? and @scope.layers.filterSummary.length
-          @scope.layers.filterSummary.forEach (summary, index) =>
-            summary.index = index
-            @filterSummaryHash[summary.rm_property_id] = summary
-        # get the models that are no longer in @filterSummaryHash, and make sure they update
-        _.forEach _.omit(_oldHash, _.keys(@filterSummaryHash)), (model) =>
-          model.passedFilters = undefined
-          @updateAllLayersByModel(model)
-        #need to always sync the formatters.layer hash
-        @scope.formatters.layer.updateFilterSummaryHash @filterSummaryHash
-        _.forEach @filterSummaryHash, (summary) =>
-          @updateAllLayersByModel(summary)
 
       clearFilter: =>
         @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
