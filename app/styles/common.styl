@@ -67,42 +67,6 @@ body
     -moz-animation:slideInUp 0.5s both ease-in
     animation:slideInUp 0.5s both ease-in
 
-
-/* Slider Trays */
-#results-slide
-    transition: 0.15s all ease-in-out
-    background-color white
-
-#results-slide.ng-hide-add, #results-slide.ng-hide-remove
-    display: block !important
-
-
-#results-slide.ng-hide-remove, #results-slide.ng-hide-add.ng-hide-add-active
-    margin-right: -500px
-    opacity: 1
-
-#results-slide.ng-hide-remove.ng-hide-remove-active, #results-slide.ng-hide-add
-    margin-right: 0
-    opacity: 1
-
-
-#filters-slide
-    transition: 0.15s all ease-in-out
-
-
-#filters-slide.ng-hide-add, #filters-slide.ng-hide-remove
-    display: block !important
-
-
-#filters-slide.ng-hide-remove, #filters-slide.ng-hide-add.ng-hide-add-active
-    margin-left: -300px
-    opacity: 1
-
-#filters-slide.ng-hide-remove.ng-hide-remove-active, #filters-slide.ng-hide-add
-    margin-left: 0
-    opacity: 1
-
-
 /* slide in from the right */
 @keyframes slideInRight {
     from    { transform:translateX(100%); }
@@ -313,7 +277,7 @@ for num in 5 10 15 20 25 30 35 40 45 50
 $footer()
   width: 100%
   background: rm-medium-blue-darker
-  height: 50px
+  height: $footerHeight
   position: absolute
   bottom: 0px
 
@@ -325,4 +289,20 @@ $footerClose()
   color: #FFFFFF
   text-shadow: 0 1px 0 #ffffff
   opacity: 1.0
-  margin-right: 14px
+  margin-right: 50px
+
+.slide-out-container
+  margin: 0 0 0 0px
+  position: absolute
+  height $slideout-height
+  width: 100%
+  z-index: 2
+  top: 0px
+  background-color: rm-medium-blue-darker
+
+$fnMobileToolbarPadding()
+  padding 25px 25px $footerHeight $toolBarMobileLeftPadding
+
+$fnRevertToolbarPadding()
+  padding: 0px 0px $footerHeight 0px
+

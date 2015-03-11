@@ -1,18 +1,28 @@
+#filters-slide
+  transition: 0.15s all ease-in-out
+
+
+#filters-slide.ng-hide-add, #filters-slide.ng-hide-remove
+  display: block !important
+
+
+#filters-slide.ng-hide-remove, #filters-slide.ng-hide-add.ng-hide-add-active
+  margin-left: -300px
+  opacity: 1
+
+#filters-slide.ng-hide-remove.ng-hide-remove-active, #filters-slide.ng-hide-add
+  margin-left: 0
+  opacity: 1
+
 /* Filters Container
 ============================================================================= */
 
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
 .filters-container
-    margin: 0 0 0 0px
-    position: absolute
-    z-index: 2
+    @extends .slide-out-container
     bottom: 30px
     left: 0px
-    width:100%
-    top: 0px
-    background-color: rm-medium-blue-darker
-    height: 100%
     /*overflow-y:hidden !important*/
 
     .btn-sm.filter-btn
@@ -24,7 +34,9 @@
         margin-bottom:20px
 
     .inner
-        padding: 20px
+        overflow-y:auto !important
+        height: 100%
+        $fnMobileToolbarPadding()
 
     .label
         color:#FFF
@@ -110,28 +122,23 @@
 
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px)
-
-
-    .filters-container .close
-      display:none
-
-
+    .filters-container
+      .close
+        display:none
 
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
     .filters-container
       width:400px
       left: 60px
+      .inner
+        padding: 20px 20px $footerHeight 20px
 
     #results-list
       width:auto
 
-
-
 /* Large devices (large desktops, 1200px and up) */
 //@media (min-width: 1200px)
-
-
 
 /*********************
 End Results Container
@@ -151,7 +158,6 @@ End Results Container
 
 
 .filter-container .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default
-    color: #333
     background-color: rm-medium-blue-darker
     border-color: #adadad
     color:#FFF
