@@ -15,4 +15,4 @@ then
 fi
 
 
-./node_modules/rmaps_scripts/database/syncAll $1
+./node_modules/rmaps-scripts/database/syncAll $1
