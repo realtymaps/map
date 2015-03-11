@@ -16,11 +16,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
     uiGmapPromise, uiGmapControls, uiGmapObjectIterators) ->
 
+    _initToggles = ($scope, toggles) ->
+      _handleMoveToMyLocation = (position) ->
+        $scope.center = position.coords
+        $scope.$evalAsync()
+
+      toggles.setLocationCb(_handleMoveToMyLocation)
+      $scope.Toggles = toggles
 
     class Map extends BaseGoogleMap
       constructor: ($scope, limits) ->
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
-        $scope.Toggles = limits.toggles
+        _initToggles $scope, limits.toggles
 
         $scope.zoomLevelService = ZoomLevel
         self = @

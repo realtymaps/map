@@ -18,8 +18,12 @@
         include ../svg/search.svg
         .toolbar-label Search Bar
 
-    .toolbar-location-icon.icon(findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
-        include ../svg/location.svg
+    .toolbar-location-icon.icon(ng-click="Toggles.toggleLocation()" findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
+        .sk-spinner.sk-spinner-double-bounce(ng-if="Toggles.isFetchingLocation")
+          .sk-double-bounce1
+          .sk-double-bounce2
+        div(ng-if="!Toggles.isFetchingLocation")
+          include ../svg/location.svg
         .toolbar-label Find Me
 
     .toolbar-zoomin-icon.icon(ng-click="changeZoom(+1)" tool-tip placement="right" title="Zoom In")
