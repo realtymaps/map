@@ -18,6 +18,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
+        unless position
+          position =
+            coords: $scope.previousCenter
         $scope.center = position.coords
         $scope.$evalAsync()
 
@@ -40,6 +43,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             if newVal
               @scope.searchbox.setBiasBounds()
           , true
+
+          _firstCenter = true
+          @scope.$watchCollection 'center', (newVal, oldVal) =>
+            if newVal != oldVal
+              if _firstCenter
+                _firstCenter = false
+                return
+              @scope.previousCenter = oldVal
+              @scope.Toggles.hasPreviousLocation = true
+            else
+              @scope.Toggles.hasPreviousLocation = false
+
           @scope.satMap =
             options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, self.scope.options
             bounds: {}
