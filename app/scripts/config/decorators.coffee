@@ -21,6 +21,8 @@ app.config([ '$provide', ($provide) ->
     http = {}
     methods = ['get', 'delete', 'head', 'jsonp']
     dataMethods = ['post', 'put', 'patch']
+    objectFields = ['defaults', 'pendingRequests']
+
     allMethods = methods.concat(dataMethods)
     allMethods.forEach (m) ->
       http[m] = $delegate[m]
@@ -65,6 +67,9 @@ app.config([ '$provide', ($provide) ->
           url: url
           data: data
 
+    objectFields.forEach (name) ->
+      $delegate[name] = http.root[name]
 
     $delegate
-]])
+  ]
+])

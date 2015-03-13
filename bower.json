@@ -20,7 +20,8 @@
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
     "fontawesome": "~4.2.0",
     "ng-infinite-scroller-origin": "~1.2.0",
-    "spinkit": "~1.0.0"
+    "spinkit": "~1.0.0",
+    "angular-cache": "~3.2.5"
   },
   "overrides": {
     "isteven-angular-multiselect": {
