@@ -1,11 +1,10 @@
 _ = require 'lodash'
+isFalse = require('../../common/utils/util.stringToBoolean').isFalse
 path = require 'path'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
-doFork = process.env.DO_FORK || true
 base =
-  DO_FORK: doFork
-  PROC_COUNT: do -> if doFork then process.env.WEB_CONCURRENCY || require('os').cpus().length else 1
+  PROC_COUNT: do -> if !isFalse(process.env.WEB_CONCURRENCY) then process.env.WEB_CONCURRENCY || require('os').cpus().length else 1
   PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
