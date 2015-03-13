@@ -2,10 +2,10 @@ _ = require 'lodash'
 path = require 'path'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
-
+doFork = process.env.DO_FORK || true
 base =
-  DO_FORK: process.env.PROC_COUNT || true
-  PROC_COUNT: process.env.PROC_COUNT || require('os').cpus().length
+  DO_FORK: doFork
+  PROC_COUNT: do -> if doFork then process.env.WEB_CONCURRENCY || require('os').cpus().length else 1
   PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
