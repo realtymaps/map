@@ -1,0 +1,14 @@
+{
+  "web-port": 8989,
+  "debug-port": 6969,
+  "preload": false,
+  "stack-trace-limit": 50,
+  "debug-brk": false,
+  "hidden": [
+    "_public/",
+    "app/",
+    "gulp/",
+    "karma/",
+    "node_modules/"
+  ]
+}
