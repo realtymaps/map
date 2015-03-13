@@ -32,3 +32,7 @@ gulp.task "express", gulp.parallel 'otherAssets', (done) ->
 
 gulp.task "express_debug", (done) ->
   run_express done, ['--debug=9999']
+
+
+gulp.task "pack_express", gulp.parallel 'webpack', 'otherAssets', (done) ->
+  run_express(done)
