@@ -4,6 +4,8 @@ path = require 'path'
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
 
 base =
+  DO_FORK: process.env.PROC_COUNT || true
+  PROC_COUNT: process.env.PROC_COUNT || require('os').cpus().length
   PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
