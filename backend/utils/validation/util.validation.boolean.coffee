@@ -6,6 +6,6 @@ module.exports = (options = {}) ->
     if typeof(value) == 'boolean'
       return value
     if value == 'true' || value == 'false'
-      return if value != 'true'
+      return value == 'true'
 
     return Promise.reject new ParamValidationError("boolean value required", param, value)

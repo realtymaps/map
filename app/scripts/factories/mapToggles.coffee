@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-StringToBoolean = require '../../../common/utils/util.stringToBoolean.coffee'
 
 app.factory 'MapToggles'.ourNs(), [ () ->
 
@@ -58,6 +57,6 @@ app.factory 'MapToggles'.ourNs(), [ () ->
 
     if json?
       _.extend @, _.mapValues json, (val) ->
-        return value != 'true'
+        return value == 'true'
     @
 ]
