@@ -32,14 +32,15 @@ if config.MEM_WATCH.IS_ON
   memwatch = require 'memwatch'
   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
+require('./config/cluster') (cluster) ->
 
-# express configuration
-app = require("./config/express")
+  # express configuration
+  app = require("./config/express")
 
-try
-  logger.info "Attempting to start backend on port #{config.PORT}."
-  app.listen config.PORT, ->
-    logger.info "Backend express server listening on port #{@address().port} in #{config.ENV} mode"
-catch e
-  logger.error "backend failed to start with exception: #{e}"
-  throw new Error(e)
+  try
+    logger.info "Attempting to start backend on port #{config.PORT}."
+    app.listen config.PORT, ->
+      logger.info "Backend express server listening on port #{@address().port} in #{config.ENV} mode"
+  catch e
+    logger.error "backend failed to start with exception: #{e}"
+    throw new Error(e)

@@ -2,8 +2,8 @@ _ = require 'lodash'
 path = require 'path'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
-
 base =
+  PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
   PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
@@ -91,7 +91,7 @@ environmentConfig =
     NEW_RELIC:
       RUN: false # can be flipped to true if needed for troubleshooting or testing
       LOGLEVEL: 'debug'
-      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null 
+      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null
 
   test: # test inherits from development below
     LOGGING:

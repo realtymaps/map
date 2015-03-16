@@ -6,6 +6,7 @@ appName = 'app'.ourNs()
 #console.info "AppName: #{appName}"
 
 app = window.angular.module appName, [
+  'angular-data.DSCacheFactory'
   'uiGmapgoogle-maps'
   'rmaps-utils'
   'ngCookies'

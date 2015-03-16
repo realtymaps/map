@@ -11,6 +11,16 @@ img
 img[src*="gstatic.com/"], img[src*="googleapis.com/"]
   max-width none;
 
+/*
+This seems to really help with the scaling problems if markers on zoom in and out via mouse scroll
+
+http://stackoverflow.com/questions/7471830/google-maps-api-v3-weird-ui-display-glitches-with-screenshot*/
+.gm-style img
+  max-width: none
+
+.gm-style label
+  width: auto; display: inline
+
 .middle
     display table
     width 50%
