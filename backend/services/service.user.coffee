@@ -5,7 +5,6 @@ logger = require '../config/logger'
 User = require("../models/model.user")
 UserState = require("../models/model.userState")
 environmentSettingsService = require("../services/service.environmentSettings")
-StringToBoolean = require '../../common/utils/util.stringToBoolean'
 
 
 getUser = (attributes) ->

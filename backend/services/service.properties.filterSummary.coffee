@@ -24,7 +24,7 @@ minMaxValidations =
 
 otherValidations =
   ownerName: validators.string(trim: true)
-  hasOwner: [ validators.boolean() ]
+  hasOwner: validators.boolean()
   bounds: [
     validators.string(minLength: 1)
     validators.geohash
