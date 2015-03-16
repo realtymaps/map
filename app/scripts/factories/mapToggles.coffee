@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-StringToBoolean = require '../../../common/utils/util.stringToBoolean.coffee'
 
 app.factory 'MapToggles'.ourNs(), [ () ->
 
