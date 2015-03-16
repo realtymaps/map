@@ -7,6 +7,7 @@ paths = require '../paths'
 plumber = require 'gulp-plumber'
 _ = require 'lodash'
 fs = require 'fs'
+webpack = require 'webpack'
 
 mockIndexes = fs.readdirSync(paths.mockIndexes)
 
@@ -17,12 +18,12 @@ output =
 
 conf = configFact(output, [new HtmlWebpackPlugin template: paths.index])
 mockConf = configFact(output, mockIndexes.map (fileName) ->
-  new HtmlWebpackPlugin
-    template: paths.mockIndexes + '/' + fileName
-    filename: "mocks/#{fileName}"
+    new HtmlWebpackPlugin
+      template: paths.mockIndexes + '/' + fileName
+      filename: "mocks/#{fileName}"
 )
 
-gulp.task 'webpack', gulp.parallel 'otherAssets', ->
+runWebpack = (someConfig) ->
   gulp.src [
     paths.assets
     paths.styles
@@ -33,18 +34,25 @@ gulp.task 'webpack', gulp.parallel 'otherAssets', ->
     paths.scripts
   ]
   .pipe plumber()
-  .pipe(gWebpack conf)
+  .pipe(gWebpack someConfig)
   .pipe(gulp.dest(paths.dest.root))
 
+gulp.task 'webpack', gulp.parallel 'otherAssets', ->
+  runWebpack(conf)
+
 gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
-  gulp.src [
-    paths.assets
-    paths.styles
-    paths.stylus
-    paths.jade
-    paths.html
-    paths.scripts
-  ]
-  .pipe plumber()
-  .pipe(gWebpack mockConf)
-  .pipe(gulp.dest(paths.dest.root))
+  runWebpack(mockConf)
+
+gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
+  runWebpack(
+    configFact(output, [
+      new HtmlWebpackPlugin template: paths.index
+      #not sure what the option is to mangle on webpack.. we could post mangle via gulp
+      new webpack.optimize.UglifyJsPlugin {
+        compress: {
+          warnings: false
+        }}
+    ])
+  )
+
+

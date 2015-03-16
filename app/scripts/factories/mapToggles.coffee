@@ -57,6 +57,6 @@ app.factory 'MapToggles'.ourNs(), [ () ->
 
     if json?
       _.extend @, _.mapValues json, (val) ->
-        return value == 'true'
+        return val == 'true'
     @
 ]
