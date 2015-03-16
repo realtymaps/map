@@ -57,6 +57,7 @@ app.factory 'MapToggles'.ourNs(), [ () ->
       _locationCb()
 
     if json?
-      _.extend @, StringToBoolean.booleanify(json)
+      _.extend @, _.mapValues json, (val) ->
+        return value != 'true'
     @
 ]

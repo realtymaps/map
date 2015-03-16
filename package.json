@@ -13,8 +13,7 @@
     "npm": "2.1.x"
   },
   "scripts": {
-    "start": "./scripts/serve",
-    "dbsync": "./scripts/dbSync",
+    "start": "./node_modules/rmaps-scripts/app/startApp",
     "gulp": "gulp",
     "gulp-build": "gulp build",
     "test-frontend": "gulp frontendSpec",
