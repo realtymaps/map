@@ -59,7 +59,6 @@
     "geohash64": "^1.0.2",
     "gulp": "https://github.com/gulpjs/gulp/archive/e9414f0fdc2a99f0c798f72100c26d35e21d7c59.tar.gz",
     "gulp-changed": "^1.0.0",
-    "gulp-closure-compiler": "^0.2.17",
     "gulp-coffee": "^2.2.0",
     "gulp-concat": "2.4.x",
     "gulp-exit": "0.0.2",
