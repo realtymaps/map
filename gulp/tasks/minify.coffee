@@ -11,8 +11,8 @@ gulp.task 'minify-css', ->
   .pipe(gulp.dest('_public/styles/'))
 
 gulp.task 'minify-js', ->
-  gulp.src('_public/scripts/vendor.js')
-  .pipe(minifyJS())
+  gulp.src('_public/scripts/*.js')
+  .pipe(minifyJS(mangle:true))
   .pipe(gulp.dest('_public/scripts/'))
 
 gulp.task 'minify', gulp.parallel 'minify-js', 'minify-css'

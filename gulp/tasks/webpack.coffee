@@ -47,6 +47,7 @@ gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
   runWebpack(
     configFact(output, [
       new HtmlWebpackPlugin template: paths.index
+      #not sure what the option is to mangle on webpack.. we could post mangle via gulp
       new webpack.optimize.UglifyJsPlugin {
         compress: {
           warnings: false
