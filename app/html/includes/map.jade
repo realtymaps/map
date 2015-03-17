@@ -18,6 +18,17 @@ ui-gmap-google-map(center='center', zoom='zoom',
 
   ui-gmap-markers(
     ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
+    models='layers.clusters'
+    coords='"self"'
+    idkey='"id"'
+    events='actions.listingEvents'
+    ng-cloak=''
+    chunk='false'
+    cleanchunk='false'
+    modelsbyref='false')
+
+  ui-gmap-markers(
+    ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
     options='formatters.layer.MLS.markerOptionsFromForSale'
     models='layers.filterSummary'
     coords='"geom_point_json"'

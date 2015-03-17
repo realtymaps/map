@@ -110,7 +110,7 @@ module.exports =
     extra = ''
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
-    knex.select(knex.raw(_columns[which]+extra))
+    knex.select(knex.raw(_columns[which]+extra))#what is this doing? _columns[which]+extra
 
 
   whereInBounds: (query, column, bounds) ->

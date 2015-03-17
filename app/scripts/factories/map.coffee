@@ -168,6 +168,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             filterSummary: {}
             listingDetail: undefined
             drawnPolys: []
+            clusters: []
 
           controls:
             parcels: {}
@@ -327,19 +328,26 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
-            @scope.layers.parcels = uiGmapObjectIterators.slapAll data
-            $log.debug "addresses count to draw: #{data.length}"
+            $timeout => #allows the spinners digest to reach back after rendering is complete
+              @scope.layers.parcels = uiGmapObjectIterators.slapAll data
+              $log.debug "addresses count to draw: #{data.length}"
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
-          @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
-          $log.debug "filters (poly price) count to draw: #{data.length}"
+          if _.isArray data
+            #assign to cluster layer
+            @scope.layers.filterSummary = {}
+            @scope.layers.clusters = data
+          else
+            @scope.layers.clusters.length = 0
+            @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
+            $log.debug "filters (poly price) count to draw: #{data.length}"
 
-          @scope.$evalAsync () =>
-            @scope.formatters.results?.reset()
+            @scope.$evalAsync () =>
+              @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>

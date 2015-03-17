@@ -47,11 +47,26 @@ required =
   status: []
   ownerName: ""
 
+_roundCoordCol = (xy = 'X',roundTo = 1) ->
+  "round(ST_#{xy}(geom_point_raw)::decimal,#{roundTo})"
+
+_clusterQuery = (state) ->
+  if state.map_position.zoom <= 13
+    query = db.knex.select(db.knex.raw('count(*)'),
+      db.knex.raw("#{_roundCoordCol()} as longitude"),
+      db.knex.raw("#{_roundCoordCol('Y')} as latitude"),
+      'city').from(sqlHelpers.tableName(PropertyDetails))
+    query.whereNotNull('city')
+    query.groupBy('city')
+    query.groupByRaw(_roundCoordCol())
+    query.groupByRaw(_roundCoordCol('Y'))
+
+  query
 
 module.exports =
-
   getFilterSummary: (state, rawFilters, limit = 2000) ->
-    bounds = null;
+    bounds = null
+    doReturnObject = true
     Promise.try () ->
 
       # note this is looking at the pre-transformed status filter
@@ -66,8 +81,12 @@ module.exports =
         # shortcut out, this part won't yield anything
         if !filters.status.length
           return []
-  
-        query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(PropertyDetails))
+        if state.map_position.zoom > 13
+          query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(PropertyDetails))
+        else
+          doReturnObject = false
+          query = _clusterQuery(state)
+
         query.limit(limit) if limit
 
         sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
@@ -114,16 +133,21 @@ module.exports =
         if state.map_position.zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
           sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', state.map_position.center)
 
-        #logger.sql query.toString()
+#        logger.sql query.toString()
         return query
     .then (filteredProperties) ->
       if !filteredProperties?.length
         return []
       # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-      return _.uniq filteredProperties, (row) ->
-        row.rm_property_id
+      if doReturnObject
+        return _.uniq filteredProperties, (row) ->
+          row.rm_property_id
+      filteredProperties
     .then (filteredProperties) ->
-      return filteredProperties if !state?.properties_selected || _.keys(state.properties_selected).length == 0
+
+      if !state?.properties_selected || _.keys(state.properties_selected).length == 0 || !doReturnObject
+#        logger.sql "BAIL"
+        return filteredProperties
 
       # joining saved props to the filter data for properties that passed the filters, keeping track of which
       # ones hit so we can do further processing on the others
@@ -152,4 +176,11 @@ module.exports =
           row.savedDetails = state.properties_selected[row.rm_property_id]
         return filteredProperties.concat(savedProperties)
     .then (filteredProperties) ->
-      indexBy(filteredProperties)
+#      logger.sql filteredProperties
+      if doReturnObject
+        return indexBy(filteredProperties)
+      counter = 0
+      filteredProperties.map (obj) ->
+        obj.id = counter
+        counter += 1
+        obj
