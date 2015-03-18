@@ -39,7 +39,10 @@ makeMinMaxes = (result, validators, name) ->
   result["#{name}Min"] = validators
   result["#{name}Max"] = validators
 
-transforms = _.extend {}, otherValidations, _.transform(minMaxValidations, makeMinMaxes)
+minMaxes = _.transform(minMaxValidations, makeMinMaxes)
+#logger.debug minMaxes, true
+
+transforms = _.extend {}, otherValidations, minMaxes
 
 
 required =
@@ -47,21 +50,30 @@ required =
   status: []
   ownerName: ""
 
-_roundCoordCol = (xy = 'X',roundTo = 1) ->
+_roundCoordCol = (roundTo = 0, xy = 'X') ->
   "round(ST_#{xy}(geom_point_raw)::decimal,#{roundTo})"
 
-_clusterQuery = (state) ->
-  if state.map_position.zoom <= 13
-    query = db.knex.select(db.knex.raw('count(*)'),
-      db.knex.raw("#{_roundCoordCol()} as longitude"),
-      db.knex.raw("#{_roundCoordCol('Y')} as latitude"),
-      'city').from(sqlHelpers.tableName(PropertyDetails))
-    query.whereNotNull('city')
-    query.groupBy('city')
-    query.groupByRaw(_roundCoordCol())
-    query.groupByRaw(_roundCoordCol('Y'))
+_makeClusterQuery = (roundTo) ->
+  db.knex.select(db.knex.raw('count(*)'),
+    db.knex.raw("#{_roundCoordCol(roundTo)} as longitude"),
+    db.knex.raw("#{_roundCoordCol(roundTo,'Y')} as latitude"))
+  .from(sqlHelpers.tableName(PropertyDetails))
+  .whereNotNull('city')
+  .groupByRaw(_roundCoordCol(roundTo))
+  .groupByRaw(_roundCoordCol(roundTo,'Y'))
 
-  query
+_clusterQuery = (state) ->
+  if state.map_position.zoom <= 13 and state.map_position.zoom > 9
+    _makeClusterQuery(1)
+  else
+    _makeClusterQuery(0)
+
+_fillOutDummyClusterIds = (filteredProperties) ->
+  counter = 0
+  filteredProperties.map (obj) ->
+    obj.id = counter
+    counter += 1
+    obj
 
 module.exports =
   getFilterSummary: (state, rawFilters, limit = 2000) ->
@@ -179,8 +191,4 @@ module.exports =
 #      logger.sql filteredProperties
       if doReturnObject
         return indexBy(filteredProperties)
-      counter = 0
-      filteredProperties.map (obj) ->
-        obj.id = counter
-        counter += 1
-        obj
+      _fillOutDummyClusterIds(filteredProperties)

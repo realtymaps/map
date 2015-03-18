@@ -1,6 +1,7 @@
 Promise = require "bluebird"
 ParamValidationError = require './util.error.paramValidation'
 doValidation = require './util.impl.doValidation'
+logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
@@ -8,6 +9,9 @@ module.exports = (options = {}) ->
       arrayValues = values.split(options.split)
     else
       arrayValues = values
+
+#    logger.debug "param: #{param}"
+#    logger.debug "values: #{values}"
     if !_.isArray arrayValues
       return Promise.reject new ParamValidationError("array of values expected", param, values)
     if options.minLength? and arrayValues.length < options.minLength

@@ -32,6 +32,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         _initToggles $scope, limits.toggles
 
+        _handleManualMarkerCluster = (model, gObject) ->
+          if gObject?.markerType? and gObject?.markerType == "cluster"
+            $scope.center =
+              latitude: model.latitude
+              longitude: model.longitude
+            $scope.zoom = if $scope.zoom > 9 then 14 else 12
+            return true
+
         $scope.zoomLevelService = ZoomLevel
         self = @
 
@@ -238,6 +246,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                     #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                     model = GoogleService.UiMap.getCorrectModel model
+                    return if _handleManualMarkerCluster(model, gObject)
                     if event.ctrlKey or event.metaKey
                       return _saveProperty(model, gObject)
                     unless @lastEvent == 'dblclick'

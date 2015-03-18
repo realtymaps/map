@@ -156,6 +156,28 @@ app.factory 'LayerFormatters'.ourNs(), [
           markerType: "price"
           visible: isVisible(mls, true)
 
+        markerOptionsManualCluster: (model) ->
+          return {} unless model
+
+          if model.isMousedOver
+            hovered = ' label-hovered'
+            zIndex = 4
+          else
+            hovered = ''
+            zIndex = 2
+
+#          icon:
+#                """
+#                <img class="manual-cluster" src="assets/cluster_circle_gray_40.png" >
+#                <div class="manual-cluster">#{model.count}</div>
+#                """
+          icon: 'assets/cluster_circle_gray_40.png'
+          labelContent: "<div class='manual-cluster'>#{model.count}</div>"
+          labelAnchor: "20 40"
+          zIndex: zIndex
+          markerType: "cluster"
+          visible: true
+
         getWindowOffset: getWindowOffset
 
       #public
