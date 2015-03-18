@@ -95,7 +95,7 @@ module.exports =
         # shortcut out, this part won't yield anything
         if !filters.status.length
           return []
-        if state.map_position.zoom > 13
+        if state.map_position.zoom > zoomThresh.roundOne
           query = sqlHelpers.select(db.knex, "filter", true).from(sqlHelpers.tableName(PropertyDetails))
         else
           doReturnObject = false
