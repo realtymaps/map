@@ -8,6 +8,8 @@ sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
 indexBy = require '../../common/utils/util.indexByWLength'
 
+zoomThresh = config.MAP.options.zoomThresh
+
 validators = requestUtil.query.validators
 
 statuses = filterStatuses.keys
@@ -63,9 +65,9 @@ _makeClusterQuery = (roundTo) ->
   .groupByRaw(_roundCoordCol(roundTo,'Y'))
 
 _clusterQuery = (state) ->
-  if state.map_position.zoom <= 13 and state.map_position.zoom > 9
+  if state.map_position.zoom <= zoomThresh.roundOne and state.map_position.zoom > zoomThresh.roundNone
     _makeClusterQuery(1)
-  else
+  else #none
     _makeClusterQuery(0)
 
 _fillOutDummyClusterIds = (filteredProperties) ->
@@ -142,7 +144,7 @@ module.exports =
         if filters.listedDaysMax
           sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
 
-        if state.map_position.zoom >= config.MAP.zoom_ordering_threshold or _.contains(filters.status, filterStatusesEnum.not_for_sale)
+        if state.map_position.zoom >= zoomThresh.ordering or _.contains(filters.status, filterStatusesEnum.not_for_sale)
           sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', state.map_position.center)
 
 #        logger.sql query.toString()

@@ -37,7 +37,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             $scope.center =
               latitude: model.latitude
               longitude: model.longitude
-            $scope.zoom = if $scope.zoom > 9 then 14 else 12
+            $scope.zoom = if $scope.zoom > 9 then 14 else 11
             return true
 
         $scope.zoomLevelService = ZoomLevel
@@ -337,9 +337,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
           Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
-            $timeout => #allows the spinners digest to reach back after rendering is complete
-              @scope.layers.parcels = uiGmapObjectIterators.slapAll data
-              $log.debug "addresses count to draw: #{data.length}"
+            @scope.layers.parcels = uiGmapObjectIterators.slapAll data
+            $log.debug "addresses count to draw: #{data.length}"
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -348,15 +347,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           return unless data?
           if _.isArray data
             #assign to cluster layer
-            @scope.layers.filterSummary = {}
+            @scope.layers.filterSummary = [] #semi bug in ui-gmap (allows destruction to happen from {with items} to empty
             @scope.layers.clusters = data
           else
             @scope.layers.clusters.length = 0
             @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
             $log.debug "filters (poly price) count to draw: #{data.length}"
 
-            @scope.$evalAsync () =>
-              @scope.formatters.results?.reset()
+          @scope.$evalAsync () =>
+            @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>

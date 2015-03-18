@@ -1,5 +1,6 @@
 _ = require 'lodash'
 path = require 'path'
+common =  require '../../common/config/commonConfig'
 
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
 base =
@@ -57,8 +58,7 @@ base =
     TEST_API_KEY: process.env.LOB_TEST_API_KEY
     LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
     API_VERSION: '2014-12-18'
-  MAP:
-    zoom_ordering_threshold: 17
+  MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
