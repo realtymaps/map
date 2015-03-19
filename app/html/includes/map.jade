@@ -18,6 +18,18 @@ ui-gmap-google-map(center='center', zoom='zoom',
 
   ui-gmap-markers(
     ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
+    options='formatters.layer.MLS.markerOptionsManualCluster'
+    models='layers.clusters'
+    coords='"self"'
+    idkey='"id"'
+    events='actions.listingEvents'
+    ng-cloak=''
+    chunk='false'
+    cleanchunk='false'
+    modelsbyref='false')
+
+  ui-gmap-markers(
+    ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
     options='formatters.layer.MLS.markerOptionsFromForSale'
     models='layers.filterSummary'
     coords='"geom_point_json"'
@@ -28,7 +40,7 @@ ui-gmap-google-map(center='center', zoom='zoom',
     cleanchunk='false'
     doCluster='true'
     control='controls.priceMarkers'
-    clusterOptions="{ignoreHidden: true, minimumClusterSize: 4,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
+    clusterOptions="{ignoreHidden: true, minimumClusterSize: 3,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
     "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}"
     modelsbyref='false')
 

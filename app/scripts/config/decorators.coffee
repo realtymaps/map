@@ -15,6 +15,9 @@ app.config([ '$provide', ($provide) ->
     $delegate
   ]
 ])
+.config(['$httpProvider', ($httpProvider) ->
+    $httpProvider.useApplyAsync(true)
+])
 .config([ '$provide', ($provide) ->
   # attempting to create a cancelable $http on all its functions
   $provide.decorator '$http', [ '$delegate', '$q', ($delegate, $q) ->

@@ -23,6 +23,7 @@ handleRoute = (res, next, serviceCall) ->
 module.exports =
 
   filterSummary: (req, res, next) ->
+#    logger.debug req.query, true
     handleRoute res, next, () ->
       filterSummaryService.getFilterSummary(req.session.state, req.query)
 

@@ -156,6 +156,16 @@ app.factory 'LayerFormatters'.ourNs(), [
           markerType: "price"
           visible: isVisible(mls, true)
 
+        markerOptionsManualCluster: (model) ->
+          return {} unless model
+
+          icon: 'assets/cluster_circle_gray_40.png'
+          labelContent: "<div class='manual-cluster'>#{model.count}</div>"
+          labelAnchor: "20 40"
+          zIndex: 6
+          markerType: "cluster"
+          visible: true
+
         getWindowOffset: getWindowOffset
 
       #public

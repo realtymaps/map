@@ -5,4 +5,14 @@ commonConfig =
             please let us know by emailing #{commonConfig.SUPPORT_EMAIL}, and giving us the following error
             message: "+(if troubleshooting then "<br/><code>#{troubleshooting}</code>" else "")
 
+  map:
+    options:
+      zoomThresh:
+        addressParcel: 18
+        price: 16
+        clustering: 17
+        ordering: 17
+        roundOne: 13
+        roundNone: 9
+
 module.exports = commonConfig

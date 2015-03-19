@@ -32,6 +32,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         super $scope, limits.options, limits.zoomThresholdMilliSeconds
         _initToggles $scope, limits.toggles
 
+        _handleManualMarkerCluster = (model, gObject) ->
+          if gObject?.markerType? and gObject?.markerType == "cluster"
+            $scope.center =
+              latitude: model.latitude
+              longitude: model.longitude
+            $scope.zoom = if $scope.zoom > 9 then 14 else 11
+            return true
+
         $scope.zoomLevelService = ZoomLevel
         self = @
 
@@ -168,6 +176,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             filterSummary: {}
             listingDetail: undefined
             drawnPolys: []
+            clusters: []
 
           controls:
             parcels: {}
@@ -237,6 +246,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                     #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
                     #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
                     model = GoogleService.UiMap.getCorrectModel model
+                    return if _handleManualMarkerCluster(model, gObject)
                     if event.ctrlKey or event.metaKey
                       return _saveProperty(model, gObject)
                     unless @lastEvent == 'dblclick'
@@ -335,8 +345,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
         Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
           return unless data?
-          @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
-          $log.debug "filters (poly price) count to draw: #{data.length}"
+          if _.isArray data
+            #assign to cluster layer
+            @scope.layers.filterSummary = [] #semi bug in ui-gmap (allows destruction to happen from {with items} to empty
+            @scope.layers.clusters = data
+          else
+            @scope.layers.clusters.length = 0
+            @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
+            $log.debug "filters (poly price) count to draw: #{data.length}"
 
           @scope.$evalAsync () =>
             @scope.formatters.results?.reset()
