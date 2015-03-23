@@ -3,6 +3,7 @@ Promise = require "bluebird"
 detailService = require '../services/service.properties.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'
+addressService = require '../services/service.properties.addresses'
 requestUtil = require '../utils/util.http.request'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
@@ -23,13 +24,16 @@ handleRoute = (res, next, serviceCall) ->
 module.exports =
 
   filterSummary: (req, res, next) ->
-#    logger.debug req.query, true
     handleRoute res, next, () ->
       filterSummaryService.getFilterSummary(req.session.state, req.query)
 
   parcelBase: (req, res, next) ->
     handleRoute res, next, () ->
       parcelService.getBaseParcelData(req.session.state, req.query)
+
+  addresses: (req, res, next) ->
+    handleRoute res, next, () ->
+      addressService.get(req.session.state, req.query)
 
   detail: (req, res, next) ->
     handleRoute res, next, () ->

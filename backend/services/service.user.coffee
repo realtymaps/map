@@ -131,7 +131,9 @@ NOTE: IF columns for user_state need to be deleted Session.state should be purge
   a invalid bookshelf object of old state will be queried.
 ###
 _userStateCols = ['map_position', 'map_toggles', 'map_results']
-_filtersToRemove = _userStateCols.concat(['bounds'])
+#TODO: THIS NEEDS TO BE RETHOUGHT this special handling of removing types is very difficult
+# to remeber and causes significant debugging
+_filtersToRemove = _userStateCols.concat(['bounds','returnType'])
 
 _commonCaptureState = (req, stateUpdate = {}) ->
   hasSomeState = false

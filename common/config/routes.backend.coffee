@@ -20,6 +20,7 @@ module.exports =
   properties:
     filterSummary:   "#{apiBase}/properties/filter_summary/"
     parcelBase:      "#{apiBase}/properties/parcel_base/"
+    addresses:      "#{apiBase}/properties/addresses/"
     detail:          "#{apiBase}/properties/detail/"
   snail:
     quote:            "#{apiBase}/snail/quote"

@@ -1,6 +1,7 @@
 memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
-
+logger = require '../config/logger'
+Promise = require "bluebird"
 
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
@@ -20,7 +21,7 @@ _flattenLonLat = (bounds) ->
 
 _whereRawSafe = (query, rawSafe) ->
   query.whereRaw rawSafe.sql, rawSafe.bindings
-  
+
 _orWhereRawSafe = (query, rawSafe) ->
   query.orWhere ()-> _whereRawSafe(@, rawSafe)
 
@@ -64,6 +65,48 @@ _columns =
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 
+_whereInBounds = (query, column, bounds) ->
+  results = {}
+  if bounds.length > 2
+    # it must be a user-specified boundary
+    boundsFlattened = _flattenLonLat(bounds)
+    results.sql = "ST_WITHIN(#{column}, ST_GeomFromText(MULTIPOLYGON(((#{boundsFlattened.markers}))), #{coordSys.UTM}))"
+    results.bindings = boundsFlattened.bindings
+  else
+    # it's the whole map, so let's put a margin on each side
+    minLon = Math.min(bounds[0].lon, bounds[1].lon)
+    maxLon = Math.max(bounds[0].lon, bounds[1].lon)
+    marginLon = (maxLon - minLon)*_MARGIN
+    minLat = Math.min(bounds[0].lat, bounds[1].lat)
+    maxLat = Math.max(bounds[0].lat, bounds[1].lat)
+    marginLat = (maxLat - minLat)*_MARGIN
+
+    results.sql = "#{column} && ST_MakeEnvelope(?, ?, ?, ?, #{coordSys.UTM})"
+    results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
+  _whereRawSafe query, results
+
+_getClauseString = (query, remove = /.*where/) ->
+  'WHERE '+ query.toString().replace(remove,'')
+
+_geojson_query = (db, tableName, featuresColName, clause) ->
+  Promise.try () ->
+    query =
+      db.knex.raw """
+        select geojson_query_exec('#{tableName}', '#{featuresColName}', '#{clause}')
+        """
+    # logger.sql query.toString()
+    query
+  .then (data) ->
+    # logger.sql data, true
+    return [] if not data.rows?.length
+    data.rows[0].geojson_query_exec
+
+_geojson_query_bounds = (db, tableName, featuresColName, boundsColumnName, bounds) ->
+  _whereClause = _getClauseString _whereInBounds(db.knex(''), boundsColumnName, bounds)
+  _whereClause = _whereClause.replace(/'/g, "''")
+  # logger.debug _whereClause + '\n'
+  _geojson_query(db, tableName, featuresColName, _whereClause)
+
 module.exports =
 
   between: (query, column, min, max) ->
@@ -73,7 +116,7 @@ module.exports =
       query.where(column, '>=', min)
     else if max
       query.where(column, '<=', max)
-  
+
   tableName: memoize (model) ->
     model.query()._single.table
 
@@ -121,25 +164,12 @@ module.exports =
     extra = ''
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
-    knex.select(knex.raw(_columns[which]+extra))#what is this doing? _columns[which]+extra
+    knex.select(knex.raw(_columns[which] + extra))
 
+  whereInBounds: _whereInBounds
 
-  whereInBounds: (query, column, bounds) ->
-    results = {}
-    if bounds.length > 2
-      # it must be a user-specified boundary
-      boundsFlattened = _flattenLonLat(bounds)
-      results.sql = "ST_WITHIN(#{column}, ST_GeomFromText(MULTIPOLYGON(((#{boundsFlattened.markers}))), #{coordSys.UTM}))"
-      results.bindings = boundsFlattened.bindings
-    else
-      # it's the whole map, so let's put a margin on each side
-      minLon = Math.min(bounds[0].lon, bounds[1].lon)
-      maxLon = Math.max(bounds[0].lon, bounds[1].lon)
-      marginLon = (maxLon - minLon)*_MARGIN
-      minLat = Math.min(bounds[0].lat, bounds[1].lat)
-      maxLat = Math.max(bounds[0].lat, bounds[1].lat)
-      marginLat = (maxLat - minLat)*_MARGIN
+  getClauseString: _getClauseString
 
-      results.sql = "#{column} && ST_MakeEnvelope(?, ?, ?, ?, #{coordSys.UTM})"
-      results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
-    _whereRawSafe query, results
+  geojson_query:_geojson_query
+
+  geojson_query_bounds:_geojson_query_bounds

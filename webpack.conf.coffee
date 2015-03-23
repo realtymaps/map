@@ -20,8 +20,8 @@ Config = (output, additionalPlugs) ->
     module:
       loaders: [
         { test: /\.css$/, loader: 'style!css!autoprefixer?browsers=last 2 version' }
-#        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
-        { test: /\.styl$/, loader: 'style!css!stylus' }
+        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
+#        { test: /\.styl$/, loader: 'style!css!stylus' }
         { test: /\.coffee$/, loader: 'coffee' }
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.jpg$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
@@ -31,6 +31,7 @@ Config = (output, additionalPlugs) ->
         { test: /\.eot$/, loader: "file?prefix=font/" }
         { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
         { test: /\.html$/, loader: "html?attrs=img:src" }
+        {test: /\.json$/, loader: "json"}
       ]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"

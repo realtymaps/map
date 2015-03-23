@@ -12,7 +12,7 @@ module.exports = (config, webpackConf) ->
 
 # frameworks to use
 # available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-  frameworks: ['mocha','fixture','chai']
+  frameworks: ['mocha','fixture','chai', 'expect']
 
 # preprocess matching files before serving them to the browser
 # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
@@ -21,8 +21,7 @@ module.exports = (config, webpackConf) ->
     '../spec/app/**/*spec.coffee': ['webpack']
     '../spec/fixtures/*.html': ['html2js']
     '../spec/fixtures/*.json': ['html2js']
-    '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee':
-      ['coffee']
+    '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
   #'_public/*.js': ['coverage']
   }
 
@@ -95,6 +94,7 @@ module.exports = (config, webpackConf) ->
   plugins: [
     'karma-mocha-reporter'
     'karma-chai'#makes should js work, but it can be loaded directly in a spec
+    'karma-expect'
     'karma-coverage'
     'karma-mocha'
     'karma-html2js-preprocessor'

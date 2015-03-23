@@ -38,8 +38,7 @@ include ./mixins/spinner.jade
         include ../svg/zoom_out.svg
         .toolbar-label Zoom Out
 
-    //- TODO: hook up to drag-zoom - fix icon hover    
-    .toolbar-zoomout-icon.icon(tool-tip placement="right" title="Zoom Area")
+    .toolbar-zoomout-icon.icon(ng-click="map.zoomBox()" tool-tip placement="right" title="Zoom Area")
         include ../svg/zoom_area.svg
         .toolbar-label Zoom Area
 

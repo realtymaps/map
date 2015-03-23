@@ -23,3 +23,7 @@ nginx/var/
 nginx/**/
 mean.coffee.log
 newrelic_agent.log
+tags
+.tags
+TAGS
+.TAGS

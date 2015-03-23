@@ -2,7 +2,6 @@ app = require '../app.coffee'
 
 keysToValue = require '../../../common/utils/util.keysToValues.coffee'
 
-
 app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
   _zoomThresh = options.map.options.zoomThresh
   _enum = keysToValue
@@ -10,6 +9,8 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
     parcel: 1
     price: 1
 
+  _getZoom = (scope) ->
+    scope.map?.center?.zoom
 
   _enumFromLevel = (currentLevel) ->
     if currentLevel <= _zoomThresh.price
@@ -19,11 +20,11 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
     if currentLevel >= _zoomThresh.addressParcel
       return _enum.addressParcel
 
-  _enumFromMap = (gMap) ->
-    _enumFromLevel gMap.getZoom()
+  _enumFromMap = (scope) ->
+    _enumFromLevel scope.map?.center?.zoom
 
   _is = (gMapOrInt, stateObj, stateToCheck) ->
-    stateObj.zoomLevel = if _.isNumber(gMapOrInt) then _enumFromLevel(gMapOrInt) else _enumFromMap gMapOrInt
+    stateObj.zoomLevel = if _.isNumber(gMapOrInt) or _.isString(gMapOrInt) then _enumFromLevel(gMapOrInt) else _enumFromMap gMapOrInt
     stateToCheck == stateObj.zoomLevel
 
   _dblClickZoom = do ->
@@ -38,6 +39,11 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
   enumFromLevel: _enumFromLevel
   enumFromMap: _enumFromMap
 
+
+  getZoom: _getZoom
+
+  doCluster: (scope) ->
+    _getZoom(scope) <= _zoomThresh.roundOne
   #boolean checks with side effects to save the enum state to some object
   isPrice: (gMapOrInt, stateObj = {}) ->
     _is(gMapOrInt, stateObj, _enum.price)

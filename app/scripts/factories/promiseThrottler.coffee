@@ -11,9 +11,11 @@ app.factory 'PromiseThrottler'.ourNs(), [
       Simple Class to Keep Track of its own promises to debounce
     ###
     (name) ->
+      self = this
       unless name
         name = "#{defaultName}-#{defaultNameIndex}"
         defaultNameIndex += 1
+      this.name = name
 
       promiseHash = new PropMap()
       promisesIndex = 0
@@ -29,7 +31,7 @@ app.factory 'PromiseThrottler'.ourNs(), [
         If it finishes gracefully or is forced (canceled)
         it will remove itself from the cache.
       ###
-      @invokePromise = (cancelablePromise, options) ->
+      @invokePromise = (cancelablePromise, options) =>
         deferred = $q.defer()
         nonCancelpromise = deferred.promise
 
@@ -44,10 +46,10 @@ app.factory 'PromiseThrottler'.ourNs(), [
 
         cancelablePromise.then (data) ->
           deferred.resolve(data.data) if data?
-        .finally ->
-          promiseHash.remove myId
+        .finally =>
+          promiseHash.remove(@name + myId)
 
-        promiseHash.put myId, () ->
+        promiseHash.put(@name + myId, () ->
           ### these alerts won't be sent in the first place, now
           # prevent alerts from the canceled $http call
           if options.http?
@@ -60,6 +62,7 @@ app.factory 'PromiseThrottler'.ourNs(), [
 
           # do the cancel
           cancelablePromise.cancel()
+        )
 
         deferred.promise #return a regular promise
 

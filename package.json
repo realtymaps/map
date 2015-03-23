@@ -25,6 +25,7 @@
     "clean": "./scripts/app/clean"
   },
   "dependencies": {
+    "angular-leaflet-directive": "^0.7.11",
     "async": "^0.9.0",
     "autoprefixer-loader": "^1.1.0",
     "base64url": "0.0.6",
@@ -35,7 +36,7 @@
     "bookshelf.raw.safe": "0.0.2",
     "bower": "1.3.x",
     "case": "1.1.2",
-    "chai": "1.9.x",
+    "chai": "^1.9.2",
     "coffee-loader": "^0.7.2",
     "coffee-script": "1.8.x",
     "coffee-script-mapped": "^0.1.7",
@@ -56,7 +57,7 @@
     "express-session": "1.8.x",
     "file-loader": "^0.7.2",
     "forever": "0.11.x",
-    "geohash64": "^1.0.2",
+    "geohash64": "^1.0.3",
     "gulp": "https://github.com/gulpjs/gulp/archive/4502a9caead8de00d16765dc30c4e5f81e847d75.tar.gz",
     "gulp-changed": "^1.0.0",
     "gulp-coffee": "^2.2.0",
@@ -90,6 +91,7 @@
     "isnode": "0.0.1",
     "jade": "^1.7.0",
     "jade-html-loader": "^0.0.2",
+    "json-loader": "^0.5.1",
     "karma": "^0.12.23",
     "karma-chrome-launcher": "0.1.4",
     "karma-cli": "0.0.4",
@@ -103,6 +105,8 @@
     "karma-phantomjs-launcher": "0.1.4",
     "karma-webpack": "^1.3.1",
     "knex": "^0.7.3",
+    "leaflet": "^0.7.3",
+    "leaflet-plugins": "^1.3.2",
     "lob": "^2.9.1",
     "lodash": "~2.4.1",
     "main-bower-files": "^2.0.0",
@@ -142,6 +146,7 @@
   },
   "devDependencies": {
     "karma-chai": "^0.1.0",
+    "karma-expect": "^1.1.0",
     "karma-mocha-reporter": "^0.3.1",
     "phantomjs-polyfill": "0.0.1"
   }
