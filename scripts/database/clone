@@ -1,0 +1,78 @@
+#!/bin/bash
+set -e
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR/.."
+
+
+###########################
+####### set up dump #######
+###########################
+
+# use "custom" pg_dump/pg_restore format, probably the most efficient and flexible
+DUMP_COMMAND="pg_dump -F c"
+
+# dump from the source db
+SRC_URL=`./database/getDbUrl $1`
+SRC_DB=`./database/getDbName $1`
+DUMP_COMMAND="$DUMP_COMMAND -d $SRC_URL"
+shift
+
+
+##############################
+####### set up restore #######
+##############################
+
+# use "custom" pg_dump/pg_restore format, probably the most efficient and flexible
+RESTORE_COMMAND="pg_restore -F c"
+
+# restore to the destination db
+DST_URL=`./database/getDbUrl $1`
+DST_DB=`./database/getDbName $1`
+RESTORE_COMMAND="$RESTORE_COMMAND -d $DST_URL"
+shift
+
+# do not try to set the owner of created objects
+RESTORE_COMMAND="$RESTORE_COMMAND -O"
+
+# restore as a single transaction
+RESTORE_COMMAND="$RESTORE_COMMAND -1"
+
+
+###################################
+####### set up some options #######
+###################################
+if [[ "$1" == "--oids" ]]
+then
+    # means we want to dump OIDs so we can recreate foreign keys
+    # we don't do this by default because it hurts efficiency
+    DUMP_COMMAND="$DUMP_COMMAND -o"
+    shift
+fi
+if [[ "$1" == "--clean" ]]
+then
+    # drop existing objects before trying to create them
+    RESTORE_COMMAND="$RESTORE_COMMAND -c"
+    shift
+fi
+
+
+################################
+####### set what to dump #######
+################################
+if [[ "$@" != "" ]]
+then
+    # we have some restrictions on what to dump
+    DUMP_COMMAND="$DUMP_COMMAND $@"
+fi
+
+
+
+######################
+####### DO IT! #######
+######################
+
+START_TIME=`date '+%s'`
+echo "CLONE: cloning from $SRC_DB to $DST_DB"
+$DUMP_COMMAND | $RESTORE_COMMAND
+END_TIME=`date '+%s'`
+echo "CLONE: completed in $(( END_TIME - START_TIME ))s"

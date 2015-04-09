@@ -1,0 +1,70 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$1" == "--to" ]]
+then
+    # means we need to reverse the direction of all operations, to be TO the specified db instead of FROM it 
+    shift
+    
+    echo "INIT:  !!!WARNING!!!  Reverse init started..."
+    echo "INIT:  !!!WARNING!!!  You have 10 seconds to kill this script if this isn't what you wanted to do..."
+    for i in `seq 1 10`
+    do
+        sleep 1
+        echo "INIT:  !!!WARNING!!!  $(( 10 - i ))..."
+    done
+    
+    REVERSE="true"
+fi
+
+SPECIFIED_PROPERTY_DATABASE_URL="$1"
+SPECIFIED_USER_DATABASE_URL="$2"
+shift
+shift
+
+if [[ "$1" == "--clean" ]]
+then
+    # means we need to drop existing objects before restoring them 
+    CLEAN="--clean"
+    shift
+fi
+
+
+source $SCRIPT_DIR/environmentNormalization/dbsync
+
+START_TIME=`date '+%s'`
+
+if [[ "$REVERSE" == "true" ]]
+then
+    BOOTSTRAP_DB=`echo $SPECIFIED_PROPERTY_DATABASE_URL | cut -d '/' -f 4 | cut -d '?' -f 1`
+    echo "INIT: performing property bootstrap migrations on $BOOTSTRAP_DB"
+    $DBSYNC --path sql/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl ${SPECIFIED_PROPERTY_DATABASE_URL}?ssl=true` --reminder 1 --files '?bootstrap/*.sql'
+    echo "INIT: performing property db clone"
+    $SCRIPT_DIR/database/clonePropertyData --to $SPECIFIED_PROPERTY_DATABASE_URL $CLEAN
+    echo "INIT: performing property db sync"
+    $SCRIPT_DIR/database/syncPropertyData --to $SPECIFIED_PROPERTY_DATABASE_URL --breaking
+    
+    echo "INIT: performing user db clone"
+    $SCRIPT_DIR/database/cloneUserData --to $SPECIFIED_USER_DATABASE_URL $CLEAN
+    echo "INIT: performing user db sync"
+    $SCRIPT_DIR/database/syncUserData --to $SPECIFIED_USER_DATABASE_URL
+else
+    BOOTSTRAP_DB=`echo $PROPERTY_DATABASE_URL | cut -d '/' -f 4 | cut -d '?' -f 1`
+    echo "INIT: performing property bootstrap migrations on $BOOTSTRAP_DB"
+    $DBSYNC --path sql/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl PROPERTY_DATABASE` --reminder 1 --files '?bootstrap/*.sql'
+    echo "INIT: performing property db clone"
+    $SCRIPT_DIR/database/clonePropertyData $SPECIFIED_PROPERTY_DATABASE_URL $CLEAN
+    echo "INIT: performing property db sync"
+    $SCRIPT_DIR/database/syncPropertyData --breaking
+    
+    echo "INIT: performing user db clone"
+    $SCRIPT_DIR/database/cloneUserData $SPECIFIED_USER_DATABASE_URL $CLEAN
+    echo "INIT: performing user db sync"
+    $SCRIPT_DIR/database/syncUserData
+fi
+
+END_TIME=`date '+%s'`
+echo "INIT: completed in $(( END_TIME - START_TIME ))s"

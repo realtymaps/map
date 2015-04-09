@@ -1,0 +1,7 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+
+$SCRIPT_DIR/syncPropertyData "$@"
+$SCRIPT_DIR/syncUserData "$@"

@@ -1,0 +1,36 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$SKIP_DBSYNC" == "true" ]]
+then
+    exit 0
+fi
+
+
+if [[ "$1" == "--to" ]]
+then
+    # means we have a specified db, don't use the configured one 
+    DST_URL=`$SCRIPT_DIR/database/getDbUrl $2`?ssl=true
+    DST_DB=`$SCRIPT_DIR/database/getDbName $2`
+    shift
+    shift
+else
+    DST_URL=`$SCRIPT_DIR/database/getDbUrl USER_DATABASE`
+    DST_DB=USER_DATABASE
+fi
+
+source $SCRIPT_DIR/environmentNormalization/dbsync
+
+
+# temporary scripted addition to upgrade dbsync, can be removed once it has run for everyone
+if $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $DST_URL --reminder 1 --blindly --forget --files 'dbsync_update.sql' --logging silent
+then
+    echo "SYNC: updating dbsync table"
+fi
+
+
+echo "SYNC: performing user db migrations on db: $DST_DB"
+$DBSYNC --path sql/userManagement --client pg --connection $DST_URL --reminder 1 --recursive

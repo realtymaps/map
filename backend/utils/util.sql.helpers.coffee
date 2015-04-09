@@ -92,10 +92,21 @@ module.exports =
 
   whereIn: (query, column, values) ->
     # this logic is necessary to avoid SQL parse errors
-    if values.length == 1
+    if values.length == 0
+      query.whereRaw('FALSE')
+    else if values.length == 1
       query.where(column, values[0])
     else
       query.whereIn(column, values)
+
+  orWhereNotIn: (query, column, values) ->
+    # this logic is necessary to avoid SQL parse errors
+    if values.length == 0
+      query.orWhereRaw('TRUE')
+    else if values.length == 1
+      query.orWhere(column, '!=', values[0])
+    else
+      query.orWhereNotIn(column, values)
 
   allPatternsInAnyColumn: (query, patterns, columns) ->
     patterns.forEach (pattern) ->

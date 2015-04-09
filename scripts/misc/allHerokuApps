@@ -1,0 +1,11 @@
+#!/bin/bash
+set -e
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR/.."
+
+
+for app in `./environmentNormalization/herokuCli - apps | tr -s ' ' | cut -f 1 -d ' '`
+do
+    # there is no equivalent command using hk, so we have to use the bare heroku command
+    heroku "$@" --app=$app
+done

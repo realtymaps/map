@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# NOTE: intended to be sourced, not executed
+
+# This sets DBSYNC to the appropriate dbsync script location, installing it first if needed
+
+
+DBSYNC=`ls ./node_modules/.bin/dbsync 2> /dev/null || which dbsync || test 1`
+
+if [[ "$DBSYNC" == "" ]]
+then
+    npm install dbsync
+    DBSYNC=./node_modules/.bin/dbsync
+fi

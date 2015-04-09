@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+
+DB_SPECIFIER="$1"
+DB_NAME=`echo $DB_SPECIFIER | cut -d '/' -f 4 | cut -d '?' -f 1`
+    
+if [[ "$DB_NAME" != "" ]]
+then
+    echo $DB_NAME
+else
+    echo $DB_SPECIFIER
+fi
