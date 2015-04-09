@@ -93,7 +93,10 @@ fi
 if [[ "$DO_DBSYNC" == "--dbsync" ]]
 then
     # do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
-    ./environmentNormalization/herokuCli $PROJECT run -- ./scripts/database/syncAll
+    # you can't easily find out if a script run on heroku succeeds or fails; so, instead we put a special echo at the
+    # end of the script, and then check for that string to make this line succeed or fail
+    ./environmentNormalization/herokuCli $PROJECT run -- ./scripts/database/syncAll |
+        awk 'BEGIN {ok=0} {print $0; if ($0 == "done (syncAll)") ok = 1} END {if (ok==0) exit 1}'
 fi
 
 
