@@ -98,7 +98,7 @@ then
     # == we cat the script to remote bash here because if you just run the script remotely you get the old version
     #    of the script; it's not a perfect solution though because syncAll mostly calls other scripts, but it works
     #    for now to make the awk change smoother
-    cat ./scripts/database/syncAll |
+    cat ./database/syncAll |
     ./environmentNormalization/herokuCli $PROJECT run bash |
     awk 'BEGIN {ok=0} {print $0; if ($0 == "done (syncAll)") ok = 1} END {if (ok==0) exit 1}'
 fi
