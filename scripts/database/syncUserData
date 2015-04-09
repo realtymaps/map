@@ -33,4 +33,4 @@ fi
 
 
 echo "SYNC: performing user db migrations on db: $DST_DB"
-$DBSYNC --path sql/userManagement --client pg --connection $DST_URL --reminder 1 --recursive
+$DBSYNC --path migrations/userManagement --client pg --connection $DST_URL --reminder 1 --recursive

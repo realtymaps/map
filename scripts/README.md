@@ -75,13 +75,13 @@ Arguments are:
   * <optional> any dump/restore options (such as `-t table1 -t table2` to clone just table1 and table2).  Default is to
   dump all the tables in the public schema.
 * `foreman run ./scripts/database/syncPropertyData` performs the following actions:
-  * updates the property db with the latest migrations from `./scripts/sql/propertyData` (recursively)
+  * updates the property db with the latest migrations from `./scripts/migrations/propertyData` (recursively)
   * stages any materialized views that have been marked dirty -- this will typically be the slowest part of the script
   * pushes any non-breaking materialized views that have been staged, unless `--breaking` is an argument, in which case
   all staged views are pushed
 * `foreman run ./scripts/database/syncUserData` updates the user db with the latest migrations from
-`./scripts/sql/userManagement` (recursively)
-* `foreman run ./scripts/database/test` runs test migrations from `./scripts/sql/test/`.
+`./scripts/migrations/userManagement` (recursively)
+* `foreman run ./scripts/database/test` runs test migrations from `./scripts/migrations/test/`.
   * Adding `--fresh` will cause the test db to be dropped and recreated first.
   * Any additional arguments passed to `test` will be passed directly to `dbsync` to aid in testing.
   * There are 2 test migrations set up; the first will create a table in the test db, and the second will run a
@@ -99,7 +99,7 @@ currently-configured ones.
     * source user db (or destination if preceded by `--to`)
     * <optional> `--clean` will be passed on to both clone scripts
   * `init` will then execute the following scripts (in this order):
-    * `dbsync` migrations from the `./scripts/sql/propertyData/-bootstrap` directory to the destination propertyData db
+    * `dbsync` migrations from the `./migrations/propertyData/-bootstrap` directory to the destination propertyData db
     * `clonePropertyData`
     * `syncPropertyData --breaking`
     * `cloneUserData`

@@ -22,4 +22,4 @@ then
 fi
 
 echo
-$DBSYNC --path ./sql/test --client pg --connection "$TEST_DATABASE_URL" --reminder 1 "$@"
+$DBSYNC --path ./migrations/test --client pg --connection "$TEST_DATABASE_URL" --reminder 1 "$@"

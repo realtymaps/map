@@ -41,7 +41,7 @@ if [[ "$REVERSE" == "true" ]]
 then
     BOOTSTRAP_DB=`echo $SPECIFIED_PROPERTY_DATABASE_URL | cut -d '/' -f 4 | cut -d '?' -f 1`
     echo "INIT: performing property bootstrap migrations on $BOOTSTRAP_DB"
-    $DBSYNC --path sql/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl ${SPECIFIED_PROPERTY_DATABASE_URL}?ssl=true` --reminder 1 --files '?bootstrap/*.sql'
+    $DBSYNC --path migrations/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl ${SPECIFIED_PROPERTY_DATABASE_URL}?ssl=true` --reminder 1 --files '?bootstrap/*.sql'
     echo "INIT: performing property db clone"
     $SCRIPT_DIR/database/clonePropertyData --to $SPECIFIED_PROPERTY_DATABASE_URL $CLEAN
     echo "INIT: performing property db sync"
@@ -54,7 +54,7 @@ then
 else
     BOOTSTRAP_DB=`echo $PROPERTY_DATABASE_URL | cut -d '/' -f 4 | cut -d '?' -f 1`
     echo "INIT: performing property bootstrap migrations on $BOOTSTRAP_DB"
-    $DBSYNC --path sql/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl PROPERTY_DATABASE` --reminder 1 --files '?bootstrap/*.sql'
+    $DBSYNC --path migrations/propertyData --client pg --connection `$SCRIPT_DIR/database/getDbUrl PROPERTY_DATABASE` --reminder 1 --files '?bootstrap/*.sql'
     echo "INIT: performing property db clone"
     $SCRIPT_DIR/database/clonePropertyData $SPECIFIED_PROPERTY_DATABASE_URL $CLEAN
     echo "INIT: performing property db sync"
