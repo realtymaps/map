@@ -92,15 +92,9 @@ fi
 
 if [[ "$DO_DBSYNC" == "--dbsync" ]]
 then
-    # == do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
-    # == you can't easily find out if a script run on heroku succeeds or fails; so, instead we put a special echo at
-    #    the end of the script, and then check for that string to make this line succeed or fail
-    # == we cat the script to remote bash here because if you just run the script remotely you get the old version
-    #    of the script; it's not a perfect solution though because syncAll mostly calls other scripts, but it works
-    #    for now to make the awk change smoother
-    cat ./database/syncAll |
-    ./environmentNormalization/herokuCli $PROJECT run bash |
-    awk 'BEGIN {ok=0} {print $0; if ($0 == "done (syncAll)") ok = 1} END {if (ok==0) exit 1}'
+    # do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
+    ./database/syncPropertyData --to PROPERTY_DATABASE@$PROJECT
+    ./database/syncUserData --to USER_DATABASE@$PROJECT
 fi
 
 
