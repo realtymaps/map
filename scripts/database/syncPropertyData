@@ -25,7 +25,6 @@ fi
 source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
-echo "TESTING"
 echo "SYNC: performing property db migrations on db: $DST_DB"
 $DBSYNC --path migrations/propertyData --client pg --connection $DST_URL --reminder 1 --recursive
 echo "SYNC: staging dirty views"
