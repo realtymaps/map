@@ -1,0 +1,47 @@
+#!/bin/bash
+set -e
+DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
+cd "$DIR/.."
+
+
+if [[ "${1:0:11}" == "postgres://" ]]
+then
+    # got a literal db url
+    echo "$1"
+    exit 0
+fi
+
+
+STR_SPLIT=(${1//@/ })
+VARIABLE_BASE="${STR_SPLIT[0]}"
+SOURCE_APP_NAME="${STR_SPLIT[1]}"
+
+
+# echoes a db url via indirect reference to <PARAM>_VARIABLE,
+# falling back to a direct reference to <PARAM>_URL
+
+VARIABLE_HOLDER="${VARIABLE_BASE}_VARIABLE"
+
+
+if [[ "$SOURCE_APP_NAME" == "" ]]
+then
+    # as evaluated locally
+    
+    INDIRECT="${!VARIABLE_HOLDER}"
+    if [[ "$INDIRECT" == "" ]]
+    then
+        INDIRECT="${VARIABLE_BASE}_URL"
+    fi
+    DIRECT="${!INDIRECT}"
+else
+    # as evaluated on the heroku app given after '@'
+    
+    INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
+    if [[ "$INDIRECT" == "" ]]
+    then
+        INDIRECT="${VARIABLE_BASE}_URL"
+    fi
+    DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
+fi
+
+echo "${DIRECT}"

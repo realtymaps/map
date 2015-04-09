@@ -1,0 +1,103 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [ "$#" -lt 2 ]
+then
+    echo "usage: `basename $0` <heroku|github> <project> [--dbsync]"
+    exit 1
+fi
+
+
+if [[ "$CIRCLECI" == "" ]]
+then
+    # manually run
+    echo "ERROR: This is only intended to be run by CircleCI."
+    exit 1
+fi
+
+
+SERVICE="$1"
+PROJECT="$2"
+if [[ "$CIRCLE_BRANCH" != "master" ]]
+then
+    PREFIX=`echo "$CIRCLE_BRANCH" | cut -d '/' -f 2`
+    if [[ "$PREFIX" != "" ]]
+    then
+        PROJECT="$PREFIX-$PROJECT"
+    fi
+fi
+DO_DBSYNC="$3"
+
+echo "PUSH_TO: attempting to push to master on ${PROJECT} at ${SERVICE}"
+
+
+
+if [[ "$CIRCLE_BRANCH" == "master" && "$CIRCLE_PROJECT_USERNAME" != "realtymaps" ]]
+then
+    # safety check -- we only want to push from master if we're on the main
+    # "realtymaps" fork, so we're going to bail out here
+    echo "PUSH_TO: refusing to push changes from master on ${CIRCLE_PROJECT_USERNAME}"
+    exit 0
+fi
+
+
+# we don't want to set any heroku settings we don't have to, because that triggers an app restart
+queueHerokuSetting () {
+    SETTING_NAME=$1
+    DESIRED_VALUE=$2
+    
+    echo "PUSH_TO: checking value of Heroku setting: $SETTING_NAME"
+    
+    CURRENT_SETTING=`$SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT get $SETTING_NAME`
+    if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
+    then
+        echo "PUSH_TO: current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
+        HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
+    else
+        echo "PUSH_TO: current value is correct ('$CURRENT_SETTING')"
+    fi
+}
+
+setQueuedHerokuSettings () {
+    if [[ "$HEROKU_SETTINGS" != "" ]]
+    then
+        echo "PUSH_TO: setting config values: $HEROKU_SETTINGS"
+        $SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT set $HEROKU_SETTINGS
+    fi
+}
+
+
+# pre-push tasks
+if [[ "$SERVICE" == "heroku" ]]
+then
+    HEROKU_SETTINGS=""
+    queueHerokuSetting "IS_HEROKU" "1"
+    
+    if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
+    then
+        # this is a prod push
+        queueHerokuSetting "NODE_ENV" "production"
+    else
+        # this is a staging push
+        queueHerokuSetting "NODE_ENV" "staging"
+    fi
+    
+    setQueuedHerokuSettings
+fi
+
+
+if [[ "$DO_DBSYNC" == "--dbsync" ]]
+then
+    # do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
+    $SCRIPT_DIR/database/syncPropertyData --to PROPERTY_DATABASE@$PROJECT
+    $SCRIPT_DIR/database/syncUserData --to USER_DATABASE@$PROJECT
+fi
+
+
+# do the push
+echo "PUSH_TO: pushing to ${SERVICE}"
+git push --force "git@${SERVICE}.com:${PROJECT}.git" "${CIRCLE_SHA1}:master"
+

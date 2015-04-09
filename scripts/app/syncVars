@@ -1,0 +1,19 @@
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+LOCATION=""
+if [[ "$APP_BASENAME" == "admin" ]]
+then
+    if [[ "$NODE_ENV" == "staging" ]]
+    then
+        LOCATION="@${INSTANCE_NAME}-realtymaps-map"
+    elif [[ "$NODE_ENV" == "production" ]]
+    then
+        LOCATION="@realtymaps-map"
+    fi
+fi
+
+
+eval "export PROPERTY_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl PROPERTY_DATABASE$LOCATION`"
+eval "export USER_DATABASE_URL=`$SCRIPT_DIR/database/getDbUrl USER_DATABASE$LOCATION`"

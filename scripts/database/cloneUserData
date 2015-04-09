@@ -1,0 +1,38 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$1" == "--to" ]]
+then
+    # means we need to reverse the direction of the clone, to be TO the specified db instead of FROM it 
+    shift
+    CLONE_SRC=`$SCRIPT_DIR/database/getDbUrl USER_DATABASE`
+    CLONE_DST=`$SCRIPT_DIR/database/getDbUrl $1`?ssl=true
+else
+    CLONE_SRC=`$SCRIPT_DIR/database/getDbUrl $1`
+    CLONE_DST=`$SCRIPT_DIR/database/getDbUrl USER_DATABASE`
+fi
+shift
+
+
+if [[ "$1" == "--clean" ]]
+then
+    # means we don't want to rebuild views after this i.e. this might be an initial cloning 
+    CLEAN="--clean"
+    shift
+fi
+
+if [[ "$@" == "" ]]
+then
+    #if no restrictions are set on what to dump, artificially restrict to public-schema tables
+    DUMP_OBJECTS=`psql -d 'postgres://dev:devpass@localhost:5432/realtymaps_users_dev' -A -c "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = 'public';" -q -t -R ' -t '`
+    DUMP_OBJECTS="-t $DUMP_OBJECTS"
+else
+    DUMP_OBJECTS="$@"
+fi
+
+# include OIDs
+echo "CLONE: copying user db objects"
+$SCRIPT_DIR/database/clone $CLONE_SRC $CLONE_DST --oids $CLEAN $DUMP_OBJECTS

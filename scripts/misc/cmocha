@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+mocha --compilers coffee:coffee-script/register $@

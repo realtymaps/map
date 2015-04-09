@@ -1,0 +1,119 @@
+#!/bin/bash
+set -e
+
+# 2 weeks in seconds
+THRESHOLD_WINDOW=$((2*7*24*60*60))
+
+# if you want to run this script relative to a branch other than master, you
+# just need to pass the branch name as param 1
+if [[ "$1" == "" ]]
+then
+    export EXPECTED_BRANCH_NAME="master"
+else
+    export EXPECTED_BRANCH_NAME="$1"
+fi
+
+
+# make sure we're on the expected branch
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [[ "$CURRENT_BRANCH" == "" ]]
+then
+    echo "Must be in a git-tracked directory"
+    exit 1
+fi
+if [[ "$CURRENT_BRANCH" != "$EXPECTED_BRANCH_NAME" ]]
+then
+    echo "Must be on the $EXPECTED_BRANCH_NAME branch; currently on $CURRENT_BRANCH"
+    exit 1
+fi
+
+
+# prefix for remotes
+REMOTE_PREFIXES="origin"
+
+# branch names to exclude from pruning -- always include the current branch
+EXCLUDED_BRANCHES="master HEAD $CURRENT_BRANCH"
+
+# remote names to exclude from pruning
+EXCLUDED_REMOTES="prod upstream heroku"
+
+if [[ "$1" == "" ]]
+then
+    EXPECTED_BRANCH_NAME="master"
+else
+    EXPECTED_BRANCH_NAME="$1"
+    shift
+fi
+
+
+NOW_EPOCH=`date '+%s'`
+BEFORE_THRESHOLD_EPOCH="$((NOW_EPOCH-THRESHOLD_WINDOW))"
+
+# loop over all branches that are completed merged relative to the current branch; in other
+# words, we'll only even look at branches that have nothing that the current branch doesn't
+# already have
+for branch in $(git branch -a --merged|grep -v "\->"|sed s/^..//)
+do
+    SKIP="no"
+    for exclusion in $EXCLUDED_BRANCHES
+    do
+        if [[ "$branch" == "$exclusion" ]]
+        then
+            # skip if it's a local excluded branch
+            SKIP="yes"
+            break
+        fi
+        for remote in $EXCLUDED_REMOTES
+        do
+            if [[ "$branch" == remotes/$remote/* ]]
+            then
+                # skip if it's on an excluded remote
+                SKIP="yes"
+                break
+            fi
+        done
+        for remote in $REMOTE_PREFIXES
+        do
+            if [[ "$branch" == "remotes/$remote/$exclusion" ]]
+            then
+                # skip if it's a remote excluded branch
+                SKIP="yes"
+                break
+            fi
+        done
+    done
+    if [[ "$SKIP" == "yes" ]]
+    then
+        # if we were told to skip, short-circuit out of the loop before doing anything
+        continue
+    fi
+    
+    # find out when the most recent commit on this branch happened 
+    TIMESTAMP="$(git log -1 --pretty=format:"%ci" "$branch")"
+    TIMESTAMP_EPOCH=`date -jf '%F %T %z' "$TIMESTAMP" '+%s'`
+    if [[ "$TIMESTAMP_EPOCH" < "$BEFORE_THRESHOLD_EPOCH" ]]
+    then
+        # ok, it happened long enough ago that we don't need it any more
+        
+        LOCAL_BRANCH="yes"
+        for remote in $REMOTE_PREFIXES
+        do
+            if [[ "$branch" == remotes/$remote/* ]]
+            then
+                # it's a remote branch, so log and push the delete
+                LOCAL_BRANCH="no"
+                echo "REMOTE: ${branch}"
+                echo "        last commit: $TIMESTAMP"
+                git push --quiet $remote ":${branch#*/*/}"
+                break
+            fi
+        done
+        if [[ "$LOCAL_BRANCH" == "yes" ]]
+        then
+            # it must not be a remote branch, so log and delete locally
+            echo " LOCAL: ${branch}"
+            echo "        last commit: $TIMESTAMP"
+            git branch --quiet -d "$branch"
+        fi
+    fi
+done
