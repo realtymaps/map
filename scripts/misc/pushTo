@@ -1,8 +1,7 @@
 #!/bin/bash
 set -e
 
-DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
-cd "$DIR/.."
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 
 if [ "$#" -lt 2 ]
@@ -52,7 +51,7 @@ queueHerokuSetting () {
     
     echo "PUSH_TO: checking value of Heroku setting: $SETTING_NAME"
     
-    CURRENT_SETTING=`./environmentNormalization/herokuCli $PROJECT get $SETTING_NAME`
+    CURRENT_SETTING=`$SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT get $SETTING_NAME`
     if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
     then
         echo "PUSH_TO: current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
@@ -66,7 +65,7 @@ setQueuedHerokuSettings () {
     if [[ "$HEROKU_SETTINGS" != "" ]]
     then
         echo "PUSH_TO: setting config values: $HEROKU_SETTINGS"
-        ./environmentNormalization/herokuCli $PROJECT set $HEROKU_SETTINGS
+        $SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT set $HEROKU_SETTINGS
     fi
 }
 
@@ -93,8 +92,8 @@ fi
 if [[ "$DO_DBSYNC" == "--dbsync" ]]
 then
     # do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
-    ./database/syncPropertyData --to PROPERTY_DATABASE@$PROJECT
-    ./database/syncUserData --to USER_DATABASE@$PROJECT
+    $SCRIPT_DIR/database/syncPropertyData --to PROPERTY_DATABASE@$PROJECT
+    $SCRIPT_DIR/database/syncUserData --to USER_DATABASE@$PROJECT
 fi
 
 
