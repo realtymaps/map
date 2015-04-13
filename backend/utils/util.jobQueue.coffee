@@ -23,8 +23,6 @@ tables =
   currentSubtasks: 'jq_current_subtasks'
   subtaskErrorHistory: 'jq_subtask_error_history'
 
-taskImpls = loaders.loadSubmodules(path.join(__dirname, 'tasks'), /^task\.(\w+)\.coffee$/)
-
 class SoftFail extends Error
   constructor: (@message) ->
     @name = 'SoftFail'
@@ -45,6 +43,8 @@ queueReadyTasks = (transaction) -> Promise.try () ->
   overrideRunNames = []
   overrideSkipNames = []
   readyPromises = []
+  # load all task definitions to check for overridden "ready" method
+  taskImpls = loaders.loadSubmodules(path.join(__dirname, 'tasks'), /^task\.(\w+)\.coffee$/)
   for taskName, taskImpl of taskImpls
     # task might define its own logic for determining if it should run
     if taskImpl.ready?
@@ -99,7 +99,8 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
-    subtaskOverridesPromise = taskImpls[task.name].prepSubtasks?(transaction, batchId, task.data) || false
+    taskImpl = require("./tasks/task.#{task.name}")
+    subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
     subtaskConfigPromise = transaction.table(tables.subtaskConfig)
     .where(task_name: task.name)
     .then (subtaskConfig=[]) ->
@@ -205,7 +206,8 @@ executeSubtask = (subtask) ->
     status: 'running'
     started: knex.raw('NOW()')
   .then () ->
-    subtaskPromise = taskImpls[subtask.task_name].executeSubtask(subtask)
+    taskImpl = require("./tasks/task.#{subtask.task_name}")
+    subtaskPromise = taskImpl.executeSubtask(subtask)
     .then () ->
       knex.table(tables.currentSubtasks)
       .where(id: subtask.id)
