@@ -148,4 +148,4 @@ module.exports = config
 # have to set a secret backend-only route
 backendRoutes = require('../../common/config/routes.backend')
 backendRoutes.hirefire =
-  info: "hirefire/#{config.HIREFIRE.API_KEY}/info"
+  info: "/hirefire/#{config.HIREFIRE.API_KEY}/info"

@@ -13,6 +13,9 @@ info = (req, res, next) -> Promise.try () ->
     jobQueue.getQueueNeeds()
   .then (needs) ->
     next new ExpressResponse(needs)
+  .catch (err) ->
+    logger.error "unexpected error during hirefire info check: #{err}"
+    next(err)
 
 module.exports =
   info: info
