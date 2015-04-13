@@ -60,7 +60,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    query = transaction.select()
+    transaction.select()
     .from(tables.taskConfig)
     .where(active: true)                  # only consider active tasks
     .whereRaw("NOT ignore_until > NOW()") # only consider tasks whose time has come
