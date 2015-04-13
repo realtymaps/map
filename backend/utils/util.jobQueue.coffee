@@ -370,7 +370,12 @@ sendNotification = (options) ->
   # details and SMS with abbreviated summaries to db-configured emails and SMS numbers (though note that these values
   # should be loaded at startup and cached, since we don't want db problems to stop notifications about those problems)
   Promise.resolve()
-  
+
+getQueueNeeds = () ->
+  knex.raw('SELECT jq_get_queue_needs()')
+  .then (needs) ->
+    needs || []
+
 
 module.exports =
   withSchedulingLock: withSchedulingLock
@@ -384,6 +389,7 @@ module.exports =
   doMaintenance: doMaintenance
   sendNotification: sendNotification
   updateTaskCounts: updateTaskCounts
+  getQueueNeeds: getQueueNeeds
   SoftFail: SoftFail
   HardFail: HardFail
   tables: tables

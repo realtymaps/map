@@ -46,6 +46,8 @@ routesConfig =
     send:
       method: 'post'
       middleware: auth.requireLogin(redirectOnFail: true)
+  hirefire:
+    info: {}
 
 
 module.exports = (app) ->

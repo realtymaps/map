@@ -2,6 +2,7 @@ winston = require('winston')
 fs = require('fs')
 stackTrace = require('stack-trace')
 path = require 'path'
+cluster = require 'cluster'
 
 config = require('./config')
 logPath = config.LOGGING.PATH
@@ -51,7 +52,10 @@ if config.LOGGING.FILE_AND_LINE
         trace = stackTrace.get()
         args = Array.prototype.slice.call(arguments)
         filename = path.basename(trace[1].getFileName(), '.coffee')
-        args.unshift("[#{filename}:#{trace[1].getLineNumber()}]")
+        decorator = "[#{filename}:#{trace[1].getLineNumber()}]"
+        if cluster.worker?.id?
+          decorator = "<#{cluster.worker.id}>#{decorator}"
+        args.unshift(decorator)
         oldFunc.apply(logger, args)
 
 

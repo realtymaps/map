@@ -62,6 +62,8 @@ base =
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
+  HIREFIRE:
+    API_KEY: process.env.HIREFIRE_TOKEN
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
@@ -142,3 +144,8 @@ config = _.merge({}, base, environmentConfig[base.ENV])
 # console.log "config: "+JSON.stringify(config, null, 2)
 
 module.exports = config
+
+# have to set a secret backend-only route
+backendRoutes = require('../../common/config/routes.backend')
+backendRoutes.hirefire =
+  info: "hirefire/#{config.HIREFIRE.API_KEY}/info"
