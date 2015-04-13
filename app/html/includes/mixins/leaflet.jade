@@ -1,0 +1,15 @@
+mixin leaflet(path, idName)
+  leaflet(
+  id="#{idName}"
+  defaults="#{path}.defaults"
+  bounds="#{path}.bounds"
+  center="#{path}.center"
+  event-broadcast="#{path}.events"
+  markers="#{path}.markers"
+  markers-nested="true"
+  markers-watch-options="#{path}.markersWatchOptions"
+  geojson-watch-options="#{path}.geojsonWatchOptions"
+  geojson="#{path}.geojson"
+  geojson-nested="true"
+  layers="#{path}.layers"
+  ng-cloak)

@@ -32,6 +32,11 @@ routesConfig =
         auth.requireLogin(redirectOnFail: true)
         userService.captureMapState
       ]
+    addresses:
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        userService.captureMapState
+      ]
     detail:
       middleware: [
         auth.requireLogin(redirectOnFail: true)
@@ -48,7 +53,6 @@ routesConfig =
       middleware: auth.requireLogin(redirectOnFail: true)
   hirefire:
     info: {}
-
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->

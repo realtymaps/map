@@ -1,3 +1,10 @@
+.angular-leaflet-map
+  height 100%
+  width 100%
+  position absolute
+  bottom 0
+  background #e3e1de
+
 .angular-google-map-container
     height 100%
     width 100%
@@ -51,31 +58,11 @@ http://stackoverflow.com/questions/1554893/google-maps-api-v3-infowindow-not-siz
   max-height 175px
 
 windowColor = rgba(45,45,63,1.0)
+
 .custom-info-window
-  /*color: white*/
-  /*padding: 5px*/
   box-shadow: 4px 2px 6px rgba(0,0,0,.4)
-  /*border-radius: 5px*/
   width: 260px;
-  /*margin-top: 15px;*/
-  /*margin-left: -130px;*/
 
-/*.custom-info-window a*/
-  /*color: white;*/
-  /*text-decoration: underline*/
-
-/* info-box-tick / pin */
-/*.custom-info-window:after*/
-  /*content: '';*/
-  /*position: absolute;*/
-  /*border-style: solid;*/
-  /*border-width: 0 15px 15px;*/
-  /*border-color: rgba(0,0,0,0.5) transparent;*/
-  /*display: block;*/
-  /*width: 0;*/
-  /*z-index: 1;*/
-  /*top: -15px;*/
-  /*left: 118px;*/
 
 .address-label
   color: #000
@@ -101,3 +88,35 @@ img.manual-cluster{
   left: 0px;
   clip: rect(0px, 041px, 040px, 0px);
 }
+
+/*
+Before and afters are responsible for the label tick/pointer
+*/
+.leaflet-marker-icon
+  height 0
+  overflow: visible !important
+  .label
+    position relative
+    font-size 12px
+    font-weight bold
+    color rm-main-dark-blue
+    border  1px solid rm-marker-border
+    box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
+    &:after, &:before
+      top 20px
+      left 50%
+      border solid transparent
+      content " "
+      height 0
+      width 0
+      position absolute
+      pointer-events none
+    &:before
+      border-color transparent
+      border-top-color rm-marker-border
+      border-width 11px
+      margin-left -11px
+    &:after
+      border-color transparent
+      border-width 10px
+      margin-left -10px

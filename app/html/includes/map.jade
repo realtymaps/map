@@ -1,108 +1,111 @@
 
 include ./map-toolbar.jade
+include ./mixins/leaflet.jade
 
-ui-gmap-google-map(center='center', zoom='zoom',
-  dragging='dragging', bounds='bounds', events='events', options='options',
-  pan='true', control='control', ng-cloak=''
-  tabindex='0'
-)
+//ui-gmap-google-map(center='center', zoom='zoom',
+//  dragging='dragging', bounds='bounds', events='events', options='options',
+//  pan='true', control='control', ng-cloak=''
+//  tabindex='0'
+//)
 
-  //ui-gmap-layer(type='TrafficLayer', show='showTraffic')
-  //ui-gmap-layer(type='BicyclingLayer', show='showBicycling')
-  //ui-gmap-layer(namespace='weather', type='WeatherLayer', show='showWeather')
-  //two drag zooms for either keyboard or button
+div(ng-if="isReady()")
+  +leaflet('map', 'mainMap')
 
-  ui-gmap-drag-zoom(keyboardkey='"alt"')
-  ui-gmap-drag-zoom(options='dragZoom.options')
+  //markers="markers"
+  //geojson="geojson"
+  //watch-markers="no"
+
+  //ui-gmap-drag-zoom(keyboardkey='"alt"')
+  //ui-gmap-drag-zoom(options='dragZoom.options')
 
 
-  ui-gmap-markers(
-    ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
-    options='formatters.layer.MLS.markerOptionsManualCluster'
-    models='layers.clusters'
-    coords='"self"'
-    idkey='"id"'
-    events='actions.listingEvents'
-    ng-cloak=''
-    chunk='false'
-    cleanchunk='false'
-    modelsbyref='false')
-
-  ui-gmap-markers(
-    ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
-    options='formatters.layer.MLS.markerOptionsFromForSale'
-    models='layers.filterSummary'
-    coords='"geom_point_json"'
-    idkey='"rm_property_id"'
-    events='actions.listingEvents'
-    ng-cloak=''
-    chunk='false'
-    cleanchunk='false'
-    doCluster='true'
-    control='controls.priceMarkers'
-    clusterOptions="{ignoreHidden: true, minimumClusterSize: 3,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
-    "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}"
-    modelsbyref='false')
-
-  ui-gmap-window(
-    coords='layers.listingDetail.geom_point_json'
-    show="layers.listingDetail.show"
-    closeClick="actions.closeListing"
-    options="listingOptions"
-    templateUrl='"map-smallDetails.tpl.html"'
-    templateParameter='layers.listingDetail'
-  )
+  //ui-gmap-markers(
+  //  ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
+  //  options='formatters.layer.MLS.markerOptionsManualCluster'
+  //  models='layers.clusters'
+  //  coords='"self"'
+  //  idkey='"id"'
+  //  events='actions.listingEvents'
+  //  ng-cloak=''
+  //  chunk='false'
+  //  cleanchunk='false'
+  //  modelsbyref='false')
+  //
+  //ui-gmap-markers(
+  //  ng-if="zoomLevelService.isPrice(zoom) && Toggles.showPrices;"
+  //  options='formatters.layer.MLS.markerOptionsFromForSale'
+  //  models='layers.filterSummary'
+  //  coords='"geom_point_json"'
+  //  idkey='"rm_property_id"'
+  //  events='actions.listingEvents'
+  //  ng-cloak=''
+  //  chunk='false'
+  //  cleanchunk='false'
+  //  doCluster='true'
+  //  control='controls.priceMarkers'
+  //  clusterOptions="{ignoreHidden: true, minimumClusterSize: 3,  styles: [{textSize: 22, fontFamily:'\"Helvetica Neue\", Helvetica, Arial, " +
+  //  "sans-serif', url:'assets/cluster_circle_gray_40.png', width:'41', height:'40', textColor:'#fff'}]}"
+  //  modelsbyref='false')
+  //
+  //ui-gmap-window(
+  //  coords='layers.listingDetail.geom_point_json'
+  //  show="layers.listingDetail.show"
+  //  closeClick="actions.closeListing"
+  //  options="listingOptions"
+  //  templateUrl='"map-smallDetails.tpl.html"'
+  //  templateParameter='layers.listingDetail'
+  //)
 
   // BEGIN PARCEL DATA
-  ui-gmap-markers(
-    ng-if="zoomLevelService.isAddressParcel(zoom) && Toggles.showAddresses;"
-    options='formatters.layer.Parcels.labelFromStreetNum'
-    models='layers.parcels'
-    coords='"geom_point_json"'
-    idkey='"rm_property_id"'
-    ng-cloak=''
-    control='controls.streetNumMarkers'
-    events='actions.listingEvents'
-    modelsbyref='false'
-    chunk='false'
-    cleanchunk='false')
+  //ui-gmap-markers(
+  //  ng-if="zoomLevelService.isAddressParcel(zoom) && Toggles.showAddresses;"
+  //  options='formatters.layer.Parcels.labelFromStreetNum'
+  //  models='layers.parcels'
+  //  coords='"geom_point_json"'
+  //  idkey='"rm_property_id"'
+  //  ng-cloak=''
+  //  control='controls.streetNumMarkers'
+  //  events='actions.listingEvents'
+  //  modelsbyref='false'
+  //  chunk='false'
+  //  cleanchunk='false')
 
   // Would be nice to have just options without each individual attribute
   //https://github.com/angular-ui/angular-google-maps/issues/1033
   //dorebuildall="true"
-  ui-gmap-polygons(
-    ng-if="(zoomLevelService.isAddressParcel(zoom) || zoomLevelService.isParcel(zoom)) && Toggles.showAddresses;"
-    models='layers.filterSummary'
-    idkey='"rm_property_id"'
-    path='"geom_polys_json"'
-    fill="formatters.layer.Parcels.fill"
-    stroke="{ color: formatters.layer.Parcels.strokeColor, weight: formatters.layer.Parcels.strokeWeight, opacity: '1.0' }"
-    visible='true'
-    geodesic='true'
-    events='actions.listingEvents'
-    fit='false'
-    editable='false'
-    ng-cloak=''
-    static='true'
-    chunk='false'
-    cleanchunk='false'
-    control='controls.parcels'
-    zIndex='10')
+  //ui-gmap-polygons(
+  //  ng-if="(zoomLevelService.isAddressParcel(zoom) || zoomLevelService.isParcel(zoom)) && Toggles.showAddresses;"
+  //  models='layers.filterSummary'
+  //  idkey='"rm_property_id"'
+  //  path='"geom_polys_json"'
+  //  fill="formatters.layer.Parcels.fill"
+  //  stroke="{ color: formatters.layer.Parcels.strokeColor, weight: formatters.layer.Parcels.strokeWeight, opacity: '1.0' }"
+  //  visible='true'
+  //  geodesic='true'
+  //  events='actions.listingEvents'
+  //  fit='false'
+  //  editable='false'
+  //  ng-cloak=''
+  //  static='true'
+  //  chunk='false'
+  //  cleanchunk='false'
+  //  control='controls.parcels'
+  //  zIndex='10')
   //END PARCEL DATA
 
   // SearchBox in ui-gmap does not check if the template url is defined prior to grabbing it
   // reported issue to https://github.com/angular-ui/angular-google-maps/issues/1187
   // ng-if here prevents loading the search-box until a template is valid
-  ui-gmap-search-box(
-    ng-if="searchbox.template"
-    options="searchbox.options"
-    template="searchbox.template"
-    events="searchbox.events"
-    parentdiv="searchbox.parent")
+  //ui-gmap-search-box(
+  //  ng-if="searchbox.template"
+  //  options="searchbox.options"
+  //  template="searchbox.template"
+  //  events="searchbox.events"
+  //  parentdiv="searchbox.parent")
     
   //include ./map-query-draw.jade
-  ui-gmap-map-control(
-    ng-if="principal.isDebugEnvironment()"
-    template='map-debug.tpl.html'
-    position='top-right', index='1'
-    controller='RealtyMaps-MapDebugCtrl')
+  //ui-gmap-map-control(
+  //  ng-if="principal.isDebugEnvironment()"
+  //  template='map-debug.tpl.html'
+  //  position='top-right', index='1'
+  //  controller='RealtyMaps-MapDebugCtrl')

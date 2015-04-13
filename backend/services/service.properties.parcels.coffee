@@ -4,7 +4,7 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
 requestUtil = require '../utils/util.http.request'
-sqlHelpers = require './../utils/util.sql.helpers.coffee'
+{geojson_query_bounds, tableName} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 
 
@@ -20,23 +20,13 @@ transforms =
 required =
   bounds: undefined
 
+_tableName = tableName(Parcel)
 
 module.exports =
 
   getBaseParcelData: (state, filters) -> Promise.try () ->
     requestUtil.query.validateAndTransform(filters, transforms, required)
     .then (filters) ->
-
-      query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
-      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      
-      #logger.sql query.toString()      
-      return query
-
-    .then (data) ->
-      data = data||[]
-      # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-      return _.uniq data, (row) ->
-        row.rm_property_id
-    .then (data) ->
-      indexBy(data)
+      query = geojson_query_bounds(db, _tableName, 'geom_polys_json', 'geom_polys_raw', filters.bounds)
+      # logger.sql query.toString()
+      query

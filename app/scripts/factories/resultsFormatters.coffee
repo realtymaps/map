@@ -1,4 +1,5 @@
 app = require '../app.coffee'
+Point = require('../../../common/utils/util.geometries.coffee').Point
 
 sprintf = require('sprintf-js').sprintf
 
@@ -78,7 +79,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
             @postRepeat = postRepeat
           doDeleteLastTime: false
 
-        @mapCtrl.scope.$watch 'layers.filterSummary', (newVal, oldVal) =>
+        @mapCtrl.scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
           return if newVal == oldVal
           @lastSummaryIndex = 0
           #what is special about this case where we do not use reset??
@@ -148,14 +149,16 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       zoomTo: (result, doChangeZoom = true) =>
         return if !result or not result.geom_point_json?
-        latLng = uiGmapGmapUtil.getCoords result.geom_point_json
-        @mapCtrl.scope.center =
-          latitude: latLng.lat()
-          longitude: latLng.lng()
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        old = _.cloneDeep @mapCtrl.scope.map.center
+        resultCenter.zoom = old.zoom
+        @mapCtrl.scope.map.center = resultCenter
         return unless doChangeZoom
         zoomLevel = @mapCtrl.scope.options.zoomThresh.addressParcel
-        zoomLevel = @mapCtrl.scope.zoom if @mapCtrl.scope.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
-        @mapCtrl.scope.zoom = zoomLevel
+        zoomLevel = @mapCtrl.scope.map.center.zoom if @mapCtrl.scope.map.center.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
+        @mapCtrl.scope.map.center.zoom = zoomLevel
+
+        resultCenter.zoom = 20 if @mapCtrl.scope.satMap?
 
       getPriceLabel: (status) ->
         if (status =='recently sold'|| status=='not for sale')
@@ -218,22 +221,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
         amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
         return unless amountToLoad
 
-        if !@filterSummaryInBounds and @mapCtrl.scope.layers.filterSummary?.length
+        if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
           @filterSummaryInBounds = []
-          @mapCtrl.scope.layers.filterSummary.forEach (prop) =>
+          _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
             return unless prop
-            @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.gMap, prop)
+            @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
 
           @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
 
-        return unless @filterSummaryInBounds?.length
+        return unless _.keys(@filterSummaryInBounds).length
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
-          @filterSummaryInBounds.forEach (summary) =>
+          _.each @filterSummaryInBounds, (summary) =>
             if @mapCtrl.scope.formatters.layer.isVisible(summary)
               @mapCtrl.scope.results[summary.rm_property_id] = summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad
+
+      showModel: (model) =>
+        @click(@mapCtrl.scopeM().markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
 
       click: (result, event, context) =>
         maybeFetchCb = (showDetails) =>
@@ -254,7 +260,9 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         #immediatley show something
         @mapCtrl.scope.streetViewPanorama.status = 'OK'
-        @mapCtrl.scope.satMap.zoom = 20
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        resultCenter.zoom = 20 if @mapCtrl.scope.satMap?
+        @mapCtrl.scope.satMap.center= resultCenter
 
         if @mapCtrl.scope.selectedResult != result or not context
           @mapCtrl.scope.selectedResult = result
