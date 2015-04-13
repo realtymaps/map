@@ -3,6 +3,7 @@ loaders = require './util.loaders'
 dbs = require '../config/dbs'
 Promise = require 'bluebird'
 sqlHelpers = require './util.sql.helpers'
+logger = require '../config/logger'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -40,7 +41,7 @@ withSchedulingLock = (handler) ->
       return handler(transaction)
 
 queueReadyTasks = (transaction) -> Promise.try () ->
-  batchId = (new Date.now()).toString(36)
+  batchId = (Date.now()).toString(36)
   overrideRunNames = []
   overrideSkipNames = []
   readyPromises = []
@@ -73,7 +74,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
         .where () ->
           this
           .whereNull("#{tables.taskConfig}.repeat_period_minutes")   # ... it isn't set to repeat ... 
-          .orWhereIn(status: ['running', 'preparing'])               # ... or it's currently running or preparing to run ...
+          .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
           .orWhereRaw("started + #{tables.taskConfig}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
   .then (readyTasks=[]) ->
     Promise.map readyTasks, (task) ->
@@ -340,6 +341,7 @@ _setFinishedTimestamps = () ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
   knex.table(tables.currentSubtasks)
   .select('task_name', knex.raw('MAX(finished) AS finished'))
+  .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
       knex.table(tables.taskHistory)
@@ -362,7 +364,7 @@ doMaintenance = () ->
     _setFinishedTimestamps()
     
 updateTaskCounts = () ->
-  knex.raw('SELECT jq_update_task_counts()')
+  knex.select(knex.raw('jq_update_task_counts()'))
 
 sendNotification = (options) ->
   # this is a placeholder...  we need to decide what we want this to do, and implement it.
@@ -370,7 +372,12 @@ sendNotification = (options) ->
   # details and SMS with abbreviated summaries to db-configured emails and SMS numbers (though note that these values
   # should be loaded at startup and cached, since we don't want db problems to stop notifications about those problems)
   Promise.resolve()
-  
+
+getQueueNeeds = () ->
+  knex.select('*').from(knex.raw('jq_get_queue_needs()'))
+  .then (needs) ->
+    needs || []
+
 
 module.exports =
   withSchedulingLock: withSchedulingLock
@@ -384,6 +391,7 @@ module.exports =
   doMaintenance: doMaintenance
   sendNotification: sendNotification
   updateTaskCounts: updateTaskCounts
+  getQueueNeeds: getQueueNeeds
   SoftFail: SoftFail
   HardFail: HardFail
   tables: tables
