@@ -22,7 +22,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       _.uniq properties, (row) ->
          row.rm_property_id
     .then (properties) ->
-      maybeMergeSavedProperties(queryParams, properties)
+      maybeMergeSavedProperties(state, queryParams, properties, limit)
     .then (properties) ->
       _.each properties, (prop) ->
           prop.type = prop.geom_point_json.type

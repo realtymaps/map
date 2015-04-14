@@ -4,15 +4,14 @@ sqlHelpers = require './../utils/util.sql.helpers'
 PropertyDetails = require "../models/model.propertyDetails"
 logger = require '../config/logger'
 
-_maybeMergeSavedProperties = (filters, filteredProperties) ->
+_maybeMergeSavedProperties = (state, filters, filteredProperties, limit) ->
   if !state?.properties_selected ||
       _.keys(state.properties_selected).length == 0 ||
-      !mergedSaveProps ||
       !filters?.bounds?
 #        logger.sql "BAIL"
     return filteredProperties
 
-  logger.debug 'merging saved props'
+  # logger.debug 'merging saved props'
   # joining saved props to the filter data for properties that passed the filters, keeping track of which
   # ones hit so we can do further processing on the others
   matchingSavedProps = {}
@@ -39,6 +38,7 @@ _maybeMergeSavedProperties = (filters, filteredProperties) ->
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
   query.then (savedProperties) ->
     savedProperties.forEach (row) ->
+      # logger.debug row
       row.savedDetails = state.properties_selected[row.rm_property_id]
     return filteredProperties.concat(savedProperties)
 

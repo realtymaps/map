@@ -103,43 +103,18 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         _isModelInFilterSummary = (model) ->
           model.index?
 
-        # BEGIN POSSIBLE PropertySave SERVICE
-        _maybeRemoveFilterSummaryObjects = (savedDetails, model) =>
-          isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
-
-          if isEmptysFilterCanErase
-            model.isMousedOver = undefined
-            delete @scope.map.markers.filterSummary[model.rm_property_id]
-            @scope.map.markers.filterSummary.length -= 1
-
-        _maybeRefreshFilterSummary = (savedDetails, model) =>
-          if savedDetails.isSaved and !_isModelInFilterSummary(model)
-            @redraw(cache = false)
-
-        _saveProperty = (model, gObject) =>
+        @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
-            #setting savedDetails here as we know the save was successful
-            if @scope.map.markers.filterSummary[model.rm_property_id]?
-              @scope.map.markers.filterSummary[model.rm_property_id].savedDetails = savedDetails
-
-            if @lastHoveredModel?.rm_property_id == model.rm_property_id and
-            !@layerFormatter.isVisible(@scope.map.markers.filterSummary[model.rm_property_id])
-              $scope.actions.closeListing()
-
-
-            match = @scope.map.markers.filterSummary[model.rm_property_id]
-            match.savedDetails = savedDetails if match?
-
-            _maybeRemoveFilterSummaryObjects(savedDetails, model)
-            _maybeRefreshFilterSummary(savedDetails,model)
-
-            @redraw()
-        # END POSSIBLE PropertySave SERVICE
-
-        @saveProperty = _saveProperty
+            @redraw(false)
+            (model, lObject) =>
+              #TODO: Need to debounce / throttle
+              saved = Properties.saveProperty(model)
+              return unless saved
+              saved.then (savedDetails) =>
+                @redraw(false)
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         _eventReg($timeout,$scope, @, limits)
         _.merge @scope,
