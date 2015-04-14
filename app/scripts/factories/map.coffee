@@ -296,7 +296,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       draw: (event, paths) =>
         return if !@directiveControls? or !@scope.isReady()
 
-        @scope.formatters.results?.reset()
+        @scope?.formatters?.results?.reset()
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of @scope.map.bounds

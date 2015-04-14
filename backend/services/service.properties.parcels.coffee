@@ -7,7 +7,6 @@ requestUtil = require '../utils/util.http.request'
 {geojson_query_bounds, tableName} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 
-
 validators = requestUtil.query.validators
 
 transforms =

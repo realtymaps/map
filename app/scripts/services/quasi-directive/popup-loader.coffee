@@ -16,10 +16,12 @@ app.service 'popupLoader'.ourNs(),['$templateCache', '$http', '$compile', ($temp
       templateScope.model = model
       compiled = $compile(content.data)(templateScope)
 
+      coords = model.coordinates or model.geom_point_json?.coordinates
+
       lObj = new L.popup(opts)
       .setLatLng
-        lat: model.coordinates[1]
-        lng: model.coordinates[0]
+        lat: coords[1]
+        lng: coords[0]
 
       .openOn(map)
 
