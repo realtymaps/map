@@ -233,7 +233,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           _.each @filterSummaryInBounds, (summary) =>
-            if @mapCtrl.scope.formatters.layer.isVisible(summary)
+            if @mapCtrl.layerFormatter.isVisible(summary)
               @mapCtrl.scope.results[summary.rm_property_id] = summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad

@@ -79,23 +79,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
+        @layerFormatter = LayerFormatters(@)
 
         _updateGObjects = (gObject, savedDetails, model) =>
           #purpose to to take some sort of gObject and update its view immediately
           model.savedDetails = savedDetails
           if GoogleService.Map.isGMarker(gObject)
-            $scope.formatters.layer.MLS.setMarkerPriceOptions model
+            @layerFormatter.MLS.setMarkerPriceOptions model
           else
-            opts =  $scope.formatters.layer.Parcels.optionsFromFill(model)
+            opts =  @layerFormatter.Parcels.optionsFromFill(model)
             @redraw()
           $scope.formatters.results?.reset()
 
         @updateAllLayersByModel = _updateAllLayersByModel = (model) =>
           uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
             if GoogleService.Map.isGMarker(gObject)
-              $scope.formatters.layer.MLS.setMarkerPriceOptions(model)
+              @layerFormatter.MLS.setMarkerPriceOptions(model)
             else
-              opts = $scope.formatters.layer.Parcels.optionsFromFill(model)
+              opts = @layerFormatter.Parcels.optionsFromFill(model)
             @redraw()
           , ['streetNumMarkers']
 
@@ -125,7 +126,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.map.markers.filterSummary[model.rm_property_id].savedDetails = savedDetails
 
             if @lastHoveredModel?.rm_property_id == model.rm_property_id and
-            !$scope.formatters.layer.isVisible(@scope.map.markers.filterSummary[model.rm_property_id])
+            !@layerFormatter.isVisible(@scope.map.markers.filterSummary[model.rm_property_id])
               $scope.actions.closeListing()
 
 
@@ -176,7 +177,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
 
           formatters:
-            layer: LayerFormatters(self)
             results: new ResultsFormatter(self)
 
           dragZoom: {}
@@ -243,7 +243,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               #data should be in array format
               @scopeM().markers.filterSummary = {}
               _.each data, (model,k) =>
-                @scope.formatters.layer.MLS.setMarkerManualClusterOptions(model)
+                @layerFormatter.MLS.setMarkerManualClusterOptions(model)
               @scopeM().markers.backendPriceCluster = data
           )
         else
@@ -257,7 +257,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               return if !data? or _.isString data
               @scopeM().markers.backendPriceCluster = {}
 
-              @scope.formatters.layer.setDataOptions(data, @scope.formatters.layer.MLS.setMarkerPriceOptions)
+              @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
 
               @scopeM().markers.filterSummary = data
 
@@ -273,7 +273,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 return if !data? or _.isString data
                 @scopeM().geojson.filterSummary =
                   data: data
-                  style: @scope.formatters.layer.Parcels.getStyle
+                  style: @layerFormatter.Parcels.getStyle
             )
           else
             @scope.map.layers.overlays.filterSummary.visible = true
@@ -289,9 +289,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               ZoomLevel.dblClickZoom.disable(@scope)
 
               promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
-                @scope.map.markers.addresses = @scope.formatters.layer.setDataOptions(
+                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
                   _.cloneDeep(data),
-                  @scope.formatters.layer.Parcels.labelFromStreetNum
+                  @layerFormatter.Parcels.labelFromStreetNum
                 )
               ))
 
@@ -299,7 +299,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             return unless data?
             @scopeM().geojson.parcelBase =
               data: data
-              style: @scope.formatters.layer.Parcels.style
+              style: @layerFormatter.Parcels.style
 
             $log.debug "addresses count to draw: #{data?.features?.length}"
           ))
@@ -369,7 +369,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         return if not newFilters and not oldFilters
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-          
+
         @filterDrawPromise = $timeout =>
           FilterManager.manage (@filters) =>
             @filterDrawPromise = false
@@ -407,7 +407,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                 $scope.map.listingDetail.show = false
               model.show = true
               $scope.map.listingDetail = model
-              offset = $scope.formatters.layer.MLS.getWindowOffset(@gMap, $scope.map.listingDetail)
+              offset = @layerFormatter.MLS.getWindowOffset(@gMap, $scope.map.listingDetail)
               return unless offset
               _.extend $scope.listingOptions,
                 pixelOffset: offset

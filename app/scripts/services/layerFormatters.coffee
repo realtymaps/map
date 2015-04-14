@@ -69,29 +69,6 @@ app.factory 'LayerFormatters'.ourNs(), [
         hoverColors['saved'] = '#AA1'
         hoverColors['default'] = 'rgba(153,153,153,.8)'
 
-        # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
-        gOptsFromUiGmapFill = (fillOpts) ->
-          fillColor: fillOpts.color
-          fillOpacity: fillOpts.opacity
-
-        getFillColor = (parcel, logged) ->
-          unless logged
-            renderCounters.fill.control += 1
-            $log.info "fill: from control @ count: #{renderCounters.fill.control}"
-          return {} unless parcel
-          parcel = GoogleService.UiMap.getCorrectModel(parcel)
-          model = _filterSummary()[parcel.rm_property_id] || parcel
-
-          if model.savedDetails?.isSaved
-            status = 'saved'
-          else if model.passedFilters
-            status = model.rm_status
-          else
-            status = 'default'
-
-          colors = if parcel.isMousedOver then hoverColors else normalColors
-          color: colors[status]
-          opacity: '0.7'
 
         labelFromStreetNum = (model) ->
           _.extend model,
@@ -102,37 +79,30 @@ app.factory 'LayerFormatters'.ourNs(), [
               html: "<span class='address-label'>#{String.orNA model.street_address_num}</span>"
             zIndex: 1
 
-        fill: (parcel) ->
-          return unless parcel?.rm_property_id?
-          renderCounters.fill.directive += 1
-          $log.info "fill: from directive @ count: #{renderCounters.fill.directive}, id: #{parcel.rm_property_id}"
-          getFillColor(parcel, logged = true)
         labelFromStreetNum: labelFromStreetNum
-        strokeColor: _strokeColor
-        strokeWeight: _strokeWeight
-        style:
-          featureType: "administrative.land_parcel",
-          elementType: "geometry.stroke",
-          stylers: [
-            { "color": _strokeColor },
-            { "weight": _strokeWeight }
-          ]
-
-        optionsFromFill: (parcel) ->
-          gOptsFromUiGmapFill getFillColor(parcel)
 
         style:
-          weight: 2
+          weight: _strokeWeight
           opacity: 1
-          color: 'blue'
+          color: _strokeColor
           fillColor: 'transparent'
 
         getStyle : (feature) ->
           return {} unless feature
+          if feature.savedDetails?.isSaved
+            status = 'saved'
+          else if feature?.rm_status?
+            status = feature?.rm_status
+          else
+            status = 'default'
+
+          colors = if feature?.isMousedOver then hoverColors else normalColors
+          color = colors[status]
+
           weight: 2
           opacity: 1
-          color: normalColors[feature.rm_status]
-          fillColor: normalColors[feature.rm_status]
+          color: color
+          fillColor: color
 
       _mls = do ->
         markersBSLabel = {}
