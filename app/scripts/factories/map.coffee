@@ -324,11 +324,12 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.formatters.results?.reset()
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
-          for k, b of @scopeM().bounds
+          for k, b of @scope.map.bounds
             paths.push [b.lat, b.lng]
 
-        if !paths? || paths.length < 2
-          return
+        if !paths? or paths.length < 2 or
+          (@scope.map?.bounds.northEast.lat == @scope.map?.bounds.southWest.lat and @scope.map?.bounds.northEast.lon == @scope.map?.bounds.southWest.lon)
+            return
 
         @hash = _encode paths
 
@@ -365,10 +366,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @mapState
 
       filter: (newFilters, oldFilters) =>
-        if not newFilters and not oldFilters then return
+        return if not newFilters and not oldFilters
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-        @clearFilter()
+          
         @filterDrawPromise = $timeout =>
           FilterManager.manage (@filters) =>
             @filterDrawPromise = false
@@ -392,11 +393,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
-
-      clearFilter: =>
-        @scopeM().geojson.data = _emptyGeoJsonData
-        @directiveControls.geojson.create(@scopeM().geojson)
-        @scopeM().markers.filterSummary = {}
 
       openWindow: (model) =>
         PopupLoader.load(@scope, @map, model)
