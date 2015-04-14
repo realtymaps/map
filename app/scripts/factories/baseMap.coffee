@@ -13,7 +13,7 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
   'Logger'.ourNs(), 'uiGmapIsReady', '$timeout', 'leafletData',
   ($log, uiGmapIsReady, $timeout, leafletData) ->
     class BaseMap
-      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = require('../utils/util.layers.base.coffee'), mapEvents = ['load', 'dragend', 'zoomend']) ->
+      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = require('../utils/util.layers.base.coffee'), mapEvents = ['dragend', 'zoomend']) ->
         _throttler =  _eventThrottler($log, options)
 
         leafletData.getMap(mapId).then (map) =>
@@ -57,20 +57,20 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
 
         _maybeDraw = _.debounce (leafletDirectiveEvent, leaflet) =>
           #_pingPass ans debounce are all things to mimick map "idle" event
-          leafletEvent = leaflet.leafletEvent
+          leafletEvent = leaflet?.leafletEvent or undefined
 
           _maybePingTime = _pingPass()
 
-          if leafletEvent.type == 'zoomend'
+          if leafletEvent?.type == 'zoomend'
             self.clearBurdenLayers()
 
           $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
-          $log.debug "map event: #{leafletEvent.type}"
+          $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
           self.draw? 'idle'
         , redrawDebounceMilliSeconds
 
 
-#init
+        #init
         mapElement = _.first document.getElementsByClassName(_mapClassContainerName)
         if mapElement? and mapElement.addEventListener?
           ###
@@ -96,7 +96,7 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
             defaults:
               maxZoom: options.maxZoom
               minZoom: options.minZoom
-              
+
             markersWatchOptions: _.cloneDeep disableWatchObj
             geojsonWatchOptions: _.cloneDeep disableWatchObj
             bounds: {}
@@ -119,6 +119,13 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
 
         angular.extend @scope, settings
 
+        #using this instead of load since bad bounds seems to come out ng-leaflet
+        _unWatchBounds = @scope.$watch 'map.bounds', (newValue, oldValue) ->
+          if angular.equals(newValue, oldValue) or
+            (newValue.northEast.lat == newValue.southWest.lat and newValue.northEast.lon == newValue.southWest.lon)
+              return
+          _unWatchBounds()
+          _maybeDraw()
 
         leafletPreNamespace = 'leafletDirectiveMap.'
         mapEvents.forEach (eventName) =>
