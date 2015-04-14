@@ -10,9 +10,9 @@ commonConfig =
       zoomThresh:
         addressParcel: 18
         price: 16
-        clustering: 17
-        ordering: 17
-        roundOne: 13
+        clustering: 12
+        ordering: 12
+        roundOne: 12
         roundNone: 9
 
 module.exports = commonConfig

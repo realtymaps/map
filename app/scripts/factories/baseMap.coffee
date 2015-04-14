@@ -63,6 +63,7 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
 
           if leafletEvent?.type == 'zoomend'
             self.clearBurdenLayers()
+            $log.debug "zoom: #{@scope.map?.center?.zoom}"
 
           $log.debug "redraw delay (small/false bad): #{_maybePingTime}"
           $log.debug "map event: #{leafletEvent.type}" if leafletEvent?.type?
