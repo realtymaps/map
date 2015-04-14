@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -39,14 +37,14 @@ describe 'utils/http.request.validators.float()'.ourNs().ourNs('Backend'), ->
 
   promiseIt 'should reject strings that do not represent numbers', () ->
     [
-      expectReject(validators.float()(param, ''), ParamValidationError)
-      expectReject(validators.float()(param, '12.3abc'), ParamValidationError)
+      expectReject(validators.float()(param, ''), DataValidationError)
+      expectReject(validators.float()(param, '12.3abc'), DataValidationError)
     ]
 
   promiseIt 'should obey the min and max', () ->
     [
-      expectReject(validators.float(min: 4.2)(param, '4.1'), ParamValidationError)
-      expectReject(validators.float(max: 6)(param, '6.1'), ParamValidationError)
+      expectReject(validators.float(min: 4.2)(param, '4.1'), DataValidationError)
+      expectReject(validators.float(max: 6)(param, '6.1'), DataValidationError)
       expectResolve(validators.float(min: 4.1, max: 4.6)(param, '4.3'))
       expectResolve(validators.float(min: 4.1, max: 4.6)(param, '4.1'))
       expectResolve(validators.float(min: 4.1, max: 4.6)(param, '4.6'))

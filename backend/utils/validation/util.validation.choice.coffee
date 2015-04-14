@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-ParamValidationError = require './util.error.paramValidation'
+DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
@@ -9,4 +9,4 @@ module.exports = (options = {}) ->
         return choice
     else if value in options.choices
       return value
-    return Promise.reject new ParamValidationError("unrecognized value, options are: #{JSON.stringify(options.choices)}", param, value)
+    return Promise.reject new DataValidationError("unrecognized value, options are: #{JSON.stringify(options.choices)}", param, value)

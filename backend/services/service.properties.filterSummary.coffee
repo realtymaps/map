@@ -3,14 +3,14 @@ PropertyDetails = require "../models/model.propertyDetails"
 Promise = require "bluebird"
 logger = require '../config/logger'
 config = require '../config/config'
-requestUtil = require '../utils/util.http.request'
+validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
 indexBy = require '../../common/utils/util.indexByWLength'
 
 zoomThresh = config.MAP.options.zoomThresh
 
-validators = requestUtil.query.validators
+validators = validation.validators
 
 statuses = filterStatuses.keys
 filterStatusesEnum =  filterStatuses.enum
@@ -25,15 +25,21 @@ minMaxValidations =
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
 
 otherValidations =
-  ownerName: validators.string(trim: true)
+  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
   hasOwner: validators.boolean()
-  bounds: [
-    validators.string(minLength: 1)
-    validators.geohash
-    validators.array(minLength: 2)
-  ]
-  status: validators.array(subValidation: [ validators.string(forceLowerCase: true),
-                                            validators.choice(choices: statuses) ])
+  bounds:
+    transform: [
+      validators.string(minLength: 1)
+      validators.geohash
+      validators.array(minLength: 2)
+    ]
+    required: true
+  status: validators.array
+    subValidation: [
+      validators.string(forceLowerCase: true)
+      validators.choice(choices: statuses)
+      validators.defaults(defaultValue: [])
+    ]
 
 
 
@@ -45,12 +51,6 @@ minMaxes = _.transform(minMaxValidations, makeMinMaxes)
 #logger.debug minMaxes, true
 
 transforms = _.extend {}, otherValidations, minMaxes
-
-
-required =
-  bounds: undefined
-  status: []
-  ownerName: ""
 
 _roundCoordCol = (roundTo = 0, xy = 'X') ->
   "round(ST_#{xy}(geom_point_raw)::decimal,#{roundTo})"
@@ -88,7 +88,7 @@ module.exports =
         # we know there is absolutely nothing to select, GTFO before we do any real work
         return []
 
-      requestUtil.query.validateAndTransform(rawFilters, transforms, required)
+      validation.validateAndTransform(rawFilters, transforms)
       .then (filters) ->
         # save out for use with saved properties
         bounds = filters.bounds

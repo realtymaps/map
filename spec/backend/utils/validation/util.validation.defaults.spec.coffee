@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve

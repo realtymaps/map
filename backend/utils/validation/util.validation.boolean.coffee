@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-ParamValidationError = require './util.error.paramValidation'
+DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
@@ -8,4 +8,4 @@ module.exports = (options = {}) ->
     if value == 'true' || value == 'false'
       return value == 'true'
 
-    return Promise.reject new ParamValidationError("boolean value required", param, value)
+    return Promise.reject new DataValidationError("boolean value required", param, value)

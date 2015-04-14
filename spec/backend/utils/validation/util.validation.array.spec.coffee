@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -23,16 +21,16 @@ describe 'utils/http.request.validators.array()'.ourNs().ourNs('Backend'), ->
     ]
   promiseIt 'should reject non-arrays', () ->
     [
-      expectReject(validators.array()(param, 'abc'), ParamValidationError)
-      expectReject(validators.array()(param, 5), ParamValidationError)
-      expectReject(validators.array()(param, {a: 1, length: 2}), ParamValidationError)
-      expectReject(validators.array()(param, true), ParamValidationError)
+      expectReject(validators.array()(param, 'abc'), DataValidationError)
+      expectReject(validators.array()(param, 5), DataValidationError)
+      expectReject(validators.array()(param, {a: 1, length: 2}), DataValidationError)
+      expectReject(validators.array()(param, true), DataValidationError)
     ]
 
   promiseIt 'should obey the minLength and maxLength', () ->
     [
-      expectReject(validators.array(minLength: 2)(param, ['abc']), ParamValidationError)
-      expectReject(validators.array(maxLength: 4)(param, ['abc', 2, true, 4, 5]), ParamValidationError)
+      expectReject(validators.array(minLength: 2)(param, ['abc']), DataValidationError)
+      expectReject(validators.array(maxLength: 4)(param, ['abc', 2, true, 4, 5]), DataValidationError)
       expectResolve(validators.array(minLength: 2, maxLength: 4)(param, ['abc', 2, true]))
       expectResolve(validators.array(minLength: 2, maxLength: 4)(param, ['abc', 2, true, 4]))
       expectResolve(validators.array(minLength: 2, maxLength: 4)(param, ['abc', 2]))
@@ -46,8 +44,8 @@ describe 'utils/http.request.validators.array()'.ourNs().ourNs('Backend'), ->
         value.should.eql(['abc', 'def', 'ghi', 'jkl'])
       expectResolve(validators.array(split: ',')(param, "abc")).then (value) ->
         value.should.eql(['abc'])
-      expectReject(validators.array(split: ',', maxLength: 3)(param, "abc,def,ghi,jkl"), ParamValidationError)
-      expectReject(validators.array(split: ',', minLength: 5)(param, "abc,def,ghi,jkl"), ParamValidationError)
+      expectReject(validators.array(split: ',', maxLength: 3)(param, "abc,def,ghi,jkl"), DataValidationError)
+      expectReject(validators.array(split: ',', minLength: 5)(param, "abc,def,ghi,jkl"), DataValidationError)
       expectResolve(validators.array(split: ',', minLength: 4, maxLength: 4)(param, "abc,def,ghi,jkl")).then (value) ->
         value.should.eql(['abc', 'def', 'ghi', 'jkl'])
     ]
@@ -67,8 +65,8 @@ describe 'utils/http.request.validators.array()'.ourNs().ourNs('Backend'), ->
         value.should.eql(["ABC", "DEF"])
       expectResolve(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer())(param, "1,2, 3, 4 ,5")).then (value) ->
         value.should.eql([1,2,3,4,5])
-      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer())(param, "1,2, 3.4, 4 ,5"), ParamValidationError)
-      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer(max: 3))(param, "1,2, 3, 4 ,5"), ParamValidationError)
+      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer())(param, "1,2, 3.4, 4 ,5"), DataValidationError)
+      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer(max: 3))(param, "1,2, 3, 4 ,5"), DataValidationError)
       expectResolve(validators.array(subValidation: customIndexAwareSubvalidation)(param, ["1", 2, "asdf", "qwert", "zxcv"])).then (value) ->
         value.should.eql([1,2,"value 3 of 5: asdf","QWERT","ZXCV"])
     ]

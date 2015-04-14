@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -23,7 +21,7 @@ describe 'utils/http.request.validators.catchValidationRejection()'.ourNs().ourN
         value.should.equal(123)
     ]
 
-  promiseIt 'should resolve to defaultValue if its subValidation rejects with a ParamValidationError', () ->
+  promiseIt 'should resolve to defaultValue if its subValidation rejects with a DataValidationError', () ->
     [
       expectResolve(validators.catchValidationRejection(defaultValue: 42, subValidation: validators.integer(max: 100))(param, '123')).then (value) ->
         value.should.equal(42)
@@ -33,7 +31,7 @@ describe 'utils/http.request.validators.catchValidationRejection()'.ourNs().ourN
         value.should.equal(42)
     ]
 
-  promiseIt 'should reject and pass through the reason if its subValidation rejects with anything other than a ParamValidationError', () ->
+  promiseIt 'should reject and pass through the reason if its subValidation rejects with anything other than a DataValidationError', () ->
     error = new Error("tada")
     expectReject(validators.catchValidationRejection(defaultValue: 42, subValidation: (param, value) -> throw error)(param, '123')).then (err) ->
       err.should.equal(error)

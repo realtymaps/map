@@ -1,12 +1,11 @@
 Promise = require "bluebird"
-ParamValidationError = require './util.error.paramValidation'
+DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
-    if _.isArray(options.test) and (value in options.test) ||
-    _.isFunction(options.test) and options.test(value) ||
-    !_.isArray(options.test) and !_.isFunction(options.test) and !value?
+    if !options.test? and !value? ||
+    _.isArray(options.test) and (value in options.test) ||
+    _.isFunction(options.test) and options.test(value)
       return options.defaultValue
     else
       return value
- 

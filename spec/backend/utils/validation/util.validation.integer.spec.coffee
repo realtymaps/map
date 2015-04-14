@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -33,16 +31,16 @@ describe 'utils/http.request.validators.integer()'.ourNs().ourNs('Backend'), ->
 
   promiseIt 'should reject strings that do not represent integers', () ->
     [
-      expectReject(validators.integer()(param, ''), ParamValidationError)
-      expectReject(validators.integer()(param, '123abc'), ParamValidationError)
-      expectReject(validators.integer()(param, '123.123'), ParamValidationError)
-      expectReject(validators.integer()(param, '1.7777E3'), ParamValidationError)
+      expectReject(validators.integer()(param, ''), DataValidationError)
+      expectReject(validators.integer()(param, '123abc'), DataValidationError)
+      expectReject(validators.integer()(param, '123.123'), DataValidationError)
+      expectReject(validators.integer()(param, '1.7777E3'), DataValidationError)
     ]
 
   promiseIt 'should reject obey the min and max', () ->
     [
-      expectReject(validators.integer(min: 4)(param, '1'), ParamValidationError)
-      expectReject(validators.integer(max: 6)(param, '10'), ParamValidationError)
+      expectReject(validators.integer(min: 4)(param, '1'), DataValidationError)
+      expectReject(validators.integer(max: 6)(param, '10'), DataValidationError)
       expectResolve(validators.integer(min: 4, max: 6)(param, '5'))
       expectResolve(validators.integer(min: 4, max: 6)(param, '4'))
       expectResolve(validators.integer(min: 4, max: 6)(param, '6'))

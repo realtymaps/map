@@ -1,10 +1,10 @@
 analyzeValue = require '../../../common/utils/util.analyzeValue'
 
-class ParamValidationError extends Error
+class DataValidationError extends Error
   constructor: (@message, @paramName, @paramValue) ->
-    @name = "ParamValidationError"
-    Error.captureStackTrace(this, ParamValidationError)
+    @name = "DataValidationError"
+    Error.captureStackTrace(this, DataValidationError)
     analysis = analyzeValue(@paramValue)
     @message = "error validating param <#{@paramName}> with value <#{analysis.type}"+(if analysis.details then ": #{analysis.details}" else "")+"> (#{@message})"
 
-module.exports = ParamValidationError
+module.exports = DataValidationError
