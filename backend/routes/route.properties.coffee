@@ -4,7 +4,7 @@ detailService = require '../services/service.properties.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'
 addressService = require '../services/service.properties.addresses'
-requestUtil = require '../utils/util.http.request'
+validation = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
 
@@ -14,7 +14,7 @@ handleRoute = (res, next, serviceCall) ->
     serviceCall()
   .then (data) ->
     res.json(data)
-  .catch requestUtil.query.ParamValidationError, (err) ->
+  .catch validation.DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
   .catch (err) ->
     logger.error err.stack||err.toString()

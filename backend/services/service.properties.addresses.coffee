@@ -3,28 +3,27 @@ Parcel = require "../models/model.parcels"
 Promise = require "bluebird"
 logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
-requestUtil = require '../utils/util.http.request'
+validation = require '../utils/util.validation'
 {select, tableName, whereInBounds} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 
 
-validators = requestUtil.query.validators
+validators = validation.validators
 
 transforms =
-  bounds: [
-    validators.string(minLength: 1)
-    validators.geohash
-    validators.array(minLength: 2)
-  ]
-
-required =
-  bounds: undefined
+  bounds:
+    transform: [
+      validators.string(minLength: 1)
+      validators.geohash
+      validators.array(minLength: 2)
+    ]
+    required: true
 
 
 module.exports =
 
   get: (state, filters) -> Promise.try () ->
-    requestUtil.query.validateAndTransform(filters, transforms, required)
+    validation.validateAndTransform(filters, transforms)
     .then (filters) ->
 
       query = select(db.knex, 'parcel', false)
