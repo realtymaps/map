@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -13,7 +11,7 @@ promiseIt = promiseUtils.promiseIt
 describe 'utils/http.request.validators.defaults()'.ourNs().ourNs('Backend'), ->
   param = 'fake'
 
-  promiseIt 'should replace undefined and null values with the defaultValue, resolving any other value as-is', () ->
+  promiseIt 'should replace undefined, null, and "" values with the defaultValue, resolving any other value as-is', () ->
     options = defaultValue: 42
     [
       expectResolve(validators.defaults(options)(param, '123')).then (value) ->
@@ -28,9 +26,11 @@ describe 'utils/http.request.validators.defaults()'.ourNs().ourNs('Backend'), ->
         value.should.equal(42)
       expectResolve(validators.defaults(options)(param, null)).then (value) ->
         value.should.equal(42)
+      expectResolve(validators.defaults(options)(param, "")).then (value) ->
+        value.should.equal(42)
     ]
 
-  promiseIt 'should repalce any value in the passed "test" array with the defaultValue, resolving any other value as-is', () ->
+  promiseIt 'should replace any value in the passed "test" array with the defaultValue, resolving any other value as-is', () ->
     options =
       defaultValue: 42
       test: [5, 'abc', null]
@@ -55,7 +55,7 @@ describe 'utils/http.request.validators.defaults()'.ourNs().ourNs('Backend'), ->
         value.should.equal(42)
     ]
 
-  promiseIt 'should repalce any value that yields truthy from the passed "test" function with the defaultValue, resolving any other value as-is', () ->
+  promiseIt 'should replace any value that yields truthy from the passed "test" function with the defaultValue, resolving any other value as-is', () ->
     options =
       defaultValue: 42
       test: (value) -> value > 100

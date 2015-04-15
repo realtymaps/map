@@ -1,9 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-requestUtil = require "#{basePath}/utils/util.http.request"
-validators = requestUtil.query.validators
-ParamValidationError = requestUtil.query.ParamValidationError
+{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 
 promiseUtils = require('../../../specUtils/promiseUtils')
 expectResolve = promiseUtils.expectResolve
@@ -17,21 +15,31 @@ describe 'utils/http.request.validators.string()'.ourNs().ourNs('Backend'), ->
     [
       expectResolve(validators.string()(param, '5')).then (value) ->
         value.should.equal('5')
+      expectResolve(validators.string()(param, 'asdf')).then (value) ->
+        value.should.equal('asdf')
+    ]
+
+  promiseIt 'should nullify empty values except ""', () ->
+    [
       expectResolve(validators.string()(param, '')).then (value) ->
         value.should.equal('')
+      expectResolve(validators.string()(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.string()(param, undefined)).then (value) ->
+        (value == null).should.be.true
     ]
 
   promiseIt 'should reject non-strings', () ->
     [
-      expectReject(validators.string()(param, 5), ParamValidationError)
-      expectReject(validators.string()(param, {'a': '5'}), ParamValidationError)
-      expectReject(validators.string()(param, ['5']), ParamValidationError)
+      expectReject(validators.string()(param, 5), DataValidationError)
+      expectReject(validators.string()(param, {'a': '5'}), DataValidationError)
+      expectReject(validators.string()(param, ['5']), DataValidationError)
     ]
 
   promiseIt 'should obey the minLength and maxLength', () ->
     [
-      expectReject(validators.string(minLength: 4)(param, 'abc'), ParamValidationError)
-      expectReject(validators.string(maxLength: 6)(param, 'abcdefg'), ParamValidationError)
+      expectReject(validators.string(minLength: 4)(param, 'abc'), DataValidationError)
+      expectReject(validators.string(maxLength: 6)(param, 'abcdefg'), DataValidationError)
       expectResolve(validators.string(minLength: 4, maxLength: 6)(param, 'abcde'))
       expectResolve(validators.string(minLength: 4, maxLength: 6)(param, 'abcd'))
       expectResolve(validators.string(minLength: 4, maxLength: 6)(param, 'abcdef'))
@@ -39,8 +47,8 @@ describe 'utils/http.request.validators.string()'.ourNs().ourNs('Backend'), ->
 
   promiseIt 'should obey regex test', () ->
     [
-      expectReject(validators.string(regex: /^abc$/)(param, 'abcd'), ParamValidationError)
-      expectReject(validators.string(regex: '^abc$')(param, 'abcd'), ParamValidationError)
+      expectReject(validators.string(regex: /^abc$/)(param, 'abcd'), DataValidationError)
+      expectReject(validators.string(regex: '^abc$')(param, 'abcd'), DataValidationError)
       expectResolve(validators.string(regex: /^aBc/i)(param, 'abcd'))
       expectResolve(validators.string(regex: '^abc')(param, 'abcd'))
     ]

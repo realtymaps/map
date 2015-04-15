@@ -1,9 +1,9 @@
 Promise = require "bluebird"
-ParamValidationError = require './util.error.paramValidation'
+DataValidationError = require './util.error.dataValidation'
 doValidation = require './util.impl.doValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     doValidation(options.subValidation, param, value)
-    .catch ParamValidationError, () ->
+    .catch DataValidationError, () ->
       Promise.resolve(options.defaultValue)

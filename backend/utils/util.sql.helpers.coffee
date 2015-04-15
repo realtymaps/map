@@ -160,7 +160,7 @@ module.exports =
             sql: "#{column} ~* ?"
             bindings: [ pattern ]
 
-  select: (knex, which, passedFilters) ->
+  select: (knex, which, passedFilters=null) ->
     extra = ''
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
