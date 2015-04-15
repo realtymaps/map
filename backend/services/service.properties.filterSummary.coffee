@@ -5,7 +5,7 @@ Point = require('../../common/utils/util.geometries').Point
 {clusterQuery, fillOutDummyClusterIds} = require '../utils/util.sql.manual.cluster'
 Promise = require "bluebird"
 logger = require '../config/logger'
-{maybeMergeSavedProperties} = require '../utils/util.properties.merge'
+{maybeMergeSavedProperties, getMissingProperties, savedPropertiesQuery} = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
 
 _getZoom = (position) ->
@@ -22,7 +22,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       _.uniq properties, (row) ->
          row.rm_property_id
     .then (properties) ->
-      maybeMergeSavedProperties(queryParams, properties)
+      maybeMergeSavedProperties(state, queryParams, properties, limit)
     .then (properties) ->
       _.each properties, (prop) ->
           prop.type = prop.geom_point_json.type
@@ -49,6 +49,24 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       query = geojson_query(db, base.tableName, 'geom_polys_json', _whereClause)
       # logger.sql query.toString()
       query
+      .then (json) ->
+        #begin merge savedprops
+        missing = getMissingProperties(state, json.features)
+        missingWhereClause =
+          getClauseString(savedPropertiesQuery(2000, queryParams, missing))
+          .replace(/'/g,"''")
+        # logger.debug missingWhereClause
+        geojson_query(db, base.tableName, 'geom_polys_json', missingWhereClause)
+        .then (json2) ->
+          json1: json
+          json2: json2
+      .then (blob) ->
+        {json1, json2} = blob
+        if json2?.features?
+          _.merge json1, json2
+        else json1
+      #end merge savedprops
+
 
     default: _default
 

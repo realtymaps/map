@@ -35,7 +35,6 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return undefined
       resultsHash[model.rm_property_id]
 
-    #TODO: BaseObject should really come from require not window.. same w/ PropMap
     class ResultsFormatter
 
       _isWithinBounds = (map, prop) =>
@@ -64,6 +63,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
           @lastSummaryIndex = 0
           @mapCtrl.scope.resultsPotentialLength = undefined
           @filterSummaryInBounds = undefined
+
+          #make sure selectedResult is updated if it exists
+          summary = @mapCtrl.scope.map?.markers?.filterSummary
+          if @mapCtrl.scope.selectedResult? and summary[@mapCtrl.scope.selectedResult.rm_property_id]?
+            delete @mapCtrl.scope.selectedResult.savedDetails
+            angular.extend(@mapCtrl.scope.selectedResult, summary[@mapCtrl.scope.selectedResult.rm_property_id])
           @loadMore()
         , 5
         @mapCtrl.scope.resultsLimit = 10
@@ -233,7 +238,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
         if not @mapCtrl.scope.results.length # only do this once (per map bound)
           _.each @filterSummaryInBounds, (summary) =>
-            if @mapCtrl.scope.formatters.layer.isVisible(summary)
+            if @mapCtrl.layerFormatter.isVisible(summary)
               @mapCtrl.scope.results[summary.rm_property_id] = summary
 
         @mapCtrl.scope.resultsLimit += amountToLoad

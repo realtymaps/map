@@ -1,7 +1,10 @@
 _thisName = 'util.events'
 Point = require('../../../common/utils/util.geometries.coffee').Point
+caseing = require 'case'
 
 _markerEvents= ['click', 'dblclick', 'mousedown', 'mouseover', 'mouseout']
+#ng-leaflet inconsistency
+_geojsonEvents = _markerEvents.map (e) -> caseing.capital e
 
 _isMarker = (type) ->
   type == 'marker'
@@ -10,6 +13,7 @@ _getArgs = (args, cb) ->
   unless cb
     throw "#{_thisName}._getArgs: cb is undefined"
   {leafletEvent, leafletObject, model, modelName, layerName} = args
+  return unless model
   cb(leafletEvent, leafletObject, model, modelName, layerName)
 
 
@@ -40,14 +44,29 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
   _hookMarkers = (handler) ->
     _markerEvents.forEach (name) ->
       eventName = 'leafletDirectiveMarker.' + name
-      $scope.$on eventName, (event, args) ->
+      $scope.$onRootScope eventName, (event, args) ->
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           if handler[name]?
             handler[name](leafletEvent, leafletObject, model, modelName, layerName, 'marker')
 
+  _hookGeojson = (handler) ->
+    _geojsonEvents.forEach (name) ->
+        eventName = 'leafletDirectiveMap.geojson' + name;
+        $scope.$onRootScope eventName, (ngevent, feature, event) ->
+          name = caseing.lower name
+          return unless feature
+          #ng-leaflet inconsistency
+          return if Object.keys(feature).length == 7 and name != 'mouseout' #NEED TO FIX ng-leaflet
+          if arguments.length < 3
+            event = feature
+            feature = event.feature
+
+          if handler[name]?
+            handler[name](event.originalEvent, undefined, feature, undefined, undefined, 'geojson')
+
   _eventHandler =
     mouseover: (event, lObject, model, modelName, layerName, type) ->
-      if _isMarker(type) && (model.markerType == 'streetnum' or model.markerType == 'cluster')
+      if _isMarker(type) and model?.markerType? and (model.markerType == 'streetnum' or model.markerType == 'cluster') or layerName == 'addresses'
         return
 
       mapCtrl.openWindow(model)
@@ -62,7 +81,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
       $scope.formatters.results.mouseenter(null, model)
 
     mouseout: (event, lObject, model, modelName, layerName, type) ->
-      if _isMarker(type) && (model.markerType == 'streetnum' or model.markerType == 'cluster')
+      if _isMarker(type) and model?.markerType? and (model.markerType == 'streetnum' or model.markerType == 'cluster')
         return
       $timeout.cancel(mapCtrl.mouseoutDebounce)
       mapCtrl.mouseoutDebounce = $timeout ->
@@ -101,6 +120,9 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
     events:
       markers:
         enable: _markerEvents
+      geojson:
+        enable: _geojsonEvents
 
   _.merge $scope,obj
   _hookMarkers(_eventHandler)
+  _hookGeojson(_eventHandler)
