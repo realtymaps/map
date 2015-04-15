@@ -21,6 +21,7 @@ Config = (output, additionalPlugs) ->
       loaders: [
         { test: /\.css$/, loader: 'style!css!autoprefixer?browsers=last 2 version' }
         { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
+        { test: /\.scss$/, loader: "style!css?sourceMap!sass" } #mapbox styles out of the box are scss
 #        { test: /\.styl$/, loader: 'style!css!stylus' }
         { test: /\.coffee$/, loader: 'coffee' }
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
