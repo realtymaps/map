@@ -2,15 +2,18 @@ app = require '../app.coffee'
 Point = require('../../../common/utils/util.geometries.coffee').Point
 
 sprintf = require('sprintf-js').sprintf
-
+require '../services/leafletObjectFetcher.coffee'
 
 app.factory 'ResultsFormatter'.ourNs(), [
   '$rootScope', '$timeout', '$filter',
   'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
+  'rmapsLeafletObjectFetcher', 'MainOptions'.ourNs(), 'ZoomLevel'.ourNs(),
   ($rootScope, $timeout, $filter,
   $log, ParcelEnums, GoogleService,
-  Properties, FormattersService, uiGmapGmapUtil, Events) ->
+  Properties, FormattersService, uiGmapGmapUtil, Events,
+  rmapsLeafletObjectFetcher, MainOptions, ZoomLevel) ->
+    limits = MainOptions.map
 
     _forSaleClass = {}
     _forSaleClass[ParcelEnums.status.sold] = 'sold'
@@ -34,6 +37,20 @@ app.factory 'ResultsFormatter'.ourNs(), [
       if !model or !model?.rm_property_id or !resultsHash
         return undefined
       resultsHash[model.rm_property_id]
+
+    _handleMouseEventToMap = (mapCtrl, eventName, result, model, resultsHash) ->
+      event = window.event
+      result = _resultOrModel(result, model, resultsHash)
+      return unless result
+      #need event, lObject, model, modelName, layerName, type
+      modelName = result.rm_property_id
+
+      layerName = if ZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
+
+      rmapsLeafletObjectFetcher.get('mainMap', modelName)
+      .then (payload) ->
+        {lObject, type} = payload
+        mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, 'results')
 
     class ResultsFormatter
 
@@ -278,18 +295,13 @@ app.factory 'ResultsFormatter'.ourNs(), [
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
 
-      #public but _ to discuourage use externally
-      _handleMouseState: (result, model, state = undefined) =>
-        result = _resultOrModel(result, model, @mapCtrl.scope.results)
-        return unless result
-        result.isMousedOver = state
-        @mapCtrl.updateAllLayersByModel(result)
-
       mouseenter: (result, model) =>
-        @_handleMouseState(result, model, true)
+        _handleMouseEventToMap(@mapCtrl, 'mouseover', result, model, @mapCtrl.scope.results)
 
       mouseleave: (result, model) =>
-        @_handleMouseState(result, model)
+        return if @lastResultMouseLeave == (result or model)
+        @lastResultMouseLeave = result or model
+        _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results)
 
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event

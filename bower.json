@@ -35,7 +35,7 @@
       }
     },
     "leaflet": {
-      "main": "dist/leaflet.js"
+      "main": "dist/leaflet-src.js"
     },
     "leaflet-plugins": {
       "ignore": true

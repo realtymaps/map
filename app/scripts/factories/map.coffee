@@ -73,8 +73,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $log.debug "map zoom: #{JSON.stringify($scope.map.center.zoom)}"
 
 
-        @mouseoutDebounce = null
-
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
@@ -116,7 +114,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               saved.then (savedDetails) =>
                 @redraw(false)
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        _eventReg($timeout,$scope, @, limits)
+        @eventHandle = _eventReg($timeout,$scope, @, limits, $log)
         _.merge @scope,
           streetViewPanorama:
             status: 'OK'
@@ -246,7 +244,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               Properties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
               .then (data) =>
                 return if !data? or _.isString data
-                @scopeM().geojson.filterSummary =
+                @scopeM().geojson.filterSummaryPoly =
                   data: data
                   style: @layerFormatter.Parcels.getStyle
             )
