@@ -3,6 +3,8 @@ DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
+    if value == undefined
+      return undefined
     if typeof(value) == 'boolean'
       return value
     if value == 'true' || value == 'false'

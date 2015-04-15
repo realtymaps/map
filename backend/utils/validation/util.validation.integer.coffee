@@ -4,6 +4,8 @@ DataValidationError = require './util.error.dataValidation'
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     type = typeof(value)
+    if type == 'undefined'
+      return undefined
     if value == '' || (type != 'string' and type != 'number')
       return Promise.reject new DataValidationError("integer value required", param, value)
     numvalue = +value

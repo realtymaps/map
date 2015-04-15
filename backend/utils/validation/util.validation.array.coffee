@@ -5,6 +5,8 @@ logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
+    if values == undefined
+      return undefined
     if options.split? and _.isString(values)
       arrayValues = values.split(options.split)
     else

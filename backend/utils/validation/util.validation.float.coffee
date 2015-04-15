@@ -3,6 +3,8 @@ DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
+    if value == undefined
+      return undefined
     if value == ''
       return Promise.reject new DataValidationError("numeric value required", param, value)
     numvalue = +value
