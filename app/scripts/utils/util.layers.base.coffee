@@ -27,6 +27,15 @@ module.exports =
 
   googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
 
+  googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
+
+  #example of custom map via an account
+  mapbox_street: _mapBoxFactory 'Street', 'nmccready.k54j1lpg'
+
+  mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
+
+  mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
+
   #NOTE OSM does not support a zoomLevel higher than 20
   osm:
     name: 'OpenStreetMap',
@@ -36,13 +45,3 @@ module.exports =
       subdomains: ['a', 'b', 'c'],
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       continuousWorld: true
-
-
-  googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
-
-  #example of custom map via an account
-  mapbox_street: _mapBoxFactory 'Street', 'nmccready.k54j1lpg'
-
-  mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
-
-  mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
