@@ -29,9 +29,18 @@ describe 'utils/http.request.validators.integer()'.ourNs().ourNs('Backend'), ->
         value.should.equal(170)
     ]
 
+  promiseIt 'should nullify empty values', () ->
+    [
+      expectResolve(validators.integer()(param, '')).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.integer()(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.integer()(param, undefined)).then (value) ->
+        (value == null).should.be.true
+    ]
+
   promiseIt 'should reject strings that do not represent integers', () ->
     [
-      expectReject(validators.integer()(param, ''), DataValidationError)
       expectReject(validators.integer()(param, '123abc'), DataValidationError)
       expectReject(validators.integer()(param, '123.123'), DataValidationError)
       expectReject(validators.integer()(param, '1.7777E3'), DataValidationError)

@@ -19,6 +19,17 @@ describe 'utils/http.request.validators.array()'.ourNs().ourNs('Backend'), ->
       expectResolve(validators.array()(param, ['abc', 5, '10', true]))
       expectResolve(validators.array()(param, []))
     ]
+
+  promiseIt 'should nullify empty values', () ->
+    [
+      expectResolve(validators.array()(param, '')).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.array()(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.array()(param, undefined)).then (value) ->
+        (value == null).should.be.true
+    ]
+    
   promiseIt 'should reject non-arrays', () ->
     [
       expectReject(validators.array()(param, 'abc'), DataValidationError)
