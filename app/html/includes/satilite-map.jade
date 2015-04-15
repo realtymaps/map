@@ -1,41 +1,4 @@
-//NOTE THIS CONTROL COULD PROBABLY BE SPED UP TO IF IT HAD IT"S own bounds / controller
+include ./mixins/leaflet.jade
 //Currently this is sharing data with the main map
-div(ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.showDetails")
-    ui-gmap-google-map(center='selectedResult.geom_point_json', zoom='satMap.zoom',
-      bounds='satMap.bounds' options='satMap.options',
-      control='satMap.control', ng-cloak=''
-      tabindex='0'
-    )
-      // BEGIN PARCEL DATA
-      ui-gmap-markers(
-        ng-if="streetViewPanorama.status != 'OK'"
-        options='formatters.layer.Parcels.labelFromStreetNum'
-        models='layers.parcels'
-        coords='"geom_point_json"'
-        idkey='"rm_property_id"'
-        ng-cloak=''
-        events='actions.listingEvents'
-        modelsbyref='true'
-        chunk='50')
-
-      // Would be nice to have just options without each individual attribute
-      //https://github.com/angular-ui/angular-google-maps/issues/1033
-      ui-gmap-polygons(
-        ng-if="streetViewPanorama.status != 'OK'"
-        models='layers.filterSummary'
-        idkey='"rm_property_id"'
-        path='"geom_polys_json"'
-        fill="formatters.layer.Parcels.fill"
-        stroke="{ color: formatters.layer.Parcels.strokeColor, weight: formatters.layer.Parcels.strokeWeight, opacity: '1.0' }"
-        visible='true'
-        geodesic='true'
-        events='actions.listingEvents'
-        fit='false'
-        editable='false'
-        ng-cloak=''
-        static='true'
-        chunk='false'
-        cleanchunk='800'
-        control='controls.satParcels'
-        zIndex='10')
-      //END PARCEL DATA
+div(class="sat-map" ng-controller="rmapsSatMapCtrl" ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.showDetails")
+  +leaflet('satMap', 'detailSatMap')

@@ -3,18 +3,27 @@ qs = require 'qs'
 backendRoutes = require '../../../common/config/routes.backend.coffee'
 analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
 
-encode = undefined
+
+_encode = require('geohash64').encode
+_overlays = require '../utils/util.layers.overlay.coffee'
+_eventReg = require '../utils/util.events.coffee'
+_emptyGeoJsonData =
+  type: "FeatureCollection"
+  features: []
+
+
 ###
   Our Main Map Implementation
 ###
 app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
-  'BaseGoogleMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
+  'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapPromise', 'uiGmapControls'.ourNs(), 'uiGmapObjectIterators',
-  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseGoogleMap,
+  'GoogleService'.ourNs(), 'uiGmapControls'.ourNs(), 'uiGmapObjectIterators', 'popupLoader'.ourNs(),
+  'leafletData',
+  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapPromise, uiGmapControls, uiGmapObjectIterators) ->
+    uiGmapControls, uiGmapObjectIterators, PopupLoader, leafletData) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -27,30 +36,22 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
-    class Map extends BaseGoogleMap
+    class Map extends BaseMap
+      baseIsLoaded = false
+      scopeM: ->
+        @scope.map
       constructor: ($scope, limits) ->
-        super $scope, limits.options, limits.zoomThresholdMilliSeconds
-        _initToggles $scope, limits.toggles
+        $scope.isReady = ->
+          $scope.map.center? and $scope.map.layers and baseIsLoaded
 
-        _handleManualMarkerCluster = (model, gObject) ->
-          if gObject?.markerType? and gObject?.markerType == "cluster"
-            $scope.center =
-              latitude: model.latitude
-              longitude: model.longitude
-            $scope.zoom = if $scope.zoom > 9 then 14 else 11
-            return true
+        super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
+        baseIsLoaded = true
+        _initToggles $scope, limits.toggles
 
         $scope.zoomLevelService = ZoomLevel
         self = @
 
-        GoogleMapApi.then (maps) =>
-          encode = maps.geometry.encoding.encodePath
-          maps.visualRefresh = true
-          @scope.dragZoom.options = Map.getDragZoomOptions()
-          @scope.$watch 'bounds', (newVal, oldVal) =>
-            if newVal
-              @scope.searchbox.setBiasBounds()
-          , true
+        leafletData.getMap('mainMap').then (map) =>
 
           _firstCenter = true
           @scope.$watchCollection 'center', (newVal, oldVal) =>
@@ -64,119 +65,79 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.Toggles.hasPreviousLocation = false
 
           @scope.satMap =
-            options: _.extend mapTypeId: google.maps.MapTypeId.SATELLITE, self.scope.options
-            bounds: {}
-            zoom: 20
-            control: {}
-            init: ->
-              $timeout ->
-                gSatMap = self.scope.satMap.control.getGMap()
-                google.maps.event.trigger(gSatMap, 'resize')
-              , 500
+            limits: limits
 
         @singleClickCtrForDouble = 0
         $log.debug $scope.map
-        $log.debug "map center: #{JSON.stringify($scope.center)}"
-        $log.debug "map zoom: #{JSON.stringify($scope.zoom)}"
+        $log.debug "map center: #{JSON.stringify($scope.map.center)}"
+        $log.debug "map zoom: #{JSON.stringify($scope.map.center.zoom)}"
 
-        #seems to be a google bug where mouse out is not always called
-        _handleMouseout = (model) =>
-          if !model
-            return
-          $scope.actions.closeListing()
-          model.isMousedOver = undefined
-          $timeout.cancel(@mouseoutDebounce)
-          @mouseoutDebounce = null
-          $scope.formatters.results.mouseleave(null, model)
+
         @mouseoutDebounce = null
 
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
+        @layerFormatter = LayerFormatters(@)
 
-        _updateGObjects = (gObject, savedDetails, model) ->
+        _updateGObjects = (gObject, savedDetails, model) =>
           #purpose to to take some sort of gObject and update its view immediately
           model.savedDetails = savedDetails
           if GoogleService.Map.isGMarker(gObject)
-            opts = $scope.formatters.layer.MLS.markerOptionsFromForSale model
+            @layerFormatter.MLS.setMarkerPriceOptions model
           else
-            opts =  $scope.formatters.layer.Parcels.optionsFromFill(model)
-          gObject.setOptions(opts) if opts
+            opts =  @layerFormatter.Parcels.optionsFromFill(model)
+            @redraw()
           $scope.formatters.results?.reset()
 
-        @updateAllLayersByModel = _updateAllLayersByModel = (model) ->
+        @updateAllLayersByModel = _updateAllLayersByModel = (model) =>
           uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
             if GoogleService.Map.isGMarker(gObject)
-              opts = $scope.formatters.layer.MLS.markerOptionsFromForSale(model)
+              @layerFormatter.MLS.setMarkerPriceOptions(model)
             else
-              opts = $scope.formatters.layer.Parcels.optionsFromFill(model)
-            gObject.setOptions opts
+              opts = @layerFormatter.Parcels.optionsFromFill(model)
+            @redraw()
           , ['streetNumMarkers']
 
         _isModelInFilterSummary = (model) ->
           model.index?
 
-        # BEGIN POSSIBLE PropertySave SERVICE
-        _maybeRemoveFilterSummaryObjects = (savedDetails, model) =>
-          isEmptysFilterCanErase = !@filters and !savedDetails.isSaved
-
-          if isEmptysFilterCanErase
-            model.isMousedOver = undefined
-            delete @scope.layers.filterSummary[model.rm_property_id]
-            @scope.layers.filterSummary.length -= 1
-
-        _maybeRefreshFilterSummary = (savedDetails, model) =>
-          if savedDetails.isSaved and !_isModelInFilterSummary(model)
-            @redraw(cache = false)
-
-        _saveProperty = (model, gObject) =>
+        @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
           saved = Properties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
-            #setting savedDetails here as we know the save was successful
-            if @scope.layers.filterSummary[model.rm_property_id]?
-              @scope.layers.filterSummary[model.rm_property_id].savedDetails = savedDetails
-
-            if @lastHoveredModel?.rm_property_id == model.rm_property_id and
-            !$scope.formatters.layer.isVisible(@scope.layers.filterSummary[model.rm_property_id])
-              $scope.actions.closeListing()
-
-
-            match = @scope.layers.filterSummary[model.rm_property_id]
-            match.savedDetails = savedDetails if match?
-            uiGmapControls.updateAllModels match
-
-            _maybeRemoveFilterSummaryObjects(savedDetails, model)
-            _maybeRefreshFilterSummary(savedDetails,model)
-
-            _updateAllLayersByModel model # need this here for immediate coloring of the parcel
-            return if GoogleService.Map.isGMarker(gObject) and ZoomLevel.isAddressParcel($scope.zoom)#dont change the color of the address marker
-            if gObject
-              _updateGObjects(gObject, savedDetails, model)
-        # END POSSIBLE PropertySave SERVICE
-
-        @saveProperty = _saveProperty
+            @redraw(false)
+            (model, lObject) =>
+              #TODO: Need to debounce / throttle
+              saved = Properties.saveProperty(model)
+              return unless saved
+              saved.then (savedDetails) =>
+                @redraw(false)
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @scope = _.merge @scope,
+        _eventReg($timeout,$scope, @, limits)
+        _.merge @scope,
           streetViewPanorama:
             status: 'OK'
           control: {}
-          showTraffic: true
-          showWeather: false
-          showMarkers: true
 
           listingOptions:
             boxClass: 'custom-info-window'
             closeBoxDiv: ' '
 
-          layers:
-            parcels: {}
-            filterSummary: {}
+          map:
+            layers:
+              overlays: _overlays
+
             listingDetail: undefined
-            drawnPolys: []
-            clusters: []
+
+            markers:
+              filterSummary:{}
+              backendPriceCluster:{}
+              addresses:{}
+
+            geojson: {}
 
           controls:
             parcels: {}
@@ -189,88 +150,14 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             draw: undefined
             isEnabled: false
 
-          actions:
-
-            closeListing: ->
-              $scope.layers.listingDetail?.show = false
-            listing: (gMarker, eventname, model) =>
-              #model could be from parcel or from filter, but the end all be all data is in filter
-              if !model.rm_status
-                if !$scope.layers?.filterSummary?.length
-                  return
-                model = @$scope.layers.filterSummary?[model.rm_property_id] || model
-              # so we don't show the window on un-saved properties
-              if !$scope.formatters.layer.isVisible(model)
-                return
-
-              if $scope.layers.listingDetail
-                $scope.layers.listingDetail.show = false
-              model.show = true
-              $scope.layers.listingDetail = model
-              offset = $scope.formatters.layer.MLS.getWindowOffset(@gMap, $scope.layers.listingDetail)
-              return unless offset
-              _.extend $scope.listingOptions,
-                pixelOffset: offset
-                disableAutoPan: true
-
-            listingEvents:
-              mouseover: (gObject, eventname, model) =>
-                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "streetNum"
-                  return
-                model = GoogleService.UiMap.getCorrectModel model
-                _lastHoveredModel = @lastHoveredModel
-                @lastHoveredModel = model
-                model.isMousedOver = true
-                $timeout.cancel(@mouseoutDebounce)
-                @mouseoutDebounce = null
-                if _lastHoveredModel?.rm_property_id != model.rm_property_id
-                  _handleMouseout(_lastHoveredModel)
-                $scope.actions.listing(gObject, eventname, model)
-                $scope.formatters.results.mouseenter(null, model)
-
-              mouseout: (gObject, eventname, model) =>
-                if GoogleService.Map.isGMarker(gObject) && gObject.markerType == "streetNum"
-                  return
-                model = GoogleService.UiMap.getCorrectModel model
-                $timeout.cancel(@mouseoutDebounce)
-                @mouseoutDebounce = $timeout () =>
-                  _handleMouseout(model)
-                , limits.options.throttle.eventPeriods.mouseout
-
-              click: (gObject, eventname, model, events) =>
-                $scope.$evalAsync =>
-                  #delay click interaction to see if a dblclick came in
-                  #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
-                  event = events[0]
-                  $timeout =>
-                    #looks like google maps blocks ctrl down and click on gObjects (need to do super for windows (maybe meta?))
-                    #also esc/escape works with Meta ie press esc and it locks meta down. press esc again meta is off
-                    model = GoogleService.UiMap.getCorrectModel model
-                    return if _handleManualMarkerCluster(model, gObject)
-                    if event.ctrlKey or event.metaKey
-                      return _saveProperty(model, gObject)
-                    unless @lastEvent == 'dblclick'
-                      $scope.formatters.results.click(@scope.layers.filterSummary[model.rm_property_id]||model, window.event, 'map')
-                  , limits.clickDelayMilliSeconds
-
-              dblclick: (gObject, eventname, model, events) =>
-                @lastEvent = 'dblclick'
-                event = events[0]
-                if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-                model = GoogleService.UiMap.getCorrectModel model
-                _saveProperty model, gObject
-                $timeout =>
-                  #cleanup
-                  @lastEvent = undefined
-                , limits.clickDelayMilliSeconds + 100
 
           formatters:
-            layer: LayerFormatters(self)
             results: new ResultsFormatter(self)
 
           dragZoom: {}
           changeZoom: (increment) ->
-            $scope.zoom += increment
+            toBeZoom = self.map.getZoom() + increment
+            self.map.setZoom(toBeZoom)
 
           searchbox:
             template: 'map-searchbox.tpl.html'
@@ -308,66 +195,118 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
-          if @scope.layers.listingDetail?
-            @scope.layers.listingDetail.show = false if newVal isnt oldVal
-        #END SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
+          if @scopeM().listingDetail?
+            @scopeM().listingDetail.show = false if newVal isnt oldVal
+        #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         @subscribe()
         uiGmapControls.init $scope.controls
         #END CONSTRUCTOR
 
-      #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
+      #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @gMap? and not ZoomLevel.isAddressParcel(@gMap,@scope)
-          @scope.layers.parcels.length = 0
+        if @map? and not ZoomLevel.isAddressParcel(@map,@scope)
+          _.each @scopeM().geojson, (val) ->
+            val.data = _emptyGeoJsonData
 
-      maybeShowGoogleParcelLines: =>
-        if ZoomLevel.isParcel(@scope.zoom) or ZoomLevel.isAddressParcel(@scope.zoom)
-          return if @didAddGParcelLinesStyle
-          @didAddGParcelLinesStyle = true
-          @scope.options.styles.push @scope.formatters.layer.Parcels.style
+      drawFilterSummary:(cache) =>
+        promises = []
+        if ZoomLevel.doCluster(@scope)
+          promises.push(
+            Properties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
+            .then (data) =>
+              return if !data? or _.isString data
+              #data should be in array format
+              @scopeM().markers.filterSummary = {}
+              _.each data, (model,k) =>
+                @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+              @scopeM().markers.backendPriceCluster = data
+          )
         else
-          if @didAddGParcelLinesStyle
-            @scope.options.styles = _.without(@scope.options.styles, @scope.formatters.layer.Parcels.style)
-            @didAddGParcelLinesStyle = false
+          #needed for results list, rendering price markers, and address Markers
+          #depending on zoome we want address or price
+          #the data structure is the same (do we clone and hide one?)
+          #or do we have the results list view grab one that exists with items?
+          promises.push(
+            Properties.getFilterSummary(@hash, @mapState, @filters, cache)
+            .then (data) =>
+              return if !data? or _.isString data
+              @scopeM().markers.backendPriceCluster = {}
+
+              @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+
+              @scopeM().markers.filterSummary = data
+
+              $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
+          )
+
+          if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+            @scope.map.layers.overlays.filterSummary.visible = false
+            @scope.map.layers.overlays.addresses.visible = true
+            promises.push(
+              Properties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+              .then (data) =>
+                return if !data? or _.isString data
+                @scopeM().geojson.filterSummary =
+                  data: data
+                  style: @layerFormatter.Parcels.getStyle
+            )
+          else
+            @scope.map.layers.overlays.filterSummary.visible = true
+            @scope.map.layers.overlays.addresses.visible = false
+        promises
 
       redraw: (cache = true) =>
+        promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        @maybeShowGoogleParcelLines()
-        if ZoomLevel.isAddressParcel(@scope.zoom, @scope)
-          ZoomLevel.dblClickZoom.disable(@scope) if ZoomLevel.isAddressParcel(@scope.zoom)
-          Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
+        if ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
+             ZoomLevel.isParcel(@scopeM().center.zoom)
+          if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+              ZoomLevel.dblClickZoom.disable(@scope)
+
+              promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
+                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+                  _.cloneDeep(data),
+                  @layerFormatter.Parcels.labelFromStreetNum
+                )
+              ))
+
+          promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
             return unless data?
-            @scope.layers.parcels = uiGmapObjectIterators.slapAll data
-            $log.debug "addresses count to draw: #{data.length}"
+            @scopeM().geojson.parcelBase =
+              data: data
+              style: @layerFormatter.Parcels.style
+
+            $log.debug "addresses count to draw: #{data?.features?.length}"
+          ))
+
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        Properties.getFilterSummary(@hash, @mapState, @filters, cache).then (data) =>
-          return unless data?
-          if _.isArray data
-            #assign to cluster layer
-            @scope.layers.filterSummary = [] #semi bug in ui-gmap (allows destruction to happen from {with items} to empty
-            @scope.layers.clusters = data
-          else
-            @scope.layers.clusters.length = 0
-            @scope.layers.filterSummary = uiGmapObjectIterators.slapAll data
-            $log.debug "filters (poly price) count to draw: #{data.length}"
+        promises = promises.concat @drawFilterSummary(cache)
 
-          @scope.$evalAsync () =>
+        $q.all(promises).then =>
+          #every thing is setup, only draw once
+          @directiveControls.geojson.create(@scope.map.geojson)
+          @directiveControls.markers.create(@scope.map.markers)
+          @scope.$evalAsync =>
             @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>
-        @scope.formatters.results?.reset()
+        return if !@directiveControls? or !@scope.isReady()
+
+        @scope?.formatters?.results?.reset()
         if not paths and not @scope.drawUtil.isEnabled
-          paths = _.map @scope.bounds, (b) ->
-            new google.maps.LatLng b.latitude, b.longitude
+          paths  = []
+          for k, b of @scope.map.bounds
+            paths.push [b.lat, b.lng]
 
-        if !paths? || paths.length < 2 || (paths.length == 2 && _.isEqual(paths...))
-          return
+        if !paths? or paths.length < 2 or
+          (@scope.map?.bounds.northEast.lat == @scope.map?.bounds.southWest.lat and @scope.map?.bounds.northEast.lon == @scope.map?.bounds.southWest.lon)
+            return
 
-        @hash = encode paths
+        @hash = _encode paths
 
         @refreshState()
         @redraw()
@@ -375,15 +314,15 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       getMapStateObj: =>
         centerToSave = undefined
 
-        if @scope.center?.latitude? and @scope.center?.longitude?
-          centerToSave = @scope.center
-        else if @scope.center?.lat? and @scope.center?.lng?
+        if @scopeM().center?.latitude? and @scopeM().center?.longitude?
+          centerToSave = @scopeM().center
+        else if @scopeM().center?.lat? and @scopeM().center?.lng?
           centerToSave =
-            latitude: @scope.center.lat()
-            longitude: @scope.center.lng()
+            latitude: @scopeM().center.lat()
+            longitude: @scopeM().center.lng()
         else
           #fallback to saftey and save a good center
-          centerToSave = MainOptions.map.json.center
+          centerToSave = MainOptions.json.center
 
         stateObj =
           map_position:
@@ -402,10 +341,10 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @mapState
 
       filter: (newFilters, oldFilters) =>
-        if not newFilters and not oldFilters then return
+        return if not newFilters and not oldFilters
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
-        @clearFilter()
+
         @filterDrawPromise = $timeout =>
           FilterManager.manage (@filters) =>
             @filterDrawPromise = false
@@ -430,8 +369,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
-      clearFilter: =>
-        @scope.layers.parcels.length = 0 #must clear so it is rebuilt!
-        @scope.layers.filterSummary.length = 0
+      openWindow: (model) =>
+        PopupLoader.load(@scope, @map, model)
+
+      closeWindow: ->
+        PopupLoader.close()
+
+      ###
+              closeListing: ->
+
+              if $scope.map.listingDetail
+                $scope.map.listingDetail.show = false
+              model.show = true
+              $scope.map.listingDetail = model
+              offset = @layerFormatter.MLS.getWindowOffset(@gMap, $scope.map.listingDetail)
+              return unless offset
+              _.extend $scope.listingOptions,
+                pixelOffset: offset
+                disableAutoPan: true
+      ###
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
 ]

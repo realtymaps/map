@@ -30,21 +30,22 @@ module.exports =
       else
         halfBaths = ''
 
-    $scope.street_address_num = String.orDash $scope.parameter.street_address_num
-    $scope.street_address_name = String.orDash $scope.parameter.street_address_name
-    $scope.beds_total = String.orDash $scope.parameter.bedrooms
-    $scope.baths_full = String.orDash $scope.parameter.baths_full
-    $scope.baths_half= formatHalfBaths String.orDash $scope.parameter.baths_half
-    $scope.baths_total= String.orDash $scope.parameter.baths_total
-    $scope.finished_sqft= String.orDash $scope.parameter.finished_sqft
-    $scope.price = getPrice $scope.parameter.price
-    $scope.priceLabel = getPriceLabel $scope.parameter.rm_status
-    $scope.assessed_value = getPrice $scope.parameter.assessed_value
-    $scope.year_built = if $scope.parameter.year_built then moment($scope.parameter.year_built).format('YYYY') else String.orDash $scope.parameter.year_built
-    $scope.acres = String.orDash $scope.parameter.acres
-    $scope.rm_status = String.orDash $scope.parameter.rm_status
-    $scope.owner_name = String.orDash $scope.parameter.owner_name
-    $scope.owner_name2 = $scope.parameter.owner_name2
+    #TODO: consider pointing everything to mdoel.. and then for modifiers use functions
+    $scope.street_address_num = String.orDash $scope.model.street_address_num
+    $scope.street_address_name = String.orDash $scope.model.street_address_name
+    $scope.beds_total = String.orDash $scope.model.bedrooms
+    $scope.baths_full = String.orDash $scope.model.baths_full
+    $scope.baths_half= formatHalfBaths String.orDash $scope.model.baths_half
+    $scope.baths_total= String.orDash $scope.model.baths_total
+    $scope.finished_sqft= String.orDash $scope.model.finished_sqft
+    $scope.price = getPrice $scope.model.price
+    $scope.priceLabel = getPriceLabel $scope.model.rm_status
+    $scope.assessed_value = getPrice $scope.model.assessed_value
+    $scope.year_built = if $scope.model.year_built then moment($scope.model.year_built).format('YYYY') else String.orDash $scope.model.year_built
+    $scope.acres = String.orDash $scope.model.acres
+    $scope.rm_status = String.orDash $scope.model.rm_status
+    $scope.owner_name = String.orDash $scope.model.owner_name
+    $scope.owner_name2 = $scope.model.owner_name2
     
-    $scope.statusClass = getStatusClass($scope.parameter.rm_status)
+    $scope.statusClass = getStatusClass($scope.model.rm_status)
   ]

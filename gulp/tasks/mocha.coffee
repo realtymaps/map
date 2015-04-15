@@ -11,7 +11,10 @@ runMocha = (files, reporter = 'spec') ->
   .pipe(mocha(reporter: reporter))
 
 gulp.task 'backendSpec', ->
-  runMocha ['spec/common/**/*spec*', 'spec/backend/**/*spec*']
+  runMocha ['spec/backend/**/*spec*']
+
+gulp.task 'commonSpec', ->
+  runMocha 'spec/common/**/*spec*'
 
 gulp.task 'gulpSpec', ->
   runMocha  'spec/gulp/**/*spec*'

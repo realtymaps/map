@@ -11,18 +11,18 @@ app.factory 'LayerFormatters'.ourNs(), [
     (mapCtrl) ->
 
       _filterSummary = ->
-        mapCtrl.scope.layers.filterSummary
+        mapCtrl.scope.map.markers.filterSummary
 
       renderCounters =
         fill:
           directive: 0
           control: 0
 
-      getPixelFromLatLng = (latLng, map) ->
+      _getPixelFromLatLng = (latLng, map) ->
         point = map.getProjection().fromLatLngToPoint(latLng)
         point
 
-      isVisible = (model, requireFilterModel=false) ->
+      _isVisible = (model, requireFilterModel=false) ->
         if !model || requireFilterModel && !_filterSummary()[model.rm_property_id]
           return false
         # by returning savedDetails.isSaved false instead of undefined it allows us to tell the difference
@@ -32,10 +32,10 @@ app.factory 'LayerFormatters'.ourNs(), [
         return filterModel.passedFilters || filterModel.savedDetails?.isSaved
 
       # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
-      getWindowOffset = (map, mls, width = 290) ->
-        return if not mls or not map
-        center = getPixelFromLatLng(map.getCenter(), map)
-        point = getPixelFromLatLng(uiGmapUtil.getCoords(mls.geom_point_json), map)
+      getWindowOffset = (map, model, width = 290) ->
+        return if not model or not map
+        center = _getPixelFromLatLng(map.getCenter(), map)
+        point = _getPixelFromLatLng(uiGmapUtil.getCoords(model.geom_point_json), map)
         quadrant = ''
         quadrant += (if (point.y > center.y) then "b" else "t")
         quadrant += (if (point.x < center.x) then "l" else "r")
@@ -48,7 +48,11 @@ app.factory 'LayerFormatters'.ourNs(), [
         else offset = new google.maps.Size(30, -340)  if quadrant is "bl"
         offset
 
-      parcels = do ->
+      _parcels = do ->
+
+        _strokeColor = "#1269D8"
+        _strokeWeight = 1.5
+
         normalColors = {}
         normalColors[ParcelEnums.status.sold] = '#FF4A4A'
         normalColors[ParcelEnums.status.pending] = '#8C3DAA'
@@ -65,62 +69,42 @@ app.factory 'LayerFormatters'.ourNs(), [
         hoverColors['saved'] = '#AA1'
         hoverColors['default'] = 'rgba(153,153,153,.8)'
 
-        # fillOpts is unique to uiGmap since we are interacting directly with the gPoly we need the real options
-        gOptsFromUiGmapFill = (fillOpts) ->
-          fillColor: fillOpts.color
-          fillOpacity: fillOpts.opacity
 
-        getFillColor = (parcel, logged) ->
-          unless logged
-            renderCounters.fill.control += 1
-            $log.info "fill: from control @ count: #{renderCounters.fill.control}"
-          return {} unless parcel
-          parcel = GoogleService.UiMap.getCorrectModel(parcel)
-          model = _filterSummary()[parcel.rm_property_id] || parcel
+        labelFromStreetNum = (model) ->
+          _.extend model,
+            markerType: "streetNum"
+            icon:
+              type: 'div'
+              iconSize: [10, 10]
+              html: "<span class='address-label'>#{String.orNA model.street_address_num}</span>"
+            zIndex: 1
 
-          if model.savedDetails?.isSaved
+        labelFromStreetNum: labelFromStreetNum
+
+        style:
+          weight: _strokeWeight
+          opacity: 1
+          color: _strokeColor
+          fillColor: 'transparent'
+
+        getStyle : (feature) ->
+          return {} unless feature
+          if feature.savedDetails?.isSaved
             status = 'saved'
-          else if model.passedFilters
-            status = model.rm_status
+          else if feature?.rm_status?
+            status = feature?.rm_status
           else
             status = 'default'
 
-          colors = if parcel.isMousedOver then hoverColors else normalColors
-          color: colors[status]
-          opacity: '0.7'
+          colors = if feature?.isMousedOver then hoverColors else normalColors
+          color = colors[status]
 
-        labelFromStreetNum = (parcel) ->
-          return {} unless parcel
-          parcel = GoogleService.UiMap.getCorrectModel(parcel)
-          icon: ' '
-          labelContent: "<span class='address-label'>#{String.orNA parcel.street_address_num}</span>"
-          labelAnchor: "10 10"
-          zIndex: 1
-          markerType: "streetNum"
+          weight: 2
+          opacity: 1
+          color: color
+          fillColor: color
 
-        _strokeColor = "#1269D8"
-        _strokeWeight = 1.5
-
-        fill: (parcel) ->
-          return unless parcel?.rm_property_id?
-          renderCounters.fill.directive += 1
-          $log.info "fill: from directive @ count: #{renderCounters.fill.directive}, id: #{parcel.rm_property_id}"
-          getFillColor(parcel, logged = true)
-        labelFromStreetNum: labelFromStreetNum
-        strokeColor: _strokeColor
-        strokeWeight: _strokeWeight
-        style:
-          featureType: "administrative.land_parcel",
-          elementType: "geometry.stroke",
-          stylers: [
-            { "color": _strokeColor },
-            { "weight": _strokeWeight }
-          ]
-
-        optionsFromFill: (parcel) ->
-          gOptsFromUiGmapFill getFillColor(parcel)
-
-      mls = do ->
+      _mls = do ->
         markersBSLabel = {}
         markersBSLabel[ParcelEnums.status.sold] = 'sold-property'
         markersBSLabel[ParcelEnums.status.pending] = 'pending-property'
@@ -128,49 +112,66 @@ app.factory 'LayerFormatters'.ourNs(), [
         markersBSLabel[ParcelEnums.status.notForSale] = 'notsale-property'
         markersBSLabel['saved'] = 'saved-property'
 
-        markerOptionsFromForSale: (mls) ->
-          return {} unless mls
-          if not mls.price
+        setMarkerPriceOptions: (model) ->
+          return {} unless model
+          if not model.price
             formattedPrice = " &nbsp; &nbsp; &nbsp;"
-          else if mls.price >= 1000000
-            formattedPrice = '$'+casing.upper numeral(mls.price).format('0.00a'), '.'
+          else if model.price >= 1000000
+            formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
           else
-            formattedPrice = '$'+casing.upper numeral(mls.price).format('0a'), '.'
+            formattedPrice = '$'+casing.upper numeral(model.price).format('0a'), '.'
 
-          if mls.isMousedOver
+          if model.isMousedOver
             hovered = ' label-hovered'
             zIndex = 4
           else
             hovered = ''
             zIndex = 2
 
-          if mls.savedDetails?.isSaved
+          if model.savedDetails?.isSaved
             status = 'saved'
           else
-            status = mls.rm_status
+            status = model.rm_status
 
-          icon: ' '
-          labelContent: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
-          labelAnchor: "30 50"
-          zIndex: zIndex
-          markerType: "price"
-          visible: isVisible(mls, true)
+          _.extend model,
+            markerType: "price"
+            icon:
+              type: 'div'
+              iconSize: [60, 30]
+              html: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
 
-        markerOptionsManualCluster: (model) ->
+        setMarkerManualClusterOptions: (model) ->
           return {} unless model
+          clusterSize = 'small'
+          clusterSize = 'medium' if model.count > 10
+          clusterSize = 'large' if model.count > 50
 
-          icon: 'assets/cluster_circle_gray_40.png'
-          labelContent: "<div class='manual-cluster'>#{model.count}</div>"
-          labelAnchor: "20 40"
-          zIndex: 6
-          markerType: "cluster"
+          #important for the clusterer css a div must have child span
+          _.extend model,
+            markerType: "cluster"
+            icon:
+              type: 'div'
+              iconSize: [60, 30]
+              html: """
+                <div class='leaflet-marker-icon marker-cluster marker-cluster-#{clusterSize} leaflet-zoom-animated'
+                  style='margin-left: -20px; margin-top: -20px; width: 40px; height: 40px;'>
+                    <div>
+                      <span>#{model.count}</span>
+                    </div>
+                </div>"""
+
+
           visible: true
 
         getWindowOffset: getWindowOffset
 
       #public
-      Parcels: parcels
-      MLS: mls
-      isVisible: isVisible
+      Parcels: _parcels
+      MLS: _mls
+      isVisible: _isVisible
+      setDataOptions: (data, optionsFormatter) ->
+        _.each data, (model,k) =>
+          optionsFormatter(model)
+        data
 
 ]
