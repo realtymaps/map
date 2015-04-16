@@ -7,23 +7,36 @@
     overflow: visible
     .search-controls
         position: relative
+        top: -49px
+        z-index: 10000
         margin: 5px auto
         width: 600px
-        #searchbox-container .places-search-input
+        #searchbox-container
             width: 100%
-            font-size: 20px
+            .leaflet-control-search
+                .search-input
+                    width: 600px
+                    height: 32px
+                    font-size: 20px
+                .search-tooltip
+                    position: relative
+                    top: 0px
+                .search-cancel
+                    display: none
+                .search-button
+                    display: none
+
         a.close-button
             position: absolute
             display: block
             cursor: pointer
             top: 0
             right: 0
-            width: 34px
-            height: 34px
+            width: 35px
+            height: 35px
             img
                 position: absolute
-                top: 3px
-                right: 3px
+                top: 5px
+                right: 0px
                 width: 28px
                 height: 28px
-                opacity: .5
