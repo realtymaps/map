@@ -14,7 +14,7 @@ app.controller 'SatMapCtrl'.ourNs(), ['Logger'.ourNs(), '$timeout', '$rootScope'
     _mapId ='detailSatMap'
 
     @satMapFactory = new BaseMap($scope, limits.options, limits.redrawDebounceMilliSeconds, 'satMap', _mapId,_baseLayer)
-    _eventReg($timeout,$scope, @satMapFactory, limits, 'satMap')
+    _eventReg($timeout,$scope, @satMapFactory, limits, $log, 'satMap')
     _.merge $scope,
       satMap:
         layers:
