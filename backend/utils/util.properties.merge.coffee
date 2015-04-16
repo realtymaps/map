@@ -5,6 +5,7 @@ PropertyDetails = require "../models/model.propertyDetails"
 logger = require '../config/logger'
 
 _getMissingProperties = (state, properties) ->
+  return [] if !properties?.length
   matchingSavedProps = {}
   properties.forEach (row) ->
     maybeProp = state.properties_selected[row.rm_property_id]

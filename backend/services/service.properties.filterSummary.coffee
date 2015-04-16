@@ -50,6 +50,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       # logger.sql query.toString()
       query
       .then (json) ->
+        return  { json1: [], json2:[] } if !json?.features?
         #begin merge savedprops
         missing = getMissingProperties(state, json.features)
         missingWhereClause =
