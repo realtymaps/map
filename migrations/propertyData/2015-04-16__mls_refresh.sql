@@ -3,5 +3,3 @@ SET definition = 'parcel_status3(mls.status, mls.rm_property_id IS NOT NULL, mls
 WHERE name = 'rm_status' AND view_id = 'property_details_main';
 
 SELECT dirty_materialized_view('property_details', FALSE);
-SELECT stage_dirty_views();
-SELECT push_staged_views(FALSE);
