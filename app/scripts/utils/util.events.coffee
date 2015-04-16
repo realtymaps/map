@@ -16,9 +16,25 @@ _getArgs = (args, cb) ->
   return unless model
   cb(leafletEvent, leafletObject, model, modelName, layerName)
 
+_lastHoveredFactory = (lObject, model, layerName, type) ->
+  @destroy = =>
+    @lObject = null
+    @model = null
+    @layerName =null
+    @type = null
+
+  @lObject = lObject
+  @model = model
+  @layerName =layerName
+  @type = type
+  @
+
 
 module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
   #begin prep w dependencies
+
+
+  _lastHovered = null
 
   _lastEvents =
     mouseover:null
@@ -29,6 +45,9 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
     if type == "marker" and layerName != 'addresses'
       mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
       lObject.setIcon(new L.divIcon(model.icon))
+    if type == "geojson"
+      opts = mapCtrl.layerFormatter.Parcels.getStyle(model, layerName)
+      lObject.setStyle(opts)
 
     #seems to be a google bug where mouse out is not always called
   _handleMouseout = (model, maybeCaller) =>
@@ -77,55 +96,53 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
             event = feature
             feature = event.target.feature or {}
 
-          return if  _isParcelPoly(feature) and name != 'click' #NEED TO FIX ng-leaflet
+          # return if  _isParcelPoly(feature) and name != 'click' #NEED TO FIX ng-leaflet
           feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
+          lObject = event.layer
+          layerName = lObject._layerName or if lObject.options.fillColor == "transparent" then "parcelBase" else "filterSummaryPoly"
+          lObject._layerName = layerName
           if handler[name]?
-            handler[name](event.originalEvent, undefined, feature, undefined, undefined, 'geojson')
+            handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson')
 
   _eventHandler =
-    ###
-    interesting behavior for mouseover and mouseout:
 
-    Chrome: If mouse is moved within a marker mouseover constantly fires even if it is the same marker
-
-    ###
-    mouseover: _.debounce (event, lObject, model, modelName, layerName, type, maybeCaller) ->
+    mouseover: (event, lObject, model, modelName, layerName, type, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
         (model.markerType == 'streetnum' or model.markerType == 'cluster') or
         _lastEvents.mouseover == model
           return
       _lastEvents.mouseover = model
+      _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
 
-      $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
+      # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
-      mapCtrl.openWindow(model)
-      _lastHoveredModel = mapCtrl.lastHoveredModel
-      mapCtrl.lastHoveredModel = model
+      #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
+      mapCtrl.openWindow(model) if layerName != 'parcelBase' and !maybeCaller
+
       model.isMousedOver = true
       $timeout.cancel(mapCtrl.mouseoutDebounce)
       mapCtrl.mouseoutDebounce = null
-      if _lastHoveredModel?.rm_property_id != model.rm_property_id
-        _handleMouseout(_lastHoveredModel)
+      if _lastHovered?.model?.rm_property_id != model.rm_property_id
+        _lastHovered.model.isMousedOver = false
+        _handleMouseout(_lastHovered.model)
+        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName)
 
       _handleHover(model, lObject, type, layerName)
 
       if maybeCaller != 'results'
         $scope.formatters.results.mouseenter(null, model)
 
-    , limits.options.throttle.eventPeriods.mouseout - 100
-
-    mouseout: _.debounce (event, lObject, model, modelName, layerName, type, maybeCaller) ->
+    mouseout: (event, lObject, model, modelName, layerName, type, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
         (model.markerType == 'streetnum' or model.markerType == 'cluster')
           return
 
       _lastEvents.mouseover = null
 
-      $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
+      # $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
       _handleMouseout(model, maybeCaller)
       _handleHover(model, lObject, type, layerName)
-    , limits.options.throttle.eventPeriods.mouseout
 
     click: (event, lObject, model, modelName, layerName, type) ->
       $scope.$evalAsync ->
