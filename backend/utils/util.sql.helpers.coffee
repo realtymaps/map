@@ -121,7 +121,7 @@ module.exports =
     model.query()._single.table
 
   ageOrDaysFromStartToNow: (query, listingAge, beginDate, operator, val) ->
-    query.whereRawSafe query,
+    _whereRawSafe query,
       sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
       bindings: [ val ]
 
