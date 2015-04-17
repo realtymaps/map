@@ -59,7 +59,7 @@ base =
     API_VERSION: '2014-12-18'
   MAP: common.map
   NEW_RELIC:
-    LOGLEVEL: 'warn'
+    LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
@@ -92,7 +92,7 @@ environmentConfig =
     USE_ERROR_HANDLER: true
     NEW_RELIC:
       RUN: false # can be flipped to true if needed for troubleshooting or testing
-      LOGLEVEL: 'debug'
+      LOGLEVEL: 'info'
       APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null
 
   test: # test inherits from development below
@@ -117,7 +117,7 @@ environmentConfig =
         secure: false
     NEW_RELIC:
       RUN: true
-      LOGLEVEL: 'debug'
+      LOGLEVEL: 'info'
       APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
