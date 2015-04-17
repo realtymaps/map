@@ -30,7 +30,7 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @
 
 
-module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
+module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', thisOriginator = 'map') ->
   #begin prep w dependencies
 
 
@@ -53,7 +53,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
   _handleMouseout = (model, maybeCaller) =>
     if !model
       return
-    model.isMousedOver = undefined
+    model.isMousedOver = false
 
     return if maybeCaller == 'results' #avoid recursion
 
@@ -83,7 +83,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           if handler[name]?
             return if layerName == 'addresses'#IF the ignore list grows.. make an array
-            handler[name](leafletEvent, leafletObject, model, modelName, layerName, 'marker')
+            handler[name](leafletEvent, leafletObject, model, modelName, layerName, 'marker', thisOriginator)
 
   _hookGeojson = (handler) ->
     _geojsonEvents.forEach (name) ->
@@ -102,16 +102,18 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
           layerName = lObject._layerName or if lObject.options.fillColor == "transparent" then "parcelBase" else "filterSummaryPoly"
           lObject._layerName = layerName
           if handler[name]?
-            handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson')
+            handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
 
   _eventHandler =
 
-    mouseover: (event, lObject, model, modelName, layerName, type, maybeCaller) ->
+    mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
         (model.markerType == 'streetnum' or model.markerType == 'cluster') or
-        _lastEvents.mouseover == model
+        _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
+        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
           return
       _lastEvents.mouseover = model
+      _lastEvents.mouseout = null
       _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
 
       # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
@@ -120,11 +122,10 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
       mapCtrl.openWindow(model) if layerName != 'parcelBase' and !maybeCaller
 
       model.isMousedOver = true
-      $timeout.cancel(mapCtrl.mouseoutDebounce)
-      mapCtrl.mouseoutDebounce = null
+
       if _lastHovered?.model?.rm_property_id != model.rm_property_id
         _lastHovered.model.isMousedOver = false
-        _handleMouseout(_lastHovered.model)
+        _handleMouseout(_lastHovered.model, maybeCaller)
         _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName)
 
       _handleHover(model, lObject, type, layerName)
@@ -132,13 +133,15 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map') ->
       if maybeCaller != 'results'
         $scope.formatters.results.mouseenter(null, model)
 
-    mouseout: (event, lObject, model, modelName, layerName, type, maybeCaller) ->
+    mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
-        (model.markerType == 'streetnum' or model.markerType == 'cluster')
+        (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
+        # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
+        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
           return
 
+      _lastEvents.mouseout = model
       _lastEvents.mouseover = null
-
       # $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
       _handleMouseout(model, maybeCaller)
