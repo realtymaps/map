@@ -5,11 +5,10 @@ common =  require '../../common/config/commonConfig'
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
 base =
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
-  PROD_PORT: 80
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
-  PORT: process.env.PORT || 4000
+  PORT: '/tmp/nginx.socket'  # unix domain socket, unless overriden below for dev
   LOGGING:
     PATH: "mean.coffee.log"
     LEVEL: 'info'
@@ -74,6 +73,7 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
+    PORT: process.env.PORT || 4000
     USER_DB:
       debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:

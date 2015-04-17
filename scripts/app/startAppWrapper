@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$IS_HEROKU" != "" ]]
+then
+  # this ensures we never wait more than 60 seconds before letting nginx bind the port;
+  # we give 15s slack for heroku startup overhead, nginx startup, etc
+
+  rm -f /tmp/app-initialized
+  rm -f /tmp/nginx.socket
+  
+  #(
+  #  sleep 45
+  #  touch /tmp/app-initialized
+  #) &
+
+  bin/start-nginx $SCRIPT_DIR/app/startApp
+else
+  # not on heroku, so don't mess with nginx
+  $SCRIPT_DIR/app/startApp
+fi
