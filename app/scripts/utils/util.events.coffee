@@ -40,12 +40,14 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
     mouseover:null
     last: null
 
-  _handleHover = (model, lObject, type, layerName) ->
+  _handleHover = (model, lObject, type, layerName, eventName) ->
     return if !layerName or !type
     if type == "marker" and layerName != 'addresses'
       mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
       lObject.setIcon(new L.divIcon(model.icon))
     if type == "geojson"
+      if eventName == "mouseout"
+        s = 's'
       opts = mapCtrl.layerFormatter.Parcels.getStyle(model, layerName)
       lObject.setStyle(opts)
 
@@ -105,7 +107,12 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
             handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
 
   _eventHandler =
-
+    ###TODO:
+    It would  be nice to make an open source event handling utility that automatically tracks
+    what functions it has seen via some queueing mechanism. Thus it would simplify the below GTFO
+    recursion logic. This is the case when pointing events to other eventhandlrs which are two-way.
+    Thus in a two way event everything should be visited once.
+    ###
     mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
         (model.markerType == 'streetnum' or model.markerType == 'cluster') or
@@ -114,7 +121,6 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
           return
       _lastEvents.mouseover = model
       _lastEvents.mouseout = null
-      _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
 
       # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
@@ -123,12 +129,15 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
       model.isMousedOver = true
 
-      if _lastHovered?.model?.rm_property_id != model.rm_property_id
+      #_lastHovered catches the edge case where a mouseout event was somehow missed (html or leaflet bug?)
+      if _lastHovered? and _lastHovered?.model?.rm_property_id != model.rm_property_id
         _lastHovered.model.isMousedOver = false
         _handleMouseout(_lastHovered.model, maybeCaller)
-        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName)
+        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName, "mouseover-out")
 
-      _handleHover(model, lObject, type, layerName)
+      _handleHover(model, lObject, type, layerName, "mouseover")
+
+      _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
 
       if maybeCaller != 'results'
         $scope.formatters.results.mouseenter(null, model)
@@ -145,7 +154,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       # $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
       _handleMouseout(model, maybeCaller)
-      _handleHover(model, lObject, type, layerName)
+      _handleHover(model, lObject, type, layerName, "mouseout")
 
     click: (event, lObject, model, modelName, layerName, type) ->
       $scope.$evalAsync ->
