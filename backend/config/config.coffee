@@ -59,7 +59,7 @@ base =
     API_VERSION: '2014-12-18'
   MAP: common.map
   NEW_RELIC:
-    LOGLEVEL: 'info'
+    LOGLEVEL: 'warn'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
