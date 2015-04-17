@@ -18,6 +18,7 @@ then
   #  touch /tmp/app-initialized
   #) &
 
+  mkdir -p config
   bin/start-nginx $SCRIPT_DIR/app/startApp
 else
   # not on heroku, so don't mess with nginx
