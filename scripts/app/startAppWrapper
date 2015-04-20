@@ -13,7 +13,7 @@ then
   rm -f /tmp/nginx.socket
   
   (
-    # this value is used in a calculation in nginx.conf.erb, so if it is changed here, that file should be changed too
+    # this value is used in a calculation in nginx.conf.coffee, so if it is changed here, that file should be changed too
     sleep 50
     echo "forcing 50s init..."
     touch /tmp/app-initialized
