@@ -7,31 +7,7 @@ app.service 'popupLoader'.ourNs(),['$templateCache', '$http', '$compile', ($temp
     _map = map
     return if model?.markerType == 'cluster'
 
-
-
-
-    # self = @
-    # _getWindowOffset = (map, model, width = 290) =>
-    #   console.log "#### getWindowOffset #{map}, #{model}, #{width}"
-    #   return unless map or model
-    #   center = map.latLngToContainerPoint(map.getCenter())
-    #   point = map.latLngToContainerPoint(new L.LatLng(model.lat, model.lng));
-    #   quadrant = ''
-    #   quadrant += (if (point.y > center.y) then "b" else "t")
-    #   quadrant += (if (point.x < center.x) then "l" else "r")
-    #   if quadrant is "tr"
-    #     offset = new L.Point(-1 * width, 20)
-    #   else if quadrant is "tl"
-    #     offset = new L.Point(30, 20)
-    #   else if quadrant is "br"
-    #     offset = new L.Point(-1 * width, -340)
-    #   else offset = new L.Point(30, -340)  if quadrant is "bl"
-    #   offset
-
-
-
-
-    #redundant but forces out window to not have a close buttons since we always hide on mouseoff
+    # redundant but forces out window to not have a close buttons since we always hide on mouseoff
     $http.get(templateUrl, { cache: $templateCache })
     .then (content) ->
       angular.extend opts,
