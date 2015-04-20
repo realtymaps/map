@@ -20,6 +20,8 @@ app.factory 'LayerFormatters'.ourNs(), [
 
       _getPixelFromLatLng = (latLng, map) ->
         point = map.getProjection().fromLatLngToPoint(latLng)
+        console.log "#### _getPixelFromLatLng, latLng:"
+        console.log latLng
         point
 
       _isVisible = (model, requireFilterModel=false) ->
@@ -33,7 +35,8 @@ app.factory 'LayerFormatters'.ourNs(), [
 
       # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
       getWindowOffset = (map, model, width = 290) ->
-        return if not model or not map
+        console.log "#### getWindowOffset #{map}, #{model}, #{width}"
+        return unless map or model
         center = _getPixelFromLatLng(map.getCenter(), map)
         point = _getPixelFromLatLng(uiGmapUtil.getCoords(model.geom_point_json), map)
         quadrant = ''
@@ -46,6 +49,7 @@ app.factory 'LayerFormatters'.ourNs(), [
         else if quadrant is "br"
           offset = new google.maps.Size(-1 * width, -340)
         else offset = new google.maps.Size(30, -340)  if quadrant is "bl"
+
         offset
 
       _parcels = do ->
