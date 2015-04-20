@@ -47,10 +47,10 @@ http {
 
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error;
     # this config therefore gives uses (MAX_STARTUP_TIME-45)/10, because we wait 45s before even starting nginx, and
-    # then we delay 10 times before hitting the total amount in the environment variable
+    # then we delay 10 times before hitting the total amount in the environment variable; the +9 forces int round up
 		location @delayed_retry {
 		  error_page 502 = @delayed_retry;
-		  delay <%= (ENV["MAX_STARTUP_TIME"].to_f-45)/10 %>s;
+		  delay <%= (ENV["MAX_STARTUP_TIME"].to_i-45+9)/10 %>s;
 			proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 			proxy_set_header Host $http_host;
 			proxy_redirect off;
