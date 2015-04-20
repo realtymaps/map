@@ -14,8 +14,8 @@ then
   
   (
     # this value is used in a calculation in nginx.conf.erb, so if it is changed here, that file should be changed too
-    sleep 10
-    echo "forcing early app init message..."
+    sleep 50
+    echo "forcing 50s init..."
     touch /tmp/app-initialized
   ) &
 
