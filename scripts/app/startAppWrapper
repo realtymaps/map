@@ -12,11 +12,11 @@ then
   rm -f /tmp/app-initialized
   rm -f /tmp/nginx.socket
   
-  #(
-  #  sleep 45
-  #  echo "forcing early app init message..."
-  #  touch /tmp/app-initialized
-  #) &
+  (
+    sleep 10
+    echo "forcing early app init message..."
+    touch /tmp/app-initialized
+  ) &
 
   mkdir -p config
   bin/start-nginx $SCRIPT_DIR/app/startApp
