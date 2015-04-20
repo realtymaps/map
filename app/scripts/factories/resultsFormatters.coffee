@@ -38,19 +38,25 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return undefined
       resultsHash[model.rm_property_id]
 
-    _handleMouseEventToMap = (mapCtrl, eventName, result, model, resultsHash) ->
+    _handleMouseEventToMap = (mapCtrl, eventName, result, model, resultsHash, originator) ->
       event = window.event
       result = _resultOrModel(result, model, resultsHash)
       return unless result
+
+      if model != result and model.hasOwnProperty('isMousedOver')
+        result.isMousedOver = model.isMousedOver  #THIS IS important as the model is not always the same as the result (reference wise) rmaps ngReplacements
+
       #need event, lObject, model, modelName, layerName, type
       modelName = result.rm_property_id
 
       layerName = if ZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
 
+      originator = if originator? then originator else 'results'
+
       rmapsLeafletObjectFetcher.get('mainMap', modelName)
       .then (payload) ->
         {lObject, type} = payload
-        mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, 'results')
+        mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, originator, 'results')
 
     class ResultsFormatter
 
@@ -295,13 +301,13 @@ app.factory 'ResultsFormatter'.ourNs(), [
           maybeFetchCb(false)
           @mapCtrl.scope.selectedResult = undefined
 
-      mouseenter: (result, model) =>
-        _handleMouseEventToMap(@mapCtrl, 'mouseover', result, model, @mapCtrl.scope.results)
+      mouseenter: (result, model, originator) =>
+        _handleMouseEventToMap(@mapCtrl, 'mouseover', result, model, @mapCtrl.scope.results, originator)
 
-      mouseleave: (result, model) =>
-        return if @lastResultMouseLeave == (result or model)
-        @lastResultMouseLeave = result or model
-        _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results)
+      mouseleave: (result, model, originator) =>
+        # return if @lastResultMouseLeave == (result or model)
+        # @lastResultMouseLeave = result or model
+        _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results, originator)
 
       clickSaveResultFromList: (result, eventOpts) =>
         event = eventOpts.$event
