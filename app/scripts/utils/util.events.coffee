@@ -16,19 +16,51 @@ _getArgs = (args, cb) ->
   return unless model
   cb(leafletEvent, leafletObject, model, modelName, layerName)
 
+_lastHoveredFactory = (lObject, model, layerName, type) ->
+  @destroy = =>
+    @lObject = null
+    @model = null
+    @layerName =null
+    @type = null
 
-module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
+  @lObject = lObject
+  @model = model
+  @layerName =layerName
+  @type = type
+  @
+
+
+module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', thisOriginator = 'map') ->
   #begin prep w dependencies
 
+
+  _lastHovered = null
+
+  _lastEvents =
+    mouseover:null
+    last: null
+
+  _handleHover = (model, lObject, type, layerName, eventName) ->
+    return if !layerName or !type
+    if type == "marker" and layerName != 'addresses'
+      mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
+      lObject.setIcon(new L.divIcon(model.icon))
+    if type == "geojson"
+      if eventName == "mouseout"
+        s = 's'
+      opts = mapCtrl.layerFormatter.Parcels.getStyle(model, layerName)
+      lObject.setStyle(opts)
+
     #seems to be a google bug where mouse out is not always called
-  _handleMouseout = (model) =>
+  _handleMouseout = (model, maybeCaller) =>
     if !model
       return
-    model.isMousedOver = undefined
-    $timeout.cancel(mapCtrl.mouseoutDebounce)
-    mapCtrl.mouseoutDebounce = null
-    $scope.formatters.results.mouseleave(null, model)
+    model.isMousedOver = false
 
+    return if maybeCaller == 'results' #avoid recursion
+
+    mapCtrl.closeWindow()
+    $scope.formatters.results.mouseleave(null, model)
 
   _handleManualMarkerCluster = (model) ->
     if model.markerType == "cluster"
@@ -41,13 +73,19 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
       return true
     false
 
+  _isParcelPoly = (feature) ->
+    #crappy hack until leaflet fix
+    len = Object.keys(feature).length
+    len == 7
+
   _hookMarkers = (handler) ->
     _markerEvents.forEach (name) ->
       eventName = 'leafletDirectiveMarker.' + name
       $scope.$onRootScope eventName, (event, args) ->
         _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
           if handler[name]?
-            handler[name](leafletEvent, leafletObject, model, modelName, layerName, 'marker')
+            return if layerName == 'addresses'#IF the ignore list grows.. make an array
+            handler[name](leafletEvent, leafletObject, model, modelName, layerName, 'marker', thisOriginator)
 
   _hookGeojson = (handler) ->
     _geojsonEvents.forEach (name) ->
@@ -56,38 +94,67 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
           name = caseing.lower name
           return unless feature
           #ng-leaflet inconsistency
-          return if Object.keys(feature).length == 7 and name != 'mouseout' #NEED TO FIX ng-leaflet
           if arguments.length < 3
             event = feature
-            feature = event.feature
+            feature = event.target.feature or {}
 
+          # return if  _isParcelPoly(feature) and name != 'click' #NEED TO FIX ng-leaflet
+          feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
+          lObject = event.layer
+          layerName = lObject._layerName or if lObject.options.fillColor == "transparent" then "parcelBase" else "filterSummaryPoly"
+          lObject._layerName = layerName
           if handler[name]?
-            handler[name](event.originalEvent, undefined, feature, undefined, undefined, 'geojson')
+            handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
 
   _eventHandler =
-    mouseover: (event, lObject, model, modelName, layerName, type) ->
-      if _isMarker(type) and model?.markerType? and (model.markerType == 'streetnum' or model.markerType == 'cluster') or layerName == 'addresses'
-        return
+    ###TODO:
+    It would  be nice to make an open source event handling utility that automatically tracks
+    what functions it has seen via some queueing mechanism. Thus it would simplify the below GTFO
+    recursion logic. This is the case when pointing events to other eventhandlrs which are two-way.
+    Thus in a two way event everything should be visited once.
+    ###
+    mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+      if _isMarker(type) and model?.markerType? and
+        (model.markerType == 'streetnum' or model.markerType == 'cluster') or
+        _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
+        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+          return
+      _lastEvents.mouseover = model
+      _lastEvents.mouseout = null
 
-      mapCtrl.openWindow(model)
-      _lastHoveredModel = mapCtrl.lastHoveredModel
-      mapCtrl.lastHoveredModel = model
+      # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
+
+      #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
+      mapCtrl.openWindow(model) if layerName != 'parcelBase' and !maybeCaller
+
       model.isMousedOver = true
-      $timeout.cancel(mapCtrl.mouseoutDebounce)
-      mapCtrl.mouseoutDebounce = null
-      if _lastHoveredModel?.rm_property_id != model.rm_property_id
-        _handleMouseout(_lastHoveredModel)
 
-      $scope.formatters.results.mouseenter(null, model)
+      #_lastHovered catches the edge case where a mouseout event was somehow missed (html or leaflet bug?)
+      if _lastHovered? and _lastHovered?.model?.rm_property_id != model.rm_property_id
+        _lastHovered.model.isMousedOver = false
+        _handleMouseout(_lastHovered.model, maybeCaller)
+        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName, "mouseover-out")
 
-    mouseout: (event, lObject, model, modelName, layerName, type) ->
-      if _isMarker(type) and model?.markerType? and (model.markerType == 'streetnum' or model.markerType == 'cluster')
-        return
-      $timeout.cancel(mapCtrl.mouseoutDebounce)
-      mapCtrl.mouseoutDebounce = $timeout ->
-        mapCtrl.closeWindow()
-        _handleMouseout(model)
-      , limits.options.throttle.eventPeriods.mouseout
+      _handleHover(model, lObject, type, layerName, "mouseover")
+
+      _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
+
+      if maybeCaller != 'results'
+        $scope.formatters.results.mouseenter(null, model)
+
+    mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+      if _isMarker(type) and model?.markerType? and
+        (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
+        # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
+        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+          return
+
+      _lastEvents.mouseout = model
+      _lastEvents.mouseover = null
+      # $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
+
+      _handleMouseout(model, maybeCaller)
+      _handleHover(model, lObject, type, layerName, "mouseout")
 
     click: (event, lObject, model, modelName, layerName, type) ->
       $scope.$evalAsync ->
@@ -98,19 +165,19 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
           return if _handleManualMarkerCluster(model)
           if event.ctrlKey or event.metaKey
             return mapCtrl.saveProperty(model, lObject)
-          unless mapCtrl.lastEvent == 'dblclick'
+          unless _lastEvents.last == 'dblclick'
             $scope.formatters.results.showModel(model)
         , limits.clickDelayMilliSeconds
 
     dblclick: (event, lObject, model, modelName, layerName, type) ->
-      mapCtrl.lastEvent = 'dblclick'
+      lastEvents.last = 'dblclick'
       {originalEvent} = event
       if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
 
       mapCtrl.saveProperty model, lObject
       $timeout =>
         #cleanup
-        mapCtrl.lastEvent = undefined
+        lastEvents.last = undefined
       , limits.clickDelayMilliSeconds + 100
   #end prep w dependencies
 
@@ -126,3 +193,4 @@ module.exports = ($timeout, $scope, mapCtrl, limits, mapPath = 'map') ->
   _.merge $scope,obj
   _hookMarkers(_eventHandler)
   _hookGeojson(_eventHandler)
+  return _eventHandler

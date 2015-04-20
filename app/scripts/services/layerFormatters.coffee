@@ -53,6 +53,12 @@ app.factory 'LayerFormatters'.ourNs(), [
         _strokeColor = "#1269D8"
         _strokeWeight = 1.5
 
+        _parcelBaseStyle =
+          weight: _strokeWeight
+          opacity: 1
+          color: _strokeColor
+          fillColor: 'transparent'
+
         normalColors = {}
         normalColors[ParcelEnums.status.sold] = '#FF4A4A'
         normalColors[ParcelEnums.status.pending] = '#8C3DAA'
@@ -81,13 +87,10 @@ app.factory 'LayerFormatters'.ourNs(), [
 
         labelFromStreetNum: labelFromStreetNum
 
-        style:
-          weight: _strokeWeight
-          opacity: 1
-          color: _strokeColor
-          fillColor: 'transparent'
+        style: _parcelBaseStyle
 
-        getStyle : (feature) ->
+
+        getStyle : (feature, layerName) ->
           return {} unless feature
           if feature.savedDetails?.isSaved
             status = 'saved'
@@ -99,9 +102,9 @@ app.factory 'LayerFormatters'.ourNs(), [
           colors = if feature?.isMousedOver then hoverColors else normalColors
           color = colors[status]
 
-          weight: 2
+          weight: if layerName == 'parcelBase' then _parcelBaseStyle.weight else 2
           opacity: 1
-          color: color
+          color: if layerName == 'parcelBase' then _parcelBaseStyle.color else color
           fillColor: color
 
       _mls = do ->
