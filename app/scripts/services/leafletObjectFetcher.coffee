@@ -2,37 +2,44 @@ app = require '../app.coffee'
 
 app.factory 'rmapsLeafletObjectFetcher', [
   'rmapsLogger', '$q', 'leafletData', ($log, $q, leafletData) ->
-    ###params:
-      elementId: div id
-      lModelId: usually rm_propertyid (However)
-      Markers layerName.rm_propertyid
-      GeoJSON .. finding out
-    ###
-    get: (elementId, lModelId) ->
+    #elementId: div id
+    (elementId) ->
+      # ng-leaflets promise logic is kinda overkill,
+      # the references are the same for the lifetime
       _lMarkers = null
       _lGeojsons = null
-      d = $q.defer()
 
-      promises = [
-        leafletData.getMarkers(elementId)
-        .then (lObjs) ->
-          _lMarkers = lObjs
-        ,
-        leafletData.getGeoJSON(elementId)
-        .then (lObjs) ->
-          _lGeojsons = lObjs
-      ]
-      $q.all(promises).then ->
-        marker = _lMarkers[lModelId]
-        geo = _lGeojsons[lModelId]
+      leafletData.getMarkers(elementId)
+      .then (lObjs) ->
+        _lMarkers = lObjs
+
+      leafletData.getGeoJSON(elementId)
+      .then (lObjs) ->
+        _lGeojsons = lObjs
+
+      _getMarker = (rm_property_id, layerName = '') ->
+        _lMarkers[layerName + rm_property_id]
+
+      _getPoly = (rm_property_id, layerName) ->
+        return if !layerName
+        _.find _lGeojsons[layerName]._layers, (layer) ->
+          layer.feature.rm_property_id == rm_property_id
+      ###params:
+        rm_property_id
+        Markers layerName.rm_property_id
+        GeoJSON .. finding out
+      ###
+      _get = (rm_property_id, layerName) ->
+        marker = _getMarker(rm_property_id, layerName)
+        geo = _getPoly(rm_property_id, layerName)
 
         #we could add a pram to do preference, but for now marker takes pref
         lObject = marker or geo
         type = if lObject == marker then 'marker' else 'geojson'
-        payload =
-          lObject: lObject
-          type: type
-        d.resolve(payload)
 
-      d.promise
+        lObject: lObject
+        type: type
+
+      @get = _get
+      @
 ]
