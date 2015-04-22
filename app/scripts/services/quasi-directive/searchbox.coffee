@@ -22,9 +22,8 @@ app.service 'searchbox'.ourNs(),['leafletData', (leafletData) ->
             url = "http://nominatim.openstreetmap.org/search?format=json&q={s}&viewbox=#{left},#{top},#{right},#{bottom}&bounded=1"
 
         # marker reference
-        searchMarker = new L.Icon({
+        searchMarker = new L.Icon
           iconUrl: 'assets/map_marker_out_red_64.png'
-        })
 
         # setup for search bar; available search options: https://github.com/stefanocudini/leaflet-search/blob/master/src/leaflet-search.js
         searchParams =
