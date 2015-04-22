@@ -3,14 +3,14 @@ DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
+    if !value? or value == ''
+      return null
     type = typeof(value)
-    if type == 'undefined'
-      return undefined
-    if value == '' || (type != 'string' and type != 'number')
-      return Promise.reject new DataValidationError("integer value required", param, value)
+    if type != 'string' and type != 'number'
+      return Promise.reject new DataValidationError("invalid data type given for integer field", param, value)
     numvalue = +value
     if isNaN(numvalue) || numvalue != Math.floor(numvalue)
-      return Promise.reject new DataValidationError("integer value required", param, value)
+      return Promise.reject new DataValidationError("invalid data type given for integer field", param, value)
     if options.min? and numvalue < options.min
       return Promise.reject new DataValidationError("value less than minimum: #{options.min}", param, value)
     if options.max? and numvalue > options.max

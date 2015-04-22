@@ -18,6 +18,20 @@ describe 'utils/http.request.validators.choice()'.ourNs().ourNs('Backend'), ->
       expectReject(validators.choice(choices: ['abc', 5, '10', true])(param, 10), DataValidationError)
     ]
 
+  promiseIt 'should nullify empty values unless given in choices', () ->
+    [
+      expectResolve(validators.choice(choices: ['abc', 5, '10', true])(param, '')).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.choice(choices: ['abc', 5, '10', true, ''])(param, '')).then (value) ->
+        value.should.equal('')
+      expectResolve(validators.choice(choices: ['abc', 5, '10', true])(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.choice(choices: ['abc', 5, '10', true])(param, undefined)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.choice(choices: ['abc', 5, '10', true, undefined])(param, undefined)).then (value) ->
+        (value == undefined).should.be.true
+    ]
+
   promiseIt 'should resolve or reject based on equalsTester when provided, and transform to the matching choice', () ->
     a = {key:10,value:"a"}
     b = {key:25,value:"b"}

@@ -15,8 +15,18 @@ describe 'utils/http.request.validators.string()'.ourNs().ourNs('Backend'), ->
     [
       expectResolve(validators.string()(param, '5')).then (value) ->
         value.should.equal('5')
+      expectResolve(validators.string()(param, 'asdf')).then (value) ->
+        value.should.equal('asdf')
+    ]
+
+  promiseIt 'should nullify empty values except ""', () ->
+    [
       expectResolve(validators.string()(param, '')).then (value) ->
         value.should.equal('')
+      expectResolve(validators.string()(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.string()(param, undefined)).then (value) ->
+        (value == null).should.be.true
     ]
 
   promiseIt 'should reject non-strings', () ->

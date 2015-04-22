@@ -5,8 +5,8 @@ logger = require '../../config/logger'
 
 module.exports = (param, boundsStr) ->
   Promise.try () ->
-    if boundsStr == undefined
-      return undefined
+    if !boundsStr? or boundsStr == ''
+      return null
     hash = geohash64.decode(boundsStr)
 #    logger.debug 'hash'
 #    logger.debug hash, true

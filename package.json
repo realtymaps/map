@@ -13,7 +13,7 @@
     "npm": "2.1.x"
   },
   "scripts": {
-    "start": "./scripts/app/startApp",
+    "start": "./scripts/app/startAppWrapper",
     "gulp": "gulp",
     "gulp-build": "gulp build",
     "test-frontend": "gulp frontendSpec",
@@ -126,6 +126,7 @@
     "raw-loader": "^0.5.1",
     "readable-stream": "^1.0.32",
     "require-dir": "^0.1.0",
+    "sass-loader": "^0.6.0",
     "serve-favicon": "2.1.x",
     "serve-static": "1.6.x",
     "should": "^4.0.4",
@@ -139,6 +140,7 @@
     "stylus-loader": "^0.5.0",
     "supertest": "0.13.x",
     "through2": "^0.6.2",
+    "touch": "0.0.3",
     "url-loader": "^0.5.5",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",

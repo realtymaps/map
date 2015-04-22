@@ -3,10 +3,10 @@ DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
-    if value == undefined
-      return undefined 
+    if !value?
+      return null 
     if !_.isString(value)
-      return Promise.reject new DataValidationError("string value required", param, value)
+      return Promise.reject new DataValidationError("invalid data type given for string field", param, value)
     if options.minLength? and value.length < options.minLength
       return Promise.reject new DataValidationError("string shorter than minimum length: #{options.minLength}", param, value)
     if options.maxLength? and value.length > options.maxLength

@@ -35,9 +35,18 @@ describe 'utils/http.request.validators.float()'.ourNs().ourNs('Backend'), ->
         value.should.equal(178.9)
     ]
 
+  promiseIt 'should nullify empty values', () ->
+    [
+      expectResolve(validators.float()(param, '')).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.float()(param, null)).then (value) ->
+        (value == null).should.be.true
+      expectResolve(validators.float()(param, undefined)).then (value) ->
+        (value == null).should.be.true
+    ]
+    
   promiseIt 'should reject strings that do not represent numbers', () ->
     [
-      expectReject(validators.float()(param, ''), DataValidationError)
       expectReject(validators.float()(param, '12.3abc'), DataValidationError)
     ]
 
