@@ -31,23 +31,6 @@ app.factory 'LayerFormatters'.ourNs(), [
         filterModel = _filterSummary()[model.rm_property_id] or model
         return filterModel.passedFilters || filterModel.savedDetails?.isSaved
 
-      # TODO - Dan - this will need some more attention to make it a bit more intelligent.  This was my quick attempt for info box offests.
-      getWindowOffset = (map, model, width = 290) ->
-        return if not model or not map
-        center = _getPixelFromLatLng(map.getCenter(), map)
-        point = _getPixelFromLatLng(uiGmapUtil.getCoords(model.geom_point_json), map)
-        quadrant = ''
-        quadrant += (if (point.y > center.y) then "b" else "t")
-        quadrant += (if (point.x < center.x) then "l" else "r")
-        if quadrant is "tr"
-          offset = new google.maps.Size(-1 * width, 20)
-        else if quadrant is "tl"
-          offset = new google.maps.Size(30, 20)
-        else if quadrant is "br"
-          offset = new google.maps.Size(-1 * width, -340)
-        else offset = new google.maps.Size(30, -340)  if quadrant is "bl"
-        offset
-
       _parcels = do ->
 
         _strokeColor = "#1269D8"
@@ -106,6 +89,7 @@ app.factory 'LayerFormatters'.ourNs(), [
           opacity: 1
           color: if layerName == 'parcelBase' then _parcelBaseStyle.color else color
           fillColor: color
+          fillOpacity: .75
 
       _mls = do ->
         markersBSLabel = {}
@@ -165,8 +149,6 @@ app.factory 'LayerFormatters'.ourNs(), [
 
 
           visible: true
-
-        getWindowOffset: getWindowOffset
 
       #public
       Parcels: _parcels

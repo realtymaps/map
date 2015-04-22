@@ -28,9 +28,8 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
         unless position
-          position =
-            coords: $scope.previousCenter
-        $scope.center = position.coords
+          position = $scope.previousCenter
+        $scope.map.center = position
         $scope.$evalAsync()
 
       toggles.setLocationCb(_handleMoveToMyLocation)
@@ -54,7 +53,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         leafletData.getMap('mainMap').then (map) =>
 
           _firstCenter = true
-          @scope.$watchCollection 'center', (newVal, oldVal) =>
+          @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal
               if _firstCenter
                 _firstCenter = false
@@ -79,16 +78,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         @scope.savedProperties = Properties.getSavedProperties()
         @layerFormatter = LayerFormatters(@)
 
-        _updateGObjects = (gObject, savedDetails, model) =>
-          #purpose to to take some sort of gObject and update its view immediately
-          model.savedDetails = savedDetails
-          if GoogleService.Map.isGMarker(gObject)
-            @layerFormatter.MLS.setMarkerPriceOptions model
-          else
-            opts =  @layerFormatter.Parcels.optionsFromFill(model)
-            @redraw()
-          $scope.formatters.results?.reset()
-
         @updateAllLayersByModel = _updateAllLayersByModel = (model) =>
           uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
             if GoogleService.Map.isGMarker(gObject)
@@ -97,9 +86,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               opts = @layerFormatter.Parcels.optionsFromFill(model)
             @redraw()
           , ['streetNumMarkers']
-
-        _isModelInFilterSummary = (model) ->
-          model.index?
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
@@ -211,9 +197,9 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
           )
 
-          if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+          if ZoomLevel.isParcel(@scopeM().center.zoom) or ZoomLevel.isAddressParcel(@scopeM().center.zoom)
             @scope.map.layers.overlays.filterSummary.visible = false
-            @scope.map.layers.overlays.addresses.visible = true
+            @scope.map.layers.overlays.addresses.visible = if ZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
               Properties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
               .then (data) =>
@@ -347,18 +333,5 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       closeWindow: ->
         PopupLoader.close()
 
-      ###
-              closeListing: ->
-
-              if $scope.map.listingDetail
-                $scope.map.listingDetail.show = false
-              model.show = true
-              $scope.map.listingDetail = model
-              offset = @layerFormatter.MLS.getWindowOffset(@gMap, $scope.map.listingDetail)
-              return unless offset
-              _.extend $scope.listingOptions,
-                pixelOffset: offset
-                disableAutoPan: true
-      ###
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
 ]
