@@ -1,15 +1,17 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
+_defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
 app.service 'popupLoader'.ourNs(),[
-  '$templateCache', '$http', '$compile', 'popupVariables'.ourNs(), 
+  '$templateCache', '$http', '$compile', 'popupVariables'.ourNs(),
   ($templateCache, $http, $compile, popupVariables) ->
     _map = null
 
 
     _getOffset = (map, model, offsets = popupVariables.offsets) ->
       # get center and point container coords
+      return if !model?.coordinates?.length
       center = map.latLngToContainerPoint map.getCenter()
-      point = map.latLngToContainerPoint new L.LatLng model.lat, model.lng
+      point = map.latLngToContainerPoint new L.LatLng model.coordinates[1], model.coordinates[0]
 
       # ascertain near which container corner the marker is in
       quadrant = ''
@@ -24,7 +26,7 @@ app.service 'popupLoader'.ourNs(),[
         else new L.Point offsets.left, offsets.bottom
 
 
-    load: ($scope, map, model, opts = {closeButton: false, offset: new L.Point(0, -5)}, templateUrl = 'map-smallDetails.tpl.html') ->
+    load: _.debounce ($scope, map, model, opts = _defaultOptions, templateUrl = 'map-smallDetails.tpl.html') ->
       _map = map
 
       return if model?.markerType == 'cluster'
@@ -52,6 +54,7 @@ app.service 'popupLoader'.ourNs(),[
         .openOn map
         lObj.setContent compiled[0]
         lObj
+    , 500
 
 
     close:  ->
