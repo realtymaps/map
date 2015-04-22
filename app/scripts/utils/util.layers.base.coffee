@@ -1,8 +1,9 @@
 httpSync = require './util.httpSync.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
-#Do we secure this if so how? Eventually it will be public on client code
-_mapboxKey = httpSync.get('/api/mapbox_key')
+routes = require '../../../common/config/routes.backend.coffee'
+
+_mapboxKey = httpSync.get routes.config.mapboxKey
 
 _mapBoxFactory = (name, id) ->
   name: 'Mapbox ' + name
