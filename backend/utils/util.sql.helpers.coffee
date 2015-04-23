@@ -88,14 +88,17 @@ _whereInBounds = (query, column, bounds) ->
 _getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
-_geojson_query = (db, tableName, featuresColName, clause) ->
-  Promise.try () ->
+_geojson_query_non_exec = (db, tableName, featuresColName, clause) ->
     query =
       db.knex.raw """
         select geojson_query_exec('#{tableName}', '#{featuresColName}', '#{clause}')
         """
     # logger.sql query.toString()
     query
+
+_geojson_query = (db, tableName, featuresColName, clause) ->
+  Promise.try () ->
+    _geojson_query_non_exec(db, tableName, featuresColName, clause)
   .then (data) ->
     # logger.sql data, true
     return [] if not data.rows?.length
@@ -106,6 +109,13 @@ _geojson_query_bounds = (db, tableName, featuresColName, boundsColumnName, bound
   _whereClause = _whereClause.replace(/'/g, "''")
   # logger.debug _whereClause + '\n'
   _geojson_query(db, tableName, featuresColName, _whereClause)
+
+
+_geojson_query_bounds_non_exec = (db, tableName, featuresColName, boundsColumnName, bounds) ->
+  _whereClause = _getClauseString _whereInBounds(db.knex(''), boundsColumnName, bounds)
+  _whereClause = _whereClause.replace(/'/g, "''")
+  # logger.debug _whereClause + '\n'
+  _geojson_query_non_exec(db, tableName, featuresColName, _whereClause)
 
 module.exports =
 
@@ -173,3 +183,4 @@ module.exports =
   geojson_query:_geojson_query
 
   geojson_query_bounds:_geojson_query_bounds
+  geojson_query_bounds_non_exec: _geojson_query_bounds_non_exec

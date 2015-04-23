@@ -1,14 +1,15 @@
-db = require('../config/dbs').properties
+db = require('../config/dbs')
+{properties} = db
 Parcel = require "../models/model.parcels"
 Promise = require "bluebird"
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-{geojson_query_bounds, tableName} = require './../utils/util.sql.helpers.coffee'
-indexBy = require '../../common/utils/util.indexByWLength'
-upload = Promise.promisifyAll require('mapbox-upload')
+{geojson_query_bounds_non_exec, tableName} = require './../utils/util.sql.helpers.coffee'
+upload = require('mapbox-upload')
 {MAPBOX}= require '../config/config'
 JSONStream = require 'JSONStream'
+QueryStream = require 'pg-query-stream'
 
 transforms =
   bounds:
@@ -23,36 +24,42 @@ transforms =
 _tableName = tableName(Parcel)
 
 _uploadStream = (mapId, geojsonStream, length) ->
-  geojsonStream = geojsonStream.pipe(JSONStream.stringify)#might not be needed
-  Promise.try ->
+  # geojsonStream = geojsonStream.pipe(JSONStream.stringify)#might not be needed
+  # length: length
+  new Promise (resolve, reject) ->
     loader = upload
       stream: geojsonStream
-      length: length
       account: MAPBOX.ACCOUNT
       accesstoken: MAPBOX.API_KEY
       mapid: mapId
 
-    progress.on 'error', (err) ->
-      if (err) throw err
+    loader.on 'error', reject
 
-    loader.onceAsync('finished')
-    .then ->
-      geojsonStream
+    loader.once 'finished', ->
+      resolve geojsonStream
 
 _uploadParcelByBounds = (bounds) ->
-  strQuery = geojson_query_bounds(db, _tableName, 'geom_polys_json',
-    'geom_polys_raw', bounds).toString()
+  strQuery = geojson_query_bounds_non_exec(properties, _tableName, 'geom_polys_json', 'geom_polys_raw', bounds).toString()
+  logger.sql strQuery
 
   new Promise (resolve, reject) ->
-    pg.connect (err, client, done) ->
+    # logger.sql db.pg
+    db.pg.connect (err, client, done) ->
       reject(err) if err
-      query = new QueryStream(strQuery)
-      stream = client.query(query)
+      qs = new QueryStream strQuery
+      stream = client.query qs
+      logger.sql 'pre stream'
+      # logger.sql stream, true
       #release the client when the stream is finished
-      stream.on('end', done)
-
-      resolve Promise.all _.map MAPBOX.MAPS, (mapId) ->
-        _uploadStream(mapId, stream)
+      stream.on('error', reject)
+      stream.on 'end', ->
+        logger.sql 'stream is fucking done'
+        done()
+      logger.sql 'past end'
+      stream.pipe(process.stdout)
+      # resolve Promise.all _.map MAPBOX.MAPS, (mapId) ->
+      #   logger.sql mapId
+      #   _uploadStream(mapId, stream)
 
 module.exports =
 
