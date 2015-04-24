@@ -123,7 +123,6 @@
     "numeral": "^1.5.3",
     "pdfkit": "^0.7.0",
     "pg": "^3.4.4",
-    "pg-query-stream": "^0.7.0",
     "pretty-hrtime": "^0.2.1",
     "qs": "^2.3.3",
     "raw-loader": "^0.5.1",
