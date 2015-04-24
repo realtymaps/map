@@ -17,6 +17,8 @@ module.exports =
     logout:          "#{apiBase}/logout"
   version:
     version:         "#{apiBase}/version"
+  config:
+    mapboxKey:         "#{apiBase}/mapbox_key"
   properties:
     filterSummary:   "#{apiBase}/properties/filter_summary/"
     parcelBase:      "#{apiBase}/properties/parcel_base/"

@@ -143,32 +143,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             toBeZoom = self.map.getZoom() + increment
             self.map.setZoom(toBeZoom)
 
-          searchbox:
-            template: 'map-searchbox.tpl.html'
-            parent: 'searchbox-container'
-            options:
-              bounds: {}
-            events:
-              places_changed: (searchBox) =>
-                places = searchBox.getPlaces()
-                if !places.length
-                  return
-                place = places[0]
-                if (place.formatted_address)
-                  document.getElementById('places-search-input').value = place.formatted_address
-                if place.geometry?.viewport
-                  @scope.bounds =
-                    northeast:
-                      latitude: place.geometry.viewport.getNorthEast().lat()
-                      longitude: place.geometry.viewport.getNorthEast().lng()
-                    southwest:
-                      latitude: place.geometry.viewport.getSouthWest().lat()
-                      longitude: place.geometry.viewport.getSouthWest().lng()
-                else
-                  @scope.center =
-                    latitude: place.geometry.location.lat()
-                    longitude: place.geometry.location.lng()
-                  @scope.zoom = 19
             setBiasBounds: () =>
               sw = uiGmapUtil.getCoords(@scope.bounds?.southwest)
               sw ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude-0.01, longitude: @scope.center.longitude-0.01)
