@@ -44,6 +44,10 @@ routesConfig =
       ]
   version:
     version: {}
+  config:
+    mapboxKey:
+      method: 'get'
+      middleware: [auth.requireLogin(redirectOnFail: true)]
   snail:
     quote:
       method: 'post'
