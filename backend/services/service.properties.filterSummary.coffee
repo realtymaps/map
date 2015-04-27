@@ -53,6 +53,8 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       .then (json) ->
         return  { json1: [], json2:[] } if !json?.features?
         #begin merge savedprops
+        logger.debug "state:"
+        logger.debug JSON.stringify(state)
         missing = getMissingProperties(state, json.features)
         missingWhereClause =
           getClauseString(savedPropertiesQuery(2000, queryParams, missing))

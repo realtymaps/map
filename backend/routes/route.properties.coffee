@@ -13,6 +13,10 @@ handleRoute = (res, next, serviceCall) ->
   Promise.try () ->
     serviceCall()
   .then (data) ->
+    fs = require 'fs'
+    fs.writeFile '/tmp/rawfilterSummary.log', JSON.stringify(data), (err) ->
+      if err
+        return console.log err
     res.json(data)
   .catch validation.DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
@@ -24,6 +28,8 @@ handleRoute = (res, next, serviceCall) ->
 module.exports =
 
   filterSummary: (req, res, next) ->
+    logger.debug "filterSummary req.originalUrl:"
+    logger.debug req.originalUrl
     handleRoute res, next, () ->
       filterSummaryService.getFilterSummary(req.session.state, req.query)
 
