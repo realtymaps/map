@@ -32,7 +32,7 @@ module.exports =
   googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
 
   #example of custom map via an account
-  mapbox_street: _mapBoxFactory 'Street', 'nmccready.k54j1lpg'
+  mapbox_street: _mapBoxFactory 'Street', 'realtymaps.f33ce76e'
 
   mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
 
