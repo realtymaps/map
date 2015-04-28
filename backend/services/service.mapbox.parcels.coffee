@@ -25,15 +25,22 @@ _uploadStream = (mapId, geojsonStream, length) ->
   # geojsonStream = geojsonStream.pipe(JSONStream.stringify)#might not be needed
   # length: length
   new Promise (resolve, reject) ->
+    logger.debug "pre-mapbox-upload"
     loader = upload
       stream: geojsonStream
       account: MAPBOX.ACCOUNT
-      accesstoken: MAPBOX.API_KEY
+      accesstoken: MAPBOX.UPLOAD_KEY
       mapid: mapId
+      length: length
 
-    loader.on 'error', reject
+    loader.on 'error', (err) ->
+      logger.error "mapbox-upload error: #{err}"
+      reject(err)
+    loader.on 'progress', (p) ->
+        logger.debug p, true
 
     loader.once 'finished', ->
+      logger.debug "done uploading to mapbox"
       resolve geojsonStream
 
 _uploadParcelByBounds = (bounds) -> Promise.try ->
@@ -45,12 +52,22 @@ _uploadParcelByBounds = (bounds) -> Promise.try ->
   stream = properties.knex.raw(strQuery)
   .stream().pipe(JSONStream.stringify())
 
-  stream.on 'end', ->
-    logger.debug 'done processing stream'
-  #stream.pipe(process.stdout) debug
-  Promise.all _.map MAPBOX.MAPS, (mapId) ->
-    logger.sql mapId
-    _uploadStream(mapId, stream)
+  byteLen = 0
+
+  stream.on 'data', (chunk) ->
+    byteLen += chunk.length
+
+  new Promise (resolve, reject) ->
+    stream.on 'error', reject
+    stream.on 'end', ->
+      logger.debug "stream length: #{byteLen}"
+      logger.debug 'done processing stream'
+      #stream.pipe(process.stdout) debug
+      resolve(
+        Promise.all _.map MAPBOX.MAPS, (mapId) ->
+          logger.sql mapId
+          _uploadStream(mapId, stream, byteLen)
+      )
 
 module.exports =
 
