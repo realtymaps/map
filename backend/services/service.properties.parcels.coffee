@@ -20,17 +20,23 @@ transforms =
 
 _tableName = tableName(Parcel)
 
+_getBaseParcelDataUnwrapped = (state, filters, doStream = false) -> Promise.try () ->
+  validation.validateAndTransform(filters, transforms)
+  .then (filters) ->
+    query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
+    sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
+    ret = query
+    ret = query.stream() if doStream
+    ret
+
 module.exports =
 
+  getBaseParcelDataUnwrapped: _getBaseParcelDataUnwrapped
   # pseudo-new implementation
-  getBaseParcelData: (state, filters) -> Promise.try () ->
-    validation.validateAndTransform(filters, transforms)
-    .then (filters) ->
-      query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
-      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      logger.sql "#### query: " + query
-      query.then (data) ->
-        return {"type": "FeatureCollection", "features": data}
+  getBaseParcelData: (state, filters) ->
+    _getBaseParcelDataUnwrapped(state,filters)
+    .then (data) ->
+      return {"type": "FeatureCollection", "features": data}
 
 
   # old implementation:
@@ -40,8 +46,8 @@ module.exports =
 
   #     query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
   #     sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      
-  #     #logger.sql query.toString()      
+
+  #     #logger.sql query.toString()
   #     return query
 
   #   .then (data) ->
