@@ -53,6 +53,20 @@ _columns =
     'depth_footage', 'mls_close_date', 'mls_close_price', 'sale_date', 'sale_price', 'prior_sale_date',
     "#{_ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age",
   ].join(', ')
+  # columns returned for full detail results, with geom_polys_json AS geometry for geojson standard
+  all_detail_geojson: [
+    'rm_property_id', 'has_mls', 'has_tax', 'has_deed', 'street_address_num', 'street_address_name', 'street_address_unit',
+    'city', 'state', 'zip', 'geom_polys_raw', 'geom_point_raw', 'geom_polys_json AS geometry', 'geom_point_json', 'close_date',
+    'owner_name', 'owner_name2_raw', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
+    'owner_city', 'owner_state', 'owner_zip', 'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning', 'year_built', 'year_modified', 'acres', 'finished_sqft', 'baths_full', 'baths_half', 'baths_total', 'bedrooms',
+    'ask_price', 'prior_sale_price', 'prior_sale_date', 'original_price', 'close_price', 'mls_close_date', 'mls_close_price',
+    'sale_date', 'sale_price', 'mortgage_amount', 'listing_start_date', 'listing_age_days', 'mortgage_date', 'recording_date',
+    'title_company_name', 'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc',
+    'heat', 'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
+    'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id', 'mls_name',
+    'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage', 'depth_footage',
+    'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
+  ].join(', ')
   # columns returned internally for snail pdf render lookups
   address: [
     'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
@@ -97,7 +111,7 @@ _geojson_query = (db, tableName, featuresColName, clause) ->
     # logger.sql query.toString()
     query
   .then (data) ->
-    # logger.sql data, true
+    logger.sql data, true
     return [] if not data.rows?.length
     data.rows[0].geojson_query_exec
 
@@ -141,6 +155,15 @@ module.exports =
       query.where(column, values[0])
     else
       query.whereIn(column, values)
+
+  orWhereIn: (query, column, values) ->
+    # this logic is necessary to avoid SQL parse errors
+    if values.length == 0
+      query.orWhereRaw('FALSE')
+    else if values.length == 1
+      query.orWhere(column, values[0])
+    else
+      query.orWhereIn(column, values)
 
   orWhereNotIn: (query, column, values) ->
     # this logic is necessary to avoid SQL parse errors

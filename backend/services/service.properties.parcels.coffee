@@ -22,41 +22,14 @@ _tableName = tableName(Parcel)
 
 module.exports =
 
-  # pseudo-new implementation
   getBaseParcelData: (state, filters) -> Promise.try () ->
     validation.validateAndTransform(filters, transforms)
     .then (filters) ->
       query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
       sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      logger.sql "#### query: " + query
+      logger.sql "#### parcel query: #{query}"
       query.then (data) ->
-        return {"type": "FeatureCollection", "features": data}
-
-
-  # old implementation:
-  # getBaseParcelData: (state, filters) -> Promise.try () ->
-  #   requestUtil.query.validateAndTransform(filters, transforms, required)
-  #   .then (filters) ->
-
-  #     query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
-  #     sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      
-  #     #logger.sql query.toString()      
-  #     return query
-
-  #   .then (data) ->
-  #     data = data||[]
-  #     # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-  #     return _.uniq data, (row) ->
-  #       row.rm_property_id
-  #   .then (data) ->
-  #     indexBy(data)
-
-  # current implementation:
-  # getBaseParcelData: (state, filters) -> Promise.try () ->
-  #   validation.validateAndTransform(filters, transforms)
-  #   .then (filters) ->
-  #     query = geojson_query_bounds(db, _tableName, 'geom_polys_json', 'geom_polys_raw', filters.bounds)
-  #     logger.debug "#### query: " + JSON.stringify(query)
-  #     logger.sql query.toString()
-  #     query
+        geojson = 
+          "type": "FeatureCollection"
+          "features": _.uniq data, (row) ->
+            row.rm_property_id

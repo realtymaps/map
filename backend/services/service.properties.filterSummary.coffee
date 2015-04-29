@@ -1,5 +1,5 @@
 base = require './service.properties.base.filterSummary'
-{geojson_query, getClauseString} = require '../utils/util.sql.helpers'
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Point = require('../../common/utils/util.geometries').Point
 {clusterQuery, fillOutDummyClusterIds} = require '../utils/util.sql.manual.cluster'
@@ -7,6 +7,8 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 {maybeMergeSavedProperties, getMissingProperties, savedPropertiesQuery} = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
+PropertyDetails = require "../models/model.propertyDetails"
+_ = require 'lodash'
 
 _getZoom = (position) ->
   # console.log position, true
@@ -41,33 +43,15 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
         # logger.debug properties, true
         properties
 
+
     geojsonPolys: ->
-      # logger.sql 'in geojsonPolys'
-      _whereClause =
-        getClauseString(base.getFilterSummaryAsQuery(state, queryParams))
-        .replace(/'/g,"''")
-      query = geojson_query(db, base.tableName, 'geom_polys_json', _whereClause)
-      querystr = query.toString()
-      logger.sql "#{querystr}"
-      query
-      .then (json) ->
-        return  { json1: [], json2:[] } if !json?.features?
-        #begin merge savedprops
-        missing = getMissingProperties(state, json.features)
-        missingWhereClause =
-          getClauseString(savedPropertiesQuery(2000, queryParams, missing))
-          .replace(/'/g,"''")
-        # logger.debug missingWhereClause
-        geojson_query(db, base.tableName, 'geom_polys_json', missingWhereClause)
-        .then (json2) ->
-          json1: json
-          json2: json2
-      .then (blob) ->
-        {json1, json2} = blob
-        if json2?.features?
-          _.merge json1, json2
-        else json1
-      #end merge savedprops
+      query = sqlHelpers.select(db.knex, 'all_detail_geojson', false).from(sqlHelpers.tableName(PropertyDetails))
+      query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
+      # include saved id's in query
+      if Object.keys(state.properties_selected).length > 0
+        sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
+      query.then (data) ->
+        return {"type": "FeatureCollection", "features": data}
 
 
     default: _default
