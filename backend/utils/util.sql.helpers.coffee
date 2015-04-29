@@ -111,7 +111,6 @@ _geojson_query = (db, tableName, featuresColName, clause) ->
     # logger.sql query.toString()
     query
   .then (data) ->
-    logger.sql data, true
     return [] if not data.rows?.length
     data.rows[0].geojson_query_exec
 

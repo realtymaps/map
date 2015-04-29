@@ -13,7 +13,6 @@ handleRoute = (res, next, serviceCall) ->
   Promise.try () ->
     serviceCall()
   .then (data) ->
-    fs = require 'fs'
     res.json(data)
   .catch validation.DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
