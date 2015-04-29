@@ -30,6 +30,17 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
 
       returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
       route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
+      console.log "################--- " + (new Date()).getMinutes() + ":" + (new Date()).getSeconds() + " ---###############"
+      console.log "####  http _getPropertyData, pathId:"
+      console.log pathId
+      console.log "####  http _getPropertyData, filters:"
+      console.log filters
+      console.log "####  http _getPropertyData, returnType:"
+      console.log returnType
+      console.log "####  _getPropertyData, $http.get url:"
+      console.log route
+      console.log "####################################"
+
       $http.get(route, cache: cache)
 
     _getFilterSummary = (hash, mapState, returnType, filters="", cache = true, throttler = _filterThrottler) ->
@@ -59,8 +70,13 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         , http: {route: backendRoutes.properties.parcelBase }
 
       getPropertyDetail: (mapState, rm_property_id, column_set, cache = true) ->
+        console.log "################--- " + (new Date()).getMinutes() + ":" + (new Date()).getSeconds() + " ---###############"
+        console.log "####  getPropertyDetail, column_set:"
+        console.log column_set
         mapStateStr = if mapState? then "&#{mapState}" else ''
         url = "#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}#{mapStateStr}"
+        console.log "####  getPropertyDetail, $http.get url:"
+        console.log url
         _detailThrottler.invokePromise $http.get(url, cache: cache)
         , http: {route: backendRoutes.properties.detail }
 
