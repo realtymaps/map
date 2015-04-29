@@ -1,11 +1,10 @@
-db = require('../config/dbs').properties
-Parcel = require "../models/model.parcels"
 Promise = require "bluebird"
+indexBy = require '../../common/utils/util.indexByWLength'
+db = require('../config/dbs').properties
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
-sqlHelpers = require './../utils/util.sql.helpers.coffee'
-{geojson_query_bounds, tableName} = require './../utils/util.sql.helpers.coffee'
-indexBy = require '../../common/utils/util.indexByWLength'
+sqlHelpers = require '../utils/util.sql.helpers'
+Parcel = require "../models/model.parcels"
 
 
 transforms =
@@ -17,8 +16,6 @@ transforms =
     ]
     required: true
 
-
-_tableName = tableName(Parcel)
 
 module.exports =
 
