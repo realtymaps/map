@@ -8,6 +8,7 @@ sqlHelpers = require './../utils/util.sql.helpers.coffee'
 upload = require 'mapbox-upload'
 {MAPBOX,PROPERTY_DB}= require '../config/config'
 JSONStream = require 'JSONStream'
+fs = require 'fs'
 
 transforms =
   bounds:
@@ -46,11 +47,11 @@ _uploadStream = (mapId, geojsonStream, length) ->
 _uploadParcelByBounds = (bounds) -> Promise.try ->
   strQuery = geojson_query_bounds_non_exec(properties, _tableName,
     'geom_polys_json', 'geom_polys_raw', bounds).toString()
-  # strQuery = 'select * from parcels limit 10'
-  # logger.sql strQuery
-  # logger.sql _.keys db.properties.knex
+
+  #writeStream for manual testing
+  #writeStream = fs.createWriteStream './output.json'
   stream = properties.knex.raw(strQuery)
-  .stream().pipe(JSONStream.stringify())
+  .stream().pipe(JSONStream.stringify())#.pipe(writeStream)
 
   byteLen = 0
 
