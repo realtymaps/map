@@ -5,17 +5,23 @@ _parcelPropertiesMove = [
   'geom_point_json'
   'passedFilters'
 ]
+
+_parcelFeature = (row) ->
+  _parcelDeletes.forEach (prop) ->
+    delete row[prop]
+
+  row.properties = {}
+  _parcelPropertiesMove.forEach (prop) ->
+    row.properties[prop] = row[prop]
+    delete row[prop]
+  row
+
 module.exports =
+  parcelFeature: _parcelFeature
+  
   parcelFeatureCollection: (rows) ->
     rows = _.uniq rows, (r) ->
       r.rm_property_id
     rows.forEach (row) ->
-      _parcelDeletes.forEach (prop) ->
-        delete row[prop]
-
-      row.properties = {}
-      _parcelPropertiesMove.forEach (prop) ->
-        row.properties[prop] = row[prop]
-        delete row[prop]
-      row
+      row = _parcelFeature(row)
     type: 'FeatureCollection', features: rows

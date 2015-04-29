@@ -6,8 +6,8 @@ module.exports =
   upload: (req, res, next) ->
     uploadParcel(req.session.state, req.query)
     .then (stream) ->
-      #stream.pipe res
-      res.send("success")
+      # stream.pipe res
+      res.send('success')
     .catch validation.DataValidationError, (err) ->
       next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
     .catch (err) ->
