@@ -13,6 +13,8 @@ app.factory 'ResultsFormatter'.ourNs(), [
   $log, ParcelEnums, GoogleService,
   Properties, FormattersService, uiGmapGmapUtil, Events,
   rmapsLeafletObjectFetcher, MainOptions, ZoomLevel) ->
+
+    leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
     limits = MainOptions.map
 
     _forSaleClass = {}
@@ -48,15 +50,12 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       #need event, lObject, model, modelName, layerName, type
       modelName = result.rm_property_id
-
       layerName = if ZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
-
       originator = if originator? then originator else 'results'
 
-      rmapsLeafletObjectFetcher.get('mainMap', modelName)
-      .then (payload) ->
-        {lObject, type} = payload
-        mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, originator, 'results')
+      payload = if layerName != 'filterSummaryPoly' then leafletDataMainMap.get(modelName) else leafletDataMainMap.get(modelName, layerName)
+      {lObject, type} = payload
+      mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, originator, 'results')
 
     class ResultsFormatter
 

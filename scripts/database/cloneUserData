@@ -27,7 +27,7 @@ fi
 if [[ "$@" == "" ]]
 then
     #if no restrictions are set on what to dump, artificially restrict to public-schema tables
-    DUMP_OBJECTS=`psql -d 'postgres://dev:devpass@localhost:5432/realtymaps_users_dev' -A -c "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = 'public';" -q -t -R ' -t '`
+    DUMP_OBJECTS=`psql -d $CLONE_SRC -A -c "SELECT table_name FROM information_schema.tables WHERE table_type = 'BASE TABLE' AND table_schema = 'public';" -q -t -R ' -t '`
     DUMP_OBJECTS="-t $DUMP_OBJECTS"
 else
     DUMP_OBJECTS="$@"

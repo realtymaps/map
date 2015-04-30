@@ -49,7 +49,8 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
         getClauseString(base.getFilterSummaryAsQuery(state, queryParams))
         .replace(/'/g,"''")
       query = geojson_query(db, base.tableName, 'geom_polys_json', _whereClause)
-      # logger.sql query.toString()
+      querystr = query.toString()
+      logger.sql "#{querystr}"
       query
       .then (json) ->
         return  { json1: [], json2:[] } if !json?.features?

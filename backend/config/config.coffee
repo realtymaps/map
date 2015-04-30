@@ -57,6 +57,12 @@ base =
     TEST_API_KEY: process.env.LOB_TEST_API_KEY
     LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
     API_VERSION: '2014-12-18'
+  MAPBOX:
+    API_KEY: process.env.MAPBOX_API_KEY
+    UPLOAD_KEY: process.env.MAPBOX_API_UPLOAD_KEY
+    ACCOUNT: process.env.MAPBOX_ACCOUNT
+    MAPS:
+      main: process.env.MAPBOX_MAPS_MAIN
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'

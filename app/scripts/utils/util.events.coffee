@@ -125,7 +125,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
       #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-      mapCtrl.openWindow(model) if layerName != 'parcelBase' and !maybeCaller
+      mapCtrl.openWindow(model) if !maybeCaller
 
       model.isMousedOver = true
 
