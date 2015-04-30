@@ -1,9 +1,7 @@
 parcelSvc = require './service.properties.parcels'
 Promise = require "bluebird"
 logger = require '../config/logger'
-{PassThrough} = require('stream')
-combine = require 'stream-combiner'
-
+{MAPBOX} = require '../config/config'
 
 JSONStream = require 'JSONStream'
 featureCollectionWrapStream = require '../utils/util.featureCollectionWrapStream'
@@ -11,29 +9,28 @@ mapboxUpload = require '../utils/util.mapbox'
 fs = require 'fs'
 
 _uploadParcelByQuery = (stream) -> Promise.try ->
-  # logger.sql stream
   writeStream = fs.createWriteStream './output.json'
-  stream.pipe(featureCollectionWrapStream())
-  # .pipe(writeStream)
+  filteredStream =
+    stream.pipe(featureCollectionWrapStream())
 
+  # filteredStream.pipe(process.stdout) #uncomment to send to console
+  # filteredStream.pipe(writeStream) #uncomment to write file
 
+  #comment below out to not send to mapbox
   byteLen = 0
 
-  stream.on 'data', (chunk) ->
-    logger.sql chunk
+  filteredStream.on 'data', (chunk) ->
+    # logger.debug (new Buffer(chunk)).toString('utf-8')
     byteLen += chunk.length
 
   new Promise (resolve, reject) ->
-    stream.on 'error', reject
-    stream.on 'end', ->
+    filteredStream.on 'error', reject
+    filteredStream.on 'end', ->
       logger.debug "stream length: #{byteLen}"
       logger.debug 'done processing stream'
-      #stream.pipe(process.stdout) debug
-      resolve(
-        Promise.all _.map MAPBOX.MAPS, (mapId) ->
-          logger.sql mapId
-          mapboxUpload.uploadStreamPromise(mapId, stream, byteLen)
-      )
+
+      resolve Promise.all _.map MAPBOX.MAPS, (mapId) ->
+        mapboxUpload.uploadStreamPromise(mapId, filteredStream, byteLen)
 
 module.exports =
 

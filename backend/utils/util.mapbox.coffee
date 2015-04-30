@@ -1,8 +1,10 @@
 upload = require 'mapbox-upload'
 {MAPBOX, PROPERTY_DB} = require '../config/config'
+Promise = require "bluebird"
+logger = require '../config/logger'
 
 _uploadStreamPromise = (mapId, geojsonStream, length) ->
-  # geojsonStream = geojsonStream.pipe(JSONStream.stringify)#might not be needed
+  # geojsonStream: string formatted stream
   # length: length
   new Promise (resolve, reject) ->
     logger.debug "pre-mapbox-upload"
