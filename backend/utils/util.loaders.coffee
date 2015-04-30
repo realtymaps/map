@@ -3,6 +3,8 @@ path = require 'path'
 config = require '../config/config'
 logger = require '../config/logger'
 backendRoutes = require '../../common/config/routes.backend.coffee'
+_ = require 'lodash'
+
 
 module.exports =
   

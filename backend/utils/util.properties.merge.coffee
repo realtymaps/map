@@ -3,6 +3,7 @@ config = require '../config/config'
 sqlHelpers = require './../utils/util.sql.helpers'
 PropertyDetails = require "../models/model.propertyDetails"
 logger = require '../config/logger'
+_ = require 'lodash'
 
 _getMissingProperties = (state, properties) ->
   return [] if !properties?.length

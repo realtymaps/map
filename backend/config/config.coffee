@@ -18,7 +18,7 @@ base =
     client: 'pg'
     connection: process.env.USER_DATABASE_URL
     pool:
-      min: 2
+      min: 1
       max: 10
   PROPERTY_DB:
     client: 'pg'
@@ -63,6 +63,7 @@ base =
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
+  ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

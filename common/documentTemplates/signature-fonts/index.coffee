@@ -1,3 +1,5 @@
+_ = require 'lodash'
+
 ###
   Data for each font included via this file is a base64 encoding of files downloaded from Font Squirrel
   (http://www.fontsquirrel.com/).  Before base64 encoding, some of the files were converted from otf to ttf.
@@ -16,7 +18,7 @@
   within our application.  If you extract any of the fonts here for use in any way, you are still bound by the
   terms of the licenses associated with those fonts.
 ###
-  
+
 baseFont =
   signatureSize: 22
   angle: 0

@@ -1,3 +1,4 @@
+_ = require 'lodash'
 PDFDocument = require 'pdfkit'
 pdfUtils = require '../utils/util.pdf.coffee'
 bg = require './temp.postcard2.coffee'

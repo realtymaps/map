@@ -1,5 +1,4 @@
 
-global._ = require 'lodash'
 touch = require 'touch'
 
 config = require './config/config'
