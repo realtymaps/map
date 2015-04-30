@@ -102,23 +102,31 @@ _whereInBounds = (query, column, bounds) ->
 _getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
-_geojson_query = (db, tableName, featuresColName, clause) ->
-  Promise.try () ->
-    query =
-      db.knex.raw """
-        select geojson_query_exec('#{tableName}', '#{featuresColName}', '#{clause}')
-        """
-    # logger.sql query.toString()
-    query
-  .then (data) ->
-    return [] if not data.rows?.length
-    data.rows[0].geojson_query_exec
 
-_geojson_query_bounds = (db, tableName, featuresColName, boundsColumnName, bounds) ->
-  _whereClause = _getClauseString _whereInBounds(db.knex(''), boundsColumnName, bounds)
-  _whereClause = _whereClause.replace(/'/g, "''")
-  # logger.debug _whereClause + '\n'
-  _geojson_query(db, tableName, featuresColName, _whereClause)
+whereIn = (query, column, values) ->
+  # this logic is necessary to avoid SQL parse errors
+  if values.length == 0
+    query.whereRaw('FALSE')
+  else if values.length == 1
+    query.where(column, values[0])
+  else
+    query.whereIn(column, values)
+
+orWhereIn = (query, column, values) ->
+  query.orWhere () -> whereIn(@, column, values)
+
+whereNotIn = (query, column, values) ->
+  # this logic is necessary to avoid SQL parse errors
+  if values.length == 0
+    query.whereRaw('TRUE')
+  else if values.length == 1
+    query.where(column, '!=', values[0])
+  else
+    query.whereNotIn(column, values)
+
+orWhereNotIn = (query, column, values) ->
+  query.orWhere () -> whereNotIn(@, column, values)
+
 
 module.exports =
 
@@ -146,32 +154,7 @@ module.exports =
       sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
       bindings: [point.longitude, point.latitude]
 
-  whereIn: (query, column, values) ->
-    # this logic is necessary to avoid SQL parse errors
-    if values.length == 0
-      query.whereRaw('FALSE')
-    else if values.length == 1
-      query.where(column, values[0])
-    else
-      query.whereIn(column, values)
 
-  orWhereIn: (query, column, values) ->
-    # this logic is necessary to avoid SQL parse errors
-    if values.length == 0
-      query.orWhereRaw('FALSE')
-    else if values.length == 1
-      query.orWhere(column, values[0])
-    else
-      query.orWhereIn(column, values)
-
-  orWhereNotIn: (query, column, values) ->
-    # this logic is necessary to avoid SQL parse errors
-    if values.length == 0
-      query.orWhereRaw('TRUE')
-    else if values.length == 1
-      query.orWhere(column, '!=', values[0])
-    else
-      query.orWhereNotIn(column, values)
 
   allPatternsInAnyColumn: (query, patterns, columns) ->
     patterns.forEach (pattern) ->
@@ -188,10 +171,14 @@ module.exports =
       extra = ", #{passedFilters} as \"passedFilters\""
     knex.select(knex.raw(_columns[which] + extra))
 
+  whereIn: whereIn
+
+  orWhereIn: orWhereIn
+
+  whereNotIn: whereNotIn
+
+  orWhereNotIn: orWhereNotIn
+
   whereInBounds: _whereInBounds
 
   getClauseString: _getClauseString
-
-  geojson_query:_geojson_query
-
-  geojson_query_bounds:_geojson_query_bounds

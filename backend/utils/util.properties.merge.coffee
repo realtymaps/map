@@ -4,6 +4,15 @@ sqlHelpers = require './../utils/util.sql.helpers'
 PropertyDetails = require "../models/model.propertyDetails"
 logger = require '../config/logger'
 
+# merge details of data in memory; no db call
+_updateSavedProperties = (state, properties) ->
+  _.each properties, (prop) ->
+    # ensure saved details are part of the saved props
+    if prop.rm_property_id of state.properties_selected
+      prop.savedDetails = state.properties_selected[prop.rm_property_id]
+  properties
+
+
 _getMissingProperties = (state, properties) ->
   return [] if !properties?.length
   matchingSavedProps = {}
@@ -49,6 +58,7 @@ _maybeMergeSavedProperties = (state, filters, filteredProperties, limit) ->
 
 
 module.exports =
-  maybeMergeSavedProperties:_maybeMergeSavedProperties
+  updateSavedProperties: _updateSavedProperties
+  maybeMergeSavedProperties: _maybeMergeSavedProperties
   getMissingProperties: _getMissingProperties
-  savedPropertiesQuery:_savedPropertiesQuery
+  savedPropertiesQuery: _savedPropertiesQuery

@@ -1,10 +1,10 @@
-Promise = require "bluebird"
-indexBy = require '../../common/utils/util.indexByWLength'
 db = require('../config/dbs').properties
+Parcel = require "../models/model.parcels"
+Promise = require "bluebird"
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
-sqlHelpers = require '../utils/util.sql.helpers'
-Parcel = require "../models/model.parcels"
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
+indexBy = require '../../common/utils/util.indexByWLength'
 
 
 transforms =
@@ -16,7 +16,6 @@ transforms =
     ]
     required: true
 
-
 module.exports =
 
   getBaseParcelData: (state, filters) -> Promise.try () ->
@@ -24,7 +23,6 @@ module.exports =
     .then (filters) ->
       query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
       sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      logger.sql "#### parcel query: #{query}"
       query.then (data) ->
         geojson = 
           "type": "FeatureCollection"
