@@ -102,7 +102,6 @@ _whereInBounds = (query, column, bounds) ->
 _getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
-
 whereIn = (query, column, values) ->
   # this logic is necessary to avoid SQL parse errors
   if values.length == 0
@@ -126,7 +125,6 @@ whereNotIn = (query, column, values) ->
 
 orWhereNotIn = (query, column, values) ->
   query.orWhere () -> whereNotIn(@, column, values)
-
 
 module.exports =
 
@@ -153,8 +151,6 @@ module.exports =
     _orderByRawSafe query,
       sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
       bindings: [point.longitude, point.latitude]
-
-
 
   allPatternsInAnyColumn: (query, patterns, columns) ->
     patterns.forEach (pattern) ->

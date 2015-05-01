@@ -16,15 +16,26 @@ transforms =
     ]
     required: true
 
+
+_getBaseParcelDataUnwrapped = (state, filters, doStream = false) -> Promise.try () ->
+  validation.validateAndTransform(filters, transforms)
+  .then (filters) ->
+    query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
+    sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
+    ret = query
+    ret = query.stream() if doStream
+    ret
+
+
 module.exports =
 
-  getBaseParcelData: (state, filters) -> Promise.try () ->
-    validation.validateAndTransform(filters, transforms)
-    .then (filters) ->
-      query = sqlHelpers.select(db.knex, 'parcel', false).from(sqlHelpers.tableName(Parcel))
-      sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      query.then (data) ->
-        geojson = 
-          "type": "FeatureCollection"
-          "features": _.uniq data, (row) ->
-            row.rm_property_id
+  getBaseParcelDataUnwrapped: _getBaseParcelDataUnwrapped
+  # pseudo-new implementation
+  getBaseParcelData: (state, filters) ->
+    _getBaseParcelDataUnwrapped(state,filters)
+    .then (data) ->
+      geojson = 
+        "type": "FeatureCollection"
+        "features": _.uniq data, (row) ->
+          row.rm_property_id
+

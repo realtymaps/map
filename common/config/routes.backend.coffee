@@ -27,4 +27,6 @@ module.exports =
   snail:
     quote:            "#{apiBase}/snail/quote"
     send:             "#{apiBase}/snail/send"
+  mapbox:
+    upload:            "#{apiBase}/mapbox/upload"
   # hirefire secret value set from within backend/config/config.coffee
