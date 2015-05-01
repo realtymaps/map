@@ -86,4 +86,3 @@ loadRetsTableUpdates = (subtask, options) ->
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
- 

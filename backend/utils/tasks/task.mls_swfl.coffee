@@ -1,9 +1,9 @@
-taskHelpers = require './util.taskHelpers'
+retsHelpers = require './util.retsHelpers'
 
 
 subtasks =
   loadDataRawMain: (subtask) ->
-    taskHelpers.loadRetsTableUpdates subtask,
+    retsHelpers.loadRetsTableUpdates subtask,
       rawTableSuffix: 'main'
       retsDbName: 'Property'
       retsTableName: 'RES'
