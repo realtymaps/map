@@ -7,6 +7,8 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 {maybeMergeSavedProperties, getMissingProperties, savedPropertiesQuery} = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
+_ = require 'lodash'
+
 
 _getZoom = (position) ->
   # console.log position, true

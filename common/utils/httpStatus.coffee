@@ -1,4 +1,4 @@
-hack = require '../utils/webpackHack.coffee'
+_ = require 'lodash'
 
 codes =
   OK: 200

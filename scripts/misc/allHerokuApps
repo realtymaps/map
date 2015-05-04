@@ -6,6 +6,6 @@ cd "$DIR/.."
 
 for app in `./environmentNormalization/herokuCli - apps | tr -s ' ' | cut -f 1 -d ' '`
 do
-    # there is no equivalent command using hk, so we have to use the bare heroku command
+    # there may be no equivalent command using hk, so we have to use the bare heroku command
     heroku "$@" --app=$app
 done

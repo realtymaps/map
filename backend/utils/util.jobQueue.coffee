@@ -4,6 +4,8 @@ dbs = require '../config/dbs'
 Promise = require 'bluebird'
 sqlHelpers = require './util.sql.helpers'
 logger = require '../config/logger'
+analyzeValue = require '../../common/utils/util.analyzeValue'
+_ = require 'lodash'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -63,7 +65,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
     transaction.select()
     .from(tables.taskConfig)
     .where(active: true)                  # only consider active tasks
-    .whereRaw("NOT ignore_until > NOW()") # only consider tasks whose time has come
+    .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
     .where () ->
       sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
       sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
@@ -153,10 +155,10 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
 
 queueSubtask = (transaction, batchId, _taskData, subtask) ->
   Promise.try () ->
-    if _taskData != undefined || !subtasks?.length
+    if _taskData != undefined
       return _taskData
     transaction.table(tables.taskHistory)
-    .where(current: true, name: subtasks[0].task_name)
+    .where(current: true, name: subtask.task_name)
   .then (task) ->
     task?[0]?.data
   .then (taskData) ->
@@ -166,6 +168,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask) ->
         singleSubtask.data = data
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
+        singleSubtask.batch_id = batchId
         transaction.table(tables.currentSubtasks)
         .insert singleSubtask
       .then () ->
@@ -174,8 +177,9 @@ queueSubtask = (transaction, batchId, _taskData, subtask) ->
       singleSubtask = _.clone(subtask)
       singleSubtask.task_data = taskData
       singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
+      singleSubtask.batch_id = batchId
       transaction.table(tables.currentSubtasks)
-      .insert subtask
+      .insert singleSubtask
       .then () ->
         return 1
 
@@ -227,6 +231,7 @@ executeSubtask = (subtask) ->
         subject: 'major db interaction problem'
         subtask: subtask
         error: err
+      throw err
     if subtask.warn_timeout_seconds?
       warnTimeout = setTimeout () ->
         sendNotification
@@ -262,21 +267,26 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     knex.table(tables.currentSubtasks)
     .where(id: subtask.id)
   .then (updatedSubtask) ->
-    updatedSubtask.error = "subtask: #{error}"
+    updatedSubtask[0].error = "subtask: #{error}"
     knex.table(tables.subtaskErrorHistory)
-    .where(id: subtask.id)
-    .update updatedSubtask
+    .insert updatedSubtask[0]
   .then () ->
     if hard
       Promise.join cancelTask(subtask.task_name, 'hard fail'), sendNotification
         subject: 'subtask: hard fail'
         subtask: subtask
         error: "subtask: #{error}"
+    throw error
 
 # should this be rewritten to use a transaction and query built by knex?  I decided to implement it as a stored proc
 # in order to enforce the locking semantics, but I'm not sure if that's really a good reason
 getQueuedSubtask = (queue_name) ->
-  knex.raw('SELECT jq_get_next_subtask(?)', [queue_name])   
+  knex.select('*').from(knex.raw('jq_get_next_subtask(?)', [queue_name]))   
+  .then (results) ->
+    if !results?[0]?.id?
+      return null
+    else
+      return results[0]
 
 _sendLongTaskWarnings = () ->
   # warn about long-running tasks
@@ -397,3 +407,4 @@ module.exports =
   SoftFail: SoftFail
   HardFail: HardFail
   tables: tables
+  knex: knex
