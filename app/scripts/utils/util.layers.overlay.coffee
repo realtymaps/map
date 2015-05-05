@@ -13,6 +13,7 @@ module.exports =
     type: "markercluster"
     visible: true
     layerOptions:
+      maxClusterRadius: 100
       chunkedLoading: true
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true
@@ -28,8 +29,8 @@ module.exports =
 
 
         strokewidth = 1
-        r = 30
-        rinner = 10
+        r = 27
+        rinner = 16
         label = c
         w = (r+1)*2
         h = w
@@ -44,8 +45,14 @@ module.exports =
         vis = d3.select(svg)
           .data([data])
           .attr('class', 'pieClass')
-          .attr('width', w)
-          .attr('height', h)
+          .attr('width', w+(2*strokewidth))
+          .attr('height', h*(2*strokewidth))
+
+        vis.append('circle')
+          .attr('cx', r)
+          .attr('cy', r)
+          .attr('r', r)
+          .attr('fill', 'white')
 
         arcs = vis.selectAll('g.arc')
           .data(donut.value(valueFunc))
@@ -65,7 +72,8 @@ module.exports =
           .attr('y', r)
           .attr('class', 'marker-cluster-pie-label')
           .attr('text-anchor', 'middle')
-          .attr('dy', '.5em')
+          .attr('dy', '.4em')
+          .attr('fill', 'black')
           .text(c)
 
         html = serializeXmlNode(svg)
