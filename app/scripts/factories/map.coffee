@@ -112,7 +112,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
           map:
             layers:
-              overlays: _overlays
+              overlays: _overlays()
 
             listingDetail: undefined
 
@@ -222,21 +222,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
               @scope.map.layers.overlays["cartodb parcels"].visible = true
           if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
               ZoomLevel.dblClickZoom.disable(@scope)
-              # promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
-              #   @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-              #     _.cloneDeep(data),
-              #     @layerFormatter.Parcels.labelFromStreetNum
-              #   )
-              # ))
+        ## BEGIN COMMENT OUT WHEN CARTODB OR MAPBOX IS FULLY USED
+              promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
+                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+                  _.cloneDeep(data),
+                  @layerFormatter.Parcels.labelFromStreetNum
+                )
+              ))
 
-          # promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
-          #   return unless data?
-          #   @scopeM().geojson.parcelBase =
-          #     data: data
-          #     style: @layerFormatter.Parcels.style
-          #
-          #   $log.debug "addresses count to draw: #{data?.features?.length}"
-          # ))
+          promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
+            return unless data?
+            @scopeM().geojson.parcelBase =
+              data: data
+              style: @layerFormatter.Parcels.style
+
+            $log.debug "addresses count to draw: #{data?.features?.length}"
+          ))
+        ## END COMMENT OUT WHEN CARTODB OR MAPBOX IS FULLY USED
 
         else
           ZoomLevel.dblClickZoom.enable(@scope)

@@ -3,11 +3,7 @@ googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 routes = require '../../../common/config/routes.backend.coffee'
 
-##TODO: use angular to inject a route?
-try
-  _mapboxKey = httpSync.get routes.config.mapboxKey
-catch
-  _mapboxKey = ''
+_mapboxKey = ''
 
 _mapBoxFactory = (name, id) ->
   name: 'Mapbox ' + name
@@ -27,21 +23,10 @@ _googleFactory = (name, type, options) ->
     _.extend ret, layerOptions: options
   ret
 
-module.exports =
-
+_baseLayers =
   googleRoadmap: _googleFactory 'Streets', 'ROADMAP', mapOptions: googleOptions
-
   googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
-
   googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
-
-  #example of custom map via an account
-  mapbox_street: _mapBoxFactory 'Street', 'realtymaps.f33ce76e'
-
-  mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
-
-  mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
-
   #NOTE OSM does not support a zoomLevel higher than 20
   osm:
     name: 'OpenStreetMap',
@@ -51,3 +36,18 @@ module.exports =
       subdomains: ['a', 'b', 'c'],
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       continuousWorld: true
+
+
+module.exports = ->
+  try
+    _mapboxKey = httpSync.get routes.config.mapboxKey
+  catch
+    _mapboxKey = ''
+
+  if _mapboxKey
+    _.extend _baseLayers,
+      mapbox_street: _mapBoxFactory 'Street', 'realtymaps.f33ce76e'
+      mapbox_comic: _mapBoxFactory 'Comic', 'mapbox.comic'
+      mapbox_dark: _mapBoxFactory 'Dark', 'mapbox.dark'
+
+  _baseLayers

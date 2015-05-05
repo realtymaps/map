@@ -65,6 +65,9 @@ routesConfig =
     upload:
       method: 'get'
       middleware: auth.requireLogin(redirectOnFail: true)
+  cartodb:
+    getByFipsCode:
+      method: 'get'#TODO: API_KEY middleware
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->

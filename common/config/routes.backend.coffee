@@ -30,4 +30,6 @@ module.exports =
     send:             "#{apiBase}/snail/send"
   mapbox:
     upload:            "#{apiBase}/mapbox/upload"
+  cartodb:
+    getByFipsCode:     "#{apiBase}/cartodb/fipscode/:fipscode"
   # hirefire secret value set from within backend/config/config.coffee

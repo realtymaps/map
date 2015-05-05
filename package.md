@@ -3,12 +3,8 @@
 ##node
 
 - 0.10.X: (just outdated)
-- 0.12.X:
-  - memwatch (stale) -> memwatch-next (still has nan/node-gyp)
-  - bcrypt - still has nan/node-gyp
+- 0.12.X: works as of v0.8.3+ of bcrypt
 
 ##io.js
 
-- 1.8.1-2.0.0:
-  - memwatch - "" https://github.com/lloyd/node-memwatch/issues/64
-  - karma - "" https://github.com/ncb000gt/node.bcrypt.js/issues/298
+- 1.8.1-2.0.0: works as of v0.8.3+ of bcrypt
