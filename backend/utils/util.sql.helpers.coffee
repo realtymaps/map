@@ -185,3 +185,7 @@ module.exports =
 
   geojson_query_bounds:_geojson_query_bounds
   geojson_query_bounds_non_exec: _geojson_query_bounds_non_exec
+  orderBySearchScore: (query, column, value) ->
+    query.orderByRaw()
+  whereMisspellingMatch: (query, column, value) ->
+    query.whereRaw("\"#{column}\" @@ to_tsquery(?)", [value])
