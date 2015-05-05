@@ -27,8 +27,8 @@ module.exports = (config, webpackConf) ->
 
   coverageReporter:
     reporters:[
-      { type : 'html', dir : '../_public/coverage/', middlePathDir: "application" }
-      { type : 'cobertura', dir : '../_public/coverage/', middlePathDir: "application" }
+      { type : 'html', dir : '../_public/coverage/', subdir: "application" }
+      { type : 'cobertura', dir : '../_public/coverage/', subdir: "application" }
     ]
 
 # list of files / patterns to load in the browser
