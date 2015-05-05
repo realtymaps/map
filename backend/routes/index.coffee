@@ -48,6 +48,9 @@ routesConfig =
     mapboxKey:
       method: 'get'
       middleware: auth.requireLogin(redirectOnFail: true)
+    cartodb:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
   snail:
     quote:
       method: 'post'

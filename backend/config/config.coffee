@@ -63,6 +63,10 @@ base =
     ACCOUNT: process.env.MAPBOX_ACCOUNT
     MAPS:
       main: process.env.MAPBOX_MAPS_MAIN
+  CARTODB:
+    API_KEY: process.env.CARTODB_API_KEY
+    MAPS: JSON.parse process.env.CARTODB_MAPS
+    ACCOUNT: process.env.CARTODB_ACCOUNT
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'

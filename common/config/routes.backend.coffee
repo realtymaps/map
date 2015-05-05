@@ -19,6 +19,7 @@ module.exports =
     version:         "#{apiBase}/version"
   config:
     mapboxKey:         "#{apiBase}/mapbox_key"
+    cartodb:           "#{apiBase}/cartodb"
   properties:
     filterSummary:   "#{apiBase}/properties/filter_summary/"
     parcelBase:      "#{apiBase}/properties/parcel_base/"

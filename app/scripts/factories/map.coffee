@@ -209,6 +209,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                   style: @layerFormatter.Parcels.getStyle
             )
           else
+            @scope.map.layers.overlays["cartodb parcels"].visible = false
             @scope.map.layers.overlays.filterSummary.visible = true
             @scope.map.layers.overlays.addresses.visible = false
         promises
@@ -218,24 +219,24 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         #consider renaming parcels to addresses as that is all they are used for now
         if ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
              ZoomLevel.isParcel(@scopeM().center.zoom)
+              @scope.map.layers.overlays["cartodb parcels"].visible = true
           if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
               ZoomLevel.dblClickZoom.disable(@scope)
+              # promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
+              #   @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+              #     _.cloneDeep(data),
+              #     @layerFormatter.Parcels.labelFromStreetNum
+              #   )
+              # ))
 
-              promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
-                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-                  _.cloneDeep(data),
-                  @layerFormatter.Parcels.labelFromStreetNum
-                )
-              ))
-
-          promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
-            return unless data?
-            @scopeM().geojson.parcelBase =
-              data: data
-              style: @layerFormatter.Parcels.style
-
-            $log.debug "addresses count to draw: #{data?.features?.length}"
-          ))
+          # promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
+          #   return unless data?
+          #   @scopeM().geojson.parcelBase =
+          #     data: data
+          #     style: @layerFormatter.Parcels.style
+          #
+          #   $log.debug "addresses count to draw: #{data?.features?.length}"
+          # ))
 
         else
           ZoomLevel.dblClickZoom.enable(@scope)
