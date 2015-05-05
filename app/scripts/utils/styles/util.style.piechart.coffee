@@ -1,16 +1,22 @@
-minSlice = 5
 radius = 27
 innerRadius = 16
 strokewidth = 1
+arcOffset = 1 #shimmy the arcs & text away from pie-frame border to ensure no clipping
+width = (4*strokewidth)+(2*radius)
+height = width
+dy = '.4em' #amount of drop for number value in center
 
+# return count of given parcel type
+valueFunc = (c) ->
+  # exposing c (total parcel count) here in case normalizing becomes necessary later
+  (d) ->
+    d.values.length
 
-valueFunc = (d) ->
-  # return if (d.values.length/c > 0.02) then d.values.length else (d.values.length + ((d.values.length-(0.02*c))/0.02))
-  d.values.length
-
+# return class denoting parcel type (see piechart.styl)
 pathClassFunc = (d) ->
   "category-"+d.data.key.replace(/\ /g,'-')
 
+# provide a title for the parcel type when hovering over the arc
 pathTitleFunc = (d) ->
   d.data.key.replace(/\ /g,'-')
 
@@ -18,8 +24,10 @@ module.exports =
   radius: radius
   innerRadius: innerRadius
   strokewidth: strokewidth
-  width: 60
-  height: 60
+  arcOffset: arcOffset
+  width: width
+  height: height
+  dy: dy
   valueFunc: valueFunc
   pathClassFunc: pathClassFunc
   pathTitleFunc: pathTitleFunc
