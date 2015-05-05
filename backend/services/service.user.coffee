@@ -1,5 +1,6 @@
 Promise = require "bluebird"
 bcrypt = require 'bcrypt'
+_ = require 'lodash'
 
 logger = require '../config/logger'
 User = require("../models/model.user")

@@ -6,6 +6,7 @@ config = require '../config/config'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
+_ = require 'lodash'
 
 
 validators = validation.validators
