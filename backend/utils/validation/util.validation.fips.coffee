@@ -10,7 +10,7 @@ knex = dbs.users.knex
 module.exports = (options = {}) ->
   minSimilarity = options.minSimilarity ? 0.4
   (param, value) -> Promise.try () ->
-    if !value? or value == ''
+    if !value
       return null
     query = knex.select('*', knex.raw("similarity(county, '#{value}') AS similarity")).from('fips_lookup')
     if options.states?.length
