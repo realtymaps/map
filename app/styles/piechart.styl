@@ -1,3 +1,5 @@
+@require 'color_scheme'
+
 .marker-cluster-pie g.arc
   fill-opacity: 0.5
 
@@ -5,30 +7,28 @@
   font-size: 18px
   font-weight: bold
   font-family: sans-serif
-  background: #FFF
-  padding: 5px
 
 /*marker categories*/
 .category-pending
-  fill: #8C3DAA
+  fill: $rm_pending
   stroke: #800
-  background: #8C3DAA
+  background: $rm_pending
   border-color: #800
 
 .category-for-sale
-  fill: #1FDE12
+  fill: $rm_forsale
   stroke: #007
-  background: #1FDE12
+  background: $rm_forsale
   border-color: #007
 
 .category-not-for-sale
-  fill: #45A0D9
+  fill: $rm_notforsale
   stroke: #007
-  background: #45A0D9
+  background: $rm_notforsale
   border-color: #007
 
 .category-recently-sold
-  fill: #FF4A4A
+  fill: $rm_sold
   stroke: #007
-  background: #FF4A4A
+  background: $rm_sold
   border-color: #007

@@ -1,15 +1,23 @@
 minSlice = 5
+radius = 27
+innerRadius = 16
+strokewidth = 1
+
+
 valueFunc = (d) ->
+  # return if (d.values.length/c > 0.02) then d.values.length else (d.values.length + ((d.values.length-(0.02*c))/0.02))
   d.values.length
+
 pathClassFunc = (d) ->
   "category-"+d.data.key.replace(/\ /g,'-')
+
 pathTitleFunc = (d) ->
-  return
+  d.data.key.replace(/\ /g,'-')
 
 module.exports = 
-  radius: 30
-  innerRadius: 10
-  strokewidth: 1
+  radius: radius
+  innerRadius: innerRadius
+  strokewidth: strokewidth
   width: 60
   height: 60
   valueFunc: valueFunc

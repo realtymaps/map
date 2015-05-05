@@ -1,12 +1,11 @@
 app = require '../app.coffee'
-
 sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 
 app.factory 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope'
-  ($log, ParcelEnums, uiGmapUtil, GoogleService, $rootScope) ->
+  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope', 'stylusVariables'.ourNs()
+  ($log, ParcelEnums, uiGmapUtil, GoogleService, $rootScope, stylusVariables) ->
 
     (mapCtrl) ->
 
@@ -43,18 +42,18 @@ app.factory 'LayerFormatters'.ourNs(), [
           fillColor: 'transparent'
 
         normalColors = {}
-        normalColors[ParcelEnums.status.sold] = '#FF4A4A'
-        normalColors[ParcelEnums.status.pending] = '#8C3DAA'
-        normalColors[ParcelEnums.status.forSale] = '#1FDE12'
-        normalColors[ParcelEnums.status.notForSale] = '#45A0D9'
+        normalColors[ParcelEnums.status.sold] = stylusVariables.$rm_sold
+        normalColors[ParcelEnums.status.pending] = stylusVariables.$rm_pending
+        normalColors[ParcelEnums.status.forSale] = stylusVariables.$rm_forsale
+        normalColors[ParcelEnums.status.notForSale] = stylusVariables.$rm_notforsale
         normalColors['saved'] = '#F3F315'
         normalColors['default'] = 'transparent'
 
         hoverColors = {}
-        hoverColors[ParcelEnums.status.sold] = '#A33'
-        hoverColors[ParcelEnums.status.pending] = '#537'
-        hoverColors[ParcelEnums.status.forSale] = '#191'
-        hoverColors[ParcelEnums.status.notForSale] = '#379'
+        hoverColors[ParcelEnums.status.sold] = stylusVariables.$rm_sold_hover
+        hoverColors[ParcelEnums.status.pending] = stylusVariables.$rm_pending_hover
+        hoverColors[ParcelEnums.status.forSale] = stylusVariables.$rm_forsale_hover
+        hoverColors[ParcelEnums.status.notForSale] = stylusVariables.$rm_notforsale_hover
         hoverColors['saved'] = '#AA1'
         hoverColors['default'] = 'rgba(153,153,153,.8)'
 
