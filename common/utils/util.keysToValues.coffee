@@ -1,3 +1,5 @@
+_ = require 'lodash'
+
 ###
   Point of this library is to not need to copy past key to values to save typing
   so no need to

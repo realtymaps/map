@@ -10,7 +10,7 @@ expectReject = promiseUtils.expectReject
 promiseIt = promiseUtils.promiseIt
 
 
-describe 'utils/http.request.validateAndTransform()'.ourNs().ourNs('Backend'), ->
+describe 'utils/validation.validateAndTransform()'.ourNs().ourNs('Backend'), ->
 
   promiseIt "should transform all parameters that have transforms, and omit parameters that don't", () ->
     [

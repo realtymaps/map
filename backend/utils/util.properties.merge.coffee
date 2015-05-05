@@ -3,6 +3,7 @@ config = require '../config/config'
 sqlHelpers = require './../utils/util.sql.helpers'
 PropertyDetails = require "../models/model.propertyDetails"
 logger = require '../config/logger'
+_ = require 'lodash'
 
 # merge details of data in memory; no db call
 _updateSavedProperties = (state, properties) ->

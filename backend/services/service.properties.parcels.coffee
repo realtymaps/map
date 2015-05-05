@@ -5,6 +5,7 @@ logger = require '../config/logger'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
+_ = require 'lodash'
 
 
 transforms =

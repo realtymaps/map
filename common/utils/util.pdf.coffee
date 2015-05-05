@@ -1,3 +1,6 @@
+_ = require 'lodash'
+
+
 INCH_MULTIPLIER = 72
 
 module.exports =
