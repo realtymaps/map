@@ -60,7 +60,8 @@ _columns =
     'zip', 'owner_zip'
   ].join(', ')
   parcel: [
-    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type'
+    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type',
+    'fips_code'
   ].join(', ')
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
