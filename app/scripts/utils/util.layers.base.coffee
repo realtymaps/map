@@ -3,7 +3,7 @@ googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 routes = require '../../../common/config/routes.backend.coffee'
 
-_mapboxKey = httpSync.get routes.config.mapboxKey
+_mapboxKey = if !window.isTesting then httpSync.get routes.config.mapboxKey else ''
 
 _mapBoxFactory = (name, id) ->
   name: 'Mapbox ' + name

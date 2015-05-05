@@ -1,3 +1,6 @@
+beforEach ->
+  window.isTest = true
+  
 describe 'Karma Sanity'.ourNs().ourNs('FrontEnd'), ->
   describe 'fixtures', ->
 
