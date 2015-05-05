@@ -1,3 +1,4 @@
+_ = require 'lodash'
 memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 logger = require '../config/logger'
@@ -53,6 +54,20 @@ _columns =
     'depth_footage', 'mls_close_date', 'mls_close_price', 'sale_date', 'sale_price', 'prior_sale_date',
     "#{_ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age",
   ].join(', ')
+  # columns returned for full detail results, with geom_polys_json AS geometry for geojson standard
+  all_detail_geojson: [
+    'rm_property_id', 'has_mls', 'has_tax', 'has_deed', 'street_address_num', 'street_address_name', 'street_address_unit',
+    'city', 'state', 'zip', 'geom_polys_raw', 'geom_point_raw', 'geom_polys_json AS geometry', 'geom_point_json', 'close_date',
+    'owner_name', 'owner_name2_raw', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
+    'owner_city', 'owner_state', 'owner_zip', 'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning', 'year_built', 'year_modified', 'acres', 'finished_sqft', 'baths_full', 'baths_half', 'baths_total', 'bedrooms',
+    'ask_price', 'prior_sale_price', 'prior_sale_date', 'original_price', 'close_price', 'mls_close_date', 'mls_close_price',
+    'sale_date', 'sale_price', 'mortgage_amount', 'listing_start_date', 'listing_age_days', 'mortgage_date', 'recording_date',
+    'title_company_name', 'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc',
+    'heat', 'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
+    'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id', 'mls_name',
+    'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage', 'depth_footage',
+    'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
+  ].join(', ')
   # columns returned internally for snail pdf render lookups
   address: [
     'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
@@ -89,34 +104,29 @@ _whereInBounds = (query, column, bounds) ->
 _getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
-_geojson_query_non_exec = (db, tableName, featuresColName, clause) ->
-    query =
-      db.knex.raw """
-        select geojson_query_exec('#{tableName}', '#{featuresColName}', '#{clause}')
-        """
-    # logger.sql query.toString()
-    query
+whereIn = (query, column, values) ->
+  # this logic is necessary to avoid SQL parse errors
+  if values.length == 0
+    query.whereRaw('FALSE')
+  else if values.length == 1
+    query.where(column, values[0])
+  else
+    query.whereIn(column, values)
 
-_geojson_query = (db, tableName, featuresColName, clause) ->
-  Promise.try () ->
-    _geojson_query_non_exec(db, tableName, featuresColName, clause)
-  .then (data) ->
-    # logger.sql data, true
-    return [] if not data.rows?.length
-    data.rows[0].geojson_query_exec
+orWhereIn = (query, column, values) ->
+  query.orWhere () -> whereIn(@, column, values)
 
-_geojson_query_bounds = (db, tableName, featuresColName, boundsColumnName, bounds) ->
-  _whereClause = _getClauseString _whereInBounds(db.knex(''), boundsColumnName, bounds)
-  _whereClause = _whereClause.replace(/'/g, "''")
-  # logger.debug _whereClause + '\n'
-  _geojson_query(db, tableName, featuresColName, _whereClause)
+whereNotIn = (query, column, values) ->
+  # this logic is necessary to avoid SQL parse errors
+  if values.length == 0
+    query.whereRaw('TRUE')
+  else if values.length == 1
+    query.where(column, '!=', values[0])
+  else
+    query.whereNotIn(column, values)
 
-
-_geojson_query_bounds_non_exec = (db, tableName, featuresColName, boundsColumnName, bounds) ->
-  _whereClause = _getClauseString _whereInBounds(db.knex(''), boundsColumnName, bounds)
-  _whereClause = _whereClause.replace(/'/g, "''")
-  # logger.debug _whereClause + '\n'
-  _geojson_query_non_exec(db, tableName, featuresColName, _whereClause)
+orWhereNotIn = (query, column, values) ->
+  query.orWhere () -> whereNotIn(@, column, values)
 
 module.exports =
 
@@ -144,24 +154,6 @@ module.exports =
       sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
       bindings: [point.longitude, point.latitude]
 
-  whereIn: (query, column, values) ->
-    # this logic is necessary to avoid SQL parse errors
-    if values.length == 0
-      query.whereRaw('FALSE')
-    else if values.length == 1
-      query.where(column, values[0])
-    else
-      query.whereIn(column, values)
-
-  orWhereNotIn: (query, column, values) ->
-    # this logic is necessary to avoid SQL parse errors
-    if values.length == 0
-      query.orWhereRaw('TRUE')
-    else if values.length == 1
-      query.orWhere(column, '!=', values[0])
-    else
-      query.orWhereNotIn(column, values)
-
   allPatternsInAnyColumn: (query, patterns, columns) ->
     patterns.forEach (pattern) ->
       query.where () ->
@@ -177,11 +169,14 @@ module.exports =
       extra = ", #{passedFilters} as \"passedFilters\""
     knex.select(knex.raw(_columns[which] + extra))
 
+  whereIn: whereIn
+
+  orWhereIn: orWhereIn
+
+  whereNotIn: whereNotIn
+
+  orWhereNotIn: orWhereNotIn
+
   whereInBounds: _whereInBounds
 
   getClauseString: _getClauseString
-
-  geojson_query:_geojson_query
-
-  geojson_query_bounds:_geojson_query_bounds
-  geojson_query_bounds_non_exec: _geojson_query_bounds_non_exec

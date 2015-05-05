@@ -1,12 +1,14 @@
 base = require './service.properties.base.filterSummary'
-{geojson_query, getClauseString} = require '../utils/util.sql.helpers'
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Point = require('../../common/utils/util.geometries').Point
 {clusterQuery, fillOutDummyClusterIds} = require '../utils/util.sql.manual.cluster'
 Promise = require "bluebird"
 logger = require '../config/logger'
-{maybeMergeSavedProperties, getMissingProperties, savedPropertiesQuery} = require '../utils/util.properties.merge'
+propMerge = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
+PropertyDetails = require "../models/model.propertyDetails"
+_ = require 'lodash'
 
 _getZoom = (position) ->
   # console.log position, true
@@ -17,57 +19,47 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   # logger.debug "returnAs: #{returnAs}"
 
   _default = ->
-    base.getFilterSummary(state, queryParams, limit)
+    query = base.getFilterSummaryAsQuery(state, queryParams, limit)
+    # include saved id's in query so no need to touch db later
+    if Object.keys(state.properties_selected).length > 0
+      sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
+    query
+    # remove dupes
     .then (properties) ->
       _.uniq properties, (row) ->
          row.rm_property_id
+    # include "savedDetails" for saved props
     .then (properties) ->
-      maybeMergeSavedProperties(state, queryParams, properties, limit)
+      propMerge.updateSavedProperties(state, properties)
+    # more data arranging
     .then (properties) ->
       _.each properties, (prop) ->
-          prop.type = prop.geom_point_json.type
-          prop.coordinates = prop.geom_point_json.coordinates
+        prop.type = prop.geom_point_json.type
+        prop.coordinates = prop.geom_point_json.coordinates
       props = indexBy(properties, false)
-      # logger.sql props, true
       props
 
   handles =
     cluster: ->
-      # logger.debug 'clustering'
       base.getFilterSummary(state, queryParams, limit, clusterQuery(zoom))
       .then (properties) ->
         fillOutDummyClusterIds(properties)
       .then (properties) ->
-        # logger.debug properties, true
         properties
 
+
     geojsonPolys: ->
-      # logger.sql 'in geojsonPolys'
-      _whereClause =
-        getClauseString(base.getFilterSummaryAsQuery(state, queryParams))
-        .replace(/'/g,"''")
-      query = geojson_query(db, base.tableName, 'geom_polys_json', _whereClause)
-      querystr = query.toString()
-      logger.sql "#{querystr}"
-      query
-      .then (json) ->
-        return  { json1: [], json2:[] } if !json?.features?
-        #begin merge savedprops
-        missing = getMissingProperties(state, json.features)
-        missingWhereClause =
-          getClauseString(savedPropertiesQuery(2000, queryParams, missing))
-          .replace(/'/g,"''")
-        # logger.debug missingWhereClause
-        geojson_query(db, base.tableName, 'geom_polys_json', missingWhereClause)
-        .then (json2) ->
-          json1: json
-          json2: json2
-      .then (blob) ->
-        {json1, json2} = blob
-        if json2?.features?
-          _.merge json1, json2
-        else json1
-      #end merge savedprops
+      query = sqlHelpers.select(db.knex, 'all_detail_geojson', false).from(sqlHelpers.tableName(PropertyDetails))
+      query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
+      # include saved id's in query so no need to touch db later
+      if Object.keys(state.properties_selected).length > 0
+        sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
+      # data formatting
+      query.then (data) ->
+        geojson = 
+          "type": "FeatureCollection"
+          "features": _.uniq propMerge.updateSavedProperties(state, data), (row) ->
+            row.rm_property_id
 
 
     default: _default

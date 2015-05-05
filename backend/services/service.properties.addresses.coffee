@@ -6,6 +6,7 @@ geohashHelper = require '../utils/validation/util.validation.geohash'
 validation = require '../utils/util.validation'
 {select, tableName, whereInBounds} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
+_ = require 'lodash'
 
 
 validators = validation.validators

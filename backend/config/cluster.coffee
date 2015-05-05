@@ -15,7 +15,7 @@ module.exports = (workerCb) ->
 
     logger.debug headerMsg + "forking #{cpuCount} processes"
     #Create a worker for each CPU
-    _.range(cpuCount).forEach ->
+    [1..cpuCount].forEach ->
       cluster.forkAsync()
 
     cluster.onAsync('exit').then (worker) ->

@@ -2,6 +2,7 @@ logger = require '../config/logger'
 auth = require '../utils/util.auth'
 userService = require '../services/service.user'
 loaders = require '../utils/util.loaders'
+_ = require 'lodash'
 
 
 routesConfig =
