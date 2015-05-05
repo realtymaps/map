@@ -1,6 +1,12 @@
 httpSync = require './util.httpSync.coffee'
 routes = require '../../../common/config/routes.backend.coffee'
-_cartodb = if !window.isTesting then JSON.parse httpSync.get routes.config.cartodb else {API_KEY:'', ACCOUNT:'', mapsId: ''}
+console.debug "isTest: #{window.isTest}"
+
+##TODO: use angular to inject a route?
+try
+  _cartodb = JSON.parse httpSync.get routes.config.cartodb
+catch
+  _cartodb = {API_KEY:'', ACCOUNT:'', mapsId: '', MAPS:[]}
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)

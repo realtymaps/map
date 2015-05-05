@@ -18,15 +18,23 @@ transforms =
     required: true
 
 
-_tableName = tableName(Parcel)
+_tableName = sqlHelpers.tableName(Parcel)
 
-_getBaseParcelDataUnwrapped = (state, filters, doStream = false) -> Promise.try () ->
+_getBaseParcelQuery = ->
+  sqlHelpers.select(db.knex, 'parcel', false)
+  .from(sqlHelpers.tableName(Parcel))
+
+_getBaseParcelQueryByBounds = (bounds) ->
+  query = _getBaseParcelQuery()
+  sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
+  query
+
+_getBaseParcelDataUnwrapped = (state, filters, doStream) -> Promise.try () ->
   validation.validateAndTransform(filters, transforms)
   .then (filters) ->
     query = _getBaseParcelQuery(filters.bounds)
     return query.stream() if doStream
     query
-
 
 module.exports =
   getBaseParcelQuery: _getBaseParcelQuery
@@ -36,8 +44,7 @@ module.exports =
   getBaseParcelData: (state, filters) ->
     _getBaseParcelDataUnwrapped(state,filters)
     .then (data) ->
-      geojson = 
+      geojson =
         "type": "FeatureCollection"
         "features": _.uniq data, (row) ->
           row.rm_property_id
-

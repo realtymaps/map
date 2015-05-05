@@ -61,7 +61,7 @@
     "forever": "0.11.x",
     "from": "^0.1.3",
     "geohash64": "^1.0.3",
-    "gulp": "https://github.com/gulpjs/gulp/archive/4502a9caead8de00d16765dc30c4e5f81e847d75.tar.gz",
+    "gulp": "https://github.com/gulpjs/gulp/archive/78751c834e1c7365f60dff7094c1d7e492b11997.tar.gz",
     "gulp-changed": "^1.0.0",
     "gulp-coffee": "^2.2.0",
     "gulp-concat": "2.4.x",

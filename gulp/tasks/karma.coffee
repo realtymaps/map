@@ -2,22 +2,19 @@ gulp = require 'gulp'
 karma = require('karma').server
 open  = require "gulp-open"
 concat = require 'gulp-concat'
-log = require('gulp-util').log
-plumber = require 'gulp-plumber'
+{log} = require('gulp-util')
 
 karmaConf = require.resolve('../../karma/karma.conf.coffee')
 
 karmaRunner = (done) ->
-  karma_callback = (code) =>
-    log "Karma Callback Code: #{code}"
-    done(code)
-
   log "-- Karma Setup --"
   try
     karma.start
       configFile: karmaConf
       singleRun: true
-    , karma_callback
+    , (code) =>
+      log "Karma Callback Code: #{code}"
+      done(code)
   catch e
     log "KARMA ERROR: #{e}"
     done(e)

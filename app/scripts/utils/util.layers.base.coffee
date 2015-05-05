@@ -3,7 +3,11 @@ googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 routes = require '../../../common/config/routes.backend.coffee'
 
-_mapboxKey = if !window.isTesting then httpSync.get routes.config.mapboxKey else ''
+##TODO: use angular to inject a route?
+try
+  _mapboxKey = httpSync.get routes.config.mapboxKey
+catch
+  _mapboxKey = ''
 
 _mapBoxFactory = (name, id) ->
   name: 'Mapbox ' + name
