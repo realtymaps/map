@@ -219,27 +219,23 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         #consider renaming parcels to addresses as that is all they are used for now
         if ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
              ZoomLevel.isParcel(@scopeM().center.zoom)
-              @scope.map.layers.overlays["cartodb parcels"].visible = true
           if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
               ZoomLevel.dblClickZoom.disable(@scope)
-        ## BEGIN COMMENT OUT WHEN CARTODB OR MAPBOX IS FULLY USED
-              promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
+              #BEGIN COMMENT OUT WHEN MAPBOX OR CARTODB ARE FULLY USED
+              promises.pushProperties.getAddresses(@hash, @mapState, cache).then (data) =>
                 @scope.map.markers.addresses = @layerFormatter.setDataOptions(
                   _.cloneDeep(data),
                   @layerFormatter.Parcels.labelFromStreetNum
                 )
-              ))
 
-          promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
+          promises.push Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scopeM().geojson.parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
 
             $log.debug "addresses count to draw: #{data?.features?.length}"
-          ))
-        ## END COMMENT OUT WHEN CARTODB OR MAPBOX IS FULLY USED
-
+        #END COMMENT OUT
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
