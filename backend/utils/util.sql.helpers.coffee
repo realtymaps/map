@@ -169,13 +169,8 @@ module.exports =
     knex.select(knex.raw(_columns[which] + extra))
 
   whereIn: whereIn
-
   orWhereIn: orWhereIn
-
   whereNotIn: whereNotIn
-
   orWhereNotIn: orWhereNotIn
-
   whereInBounds: _whereInBounds
-
   getClauseString: _getClauseString

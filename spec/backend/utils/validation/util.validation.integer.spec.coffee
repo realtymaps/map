@@ -2,11 +2,8 @@ Promise = require 'bluebird'
 basePath = require '../../basePath'
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
+{expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
-promiseUtils = require('../../../specUtils/promiseUtils')
-expectResolve = promiseUtils.expectResolve
-expectReject = promiseUtils.expectReject
-promiseIt = promiseUtils.promiseIt
 
 describe 'utils/http.request.validators.integer()'.ourNs().ourNs('Backend'), ->
   param = 'fake'
