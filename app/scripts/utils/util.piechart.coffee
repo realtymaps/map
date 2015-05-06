@@ -20,59 +20,47 @@ formatPieData = (data) ->
   .entries data, d3.map
 
 makeSvg = (data, total) ->
-  # reduce some of the variables for readability
-  s = pieStyl.strokewidth
-  r = pieStyl.radius
-  i = pieStyl.innerRadius
-  w = pieStyl.width
-  h = pieStyl.height
-  a = pieStyl.arcOffset
-  dy = pieStyl.dy
-  cfn = pieStyl.pathClassFunc
-  vfn = pieStyl.valueFunc
-  tfn = pieStyl.pathTitleFunc
-
   # stage items for processing and creating pie data
   donut = d3.layout.pie()
-  arc = d3.svg.arc().outerRadius(r).innerRadius(i)
+  arc = d3.svg.arc().outerRadius(pieStyl.radius).innerRadius(pieStyl.innerRadius)
   svg = document.createElementNS(d3.ns.prefix.svg, 'svg')
 
   # initialize this pie and give it data set
   vis = d3.select(svg)
     .data([data])
     .attr('class', 'pieClass')
-    .attr('width', w)
-    .attr('height', h)
+    .attr('width', pieStyl.width)
+    .attr('height', pieStyl.height)
 
   # white circle for background behind cluster number in pie (css background does not work)
   vis.append('circle')
-    .attr('cx', r)
-    .attr('cy', r)
-    .attr('r', r)
+    .attr('cx', pieStyl.radius)
+    .attr('cy', pieStyl.radius)
+    .attr('r', pieStyl.radius)
     .attr('fill', 'white')
 
   # arc data according to the parcel counts in dataset
   arcs = vis.selectAll('g.arc')
-    .data(donut.value(vfn(total)))
+    .data(donut.value(pieStyl.valueFunc(total)))
     .enter().append('svg:g')
     .attr('class', 'arc')
-    .attr('transform', 'translate('+(r+a)+','+(r+a)+')')
+    .attr('transform', 'translate('+(pieStyl.radius+pieStyl.arcOffset)+','+(pieStyl.radius+pieStyl.arcOffset)+')')
 
   # visuals & styling for the arcs
   arcs.append('svg:path')
-    .attr('class', cfn)
-    .attr('stroke-width', s)
+    .attr('class', pieStyl.pathClassFunc)
+    .attr('stroke-width', pieStyl.strokewidth)
     .attr('d', arc)
     .append('svg:title')
-    .text(tfn)
+    .text(pieStyl.pathTitleFunc)
 
   # cluster number
   vis.append('text')
-    .attr('x', r+a)
-    .attr('y', r)
+    .attr('x', pieStyl.radius+pieStyl.arcOffset)
+    .attr('y', pieStyl.radius)
     .attr('class', 'marker-cluster-pie-label')
     .attr('text-anchor', 'middle')
-    .attr('dy', dy)
+    .attr('dy', pieStyl.textyOffset)
     .text(total)
   return svg
 

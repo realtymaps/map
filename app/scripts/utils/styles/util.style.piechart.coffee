@@ -4,7 +4,7 @@ strokewidth = 1
 arcOffset = 1 #shimmy the arcs & text away from pie-frame border to ensure no clipping
 width = (4*strokewidth)+(2*radius)
 height = width
-dy = '.4em' #amount of drop for number value in center
+textyOffset = '.4em' #amount of drop for number value in center
 
 # return count of given parcel type
 valueFunc = (c) ->
@@ -27,7 +27,7 @@ module.exports =
   arcOffset: arcOffset
   width: width
   height: height
-  dy: dy
+  textyOffset: textyOffset
   valueFunc: valueFunc
   pathClassFunc: pathClassFunc
   pathTitleFunc: pathTitleFunc
