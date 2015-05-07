@@ -51,7 +51,7 @@ base =
     FAST_REFRESH: 30*1000   # 30 seconds
     PRE_FETCH: .1
   MEM_WATCH:
-    IS_ON: false
+    IS_ON: process.env.MEM_WATCH_IS_ON || false
   TEMP_DIR: '/tmp'
   LOB:
     TEST_API_KEY: process.env.LOB_TEST_API_KEY

@@ -29,7 +29,7 @@ process.on 'uncaughtException', (err) ->
 
  if config.MEM_WATCH.IS_ON
    # watch and log any leak (a lot of false positive though)
-   memwatch = require 'memwatch'
+   memwatch = require 'memwatch-next'
    memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 require('./config/cluster') (cluster) ->
