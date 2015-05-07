@@ -75,7 +75,8 @@ _columns =
     'zip', 'owner_zip'
   ].join(', ')
   parcel: [
-    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type'
+    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type',
+    'fips_code'
   ].join(', ')
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
@@ -162,11 +163,12 @@ module.exports =
             sql: "#{column} ~* ?"
             bindings: [ pattern ]
 
-  select: (knex, which, passedFilters=null) ->
+  select: (knex, which, passedFilters=null, prepend='') ->
+    prepend += ' ' if prepend?
     extra = ''
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
-    knex.select(knex.raw(_columns[which] + extra))
+    knex.select(knex.raw(prepend + _columns[which] + extra))
 
   whereIn: whereIn
   orWhereIn: orWhereIn

@@ -1,3 +1,4 @@
+
 describe 'Karma Sanity'.ourNs().ourNs('FrontEnd'), ->
   describe 'fixtures', ->
 

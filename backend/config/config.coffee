@@ -51,7 +51,7 @@ base =
     FAST_REFRESH: 30*1000   # 30 seconds
     PRE_FETCH: .1
   MEM_WATCH:
-    IS_ON: false
+    IS_ON: process.env.MEM_WATCH_IS_ON || false
   TEMP_DIR: '/tmp'
   LOB:
     TEST_API_KEY: process.env.LOB_TEST_API_KEY
@@ -63,6 +63,11 @@ base =
     ACCOUNT: process.env.MAPBOX_ACCOUNT
     MAPS:
       main: process.env.MAPBOX_MAPS_MAIN
+  CARTODB:
+    API_KEY: process.env.CARTODB_API_KEY
+    MAPS: JSON.parse process.env.CARTODB_MAPS
+    ACCOUNT: process.env.CARTODB_ACCOUNT
+    API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'

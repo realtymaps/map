@@ -54,5 +54,3 @@ gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
         }}
     ])
   )
-
-

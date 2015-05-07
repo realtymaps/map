@@ -40,6 +40,7 @@ module.exports = (config, webpackConf) ->
     '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
     '../spec/fixtures/*.html'
     '../spec/fixtures/*.json'
+    '../spec/app/bootstrap.spec.coffee'
     '../spec/common/**/*spec.coffee'
     '../spec/app/**/*spec.coffee'
     #do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
