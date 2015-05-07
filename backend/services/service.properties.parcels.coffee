@@ -20,7 +20,7 @@ transforms =
 _tableName = sqlHelpers.tableName(Parcel)
 
 _getBaseParcelQuery = ->
-  sqlHelpers.select(db.knex, 'parcel', false)
+  sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
   .from(_tableName)
 
 _getBaseParcelQueryByBounds = (bounds) ->
