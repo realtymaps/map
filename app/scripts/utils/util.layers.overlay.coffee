@@ -1,5 +1,6 @@
 httpSync = require './util.httpSync.coffee'
 routes = require '../../../common/config/routes.backend.coffee'
+pieUtil = require './util.piechart.coffee'
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
@@ -7,9 +8,11 @@ _overlays =
     type: "markercluster"
     visible: true
     layerOptions:
+      maxClusterRadius: 100
       chunkedLoading: true
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true
+      iconCreateFunction: pieUtil.pieCreateFunction
 
   backendPriceCluster:
     name: 'Price Cluster'
