@@ -6,14 +6,18 @@ describe 'service.cartodb', ->
   beforeEach ->
     @subject = svc
     @limitStub = sinon.stub()
-    @parcelSvcMock =
-      getBaseParcelQuery: sinon.stub().returns
-        where: sinon.stub().returns
-          limit: @limitStub
-          then: sinon.stub()
-          stream: sinon.stub()
+    @sqlHelpersMock =
+      select: sinon.stub().returns
+        from: sinon.stub().returns
+          where: sinon.stub().returns
+            whereNotNull: sinon.stub().returns
+              orderBy: sinon.stub().returns
+                limit: @limitStub
+                then: sinon.stub()
+                stream: sinon.stub()
 
-    @subject.__set__ parcelSvc: @parcelSvcMock
+
+    @subject.__set__ sqlHelpers: @sqlHelpersMock
 
 
   describe 'restful', ->
@@ -23,14 +27,14 @@ describe 'service.cartodb', ->
           @subject.restful.getByFipsCode
             api_key: CARTODB.API_KEY_TO_US
             fipscode: 12011
-          @parcelSvcMock.getBaseParcelQuery.calledOnce.should.equal true
+          @sqlHelpersMock.select.calledOnce.should.equal true
 
         it 'limit', ->
           @subject.restful.getByFipsCode
             api_key: CARTODB.API_KEY_TO_US
             fipscode: 12011
             limit: 10
-          @parcelSvcMock.getBaseParcelQuery.calledOnce.should.equal true
+          @sqlHelpersMock.select.calledOnce.should.equal true
           @limitStub.calledOnce.should.equal true
 
       describe 'throws', ->

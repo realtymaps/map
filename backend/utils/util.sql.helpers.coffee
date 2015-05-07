@@ -163,11 +163,12 @@ module.exports =
             sql: "#{column} ~* ?"
             bindings: [ pattern ]
 
-  select: (knex, which, passedFilters=null) ->
+  select: (knex, which, passedFilters=null, prepend='') ->
+    prepend += ' ' if prepend?
     extra = ''
     if passedFilters?
       extra = ", #{passedFilters} as \"passedFilters\""
-    knex.select(knex.raw(_columns[which] + extra))
+    knex.select(knex.raw(prepend + _columns[which] + extra))
 
   whereIn: whereIn
 

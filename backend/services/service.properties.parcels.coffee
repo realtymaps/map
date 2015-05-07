@@ -17,12 +17,11 @@ transforms =
     ]
     required: true
 
-
 _tableName = sqlHelpers.tableName(Parcel)
 
 _getBaseParcelQuery = ->
   sqlHelpers.select(db.knex, 'parcel', false)
-  .from(sqlHelpers.tableName(Parcel))
+  .from(_tableName)
 
 _getBaseParcelQueryByBounds = (bounds) ->
   query = _getBaseParcelQuery()

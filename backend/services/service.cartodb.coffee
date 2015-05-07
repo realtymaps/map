@@ -1,4 +1,7 @@
-parcelSvc = require './service.properties.parcels'
+db = require('../config/dbs').properties
+Parcel = require "../models/model.parcels"
+sqlHelpers = require './../utils/util.sql.helpers.coffee'
+_parcelTable = sqlHelpers.tableName(Parcel)
 Promise = require "bluebird"
 logger = require '../config/logger'
 {CARTODB} = require '../config/config'
@@ -29,38 +32,45 @@ _upload = (stream, fileName) -> Promise.try ->
           stream: filteredStream
           uploadFileName: fileName
 
-_fipsCodeQuery = (fipsCode, limit) ->
-  query = parcelSvc.getBaseParcelQuery()
-  .where(fips_code:fipsCode)
+_fipsCodeQuery = (opts) ->
+  throw "opts.fipscode required!" unless opts?.fipscode?
 
-  if limit
-    query.limit(limit)
-  # logger.debug query.toString()
+  query =
+  sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
+  .from _parcelTable
+  .where fips_code:opts.fipscode
+  .whereNotNull 'rm_property_id'
+  .orderBy 'rm_property_id'
+
+  if opts?.limit?
+    query.limit(opts.limit)
+  if opts?.start_rm_property_id?
+    query.whereRaw("rm_property_id > '#{opts.start_rm_property_id}'")
+  logger.debug query.toString()
   query
 
 _parcel =
-  upload: (fipsCode) ->
-    _upload _fipsCodeQuery(fipsCode).stream(), 'parcels-' + fipsCode
+  upload: (fipscode) ->
+    _upload _fipsCodeQuery(fipscode: fipscode).stream(), 'parcels-' + fipsCode
 
   #initiates cartodb to synchronize (callback to us for a file)
   synchronize: (fipsCode) ->
     #need to add synchronize API to cartodb-upload
 
-  getByFipsCode: (fileName, limit) ->
-    #maybe parse file name for fipsCode?
-    _fipsCodeQuery(fileName, limit)
+  getByFipsCode: (opts) ->
+    _fipsCodeQuery(opts)
 
 module.exports =
 
   parcel: _parcel
   restful:
     getByFipsCode: (opts) ->
-      # logger.debug(opts,true)
+      # logger.debug opts,true
       if !opts or !opts.api_key? or opts.api_key != CARTODB.API_KEY_TO_US
         throw 'UNAUTHORIZED'
       if !opts.fipscode?
         throw 'BADREQUEST'
-      limit = opts.limit || undefined
-      _parcel.getByFipsCode(opts.fipscode, limit)
+
+      _parcel.getByFipsCode(opts)
     uploadParcel: (state, filters) -> Promise.try ->
       _parcel.uploadParcel(filters.fips_code)
