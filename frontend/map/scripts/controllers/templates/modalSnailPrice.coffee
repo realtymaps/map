@@ -1,8 +1,8 @@
 app = require '../../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
-httpStatus = require '../../../../common/utils/httpStatus.coffee'
-commonConfig = require '../../../../common/config/commonConfig.coffee'
+frontendRoutes = require '../../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../../common/config/routes.backend.coffee'
+httpStatus = require '../../../../../common/utils/httpStatus.coffee'
+commonConfig = require '../../../../../common/config/commonConfig.coffee'
 
 app.controller 'ModalSnailPriceCtrl'.ourNs(), ['$scope', '$http', '$interpolate', '$location', ($scope, $http, $interpolate, $location) ->
   

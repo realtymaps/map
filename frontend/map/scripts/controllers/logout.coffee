@@ -1,6 +1,6 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-backendRoutes = require '../../../common/config/routes.backend.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 ###
   Logout controller

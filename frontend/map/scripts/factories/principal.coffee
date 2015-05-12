@@ -1,8 +1,8 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
 
 app = require '../app.coffee'
-backendRoutes = require '../../../common/config/routes.backend.coffee'
-permissionsUtil = require '../../../common/utils/permissions.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+permissionsUtil = require '../../../../common/utils/permissions.coffee'
 
 
 app.factory 'principal'.ourNs(), [

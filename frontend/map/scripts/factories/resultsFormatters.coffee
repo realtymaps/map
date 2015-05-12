@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-Point = require('../../../common/utils/util.geometries.coffee').Point
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'

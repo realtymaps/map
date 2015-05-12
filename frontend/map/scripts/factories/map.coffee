@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 qs = require 'qs'
-backendRoutes = require '../../../common/config/routes.backend.coffee'
-analyzeValue = require '../../../common/utils/util.analyzeValue.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 
 
 _encode = require('geohash64').encode

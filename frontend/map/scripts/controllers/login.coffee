@@ -1,8 +1,8 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-backendRoutes = require '../../../common/config/routes.backend.coffee'
-alertIds = require '../../../common/utils/enums/util.enums.alertIds.coffee'
-httpStatus = require '../../../common/utils/httpStatus.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
+httpStatus = require '../../../../common/utils/httpStatus.coffee'
 
 ###
   Login controller

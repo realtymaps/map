@@ -1,7 +1,7 @@
 app = require '../app.coffee'
-fonts = require "../../../common/documentTemplates/signature-fonts/index.coffee"
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-pdfUtils = require "../../../common/utils/util.pdf.coffee"
+fonts = require "../../../../common/documentTemplates/signature-fonts/index.coffee"
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+pdfUtils = require "../../../../common/utils/util.pdf.coffee"
 
 
 setWatch = null

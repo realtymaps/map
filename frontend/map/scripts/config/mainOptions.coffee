@@ -1,6 +1,6 @@
 app = require '../app.coffee'
-common = require '../../../common/config/commonConfig.coffee'
-Point = require('../../../common/utils/util.geometries.coffee').Point
+common = require '../../../../common/config/commonConfig.coffee'
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 
 app.constant 'MainOptions'.ourNs(), do () ->

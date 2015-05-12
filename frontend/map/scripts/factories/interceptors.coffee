@@ -1,8 +1,8 @@
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 app = require '../app.coffee'
 qs = require 'qs'
-httpStatus = require '../../../common/utils/httpStatus.coffee'
-commonConfig = require '../../../common/config/commonConfig.coffee'
+httpStatus = require '../../../../common/utils/httpStatus.coffee'
+commonConfig = require '../../../../common/config/commonConfig.coffee'
 escapeHtml = require 'escape-html'
 
 app.factory 'RedirectInterceptor'.ourNs(), [ '$location', '$rootScope',

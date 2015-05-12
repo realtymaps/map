@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 require '../factories/map.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
-{Point, NgLeafletCenter} = require('../../../common/utils/util.geometries.coffee')
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+{Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 
 ###

@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-keysToValues = require '../../../common/utils/util.keysToValues.coffee'
+keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 
 app.constant 'events'.ourNs(),
   keysToValues

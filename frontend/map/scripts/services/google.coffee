@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-{Point} = require '../../../common/utils/util.geometries.coffee'
+{Point} = require '../../../../common/utils/util.geometries.coffee'
 
 app.service 'GoogleService'.ourNs(), ->
   GeoJsonTo: do ->

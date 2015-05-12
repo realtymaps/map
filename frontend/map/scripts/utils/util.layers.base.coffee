@@ -1,7 +1,7 @@
 httpSync = require './util.httpSync.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
-routes = require '../../../common/config/routes.backend.coffee'
+routes = require '../../../../common/config/routes.backend.coffee'
 
 _mapboxKey = ''
 

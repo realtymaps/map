@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views

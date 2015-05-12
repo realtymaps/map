@@ -1,5 +1,5 @@
 _thisName = 'util.events'
-Point = require('../../../common/utils/util.geometries.coffee').Point
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 caseing = require 'case'
 
 _markerEvents= ['click', 'dblclick', 'mousedown', 'mouseover', 'mouseout']

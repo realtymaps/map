@@ -1,7 +1,7 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
 
 app = require '../app.coffee'
-frontendRoutes = require '../../../common/config/routes.frontend.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 
 qs = require 'qs'
 

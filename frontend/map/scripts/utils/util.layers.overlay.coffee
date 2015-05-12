@@ -1,5 +1,5 @@
 httpSync = require './util.httpSync.coffee'
-routes = require '../../../common/config/routes.backend.coffee'
+routes = require '../../../../common/config/routes.backend.coffee'
 pieUtil = require './util.piechart.coffee'
 
 _overlays =
