@@ -2,7 +2,7 @@ webpack = require 'webpack'
 _ = require 'lodash'
 ngAnnotatePlugin = require 'ng-annotate-webpack-plugin'
 
-Config = (output, additionalPlugs) ->
+Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
   obj =
 #    watch:true
     verbose:false
@@ -16,14 +16,17 @@ Config = (output, additionalPlugs) ->
         new webpack.ResolverPlugin(
           new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(
             "bower.json", ["main"])
-        ),
+        )
+        new webpack.optimize.DedupePlugin()
+        new webpack.optimize.OccurenceOrderPlugin(true)
+        new webpack.optimize.AggressiveMergingPlugin()
         new ngAnnotatePlugin()
       ]
     module:
       loaders: [
         { test: /\.css$/, loader: 'style!css!autoprefixer?browsers=last 2 version' }
-        { test: /\.styl$/, loader: 'style!css?sourceMap!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
-        { test: /\.scss$/, loader: "style!css?sourceMap!sass" } #mapbox styles out of the box are scss
+        { test: /\.styl$/, loader: 'style!css' + sourceMap + '!stylus' } #enables import url for sourceMap, but background-images are broken.. webpack bug?
+        { test: /\.scss$/, loader: 'style!css' + sourceMap + '!sass' } #mapbox styles out of the box are scss
 #        { test: /\.styl$/, loader: 'style!css!stylus' }
         { test: /\.coffee$/, loader: 'coffee' }
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
