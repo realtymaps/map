@@ -17,7 +17,7 @@ Config = (output, additionalPlugs) ->
           new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(
             "bower.json", ["main"])
         ),
-        new ngAnnotatePlugin(add: true)
+        new ngAnnotatePlugin()
       ]
     module:
       loaders: [
