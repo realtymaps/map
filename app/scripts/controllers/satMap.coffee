@@ -4,7 +4,7 @@ qs = require 'qs'
 _overlays = require '../utils/util.layers.overlay.coffee'
 _eventReg = require '../utils/util.events.coffee'
 
-app.controller 'SatMapCtrl'.ourNs(), ['Logger'.ourNs(), '$timeout', '$rootScope',
+app.controller 'SatMapCtrl'.ourNs(), ['$log', '$timeout', '$rootScope',
   'BaseMap'.ourNs(), 'leafletData', '$scope'
   ($log, $timeout, $rootScope, BaseMap, leafletData, $scope) ->
 

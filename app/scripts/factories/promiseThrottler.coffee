@@ -1,9 +1,9 @@
 app = require '../app.coffee'
 
 
-app.factory 'PromiseThrottler'.ourNs(), [
-  'Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'events'.ourNs(), 'MainOptions'.ourNs(), 'uiGmapPropMap',
-  ($log, $timeout, $q, $rootScope, Events, MainOptions, PropMap) ->
+app.factory 'rmapsPromiseThrottler', [
+  '$log', '$timeout', '$q', '$rootScope', 'rmapsevents', 'rmapsMainOptions',
+  ($log, $timeout, $q, $rootScope, Events, MainOptions) ->
 
     defaultName = 'PromiseThrottler'
     defaultNameIndex = 0
@@ -17,12 +17,12 @@ app.factory 'PromiseThrottler'.ourNs(), [
         defaultNameIndex += 1
       this.name = name
 
-      promiseHash = new PropMap()
+      promiseHash = {}
       promisesIndex = 0
 
       cancelAll = ->
-        if promiseHash.length
-          promiseHash.each (cancelHandler) ->
+        if _.keys(promiseHash).length
+          _.each promiseHash, (cancelHandler) ->
             cancelHandler()
       ###
         A promise has ben executed;
@@ -49,7 +49,7 @@ app.factory 'PromiseThrottler'.ourNs(), [
         .finally =>
           promiseHash.remove(@name + myId)
 
-        promiseHash.put(@name + myId, () ->
+        promiseHash[@name + myId] = ->
           ### these alerts won't be sent in the first place, now
           # prevent alerts from the canceled $http call
           if options.http?
@@ -62,7 +62,6 @@ app.factory 'PromiseThrottler'.ourNs(), [
 
           # do the cancel
           cancelablePromise.cancel()
-        )
 
         deferred.promise #return a regular promise
 

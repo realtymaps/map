@@ -7,7 +7,7 @@ moment = require 'moment'
 
 
 module.exports =
-  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', 'Logger'.ourNs(), 'ParcelEnums'.ourNs(), ($scope, $log, ParcelEnums) ->
+  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', '$log', 'ParcelEnums'.ourNs(), ($scope, $log, ParcelEnums) ->
     colorClasses = {}
     colorClasses[ParcelEnums.status.sold] = 'label-sold-property'
     colorClasses[ParcelEnums.status.pending] = 'label-pending-property'

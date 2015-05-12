@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 keysToValue = require '../../../common/utils/util.keysToValues.coffee'
 
-app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), 'Logger'.ourNs(), (options, $log) ->
+app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), '$log', (options, $log) ->
   _zoomThresh = options.map.options.zoomThresh
   _enum = keysToValue
     addressParcel: 1

@@ -13,9 +13,10 @@
     "angular-animate": "~1.3.4",
     "angular-bootstrap": "~0.11.0",
     "angular-ui-utils": "~0.1.1",
-    "angular-google-maps": "2.1.0-X.10",
+    "angular-google-maps": "2.1.1",
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
+    "angular-loggly-logger": "~0.1.1",
     "rmaps-angular-utils": "1.0.0",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
     "fontawesome": "~4.2.0",
@@ -35,6 +36,9 @@
       "dependencies": {
         "angular": ">=1.2.0"
       }
+    },
+    "angular-google-maps": {
+      "main": "dist/angular-google-maps-street-view.js"
     },
     "leaflet": {
       "main": "dist/leaflet-src.js"

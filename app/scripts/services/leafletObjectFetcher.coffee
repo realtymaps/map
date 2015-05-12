@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 
 app.factory 'rmapsLeafletObjectFetcher', [
-  'rmapsLogger', '$q', 'leafletData', ($log, $q, leafletData) ->
+  '$log', '$q', 'leafletData', ($log, $q, leafletData) ->
     #elementId: div id
     (elementId) ->
       # ng-leaflets promise logic is kinda overkill,

@@ -11,8 +11,8 @@ _mapClassContainerName = 'angular-leaflet-map'
 
 
 module.exports = app.factory 'BaseMap'.ourNs(), [
-  'Logger'.ourNs(), 'uiGmapIsReady', '$timeout', 'leafletData',
-  ($log, uiGmapIsReady, $timeout, leafletData) ->
+  '$log', '$timeout', 'leafletData',
+  ($log, $timeout, leafletData) ->
     class BaseMap
       constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['dragend', 'zoomend'])->
         _throttler =  _eventThrottler($log, options)

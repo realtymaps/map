@@ -3,7 +3,7 @@ app = require '../app.coffee'
 qs = require 'qs'
 
 app.service 'FilterManager'.ourNs(), [
-  '$rootScope', 'Logger'.ourNs(), 'ParcelEnums'.ourNs()
+  '$rootScope', '$log', 'ParcelEnums'.ourNs()
   ($rootScope, $log, ParcelEnums) ->
 
     cleanFilters = (filters) ->
