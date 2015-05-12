@@ -18,7 +18,7 @@ _humanizePartial = (val, unit) ->
     return readable.slice(0,-1)
   return readable
 
-app.service 'FormattersService'.ourNs(), [ 'Logger'.ourNs(), ($log) ->
+app.service 'FormattersService'.ourNs(), [ '$log', ($log) ->
   _json =
     readable: (json) ->
       JSON.stringify(json).replace(/"/g,'').replace(/:/g,': ').replace(/,/g,', ').replace('{','').replace('}','')

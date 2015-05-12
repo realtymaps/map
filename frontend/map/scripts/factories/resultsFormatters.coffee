@@ -6,7 +6,7 @@ require '../services/leafletObjectFetcher.coffee'
 
 app.factory 'ResultsFormatter'.ourNs(), [
   '$rootScope', '$timeout', '$filter',
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
+  '$log', 'ParcelEnums'.ourNs(), 'GoogleService'.ourNs(),
   'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
   'rmapsLeafletObjectFetcher', 'MainOptions'.ourNs(), 'ZoomLevel'.ourNs(),
   ($rootScope, $timeout, $filter,

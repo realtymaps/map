@@ -15,15 +15,15 @@ _emptyGeoJsonData =
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
+app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapControls'.ourNs(), 'uiGmapObjectIterators', 'popupLoader'.ourNs(),
+  'ParcelEnums'.ourNs(), 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
+  'GoogleService'.ourNs(), 'popupLoader'.ourNs(),
   'leafletData',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapControls, uiGmapObjectIterators, PopupLoader, leafletData) ->
+    ParcelEnums, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
+    PopupLoader, leafletData) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -77,15 +77,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
         @layerFormatter = LayerFormatters(@)
-
-        @updateAllLayersByModel = _updateAllLayersByModel = (model) =>
-          uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
-            if GoogleService.Map.isGMarker(gObject)
-              @layerFormatter.MLS.setMarkerPriceOptions(model)
-            else
-              opts = @layerFormatter.Parcels.optionsFromFill(model)
-            @redraw()
-          , ['streetNumMarkers']
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
@@ -143,13 +134,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             toBeZoom = self.map.getZoom() + increment
             self.map.setZoom(toBeZoom)
 
-            setBiasBounds: () =>
-              sw = uiGmapUtil.getCoords(@scope.bounds?.southwest)
-              sw ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude-0.01, longitude: @scope.center.longitude-0.01)
-              ne = uiGmapUtil.getCoords(@scope.bounds?.northeast)
-              ne ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude+0.01, longitude: @scope.center.longitude+0.01)
-              @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
-
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
@@ -157,7 +141,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scopeM().listingDetail.show = false if newVal isnt oldVal
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         @subscribe()
-        uiGmapControls.init $scope.controls
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
