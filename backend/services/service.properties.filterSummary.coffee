@@ -33,6 +33,8 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       _.each properties, (prop) ->
         prop.type = prop.geom_point_json.type
         prop.coordinates = prop.geom_point_json.coordinates
+        delete prop.geom_point_json
+        delete prop.geometry
       props = indexBy(properties, false)
       props
 
@@ -54,7 +56,11 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       query.then (data) ->
         geojson =
           "type": "FeatureCollection"
-          "features": propMerge.updateSavedProperties(state, data)
+          "features": propMerge.updateSavedProperties(state, data).map (d) ->
+            d.type = 'Feature'
+            delete d.geom_point_json
+            d.properties = {}
+            d
 
     default: _default
 
