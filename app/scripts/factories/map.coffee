@@ -70,7 +70,7 @@ app.factory 'rmapsMap',
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
-        @scope.savedrmapsProperties = rmapsProperties.getSavedrmapsProperties()
+        @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
         @layerFormatter = rmapsLayerFormatters(@)
 
         @saveProperty = (model, lObject) =>
