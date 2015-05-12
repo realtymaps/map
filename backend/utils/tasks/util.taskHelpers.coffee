@@ -38,7 +38,7 @@ createRawTempTable = (tableName, fields) ->
     table.increments('rm_raw_id').notNullable()
     table.boolean('rm_valid')
     fields.forEach (field) ->
-      table.text(field)
+      table.text(field.replace(/\./g, ''))
 
 
 module.exports =

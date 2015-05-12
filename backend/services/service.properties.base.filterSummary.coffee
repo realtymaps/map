@@ -16,7 +16,6 @@ filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
-  closePrice: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
@@ -72,7 +71,6 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
       sqlHelpers.whereIn(query, 'rm_status', filters.status)
 
     sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
-    sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
     sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
     sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 

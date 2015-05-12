@@ -11,8 +11,8 @@ objectsToPgText = (fields, _options={}) ->
     encoding: 'utf-8'
   options = _.extend({}, defaults, _options)
   write = (obj) ->
-    parts = _.map fields, (field) ->
-      val = obj[field]
+    parts = _.map fields, (longName, systemKey) ->
+      val = obj[systemKey]
       if !val?
         return options.null
       else

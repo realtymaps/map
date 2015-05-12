@@ -23,7 +23,7 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
   .then () -> new Promise (resolve, reject) ->
-    rawDataStream = pgClient.query(copyStream.from("COPY #{tableName} (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"))
+    rawDataStream = pgClient.query(copyStream.from("COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"))
     rawDataStream.on('finish', resolve)
     rawDataStream.on('error', reject)
     # stream from array to object serializer stream to COPY FROM
@@ -49,7 +49,7 @@ loadRetsTableUpdates = (subtask, options) ->
     # get info about the fields available in the table
     retsClient.metadata.getTable(options.retsDbName, options.retsTableName)
   .then (tableInfo) ->
-    _.pluck tableInfo.Fields, 'SystemName'
+    _.indexBy(tableInfo.Fields, 'LongName').mapValues('SystemName')
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to determine table fields")
   .then (fields) ->
@@ -59,7 +59,7 @@ loadRetsTableUpdates = (subtask, options) ->
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
     .then () ->
-      taskHelpers.createRawTempTable(rawTableName, fields)
+      taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
     .then () ->
