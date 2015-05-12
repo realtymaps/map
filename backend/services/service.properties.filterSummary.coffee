@@ -54,7 +54,10 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       query.then (data) ->
         geojson =
           "type": "FeatureCollection"
-          "features": propMerge.updateSavedProperties(state, data)
+          "features": propMerge.updateSavedProperties(state, data).map (d) ->
+            d.type = 'Feature'
+            d.properties = {}
+            d
 
     default: _default
 
