@@ -1,5 +1,6 @@
 webpack = require 'webpack'
 _ = require 'lodash'
+ngAnnotatePlugin = require 'ng-annotate-webpack-plugin'
 
 Config = (output, additionalPlugs) ->
   obj =
@@ -15,7 +16,8 @@ Config = (output, additionalPlugs) ->
         new webpack.ResolverPlugin(
           new webpack.ResolverPlugin.DirectoryDescriptionFilePlugin(
             "bower.json", ["main"])
-        )
+        ),
+        new ngAnnotatePlugin(add: true)
       ]
     module:
       loaders: [

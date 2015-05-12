@@ -5,10 +5,10 @@ frontendRoutes = require '../../../common/config/routes.frontend.coffee'
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
 
-module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider', ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
+module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
 
   buildState = (name, overrides = {}) ->
-    state = 
+    state =
       name:         name
       parent:       'main'
       url:          frontendRoutes[name],
@@ -24,8 +24,8 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       delete state.controller
     $stateProvider.state(state)
     state
-  
-  
+
+
   buildState 'main', parent: null, url: frontendRoutes.index, sticky: true
   buildState 'map', sticky:true, loginRequired:true
   buildState 'login'
@@ -33,9 +33,8 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
   buildState 'accessDenied', controller: null
   buildState 'authenticating', controller: null
   buildState 'snail', sticky: true
-  
+
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null
 
   $urlRouterProvider.when '', frontendRoutes.index
-]

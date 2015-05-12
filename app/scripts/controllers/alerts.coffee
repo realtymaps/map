@@ -28,7 +28,7 @@ app = require '../app.coffee'
 # To preemptively hide an event, use:
 #   $rootScope.$emit Events.alert.prevent, {id: alertId, quietMillis: quietTime}
 # -------
-# Allowed properties of an emitted alert:
+# Allowed rmapsProperties of an emitted alert:
 #   msg (required): the main body of the alert.  This can be HTML, but should consist only of inline or inline-block
 #     type formatting since it is all contained in a span.
 #   type: a string that determines the colors used for the alert; defaults to "rm-danger". There are 4 intended values,
@@ -47,9 +47,9 @@ app = require '../app.coffee'
 #     to MainOpions.alerts.quietMillis
 ###
 
-module.exports = app.controller 'AlertsCtrl'.ourNs(), [
-  '$scope', '$timeout', '$sce', 'events'.ourNs(), 'MainOptions'.ourNs(), '$log',
-  ($scope, $timeout, $sce, Events, MainOptions, $log) ->
+module.exports = app.controller 'rmapsAlertsCtrl',
+  ($scope, $timeout, $sce, rmapsevents, rmapsMainOptions, $log) ->
+    Events = rmapsevents
     $scope.alerts = []
     alertsMap = {}
     anonymousAlertCounter = 1
@@ -160,4 +160,3 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
     $scope.$onRootScope Events.alert.hide, (event, alertId) -> hideAlert(alertId)
     $scope.$onRootScope Events.alert.dismiss, (event, alertId) -> removeAlert(alertId)
     $scope.$onRootScope Events.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)
-]

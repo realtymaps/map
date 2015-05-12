@@ -1,9 +1,9 @@
 app = require '../app.coffee'
 
-app.config([ '$provide', ($provide) ->
+app.config(($provide) ->
   #recommended way of dealing with clean up of angular communication channels
   #http://stackoverflow.com/questions/11252780/whats-the-correct-way-to-communicate-between-controllers-in-angularjs
-  $provide.decorator '$rootScope', [ '$delegate', ($delegate) ->
+  $provide.decorator '$rootScope', ($delegate) ->
     Object.defineProperty $delegate.constructor::, '$onRootScope',
       value: (name, listener) ->
         unsubscribe = $delegate.$on(name, listener)
@@ -13,14 +13,13 @@ app.config([ '$provide', ($provide) ->
       enumerable: false
 
     $delegate
-  ]
-])
-.config(['$httpProvider', ($httpProvider) ->
+)
+.config(($httpProvider) ->
     $httpProvider.useApplyAsync(true)
-])
-.config([ '$provide', ($provide) ->
+)
+.config(($provide) ->
   # attempting to create a cancelable $http on all its functions
-  $provide.decorator '$http', [ '$delegate', '$q', ($delegate, $q) ->
+  $provide.decorator '$http', ($delegate, $q) ->
     http = {}
     methods = ['get', 'delete', 'head', 'jsonp']
     dataMethods = ['post', 'put', 'patch']
@@ -74,5 +73,4 @@ app.config([ '$provide', ($provide) ->
       $delegate[name] = http.root[name]
 
     $delegate
-  ]
-])
+)

@@ -8,6 +8,6 @@ for key,value of colorScheme
   # check the color palate for an indirect color reference (which is what should happen), but fall back to literal
   # value just in case (and to aid troubleshooting)
   variables[key] = colorPalate[value]||value
-  
-app.constant 'stylusVariables'.ourNs(),
+
+app.constant 'rmapsstylusVariables',
   variables

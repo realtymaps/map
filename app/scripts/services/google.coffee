@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 {Point} = require '../../../common/utils/util.geometries.coffee'
 
-app.service 'GoogleService'.ourNs(), ->
+app.service 'rmapsGoogleService'.ourNs(), ->
   GeoJsonTo: do ->
     _isCorrectType = (expected, geoJson) ->
       expected == geoJson.type
