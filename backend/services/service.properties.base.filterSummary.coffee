@@ -56,7 +56,7 @@ _tableName = sqlHelpers.tableName(PropertyDetails)
 
 
 _getDefaultQuery = ->
-  sqlHelpers.select(db.knex, "filter", true)
+  sqlHelpers.select(db.knex, "filter", true, 'distinct on (rm_property_id)')
   .from(_tableName)
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->

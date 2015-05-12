@@ -4,14 +4,14 @@ logger = require '../config/logger'
 {MAPBOX} = require '../config/config'
 
 JSONStream = require 'JSONStream'
-utilStreams = require '../utils/util.streams'
+{geoJsonFormatter} = require '../utils/util.streams'
 mapboxUpload = require '../utils/util.mapbox'
 fs = require 'fs'
 
 _uploadParcelByQuery = (stream) -> Promise.try ->
   writeStream = fs.createWriteStream './output.json'
   filteredStream =
-    stream.pipe(utilStreams.geoJsonFormatter())
+    stream.pipe(geoJsonFormatter)
 
   # filteredStream.pipe(process.stdout) #uncomment to send to console
   # filteredStream.pipe(writeStream) #uncomment to write file
