@@ -36,7 +36,7 @@ _ageOrDaysFromStartToNow = (listingAge, beginDate) ->
 _columns =
   # columns returned for filter requests
   filter: [
-    'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json', 'geom_polys_json AS geometry',
+    'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json AS geometry',
     'geom_point_json', 'rm_status', 'owner_name', 'owner_name2', 'year_built', 'acres', 'finished_sqft', 'baths_full',
     'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
     'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
