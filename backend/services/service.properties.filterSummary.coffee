@@ -23,13 +23,10 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
     # include saved id's in query so no need to touch db later
     if Object.keys(state.properties_selected).length > 0
       sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
-    query
+
     # remove dupes
-    .then (properties) ->
-      _.uniq properties, (row) ->
-         row.rm_property_id
     # include "savedDetails" for saved props
-    .then (properties) ->
+    query.then (properties) ->
       propMerge.updateSavedProperties(state, properties)
     # more data arranging
     .then (properties) ->
@@ -49,18 +46,15 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
 
     geojsonPolys: ->
-      query = sqlHelpers.select(db.knex, 'all_detail_geojson', false).from(sqlHelpers.tableName(PropertyDetails))
       query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
       # include saved id's in query so no need to touch db later
       if Object.keys(state.properties_selected).length > 0
         sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
       # data formatting
       query.then (data) ->
-        geojson = 
+        geojson =
           "type": "FeatureCollection"
-          "features": _.uniq propMerge.updateSavedProperties(state, data), (row) ->
-            row.rm_property_id
-
+          "features": propMerge.updateSavedProperties(state, data)
 
     default: _default
 
