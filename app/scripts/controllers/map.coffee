@@ -22,7 +22,7 @@ module.exports = app
 app.controller 'MapCtrl'.ourNs(), [
   '$scope', '$rootScope', '$timeout', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
-  'Logger'.ourNs(), 'searchbox'.ourNs(),
+  '$log', 'searchbox'.ourNs(),
   ($scope, $rootScope, $timeout, Map, MainOptions, Toggles,
   principal, Events, ParcelEnums, Properties, $log, searchbox) ->
 

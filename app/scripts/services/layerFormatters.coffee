@@ -4,7 +4,7 @@ numeral = require 'numeral'
 casing = require 'case'
 
 app.factory 'LayerFormatters'.ourNs(), [
-  'Logger'.ourNs(), 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope', 'stylusVariables'.ourNs()
+  '$log', 'ParcelEnums'.ourNs(), "uiGmapGmapUtil", 'GoogleService'.ourNs(), '$rootScope', 'stylusVariables'.ourNs()
   ($log, ParcelEnums, uiGmapUtil, GoogleService, $rootScope, stylusVariables) ->
 
     (mapCtrl) ->
