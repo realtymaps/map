@@ -1,5 +1,6 @@
 app = require '../app.coffee'
-_eventThrottler = require('../utils/util.event-throttler.coffee')
+_eventThrottler = require '../utils/util.event-throttler.coffee'
+_baseLayers = require '../utils/util.layers.base.coffee'
 
 ###
   This base map is primarily to deal with basic functionality of zoom and dragg issues.
@@ -10,10 +11,10 @@ _mapClassContainerName = 'angular-leaflet-map'
 
 
 module.exports = app.factory 'BaseMap'.ourNs(), [
-  'Logger'.ourNs(), 'uiGmapIsReady', '$timeout', 'leafletData',
-  ($log, uiGmapIsReady, $timeout, leafletData) ->
+  '$log', '$timeout', 'leafletData',
+  ($log, $timeout, leafletData) ->
     class BaseMap
-      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = require('../utils/util.layers.base.coffee'), mapEvents = ['dragend', 'zoomend']) ->
+      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['dragend', 'zoomend'])->
         _throttler =  _eventThrottler($log, options)
 
         leafletData.getMap(mapId).then (map) =>

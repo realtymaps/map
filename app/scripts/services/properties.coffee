@@ -2,8 +2,8 @@ app = require '../app.coffee'
 backendRoutes = require '../../../common/config/routes.backend.coffee'
 
 app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'principal'.ourNs(),
-  'events'.ourNs(), 'uiGmapPropMap', 'PromiseThrottler'.ourNs(), 'Logger'.ourNs()
-  ($rootScope, $http, Property, principal, Events, PropMap, PromiseThrottler, $log) ->
+  'events'.ourNs(), 'PromiseThrottler'.ourNs(), '$log'
+  ($rootScope, $http, Property, principal, Events, PromiseThrottler, $log) ->
     #HASH to properties by rm_property_id
     #we may want to save details beyond just saving there fore it will be a hash pointing to an object
     _savedProperties = {}

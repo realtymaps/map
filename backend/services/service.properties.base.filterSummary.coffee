@@ -6,6 +6,7 @@ config = require '../config/config'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
+_ = require 'lodash'
 
 
 validators = validation.validators
@@ -56,7 +57,7 @@ _tableName = sqlHelpers.tableName(PropertyDetails)
 
 
 _getDefaultQuery = ->
-  sqlHelpers.select(db.knex, "filter", true)
+  sqlHelpers.select(db.knex, "filter", true, 'distinct on (rm_property_id)')
   .from(_tableName)
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->

@@ -1,3 +1,6 @@
+_ = require 'lodash'
+
+
 # utility to check required permissions vs allowed permissions
 #   required:
 #     parameter specifying what permission(s) the user needs in order to

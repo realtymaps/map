@@ -19,6 +19,7 @@ appName = 'app'.ourNs()
 #console.info "AppName: #{appName}"
 
 app = window.angular.module appName, [
+  'logglyLogger.logger'
   'angular-data.DSCacheFactory'
   'leaflet-directive'
   'uiGmapgoogle-maps'

@@ -18,7 +18,7 @@ base =
     client: 'pg'
     connection: process.env.USER_DATABASE_URL
     pool:
-      min: 2
+      min: 1
       max: 10
   PROPERTY_DB:
     client: 'pg'
@@ -51,18 +51,30 @@ base =
     FAST_REFRESH: 30*1000   # 30 seconds
     PRE_FETCH: .1
   MEM_WATCH:
-    IS_ON: false
+    IS_ON: process.env.MEM_WATCH_IS_ON || false
   TEMP_DIR: '/tmp'
   LOB:
     TEST_API_KEY: process.env.LOB_TEST_API_KEY
     LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
     API_VERSION: '2014-12-18'
+  MAPBOX:
+    API_KEY: process.env.MAPBOX_API_KEY
+    UPLOAD_KEY: process.env.MAPBOX_API_UPLOAD_KEY
+    ACCOUNT: process.env.MAPBOX_ACCOUNT
+    MAPS:
+      main: process.env.MAPBOX_MAPS_MAIN
+  CARTODB:
+    API_KEY: process.env.CARTODB_API_KEY
+    MAPS: JSON.parse process.env.CARTODB_MAPS
+    ACCOUNT: process.env.CARTODB_ACCOUNT
+    API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
+  ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

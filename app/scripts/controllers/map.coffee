@@ -22,9 +22,9 @@ module.exports = app
 app.controller 'MapCtrl'.ourNs(), [
   '$scope', '$rootScope', '$timeout', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
   'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
-  'Logger'.ourNs(),
+  '$log', 'searchbox'.ourNs(),
   ($scope, $rootScope, $timeout, Map, MainOptions, Toggles,
-  principal, Events, ParcelEnums, Properties, $log) ->
+  principal, Events, ParcelEnums, Properties, $log, searchbox) ->
 
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
@@ -34,6 +34,8 @@ app.controller 'MapCtrl'.ourNs(), [
     $scope.init = (pageClass) ->
       $scope.pageClass = pageClass
     #end inits
+
+    searchbox('mainMap')
 
     restoreState = () ->
       principal.getIdentity()

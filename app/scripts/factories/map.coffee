@@ -15,22 +15,21 @@ _emptyGeoJsonData =
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
+app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
   'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'uiGmapGmapUtil', 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'uiGmapControls'.ourNs(), 'uiGmapObjectIterators', 'popupLoader'.ourNs(),
+  'ParcelEnums'.ourNs(), 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
+  'GoogleService'.ourNs(), 'popupLoader'.ourNs(),
   'leafletData',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
     Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, uiGmapUtil, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    uiGmapControls, uiGmapObjectIterators, PopupLoader, leafletData) ->
+    ParcelEnums, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
+    PopupLoader, leafletData) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
         unless position
-          position =
-            coords: $scope.previousCenter
-        $scope.center = position.coords
+          position = $scope.previousCenter
+        $scope.map.center = position
         $scope.$evalAsync()
 
       toggles.setLocationCb(_handleMoveToMyLocation)
@@ -54,7 +53,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         leafletData.getMap('mainMap').then (map) =>
 
           _firstCenter = true
-          @scope.$watchCollection 'center', (newVal, oldVal) =>
+          @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal
               if _firstCenter
                 _firstCenter = false
@@ -78,28 +77,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
         $rootScope.$watch('selectedFilters', @filter, true)
         @scope.savedProperties = Properties.getSavedProperties()
         @layerFormatter = LayerFormatters(@)
-
-        _updateGObjects = (gObject, savedDetails, model) =>
-          #purpose to to take some sort of gObject and update its view immediately
-          model.savedDetails = savedDetails
-          if GoogleService.Map.isGMarker(gObject)
-            @layerFormatter.MLS.setMarkerPriceOptions model
-          else
-            opts =  @layerFormatter.Parcels.optionsFromFill(model)
-            @redraw()
-          $scope.formatters.results?.reset()
-
-        @updateAllLayersByModel = _updateAllLayersByModel = (model) =>
-          uiGmapControls.eachSpecificGObject model.rm_property_id, (gObject) ->
-            if GoogleService.Map.isGMarker(gObject)
-              @layerFormatter.MLS.setMarkerPriceOptions(model)
-            else
-              opts = @layerFormatter.Parcels.optionsFromFill(model)
-            @redraw()
-          , ['streetNumMarkers']
-
-        _isModelInFilterSummary = (model) ->
-          model.index?
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
@@ -126,7 +103,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
 
           map:
             layers:
-              overlays: _overlays
+              overlays: _overlays()
 
             listingDetail: undefined
 
@@ -157,39 +134,6 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             toBeZoom = self.map.getZoom() + increment
             self.map.setZoom(toBeZoom)
 
-          searchbox:
-            template: 'map-searchbox.tpl.html'
-            parent: 'searchbox-container'
-            options:
-              bounds: {}
-            events:
-              places_changed: (searchBox) =>
-                places = searchBox.getPlaces()
-                if !places.length
-                  return
-                place = places[0]
-                if (place.formatted_address)
-                  document.getElementById('places-search-input').value = place.formatted_address
-                if place.geometry?.viewport
-                  @scope.bounds =
-                    northeast:
-                      latitude: place.geometry.viewport.getNorthEast().lat()
-                      longitude: place.geometry.viewport.getNorthEast().lng()
-                    southwest:
-                      latitude: place.geometry.viewport.getSouthWest().lat()
-                      longitude: place.geometry.viewport.getSouthWest().lng()
-                else
-                  @scope.center =
-                    latitude: place.geometry.location.lat()
-                    longitude: place.geometry.location.lng()
-                  @scope.zoom = 19
-            setBiasBounds: () =>
-              sw = uiGmapUtil.getCoords(@scope.bounds?.southwest)
-              sw ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude-0.01, longitude: @scope.center.longitude-0.01)
-              ne = uiGmapUtil.getCoords(@scope.bounds?.northeast)
-              ne ||= uiGmapUtil.getCoords(latitude: @scope.center.latitude+0.01, longitude: @scope.center.longitude+0.01)
-              @scope.searchbox.options.bounds = new google.maps.LatLngBounds(sw, ne)
-
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
@@ -197,12 +141,11 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
             @scopeM().listingDetail.show = false if newVal isnt oldVal
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         @subscribe()
-        uiGmapControls.init $scope.controls
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not ZoomLevel.isAddressParcel(@map,@scope)
+        if @map? and not ZoomLevel.isAddressParcel(@scopeM().center.zoom)
           _.each @scopeM().geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -238,6 +181,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
           )
 
           if ZoomLevel.isParcel(@scopeM().center.zoom) or ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+            @scope.map.layers.overlays["cartodb parcels"].visible = true
             @scope.map.layers.overlays.filterSummary.visible = false
             @scope.map.layers.overlays.addresses.visible = if ZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
@@ -249,6 +193,7 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
                   style: @layerFormatter.Parcels.getStyle
             )
           else
+            @scope.map.layers.overlays["cartodb parcels"].visible = false
             @scope.map.layers.overlays.filterSummary.visible = true
             @scope.map.layers.overlays.addresses.visible = false
         promises
@@ -260,23 +205,21 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
              ZoomLevel.isParcel(@scopeM().center.zoom)
           if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
               ZoomLevel.dblClickZoom.disable(@scope)
-
-              promises.push(Properties.getAddresses(@hash, @mapState, cache).then( (data) =>
-                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-                  _.cloneDeep(data),
-                  @layerFormatter.Parcels.labelFromStreetNum
-                )
-              ))
-
-          promises.push(Properties.getParcelBase(@hash, @mapState, cache).then( (data) =>
-            return unless data?
-            @scopeM().geojson.parcelBase =
-              data: data
-              style: @layerFormatter.Parcels.style
-
-            $log.debug "addresses count to draw: #{data?.features?.length}"
-          ))
-
+              #BEGIN COMMENT OUT WHEN MAPBOX OR CARTODB ARE FULLY USED
+          #     promises.pushProperties.getAddresses(@hash, @mapState, cache).then (data) =>
+          #       @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+          #         _.cloneDeep(data),
+          #         @layerFormatter.Parcels.labelFromStreetNum
+          #       )
+          #
+          # promises.push Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
+          #   return unless data?
+          #   @scopeM().geojson.parcelBase =
+          #     data: data
+          #     style: @layerFormatter.Parcels.style
+          #
+          #   $log.debug "addresses count to draw: #{data?.features?.length}"
+        #END COMMENT OUT
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
@@ -373,18 +316,5 @@ app.factory 'Map'.ourNs(), ['Logger'.ourNs(), '$timeout', '$q', '$rootScope', 'u
       closeWindow: ->
         PopupLoader.close()
 
-      ###
-              closeListing: ->
-
-              if $scope.map.listingDetail
-                $scope.map.listingDetail.show = false
-              model.show = true
-              $scope.map.listingDetail = model
-              offset = @layerFormatter.MLS.getWindowOffset(@gMap, $scope.map.listingDetail)
-              return unless offset
-              _.extend $scope.listingOptions,
-                pixelOffset: offset
-                disableAutoPan: true
-      ###
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
 ]

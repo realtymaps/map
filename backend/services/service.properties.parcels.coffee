@@ -4,8 +4,8 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-{geojson_query_bounds, tableName} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
+_ = require 'lodash'
 
 
 transforms =
@@ -17,14 +17,33 @@ transforms =
     ]
     required: true
 
+_tableName = sqlHelpers.tableName(Parcel)
 
-_tableName = tableName(Parcel)
+_getBaseParcelQuery = ->
+  sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
+  .from(_tableName)
+
+_getBaseParcelQueryByBounds = (bounds) ->
+  query = _getBaseParcelQuery()
+  sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
+  query
+
+_getBaseParcelDataUnwrapped = (state, filters, doStream) -> Promise.try () ->
+  validation.validateAndTransform(filters, transforms)
+  .then (filters) ->
+    query = _getBaseParcelQuery(filters.bounds)
+    return query.stream() if doStream
+    query
 
 module.exports =
-
-  getBaseParcelData: (state, filters) -> Promise.try () ->
-    validation.validateAndTransform(filters, transforms)
-    .then (filters) ->
-      query = geojson_query_bounds(db, _tableName, 'geom_polys_json', 'geom_polys_raw', filters.bounds)
-      # logger.sql query.toString()
-      query
+  getBaseParcelQuery: _getBaseParcelQuery
+  getBaseParcelQueryByBounds: _getBaseParcelQueryByBounds
+  getBaseParcelDataUnwrapped: _getBaseParcelDataUnwrapped
+  # pseudo-new implementation
+  getBaseParcelData: (state, filters) ->
+    _getBaseParcelDataUnwrapped(state,filters)
+    .then (data) ->
+      geojson =
+        "type": "FeatureCollection"
+        "features": _.uniq data, (row) ->
+          row.rm_property_id

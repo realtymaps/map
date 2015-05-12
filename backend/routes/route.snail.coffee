@@ -7,6 +7,7 @@ detailService = require '../services/service.properties.details'
 escape = require('escape-html')
 pdfUtils = require '../../common/utils/util.pdf'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+_ = require 'lodash'
 
 
 lookupErrorMessage =

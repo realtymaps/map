@@ -3,14 +3,10 @@ basePath = require '../basePath'
 
 
 {validators, validateAndTransform, DataValidationError} = require "#{basePath}/utils/util.validation"
-
-promiseUtils = require('../../specUtils/promiseUtils')
-expectResolve = promiseUtils.expectResolve
-expectReject = promiseUtils.expectReject
-promiseIt = promiseUtils.promiseIt
+{expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validateAndTransform()'.ourNs().ourNs('Backend'), ->
+describe 'utils/validation.validateAndTransform()'.ourNs().ourNs('Backend'), ->
 
   promiseIt "should transform all parameters that have transforms, and omit parameters that don't", () ->
     [

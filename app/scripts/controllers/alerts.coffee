@@ -46,9 +46,9 @@ app = require '../app.coffee'
 #   quietMillis: milliseconds until a hidden alert will auto-dismiss (counted from its most recent repetition); defaults
 #     to MainOpions.alerts.quietMillis
 ###
-  
+
 module.exports = app.controller 'AlertsCtrl'.ourNs(), [
-  '$scope', '$timeout', '$sce', 'events'.ourNs(), 'MainOptions'.ourNs(), 'Logger'.ourNs(), 
+  '$scope', '$timeout', '$sce', 'events'.ourNs(), 'MainOptions'.ourNs(), '$log',
   ($scope, $timeout, $sce, Events, MainOptions, $log) ->
     $scope.alerts = []
     alertsMap = {}
@@ -79,7 +79,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
         alert.quietMillis = alertInfo.quietMillis
         hideAlert(alertInfo.id)
         return
-      
+
       alert = _.clone(alertInfo)
       # mark it as closed
       alert.closed = true
@@ -101,7 +101,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
         $scope.alerts.splice(index, 1);
       # this makes us forget it ever happened
       delete alertsMap[alertId]
-    
+
     # this handles an incoming alert that is intended to override an existing one
     handleDupeAlert = (alert) ->
       # copy over all values, just in case something has escalated or changed
@@ -117,12 +117,12 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
         $scope.alerts.push(alert)
       else
         newDelay = alert.quietMillis
-      # cancel any existing expiration timeout, and set a new one based on either the ttl or the quiet period 
+      # cancel any existing expiration timeout, and set a new one based on either the ttl or the quiet period
       if alert.expiration?
         $timeout.cancel(alert.expiration)
       if newDelay > 0 || alert.closed   # quiet period is allowed to be 0, but TTL of 0 means unlimited
         alert.expiration = $timeout(removeAlert.bind(null, alert.id), newDelay)
-      
+
     # this handles a new (or expired/forgotten) alert
     handleNewAlert = (alert) ->
       # give a unique id to alerts that don't have one (i.e. alerts that can't be dupes)
@@ -142,7 +142,7 @@ module.exports = app.controller 'AlertsCtrl'.ourNs(), [
       # put it in the display list and map
       $scope.alerts.push(alert)
       alertsMap[alert.id] = alert
-      
+
     # this does some common alert handling and then branches based on whether the alert is a dupe
     handleAlertSpawnEvent = (event, alert) ->
       if !alert.msg

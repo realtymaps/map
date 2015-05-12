@@ -2,6 +2,7 @@ logger = require '../config/logger'
 auth = require '../utils/util.auth'
 userService = require '../services/service.user'
 loaders = require '../utils/util.loaders'
+_ = require 'lodash'
 
 
 routesConfig =
@@ -44,6 +45,13 @@ routesConfig =
       ]
   version:
     version: {}
+  config:
+    mapboxKey:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+    cartodb:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
   snail:
     quote:
       method: 'post'
@@ -53,6 +61,16 @@ routesConfig =
       middleware: auth.requireLogin(redirectOnFail: true)
   hirefire:
     info: {}
+  mapbox:
+    upload:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+  cartodb:
+    #TODO: API_KEY middleware
+    getByFipsCodeAsFile:
+      method: 'get'
+    getByFipsCodeAsStream:
+      method: 'get'
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->

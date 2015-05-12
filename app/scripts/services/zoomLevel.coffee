@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 keysToValue = require '../../../common/utils/util.keysToValues.coffee'
 
-app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
+app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), '$log', (options, $log) ->
   _zoomThresh = options.map.options.zoomThresh
   _enum = keysToValue
     addressParcel: 1
@@ -13,17 +13,19 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), (options) ->
     scope.map?.center?.zoom
 
   _enumFromLevel = (currentLevel) ->
+    $log.error 'currentLevel undefined from _enumFromLevel' unless currentLevel
     if currentLevel <= _zoomThresh.price
       return _enum.price
     if currentLevel >= _zoomThresh.price and currentLevel < _zoomThresh.addressParcel
       return _enum.parcel
     if currentLevel >= _zoomThresh.addressParcel
       return _enum.addressParcel
+    return _enum.addressParcel
 
   _enumFromMap = (scope) ->
     _enumFromLevel scope.map?.center?.zoom
 
-  _is = (gMapOrInt, stateObj, stateToCheck) ->
+  _is = (gMapOrInt, stateObj, stateToCheck, isGreater) ->
     stateObj.zoomLevel = if _.isNumber(gMapOrInt) or _.isString(gMapOrInt) then _enumFromLevel(gMapOrInt) else _enumFromMap gMapOrInt
     stateToCheck == stateObj.zoomLevel
 

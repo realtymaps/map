@@ -1,3 +1,4 @@
+_ = require 'lodash'
 moment = require 'moment'
 PDFDocument = require 'pdfkit'
 pdfUtils = require '../utils/util.pdf.coffee'
