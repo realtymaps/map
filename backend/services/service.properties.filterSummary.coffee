@@ -19,7 +19,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   # logger.debug "returnAs: #{returnAs}"
 
   _default = ->
-    query = base.getFilterSummaryAsQuery(state, queryParams, limit)
+    query = base.getFilterSummaryAsQuery(state, queryParams, 800)
     # include saved id's in query so no need to touch db later
     if Object.keys(state.properties_selected).length > 0
       sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
@@ -58,7 +58,6 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
           "type": "FeatureCollection"
           "features": propMerge.updateSavedProperties(state, data).map (d) ->
             d.type = 'Feature'
-            delete d.geom_point_json
             d.properties = {}
             d
 

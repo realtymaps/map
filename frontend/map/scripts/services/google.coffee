@@ -3,8 +3,6 @@ app = require '../app.coffee'
 
 app.service 'GoogleService'.ourNs(), ->
   GeoJsonTo: do ->
-    _isCorrectType = (expected, geoJson) ->
-      expected == geoJson.type
 
     _point = do ->
       type = 'Point'
@@ -21,11 +19,15 @@ app.service 'GoogleService'.ourNs(), ->
         new L.latLngBounds(point,point)
 
     _multiPolygon = do ->
-      type = 'MultiPolygon'
       toBounds:(geoJson) ->
-        return unless _isCorrectType(type, geoJson)
         bounds = new L.latLngBounds([])
-        geoJson.coordinates[0][0].forEach (coord) ->
+        if geoJson.type == 'MultiPolygon'
+          polys = geoJson.coordinates[0][0]
+
+        if geoJson.type == 'Point'
+          polys = [geoJson.coordinates]
+
+        polys.forEach (coord) ->
           latLng = new L.LatLng(coord[1], coord[0])
           bounds.extend latLng
         bounds

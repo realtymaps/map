@@ -11,6 +11,12 @@ _emptyGeoJsonData =
   type: "FeatureCollection"
   features: []
 
+_wrapGeomPointJson = (obj) ->
+  unless obj?.geom_point_json
+    obj.geom_point_json =
+      coordinates: obj.coordinates
+      type: obj.type
+  obj
 
 ###
   Our Main Map Implementation
@@ -19,11 +25,13 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
   'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
   'GoogleService'.ourNs(), 'popupLoader'.ourNs(),
-  'leafletData',
+  'leafletData', 'leafletIterators',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    PopupLoader, leafletData) ->
+    PopupLoader, leafletData, leafletIterators) ->
+
+    $it = leafletIterators
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -174,6 +182,9 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
               @scopeM().markers.backendPriceCluster = {}
 
               @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+
+              for key, val of data
+                _wrapGeomPointJson val
 
               @scopeM().markers.filterSummary = data
 

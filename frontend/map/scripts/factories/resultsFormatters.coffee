@@ -60,7 +60,9 @@ app.factory 'ResultsFormatter'.ourNs(), [
     class ResultsFormatter
 
       _isWithinBounds = (map, prop) =>
-        pointBounds = GoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
+        pointBounds = GoogleService.GeoJsonTo.MultiPolygon
+        .toBounds(prop.geometry or prop.geom_polys_json or prop.geom_point_json)
+
         isVisible = map.getBounds().intersects(pointBounds)
         return unless isVisible
         prop
