@@ -1,4 +1,6 @@
-libFront = 'app/lib'
+mapApp = 'frontend/map/'
+adminApp = 'frontend/admin/'
+libFront = mapApp + 'lib'
 
 dest =
   scripts: 'scripts'
@@ -8,22 +10,23 @@ dest =
   root: '_public/'
 
 module.exports =
-  spec: 'spec/**'
-  scripts: 'app/scripts/**/*'
-  vendorLibs: 'app/lib/scripts/vendor/**/*.*'
-  webpackLibs: 'app/lib/scripts/webpack/**/*.*'
-  styles: 'app/styles/*.css'
-  stylus: 'app/styles/main.styl'
-  stylusWatch: 'app/styles/**/*.styl'
   bower: 'bower_components'
+  spec: 'spec/**'
   common: 'common/**/*.*'
-  svg: 'app/html/svg/*.svg'
-  html: 'app/html/**/*.html'
-  jade: 'app/html/**/*.jade'
-  json: 'app/json/**/*.json'
-  mockIndexes: 'app/html/mocks'
-  index: 'app/html/index.html'
-  assets: 'app/assets/*'
+
+  scripts: mapApp + 'scripts/**/*'
+  vendorLibs: mapApp + 'lib/scripts/vendor/**/*.*'
+  webpackLibs: mapApp + 'lib/scripts/webpack/**/*.*'
+  styles: mapApp + 'styles/*.css'
+  stylus: mapApp + 'styles/main.styl'
+  stylusWatch: mapApp + 'styles/**/*.styl'
+  svg: mapApp + 'html/svg/*.svg'
+  html: mapApp + 'html/**/*.html'
+  jade: mapApp + 'html/**/*.jade'
+  json: mapApp + 'json/**/*.json'
+  mockIndexes: mapApp + 'html/mocks'
+  index: mapApp + 'html/index.html'
+  assets: mapApp + 'assets/*'
   lib:
     front:
       scripts: libFront + '/scripts'
