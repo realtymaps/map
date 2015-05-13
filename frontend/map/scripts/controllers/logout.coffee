@@ -9,7 +9,7 @@ module.exports = app.controller 'LogoutCtrl'.ourNs(), () ->
 
 # this controller manages loadingCount manually because we're putting an artificial min delay on logout,
 # so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the
-# rmapsSpinner go away more quickly
+# Spinner go away more quickly
 
 app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOptions, rmapsSpinner) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
