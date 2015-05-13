@@ -4685,7 +4685,7 @@
       this.resources = this.document.ref({
         ProcSet: ['PDF', 'Text', 'ImageB', 'ImageC', 'ImageI']
       });
-      Object.definermapsProperties(this, {
+      Object.defineProperties(this, {
         fonts: {
           get: (function(_this) {
             return function() {
@@ -5480,7 +5480,7 @@
 
       // 7.3 If the expected value is a RegExp object, the actual value is
       // equivalent if it is also a RegExp object with the same source and
-      // rmapsProperties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
+      // properties (`global`, `multiline`, `lastIndex`, `ignoreCase`).
     } else if (util.isRegExp(actual) && util.isRegExp(expected)) {
       return actual.source === expected.source &&
         actual.global === expected.global &&
@@ -5494,11 +5494,11 @@
       return actual == expected;
 
       // 7.5 For all other Object pairs, including Array objects, equivalence is
-      // determined by having the same number of owned rmapsProperties (as verified
+      // determined by having the same number of owned properties (as verified
       // with Object.prototype.hasOwnProperty.call), the same set of keys
       // (although not necessarily the same order), equivalent values for every
       // corresponding key, and an identical 'prototype' property. Note: this
-      // accounts for both named and indexed rmapsProperties on Arrays.
+      // accounts for both named and indexed properties on Arrays.
     } else {
       return objEquiv(actual, expected);
     }
@@ -5530,7 +5530,7 @@
     } catch (e) {//happens when one is a string literal and the other isn't
       return false;
     }
-    // having the same number of owned rmapsProperties (keys incorporates
+    // having the same number of owned properties (keys incorporates
     // hasOwnProperty)
     if (ka.length != kb.length)
       return false;
@@ -5883,7 +5883,7 @@
         return ret;
       }
 
-      // Primitive types cannot have rmapsProperties
+      // Primitive types cannot have properties
       var primitive = formatPrimitive(ctx, value);
       if (primitive) {
         return primitive;
@@ -5904,7 +5904,7 @@
         return formatError(value);
       }
 
-      // Some type of object without rmapsProperties can be shortcutted.
+      // Some type of object without properties can be shortcutted.
       if (keys.length === 0) {
         if (isFunction(value)) {
           var name = value.name ? ': ' + value.name : '';
@@ -5940,7 +5940,7 @@
         base = ' ' + RegExp.prototype.toString.call(value);
       }
 
-      // Make dates with rmapsProperties first say the date
+      // Make dates with properties first say the date
       if (isDate(value)) {
         base = ' ' + Date.prototype.toUTCString.call(value);
       }
@@ -12518,7 +12518,7 @@
    *
    * Note:
    *
-   * - Implementation must support adding new rmapsProperties to `Uint8Array` instances.
+   * - Implementation must support adding new properties to `Uint8Array` instances.
    *   Firefox 4-29 lacked support, fixed in Firefox 30+.
    *   See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
    *
@@ -12548,7 +12548,7 @@
    * =============
    *
    * The Buffer constructor returns instances of `Uint8Array` that are augmented
-   * with function rmapsProperties for all the node `Buffer` API functions. We use
+   * with function properties for all the node `Buffer` API functions. We use
    * `Uint8Array` so that square bracket notation works as expected -- it returns
    * a single octet.
    *
