@@ -186,7 +186,7 @@ app.factory 'rmapsMap',
           )
 
           if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays["cartodb parcels"].visible = true
+            @scope.map.layers.overlays["cartodb parcels"].visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
             @scope.map.layers.overlays.filterSummary.visible = false
             @scope.map.layers.overlays.addresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
