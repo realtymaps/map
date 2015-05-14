@@ -3,7 +3,7 @@ common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 
-app.constant 'MainOptions'.ourNs(), do () ->
+app.constant 'rmapsMainOptions', do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
   res = _.merge common,
     map:

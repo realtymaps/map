@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.constant 'ParcelEnums'.ourNs(),
+app.constant 'rmapsParcelEnums',
   status:
     notForSale: 'not for sale'
     sold: 'recently sold'
