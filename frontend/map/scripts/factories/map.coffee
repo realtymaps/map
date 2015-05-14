@@ -145,7 +145,8 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+        if @map? and not ZoomLevel.isParcel(@scopeM().center.zoom)
+          @scopeM().markers.addresses = {}
           _.each @scopeM().geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -181,7 +182,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
           )
 
           if ZoomLevel.isParcel(@scopeM().center.zoom) or ZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays["cartodb parcels"].visible = true
+            @scope.map.layers.overlays["cartodb parcels"].visible = if ZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
             @scope.map.layers.overlays.filterSummary.visible = false
             @scope.map.layers.overlays.addresses.visible = if ZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
@@ -201,25 +202,25 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
       redraw: (cache = true) =>
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        if ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
-             ZoomLevel.isParcel(@scopeM().center.zoom)
+        if (ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
+             ZoomLevel.isParcel(@scopeM().center.zoom)) and ZoomLevel.isBeyondCartoDb(@scopeM().center.zoom)
           if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
               ZoomLevel.dblClickZoom.disable(@scope)
-              #BEGIN COMMENT OUT WHEN MAPBOX OR CARTODB ARE FULLY USED
-          #     promises.pushProperties.getAddresses(@hash, @mapState, cache).then (data) =>
-          #       @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-          #         _.cloneDeep(data),
-          #         @layerFormatter.Parcels.labelFromStreetNum
-          #       )
-          #
-          # promises.push Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
-          #   return unless data?
-          #   @scopeM().geojson.parcelBase =
-          #     data: data
-          #     style: @layerFormatter.Parcels.style
-          #
-          #   $log.debug "addresses count to draw: #{data?.features?.length}"
-        #END COMMENT OUT
+
+              promises.push Properties.getAddresses(@hash, @mapState, cache).then (data) =>
+                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+                  _.cloneDeep(data),
+                  @layerFormatter.Parcels.labelFromStreetNum
+                )
+
+          promises.push Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
+            return unless data?
+            @scopeM().geojson.parcelBase =
+              data: data
+              style: @layerFormatter.Parcels.style
+
+            $log.debug "addresses count to draw: #{data?.features?.length}"
+
         else
           ZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
