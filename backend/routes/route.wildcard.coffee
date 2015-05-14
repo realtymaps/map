@@ -11,12 +11,12 @@ module.exports =
     next new ExpressResponse(alert: {msg: "Oops!  The API resource #{req.path} was not found.  Try reloading the page."}, httpStatus.NOT_FOUND)
 
   admin: (req, res) ->
-    frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/admin/index.html"
-    logger.route "frontEndIndex: #{frontEndIndex}"
-    res.sendFile frontEndIndex
+    adminIndex = "#{config.FRONTEND_ASSETS_PATH}/admin.html"
+    logger.route "adminIndex: #{adminIndex}"
+    res.sendFile adminIndex
 
   # this wildcard allows angular to deal with any URL that isn't an api URL
   frontend: (req, res) ->
-    frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/index.html"
+    frontEndIndex = "#{config.FRONTEND_ASSETS_PATH}/rmap.html"
     logger.route "frontEndIndex: #{frontEndIndex}"
     res.sendFile frontEndIndex

@@ -3,18 +3,20 @@ gulp = require 'gulp'
 path = require '../paths'
 plumber = require 'gulp-plumber'
 
-gulp.task 'watch_rest', ->
-  # iterate and flatten paths common to both rmap and admin
-  apps = ['rmap', 'admin']
-  appPaths = _.flatten([
+getPaths = (app) ->
+  return [
     path[app].scripts, path[app].styles, path[app].stylus,
     path[app].assets,
     path[app].index, path[app].stylus, path[app].stylusWatch
-    path[app].jade, path[app].html
-  ] for app in apps).concat([path.common])
+    path[app].jade, path[app].html    
+  ]
 
-  gulp.watch appPaths, ['webpack']
-  gulp.watch ['app/**.*.coffee'], ['webpack']
+gulp.task 'watch_rest', ->
+  rmapPaths = getPaths('rmap').concat([path.common])
+  adminPaths = getPaths('admin').concat([path.common])
+
+  gulp.watch rmapPaths, ['webpack']
+  gulp.watch adminPaths, ['webpackAdmin']
   gulp.watch path.bower, ['vendor']
 
 specCommon = "spec/common/**/*.coffee"

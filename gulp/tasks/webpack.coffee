@@ -9,32 +9,41 @@ _ = require 'lodash'
 fs = require 'fs'
 webpack = require 'webpack'
 
-#console.log "#### paths: " + JSON.stringify(paths)
 mockIndexes = fs.readdirSync(paths.rmap.mockIndexes)
 
-#end dependencies
+# outputs
 output =
   filename: paths.dest.scripts + "/[name].wp.js"
   chunkFilename: paths.dest.scripts + "/[id].wp.js"
 
-conf = configFact(output, [new HtmlWebpackPlugin template: paths.rmap.index])
+outputAdmin =
+  filename: paths.dest.scripts + "/admin.wp.js"
+  chunkFilename: paths.dest.scripts + "/adminChunk.wp.js"
+
+# webpack confs per each environment & app
+conf = configFact(output, [new HtmlWebpackPlugin
+  template: paths.rmap.index
+  filename: "rmap.html"
+])
 mockConf = configFact(output, mockIndexes.map (fileName) ->
   new HtmlWebpackPlugin
     template: paths.mockIndexes + '/' + fileName
     filename: "mocks/#{fileName}"
 )
 prodConf = configFact(output, [
-  new HtmlWebpackPlugin template: paths.rmap.index
+  new HtmlWebpackPlugin
+    template: paths.rmap.index
+    filename: "rmap.html"
   #not sure what the option is to mangle on webpack.. we could post mangle via gulp
   new webpack.optimize.UglifyJsPlugin {
     compress: {
       warnings: false
     }}
 ])
-adminConf = configFact(output, [
+adminConf = configFact(outputAdmin, [
   new HtmlWebpackPlugin
     template: paths.admin.index
-    filename: "admin/index.html"
+    filename: "admin.html"
   #not sure what the option is to mangle on webpack.. we could post mangle via gulp
   new webpack.optimize.UglifyJsPlugin {
     compress: {
@@ -42,6 +51,7 @@ adminConf = configFact(output, [
     }}
 ])
 
+# webpack task mgmt
 runWebpack = (someConfig, app='rmap') ->
   gulp.src [
     paths[app].assets
@@ -57,17 +67,13 @@ runWebpack = (someConfig, app='rmap') ->
   .pipe(gulp.dest(paths.dest.root))
 
 gulp.task 'webpack', gulp.parallel 'otherAssets', ->
-  console.log "#### running regular webpack"
   runWebpack(conf)
 
 gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
-  console.log "#### running webpackMock"
   runWebpack(mockConf)
 
 gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
-  console.log "#### running webpackProd"
   runWebpack(prodConf)
 
 gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
-  console.log "#### running webpackAdmin"
   runWebpack(adminConf, 'admin')

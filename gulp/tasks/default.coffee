@@ -20,11 +20,11 @@ gulp.task 'develop', gulp.series 'clean', 'spec', 'express_watch'
 
 gulp.task 'mock', gulp.series 'clean', 'specMock', 'jsonMock', 'express', 'watch'
 
-gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'express', 'watch'
+gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'webpackAdmin', 'express', 'watch'
 
 gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
-gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'express', 'minify'
+gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'webpackAdmin', 'express', 'minify'
 
 gulp.task 'default', gulp.parallel 'develop'
 

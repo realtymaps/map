@@ -7,7 +7,6 @@ dest =
   styles: 'styles'
   fonts: 'fonts'
   assets: 'assets'
-  admin: 'admin/'
   root: '_public/'
 
 getAssetCollection = (app) ->
@@ -49,5 +48,5 @@ module.exports =
     scripts: dest.root + dest.scripts
     styles: dest.root + dest.styles
     fonts: dest.root + dest.fonts
-    index: dest.root + 'index.html'
-    admin: dest.root + dest.admin + 'index.html'
+    index: dest.root + 'rmap.html'
+    admin: dest.root + 'admin.html'
