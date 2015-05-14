@@ -4,14 +4,12 @@ qs = require 'qs'
 _overlays = require '../utils/util.layers.overlay.coffee'
 _eventReg = require '../utils/util.events.coffee'
 
-app.controller 'SatMapCtrl'.ourNs(), ['$log', '$timeout', '$rootScope',
-  'BaseMap'.ourNs(), 'leafletData', '$scope'
-  ($log, $timeout, $rootScope, BaseMap, leafletData, $scope) ->
+app.controller 'rmapsSatMapCtrl', ($log, $timeout, $rootScope, rmapsBaseMap, leafletData, $scope) ->
 
     limits = $scope.satMap.limits
     _mapId ='detailSatMap'
 
-    @satMapFactory = new BaseMap($scope, limits.options, limits.redrawDebounceMilliSeconds, 'satMap', _mapId)
+    @satMapFactory = new rmapsBaseMap($scope, limits.options, limits.redrawDebounceMilliSeconds, 'satMap', _mapId)
     _eventReg($timeout,$scope, @satMapFactory, limits, $log, 'satMap')
     _.merge $scope,
       satMap:
@@ -25,5 +23,3 @@ app.controller 'SatMapCtrl'.ourNs(), ['$log', '$timeout', '$rootScope',
 
     leafletData.getMap(_mapId).then (map) =>
       map.invalidateSize()
-
-]

@@ -15,7 +15,7 @@ require '../styles/leaflet.styl'
 
 #require 'angular-leaflet-directive'
 
-appName = 'app'.ourNs()
+appName = 'rmapsapp'
 #console.info "AppName: #{appName}"
 
 app = window.angular.module appName, [
