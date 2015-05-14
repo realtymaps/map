@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.factory 'MapToggles'.ourNs(), [ () ->
+app.factory 'rmapsMapToggles', ->
 
   (json) ->
     _locationCb = null
@@ -59,4 +59,3 @@ app.factory 'MapToggles'.ourNs(), [ () ->
       _.extend @, _.mapValues json, (val) ->
         return val == 'true'
     @
-]

@@ -10,26 +10,26 @@ app.factory 'ResultsFormatter'.ourNs(), [
   'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
   'rmapsLeafletObjectFetcher', 'MainOptions'.ourNs(), 'ZoomLevel'.ourNs(),
   ($rootScope, $timeout, $filter,
-  $log, ParcelEnums, GoogleService,
-  Properties, FormattersService, uiGmapGmapUtil, Events,
+  $log, rmapsParcelEnums, rmapsGoogleService,
+  rmapsProperties, FormattersService, uiGmapGmapUtil, Events,
   rmapsLeafletObjectFetcher, MainOptions, ZoomLevel) ->
 
     leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
     limits = MainOptions.map
 
     _forSaleClass = {}
-    _forSaleClass[ParcelEnums.status.sold] = 'sold'
-    _forSaleClass[ParcelEnums.status.pending] = 'pending'
-    _forSaleClass[ParcelEnums.status.forSale] = 'forsale'
-    _forSaleClass[ParcelEnums.status.notForSale] = 'notsale'
+    _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
+    _forSaleClass[rmapsParcelEnums.status.pending] = 'pending'
+    _forSaleClass[rmapsParcelEnums.status.forSale] = 'forsale'
+    _forSaleClass[rmapsParcelEnums.status.notForSale] = 'notsale'
     _forSaleClass['saved'] = 'saved'
     _forSaleClass['default'] = ''
 
     _statusLabelClass = {}
-    _statusLabelClass[ParcelEnums.status.sold] = 'label-sold-property'
-    _statusLabelClass[ParcelEnums.status.pending] = 'label-pending-property'
-    _statusLabelClass[ParcelEnums.status.forSale] = 'label-sale-property'
-    _statusLabelClass[ParcelEnums.status.notForSale] = 'label-notsale-property'
+    _statusLabelClass[rmapsParcelEnums.status.sold] = 'label-sold-property'
+    _statusLabelClass[rmapsParcelEnums.status.pending] = 'label-pending-property'
+    _statusLabelClass[rmapsParcelEnums.status.forSale] = 'label-sale-property'
+    _statusLabelClass[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
     _statusLabelClass['saved'] = 'label-saved-property'
     _statusLabelClass['default'] = ''
 
@@ -60,9 +60,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
     class ResultsFormatter
 
       _isWithinBounds = (map, prop) =>
-        pointBounds = GoogleService.GeoJsonTo.MultiPolygon
-        .toBounds(prop.geometry or prop.geom_polys_json or prop.geom_point_json)
-
+        pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
         isVisible = map.getBounds().intersects(pointBounds)
         return unless isVisible
         prop
@@ -274,7 +272,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         maybeFetchCb = (showDetails) =>
           #start getting more data
           if showDetails
-            Properties.getPropertyDetail(@mapCtrl.refreshState(
+            rmapsProperties.getPropertyDetail(@mapCtrl.refreshState(
               map_results:
                 selectedResultId: result.rm_property_id)
             , result.rm_property_id, if result.rm_status then "detail" else "all")

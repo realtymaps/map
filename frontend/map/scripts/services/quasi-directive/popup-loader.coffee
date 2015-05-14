@@ -1,13 +1,10 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
-app.service 'popupLoader'.ourNs(),[
-  '$templateCache', '$http', '$compile', 'popupVariables'.ourNs(),
-  ($templateCache, $http, $compile, popupVariables) ->
+app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVariables) ->
     _map = null
 
-
-    _getOffset = (map, model, offsets = popupVariables.offsets) ->
+    _getOffset = (map, model, offsets = rmapspopupVariables.offsets) ->
       # get center and point container coords
       return if !model?.coordinates?.length
       center = map.latLngToContainerPoint map.getCenter()
@@ -60,4 +57,3 @@ app.service 'popupLoader'.ourNs(),[
     close:  ->
       return unless _map
       _map.closePopup()
-]

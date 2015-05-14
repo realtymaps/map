@@ -1,23 +1,22 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'principal'.ourNs(),
-  'events'.ourNs(), 'PromiseThrottler'.ourNs(), '$log'
-  ($rootScope, $http, Property, principal, Events, PromiseThrottler, $log) ->
+app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal,
+  rmapsevents, rmapsPromiseThrottler, $log) ->
     #HASH to properties by rm_property_id
     #we may want to save details beyond just saving there fore it will be a hash pointing to an object
     _savedProperties = {}
 
-    _detailThrottler = new PromiseThrottler('detailThrottler')
-    _filterThrottler = new PromiseThrottler('filterThrottler')
-    _filterThrottlerGeoJson = new PromiseThrottler('filterThrottlerGeoJson')
-    _filterThrottlerCluster = new PromiseThrottler('filterThrottlerCluster')
-    _parcelThrottler = new PromiseThrottler('parcelThrottler')
-    _saveThrottler = new PromiseThrottler('saveThrottler')
-    _addressThrottler = new PromiseThrottler('addressThrottler')
+    _detailThrottler = new rmapsPromiseThrottler('detailThrottler')
+    _filterThrottler = new rmapsPromiseThrottler('filterThrottler')
+    _filterThrottlerGeoJson = new rmapsPromiseThrottler('filterThrottlerGeoJson')
+    _filterThrottlerCluster = new rmapsPromiseThrottler('filterThrottlerCluster')
+    _parcelThrottler = new rmapsPromiseThrottler('parcelThrottler')
+    _saveThrottler = new rmapsPromiseThrottler('saveThrottler')
+    _addressThrottler = new rmapsPromiseThrottler('addressThrottler')
 
-    $rootScope.$onRootScope Events.principal.login.success, () ->
-      principal.getIdentity().then (identity) ->
+    $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
+      rmapsprincipal.getIdentity().then (identity) ->
         _savedProperties = _.extend {}, identity.stateRecall.properties_selected
 
     # this convention for a combined service call helps elsewhere because we know how to get the path used
@@ -69,7 +68,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         rm_property_id = model.rm_property_id
         prop = _savedProperties[rm_property_id]
         if not prop
-          prop = new Property(rm_property_id, true, false, undefined)
+          prop = new rmapsProperty(rm_property_id, true, false, undefined)
           _savedProperties[rm_property_id] = prop
         else
           prop.isSaved = !prop.isSaved
@@ -86,7 +85,7 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
         #post state to database
         statePromise = $http.post(backendRoutes.user.updateState, properties_selected: _savedProperties)
         _saveThrottler.invokePromise statePromise
-        statePromise.error (data, status) -> $rootScope.$emit(Events.alert, {type: 'danger', msg: data})
+        statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
         statePromise.then () ->
           prop
 
@@ -99,4 +98,3 @@ app.service 'Properties'.ourNs(), ['$rootScope', '$http', 'Property'.ourNs(), 'p
       savedProperties: _savedProperties
 
     service
-]

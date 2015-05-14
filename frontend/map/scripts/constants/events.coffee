@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 
-app.constant 'events'.ourNs(),
+app.constant 'rmapsevents',
   keysToValues
     map:
       drawPolys:

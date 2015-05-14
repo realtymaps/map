@@ -21,15 +21,10 @@ _wrapGeomPointJson = (obj) ->
 ###
   Our Main Map Implementation
 ###
-app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogleMapApi',
-  'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
-  'ParcelEnums'.ourNs(), 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
-  'GoogleService'.ourNs(), 'popupLoader'.ourNs(),
-  'leafletData',
-  ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
-    Properties, Events, LayerFormatters, MainOptions,
-    ParcelEnums, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    PopupLoader, leafletData) ->
+app.factory 'rmapsMap',
+  ($log, $timeout, $q, $rootScope, rmapsBaseMap,
+    rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
+    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -41,7 +36,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
       toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
-    class Map extends BaseMap
+    class Map extends rmapsBaseMap
       baseIsLoaded = false
       scopeM: ->
         @scope.map
@@ -53,7 +48,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
         baseIsLoaded = true
         _initToggles $scope, limits.toggles
 
-        $scope.zoomLevelService = ZoomLevel
+        $scope.zoomLevelService = rmapsZoomLevel
         self = @
 
         leafletData.getMap('mainMap').then (map) =>
@@ -81,18 +76,18 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
         @filters = ''
         @filterDrawPromise = false
         $rootScope.$watch('selectedFilters', @filter, true)
-        @scope.savedProperties = Properties.getSavedProperties()
-        @layerFormatter = LayerFormatters(@)
+        @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
+        @layerFormatter = rmapsLayerFormatters(@)
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
-          saved = Properties.saveProperty(model)
+          saved = rmapsProperties.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
             @redraw(false)
             (model, lObject) =>
               #TODO: Need to debounce / throttle
-              saved = Properties.saveProperty(model)
+              saved = rmapsProperties.saveProperty(model)
               return unless saved
               saved.then (savedDetails) =>
                 @redraw(false)
@@ -133,7 +128,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
 
 
           formatters:
-            results: new ResultsFormatter(self)
+            results: new rmapsResultsFormatter(self)
 
           dragZoom: {}
           changeZoom: (increment) ->
@@ -151,15 +146,15 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+        if @map? and not rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
           _.each @scopeM().geojson, (val) ->
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
         promises = []
-        if ZoomLevel.doCluster(@scope)
+        if rmapsZoomLevel.doCluster(@scope)
           promises.push(
-            Properties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
+            rmapsProperties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
             .then (data) =>
               return if !data? or _.isString data
               #data should be in array format
@@ -174,7 +169,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
           #the data structure is the same (do we clone and hide one?)
           #or do we have the results list view grab one that exists with items?
           promises.push(
-            Properties.getFilterSummary(@hash, @mapState, @filters, cache)
+            rmapsProperties.getFilterSummary(@hash, @mapState, @filters, cache)
             .then (data) =>
               return if !data? or _.isString data
               @scopeM().markers.backendPriceCluster = {}
@@ -189,12 +184,12 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
               $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
           )
 
-          if ZoomLevel.isParcel(@scopeM().center.zoom) or ZoomLevel.isAddressParcel(@scopeM().center.zoom)
+          if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
             @scope.map.layers.overlays["cartodb parcels"].visible = true
             @scope.map.layers.overlays.filterSummary.visible = false
-            @scope.map.layers.overlays.addresses.visible = if ZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
+            @scope.map.layers.overlays.addresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
-              Properties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+              rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
               .then (data) =>
                 return if !data? or _.isString data
                 @scopeM().geojson.filterSummaryPoly =
@@ -210,18 +205,18 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
       redraw: (cache = true) =>
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        if ZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
-             ZoomLevel.isParcel(@scopeM().center.zoom)
-          if ZoomLevel.isAddressParcel(@scopeM().center.zoom)
-              ZoomLevel.dblClickZoom.disable(@scope)
+        if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
+             rmapsZoomLevel.isParcel(@scopeM().center.zoom)
+          if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
+              rmapsZoomLevel.dblClickZoom.disable(@scope)
               #BEGIN COMMENT OUT WHEN MAPBOX OR CARTODB ARE FULLY USED
-          #     promises.pushProperties.getAddresses(@hash, @mapState, cache).then (data) =>
+          #     promises.pushrmapsProperties.getAddresses(@hash, @mapState, cache).then (data) =>
           #       @scope.map.markers.addresses = @layerFormatter.setDataOptions(
           #         _.cloneDeep(data),
           #         @layerFormatter.Parcels.labelFromStreetNum
           #       )
           #
-          # promises.push Properties.getParcelBase(@hash, @mapState, cache).then (data) =>
+          # promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
           #   return unless data?
           #   @scopeM().geojson.parcelBase =
           #     data: data
@@ -230,7 +225,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
           #   $log.debug "addresses count to draw: #{data?.features?.length}"
         #END COMMENT OUT
         else
-          ZoomLevel.dblClickZoom.enable(@scope)
+          rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         promises = promises.concat @drawFilterSummary(cache)
@@ -272,7 +267,7 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
             longitude: @scopeM().center.lng()
         else
           #fallback to saftey and save a good center
-          centerToSave = MainOptions.json.center
+          centerToSave = rmapsMainOptions.json.center
 
         stateObj =
           map_position:
@@ -296,34 +291,33 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
           $timeout.cancel(@filterDrawPromise)
 
         @filterDrawPromise = $timeout =>
-          FilterManager.manage (@filters) =>
+          rmapsFilterManager.manage (@filters) =>
             @filterDrawPromise = false
             @redraw()
-        , MainOptions.filterDrawDelay
+        , rmapsMainOptions.filterDrawDelay
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
-        @scope.$onRootScope Events.map.drawPolys.clear, =>
+        @scope.$onRootScope rmapsevents.map.drawPolys.clear, =>
           _.each @scope.layers, (layer, k) ->
             return layer.length = 0 if layer? and _.isArray layer
             layer = {} #this is when a layer is an object
 
-        @scope.$onRootScope Events.map.drawPolys.isEnabled, (event, isEnabled) =>
+        @scope.$onRootScope rmapsevents.map.drawPolys.isEnabled, (event, isEnabled) =>
           @scope.drawUtil.isEnabled = isEnabled
           if isEnabled
             @scope.drawUtil.draw()
 
-        @scope.$onRootScope Events.map.drawPolys.query, =>
+        @scope.$onRootScope rmapsevents.map.drawPolys.query, =>
           polygons = @scope.layers.drawnPolys
           paths = _.flatten polygons.map (polygon) ->
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
       openWindow: (model) =>
-        PopupLoader.load(@scope, @map, model)
+        rmapsPopupLoader.load(@scope, @map, model)
 
       closeWindow: ->
-        PopupLoader.close()
+        rmapsPopupLoader.close()
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
-]

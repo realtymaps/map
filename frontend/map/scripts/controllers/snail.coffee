@@ -8,19 +8,17 @@ setWatch = null
 clearWatch = null
 renderPromise = null
 rendered = false
-data = 
+data =
   snailData: {}
   property: null
 _setContextValues = null
 
-module.exports = app.controller 'SnailCtrl'.ourNs(), [
-  '$scope', '$rootScope', '$location', '$http', '$sce', '$timeout', '$modal',
-  'RenderPdfBlob'.ourNs(), 'documentTemplates'.ourNs(), 'MainOptions'.ourNs(), 'Spinner'.ourNs(),
+module.exports = app.controller 'rmapsSnailCtrl',
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-   RenderPdfBlob, documentTemplates, MainOptions, Spinner) ->
-    
+   rmapsRenderPdfBlob, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinner) ->
+
     $scope.data = data
-    $scope.documentTemplates = documentTemplates
+    $scope.rmapsdocumentTemplates = rmapsdocumentTemplates
     $scope.fonts = fonts
     $scope.placeholderValues =
       from:
@@ -35,7 +33,7 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
       style: {}
     $scope.formReady = false
     $scope.form =
-      # instead of a blank form, use some fake default values for now 
+      # instead of a blank form, use some fake default values for now
       #from: {}
       from:
         name: "Dan Sexton"
@@ -48,17 +46,17 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         email: "dan@mangrovebaynaples.com"
       style:
         signature: 'print font 3'
-        # preselect a template as well for now 
+        # preselect a template as well for now
         templateId: 'letter.prospecting'
         #templateId: null
     $scope.cancel = () ->
       $location.url(frontendRoutes.map)
     $scope.iframeIndex = 0
-    
+
     _setContextValues = (index, blob) ->
       $scope["pdfPreviewBlob#{index}"] = $sce.trustAsResourceUrl(blob)
       $scope["templateId#{index}"] = $scope.form.style.templateId
-      template = $scope.documentTemplates[$scope["templateId#{index}"]]
+      template = $scope.rmapsdocumentTemplates[$scope["templateId#{index}"]]
       if template
         $scope["width#{index}"] = template.width
         $scope["height#{index}"] = template.height
@@ -72,24 +70,24 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
     _setContextValues(1, "about:blank")
 
     $scope.renderError = (reason) ->
-      Spinner.decrementLoadingCount("pdf rendering")
+      rmapsSpinner.decrementLoadingCount("pdf rendering")
 
     $scope.finishRender = () ->
       $scope.iframeIndex = ($scope.iframeIndex+1)%2
-      Spinner.decrementLoadingCount("pdf rendering")
+      rmapsSpinner.decrementLoadingCount("pdf rendering")
 
     doRender = () ->
       renderPromise = null
-      RenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
+      rmapsRenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
       .then (blob) ->
         _setContextValues(($scope.iframeIndex+1)%2, blob)
       , $scope.renderError
-    
+
     updateBlob = (newValue, oldValue) ->
       if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
-      template = $scope.documentTemplates[$scope.form.style.templateId]
+      template = $scope.rmapsdocumentTemplates[$scope.form.style.templateId]
       formReady = true
       for prop of $scope.form
         $scope.data.snailData[prop] = _.clone($scope.form[prop])
@@ -99,20 +97,20 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
             formReady &&= !!formValue
           $scope.data.snailData[prop][key] = formValue || "{{#{$scope.placeholderValues[prop][key]}}}"
       $scope.formReady = formReady
-        
+
       if renderPromise
         # replace the existing rendering call
         $timeout.cancel(renderPromise)
         renderPromise = null
       else
         # create a new one
-        Spinner.incrementLoadingCount("pdf rendering")
-      renderPromise = $timeout(doRender, MainOptions.pdfRenderDelay)
-    
+        rmapsSpinner.incrementLoadingCount("pdf rendering")
+      renderPromise = $timeout(doRender, rmapsMainOptions.pdfRenderDelay)
+
     setWatch = () ->
       clearWatch?()
       clearWatch = $scope.$watch 'form', updateBlob, true
-    
+
     setWatch()
 
     $scope.getPriceQuote = () ->
@@ -126,12 +124,11 @@ module.exports = app.controller 'SnailCtrl'.ourNs(), [
         keyboard: false
         backdrop: 'static'
         windowClass: 'snail-modal'
-    
+
     if !$scope.data.property
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
-]
-app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), 'Spinner'.ourNs(), ($rootScope, $location, $timeout, Events, Spinner) ->
+app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
   initiateSend = (property) ->
     _setContextValues?(0, "about:blank")
     _setContextValues?(1, "about:blank")
@@ -139,7 +136,7 @@ app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), 'Spinner'.ourN
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
     $location.url frontendRoutes.snail
-  $rootScope.$on Events.snail.initiateSend, (event, property) -> initiateSend(property)
+  $rootScope.$on rmapsevents.snail.initiateSend, (event, property) -> initiateSend(property)
 
   $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
     # if we're leaving the snail state, cancel the watch for performance
@@ -148,5 +145,4 @@ app.run ["$rootScope", '$location', '$timeout', 'events'.ourNs(), 'Spinner'.ourN
       if renderPromise
         $timeout.cancel(renderPromise)
         renderPromise = null
-        Spinner.decrementLoadingCount("pdf rendering")
-]
+        rmapsSpinner.decrementLoadingCount("pdf rendering")

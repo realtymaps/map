@@ -11,6 +11,7 @@ map = undefined
 
 module.exports = app
 
+#WE WILL STILL NEED THIS IN PRODUCTION FOR A GOOGLE APIKEY
 #app.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
 #  GoogleMapApi.configure
 #    # key: 'your api key',
@@ -18,12 +19,9 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'MapCtrl'.ourNs(), [
-  '$scope', '$rootScope', '$timeout', 'Map'.ourNs(), 'MainOptions'.ourNs(), 'MapToggles'.ourNs(),
-  'principal'.ourNs(), 'events'.ourNs(), 'ParcelEnums'.ourNs(), 'Properties'.ourNs(),
-  '$log', 'searchbox'.ourNs(),
-  ($scope, $rootScope, $timeout, Map, MainOptions, Toggles,
-  principal, Events, ParcelEnums, Properties, $log, searchbox) ->
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $timeout, rmapsMap,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
+  rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
@@ -34,10 +32,10 @@ app.controller 'MapCtrl'.ourNs(), [
       $scope.pageClass = pageClass
     #end inits
 
-    searchbox('mainMap')
+    rmapssearchbox('mainMap')
 
     restoreState = () ->
-      principal.getIdentity()
+      rmapsprincipal.getIdentity()
       .then (identity) ->
         if not identity?.stateRecall
           return
@@ -58,15 +56,15 @@ app.controller 'MapCtrl'.ourNs(), [
         if identity.stateRecall.filters
           statusList = identity.stateRecall.filters.status || []
           delete identity.stateRecall.filters.status
-          for key,status of ParcelEnums.status
+          for key,status of rmapsParcelEnums.status
             identity.stateRecall.filters[key] = (statusList.indexOf(status) > -1)
           _.extend($rootScope.selectedFilters, identity.stateRecall.filters)
         if map
           if map_position?.center?
-            $scope.map.center = NgLeafletCenter(map_position.center or MainOptions.map.options.json.center)
+            $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
           if map_position?.zoom?
             $scope.map.center.zoom = Number map_position.zoom
-          $scope.toggles = new Toggles(identity.stateRecall.map_toggles)
+          $scope.rmapsMapToggles = new rmapsMapToggles(identity.stateRecall.map_toggles)
         else
           if map_position?
             if map_position.center? and
@@ -74,29 +72,27 @@ app.controller 'MapCtrl'.ourNs(), [
             map_position.center.latitude != "NaN" and
             map_position.center.longitude? and
             map_position.center.longitude != "NaN"
-              MainOptions.map.options.json.center = NgLeafletCenter map_position.center
+              rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
             if map_position.zoom?
-              MainOptions.map.options.json.center.zoom = +map_position.zoom
-          MainOptions.map.toggles = new Toggles(identity.stateRecall.map_toggles)
-          map = new Map($scope, MainOptions.map)
+              rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
+          rmapsMainOptions.map.toggles = new rmapsMapToggles(identity.stateRecall.map_toggles)
+          map = new rmapsMap($scope, rmapsMainOptions.map)
 
           if identity.stateRecall.map_results?.selectedResultId? and map?
             $log.debug "attempting to reinstate selectedResult"
-            Properties.getPropertyDetail(null,
+            rmapsProperties.getPropertyDetail(null,
               identity.stateRecall.map_results.selectedResultId,"all")
             .then (data) ->
               map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
-    $scope.$onRootScope Events.principal.login.success, () ->
+    $scope.$onRootScope rmapsevents.principal.login.success, () ->
       restoreState()
 
-    if principal.isIdentityResolved() && principal.isAuthenticated()
+    if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
       restoreState()
-]
 
 # fix google map views after changing back to map state
-app.run ["$rootScope", "$timeout",
-  ($rootScope, $timeout) ->
+app.run ($rootScope, $timeout) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
       # if we're not entering the map state, or if we're already on the map state, don't do anything
       if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
@@ -110,4 +106,3 @@ app.run ["$rootScope", "$timeout",
         if gStrMap?
           google.maps.event.trigger(gStrMap, 'resize')
       , 500
-]
