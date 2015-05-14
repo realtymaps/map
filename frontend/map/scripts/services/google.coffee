@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
 
-app.service 'rmapsGoogleService'.ourNs(), ->
+app.service 'rmapsGoogleService', ->
   GeoJsonTo: do ->
 
     _point = do ->
