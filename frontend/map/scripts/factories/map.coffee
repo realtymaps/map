@@ -25,13 +25,11 @@ app.factory 'Map'.ourNs(), ['$log', '$timeout', '$q', '$rootScope', 'uiGmapGoogl
   'BaseMap'.ourNs(), 'Properties'.ourNs(), 'events'.ourNs(), 'LayerFormatters'.ourNs(), 'MainOptions'.ourNs(),
   'ParcelEnums'.ourNs(), 'FilterManager'.ourNs(), 'ResultsFormatter'.ourNs(), 'ZoomLevel'.ourNs(),
   'GoogleService'.ourNs(), 'popupLoader'.ourNs(),
-  'leafletData', 'leafletIterators',
+  'leafletData',
   ($log, $timeout, $q, $rootScope, GoogleMapApi, BaseMap,
     Properties, Events, LayerFormatters, MainOptions,
     ParcelEnums, FilterManager, ResultsFormatter, ZoomLevel, GoogleService,
-    PopupLoader, leafletData, leafletIterators) ->
-
-    $it = leafletIterators
+    PopupLoader, leafletData) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
