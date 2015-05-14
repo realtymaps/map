@@ -54,5 +54,8 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), '$log', (options, $log)
   isAddressParcel: (gMapOrInt, stateObj = {}) ->
     _is(gMapOrInt, stateObj, _enum.addressParcel)
 
+  isBeyondCartoDb: (currentLevel) ->
+    currentLevel > _zoomThresh.addressParcel
+
   dblClickZoom: _dblClickZoom
 ]
