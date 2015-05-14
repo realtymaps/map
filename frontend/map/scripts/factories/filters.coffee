@@ -3,7 +3,7 @@ Filters service to get current and set filters
 ###
 app = require '../app.coffee'
 
-app.factory 'Filters'.ourNs(), [ () =>
+app.factory 'rmapsFilters', () =>
 
   # query filters
   values:
@@ -60,4 +60,3 @@ app.factory 'Filters'.ourNs(), [ () =>
       { value: "580", name: "~ 1.5 years+"}
       { value: "730", name: "2 years+"}
     ]
-]

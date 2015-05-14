@@ -7,12 +7,12 @@ moment = require 'moment'
 
 
 module.exports =
-  app.controller 'MapSmallDetailsCtrl'.ourNs(), ['$scope', '$log', 'ParcelEnums'.ourNs(), ($scope, $log, ParcelEnums) ->
+  app.controller 'rmapsMapSmallDetailsCtrl',($scope, $log, rmapsParcelEnums) ->
     colorClasses = {}
-    colorClasses[ParcelEnums.status.sold] = 'label-sold-property'
-    colorClasses[ParcelEnums.status.pending] = 'label-pending-property'
-    colorClasses[ParcelEnums.status.forSale] = 'label-sale-property'
-    colorClasses[ParcelEnums.status.notForSale] = 'label-notsale-property'
+    colorClasses[rmapsParcelEnums.status.sold] = 'label-sold-property'
+    colorClasses[rmapsParcelEnums.status.pending] = 'label-pending-property'
+    colorClasses[rmapsParcelEnums.status.forSale] = 'label-sale-property'
+    colorClasses[rmapsParcelEnums.status.notForSale] = 'label-notsale-property'
 
     getPrice = (val) ->
       String.orDash if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
@@ -46,6 +46,5 @@ module.exports =
     $scope.rm_status = String.orDash $scope.model.rm_status
     $scope.owner_name = String.orDash $scope.model.owner_name
     $scope.owner_name2 = $scope.model.owner_name2
-    
+
     $scope.statusClass = getStatusClass($scope.model.rm_status)
-  ]

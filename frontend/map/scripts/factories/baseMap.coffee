@@ -10,9 +10,7 @@ _baseLayers = require '../utils/util.layers.base.coffee'
 _mapClassContainerName = 'angular-leaflet-map'
 
 
-module.exports = app.factory 'BaseMap'.ourNs(), [
-  '$log', '$timeout', 'leafletData',
-  ($log, $timeout, leafletData) ->
+module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
     class BaseMap
       constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['dragend', 'zoomend'])->
         _throttler =  _eventThrottler($log, options)
@@ -138,4 +136,3 @@ module.exports = app.factory 'BaseMap'.ourNs(), [
 
 #public fns
       isZoomIn: (newValue, oldValue) -> newValue > oldValue
-]
