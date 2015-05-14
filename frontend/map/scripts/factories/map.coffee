@@ -140,7 +140,8 @@ app.factory 'rmapsMap',
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
+        if @map? and not rmapsZoomLevel.isParcel(@scopeM().center.zoom)
+          @scopeM().markers.addresses = {}
           _.each @scopeM().geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -196,25 +197,25 @@ app.factory 'rmapsMap',
       redraw: (cache = true) =>
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
-             rmapsZoomLevel.isParcel(@scopeM().center.zoom)
+        if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
+             rmapsZoomLevel.isParcel(@scopeM().center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom)
           if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
               rmapsZoomLevel.dblClickZoom.disable(@scope)
-              #BEGIN COMMENT OUT WHEN MAPBOX OR CARTODB ARE FULLY USED
-          #     promises.pushrmapsProperties.getAddresses(@hash, @mapState, cache).then (data) =>
-          #       @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-          #         _.cloneDeep(data),
-          #         @layerFormatter.Parcels.labelFromStreetNum
-          #       )
-          #
-          # promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
-          #   return unless data?
-          #   @scopeM().geojson.parcelBase =
-          #     data: data
-          #     style: @layerFormatter.Parcels.style
-          #
-          #   $log.debug "addresses count to draw: #{data?.features?.length}"
-        #END COMMENT OUT
+
+              promises.push rmapsProperties.getAddresses(@hash, @mapState, cache).then (data) =>
+                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
+                  _.cloneDeep(data),
+                  @layerFormatter.Parcels.labelFromStreetNum
+                )
+
+          promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
+            return unless data?
+            @scopeM().geojson.parcelBase =
+              data: data
+              style: @layerFormatter.Parcels.style
+
+            $log.debug "addresses count to draw: #{data?.features?.length}"
+
         else
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()

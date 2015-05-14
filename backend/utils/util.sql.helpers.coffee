@@ -77,7 +77,7 @@ _columns =
   ].join(', ')
   parcel: [
     'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type',
-    'fips_code'
+    'fips_code', '\'{}\'::json AS properties'
   ].join(', ')
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
