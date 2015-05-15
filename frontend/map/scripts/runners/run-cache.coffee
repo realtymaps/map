@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.run [ '$http', 'DSCacheFactory', '$log', ($http, DSCacheFactory, $log) ->
+app.run ($http, DSCacheFactory, $log) ->
   #init caches here begining w default
   DSCacheFactory 'defaultCache',
     #capacity: 100000
@@ -15,5 +15,3 @@ app.run [ '$http', 'DSCacheFactory', '$log', ($http, DSCacheFactory, $log) ->
 
 
   $http.defaults.cache = DSCacheFactory.get('defaultCache')
-
-]

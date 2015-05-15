@@ -2,7 +2,7 @@ testScope = 'FormattersService'
 
 describe testScope, ->
   beforeEach ->
-    angular.mock.module 'app'.ourNs()
+    angular.mock.module 'app'.ns()
     angular.mock.module 'uiGmapgoogle-maps.mocks'
     angular.mock.module 'uiGmapgoogle-maps'
 
@@ -14,7 +14,7 @@ describe testScope, ->
       @apiMock.mockEvent()
     ]
 
-    inject ['$rootScope', testScope.ourNs(),
+    inject ['$rootScope', testScope.ns(),
       ($rootScope, Formatters) =>
         @$rootScope = $rootScope
         @subject = Formatters

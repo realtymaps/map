@@ -1,6 +1,5 @@
 app = require '../app.coffee'
 
-app.run ["principal".ourNs(), (principal) ->
+app.run (rmapsprincipal) ->
   #bootstrap the idenitity check when the app loads
-  principal.getIdentity()
-]
+  rmapsprincipal.getIdentity()

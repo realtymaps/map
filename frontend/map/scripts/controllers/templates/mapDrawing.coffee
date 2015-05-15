@@ -3,22 +3,19 @@
 app = require '../../app.coffee'
 
 module.exports =
-  app.controller 'MapDrawingCtrl'.ourNs(), [
-    '$scope', '$rootScope', 'events'.ourNs(),
-    ($scope, $rootScope, Events) ->
+  app.controller 'rmapsMapDrawingCtrl', ($scope, $rootScope, rmapsevents) ->
 
       angular.extend $scope,
         clearDrawnPolysClick: ->
-          $rootScope.$emit Events.map.drawPolys.clear
+          $rootScope.$emit rmapsevents.map.drawPolys.clear
 
         queryDrawnPolysClick: ->
-          $rootScope.$emit Events.map.drawPolys.query
+          $rootScope.$emit rmapsevents.map.drawPolys.query
 
         enableDrawnPolysClick: ->
           $scope.danger = !$scope.danger
           $scope.enableDisableText = if $scope.danger then 'draw enabled' else 'draw disabled'
-          $rootScope.$emit Events.map.drawPolys.isEnabled, $scope.danger
+          $rootScope.$emit rmapsevents.map.drawPolys.isEnabled, $scope.danger
 
         enableDisableText: 'draw disabled'
         danger: false
-  ]

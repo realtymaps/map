@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 loadingCount = 0
 
-app.service 'Spinner'.ourNs(), [ '$log', ($log) ->
+app.service 'rmapsSpinner', ($log) ->
   incrementLoadingCount: (logMessage, delta=1) ->
     loadingCount += delta
     #$log.debug("incremented loadingCount by #{delta} (#{logMessage}): #{loadingCount}")
@@ -13,4 +13,3 @@ app.service 'Spinner'.ourNs(), [ '$log', ($log) ->
     #$log.debug("decremented loadingCount by #{delta} (#{logMessage}): #{loadingCount}")
   getLoadingCount: () ->
     loadingCount
-]

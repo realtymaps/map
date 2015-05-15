@@ -13,7 +13,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
       parent:       'main'
       url:          frontendRoutes[name],
       template:     require("../../html/views/#{name}.jade")
-      controller:   "#{name[0].toUpperCase()}#{name.substr(1)}Ctrl".ourNs()
+      controller:   "#{name[0].toUpperCase()}#{name.substr(1)}Ctrl".ns()
     _.extend(state, overrides)
     if state.parent
       state.views = {}

@@ -7,7 +7,7 @@ String::ourNameSpace = (flare = 'rmaps') ->
   flare + @
 
 #String::ns = String::flare used by angular-google-maps in 2.0.0
-String::ourNs = String::ourNameSpace
+String::ns = String::ourNameSpace
 
 String::space = ->
   @ + space

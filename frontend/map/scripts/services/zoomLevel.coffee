@@ -2,8 +2,8 @@ app = require '../app.coffee'
 
 keysToValue = require '../../../../common/utils/util.keysToValues.coffee'
 
-app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), '$log', (options, $log) ->
-  _zoomThresh = options.map.options.zoomThresh
+app.service 'rmapsZoomLevel', (rmapsMainOptions, $log) ->
+  _zoomThresh = rmapsMainOptions.map.options.zoomThresh
   _enum = keysToValue
     addressParcel: 1
     parcel: 1
@@ -58,4 +58,3 @@ app.service 'ZoomLevel'.ourNs(), ['MainOptions'.ourNs(), '$log', (options, $log)
     currentLevel > _zoomThresh.addressParcel
 
   dblClickZoom: _dblClickZoom
-]
