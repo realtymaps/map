@@ -8,7 +8,7 @@ sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
 auth = require "#{basePath}/utils/util.auth"
 
 
-describe 'utils/auth'.ourNs().ourNs('Backend'), ->
+describe 'utils/auth'.ns().ns('Backend'), ->
 
   # mock this call so we don't actually call the db
   sessionSecurityService.deleteSecurities = () -> Promise.resolve()

@@ -18,7 +18,7 @@ _humanizePartial = (val, unit) ->
     return readable.slice(0,-1)
   return readable
 
-app.service 'FormattersService'.ourNs(), [ '$log', ($log) ->
+app.service 'rmapsFormattersService', ($log) ->
   _json =
     readable: (json) ->
       JSON.stringify(json).replace(/"/g,'').replace(/:/g,': ').replace(/,/g,', ').replace('{','').replace('}','')
@@ -84,4 +84,3 @@ app.service 'FormattersService'.ourNs(), [ '$log', ($log) ->
       "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
       "&location=#{lonLat[1]},#{lonLat[0]}" +
       "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}"
-]

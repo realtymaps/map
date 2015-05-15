@@ -49,7 +49,6 @@ app = require '../app.coffee'
 
 module.exports = app.controller 'rmapsAlertsCtrl',
   ($scope, $timeout, $sce, rmapsevents, rmapsMainOptions, $log) ->
-    Events = rmapsevents
     $scope.alerts = []
     alertsMap = {}
     anonymousAlertCounter = 1
@@ -156,7 +155,7 @@ module.exports = app.controller 'rmapsAlertsCtrl',
 
     # expose some functions via scope and event
     $scope.hideAlert = hideAlert # this is used by the alert close button
-    $scope.$onRootScope Events.alert.spawn, handleAlertSpawnEvent
-    $scope.$onRootScope Events.alert.hide, (event, alertId) -> hideAlert(alertId)
-    $scope.$onRootScope Events.alert.dismiss, (event, alertId) -> removeAlert(alertId)
-    $scope.$onRootScope Events.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)
+    $scope.$onRootScope rmapsevents.alert.spawn, handleAlertSpawnEvent
+    $scope.$onRootScope rmapsevents.alert.hide, (event, alertId) -> hideAlert(alertId)
+    $scope.$onRootScope rmapsevents.alert.dismiss, (event, alertId) -> removeAlert(alertId)
+    $scope.$onRootScope rmapsevents.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)

@@ -1,4 +1,4 @@
-describe 'Sanity'.ourNs().ourNs('Backend'), ->
+describe 'Sanity'.ns().ns('Backend'), ->
   describe 'lodash', ->
 
     it 'should exist', ->

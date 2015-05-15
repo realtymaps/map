@@ -1,5 +1,5 @@
 
-describe 'Karma Sanity'.ourNs().ourNs('FrontEnd'), ->
+describe 'Karma Sanity'.ns().ns('FrontEnd'), ->
   describe 'fixtures', ->
 
     it 'should exist', ->

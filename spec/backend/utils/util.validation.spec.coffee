@@ -6,7 +6,7 @@ basePath = require '../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
 
 
-describe 'utils/validation.validateAndTransform()'.ourNs().ourNs('Backend'), ->
+describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
 
   promiseIt "should transform all parameters that have transforms, and omit parameters that don't", () ->
     [

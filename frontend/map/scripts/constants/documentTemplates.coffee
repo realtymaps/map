@@ -8,4 +8,4 @@ for request in directoryContext.keys()
   name = /\/document\.(.+)\.coffee$/.exec(request)[1]
   documentTemplates[name] = directoryContext(request)
 
-app.constant 'documentTemplates'.ourNs(), documentTemplates
+app.constant 'documentTemplates'.ns(), documentTemplates
