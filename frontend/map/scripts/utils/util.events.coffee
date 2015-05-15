@@ -4,7 +4,7 @@ caseing = require 'case'
 
 _markerEvents= ['click', 'dblclick', 'mousedown', 'mouseover', 'mouseout']
 #ng-leaflet inconsistency
-_geojsonEvents = _markerEvents.map (e) -> caseing.capital e
+_geojsonEvents = ['click', 'dblclick', 'mouseover', 'mouseout']
 
 _isMarker = (type) ->
   type == 'marker'
@@ -41,7 +41,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
     last: null
 
   _handleHover = (model, lObject, type, layerName, eventName) ->
-    return if !layerName or !type
+    return if !layerName or !type or !lObject
     if type == "marker" and layerName != 'addresses'
       mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
       lObject.setIcon(new L.divIcon(model.icon))
@@ -89,22 +89,14 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
   _hookGeojson = (handler) ->
     _geojsonEvents.forEach (name) ->
-        eventName = 'leafletDirectiveMap.geojson' + name;
-        $scope.$onRootScope eventName, (ngevent, feature, event) ->
-          name = caseing.lower name
-          return unless feature
-          #ng-leaflet inconsistency
-          if arguments.length < 3
-            event = feature
-            feature = event.target.feature or {}
-
-          # return if  _isParcelPoly(feature) and name != 'click' #NEED TO FIX ng-leaflet
-          feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
-          lObject = event.layer
-          layerName = lObject._layerName or if lObject.options.fillColor == "transparent" then "parcelBase" else "filterSummaryPoly"
-          lObject._layerName = layerName
-          if handler[name]?
-            handler[name](event.originalEvent, lObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
+        eventName = 'leafletDirectiveGeoJson.' + name;
+        $scope.$onRootScope eventName, (event, args) ->
+          _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
+            {feature} = leafletObject
+            return unless feature
+            feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
+            if handler[name]?
+              handler[name](leafletEvent, leafletObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
 
   _eventHandler =
     ###TODO:

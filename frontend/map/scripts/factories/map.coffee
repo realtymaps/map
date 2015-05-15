@@ -11,6 +11,12 @@ _emptyGeoJsonData =
   type: "FeatureCollection"
   features: []
 
+_wrapGeomPointJson = (obj) ->
+  unless obj?.geom_point_json
+    obj.geom_point_json =
+      coordinates: obj.coordinates
+      type: obj.type
+  obj
 
 ###
   Our Main Map Implementation
@@ -171,13 +177,16 @@ app.factory 'rmapsMap',
 
               @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
 
+              for key, val of data
+                _wrapGeomPointJson val
+
               @scopeM().markers.filterSummary = data
 
               $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
           )
 
           if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays["cartodb parcels"].visible = true
+            @scope.map.layers.overlays["cartodb parcels"].visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
             @scope.map.layers.overlays.filterSummary.visible = false
             @scope.map.layers.overlays.addresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(

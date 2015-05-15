@@ -4,18 +4,14 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
-app.factory 'ResultsFormatter'.ourNs(), [
-  '$rootScope', '$timeout', '$filter',
-  '$log', 'ParcelEnums'.ourNs(), 'rmapsGoogleService'.ourNs(),
-  'Properties'.ourNs(), 'FormattersService'.ourNs(), 'uiGmapGmapUtil', 'events'.ourNs(),
-  'rmapsLeafletObjectFetcher', 'MainOptions'.ourNs(), 'ZoomLevel'.ourNs(),
+app.factory 'ResultsFormatter'.ourNs(),
   ($rootScope, $timeout, $filter,
   $log, rmapsParcelEnums, rmapsGoogleService,
-  rmapsProperties, FormattersService, uiGmapGmapUtil, Events,
-  rmapsLeafletObjectFetcher, MainOptions, ZoomLevel) ->
+  rmapsProperties, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
+  rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
 
     leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
-    limits = MainOptions.map
+    limits = rmapsMainOptions.map
 
     _forSaleClass = {}
     _forSaleClass[rmapsParcelEnums.status.sold] = 'sold'
@@ -50,7 +46,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
 
       #need event, lObject, model, modelName, layerName, type
       modelName = result.rm_property_id
-      layerName = if ZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
+      layerName = if rmapsZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
       originator = if originator? then originator else 'results'
 
       payload = if layerName != 'filterSummaryPoly' then leafletDataMainMap.get(modelName) else leafletDataMainMap.get(modelName, layerName)
@@ -60,14 +56,16 @@ app.factory 'ResultsFormatter'.ourNs(), [
     class ResultsFormatter
 
       _isWithinBounds = (map, prop) =>
-        pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon.toBounds(prop.geom_polys_json)
+        pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon
+        .toBounds(prop.geometry or prop.geom_polys_json or prop.geom_point_json)
+
         isVisible = map.getBounds().intersects(pointBounds)
         return unless isVisible
         prop
 
       constructor: (@mapCtrl) ->
-        _.extend @, FormattersService.Common
-        _.extend @, FormattersService.Google
+        _.extend @, rmapsFormattersService.Common
+        _.extend @, rmapsFormattersService.Google
 
         @mapCtrl.scope.isScrolling = false
 
@@ -169,7 +167,7 @@ app.factory 'ResultsFormatter'.ourNs(), [
         return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
 
       sendSnail: (result) ->
-        $rootScope.$emit Events.snail.initiateSend, result
+        $rootScope.$emit rmapsevents.snail.initiateSend, result
 
       centerOn: (result) =>
         @zoomTo(result,false)
@@ -316,5 +314,3 @@ app.factory 'ResultsFormatter'.ourNs(), [
           @reset()
           if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
             result.isMousedOver = undefined
-
-]
