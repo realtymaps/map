@@ -34,7 +34,6 @@ prodConf = configFact(output, [
   new HtmlWebpackPlugin
     template: paths.rmap.index
     filename: "rmap.html"
-  #not sure what the option is to mangle on webpack.. we could post mangle via gulp
   new webpack.optimize.UglifyJsPlugin {
     compress: {
       warnings: false
@@ -44,7 +43,6 @@ adminConf = configFact(outputAdmin, [
   new HtmlWebpackPlugin
     template: paths.admin.index
     filename: "admin.html"
-  #not sure what the option is to mangle on webpack.. we could post mangle via gulp
   new webpack.optimize.UglifyJsPlugin {
     compress: {
       warnings: false
@@ -80,23 +78,3 @@ gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
 
 gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
   runWebpack(adminConf, 'admin')
-
-# gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
-# <<<<<<< HEAD
-#   runWebpack(prodConf)
-
-# gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
-#   runWebpack(adminConf, 'admin')
-# =======
-#   runWebpack(
-#     prodConfig = configFact(output, [
-#       new HtmlWebpackPlugin template: paths.index
-#       #not sure what the option is to mangle on webpack.. we could post mangle via gulp
-#       new webpack.optimize.UglifyJsPlugin {
-#         compress: {
-#           warnings: false
-#         }}
-#     ], '!')
-#     delete prodConfig.devtool
-#   )
-# >>>>>>> da3d5fe04ab1a8d75d5be5a650a702e21b0ccb01
