@@ -68,6 +68,7 @@ base =
     MAPS: JSON.parse process.env.CARTODB_MAPS
     ACCOUNT: process.env.CARTODB_ACCOUNT
     API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
+    TEMPLATE: 'parcels'
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'
