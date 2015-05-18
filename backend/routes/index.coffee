@@ -10,6 +10,9 @@ routesConfig =
   wildcard:
     backend:
       method: 'all'
+      order: 9998 # needs to be first
+    admin:
+      method: 'all'
       order: 9999 # needs to be next to last
     frontend:
       method: 'all'

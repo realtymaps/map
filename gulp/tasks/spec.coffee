@@ -8,7 +8,7 @@ require './watch'
 #dependency order is ok because fronendSpec needs build as well so build should happen first
 gulp.task 'specs', gulp.parallel 'commonSpec', 'backendSpec','gulpSpec', 'frontendSpec'
 
-gulp.task 'spec', gulp.series 'webpack', 'specs'
+gulp.task 'spec', gulp.series 'webpack', 'webpackAdmin', 'specs'
 
 gulp.task 'specMock', gulp.series 'webpackMock','gulpSpec', 'frontendSpec'
 

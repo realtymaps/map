@@ -9,29 +9,56 @@ _ = require 'lodash'
 fs = require 'fs'
 webpack = require 'webpack'
 
-mockIndexes = fs.readdirSync(paths.mockIndexes)
+mockIndexes = fs.readdirSync(paths.rmap.mockIndexes)
 
-#end dependencies
+# outputs
 output =
   filename: paths.dest.scripts + "/[name].wp.js"
   chunkFilename: paths.dest.scripts + "/[id].wp.js"
 
-conf = configFact(output, [new HtmlWebpackPlugin template: paths.index])
-mockConf = configFact(output, mockIndexes.map (fileName) ->
-    new HtmlWebpackPlugin
-      template: paths.mockIndexes + '/' + fileName
-      filename: "mocks/#{fileName}"
-)
+outputAdmin =
+  filename: paths.dest.scripts + "/admin.wp.js"
+  chunkFilename: paths.dest.scripts + "/adminChunk.wp.js"
 
-runWebpack = (someConfig) ->
+# webpack confs per each environment & app
+conf = configFact(output, [new HtmlWebpackPlugin
+  template: paths.rmap.index
+  filename: "rmap.html"
+])
+mockConf = configFact(output, mockIndexes.map (fileName) ->
+  new HtmlWebpackPlugin
+    template: paths.mockIndexes + '/' + fileName
+    filename: "mocks/#{fileName}"
+)
+prodConf = configFact(output, [
+  new HtmlWebpackPlugin
+    template: paths.rmap.index
+    filename: "rmap.html"
+  new webpack.optimize.UglifyJsPlugin {
+    compress: {
+      warnings: false
+    }}
+], '!')
+adminConf = configFact(outputAdmin, [
+  new HtmlWebpackPlugin
+    template: paths.admin.index
+    filename: "admin.html"
+  new webpack.optimize.UglifyJsPlugin {
+    compress: {
+      warnings: false
+    }}
+])
+
+# webpack task mgmt
+runWebpack = (someConfig, app='rmap') ->
   gulp.src [
-    paths.assets
-    paths.styles
-    paths.stylus
-    paths.jade
-    paths.html
-    paths.webpackLibs
-    paths.scripts
+    paths[app].assets
+    paths[app].styles
+    paths[app].stylus
+    paths[app].jade
+    paths[app].html
+    paths[app].webpackLibs
+    paths[app].scripts
   ]
   .pipe plumber()
   .pipe(gWebpack someConfig)
@@ -45,13 +72,9 @@ gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
 
 gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
   runWebpack(
-    prodConfig = configFact(output, [
-      new HtmlWebpackPlugin template: paths.index
-      #not sure what the option is to mangle on webpack.. we could post mangle via gulp
-      new webpack.optimize.UglifyJsPlugin {
-        compress: {
-          warnings: false
-        }}
-    ], '!')
-    delete prodConfig.devtool
+    prodConf
+    delete prodConf.devtool
   )
+
+gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
+  runWebpack(adminConf, 'admin')
