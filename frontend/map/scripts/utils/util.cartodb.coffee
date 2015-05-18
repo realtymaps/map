@@ -7,13 +7,7 @@ catch
 
 ret =  {}
 
-if _cartodb?
-  root = "//#{_cartodb.ACCOUNT}.cartodb.com/api/v1"
-  apiUrl = "api_key=#{_cartodb.API_KEY}"
-
-  ret = _.extend _cartodb,
-    tileUrl: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
-    wakeUrl: "#{root}/map/named/#{_cartodb.TEMPLATE}?#{apiUrl}"
-
-  http.post _cartodb.wakeUrl, true
+ret = _cartodb if _cartodb
+if _cartodb?.WAKE_URL?
+  http.post _cartodb.WAKE_URL, true
 module.exports = ret

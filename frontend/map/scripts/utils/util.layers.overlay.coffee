@@ -32,7 +32,7 @@ module.exports = ($log) ->
       _overlays[map.name] =
         visible: false
         name: map.name
-        url: _cartodb.tileUrl
+        url: _cartodb.TILE_URL
         type: 'xyz'
         layerOptions:
           apikey: _cartodb.API_KEY
