@@ -63,11 +63,23 @@ base =
     ACCOUNT: process.env.MAPBOX_ACCOUNT
     MAPS:
       main: process.env.MAPBOX_MAPS_MAIN
-  CARTODB:
-    API_KEY: process.env.CARTODB_API_KEY
-    MAPS: JSON.parse process.env.CARTODB_MAPS
-    ACCOUNT: process.env.CARTODB_ACCOUNT
-    API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
+  CARTODB: do ->
+    ret =
+      API_KEY: process.env.CARTODB_API_KEY
+      MAPS: JSON.parse process.env.CARTODB_MAPS
+      ACCOUNT: process.env.CARTODB_ACCOUNT
+      API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
+      TEMPLATE: 'parcels'
+
+    root = "//#{ret.ACCOUNT}.cartodb.com/api/v1"
+    apiUrl = "api_key=#{ret.API_KEY}"
+
+    _.extend ret,
+      ROOT_URL: root
+      API_URL: apiUrl
+      TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
+      WAKE_URL: "#{root}/map/named/#{ret.TEMPLATE}?#{apiUrl}"
+
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'

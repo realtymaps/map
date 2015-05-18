@@ -1,5 +1,4 @@
-httpSync = require './util.httpSync.coffee'
-routes = require '../../../../common/config/routes.backend.coffee'
+_cartodb = require './util.cartodb.coffee'
 pieUtil = require './util.piechart.coffee'
 
 _overlays =
@@ -26,18 +25,14 @@ _overlays =
 
 
 
-module.exports = ->
+module.exports = ($log) ->
   #only call function post login
-  try
-    _cartodb = JSON.parse httpSync.get routes.config.cartodb
-  catch
-
   if _cartodb?.MAPS?
     _cartodb.MAPS.forEach (map) ->
       _overlays[map.name] =
         visible: false
         name: map.name
-        url:'http://{account}.cartodb.com/api/v1/map/{mapid}/{z}/{x}/{y}.png?api_key={apikey}'
+        url: _cartodb.TILE_URL
         type: 'xyz'
         layerOptions:
           apikey: _cartodb.API_KEY

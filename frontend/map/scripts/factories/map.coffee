@@ -2,10 +2,10 @@ app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
-
+_overlays = require '../utils/util.layers.overlay.coffee'
 
 _encode = require('geohash64').encode
-_overlays = require '../utils/util.layers.overlay.coffee'
+
 _eventReg = require '../utils/util.events.coffee'
 _emptyGeoJsonData =
   type: "FeatureCollection"
@@ -22,9 +22,10 @@ _wrapGeomPointJson = (obj) ->
   Our Main Map Implementation
 ###
 app.factory 'rmapsMap',
-  ($log, $timeout, $q, $rootScope, rmapsBaseMap,
+  ($log, $timeout, $q, $rootScope, $http, rmapsBaseMap,
     rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
     rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData) ->
+
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -104,7 +105,7 @@ app.factory 'rmapsMap',
 
           map:
             layers:
-              overlays: _overlays()
+              overlays: _overlays($log)
 
             listingDetail: undefined
 

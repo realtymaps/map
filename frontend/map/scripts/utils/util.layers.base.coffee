@@ -1,4 +1,4 @@
-httpSync = require './util.httpSync.coffee'
+httpSync = require './util.http.coffee'
 googleStyles = require './styles/util.style.google.coffee'
 googleOptions = _.extend {}, googleStyles
 routes = require '../../../../common/config/routes.backend.coffee'
