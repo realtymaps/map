@@ -121,10 +121,9 @@ _http = (opts, cb) ->
 
   xhr = createXhr()
   xhr.open(opts.method, opts.url, opts.isAsync)
-  headers = [CONTENT_TYPE_APPLICATION_JSON]
-  headers.forEach (value, key) ->
-    if angular.isDefined(value)
-      xhr.setRequestHeader(key, value)
+  headers = _.extend {}, CONTENT_TYPE_APPLICATION_JSON
+  for key, val of headers
+    xhr.setRequestHeader(key, val)
 
   if cb?
     xhr.onload = -> #copied from angular
@@ -147,9 +146,11 @@ _http = (opts, cb) ->
 
   xhr.send(opts.data || null)
 
+  return xhr.responseText unless cb?
+
 
 module.exports =
   get: (theUrl, isAsync = false, cb) ->
     _http({method:'GET', url:theUrl, isAsync:isAsync}, cb)
   post: (theUrl, isAsync = false, data, cb) ->
-    _http({method:'GET', url:theUrl, isAsync:isAsync, data: data}, cb)
+    _http({method:'POST', url:theUrl, isAsync:isAsync}, cb)
