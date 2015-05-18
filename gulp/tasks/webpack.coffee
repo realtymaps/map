@@ -73,7 +73,7 @@ gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
 gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
   runWebpack(
     prodConf
-    delete prodConfig.devtool
+    delete prodConf.devtool
   )
 
 gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
