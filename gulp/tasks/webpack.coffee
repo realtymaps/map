@@ -49,6 +49,13 @@ adminConf = configFact(outputAdmin, [
     }}
 ])
 
+# modify staging settings that are only needed for staging
+# (we may want to have an organized staging vs. prod config defined
+#   that accounts for special cases / exceptions-to-the-rule that
+#   we're hitting right now)
+stagingConfs = [conf, mockConf, adminConf]
+[ _.merge(conf, {'devtool': '#eval'}) for conf in stagingConfs ]
+
 # webpack task mgmt
 runWebpack = (someConfig, app='rmap') ->
   gulp.src [
@@ -71,10 +78,7 @@ gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
   runWebpack(mockConf)
 
 gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
-  runWebpack(
-    prodConf
-    delete prodConf.devtool
-  )
+  runWebpack(prodConf)
 
 gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
   runWebpack(adminConf, 'admin')
