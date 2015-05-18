@@ -53,9 +53,8 @@ adminConf = configFact(outputAdmin, [
 # (we may want to have an organized staging vs. prod config defined
 #   that accounts for special cases / exceptions-to-the-rule that
 #   we're hitting right now)
-conf.devtool = '#eval'
-mockConf.devtool = '#eval'
-adminConf.devtool = '#eval'
+stagingConfs = [conf, mockConf, adminConf]
+[ _.merge(conf, {'devtool': '#eval'}) for conf in stagingConfs ]
 
 # webpack task mgmt
 runWebpack = (someConfig, app='rmap') ->
