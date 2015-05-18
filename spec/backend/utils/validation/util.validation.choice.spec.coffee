@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.choice()'.ourNs().ourNs('Backend'), ->
+describe 'utils/http.request.validators.choice()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve or reject based on strict equality to any value found in the choices array when no equalsTester is provided', () ->

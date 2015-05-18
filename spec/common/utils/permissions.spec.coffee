@@ -1,4 +1,4 @@
-describe 'Permissions'.ourNs('Common'), ->
+describe 'Permissions'.ns('Common'), ->
   before ->
     somePermissions = [
       'presents'

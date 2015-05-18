@@ -4,7 +4,7 @@ backendRoutes = require '../../../../../common/config/routes.backend.coffee'
 httpStatus = require '../../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 
-app.controller 'ModalSnailPriceCtrl'.ourNs(), ['$scope', '$http', '$interpolate', '$location', ($scope, $http, $interpolate, $location) ->
+app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location) ->
   
   $scope.$interpolate = $interpolate
   $scope.statuses =
@@ -52,4 +52,3 @@ app.controller 'ModalSnailPriceCtrl'.ourNs(), ['$scope', '$http', '$interpolate'
   $scope.done = () ->
     $location.url(frontendRoutes.map)
     $scope.$close('done')
-]

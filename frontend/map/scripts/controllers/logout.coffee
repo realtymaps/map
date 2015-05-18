@@ -5,7 +5,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 ###
   Logout controller
 ###
-module.exports = app.controller 'LogoutCtrl'.ourNs(), () ->
+module.exports = app.controller 'LogoutCtrl'.ns(), () ->
 
 # this controller manages loadingCount manually because we're putting an artificial min delay on logout,
 # so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the

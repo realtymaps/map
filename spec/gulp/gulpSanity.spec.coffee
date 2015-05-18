@@ -1,6 +1,6 @@
 gulp = require 'gulp'
 
-describe 'Gulp Sanity'.ourNs().ourNs('gulp'), ->
+describe 'Gulp Sanity'.ns().ns('gulp'), ->
 
   describe 'gulp', ->
 

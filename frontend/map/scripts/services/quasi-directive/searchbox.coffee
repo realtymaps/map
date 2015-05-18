@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 
-app.service 'searchbox'.ourNs(),['leafletData', (leafletData) ->
+app.service 'rmapssearchbox', (leafletData) ->
 
   # need to have the id for the main map element (mapdiv)
   create = (mapdiv) ->
@@ -51,4 +51,3 @@ app.service 'searchbox'.ourNs(),['leafletData', (leafletData) ->
       , (err) ->
         console.log "Error loading search bar:"
         console.log err
-]

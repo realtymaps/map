@@ -3,7 +3,7 @@ Point = require('../../../common/utils/util.geometries.coffee').Point
 describe "BaseMapCtrl", ->
   beforeEach ->
 
-    angular.mock.module 'app'.ourNs()
+    angular.mock.module 'app'.ns()
 
     @mocks =
       options:

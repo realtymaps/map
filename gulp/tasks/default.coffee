@@ -11,7 +11,7 @@ util = require 'gulp-util'
 
 gulp.task 'clean', (done) ->
   # done is absolutely needed to let gulp known when this async task is done!!!!!!!
-  del ['_public'], done
+  del ['_public', '*.log'], done
 
 #gulp dependency hell
 gulp.task 'express_watch', gulp.series 'express', 'watch'

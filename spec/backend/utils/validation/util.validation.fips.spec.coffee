@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.float()'.ourNs().ourNs('Backend'), ->
+describe 'utils/http.request.validators.float()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve to codes for counties that match the text exactly', () ->

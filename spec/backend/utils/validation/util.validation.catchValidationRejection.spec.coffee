@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.catchValidationRejection()'.ourNs().ourNs('Backend'), ->
+describe 'utils/http.request.validators.catchValidationRejection()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve to any value its subValidation resolves', () ->

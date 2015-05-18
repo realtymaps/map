@@ -119,7 +119,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
       $scope.modalControl = {}
       $modal.open
         templateUrl: 'modal-snailPrice.tpl.html'
-        controller: 'ModalSnailPriceCtrl'.ourNs()
+        controller: 'ModalSnailPriceCtrl'.ns()
         scope: $scope
         keyboard: false
         backdrop: 'static'

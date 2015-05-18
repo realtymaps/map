@@ -5,7 +5,7 @@ Encryptor = require "#{basePath}/utils/util.encryptor"
 # tests below come from the official NIST definitions for AES-256-CTR; see page 57 of
 # http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
 
-describe 'utils/encryptor'.ourNs().ourNs('Backend'), () ->
+describe 'utils/encryptor'.ns().ns('Backend'), () ->
 
   describe 'correct AES-256-CTR (default) encryption/decryption', () ->
     cipherKey = '603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4'

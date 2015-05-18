@@ -5,9 +5,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 
 
-app.factory 'principal'.ourNs(), [
-  '$rootScope', '$q', '$http', 'events'.ourNs(),
-  ($rootScope, $q, $http, Events) ->
+app.factory 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
     _identity = null
     _authenticated = false
     _resolved = false
@@ -21,7 +19,7 @@ app.factory 'principal'.ourNs(), [
         _deferred.resolve(identity)
         _deferred = null
       if _authenticated
-        $rootScope.$emit Events.principal.login.success
+        $rootScope.$emit rmapsevents.principal.login.success
 
     unsetIdentity = () ->
       _identity = null
@@ -62,4 +60,3 @@ app.factory 'principal'.ourNs(), [
         unsetIdentity()
         
       return _deferred.promise
-]

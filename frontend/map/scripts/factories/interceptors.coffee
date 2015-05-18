@@ -13,7 +13,7 @@ app.factory 'rmapsRedirectInterceptor', ($location, $rootScope) ->
     response
 
 .config ($httpProvider) ->
-  $httpProvider.interceptors.push 'RedirectInterceptor'.ourNs()
+  $httpProvider.interceptors.push 'RedirectInterceptor'.ns()
 
 app.factory 'rmapsAlertInterceptor', ($rootScope, $q, rmapsevents) ->
   defineNull = (value) ->

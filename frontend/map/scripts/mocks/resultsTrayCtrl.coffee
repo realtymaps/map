@@ -1,9 +1,7 @@
 app = require '../app.coffee'
 
 module.exports =
-  app.controller 'MockResultsTrayCtrl'.ourNs(), [
-    '$scope', 'ResultsFormatter'.ourNs(), '$http',
-    ($scope, ResultsFormatter, $http) ->
+  app.controller 'rmapsMockResultsTrayCtrl', ($scope, rmapsResultsFormatter, $http) ->
       angular.extend $scope,
         layers:
           filterSummary: []
@@ -14,6 +12,5 @@ module.exports =
       .then (data) ->
         $scope.layers.filterSummary = data.data
       $scope.formatters = angular.extend $scope.formatters or {},
-        results: new ResultsFormatter($scope)
+        results: new rmapsResultsFormatter($scope)
       $scope.formatters.results.loadMore()
-  ]
