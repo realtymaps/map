@@ -15,5 +15,5 @@ if _cartodb?
     tileUrl: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
     wakeUrl: "#{root}/map/named/#{_cartodb.TEMPLATE}?#{apiUrl}"
 
-  http.post _cartodb.wakeUrl, true, {}
+  http.post _cartodb.wakeUrl, true
 module.exports = ret

@@ -153,4 +153,7 @@ module.exports =
   get: (theUrl, isAsync = false, cb) ->
     _http({method:'GET', url:theUrl, isAsync:isAsync}, cb)
   post: (theUrl, isAsync = false, data, cb) ->
-    _http({method:'POST', url:theUrl, isAsync:isAsync}, cb)
+    opts = {method:'POST', url:theUrl, isAsync:isAsync}
+    if data?
+      _.extend opts, data: data
+    _http opts, cb
