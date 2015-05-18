@@ -21,9 +21,10 @@ outputAdmin =
   chunkFilename: paths.dest.scripts + "/adminChunk.wp.js"
 
 # webpack confs per each environment & app
-conf = configFact(output, [new HtmlWebpackPlugin
-  template: paths.rmap.index
-  filename: "rmap.html"
+conf = configFact(output, [
+  new HtmlWebpackPlugin
+    template: paths.rmap.index
+    filename: "rmap.html"
 ])
 mockConf = configFact(output, mockIndexes.map (fileName) ->
   new HtmlWebpackPlugin
@@ -54,7 +55,7 @@ adminConf = configFact(outputAdmin, [
 #   that accounts for special cases / exceptions-to-the-rule that
 #   we're hitting right now)
 stagingConfs = [conf, mockConf, adminConf]
-[ _.merge(conf, {'devtool': '#eval'}) for conf in stagingConfs ]
+_.merge(c, {'devtool': '#eval'}) for c in stagingConfs
 
 # webpack task mgmt
 runWebpack = (someConfig, app='rmap') ->
