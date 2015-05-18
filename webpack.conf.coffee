@@ -7,7 +7,7 @@ Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
 #    watch:true
     verbose:false
     #http://webpack.github.io/docs/configuration.html#devtool
-    devtool: '#eval'#'#eval-source-map' #eval is the fastest it is source map js, where eval-source-map is coffee and jade (ef that)
+    #devtool: '#eval'  #'#eval-source-map' #eval is the fastest it is source map js, where eval-source-map is coffee and jade (ef that)
     resolve:
       modulesDirectories: ['bower_components','node_modules']
     externals:
