@@ -9,7 +9,7 @@ commonConfig =
     options:
       zoomThresh:
         addressParcel: 18
-        price: 16
+        price: 15
         clustering: 12
         ordering: 12
         roundOne: 12

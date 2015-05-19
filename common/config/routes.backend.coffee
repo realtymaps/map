@@ -8,6 +8,7 @@ apiBase = '/api'
 
 module.exports =
   wildcard:
+    admin:           "/admin/*"
     frontend:        "/*"
     backend:         "#{apiBase}/*"
   user:

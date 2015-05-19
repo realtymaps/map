@@ -7,6 +7,7 @@ validation = require '../utils/util.validation'
 {select, tableName, whereInBounds} = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 _ = require 'lodash'
+{getBaseParcelQueryByBounds} = require './service.properties.parcels'
 
 
 validators = validation.validators
@@ -26,19 +27,7 @@ module.exports =
   get: (state, filters) -> Promise.try () ->
     validation.validateAndTransform(filters, transforms)
     .then (filters) ->
-
-      query = select(db.knex, 'parcel', false)
-      .from(tableName(Parcel))
-      whereInBounds(query, 'geom_polys_raw', filters.bounds)
-      # logger.sql query.toString()
-      return query
-
-    .then (data) ->
-      # logger.sql data, true
-      data = data or []
-      # currently we have multiple records in our DB with the same poly...  this is a temporary fix to avoid the issue
-      return _.uniq data, (row) ->
-        row.rm_property_id
+      return getBaseParcelQueryByBounds(filters.bounds, 500)
     .then (data) ->
       obj = {}
       #hack for unique markerid on address markers (NEED TO FIX IN LEAFLET Marker Directive)
@@ -46,5 +35,6 @@ module.exports =
         val.type = val.geom_point_json.type
         val.coordinates = val.geom_point_json.coordinates
         obj['addr' + val.rm_property_id] = val
+        delete val.geom_point_json
       # logger.debug obj, true
       obj

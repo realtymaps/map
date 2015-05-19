@@ -26,7 +26,6 @@
   },
   "dependencies": {
     "JSONStream": "^0.10.0",
-    "angular-leaflet-directive": "^0.7.11",
     "async": "^0.9.0",
     "autoprefixer-loader": "^1.1.0",
     "base64url": "0.0.6",
@@ -91,6 +90,7 @@
     "html-loader": "^0.2.2",
     "html-webpack-plugin": "^1.1.0",
     "http-status": "^0.1.8",
+    "hyperquest": "^1.2.0",
     "isnode": "0.0.1",
     "jade": "^1.7.0",
     "jade-html-loader": "^0.0.2",
@@ -121,6 +121,7 @@
     "mocha": "1.21.x",
     "moment": "^2.8.4",
     "newrelic": "^1.16.1",
+    "ng-annotate-webpack-plugin": "^0.1.2",
     "nib": "1.0.4",
     "numeral": "^1.5.3",
     "pdfkit": "^0.7.0",

@@ -46,7 +46,7 @@ _fipsCodeQuery = (opts) ->
     query.limit(opts.limit)
   if opts?.start_rm_property_id?
     query.whereRaw("rm_property_id > '#{opts.start_rm_property_id}'")
-  logger.debug query.toString()
+  # logger.debug query.toString()
   query
 
 _parcel =

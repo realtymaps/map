@@ -13,7 +13,7 @@ bower = bowerFilesLoader
 
 #globDebug bower, 'bower'
 
-pipeline = _.flatten([bower, path.vendorLibs])
+pipeline = _.flatten([bower, path.lib.front.scripts + "/vendor/**/*.*"])
 
 #pipe.logToob "Vendor", pipeline
 module.exports = pipeline
