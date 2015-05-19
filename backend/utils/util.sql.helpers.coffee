@@ -32,6 +32,11 @@ _orderByRawSafe = (query, rawSafe) ->
 _ageOrDaysFromStartToNow = (listingAge, beginDate) ->
   "COALESCE(#{listingAge}, now()::DATE - #{beginDate})"
 
+_parcel = [
+  'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry',
+  '\'Feature\' AS type',
+  'fips_code', '\'{}\'::json AS properties'
+]
 
 _columns =
   # columns returned for filter requests
@@ -75,10 +80,10 @@ _columns =
     'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
     'zip', 'owner_zip'
   ].join(', ')
-  parcel: [
-    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry', 'geom_point_json', '\'Feature\' AS type',
-    'fips_code', '\'{}\'::json AS properties'
-  ].join(', ')
+  parcel: ['geom_point_json'].concat(_parcel).join(', ')
+  #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
+  cartodb_parcel: ['0 as is_active'].concat(_parcel).join(', ')
+
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 
@@ -167,7 +172,7 @@ module.exports =
   select: (knex, which, passedFilters=null, prepend='') ->
     prepend += ' ' if prepend?
     extra = ''
-    if passedFilters?
+    if passedFilters
       extra = ", #{passedFilters} as \"passedFilters\""
     knex.select(knex.raw(prepend + _columns[which] + extra))
 

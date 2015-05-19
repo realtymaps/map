@@ -32,7 +32,11 @@ _getByFipsCode = (req, res, next, headersCb) ->
       # logger.debug(req, true)
       getByFipsCode(validParams)
       .stream()
-      .pipe(geoJsonFormatter())
+      .pipe(geoJsonFormatter([
+        'rm_property_id'
+        'street_address_num'
+        'is_active'
+      ], ['fips_code']))
       .pipe(res)
 
   .catch validation.DataValidationError, (err) ->
