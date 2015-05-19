@@ -16,7 +16,16 @@
               line-width: 1.5;
               line-opacity: 1;
             }",
-        "sql": "select * from table_12021"
+        "sql": "select * from table_12021
+        union all
+        select * from table_06075
+        union all
+        select * from table_48123
+        union all
+        select * from table_48339
+        union all
+        select * from table_36061
+        "
       }
     }]
   }
