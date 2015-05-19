@@ -36,7 +36,8 @@ _getByFipsCode = (req, res, next, headersCb) ->
         'rm_property_id'
         'street_address_num'
         'is_active'
-      ], ['fips_code']))
+        'fips_code'
+      ]))
       .pipe(res)
 
   .catch validation.DataValidationError, (err) ->
