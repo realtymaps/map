@@ -37,6 +37,7 @@ _getByFipsCode = (req, res, next, headersCb) ->
         'street_address_num'
         'is_active'
         'fips_code'
+        'num_updates'
       ]))
       .pipe(res)
 

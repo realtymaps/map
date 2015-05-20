@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+#required install cartodb-upload (via npm -g or link)
+
 fipsCodes=(12021 48123 48339 06075 36061)
 
 for i in "${fipsCodes[@]}"

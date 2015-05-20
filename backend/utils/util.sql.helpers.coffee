@@ -82,7 +82,7 @@ _columns =
   ].join(', ')
   parcel: ['geom_point_json'].concat(_parcel).join(', ')
   #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
-  cartodb_parcel: ['0 as is_active'].concat(_parcel).join(', ')
+  cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
