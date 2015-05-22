@@ -6,7 +6,7 @@ sqlHelpers = require './util.sql.helpers'
 logger = require '../config/logger'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
-{notification} = require 'util.notifications.coffee'
+{notification} = require './util.notifications.coffee'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
