@@ -1,0 +1,2 @@
+ALTER TABLE notification
+ADD COLUMN method TEXT NOT NULL;

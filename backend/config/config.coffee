@@ -79,6 +79,13 @@ base =
       API_URL: apiUrl
       TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
       WAKE_URL: "#{root}/map/named/#{ret.TEMPLATE}?#{apiUrl}"
+  TWILIO:
+    ACCOUNT: process.env.TWILIO_ACCOUNT
+    API_KEY: process.env.TWILIO_API_KEY
+    NUMBER: process.env.TWILIO_NUMBER
+  GMAIL:
+    ACCOUNT: process.env.GMAIL_ACCOUNT
+    PASSWORD: process.env.GMAIL_PASSWORD
 
   MAP: common.map
   NEW_RELIC:
