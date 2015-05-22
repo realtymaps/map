@@ -1,0 +1,66 @@
+#!/bin/bash
+
+#end merge count 585151
+set -e
+
+destTable=$1
+frmTable=$2
+fipsCode=$3
+
+plusSign="%2B"
+
+activate="""
+UPDATE $destTable
+set
+num_updates=num_updates $plusSign 1,
+is_active=1
+WHERE $fipsCode
+"""
+
+#UPDATE is puposly ignoring items which do not need to be updated like ids and
+#timestamps should be automatic (if designed well by cartodb)
+update="""UPDATE $destTable
+set street_address_num=subq.street_address_num,
+the_geom=subq.the_geom,
+num_updates=$destTable.num_updates $plusSign 1,
+is_active=1
+FROM (SELECT * FROM $frmTable) subq
+where $destTable.rm_property_id = subq.rm_property_id;"""
+
+#echo "$sql"
+
+
+insert="""
+INSERT INTO $destTable (rm_property_id, the_geom, created_at, updated_at, is_active, num_updates, fips_code, street_address_num)
+SELECT rm_property_id, the_geom, created_at, updated_at, (not is_active::boolean)::int, 1, fips_code, street_address_num
+FROM $frmTable
+WHERE NOT EXISTS (
+		SELECT * FROM $destTable
+		WHERE
+		rm_property_id = $frmTable.rm_property_id
+	);
+"""
+
+delete="""
+DELETE FROM $destTable
+where rm_property_id in (
+select $destTable.rm_property_id
+from $destTable
+LEFT JOIN $frmTable on $destTable.rm_property_id = $frmTable.rm_property_id
+where $frmTable.rm_property_id isnull and $destTable.fips_code = '$fipsCode'
+);
+"""
+
+drop="DROP TABLE $frmTable;"
+
+merge="""
+$update
+$insert
+$delete
+"""
+
+echo '!!!!!!!!!!!!!!!!!!!!!MERGE!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+echo "https://realtymaps.cartodb.com/api/v2/sql?q=$merge&api_key=c95946d99453dfe16168c2d482f949a3d813f583"
+
+echo '!!!!!!!!!!!!!!!!!!!!!DROP!!!!!!!!!!!!!!!!!!!!!!!!!!!!'
+echo "https://realtymaps.cartodb.com/api/v2/sql?q=$drop &api_key=c95946d99453dfe16168c2d482f949a3d813f583"
