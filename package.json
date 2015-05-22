@@ -138,6 +138,7 @@
     "serve-favicon": "2.1.x",
     "serve-static": "1.6.x",
     "should": "^4.0.4",
+    "shpjs": "^3.1.6",
     "sinon": "^1.10.3",
     "source-map": "^0.1.43",
     "split": "^0.3.3",
@@ -155,7 +156,8 @@
     "verror": "^1.6.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",
-    "winston": "0.8.x"
+    "winston": "0.8.x",
+    "yauzl": "^2.3.1"
   },
   "devDependencies": {
     "coffee-script": "^1.8.0",
