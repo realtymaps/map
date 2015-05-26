@@ -1,4 +1,4 @@
-fpath = require 'path'
+path = require 'path'
 loaders = require './util.loaders'
 dbs = require '../config/dbs'
 Promise = require 'bluebird'
@@ -378,13 +378,6 @@ doMaintenance = () ->
     
 updateTaskCounts = () ->
   knex.select(knex.raw('jq_update_task_counts()'))
-
-# sendNotification = (options) ->
-#   # this is a placeholder...  we need to decide what we want this to do, and implement it.
-#   # since this will often happen outside the webserver (in scheduled tasks), we probably want to send emails with full
-#   # details and SMS with abbreviated summaries to db-configured emails and SMS numbers (though note that these values
-#   # should be loaded at startup and cached, since we don't want db problems to stop notifications about those problems)
-#   Promise.resolve()
 
 getQueueNeeds = () ->
   knex.select('*').from(knex.raw('jq_get_queue_needs()'))
