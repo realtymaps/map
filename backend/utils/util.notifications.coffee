@@ -7,8 +7,10 @@ dbs = require '../config/dbs'
 {mailer} = require '../config/email'
 
 knex = dbs.users.knex
-# fail silent w/o twil creds
-tClient = twilio(config.TWILIO.ACCOUNT, config.TWILIO.API_KEY)
+if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
+  tClient = twilio(config.TWILIO.ACCOUNT, config.TWILIO.API_KEY)
+else
+  tClient = null
 
 
 getSmsOptions = (to, subject) ->
@@ -46,8 +48,12 @@ notification = (type) ->
     query
     .then (data) ->
       emailList = []
+      # make sure we know there wasn't twilio login
+      if not tClient?
+        logger.error "Twilio login not found in environment."
 
       # loop to build emailList as well as send sms
+      # if notification lists grow large, we may need to refine this loop
       for datum in data
         do (datum) ->
           if datum.email and datum.method == "email"
@@ -55,7 +61,7 @@ notification = (type) ->
 
           # sms currently required to send one by one; If we implement 
           # an async or bulk method, we can handle it similar to email
-          if datum.cell_phone and datum.method == 'sms'
+          if tClient? and datum.cell_phone and datum.method == 'sms'
             smsOptions = getSmsOptions(datum.cell_phone, options.subject)
             tClient.sendSms smsOptions, (error, info) ->
               if error
@@ -77,10 +83,10 @@ notification = (type) ->
       # send email
       if emailList.length > 0
         emailOptions = getEmailOptions(emailList, options.subject, message)
-      mailer.sendMail emailOptions, (error, info) ->
-        if error
-          error = JSON.stringify error
-          logger.error "error sending EMAIL: #{error}\n#{info}"
+        mailer.sendMail emailOptions, (error, info) ->
+          if error
+            error = JSON.stringify error
+            logger.error "error sending EMAIL: #{error}\n#{info}"
 
     Promise.resolve()
 

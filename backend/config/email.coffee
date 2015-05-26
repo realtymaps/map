@@ -7,7 +7,5 @@ mailer = nodemailer.createTransport
     user: config.GMAIL.ACCOUNT
     pass: config.GMAIL.PASSWORD
 
-# fail silent w/o mail creds
-
 module.exports =
   mailer: mailer
