@@ -21,8 +21,10 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   _default = ->
     query = base.getFilterSummaryAsQuery(state, queryParams, 800)
     # include saved id's in query so no need to touch db later
-    if Object.keys(state.properties_selected).length > 0
-      sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
+
+    propertiesIds = _.keys(state.properties_selected)
+    if propertiesIds.length > 0
+      sqlHelpers.orWhereIn(query, 'rm_property_id', propertiesIds)
 
     # remove dupes
     # include "savedDetails" for saved props
@@ -50,8 +52,9 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
     geojsonPolys: ->
       query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
       # include saved id's in query so no need to touch db later
-      if Object.keys(state.properties_selected).length > 0
-        sqlHelpers.orWhereIn(query, 'rm_property_id', _.keys(state.properties_selected))
+      propertiesIds = _.keys(state.properties_selected)
+      if propertiesIds.length > 0
+        sqlHelpers.orWhereIn(query, 'rm_property_id', propertiesIds)
       # data formatting
       query.then (data) ->
         geojson =
