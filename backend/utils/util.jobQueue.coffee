@@ -6,6 +6,7 @@ sqlHelpers = require './util.sql.helpers'
 logger = require '../config/logger'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
+{notification} = require './util.notifications.coffee'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -14,7 +15,7 @@ _ = require 'lodash'
 
 SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 
-
+sendNotification = notification("jobQueue")
 knex = dbs.users.knex
 
 tables =
@@ -377,13 +378,6 @@ doMaintenance = () ->
     
 updateTaskCounts = () ->
   knex.select(knex.raw('jq_update_task_counts()'))
-
-sendNotification = (options) ->
-  # this is a placeholder...  we need to decide what we want this to do, and implement it.
-  # since this will often happen outside the webserver (in scheduled tasks), we probably want to send emails with full
-  # details and SMS with abbreviated summaries to db-configured emails and SMS numbers (though note that these values
-  # should be loaded at startup and cached, since we don't want db problems to stop notifications about those problems)
-  Promise.resolve()
 
 getQueueNeeds = () ->
   knex.select('*').from(knex.raw('jq_get_queue_needs()'))

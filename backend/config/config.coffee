@@ -84,11 +84,20 @@ base =
     ret = _getAllConfigs('CARTODB', ['API_KEY', {name:'MAPS', isJson: true}, 'ACCOUNT', 'API_KEY_TO_US', 'TEMPLATE'])
     root = "//#{ret.ACCOUNT}.cartodb.com/api/v1"
     apiUrl = "api_key=#{ret.API_KEY}"
+
     _.extend ret,
       ROOT_URL: root
       API_URL: apiUrl
       TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
       WAKE_URL: "#{root}/map/named/#{ret.TEMPLATE}?#{apiUrl}"
+  TWILIO:
+    ACCOUNT: process.env.TWILIO_ACCOUNT
+    API_KEY: process.env.TWILIO_API_KEY
+    NUMBER: process.env.TWILIO_NUMBER
+  GMAIL:
+    ACCOUNT: process.env.GMAIL_ACCOUNT
+    PASSWORD: process.env.GMAIL_PASSWORD
+
   MAP: common.map
   NEW_RELIC:
     LOGLEVEL: 'info'
