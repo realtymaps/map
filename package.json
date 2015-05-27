@@ -141,7 +141,6 @@
     "serve-static": "1.6.x",
     "should": "^4.0.4",
     "shp2jsonx": "^1.0.0",
-    "shpjs": "^3.1.6",
     "sinon": "^1.10.3",
     "source-map": "^0.1.43",
     "split": "^0.3.3",
@@ -160,8 +159,7 @@
     "verror": "^1.6.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",
-    "winston": "0.8.x",
-    "yauzl": "^2.3.1"
+    "winston": "0.8.x"
   },
   "devDependencies": {
     "coffee-script": "^1.8.0",
