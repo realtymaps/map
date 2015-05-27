@@ -2,6 +2,15 @@ _ = require 'lodash'
 through = require 'through'
 logger = require '../config/logger'
 {parcelFeature} = require './util.featureCollectionWrap'
+{Readable} = require 'stream'
+
+class StringStream extends Readable
+  constructor: (@str) ->
+    super()
+
+  _read: (size) ->
+    @push @str
+    @push null
 
 
 objectsToPgText = (fields, _options={}) ->
@@ -59,3 +68,4 @@ geoJsonFormatter = (toMove, deletes) ->
 module.exports =
   objectsToPgText: objectsToPgText
   geoJsonFormatter: geoJsonFormatter
+  StringStream: StringStream

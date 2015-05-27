@@ -2,20 +2,20 @@ _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig'
 
-_getConfig = (rootName, propName, spacer) ->
+_getConfig = (rootName, propName, spacer, config = process.env) ->
   envVarName = rootName + spacer + propName
-  process.env[envVarName]
+  config[envVarName]
 
-_getAllConfigs = (rootName, props, spacer = '_') ->
+_getAllConfigs = (rootName, props, spacer = '_', config) ->
   ret = {}
-  for maybePropName of props
+  for key, maybePropName of props
     if _.isString maybePropName
       name = maybePropName
     else if _.isString maybePropName?.name
-       name = maybePropName
+        name = maybePropName.name
     throw "config property is an unsupported type or malformed object." unless name
-    ret[name] = _getConfig(rootName, name, spacer)
-    if maybePropName?.isJson
+    ret[name] = _getConfig(rootName, name, spacer, config)
+    if maybePropName?.isJson?
       ret[name] = JSON.parse ret[name]
   ret
 
