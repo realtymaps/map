@@ -1,4 +1,7 @@
 mlsService = require '../services/service.mls'
 
 module.exports =
-  getDatabaseList: mlsService.getDatabaseList
+  getDatabaseList: (req, res, next) ->
+    mlsService.getDatabaseList req.body
+    .then (dbList) ->
+        res.send dbList

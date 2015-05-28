@@ -14,6 +14,11 @@ logger = require '../config/logger'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
+_getClient = (loginUrl, username, password) ->
+  new rets.Client
+    loginUrl: loginUrl
+    username: username
+    password: encryptor.decrypt(password)
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
@@ -38,10 +43,9 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
 # loads all records from a given RETS table that have changed since the last successful run of the task
 loadRetsTableUpdates = (subtask, options) ->
   rawTableName = "raw_#{subtask.task_name}_#{options.rawTableSuffix}__#{subtask.batch_id}"
-  retsClient = new rets.Client
-    loginUrl: subtask.task_data.url
-    username: subtask.task_data.login
-    password: encryptor.decrypt(subtask.task_data.password)
+
+  retsClient = _getClient subtask.task_data.url, subtask.task_data.login, subtask.task_data.password
+
   retsClient.login()
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "login to RETS server failed")
@@ -83,21 +87,15 @@ loadRetsTableUpdates = (subtask, options) ->
     # always log out the RETS client when we're done
     retsClient.logout()
 
-getDatabaseList = (mlsInfo) ->
-  logger.info encryptor.decrypt(mlsInfo.password)
-  retsClient = new rets.Client
-    loginUrl: mlsInfo.url
-    username: mlsInfo.login
-    password: encryptor.decrypt(mlsInfo.password)
+getDatabaseList = (serverInfo) ->
+  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+
   retsClient.login()
-  .catch (error) ->
-    logger.info error
   .then () ->
     retsClient.metadata.getResources()
-  .then (data) ->
-    logger.info data
-  .finally () ->
-    # retsClient.logout()
+  .then (response) ->
+    # console.log response, null, 2
+    _.pluck response.Resources, 'ResourceID'
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates

@@ -1,12 +1,8 @@
-_ = require 'lodash'
-retsHelper = require '../utils/util.retsHelpers'
 logger = require '../config/logger'
-
-# Fetch a list of available MLS databases
-getDatabaseList = (req, res, next) ->
-  mlsInfo = req.body
-  logger.info mlsInfo
-  retsHelper.getDatabaseList(mlsInfo)
+retsHelper = require '../utils/util.retsHelpers'
 
 module.exports =
-  getDatabaseList: getDatabaseList
+  # Fetch a list of available MLS databases
+  getDatabaseList: (serverInfo) ->
+    logger.info 'service.mls.getDatabaseList', serverInfo
+    retsHelper.getDatabaseList serverInfo
