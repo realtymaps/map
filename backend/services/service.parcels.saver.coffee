@@ -1,28 +1,32 @@
+db = require('../config/dbs').properties
 parcelSvc = require './service.properties.parcels'
 Promise = require "bluebird"
 logger = require '../config/logger'
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 parcelFetcher = require './service.parcels.fetcher.digimaps'
+{WGS84, UTM} = require '../../common/utils/enums/util.enums.map.coord_system'
 shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
 
-_formatParcel = (feature, geometryType) ->
+_toReplace = "REPLACE_ME"
+
+_formatParcel = (feature) ->
     #match the db attributes
     obj = _.mapKeys feature.properties, (val, key) ->
         key.toLowerCase()
     obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
-    if geometryType == 'point'
-        obj.geom_point_json = feature.geometry
-    else
-        obj.geom_polys_json = feature.geometry
+    obj.geometry = feature.geometry
+    obj.geometry.crs =
+        type: "name"
+        properties:
+            name: "EPSG:26910"
     obj
 
 _formatParcels = (featureCollection)  ->
-    geomType = if featureCollection.fileName.indexOf 'Points' == -1 then 'polygon' else 'point'
     featureCollection.features.map (f) ->
-        _formatParcel(f,geomType)
+        _formatParcel(f)
 
 _getParcelJSON = (fipsCode) ->
     parcelFetcher(fipsCode)
@@ -39,15 +43,39 @@ _getFormatedParcelJSON = (fipsCode) ->
           @queue null
         stream.pipe through(write, end)
 
+_fixGeometrySql = (geomType, val, method = 'insert') ->
+    # logger.debug val.geometry
+    toReplaceWith = "st_geomfromgeojson( '#{JSON.stringify(val.geometry)}')"
+    delete val.geometry
+    key = if geomType == 'point' then 'geom_point' else 'geom_polys'
+    val[key] = _toReplace
+    raw = parcelSvc.rootDb()[method](val).toString();
+    raw.replace("'#{_toReplace}'", toReplaceWith)
+
+
+_execRawQuery = (geomType, val, method = 'insert') ->
+    raw = _fixGeometrySql(geomType,val)
+    logger.debug raw
+    # db.knex.raw(raw)
+
 _uploadToParcelsDb = (fipsCode) ->
     _getParcelJSON(fipsCode)
     .then (stream) ->
-        stream.on 'data', (d) ->
+        stream.on 'data', (featureCollection) ->
             #Upload each object to the parcels DB
             #some objects are points and others a polygons
             #one will be an insert and the next will be an update
-            objs = _formatParcels d
-            parcelSvc.upsert objs
+            geomType = if featureCollection.fileName.indexOf 'Points' == -1 then 'polygon' else 'point'
+            coll = _formatParcels featureCollection
+            #not bulk upserting so we can check them individually
+            # logger.debug JSON.stringify coll[0]
+            coll.forEach (val)  ->
+                insert = ->
+                    _execRawQuery(geomType, val)
+                update = ->
+                    _execRawQuery(geomType, val, 'update')
+
+                parcelSvc.upsert val, insert, update
 
 module.exports =
     getParcelJSON: _getParcelJSON

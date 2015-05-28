@@ -79,6 +79,8 @@ routesConfig =
             method: 'get'
         getByFipsCodeFormatted:
             method: 'get'
+        uploadToParcelsDb:
+            method: 'get'    
 
 module.exports = (app) ->
     _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->

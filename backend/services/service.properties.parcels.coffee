@@ -17,10 +17,11 @@ transforms =
         required: true
 
 _tableName = sqlHelpers.tableName(Parcel)
+_rootTableName = 'parcels'
 
-_getBaseParcelQuery = ->
+_getBaseParcelQuery = (tblName = _tableName) ->
     sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
-    .from(_tableName)
+    .from(tblName)
 
 _getBaseParcelQueryByBounds = (bounds, limit) ->
     query = _getBaseParcelQuery()
@@ -36,21 +37,15 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
         return query.stream() if doStream
         query
 
-_get = (rm_property_id) ->
+_get = (rm_property_id, tblName = _tableName) ->
     #nmccready - note this might not be unqiue enough, I think parcels has dupes
     _getBaseParcelQuery()
     .where rm_property_id: rm_property_id
 
-_insert = (obj) ->
-    db.knex(_tableName).insert(obj)
-
-_update = (obj) ->
-    db.knex(_tableName).update(obj)
-
-_upsert = (obj) ->
-    _get(obj).then (row) ->
-        return _insert(obj) unless row
-        _update(obj)
+_upsert = (obj, insertCb, updateCb) ->
+    _get(obj, _rootTableName).then (row) ->
+        return insertCb(obj) if !row || !_.keys(row).length
+        updateCb(obj)
 
 module.exports =
     getBaseParcelQuery: _getBaseParcelQuery
@@ -63,3 +58,5 @@ module.exports =
             type: "FeatureCollection"
             features: data
     upsert: _upsert
+    rootDb: ->
+        db.knex(_rootTableName)

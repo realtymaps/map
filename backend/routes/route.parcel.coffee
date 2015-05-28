@@ -5,7 +5,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 {validators} = require '../utils/util.validation'
 _ = require 'lodash'
-{getParcelJSON, getFormatedParcelJSON} = require '../services/service.parcels.saver'
+{getParcelJSON, getFormatedParcelJSON, uploadToParcelsDb} = require '../services/service.parcels.saver'
 JSONStream = require 'JSONStream'
 
 transforms =
@@ -13,7 +13,12 @@ transforms =
         transform: validators.string(minLength:1)
         required: true
 
-_getByFipsCode = (req, res, next, fn = getParcelJSON) ->
+_handleRes = (ret, res, isStream = true) ->
+    if isStream
+        return ret.pipe(JSONStream.stringify()).pipe(res)
+    res.json(ret)
+
+_getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) ->
     Promise.try ->
         allParams = _.extend {}, req.params, req.query
 
@@ -22,7 +27,8 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON) ->
             logger.debug validParams
             fn(validParams.fipscode)
             .then (s) ->
-                s.pipe(JSONStream.stringify()).pipe(res)
+                _handleRes(s, res, isStream)
+
     .catch validation.DataValidationError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
     .catch (error) ->
@@ -34,3 +40,5 @@ module.exports =
     getByFipsCode: _getByFipsCode
     getByFipsCodeFormatted: (req, res, next) ->
         _getByFipsCode(req, res, next, getFormatedParcelJSON)
+    uploadToParcelsDb: (req, res, next) ->
+        _getByFipsCode(req, res, next, uploadToParcelsDb, false)

@@ -36,5 +36,6 @@ module.exports =
         getByFipsCodeAsStream:    "#{apiBase}/cartodb/fipscodeStream/:fipscode"
     parcel:
         getByFipsCode:            "#{apiBase}/parcel/fipscode/:fipscode"
-        getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscodeFormatted/:fipscode"        
+        getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
+        uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
     # hirefire secret value set from within backend/config/config.coffee
