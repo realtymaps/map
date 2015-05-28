@@ -10,7 +10,7 @@ module.exports = (fipsCode) ->
     parcelFetcher(fipsCode)
     .then (stream) ->
         #return json stream
-        s = shp2json(stream).pipe(JSONStream.parse('*'))
+        s = shp2json(stream)#.pipe(JSONStream.parse('*'))
         s.on 'data', (d) ->
             logger.debug d
         s

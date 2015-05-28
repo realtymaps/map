@@ -140,7 +140,7 @@
     "serve-favicon": "2.1.x",
     "serve-static": "1.6.x",
     "should": "^4.0.4",
-    "shp2jsonx": "^1.0.0",
+    "shp2jsonx": "^1.0.1",
     "sinon": "^1.10.3",
     "source-map": "^0.1.43",
     "split": "^0.3.3",

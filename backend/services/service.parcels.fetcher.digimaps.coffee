@@ -68,10 +68,16 @@ _getParcelZipFileStream = (fipsCode, clientPromise = _createFtp(DIGIMAPS.URL, DI
         .then (dirName) ->
             logger.debug("downloading: #{fileName}")
             client.getAsync(fileName)
-        .finally ->
-            client.end()
         .then (stream) ->
             logger.debug("download complete: #{fileName}")
+            stream.on 'error', (err) ->
+                logger.debug "stream error: #{err}"
+                client.end()
+                throw err
+            stream.on 'close', ->
+                logger.debug 'stream close'
+                client.end()
             stream
+
 
 module.exports = _getParcelZipFileStream
