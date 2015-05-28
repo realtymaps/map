@@ -1,16 +1,16 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.encryptor'
+{PartiallyHandledError, isUnhandled} = require './util.encryptor'
 rets = require 'rets-client'
-Encryptor = require '../util.encryptor'
+Encryptor = require './util.encryptor'
 moment = require('moment')
 copyStream = require 'pg-copy-streams'
 from = require 'from'
-utilStreams = require '../util.streams'
-dbs = require '../../config/dbs'
-config = require '../../config/config'
-taskHelpers = require './util.taskHelpers'
-
+utilStreams = require './util.streams'
+dbs = require '../config/dbs'
+config = require '../config/config'
+taskHelpers = require './tasks/util.taskHelpers'
+logger = require '../config/logger'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
@@ -83,6 +83,22 @@ loadRetsTableUpdates = (subtask, options) ->
     # always log out the RETS client when we're done
     retsClient.logout()
 
+getDatabaseList = (mlsInfo) ->
+  logger.info encryptor.decrypt(mlsInfo.password)
+  retsClient = new rets.Client
+    loginUrl: mlsInfo.url
+    username: mlsInfo.login
+    password: encryptor.decrypt(mlsInfo.password)
+  retsClient.login()
+  .catch (error) ->
+    logger.info error
+  .then () ->
+    retsClient.metadata.getResources()
+  .then (data) ->
+    logger.info data
+  .finally () ->
+    # retsClient.logout()
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
+  getDatabaseList: getDatabaseList
