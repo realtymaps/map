@@ -1,6 +1,6 @@
 include ../includes/navbar.jade
 
-.full-width.container
-  include ../views/home.jade
+.full-width.container.adminWorkspace
+  div(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", ng-show="$state.is(state.name)", ng-cloak).page
 
-//include ../../../map/html/includes/alerts.jade
+//include ../includes/alerts.jade

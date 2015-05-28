@@ -1,3 +1,4 @@
 module.exports =
-  index: '/admin/main'
-  mls: '/admin/mls'
+  index: '/admin/'
+  home: 'home'
+  mls: 'mls'
