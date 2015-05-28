@@ -4,25 +4,37 @@ logger = require '../config/logger'
 {parcelFeature} = require './util.featureCollectionWrap'
 
 
-objectsToPgText = (fields, _options={}) ->
+
+_escape = (str, delimiter) ->
+  return str
+  .replace(/\\/g, '\\\\')
+  .replace(/\n/g, '\\n')
+  .replace(/\r/g, '\\r')
+  .replace(new RegExp(delimiter, 'g'), '\\'+delimiter)
+
+objectsToPgText = (textFields, jsonFields, _options={}) ->
   defaults =
     null: '\\N'
     delimiter: '\t'
     encoding: 'utf-8'
   options = _.extend({}, defaults, _options)
   write = (obj) ->
-    parts = _.map fields, (longName, systemKey) ->
+    textParts = _.map textFields, (longName, systemKey) ->
       val = obj[systemKey]
       if !val?
         return options.null
       else
-        return val.replace(/\\/g, '\\\\')
-        .replace(/\n/g, '\\n')
-        .replace(/\r/g, '\\r')
-        .replace(new RegExp(options.delimiter, 'g'), '\\'+options.delimiter)
-    @queue parts.join(options.delimiter)+'\n'
+        return _escape(''+val, options.delimiter)
+    jsonParts = _.map jsonFields, (longName, systemKey) ->
+      val = obj[systemKey]
+      if !val?
+        return options.null
+      else
+        return _escape(JSON.stringify(val), options.delimiter)
+    
+    @queue new Buffer(textParts.concat(jsonParts).join(options.delimiter)+'\n', options.encoding)
   end = () ->
-    @queue new Buffer('\\.\n')
+    @queue new Buffer('\\.\n', options.encoding)
     @queue null
   through(write, end)
 

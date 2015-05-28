@@ -25,7 +25,7 @@ minMaxValidations =
 otherValidations =
   returnType: validators.string()
   ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-  hasOwner: validators.boolean()
+  hasOwner: validators.boolean(truthy: 'true', falsy: 'false')
   bounds:
     transform: [
       validators.string(minLength: 1)
@@ -35,7 +35,7 @@ otherValidations =
     required: true
   status: [
     validators.array
-      subValidation: [
+      subValidateEach: [
         validators.string(forceLowerCase: true)
         validators.choice(choices: statuses)
       ]
@@ -101,9 +101,9 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
       sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
     if filters.listedDaysMin
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', ">=", filters.listedDaysMin)
+      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
     if filters.listedDaysMax
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
+      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
 
     #might not need anymore due to leaflet
     # if _getZoom(state.map_position) >= zoomThresh.ordering or _.contains(filters.status, filterStatusesEnum.not_for_sale)

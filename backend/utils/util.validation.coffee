@@ -38,10 +38,12 @@ module.exports =
       input = definition.input || output
       transform = definition.transform || validators.noop
       required = definition.required
-      if _.isArray(input)
+      if _.isString(input)
+        values = params[input]
+      else if _.isArray(input)
         values = _.at(params, input)
       else
-        values = params[input]
+        values = _.mapValues input, (sourceName) -> params[sourceName]
       promises[output] = doValidation(transform, output, values)
       .then (transformed) ->
         # check for required value

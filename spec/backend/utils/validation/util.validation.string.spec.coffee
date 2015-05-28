@@ -66,10 +66,12 @@ describe 'utils/http.request.validators.string()'.ns().ns('Backend'), ->
         value.should.equal("zzzz-ZZ-zz")
     ]
 
-  promiseIt 'should transform string to lowercase or uppercase when configured', () ->
+  promiseIt 'should transform string case when configured', () ->
     [
       expectResolve(validators.string(forceLowerCase: true)(param, 'ABCdef')).then (value) ->
         value.should.equal('abcdef')
       expectResolve(validators.string(forceUpperCase: true)(param, 'ABCdef')).then (value) ->
         value.should.equal('ABCDEF')
+      expectResolve(validators.string(forceInitCaps: true)(param, "TESTING with dash-es and a'postrophes")).then (value) ->
+        value.should.equal("Testing With Dash-Es and A'Postrophes")
     ]
