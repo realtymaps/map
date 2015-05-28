@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled} = require '../util.encryptor'
-rets = require 'rets-promise'
+rets = require 'rets-client'
 Encryptor = require '../util.encryptor'
 moment = require('moment')
 copyStream = require 'pg-copy-streams'
