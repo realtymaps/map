@@ -1,6 +1,6 @@
 {DIGIMAPS} = require '../../../backend/config/config'
 rewire = require 'rewire'
-svc = rewire '../../../backend/services/service.parcels.digimaps'
+svc = rewire '../../../backend/services/service.parcels.fetcher.digimaps'
 Promise = require 'bluebird'
 {StringStream} = require '../../../backend/utils/util.streams'
 
