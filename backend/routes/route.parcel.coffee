@@ -5,7 +5,8 @@ ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 {validators} = require '../utils/util.validation'
 _ = require 'lodash'
-save = require '../services/service.parcels.saver'
+{getParcelJSON} = require '../services/service.parcels.saver'
+JSONStream = require 'JSONStream'
 
 transforms =
     fipscode:
@@ -19,9 +20,9 @@ _getByFipsCode = (req, res, next) ->
         validation.validateAndTransform(allParams, transforms)
         .then (validParams) ->
             logger.debug validParams
-            save(validParams.fipscode)
+            getParcelJSON(validParams.fipscode)
             .then (s) ->
-                s.pipe(res)
+                s.pipe(JSONStream.stringify()).pipe(res)
     .catch validation.DataValidationError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
     .catch (error) ->
