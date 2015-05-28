@@ -38,7 +38,7 @@ _getLatestDir = (client, dirObj) ->
 _goToLatestDir = (client, directories = _.cloneDeep DIGIMAPS.DIRECTORIES) ->
     dig = ->
         dirObj = directories.shift()
-        logger.debug("dig")
+        # logger.debug("dig")
         dirNamePromise = if dirObj?.doParseDate then _getLatestDir(client, dirObj) else Promise.resolve dirObj.name
         dirNamePromise.then (dirName) ->
             client.cwdAsync './' + dirName

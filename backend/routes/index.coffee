@@ -77,6 +77,8 @@ routesConfig =
     parcel:
         getByFipsCode:
             method: 'get'
+        getByFipsCodeFormatted:
+            method: 'get'
 
 module.exports = (app) ->
     _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
