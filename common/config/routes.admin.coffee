@@ -1,2 +1,3 @@
 module.exports =
-  index:          '/'
+  index: '/admin/main'
+  mls: '/admin/mls'
