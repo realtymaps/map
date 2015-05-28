@@ -78,9 +78,10 @@ routesConfig =
   mls:
     getDatabaseList:
       method: 'post'
-      middleware: [
-        # auth.requireLogin(redirectOnFail: true) # require admin!
-      ]
+      # middleware: auth.requireLogin(redirectOnFail: true) # require admin!
+    getTableList:
+      method: 'post'
+      # middleware: auth.requireLogin(redirectOnFail: true) # require admin!
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
