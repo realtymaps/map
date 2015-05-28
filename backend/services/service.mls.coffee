@@ -11,3 +11,8 @@ module.exports =
   getTableList: (postData) ->
     logger.info 'service.mls.getTableList', postData
     retsHelper.getTableList postData, postData.databaseName
+
+  # Fetch a list of columns from a particular MLS table
+  getColumnList: (postData) ->
+    logger.info 'service.mls.getColumnList', postData
+    retsHelper.getColumnList postData, postData.databaseName, postData.tableName

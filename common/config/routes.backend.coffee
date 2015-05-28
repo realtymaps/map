@@ -37,4 +37,5 @@ module.exports =
   # hirefire secret value set from within backend/config/config.coffee
   mls:
     getDatabaseList:  "#{apiBase}/mls/getDatabaseList"
-    getTableList:  "#{apiBase}/mls/getTableList"
+    getTableList:     "#{apiBase}/mls/getTableList"
+    getColumnList:    "#{apiBase}/mls/getColumnList"

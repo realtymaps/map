@@ -10,3 +10,8 @@ module.exports =
     mlsService.getTableList req.body
     .then (tableList) ->
         res.send tableList
+
+  getColumnList: (req, res, next) ->
+    mlsService.getColumnList req.body
+    .then (columnList) ->
+        res.send columnList

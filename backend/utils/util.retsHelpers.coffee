@@ -94,9 +94,8 @@ getDatabaseList = (serverInfo) ->
   .then () ->
     retsClient.metadata.getResources()
   .then (response) ->
-    console.log response, null, 2
     _.map response.Resources, (r) ->
-      _.pick r, ['VisibleName', 'ResourceID']
+      _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
 
 getTableList = (serverInfo, databaseName) ->
   retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
@@ -105,11 +104,21 @@ getTableList = (serverInfo, databaseName) ->
   .then () ->
     retsClient.metadata.getClass(databaseName)
   .then (response) ->
-    console.log response, null, 2
     _.map response.Classes, (r) ->
-      _.pick r, ['VisibleName', 'ClassName']
+      _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+
+getColumnList = (serverInfo, databaseName, tableName) ->
+  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+
+  retsClient.login()
+  .then () ->
+    retsClient.metadata.getTable(databaseName, tableName)
+  .then (response) ->
+    _.map response.Fields, (r) ->
+      _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   getDatabaseList: getDatabaseList
   getTableList: getTableList
+  getColumnList: getColumnList

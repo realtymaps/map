@@ -82,6 +82,9 @@ routesConfig =
     getTableList:
       method: 'post'
       # middleware: auth.requireLogin(redirectOnFail: true) # require admin!
+    getColumnList:
+      method: 'post'
+      # middleware: auth.requireLogin(redirectOnFail: true) # require admin!
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
