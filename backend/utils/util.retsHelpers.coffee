@@ -96,6 +96,8 @@ getDatabaseList = (serverInfo) ->
   .then (response) ->
     _.map response.Resources, (r) ->
       _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+  .finally () ->
+    retsClient.logout()
 
 getTableList = (serverInfo, databaseName) ->
   retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
@@ -106,6 +108,8 @@ getTableList = (serverInfo, databaseName) ->
   .then (response) ->
     _.map response.Classes, (r) ->
       _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+  .finally () ->
+    retsClient.logout()
 
 getColumnList = (serverInfo, databaseName, tableName) ->
   retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
@@ -116,6 +120,8 @@ getColumnList = (serverInfo, databaseName, tableName) ->
   .then (response) ->
     _.map response.Fields, (r) ->
       _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+  .finally () ->
+    retsClient.logout()
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
