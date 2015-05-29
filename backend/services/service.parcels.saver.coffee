@@ -61,10 +61,10 @@ _execRawQuery = (geomType, val, method = 'insert') ->
     # logger.debug raw
     db.knex.transaction (trx) ->
         q = trx.raw(raw)
-        if method == 'update'
-            logger.debug "\n\n"
-            logger.debug q.toString()
-            logger.debug "\n\n"
+        # if method == 'update'
+        #     logger.debug "\n\n"
+        #     logger.debug q.toString()
+        #     logger.debug "\n\n"
         q
 
 _uploadToParcelsDb = (fipsCode) ->
@@ -79,33 +79,17 @@ _uploadToParcelsDb = (fipsCode) ->
             geomType = if featureCollection.fileName.indexOf('Points') != -1 then 'point' else 'polygon'
             logger.debug geomType
             coll = _formatParcels featureCollection
-            #not bulk upserting so we can check them individually
-            # logger.debug JSON.stringify coll[0]
-            # updateGraph = {}
-            #
-            # _createGraphItem = (geomType, updateObj)->
-            #     #cleans up itself
-            #     updateGraph[updateObj.rm_property_id] = _execRawQuery(geomType, updateObj, 'update')
-            #     updateGraph[updateObj.rm_property_id]
-            #     .finally ->
-            #         logger.debug "delete graph item: #{old.rm_property_id}"
-            #         delete updateGraph[updateObj.rm_property_id]
-            #
-            # _update = (geomType, updateObj) ->
-            #     #keep a graph of updates to keep us from updating the same rows at the same time
-            #     graphItem = updateGraph[updateObj.rm_property_id]
-            #     if !graphItem? #create
-            #         _createGraphItem(geomType,updateObj)
-            #         return
-            #     #queue up existing promise to exec after another
-            #     graphItem.finally ->
-            #         _createGraphItem(geomType,updateObj)
-
-
+            inserts = {}
+            updates = {}
             coll.forEach (val)  ->
+                return unless val?.parcelapn#GTFO we cant make a valid rm_property_id with no apn
                 insert = ->
+                    return if inserts?[val.rm_property_id]
+                    inserts[val.rm_property_id] = true
                     _execRawQuery(geomType, val)
                 update = (old) ->
+                    return if updates?[val.rm_property_id]
+                    updates[val.rm_property_id] = true
                     updateObj = _.merge({},old, val)
                     # logger.debug "\n\n"
                     # logger.debug updateObj
@@ -113,7 +97,8 @@ _uploadToParcelsDb = (fipsCode) ->
                     _execRawQuery(geomType, updateObj, 'update')
                     # _update(geomType, updateObj)
                 parcelSvc.upsert val, insert, update
-
+            if geomType == 'polygon'
+                logger.debug 'done kicking off insert/updates'
 module.exports =
     getParcelJSON: _getParcelJSON
     getFormatedParcelJSON: _getFormatedParcelJSON
