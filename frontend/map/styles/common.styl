@@ -272,7 +272,7 @@ $clearFix()
 for num in 5 10 15 20 25 30 35 40 45 50
   for where in left right top bottom
     .{where}-margin-{num}
-      margin-left unit(num,'px')
+      margin-{where} unit(num,'px')
 
 $footer()
   width: 100%

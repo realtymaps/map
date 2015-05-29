@@ -1,3 +1,88 @@
 div
-  h2 MLS Config
-  p {{ msg }}
+  form(name="mlsForm")
+    .col-md-6
+      .row
+        button(ng-click="").btn.btn-default
+          p Show Example
+        button(ng-click="").btn.btn-default
+          p Show Preview
+        //- button(ng-click="open('setTable')").btn.btn-default
+        //- button(ng-click="open('setField')").btn.btn-default
+      .row
+        .col-md-12
+          .panel.panel-default
+            .panel-heading
+              h3 MLS Data Entry
+            .panel-body
+              div
+                //- carousel.mls-wizard
+                //-   slide(ng-repeat="formItem in formItems" active="formItem.disabled")
+                //-     div.slide-content
+                //-       table
+                //-         tr(ng-repeat="(formField, settings) in formItem.formFields")
+                //-           td
+                //-             label.data-label {{settings.label}}
+                //-           td
+                //-             input(ng-if="settings.type != select" type="{{settings.type}}")
+                //-             select(ng-if="settings.type == select")
+                //-               option(value="1") One
+                //-               option(value="2") Two
+                //-               option(value="3") Three
+                accordion(close-others="oneAtATime").accordion
+                  accordion-group(ng-repeat="formItem in formItems" heading="{{formItem.heading}}" is-open="true")
+                    div(style="border: 5px")
+                      table
+                        tr(ng-repeat="(formField, settings) in formItem.formFields")
+                          td
+                            label.data-label {{settings.label}}&nbsp({{settings.type}})
+                          td
+                            input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
+                            select(ng-if="settings.type == 'select'")
+                              option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
+
+                //- div(ng-repeat="formItem in formItems" ng-animate="{enter: 'animate-enter, leave: 'animate-leave'}")
+                //-   p {{formItem.step}}
+      .row
+        br
+      .row
+        .col-md-12
+          .panel.panel-default
+            .panel-heading
+              h3 MLS Data
+            .panel-body
+              table.table-striped
+                tr(ng-repeat="(key, value) in mlsData")
+                  td
+                    label.data-label {{key}}
+                  td
+                    span.data-entry {{value}}
+              //- p
+              //-   label.data-label ID:
+              //-   span.data-entry
+              //-     {{ mlsData.id }}
+    .col-md-6
+      .row
+        .col-sm-4
+          .panel.panel-default
+            .panel-heading
+              h3 Example
+            .panel-body
+              table.table-striped
+                tr
+                  td Some
+                tr
+                  td Example
+                tr
+                  td Data
+        .col-sm-4
+          .panel.panel-default
+            .panel-heading
+              h3 Preview
+            .panel-body
+              table.table-striped
+                tr
+                  td Some
+                tr
+                  td Preview
+                tr
+                  td Data
