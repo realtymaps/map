@@ -38,14 +38,17 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
         query
 
 _get = (rm_property_id, tblName = _tableName) ->
+    throw "rm_property_id must be of type String" unless _.isString rm_property_id
     #nmccready - note this might not be unqiue enough, I think parcels has dupes
-    _getBaseParcelQuery()
+    db.knex.select().from(tblName)
     .where rm_property_id: rm_property_id
 
 _upsert = (obj, insertCb, updateCb) ->
-    _get(obj, _rootTableName).then (row) ->
-        return insertCb(obj) if !row || !_.keys(row).length
-        updateCb(obj)
+    _get(obj.rm_property_id, _rootTableName).then (rows) ->
+        if rows?.length
+            # logger.debug JSON.stringify(rows)
+            return updateCb(rows[0])
+        return insertCb(obj)
 
 module.exports =
     getBaseParcelQuery: _getBaseParcelQuery
