@@ -1,4 +1,4 @@
-mlsHelpers = require './util.mlsHelpers'
+mlsHelpers = require '../util.mlsHelpers'
 taskHelpers = require './util.taskHelpers'
 jobQueue = require '../util.jobQueue'
 

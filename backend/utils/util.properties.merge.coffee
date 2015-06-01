@@ -9,7 +9,7 @@ _ = require 'lodash'
 _updateSavedProperties = (state, properties) ->
   _.each properties, (prop) ->
     # ensure saved details are part of the saved props
-    if prop.rm_property_id of state.properties_selected
+    if state.properties_selected?[prop.rm_property_id]?
       prop.savedDetails = state.properties_selected[prop.rm_property_id]
   properties
 

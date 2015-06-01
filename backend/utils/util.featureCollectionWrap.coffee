@@ -1,4 +1,3 @@
-_parcelDeletes = ['geom_polys_raw', 'geom_point_raw']
 _parcelPropertiesMove = [
   'rm_property_id'
   'street_address_num'
@@ -6,19 +5,19 @@ _parcelPropertiesMove = [
   'passedFilters'
 ]
 
-_parcelFeature = (row) ->
-  _parcelDeletes.forEach (prop) ->
+_parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
+  deletes.forEach (prop) ->
     delete row[prop]
 
   row.properties = {}
-  _parcelPropertiesMove.forEach (prop) ->
+  toMove.forEach (prop) ->
     row.properties[prop] = row[prop]
     delete row[prop]
   row
 
 module.exports =
   parcelFeature: _parcelFeature
-  
+
   parcelFeatureCollection: (rows) ->
     rows = _.uniq rows, (r) ->
       r.rm_property_id

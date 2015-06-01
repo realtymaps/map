@@ -2,6 +2,23 @@ _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig'
 
+_getConfig = (rootName, propName, spacer, config = process.env) ->
+  envVarName = rootName + spacer + propName
+  config[envVarName]
+
+_getAllConfigs = (rootName, props, spacer = '_', config) ->
+  ret = {}
+  for key, maybePropName of props
+    if _.isString maybePropName
+      name = maybePropName
+    else if _.isString maybePropName?.name
+        name = maybePropName.name
+    throw "config property is an unsupported type or malformed object." unless name
+    ret[name] = _getConfig(rootName, name, spacer, config)
+    if maybePropName?.isJson?
+      ret[name] = JSON.parse ret[name]
+  ret
+
 #console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
 base =
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
@@ -64,13 +81,7 @@ base =
     MAPS:
       main: process.env.MAPBOX_MAPS_MAIN
   CARTODB: do ->
-    ret =
-      API_KEY: process.env.CARTODB_API_KEY
-      MAPS: JSON.parse process.env.CARTODB_MAPS
-      ACCOUNT: process.env.CARTODB_ACCOUNT
-      API_KEY_TO_US: process.env.CARTODB_API_KEY_TO_US
-      TEMPLATE: 'parcels'
-
+    ret = _getAllConfigs('CARTODB', ['API_KEY', {name:'MAPS', isJson: true}, 'ACCOUNT', 'API_KEY_TO_US', 'TEMPLATE'])
     root = "//#{ret.ACCOUNT}.cartodb.com/api/v1"
     apiUrl = "api_key=#{ret.API_KEY}"
 
@@ -79,6 +90,13 @@ base =
       API_URL: apiUrl
       TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
       WAKE_URL: "#{root}/map/named/#{ret.TEMPLATE}?#{apiUrl}"
+  TWILIO:
+    ACCOUNT: process.env.TWILIO_ACCOUNT
+    API_KEY: process.env.TWILIO_API_KEY
+    NUMBER: process.env.TWILIO_NUMBER
+  GMAIL:
+    ACCOUNT: process.env.GMAIL_ACCOUNT
+    PASSWORD: process.env.GMAIL_PASSWORD
 
   MAP: common.map
   NEW_RELIC:
@@ -87,6 +105,7 @@ base =
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
+  DIGIMAPS: _getAllConfigs('DIGIMAPS', ['ACCOUNT', 'URL', 'PASSWORD',{name:'DIRECTORIES', isJson: true}, {name:'FILE', isJson: true}])
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

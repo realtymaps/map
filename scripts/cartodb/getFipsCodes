@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+fipsCodes=(12021 48123 48339 06075 36061)
+
+for i in "${fipsCodes[@]}"
+do
+
+    url="http://localhost:4000/api/cartodb/fipscodeFile/$i?api_key=98d64004-be29-4f51-b883-1da478cf8f3d"
+    echo "$url"
+    curl "$url" > "$i".json &
+done
+
+exit 0;

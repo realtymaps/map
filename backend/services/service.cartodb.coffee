@@ -36,7 +36,7 @@ _fipsCodeQuery = (opts) ->
   throw "opts.fipscode required!" unless opts?.fipscode?
 
   query =
-  sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
+  sqlHelpers.select(db.knex, 'cartodb_parcel', false, 'distinct on (rm_property_id)')
   .from _parcelTable
   .where fips_code:opts.fipscode
   .whereNotNull 'rm_property_id'

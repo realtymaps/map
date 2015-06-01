@@ -2,6 +2,15 @@ _ = require 'lodash'
 through = require 'through'
 logger = require '../config/logger'
 {parcelFeature} = require './util.featureCollectionWrap'
+{Readable} = require 'stream'
+
+class StringStream extends Readable
+  constructor: (@str) ->
+    super()
+
+  _read: (size) ->
+    @push @str
+    @push null
 
 
 
@@ -38,8 +47,8 @@ objectsToPgText = (textFields, jsonFields, _options={}) ->
     @queue null
   through(write, end)
 
-  
-geoJsonFormatter = () ->
+
+geoJsonFormatter = (toMove, deletes) ->
   prefixWritten = false
   rm_property_ids = {}
   lastBuffStr = null
@@ -51,7 +60,7 @@ geoJsonFormatter = () ->
 
     return if rm_property_ids[row.rm_property_id] #GTFO
     rm_property_ids[row.rm_property_id] = true
-    row = parcelFeature row
+    row = parcelFeature row, toMove, deletes
 
     #hold off on adding to buffer so we know it has a next item to add ','
     if lastBuffStr
@@ -67,7 +76,8 @@ geoJsonFormatter = () ->
 
   through(write, end)
 
-    
+
 module.exports =
   objectsToPgText: objectsToPgText
   geoJsonFormatter: geoJsonFormatter
+  StringStream: StringStream

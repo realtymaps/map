@@ -1,0 +1,13 @@
+#!/bin/bash
+set -e
+
+#required install cartodb-upload (via npm -g or link)
+
+fipsCodes=(12021 48123 48339 06075 36061)
+
+for i in "${fipsCodes[@]}"
+do
+  cartodb-upload --f="$i".json --k=c95946d99453dfe16168c2d482f949a3d813f583 --a=realtymaps &
+done
+
+exit 0;
