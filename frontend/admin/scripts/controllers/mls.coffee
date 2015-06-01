@@ -26,8 +26,10 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
     $scope.adminRoutes = adminRoutes
     $scope.$state = $state
 
+    $scope.step = 0
+
     $scope.formItems = [
-      step: 1
+      step: 0
       heading: "Log into MLS"
       formFields:         
         name:
@@ -43,10 +45,10 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           type: "password"
           label: "Password"
       proceed: () ->
-        console.log "#### proceeding step 1"
+        console.log "#### proceeding step 0"
       disabled: false
     ,
-      step: 2
+      step: 1
       heading: "Select Database..."
       formFields:
         db:
@@ -58,10 +60,10 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
             three: "db3"
             four: "db4"
       proceed: () ->
-        console.log "#### proceeding step 2"
+        console.log "#### proceeding step 1"
       disabled: true
     ,
-      step: 3
+      step: 2
       heading: "Select Table..."
       formFields:
         table:
@@ -71,10 +73,10 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
             one: "table1"
             two: "table2"
       proceed: () ->
-        console.log "#### proceeding step 3"
+        console.log "#### proceeding step 2"
       disabled: true
     ,
-      step: 4
+      step: 3
       heading: "Select Field..."
       formFields:
         field:
@@ -89,12 +91,16 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           label: "Query Template"
           default: "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
       proceed: () ->
-        console.log "#### proceeding step 4"
+        console.log "#### proceeding step 3"
       disabled: true
     ]
 
     $scope.proceed = (step) ->
-      $scope.formItems[step-1].proceed()
+      $scope.formItems[step].proceed()
+      if (step == ($scope.formItems.length-1))
+        $scope.step = 0
+      else
+        $scope.step += 1
 
 
 
