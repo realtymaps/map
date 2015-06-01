@@ -1,6 +1,7 @@
 logger = require '../config/logger'
 auth = require '../utils/util.auth'
 userService = require '../services/service.user'
+mlsService = require '../services/service.mls'
 loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 
@@ -97,6 +98,16 @@ routesConfig =
         delete:
             method: 'delete'
             # middleware: auth.requireLogin(redirectOnFail: true)
+    mls:
+        getDatabaseList:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        getTableList:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        getColumnList:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->
     _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->

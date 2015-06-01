@@ -44,4 +44,8 @@ module.exports =
         update:    "#{apiBase}/mls_config/:id"
         create:    "#{apiBase}/mls_config"
         delete:    "#{apiBase}/mls_config/:id"
+    mls:
+        getDatabaseList:  "#{apiBase}/mls/getDatabaseList"
+        getTableList:     "#{apiBase}/mls/getTableList"
+        getColumnList:    "#{apiBase}/mls/getColumnList"
     # hirefire secret value set from within backend/config/config.coffee
