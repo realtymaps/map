@@ -42,6 +42,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
         password:
           type: "password"
           label: "Password"
+      proceed: () ->
+        console.log "#### proceeding step 1"
       disabled: false
     ,
       step: 2
@@ -55,6 +57,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
             two: "db2"
             three: "db3"
             four: "db4"
+      proceed: () ->
+        console.log "#### proceeding step 2"
       disabled: true
     ,
       step: 3
@@ -66,6 +70,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           options:
             one: "table1"
             two: "table2"
+      proceed: () ->
+        console.log "#### proceeding step 3"
       disabled: true
     ,
       step: 4
@@ -82,8 +88,17 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           type: "text"
           label: "Query Template"
           default: "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
+      proceed: () ->
+        console.log "#### proceeding step 4"
       disabled: true
     ]
+
+    $scope.proceed = (step) ->
+      $scope.formItems[step-1].proceed()
+
+
+
+
 
     # $scope.open = (step) ->
     #   modalInstance = $modal.open

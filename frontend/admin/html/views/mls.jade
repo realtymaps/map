@@ -39,6 +39,7 @@ div
                             input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
                             select(ng-if="settings.type == 'select'")
                               option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
+                      button(ng-click="proceed(formItem.step)") Submit
 
                 //- div(ng-repeat="formItem in formItems" ng-animate="{enter: 'animate-enter, leave: 'animate-leave'}")
                 //-   p {{formItem.step}}
