@@ -80,7 +80,23 @@ routesConfig =
         getByFipsCodeFormatted:
             method: 'get'
         uploadToParcelsDb:
-            method: 'get'    
+            method: 'get'
+    mls_config:
+        getAll:
+            method: 'get'
+            # middleware: auth.requireLogin(redirectOnFail: true)
+        getById:
+            method: 'get'
+            # middleware: auth.requireLogin(redirectOnFail: true)
+        update:
+            method: 'patch'
+            # middleware: auth.requireLogin(redirectOnFail: true)
+        create:
+            method: 'post'
+            # middleware: auth.requireLogin(redirectOnFail: true)
+        delete:
+            method: 'delete'
+            # middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->
     _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
