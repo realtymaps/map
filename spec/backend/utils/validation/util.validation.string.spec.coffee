@@ -73,5 +73,5 @@ describe 'utils/http.request.validators.string()'.ns().ns('Backend'), ->
       expectResolve(validators.string(forceUpperCase: true)(param, 'ABCdef')).then (value) ->
         value.should.equal('ABCDEF')
       expectResolve(validators.string(forceInitCaps: true)(param, "TESTING with dash-es and a'postrophes")).then (value) ->
-        value.should.equal("Testing With Dash-Es and A'Postrophes")
+        value.should.equal("Testing With Dash-Es And A'Postrophes")
     ]

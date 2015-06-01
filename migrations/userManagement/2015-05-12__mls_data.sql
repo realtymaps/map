@@ -16,15 +16,15 @@ DROP TABLE IF EXISTS mls_data;
 CREATE TABLE mls_data (
   rm_inserted_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
   rm_modified_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
-  
-  up_to_date TIMESTAMP NOT NULL,
+
+  data_source_id TEXT NOT NULL,
   batch_id TEXT NOT NULL,
-  change_history JSON,
-  prior_listings JSON,
   deleted BOOLEAN NOT NULL,
+  up_to_date TIMESTAMP NOT NULL,
+  
+  change_history JSON,
   
   rm_property_id TEXT NOT NULL,
-  data_source_id TEXT NOT NULL,
   fips_code INTEGER NOT NULL,
   parcel_id TEXT NOT NULL,
   address JSON NOT NULL,

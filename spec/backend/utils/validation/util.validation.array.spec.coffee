@@ -111,5 +111,5 @@ describe 'utils/http.request.validators.array()'.ns().ns('Backend'), ->
       value.should.eql([b,a,a,c])
 
   promiseIt 'should join elements when configured', () ->
-    expectResolve(validators.array(split: ',', subValidateEach: validators.integer())(param, "2,1,1,3"), join: '_').then (value) ->
+    expectResolve(validators.array(split: ',', subValidateEach: validators.integer(), join: '_')(param, "2,1,1,3")).then (value) ->
       value.should.eql('2_1_1_3')

@@ -28,4 +28,4 @@ String::replaceLast = (find, replace) ->
   return @toString();
 
 String::toInitCaps = () ->
-  @replace(/[-'\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+  @replace(/[^-'\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())

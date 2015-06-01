@@ -2,27 +2,27 @@ DROP TABLE IF EXISTS data_normalization_config;
 CREATE TABLE data_normalization_config (
   data_source_id TEXT NOT NULL,
   
-  output_group TEXT NOT NULL,
-  output_field TEXT,
-  display_order INTEGER NOT NULL,
+  list TEXT NOT NULL,
+  output TEXT,
+  ordering INTEGER NOT NULL,
   
   required BOOLEAN NOT NULL,
   input JSON,
   transform TEXT
 );
-CREATE INDEX ON data_normalization_config (data_source_id, output_group ASC, display_order ASC);
+CREATE INDEX ON data_normalization_config (data_source_id, list ASC, ordering ASC);
 
-CREATE OR REPLACE FUNCTION easy_normalization_insert (in_data_source_id TEXT, in_output_group TEXT, in_output_field TEXT, in_required BOOLEAN, in_input JSON, in_transform TEXT)
+CREATE OR REPLACE FUNCTION easy_normalization_insert (_data_source_id TEXT, _list TEXT, _output TEXT, _required BOOLEAN, _input JSON, _transform TEXT)
   RETURNS VOID AS $$
   BEGIN
     INSERT INTO data_normalization_config VALUES (
-      in_data_source_id, 
-      in_output_group, 
-      in_output_field, 
-      (SELECT COUNT(*) FROM data_normalization_config WHERE data_source_id = in_data_source_id AND output_group = in_output_group), 
-      in_required,
-      in_input,
-      in_transform
+      _data_source_id, 
+      _list, 
+      _output, 
+      (SELECT COUNT(*) FROM data_normalization_config WHERE data_source_id = _data_source_id AND list = _list), 
+      _required,
+      _input,
+      _transform
     );
   END;
   $$
@@ -38,18 +38,18 @@ SELECT easy_normalization_insert ('swflmls', 'base', 'parcel_id', TRUE, '"Parcel
   validators.string({stripFormatting: true})
 $$);
 SELECT easy_normalization_insert ('swflmls', 'base', 'address', TRUE, $${
-  streetNum: "Street Number", 
-  streetName: "Street Name",
-  city: "City",
-  state: "State Or Province",
-  zip: "Postal Code"
-  zip9: "Postal Code Plus 4"
-  streetDirPrefix: "Street Dir Prefix",
-  streetDirSuffix: "Street Dir Suffix",
-  streetSuffix: "Street Suffix",
-  streetNumSuffix: "Street Number Modifier",
-  streetFull: "Full Address",
-  unitNum: "Unit Number"
+  "streetNum": "Street Number",
+  "streetName": "Street Name",
+  "city": "City",
+  "state": "State Or Province",
+  "zip": "Postal Code",
+  "zip9": "Postal Code Plus 4",
+  "streetDirPrefix": "Street Dir Prefix",
+  "streetDirSuffix": "Street Dir Suffix",
+  "streetSuffix": "Street Suffix",
+  "streetNumSuffix": "Street Number Modifier",
+  "streetFull": "Full Address",
+  "unitNum": "Unit Number"
 }$$, $$
   validators.address()
 $$);
@@ -145,18 +145,18 @@ SELECT easy_normalization_insert ('swflmls', 'general', 'status', TRUE, '"Status
   }})
 $$);
 SELECT easy_normalization_insert ('swflmls', 'general', 'address', TRUE, $${
-  streetNum: "Street Number", 
-  streetName: "Street Name",
-  city: "City",
-  state: "State Or Province",
-  zip: "Postal Code"
-  zip9: "Postal Code Plus 4"
-  streetDirPrefix: "Street Dir Prefix",
-  streetDirSuffix: "Street Dir Suffix",
-  streetSuffix: "Street Suffix",
-  streetNumSuffix: "Street Number Modifier",
-  streetFull: "Full Address",
-  unitNum: "Unit Number"
+  "streetNum": "Street Number",
+  "streetName": "Street Name",
+  "city": "City",
+  "state": "State Or Province",
+  "zip": "Postal Code",
+  "zip9": "Postal Code Plus 4",
+  "streetDirPrefix": "Street Dir Prefix",
+  "streetDirSuffix": "Street Dir Suffix",
+  "streetSuffix": "Street Suffix",
+  "streetNumSuffix": "Street Number Modifier",
+  "streetFull": "Full Address",
+  "unitNum": "Unit Number"
 }$$, $$
   validators.address()
 $$);

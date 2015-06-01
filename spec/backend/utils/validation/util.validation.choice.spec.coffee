@@ -59,5 +59,5 @@ describe 'utils/http.request.validators.choice()'.ns().ns('Backend'), ->
       expectResolve(validators.choice(choices: choices, equalsTester: equalsTester)(param, 25)).then (value) ->
         value.should.equal('b')
       expectReject(validators.choice(choices: choices, equalsTester: equalsTester)(param, 77), DataValidationError)
-      expectReject(validators.choice(choices: choices, equalsTester: equalsTester)(param, b), DataValidationError)
+      expectReject(validators.choice(choices: choices, equalsTester: equalsTester)(param, 'b'), DataValidationError)
     ]

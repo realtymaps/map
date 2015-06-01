@@ -12,6 +12,7 @@ knex = jobQueue.knex
 tables =
   dataLoadHistory: 'data_load_history'
   dataNormalizationConfig: 'data_normalization_config'
+  mlsData: 'mls_data'
 
 
 getRawTableName = (subtask, suffix) ->

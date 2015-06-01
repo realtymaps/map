@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require "bluebird"
 DataValidationError = require './util.error.dataValidation'
-doValidation = require './util.impl.doValidation'
+doValidationSteps = require './util.impl.doValidationSteps'
 logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
@@ -16,12 +16,15 @@ module.exports = (options = {}) ->
       # the corresponding element of the object, and remaining elements are passed unchanged
       separatePromises = _.clone(values)
       for key, subValidation of options.subValidateSeparate
-        separatePromises[key] = doValidation(subValidation, param, values[key])
+        separatePromises[key] = doValidationSteps(subValidation, param, values[key])
       return Promise.props separatePromises
     else if options.subValidateEach
       # subValidateEach can be any validation/transformation suitable for use in validateAndTransform() (including
       # an array of iteratively applied functions), except these validators are also passed the key as an additional
       # parameter.  The validation/transformation is applied to each element of the object
-      return Promise.mapValues values, doValidation.bind(null, options.subValidateEach, param)
+      allPromises = {}
+      for key, value of values
+        allPromises[key] = doValidationSteps(options.subValidateEach, param, value)
+      return Promise.props allPromises
     else
       return values

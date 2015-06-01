@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.encryptor'
+{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
 rets = require 'rets-promise'
 Encryptor = require '../util.encryptor'
 moment = require('moment')
@@ -11,6 +11,7 @@ dbs = require '../../config/dbs'
 config = require '../../config/config'
 taskHelpers = require './util.taskHelpers'
 jobQueue = require './util.jobQueue'
+validation = require '../util.validation'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -37,6 +38,32 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
   .then () ->
     return objects.length
 
+    
+_diff = (row1, row2) ->
+  result = {}
+  fields1 = {}
+  fields2 = {}
+  
+  # first, flatten the objects
+  for groupName, groupList of row1.client_groups
+    _.extend fields1, groupList
+    _.extend fields2, row2.client_groups[groupName]
+  for groupName, groupList of row1.realtor_groups
+    _.extend fields1, groupList
+    _.extend fields2, row2.realtor_groups[groupName]
+  _.extend fields1, row2.realtor_groups.hidden_fields
+  _.extend fields2, row2.realtor_groups.hidden_fields
+  _.extend fields1, row2.realtor_groups.ungrouped_fields
+  _.extend fields2, row2.realtor_groups.ungrouped_fields
+  
+  # then get changes from row1 to row2
+  for fieldName, value1 of fields1
+    if !_.isEqual value1, fields2[fieldName]
+      result[fieldName] = if fieldName in fields2 then fields2[fieldName] else null
+        
+  # then get fields missing from row1
+  _.extend result, _.omit(fields2, Object.keys(fields1))
+    
 
 # loads all records from a given RETS table that have changed since the last successful run of the task
 loadRetsTableUpdates = (subtask, options) ->
@@ -81,12 +108,12 @@ loadRetsTableUpdates = (subtask, options) ->
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
         subtaskStep3Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'markDeleted', subtask.task_name)
-        subtaskStep5Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'removeExtraRows', subtask.task_name)
-        Promise.join(subtaskStep3Promise, subtaskStep5Promise)
+        #subtaskStep5Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'removeExtraRows', subtask.task_name)
+        #Promise.join(subtaskStep3Promise, subtaskStep5Promise)
         .then (subtaskStep3, subtaskStep5) ->
           queueStep3 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep3)
-          queueStep5 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep5)
-          Promise.join(queueStep3, queueStep5)
+          #queueStep5 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep5)
+          #Promise.join(queueStep3, queueStep5)
         .then () ->
           return new Date(0)
       else
@@ -114,23 +141,90 @@ loadRetsTableUpdates = (subtask, options) ->
 normalizeData = (subtask, options) ->
   Promise.try () ->
     rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
+    # get rows for this subtask
     rowsPromise = dbs.properties.knex(rawTableName)
     .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+    # get validations
     validationPromise = jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
     .where(data_source_id: options.dataSourceId)
+    .orderBy('output_group')
+    .orderBy('display_order')
     .then (validations=[]) ->
       validationMap = {}
       for validation in validations
-        validationMap[validation.output_group] ?= {}
-        validationMap[validation.output_group][validation.output_field] = validation
+        validationMap[validation.output_group] ?= []
+        validationMap[validation.output_group].push(validation)
       validationMap
-    Promise.join(rowsPromise, validationPromise)
-  .then (rows, validation) ->
-    Promise.map rows, (row) ->
-      normalized =
-        batch_id: subtask.batch_id
+    # get start time for "last updated" stamp
+    startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
+    Promise.join(rowsPromise, validationPromise, startTimePromise)
+  .then (rows, validationMap, startTime) ->
+    # calculate the keys that are grouped for later
+    usedKeys = []
+    for groupName, validationList of validationMap
+      for validationDefinition in validationList
+        if validationDefinition.input?
+          if _.isObject validationDefinition.input
+            usedKeys.concat Object.keys(validationDefinition.input)
+          else
+            usedKeys.concat validationDefinition.input
+        else
+          usedKeys.push(validationDefinition.output)
+    Promise.map rows, _updateRecord
+      
+_updateRecord = (normalizedData) ->
+  Promise.props _.mapValues(validationMap, validation.validateAndTransform.bind(null, row))
+  .then (transformedValues) ->
+    # build the row's new values
+    _.extend values.base,
+      data_source_id: options.dataSourceId
+      batch_id: subtask.batch_id
+      deleted: false
+      up_to_date: startTime
+      client_groups:
+        general: values.general
+        details: values.details
+        listing: values.listing
+        building: values.building
+        dimensions: values.dimensions
+        lot: values.lot
+        location: values.location
+        restrictions: values.restrictions
+      realtor_groups:
+        contacts: values.contacts
+        realtor: values.realtor
+        sale: values.sale
+      hidden_fields: values.hidden
+      ungrouped_fields: _.omit(row, usedKeys)
+  .then (updateRow) ->
+    # check for an existing row
+    dbs.properties.knex(taskHelpers.tables.mlsData)
+    .select('*')
+    .where(rm_property_id: updateRow.rm_property_id)
+    .then (result) ->
+      if !result?.length
+        # no existing row, just insert
+        dbs.properties.knex(taskHelpers.tables.mlsData)
+        .insert(updateRow)
+      else
+        # found an existing row, so need to update, but include change log 
+        updateRow.change_history = result.change_history ? []
+        changes = _diff(updateRow, result)
+        if !_.isEmpty changes
+          updateRow.change_history.push changes
+        dbs.properties.knex(taskHelpers.tables.mlsData)
+        .where(rm_property_id: updateRow.rm_property_id)
+        .update(updateRow)
+
+markOtherRowsDeleted = (subtask) ->
+  # mark any rows not updated by this subtask as deleted -- we only do this when doing a full refresh of all data,
+  # because this would be overzealous if we're just doing an incremental update
+  dbs.properties.knex(taskHelpers.tables.mlsData)
+  .where(batch_id: subtask.batch_id)
+  .update(deleted: true)
   
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData
+  markOtherRowsDeleted: markOtherRowsDeleted

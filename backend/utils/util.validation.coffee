@@ -4,13 +4,51 @@ logger = require '../config/logger'
 DataValidationError = require './validation/util.error.dataValidation'
 loaders = require './util.loaders'
 path = require 'path'
-doValidation = require './validation/util.impl.doValidation'
 
 
 validators = loaders.loadSubmodules(path.join(__dirname, 'validation'), /^util\.validation\.(\w+)\.coffee$/)
 
 
+doValidationSteps = (transform, param, value, index, length) -> Promise.try () ->
+  if not transform
+    return value
+  if _.isArray transform
+    # an array of transforms/validations to reduce over
+    return Promise.each transform, (subtransform) ->
+      doValidationSteps(subtransform, param, value, index, length)
+      .then (result) ->
+        value = result
+    .then () ->
+      return value
+  else
+    # or just a singleton
+    return transform(param, value, index, length)
+
+
+validateAndTransformSingleOutput = (params, output, definition) -> Promise.try () ->
+  if _.isArray(definition) || _.isFunction(definition)
+    # shortcut syntax was used
+    definition = {transform: definition}
+  input = definition.input || output
+  transform = definition.transform || validators.noop
+  required = definition.required
+  if _.isString(input)
+    values = params[input]
+  else if _.isArray(input)
+    values = _.at(params, input)
+  else
+    values = _.mapValues input, (sourceName) -> params[sourceName]
+  doValidationSteps(transform, output, values)
+  .then (transformed) ->
+    # check for required value
+    if required && transformed == undefined
+      return Promise.reject new DataValidationError("required", output, undefined)
+    else
+      return transformed
+
+
 module.exports =
+  ###########
   # arguments:
   #   - a map of param names to param values -- this is the source data
   #   - a map of output keys to validation/transform definitions; a validation/transform definition is an object, with
@@ -28,30 +66,32 @@ module.exports =
   # returns:
   #     a promise that is resolved with a map of the transform results, or is rejected if any of the fields failed
   #     validation or a required field is undefined
+  ###########
+  # As an alternative use, if the 2nd parameter is an array of definitions instead of a map, each definition has an
+  # additional, required field:
+  #       - output: a string giving the output key
+  # In this case, the return value is a promise that resolves with an array of objects corresponding to the input
+  # definitions, with the following fields defined:
+  #       - name: the output key from the definition
+  #       - value: the transform result of the definition
+  # This use is intended for cases where the order of the transforms must be maintained.
+  ###########
+
   validateAndTransform: (params, definitions) -> Promise.try () ->
-    promises = {}
-    # first, do validation/transformation for each param in the map
-    for output,definition of definitions
-      if _.isArray(definition) || _.isFunction(definition)
-        # shortcut syntax was used
-        definition = {transform: definition}
-      input = definition.input || output
-      transform = definition.transform || validators.noop
-      required = definition.required
-      if _.isString(input)
-        values = params[input]
-      else if _.isArray(input)
-        values = _.at(params, input)
-      else
-        values = _.mapValues input, (sourceName) -> params[sourceName]
-      promises[output] = doValidation(transform, output, values)
-      .then (transformed) ->
-        # check for required value
-        if required && transformed == undefined
-          return Promise.reject new DataValidationError("required", output, undefined)
-        else
-          return transformed
-    Promise.props(promises)
+    if _.isArray(definitions)
+      promiseList = for definition in definitions
+        validateAndTransformSingleOutput(params, definition.output, definition)
+        .then (transformed) ->
+          name: definition.output
+          value: transformed
+      return Promise.all(promiseList)
+    else
+      promiseMap = {}
+      for output,definition of definitions
+        promiseMap[output] = validateAndTransformSingleOutput(params, output, definition)
+      return Promise.props(promiseMap)
   
   DataValidationError: DataValidationError
   validators: validators
+  doValidationSteps: doValidationSteps
+  validateAndTransformSingleOutput: validateAndTransformSingleOutput

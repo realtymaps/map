@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require "bluebird"
 DataValidationError = require './util.error.dataValidation'
-doValidation = require './util.impl.doValidation'
+doValidationSteps = require './util.impl.doValidationSteps'
 logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
@@ -24,13 +24,14 @@ module.exports = (options = {}) ->
         # subValidateSeparate can be an array of validations/transformations suitable for use in validateAndTransform()
         # (including arrays of iteratively applied functions).  Each validation/transformation in the array is applied to
         # the corresponding element of the array, and remaining elements are passed unchanged
-        separatePromises = [ doValidation(subValidation, param, arrayValues[index]) for subValidation, index in options.subValidateSeparate ]
+        separatePromises = for subValidation, index in options.subValidateSeparate
+          doValidationSteps(subValidation, param, arrayValues[index])
         return Promise.all separatePromises.concat(arrayValues.slice(options.subValidateSeparate.length))
       else if options.subValidateEach
         # subValidateEach can be any validation/transformation suitable for use in validateAndTransform() (including
         # an array of iteratively applied functions), except these validators are also passed the index and length
         # of the array as additional parameters.  The validation/transformation is applied to each element of the array
-        return Promise.map arrayValues, doValidation.bind(null, options.subValidateEach, param)
+        return Promise.map arrayValues, doValidationSteps.bind(null, options.subValidateEach, param)
       else
         return arrayValues
     .then (arrayValues) ->

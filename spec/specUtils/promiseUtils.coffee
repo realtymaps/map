@@ -9,8 +9,8 @@ class PromiseExpectationError extends Error
     @message = "#{message} with #{analysis.type}"
     if analysis.details?
       @message += ": #{analysis.details}"
-    if @fulfillment instanceof Error and analysis.verbose?
-      @stack = "#{@name}: #{@message}\n#{analysis.verbose}"
+    if @fulfillment instanceof Error and analysis.stack?
+      @stack = "#{@name}: #{@message}\n#{analysis.stack}"
 
 module.exports =
 
@@ -48,7 +48,7 @@ module.exports =
   #   if a type is not provided, succeeds on any rejection
   #   if a type is provided, succeeds only on a rejection of that type
   # in either case, on success the rejection error/message is passed on
-  expectReject: (promise, type...) ->
+  expectReject: (promise, type=null) ->
     if type == PromiseExpectationError
       # since PromiseExpectationError isn't being exported, this would be a hard situation to create, but it is possible
       return Promise.reject(new Error("PromiseExpectationError passed as rejection type; this error is for internal use only"))
@@ -56,8 +56,8 @@ module.exports =
     promise = Promise.try () ->
       promise
     .then (value) ->
-      Promise.reject(new PromiseExpectationError("expected promise to be rejected"+(if type.length > 0 then " with #{analyzeValue(type[0]).details}" else "")+", but was resolved", value))
-    if type.length == 0
+      Promise.reject(new PromiseExpectationError("expected promise to be rejected"+(if type? then " with #{analyzeValue(type).details}" else "")+", but was resolved", value))
+    if !type?
       promise.catch (err) ->
         if err instanceof PromiseExpectationError
           # this is an error we created in .then() above, we need to pass it through (re-reject)
@@ -65,12 +65,11 @@ module.exports =
         else
           Promise.resolve(err)
     else
-      promise.catch type[0], (err) ->
+      promise.catch type, (err) ->
         Promise.resolve(err)
       .catch (err) ->
         if err instanceof PromiseExpectationError
           # this is an error we created in .then() above, we need to pass it through (re-reject)
           Promise.reject(err)
         else
-          Promise.reject(new PromiseExpectationError("expected promise to be rejected with #{analyzeValue(type[0]).details}, but was rejected", err))
-    
+          Promise.reject(new PromiseExpectationError("expected promise to be rejected with #{analyzeValue(type).details}, but was rejected", err))

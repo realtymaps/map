@@ -19,15 +19,14 @@ normalizeData = (subtask) ->
   mlsHelpers.normalizeData subtask,
     rawTableSuffix: 'main'
     dataSourceId: 'swflmls'
+
     
-
-
 subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  markDeleted: markDeleted
-  finalizeData: finalizeData
-  removeExtraRows: removeExtraRows
+  markDeleted: mlsHelpers.markOtherRowsDeleted
+  #finalizeData: finalizeData
+  #removeExtraRows: removeExtraRows
 
 module.exports =
   executeSubtask: (subtask) ->
