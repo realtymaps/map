@@ -8,8 +8,8 @@ module.exports = (param, boundsStr) ->
     if !boundsStr? or boundsStr == ''
       return null
     hash = geohash64.decode(boundsStr)
-#    logger.debug 'hash'
-#    logger.debug hash, true
+    # logger.debug 'hash'
+    # logger.debug hash
     hash
   .catch (err) ->
     Promise.reject new DataValidationError("error decoding geohash string", param, boundsStr)
