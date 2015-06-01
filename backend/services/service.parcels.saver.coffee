@@ -71,34 +71,41 @@ _uploadToParcelsDb = (fipsCode) ->
 
     _getParcelJSON(fipsCode)
     .then (stream) ->
-        stream.on 'data', (featureCollection) ->
-            #Upload each object to the parcels DB
-            #some objects are points and others a polygons
-            #one will be an insert and the next will be an update
-            # logger.debug featureCollection.fileName
-            geomType = if featureCollection.fileName.indexOf('Points') != -1 then 'point' else 'polygon'
-            logger.debug geomType
-            coll = _formatParcels featureCollection
-            inserts = {}
-            updates = {}
-            coll.forEach (val)  ->
-                return unless val?.parcelapn#GTFO we cant make a valid rm_property_id with no apn
-                insert = ->
-                    return if inserts?[val.rm_property_id]
-                    inserts[val.rm_property_id] = true
-                    _execRawQuery(geomType, val)
-                update = (old) ->
-                    return if updates?[val.rm_property_id]
-                    updates[val.rm_property_id] = true
-                    updateObj = _.merge({},old, val)
-                    # logger.debug "\n\n"
-                    # logger.debug updateObj
-                    # logger.debug "\n\n"
-                    _execRawQuery(geomType, updateObj, 'update')
-                    # _update(geomType, updateObj)
-                parcelSvc.upsert val, insert, update
-            if geomType == 'polygon'
-                logger.debug 'done kicking off insert/updates'
+        new Promise (resolve, reject) ->
+          stream.on 'error', reject
+          stream.on 'data', (featureCollection) ->
+              #Upload each object to the parcels DB
+              #some objects are points and others a polygons
+              #one will be an insert and the next will be an update
+              # logger.debug featureCollection.fileName
+              geomType = if featureCollection.fileName.indexOf('Points') != -1 then 'point' else 'polygon'
+              logger.debug geomType
+              coll = _formatParcels featureCollection
+              inserts = {}
+              updates = {}
+              coll.forEach (val)  ->
+                  return unless val?.parcelapn#GTFO we cant make a valid rm_property_id with no apn
+                  insert = ->
+                      return if inserts?[val.rm_property_id]
+                      inserts[val.rm_property_id] = true
+                      _execRawQuery(geomType, val)
+                  update = (old) ->
+                      return if updates?[val.rm_property_id]
+                      updates[val.rm_property_id] = true
+                      updateObj = _.merge({},old, val)
+                      # logger.debug "\n\n"
+                      # logger.debug updateObj
+                      # logger.debug "\n\n"
+                      _execRawQuery(geomType, updateObj, 'update')
+                      # _update(geomType, updateObj)
+                  parcelSvc.upsert val, insert, update
+              if geomType == 'polygon'
+                  logger.debug 'done kicking off insert/updates'
+                  db.knex.raw("SELECT dirty_materialized_view('parcels', FALSE);")
+                  .catch (err) ->
+                    reject(err)
+                  .then  ->
+                    resolve()
 module.exports =
     getParcelJSON: _getParcelJSON
     getFormatedParcelJSON: _getFormatedParcelJSON
