@@ -13,11 +13,13 @@ tables =
   mlsConfig: 'mls_config'
 
 _encrypt = (record) ->
-  record.password = encryptor.encrypt(record.password)
+  if record.password
+    record.password = encryptor.encrypt(record.password)
   record
 
 _decrypt = (record) ->
-  record.password = encryptor.decrypt(record.password)
+  if record.password
+    record.password = encryptor.decrypt(record.password)
   record
 
 module.exports =
@@ -25,7 +27,7 @@ module.exports =
   getAll: () ->
     knex.table(tables.mlsConfig)
     .then (data) ->
-      _map data _decrypt
+      _.map(data, _decrypt)
 
   getById: (id) ->
     knex.table(tables.mlsConfig)

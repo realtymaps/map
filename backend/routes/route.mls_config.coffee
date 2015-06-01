@@ -1,22 +1,28 @@
 mlsConfigService = require '../services/service.mls_config'
+ExpressResponse = require '../utils/util.expressResponse'
 
 module.exports =
   getAll: (req, res, next) ->
-    mlsConfigList = mlsConfigService.getAll
-    res.send new ExpressResponse mlsConfigList
+    mlsConfigService.getAll()
+    .then (result) ->
+      res.send new ExpressResponse result
 
   getById: (req, res, next) ->
-    mlsConfig = mlsConfigService.getById req.params.id
-    res.send new ExpressResponse mlsConfig
+    mlsConfigService.getById req.params.id
+    .then (result) ->
+      res.send new ExpressResponse result
 
   update: (req, res, next) ->
-    mlsConfig = mlsConfigService.update req.params.id req.body
-    res.send new ExpressResponse mlsConfig
+    mlsConfigService.update req.params.id req.body
+    .then (result) ->
+      res.send new ExpressResponse result
 
   create: (req, res, next) ->
-    mlsConfig = mlsConfigService.create req.body
-    res.send new ExpressResponse mlsConfig
+    mlsConfigService.create req.body
+    .then (result) ->
+      res.send new ExpressResponse result
 
   delete: (req, res, next) ->
-    mlsConfig = mlsConfigService.delete req.params.id
-    res.send new ExpressResponse mlsConfig
+    mlsConfigService.delete req.params.id
+    .then (result) ->
+      res.send new ExpressResponse result
