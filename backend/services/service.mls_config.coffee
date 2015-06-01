@@ -1,7 +1,9 @@
+_ = require 'lodash'
 Promise = require "bluebird"
 logger = require '../config/logger'
 dbs = require '../config/dbs'
-Encryptor = require './util.encryptor'
+config = require '../config/config'
+Encryptor = require '../utils/util.encryptor'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
@@ -22,13 +24,13 @@ module.exports =
 
   getAll: () ->
     knex.table(tables.mlsConfig)
-    .then(data)
+    .then (data) ->
       _map data _decrypt
 
   getById: (id) ->
     knex.table(tables.mlsConfig)
       .where(id: id)
-    .then(data)
+    .then (data) ->
       _decrypt data?[0]
 
   update: (id, mlsConfig) ->
