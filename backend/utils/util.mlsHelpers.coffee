@@ -12,7 +12,7 @@ config = require '../config/config'
 taskHelpers = require './tasks/util.taskHelpers'
 logger = require '../config/logger'
 jobQueue = require './util.jobQueue'
-validation = require '../util.validation'
+validation = require './util.validation'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)

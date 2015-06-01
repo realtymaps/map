@@ -1,5 +1,5 @@
 logger = require '../config/logger'
-retsHelper = require '../utils/util.retsHelpers'
+retsHelper = require '../utils/util.mlsHelpers'
 
 module.exports =
   # Fetch a list of available MLS databases
