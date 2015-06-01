@@ -25,9 +25,9 @@ _getClient = (loginUrl, username, password) ->
     password: encryptor.decrypt(password)
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
-# stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-# first.  Eventually, we can rewrite the rets-promise client to use hyperquest and a streaming xml parser
-# like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
+  # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
+  # first.  Eventually, we can rewrite the rets-promise client to use hyperquest and a streaming xml parser
+  # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
@@ -40,7 +40,7 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
     .pipe(utilStreams.objectsToPgText(_.mapValues(fields.text, 'SystemName'), _.mapValues(fields.json, 'SystemName')))
     .pipe(rawDataStream)
   .finally () ->
-# always disconnect the db client when we're done
+    # always disconnect the db client when we're done
     pgClient.end()
   .then () ->
     return objects.length
@@ -83,7 +83,7 @@ loadRetsTableUpdates = (subtask, options) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
   .then () ->
-# get info about the fields available in the table
+    # get info about the fields available in the table
     retsClient.metadata.getTable(options.retsDbName, options.retsTableName)
   .then (tableInfo) ->
     fields =
@@ -108,29 +108,29 @@ loadRetsTableUpdates = (subtask, options) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
     .then () ->
-# figure out when we last got updates from this table
+      # figure out when we last got updates from this table
       taskHelpers.getLastStartTime(subtask.task_name)
     .then (lastSuccess) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-# if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+        # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
         subtaskStep3Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'markDeleted', subtask.task_name)
-#subtaskStep5Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'removeExtraRows', subtask.task_name)
-#Promise.join(subtaskStep3Promise, subtaskStep5Promise)
+        #subtaskStep5Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'removeExtraRows', subtask.task_name)
+        #Promise.join(subtaskStep3Promise, subtaskStep5Promise)
         .then (subtaskStep3, subtaskStep5) ->
           queueStep3 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep3)
-#queueStep5 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep5)
-#Promise.join(queueStep3, queueStep5)
+          #queueStep5 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep5)
+          #Promise.join(queueStep3, queueStep5)
         .then () ->
           return new Date(0)
       else
         return lastSuccess
     .then (refreshThreshold) ->
-# query for everything changed since then
+      # query for everything changed since then
       retsClient.search.query(options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
     .catch isUnhandled, (error) ->
       if error.replyCode == "20201"
-# code for 0 results, not really an error (DMQL is a clunky language)
+        # code for 0 results, not really an error (DMQL is a clunky language)
         return []
       # TODO: else if error.replyCode == "20208"
       # code for too many results, must manually paginate or something to get all the data
@@ -140,7 +140,7 @@ loadRetsTableUpdates = (subtask, options) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
   .finally () ->
-# always log out the RETS client when we're done
+    # always log out the RETS client when we're done
     retsClient.logout()
 
 getDatabaseList = (serverInfo) ->
@@ -214,7 +214,7 @@ normalizeData = (subtask, options) ->
     startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
     Promise.join(rowsPromise, validationPromise, startTimePromise)
   .then (rows, validationMap, startTime) ->
-# calculate the keys that are grouped for later
+    # calculate the keys that are grouped for later
     usedKeys = []
     for groupName, validationList of validationMap
       for validationDefinition in validationList
@@ -230,7 +230,7 @@ normalizeData = (subtask, options) ->
 _updateRecord = (normalizedData) ->
   Promise.props _.mapValues(validationMap, validation.validateAndTransform.bind(null, row))
   .then (transformedValues) ->
-# build the row's new values
+    # build the row's new values
     _.extend values.base,
       data_source_id: options.dataSourceId
       batch_id: subtask.batch_id
@@ -252,17 +252,17 @@ _updateRecord = (normalizedData) ->
       hidden_fields: values.hidden
       ungrouped_fields: _.omit(row, usedKeys)
   .then (updateRow) ->
-# check for an existing row
+    # check for an existing row
     dbs.properties.knex(taskHelpers.tables.mlsData)
     .select('*')
     .where(rm_property_id: updateRow.rm_property_id)
     .then (result) ->
       if !result?.length
-# no existing row, just insert
+        # no existing row, just insert
         dbs.properties.knex(taskHelpers.tables.mlsData)
         .insert(updateRow)
       else
-# found an existing row, so need to update, but include change log 
+        # found an existing row, so need to update, but include change log 
         updateRow.change_history = result.change_history ? []
         changes = _diff(updateRow, result)
         if !_.isEmpty changes
@@ -273,8 +273,8 @@ _updateRecord = (normalizedData) ->
 
 
 markOtherRowsDeleted = (subtask) ->
-# mark any rows not updated by this subtask as deleted -- we only do this when doing a full refresh of all data,
-# because this would be overzealous if we're just doing an incremental update
+  # mark any rows not updated by this subtask as deleted -- we only do this when doing a full refresh of all data,
+  # because this would be overzealous if we're just doing an incremental update
   dbs.properties.knex(taskHelpers.tables.mlsData)
   .where(batch_id: subtask.batch_id)
   .update(deleted: true)
