@@ -13,7 +13,7 @@ module.exports =
       res.send new ExpressResponse result
 
   update: (req, res, next) ->
-    mlsConfigService.update req.params.id req.body
+    mlsConfigService.update req.params.id, req.body
     .then (result) ->
       res.send new ExpressResponse result
 
