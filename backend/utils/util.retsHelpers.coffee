@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require './util.encryptor'
+{PartiallyHandledError, isUnhandled} = require './util.PartiallyHandledError'
 rets = require 'rets-client'
 Encryptor = require './util.encryptor'
 moment = require('moment')
@@ -93,11 +93,15 @@ getDatabaseList = (serverInfo) ->
   retsClient.login()
   .then () ->
     retsClient.metadata.getResources()
-  .then (response) ->
-    _.map response.Resources, (r) ->
-      _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS databases")
+    .then (response) ->
+      _.map response.Resources, (r) ->
+        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 getTableList = (serverInfo, databaseName) ->
   retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
@@ -105,11 +109,15 @@ getTableList = (serverInfo, databaseName) ->
   retsClient.login()
   .then () ->
     retsClient.metadata.getClass(databaseName)
-  .then (response) ->
-    _.map response.Classes, (r) ->
-      _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS tables")
+    .then (response) ->
+      _.map response.Classes, (r) ->
+        _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 getColumnList = (serverInfo, databaseName, tableName) ->
   retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
@@ -117,11 +125,15 @@ getColumnList = (serverInfo, databaseName, tableName) ->
   retsClient.login()
   .then () ->
     retsClient.metadata.getTable(databaseName, tableName)
-  .then (response) ->
-    _.map response.Fields, (r) ->
-      _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
+    .then (response) ->
+      _.map response.Fields, (r) ->
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
