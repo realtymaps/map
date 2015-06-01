@@ -1,0 +1,19 @@
+include ../../../common/html/includes/mixins/spinner.jade
+
+div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
+  .collapse.navbar-collapse
+    ul.nav.navbar-nav
+      li
+        .navbar-header
+          a(ui-sref="home").navbar-brand.navbar-hide
+            img(src="/assets/logo.png")
+      li
+        a(ui-sref="home") Home
+      li
+        a(ui-sref="mls") MLS
+      li(ng-hide="$state.is('main')")
+        +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+      //- li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
+      //-   a(href="{{frontendRoutes.login}}") Sign In
+      //- li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
+      //-   a(href="{{frontendRoutes.logout}}") Sign Out
