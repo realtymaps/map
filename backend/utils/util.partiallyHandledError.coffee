@@ -4,8 +4,8 @@ class PartiallyHandledError extends VError
   constructor: (args...) ->
     super(args...)
     @name = 'PartiallyHandledError'
-  
-model.exports =
+
+module.exports =
   PartiallyHandledError: PartiallyHandledError
   isUnhandled: (err) ->
     !(err instanceof PartiallyHandledError)
