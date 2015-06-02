@@ -46,9 +46,9 @@ INSERT INTO jq_subtask_config (
   warn_timeout_seconds,
   kill_timeout_seconds
 ) VALUES (
-  'digimaps',
   'parcel_update_digimaps',
   'parcel_update',
+  'parcel_update_digimaps',
   '1',
   '4',
   '4',
@@ -72,7 +72,8 @@ INSERT INTO jq_subtask_config (
   warn_timeout_seconds,
   kill_timeout_seconds
 ) VALUES (
-  'sync mv_parcels',
+  'parcel_update_sync_mv_parcels',
+  'parcel_update',
   'parcel_update_sync_mv_parcels',
   'parcel',
   '2',
@@ -98,7 +99,8 @@ INSERT INTO jq_subtask_config (
   warn_timeout_seconds,
   kill_timeout_seconds
 ) VALUES (
-  'digimaps',
+  'parcel_update_sync_cartodb',
+  'parcel_update',
   'parcel_update_sync_cartodb',
   'parcel',
   '3',
