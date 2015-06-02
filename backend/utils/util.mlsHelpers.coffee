@@ -46,6 +46,8 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
     return objects.length
 
 
+# this performs a diff of 2 sets of MLS data, returning only the changed/new/deleted fields as keys, with the value
+# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data
 _diff = (row1, row2) ->
   result = {}
   fields1 = {}
