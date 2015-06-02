@@ -162,7 +162,6 @@
     "winston": "0.8.x"
   },
   "devDependencies": {
-    "coffee-script": "^1.8.0",
     "rewire": "^2.3.3",
     "karma-chai": "^0.1.0",
     "karma-expect": "^1.1.0",

@@ -64,7 +64,7 @@ _getFileName = (fipsCode) ->
 
 _getParcelZipFileStream = (fipsCode, digiMapsSettings) ->
     if _.isFunction digiMapsSettings?.then
-        promise = digiMapsSettings else
+        promise = digiMapsSettings
     else
         {URL, ACCOUNT, PASSWORD} = digiMapsSettings
         promise = _createFtp(URL, ACCOUNT, PASSWORD)
