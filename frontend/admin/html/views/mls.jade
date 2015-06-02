@@ -2,12 +2,7 @@ div
   form(name="mlsForm")
     .col-md-6
       .row
-        button(ng-click="").btn.btn-default
-          p Show Example
-        button(ng-click="").btn.btn-default
-          p Show Preview
-        //- button(ng-click="open('setTable')").btn.btn-default
-        //- button(ng-click="open('setField')").btn.btn-default
+        progressbar(value="step+1" max="4") Step {{step+1}} of 4
       .row
         .col-md-12
           .panel.panel-default
@@ -15,32 +10,6 @@ div
               h3 MLS Data Entry
             .panel-body
               div.animate-container
-                //- carousel.mls-wizard
-                //-   slide(ng-repeat="formItem in formItems" active="formItem.disabled")
-                //-     div.slide-content
-                //-       table
-                //-         tr(ng-repeat="(formField, settings) in formItem.formFields")
-                //-           td
-                //-             label.data-label {{settings.label}}
-                //-           td
-                //-             input(ng-if="settings.type != select" type="{{settings.type}}")
-                //-             select(ng-if="settings.type == select")
-                //-               option(value="1") One
-                //-               option(value="2") Two
-                //-               option(value="3") Three
-                //- accordion(close-others="oneAtATime").accordion
-                //-   accordion-group(ng-repeat="formItem in formItems" heading="{{formItem.heading}}" is-open="true")
-                //-     div(style="border: 5px")
-                //-       table
-                //-         tr(ng-repeat="(formField, settings) in formItem.formFields")
-                //-           td
-                //-             label.data-label {{settings.label}}&nbsp({{settings.type}})
-                //-           td
-                //-             input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
-                //-             select(ng-if="settings.type == 'select'")
-                //-               option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
-                //-       button(ng-click="proceed(formItem.step)") Submit
-
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step").animate-show
                   table
                     tr(ng-repeat="(formField, settings) in formItem.formFields")

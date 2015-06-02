@@ -1,4 +1,4 @@
-$wizardPaneWidth = 100px
+$wizardPaneWidth = 775px
 $wizardPaneHeight = 200px
 
 .data-entry
@@ -30,6 +30,8 @@ $wizardPaneHeight = 200px
   border-bottom-right-radius 10px
   border-bottom-left-radius 10px
   border 1px solid rgb(157,157,157)
+  position: relative
+  height: $wizardPaneHeight
   
 .mls-wizard, .slide-content
   height: 200px;
@@ -41,30 +43,33 @@ $wizardPaneHeight = 200px
 .mls-wizard .slide-content table
   margin: auto;
 
-
+.animate-container {
+  position: relative
+  height: $wizardPaneHeight
+  width: 100%
+}
 
 .animate-show {
-  opacity: 1;
-  padding: 10px;
-  border: 1px solid black;
-  background: white;
+  position: absolute
+  overflow: hidden
+  height: $wizardPaneHeight
+  width: 100%
+  left: 0
 }
 
 .animate-show.ng-hide-add.ng-hide-add-active,
 .animate-show.ng-hide-remove.ng-hide-remove-active {
-  -webkit-transition: all linear 0.5s;
-  transition: all linear 0.5s;
+  top: 0
+  left: 0
+  -webkit-transition: all linear 0.5s
+  transition: all linear 0.5s
 }
 
 .animate-show.ng-hide {
-  line-height: 0;
-  opacity: 0;
-  padding: 0 10px;
+  top: 0
+  left: $wizardPaneWidth
+  width: 0%
 }
 
-.check-element {
-  padding: 10px;
-  border: 1px solid black;
-  background: white;
-}
-
+progressbar
+  text-color: black
