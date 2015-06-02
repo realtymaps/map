@@ -146,7 +146,7 @@ loadRetsTableUpdates = (subtask, options) ->
     retsClient.logout()
 
 getDatabaseList = (serverInfo) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .catch isUnhandled, (error) ->
@@ -162,7 +162,7 @@ getDatabaseList = (serverInfo) ->
     retsClient.logout()
 
 getTableList = (serverInfo, databaseName) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .catch isUnhandled, (error) ->
@@ -178,7 +178,7 @@ getTableList = (serverInfo, databaseName) ->
     retsClient.logout()
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .catch isUnhandled, (error) ->
