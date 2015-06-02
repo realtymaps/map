@@ -8,7 +8,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
       table: ['tableOne', 'tableTwo']
       field: ['fieldOne', 'fieldTwo']
 
-    $scope.oneAtATime = false
+    $scope.alert = ""
 
     $scope.mlsData = 
       id: null
@@ -28,9 +28,13 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
 
     $scope.step = 0
 
+    isActive = (configStep) ->
+      () ->
+        return ($scope.step == configStep)
+
     $scope.formItems = [
       step: 0
-      heading: "Log into MLS"
+      heading: "Select MLS"
       formFields:         
         name:
           type: "text"
@@ -44,12 +48,16 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
         password:
           type: "password"
           label: "Password"
-      proceed: () ->
-        console.log "#### proceeding step 0"
+      validate: () ->
+        thisValidates = true
+        if thisValidates
+          $scope.formItems[1].disabled = false
+          console.log "#### Step 1 validated"
       disabled: false
+      active: isActive(0)      
     ,
       step: 1
-      heading: "Select Database..."
+      heading: "Choose Database"
       formFields:
         db:
           type: "select"
@@ -59,12 +67,16 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
             two: "db2"
             three: "db3"
             four: "db4"
-      proceed: () ->
-        console.log "#### proceeding step 1"
+      validate: () ->
+        thisValidates = true
+        if thisValidates
+          $scope.formItems[2].disabled = false
+          console.log "#### Step 2 validated"
       disabled: true
+      active: isActive(1)
     ,
       step: 2
-      heading: "Select Table..."
+      heading: "Choose Table"
       formFields:
         table:
           type: "select"
@@ -72,12 +84,16 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           options:
             one: "table1"
             two: "table2"
-      proceed: () ->
-        console.log "#### proceeding step 2"
+      validate: () ->
+        thisValidates = true
+        if thisValidates
+          $scope.formItems[3].disabled = false
+          console.log "#### Step 3 validated"
       disabled: true
+      active: isActive(2)
     ,
       step: 3
-      heading: "Select Field..."
+      heading: "Choose Field"
       formFields:
         field:
           type: "select"
@@ -90,17 +106,28 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           type: "text"
           label: "Query Template"
           default: "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
-      proceed: () ->
-        console.log "#### proceeding step 3"
+      validate: () ->
+        thisValidates = true
+        if thisValidates
+          console.log "#### Step 4 validated"
       disabled: true
+      active: isActive(3)
     ]
 
-    $scope.proceed = (step) ->
-      $scope.formItems[step].proceed()
-      if (step == ($scope.formItems.length-1))
-        $scope.step = 0
+    $scope.proceedTo = (toStep) ->
+      thisStep = $scope.step
+      if toStep > thisStep
+        # run proceed() of this step, which validates
+        $scope.formItems[thisStep].validate()
+
+      # incr active step if allowed
+      if _.every($scope.formItems[..toStep], {disabled: false}) and toStep < ($scope.formItems.length)
+        $scope.step = toStep
       else
-        $scope.step += 1
+        $scope.alert = "Cannot proceed to step #{toStep}!"
+        console.log $scope.alert
+
+
 
 
 

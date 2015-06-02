@@ -1,15 +1,19 @@
 div
   form(name="mlsForm")
-    .col-md-6
+    .col-md-12
       .row
-        progressbar(value="step+1" max="4") Step {{step+1}} of 4
+        .col-md-6
+          .progressPills
+            tabset(type="pills")
+              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active()" ng-click="!formItem.disabled && proceedTo($index)")
+        .col-md-6
       .row
-        .col-md-12
+        .col-md-6
           .panel.panel-default
             .panel-heading
               h3 MLS Data Entry
             .panel-body
-              div.animate-container
+              div.animate-container.wizardContent
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step").animate-show
                   table
                     tr(ng-repeat="(formField, settings) in formItem.formFields")
@@ -19,12 +23,9 @@ div
                         input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
                         select(ng-if="settings.type == 'select'")
                           option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
-                  button(ng-click="proceed(formItem.step)") Submit
+                  button(ng-click="proceedTo(formItem.step+1)") Submit
 
-      .row
-        br
-      .row
-        .col-md-12
+        .col-md-6
           .panel.panel-default
             .panel-heading
               h3 MLS Data
@@ -35,33 +36,4 @@ div
                     label.data-label {{key}}
                   td
                     span.data-entry {{value}}
-              //- p
-              //-   label.data-label ID:
-              //-   span.data-entry
-              //-     {{ mlsData.id }}
-    .col-md-6
-      .row
-        .col-sm-4
-          .panel.panel-default
-            .panel-heading
-              h3 Example
-            .panel-body
-              table.table-striped
-                tr
-                  td Some
-                tr
-                  td Example
-                tr
-                  td Data
-        .col-sm-4
-          .panel.panel-default
-            .panel-heading
-              h3 Preview
-            .panel-body
-              table.table-striped
-                tr
-                  td Some
-                tr
-                  td Preview
-                tr
-                  td Data
+

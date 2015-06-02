@@ -31,18 +31,7 @@ $wizardPaneHeight = 200px
   border-bottom-left-radius 10px
   border 1px solid rgb(157,157,157)
   position: relative
-  height: $wizardPaneHeight
   
-.mls-wizard, .slide-content
-  height: 200px;
-    
-.mls-wizard .slide-content
-  text-align: center;
-  margin: auto;
-  
-.mls-wizard .slide-content table
-  margin: auto;
-
 .animate-container {
   position: relative
   height: $wizardPaneHeight
@@ -61,8 +50,8 @@ $wizardPaneHeight = 200px
 .animate-show.ng-hide-remove.ng-hide-remove-active {
   top: 0
   left: 0
-  -webkit-transition: all linear 0.5s
-  transition: all linear 0.5s
+  -webkit-transition: all ease 0.5s
+  transition: all ease 0.5s
 }
 
 .animate-show.ng-hide {
@@ -71,5 +60,5 @@ $wizardPaneHeight = 200px
   width: 0%
 }
 
-progressbar
-  text-color: black
+.progressPills ul
+  margin: auto
