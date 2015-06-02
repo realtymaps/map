@@ -7,7 +7,8 @@ httpStatus = require '../../common/utils/httpStatus'
 _ = require 'lodash'
 {getParcelJSON, getFormatedParcelJSON, uploadToParcelsDb} = require '../services/service.parcels.saver'
 JSONStream = require 'JSONStream'
-encryptor = '../utils/util.encryptor'
+config = require '../config/config'
+encryptor = new (require '../utils/util.encryptor')(cipherKey: config.ENCRYPTION_AT_REST)
 db = require('../config/dbs').users
 
 transforms =
@@ -29,13 +30,19 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) ->
         validation.validateAndTransform(allParams, transforms)
         .then (validParams) ->
             logger.debug validParams
-            db.knex.raw("select * from jq_task_config where name='parcel_update';")
+            logger.debug 'running query'
+            db.knex.select()
+            .from('jq_task_config')
+            .where(name:'parcel_update')
             .then (rows) ->
+                logger.debug rows
+                logger.debug 'ran query'
                 return unless rows.length
                 row = rows[0]
-                for k, val of row.DIGIMAPS
-                    row.DIGIMAPS[k] = encryptor.decrypt(val)
-                fn(validParams.fipscode, row.DIGIMAPS)
+                logger.debug row
+                for k, val of row.data.DIGIMAPS
+                    row.data.DIGIMAPS[k] = encryptor.decrypt(val)
+                fn(validParams.fipscode, row.data.DIGIMAPS)
                 .then (s) ->
                     _handleRes(s, res, isStream)
 

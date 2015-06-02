@@ -20,6 +20,7 @@ _createFtp = (url, account, password) ->
     c.onAsync 'ready'
     .catch (err) ->
         logger.error(err)
+        throw err
     .then ->
         logger.debug("new client connected")
         c
