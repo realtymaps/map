@@ -1,17 +1,3 @@
-CREATE OR REPLACE FUNCTION update_rm_modified_time_column()
-  RETURNS TRIGGER AS $$
-  BEGIN
-    NEW.rm_modified_time = NOW();
-    RETURN NEW;
-  END;
-$$ LANGUAGE 'plpgsql';
-
-CREATE OR REPLACE FUNCTION now_utc()
-  RETURNS TIMESTAMP AS $$
-  SELECT NOW() AT TIME ZONE 'utc';
-$$ LANGUAGE SQL;
-
-
 DROP TABLE IF EXISTS mls_data;
 CREATE TABLE mls_data (
   rm_inserted_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
