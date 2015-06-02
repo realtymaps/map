@@ -8,7 +8,7 @@ basePath = require '../../basePath'
 describe 'utils/http.request.validators.float()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  if process.NODE_ENV == 'test'
+  if process.env.NODE_ENV == 'test'
     it "can't run on CircleCI because db trigram matching can't be mocked", () ->
       #noop
     return
