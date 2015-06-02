@@ -26,8 +26,8 @@ gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
 gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'webpackAdmin', 'express', 'minify'
 
-gulp.task 'default', gulp.parallel 'develop'
+gulp.task 'default', gulp.series 'develop'
 
-gulp.task "server", gulp.parallel 'default'
+gulp.task "server", gulp.series 'default'
 
-gulp.task 's', gulp.parallel 'server'
+gulp.task 's', gulp.series 'server'

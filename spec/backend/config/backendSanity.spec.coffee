@@ -7,3 +7,7 @@ describe 'Sanity'.ns().ns('Backend'), ->
   describe 'should.js', ->
     it 'should exist', ->
       {}.should.be.ok
+
+  describe 'dummy', ->
+    it 'should fail', ->
+      {}.should.be.null
