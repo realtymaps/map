@@ -27,7 +27,7 @@ run_express = (done, nodeArgs) ->
   done()
 
 
-gulp.task "express", gulp.parallel 'otherAssets', (done) ->
+gulp.task "express", gulp.series 'otherAssets', (done) ->
   run_express(done)
 
 gulp.task "express_debug", (done) ->

@@ -1,7 +1,6 @@
 logger = require '../config/logger'
 auth = require '../utils/util.auth'
 userService = require '../services/service.user'
-mlsService = require '../services/service.mls'
 loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 
@@ -82,15 +81,37 @@ routesConfig =
             method: 'get'
         uploadToParcelsDb:
             method: 'get'
+    mls_config:
+        getAll:
+            method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        getById:
+            method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        update:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        updatePropertyData:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        updateServerInfo:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
+        create:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
+        delete:
+            method: 'delete'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
     mls:
         getDatabaseList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         getTableList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         getColumnList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->
