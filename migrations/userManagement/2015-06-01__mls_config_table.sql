@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS mls_config;
 CREATE TABLE mls_config (
-    id TEXT NOT NULL PRIMARY KEY,
+    id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     notes TEXT,
     active BOOLEAN DEFAULT false NOT NULL,

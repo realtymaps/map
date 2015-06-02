@@ -84,19 +84,19 @@ routesConfig =
     mls_config:
         getAll:
             method: 'get'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
         getById:
             method: 'get'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
         update:
             method: 'patch'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
         create:
             method: 'post'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
         delete:
             method: 'delete'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
     mls:
         getDatabaseList:
             method: 'post'

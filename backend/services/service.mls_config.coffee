@@ -4,6 +4,7 @@ logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
 Encryptor = require '../utils/util.encryptor'
+{PartiallyHandledError, isUnhandled} = require '../utils/util.PartiallyHandledError'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
@@ -28,28 +29,45 @@ module.exports =
     knex.table(tables.mlsConfig)
     .then (data) ->
       _.map(data, _decrypt)
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
 
   getById: (id) ->
     knex.table(tables.mlsConfig)
-      .where(id: id)
+    .where(id: id)
     .then (data) ->
-      _decrypt data?[0]
+      if data?[0]
+        _decrypt data[0]
+      else
+        false
 
   update: (id, mlsConfig) ->
     _encrypt mlsConfig
     knex.table(tables.mlsConfig)
-      .where(id: id)
-      .update(mlsConfig)
+    .where(id: id)
+    .update(mlsConfig)
+    .then (result) ->
+      result == 1
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
 
   create: (mlsConfig) ->
     _encrypt mlsConfig
     knex.table(tables.mlsConfig)
-      .insert(mlsConfig)
+    .insert(mlsConfig)
+    .then (result) ->
+      result.rowCount == 1
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
 
   delete: (id) ->
     knex.table(tables.mlsConfig)
-      .where(id: id)
-      .delete()
+    .where(id: id)
+    .delete()
+    .then (result) ->
+      result == 1
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
 
   knex: knex,
   tables: tables

@@ -5,24 +5,55 @@ module.exports =
   getAll: (req, res, next) ->
     mlsConfigService.getAll()
     .then (result) ->
-      res.send new ExpressResponse result
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
 
   getById: (req, res, next) ->
     mlsConfigService.getById req.params.id
     .then (result) ->
-      res.send new ExpressResponse result
+      if result
+        next new ExpressResponse result
+      else
+        next new ExpressResponse
+          alert:
+            msg: "Unknown config #{req.params.id}"
+          404
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
 
   update: (req, res, next) ->
     mlsConfigService.update req.params.id, req.body
     .then (result) ->
-      res.send new ExpressResponse result
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
 
   create: (req, res, next) ->
     mlsConfigService.create req.body
     .then (result) ->
-      res.send new ExpressResponse result
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
 
   delete: (req, res, next) ->
     mlsConfigService.delete req.params.id
     .then (result) ->
-      res.send new ExpressResponse result
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
