@@ -48,7 +48,7 @@ INSERT INTO jq_subtask_config (
 ) VALUES (
   'parcel_update_digimaps',
   'parcel_update',
-  'parcel_update_digimaps',
+  'parcel_update',
   '1',
   '4',
   '4',
@@ -74,7 +74,7 @@ INSERT INTO jq_subtask_config (
 ) VALUES (
   'parcel_update_sync_mv_parcels',
   'parcel_update',
-  'parcel_update_sync_mv_parcels',
+  'parcel_update',
   'parcel',
   '2',
   '4',
@@ -101,7 +101,7 @@ INSERT INTO jq_subtask_config (
 ) VALUES (
   'parcel_update_sync_cartodb',
   'parcel_update',
-  'parcel_update_sync_cartodb',
+  'parcel_update',
   'parcel',
   '3',
   '4',
