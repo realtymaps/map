@@ -8,16 +8,3 @@ module.exports =
   snail:          'snail'
   # Note '*path' below is a special catchall syntax for ui-router
   pageNotFound:   '*path'
-
-  
-routes = 
-  
-  
-  
-  
-  
-prefixedRoutes =
-  _.map routes, (route) -> 'admin/'+route
-
-routes.prefixedRoutes = prefixedRoutes
-module.exports
