@@ -26,4 +26,4 @@ gulp.task 'karma', (done) ->
 gulp.task 'karmaOnly', (done) ->
   karmaRunner(done)
 
-gulp.task 'frontendSpec', gulp.parallel 'karma'
+gulp.task 'frontendSpec', gulp.series 'karma'

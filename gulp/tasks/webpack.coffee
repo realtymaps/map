@@ -72,14 +72,14 @@ runWebpack = (someConfig, app='rmap') ->
   .pipe(gWebpack someConfig)
   .pipe(gulp.dest(paths.dest.root))
 
-gulp.task 'webpack', gulp.parallel 'otherAssets', ->
+gulp.task 'webpack', gulp.series 'otherAssets', ->
   runWebpack(conf)
 
-gulp.task 'webpackMock', gulp.parallel 'otherAssets', ->
+gulp.task 'webpackMock', gulp.series 'otherAssets', ->
   runWebpack(mockConf)
 
-gulp.task 'webpackProd', gulp.parallel 'otherAssets', ->
+gulp.task 'webpackProd', gulp.series 'otherAssets', ->
   runWebpack(prodConf)
 
-gulp.task 'webpackAdmin', gulp.parallel 'otherAssets', ->
+gulp.task 'webpackAdmin', gulp.series 'otherAssets', ->
   runWebpack(adminConf, 'admin')

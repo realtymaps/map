@@ -15,15 +15,14 @@ gulp.task 'watch_rest', ->
   rmapPaths = getPaths('rmap').concat([path.common])
   adminPaths = getPaths('admin').concat([path.common])
 
-  gulp.watch rmapPaths, ['webpack']
-  gulp.watch adminPaths, ['webpackAdmin']
-  gulp.watch path.bower, ['vendor']
+  gulp.watch rmapPaths, gulp.series 'webpack'
+  gulp.watch adminPaths, gulp.series 'webpackAdmin'
+  gulp.watch path.bower, gulp.series 'vendor'
 
 specCommon = "spec/common/**/*.coffee"
-gulp.task 'watch', gulp.parallel 'watch_rest', ->
+gulp.task 'watch', gulp.series 'watch_rest', ->
   # setTimeout ->
-  gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], ['gulpSpec']
-  gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon],
-    ['backendSpec']
-  gulp.watch ['frontend/**/*.coffee', 'spec/app/**/*.coffee', specCommon], ['frontendSpec']
+  gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], gulp.series 'gulpSpec'
+  gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon], gulp.series 'backendSpec'
+  gulp.watch ['frontend/**/*.coffee', 'spec/app/**/*.coffee', specCommon], gulp.series 'frontendSpec'
   # , 8000
