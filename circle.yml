@@ -1,8 +1,6 @@
 machine:
   node:
     version: v0.10.38
-  environment:
-    NODE_ENV: test
 
 deployment:
   prod:
