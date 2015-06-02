@@ -1,19 +1,24 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.encryptor'
-rets = require 'rets-promise'
-Encryptor = require '../util.encryptor'
+{PartiallyHandledError, isUnhandled} = require './util.PartiallyHandledError'
+rets = require 'rets-client'
+Encryptor = require './util.encryptor'
 moment = require('moment')
 copyStream = require 'pg-copy-streams'
 from = require 'from'
-utilStreams = require '../util.streams'
-dbs = require '../../config/dbs'
-config = require '../../config/config'
-taskHelpers = require './util.taskHelpers'
-
+utilStreams = require './util.streams'
+dbs = require '../config/dbs'
+config = require '../config/config'
+taskHelpers = require './tasks/util.taskHelpers'
+logger = require '../config/logger'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
+_getClient = (loginUrl, username, password) ->
+  new rets.Client
+    loginUrl: loginUrl
+    username: username
+    password: encryptor.decrypt(password)
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
@@ -38,10 +43,9 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
 # loads all records from a given RETS table that have changed since the last successful run of the task
 loadRetsTableUpdates = (subtask, options) ->
   rawTableName = "raw_#{subtask.task_name}_#{options.rawTableSuffix}__#{subtask.batch_id}"
-  retsClient = new rets.Client
-    loginUrl: subtask.task_data.url
-    username: subtask.task_data.login
-    password: encryptor.decrypt(subtask.task_data.password)
+
+  retsClient = _getClient subtask.task_data.url, subtask.task_data.login, subtask.task_data.password
+
   retsClient.login()
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "login to RETS server failed")
@@ -83,6 +87,56 @@ loadRetsTableUpdates = (subtask, options) ->
     # always log out the RETS client when we're done
     retsClient.logout()
 
+getDatabaseList = (serverInfo) ->
+  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+
+  retsClient.login()
+  .then () ->
+    retsClient.metadata.getResources()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS databases")
+    .then (response) ->
+      _.map response.Resources, (r) ->
+        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
+
+getTableList = (serverInfo, databaseName) ->
+  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+
+  retsClient.login()
+  .then () ->
+    retsClient.metadata.getClass(databaseName)
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS tables")
+    .then (response) ->
+      _.map response.Classes, (r) ->
+        _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
+
+getColumnList = (serverInfo, databaseName, tableName) ->
+  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+
+  retsClient.login()
+  .then () ->
+    retsClient.metadata.getTable(databaseName, tableName)
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
+    .then (response) ->
+      _.map response.Fields, (r) ->
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+    .finally () ->
+      retsClient.logout()
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
+  getDatabaseList: getDatabaseList
+  getTableList: getTableList
+  getColumnList: getColumnList
