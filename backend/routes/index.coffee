@@ -91,21 +91,27 @@ routesConfig =
         update:
             method: 'patch'
             middleware: auth.requireLogin(redirectOnFail: true)
+        updatePropertyData:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        updateServerInfo:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
         create:
             method: 'post'
-            middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
         delete:
             method: 'delete'
-            middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
     mls:
         getDatabaseList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         getTableList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         getColumnList:
-            method: 'post'
+            method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->

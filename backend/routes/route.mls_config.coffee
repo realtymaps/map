@@ -38,6 +38,28 @@ module.exports =
           msg: error.message
         500
 
+  updatePropertyData: (req, res, next) ->
+    mlsConfigService.updatePropertyData req.params.id, req.body
+    .then (result) ->
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
+
+  # Privileged
+  updateServerInfo: (req, res, next) ->
+    mlsConfigService.updateServerInfo req.params.id, req.body
+    .then (result) ->
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
+
+  # Privileged
   create: (req, res, next) ->
     mlsConfigService.create req.body
     .then (result) ->
@@ -48,6 +70,7 @@ module.exports =
           msg: error.message
         500
 
+  # Privileged
   delete: (req, res, next) ->
     mlsConfigService.delete req.params.id
     .then (result) ->

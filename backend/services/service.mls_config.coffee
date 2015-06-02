@@ -13,22 +13,12 @@ knex = dbs.users.knex
 tables =
   mlsConfig: 'mls_config'
 
-_encrypt = (record) ->
-  if record.password
-    record.password = encryptor.encrypt(record.password)
-  record
-
-_decrypt = (record) ->
-  if record.password
-    record.password = encryptor.decrypt(record.password)
-  record
-
 module.exports =
 
   getAll: () ->
     knex.table(tables.mlsConfig)
     .then (data) ->
-      _.map(data, _decrypt)
+      data
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error)
 
@@ -36,23 +26,43 @@ module.exports =
     knex.table(tables.mlsConfig)
     .where(id: id)
     .then (data) ->
-      if data?[0]
-        _decrypt data[0]
-      else
-        false
+      data?[0]
 
   update: (id, mlsConfig) ->
-    _encrypt mlsConfig
     knex.table(tables.mlsConfig)
     .where(id: id)
-    .update(mlsConfig)
+    .update _.pick(mlsConfig, ['name', 'notes', 'active', 'main_property_data'])
     .then (result) ->
       result == 1
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error)
 
+  updatePropertyData: (id, propertyData) ->
+    knex.table(tables.mlsConfig)
+    .where(id: id)
+    .update
+      main_property_data: JSON.stringify(propertyData)
+    .then (result) ->
+      result == 1
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
+
+  # Privileged
+  updateServerInfo: (id, serverInfo) ->
+    if serverInfo.password
+      encryptor.encrypt(serverInfo.password)
+    knex.table(tables.mlsConfig)
+    .where(id: id)
+    .update _.pick(serverInfo, ['url', 'username', 'password'])
+    .then (result) ->
+      result == 1
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error)
+
+  # Privileged
   create: (mlsConfig) ->
-    _encrypt mlsConfig
+    if mlsConfig.password
+      mlsConfig.password = encryptor.encrypt(mlsConfig.password)
     knex.table(tables.mlsConfig)
     .insert(mlsConfig)
     .then (result) ->
@@ -60,6 +70,7 @@ module.exports =
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error)
 
+  # Privileged
   delete: (id) ->
     knex.table(tables.mlsConfig)
     .where(id: id)

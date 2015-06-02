@@ -88,7 +88,7 @@ loadRetsTableUpdates = (subtask, options) ->
     retsClient.logout()
 
 getDatabaseList = (serverInfo) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .then () ->
@@ -104,7 +104,7 @@ getDatabaseList = (serverInfo) ->
     throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 getTableList = (serverInfo, databaseName) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .then () ->
@@ -120,7 +120,7 @@ getTableList = (serverInfo, databaseName) ->
     throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  retsClient = _getClient serverInfo.loginUrl, serverInfo.username, serverInfo.password
+  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
 
   retsClient.login()
   .then () ->

@@ -39,13 +39,15 @@ module.exports =
         getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
         uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
     mls_config:
-        getAll:    "#{apiBase}/mls_config"
-        getById:   "#{apiBase}/mls_config/:id"
-        update:    "#{apiBase}/mls_config/:id"
-        create:    "#{apiBase}/mls_config"
-        delete:    "#{apiBase}/mls_config/:id"
+        getAll:                 "#{apiBase}/mls_config"
+        getById:                "#{apiBase}/mls_config/:id"
+        update:                 "#{apiBase}/mls_config/:id"
+        updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
+        updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
+        create:                 "#{apiBase}/mls_config"
+        delete:                 "#{apiBase}/mls_config/:id"
     mls:
-        getDatabaseList:  "#{apiBase}/mls/getDatabaseList"
-        getTableList:     "#{apiBase}/mls/getTableList"
-        getColumnList:    "#{apiBase}/mls/getColumnList"
+        getDatabaseList:  "#{apiBase}/mls/:id/databases"
+        getTableList:     "#{apiBase}/mls/:id/tables"
+        getColumnList:    "#{apiBase}/mls/:id/columns"
     # hirefire secret value set from within backend/config/config.coffee
