@@ -50,7 +50,7 @@ module.exports =
   # Privileged
   updateServerInfo: (id, serverInfo) ->
     if serverInfo.password
-      encryptor.encrypt(serverInfo.password)
+      serverInfo.password = encryptor.encrypt(serverInfo.password)
     knex.table(tables.mlsConfig)
     .where(id: id)
     .update _.pick(serverInfo, ['url', 'username', 'password'])
