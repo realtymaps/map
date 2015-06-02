@@ -16,7 +16,6 @@ filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
-  closePrice: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
@@ -26,7 +25,7 @@ minMaxValidations =
 otherValidations =
   returnType: validators.string()
   ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-  hasOwner: validators.boolean()
+  hasOwner: validators.boolean(truthy: 'true', falsy: 'false')
   bounds:
     transform: [
       validators.string(minLength: 1)
@@ -36,7 +35,7 @@ otherValidations =
     required: true
   status: [
     validators.array
-      subValidation: [
+      subValidateEach: [
         validators.string(forceLowerCase: true)
         validators.choice(choices: statuses)
       ]
@@ -72,7 +71,6 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
       sqlHelpers.whereIn(query, 'rm_status', filters.status)
 
     sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
-    sqlHelpers.between(query, 'close_price', filters.closePriceMin, filters.closePriceMax)
     sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
     sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 
@@ -103,9 +101,9 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
       sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
     if filters.listedDaysMin
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', ">=", filters.listedDaysMin)
+      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
     if filters.listedDaysMax
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'close_date', "<=", filters.listedDaysMax)
+      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
 
     #might not need anymore due to leaflet
     # if _getZoom(state.map_position) >= zoomThresh.ordering or _.contains(filters.status, filterStatusesEnum.not_for_sale)

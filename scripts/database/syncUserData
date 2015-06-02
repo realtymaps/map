@@ -25,12 +25,5 @@ fi
 source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
-# temporary scripted addition to upgrade dbsync, can be removed once it has run for everyone
-if $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $DST_URL --reminder 1 --blindly --forget --files 'dbsync_update.sql' --logging silent
-then
-    echo "SYNC: updating dbsync table"
-fi
-
-
 echo "SYNC: performing user db migrations on db: $DST_DB"
 $DBSYNC --path migrations/userManagement --client pg --connection $DST_URL --reminder 1 --recursive

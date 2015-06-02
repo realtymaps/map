@@ -26,3 +26,6 @@ String::replaceLast = (find, replace) ->
       return @substring(0, index) + replace + @substring(index + find.length);
 
   return @toString();
+
+String::toInitCaps = () ->
+  @replace(/[^-'\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
