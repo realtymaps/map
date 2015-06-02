@@ -23,7 +23,11 @@ module.exports = (options = {}) ->
       transformedValue = transformedValue.trim()
     if options.replace?
       transformedValue = transformedValue.replace(options.replace[0], options.replace[1])
-    if (options.forceLowerCase)
+    if options.stripFormatting
+      transformedValue = transformedValue.replace(/[^a-zA-Z0-9]/g, '')
+    if (options.forceInitCaps)
+      transformedValue = transformedValue.toInitCaps()
+    else if (options.forceLowerCase)
       transformedValue = transformedValue.toLowerCase()
     else if (options.forceUpperCase)
       transformedValue = transformedValue.toUpperCase()

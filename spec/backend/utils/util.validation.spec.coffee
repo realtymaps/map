@@ -68,7 +68,7 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       expectResolve validateAndTransform {a: "1", f: "3", q: "2"},
         z:
           input: ["q", "f", "a"]
-          transform: validators.array(subValidation: validators.integer())
+          transform: validators.array(subValidateEach: validators.integer())
       .then (value) ->
         value.should.eql(z: [2, 3, 1])
     ]
