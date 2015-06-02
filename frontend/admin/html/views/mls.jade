@@ -23,6 +23,12 @@ div
                         input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
                         select(ng-if="settings.type == 'select'")
                           option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
+                  br
+                  p - or -
+                  select(ng-if="formItem.step == 0")
+                    option(value="1") Option 1
+                    option(value="2") Option 2
+                  br
                   button(ng-click="proceedTo(formItem.step+1)") Submit
 
         .col-md-6
