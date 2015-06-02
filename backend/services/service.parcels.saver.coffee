@@ -28,14 +28,14 @@ _formatParcels = (featureCollection)  ->
     featureCollection.features.map (f) ->
         _formatParcel(f)
 
-_getParcelJSON = (fipsCode) ->
-    parcelFetcher(fipsCode)
+_getParcelJSON = (fipsCode, digimapsSetings) ->
+    parcelFetcher(fipsCode, digimapsSetings)
     .then (stream) ->
         shp2json(stream)
         .pipe(JSONStream.parse('*'))
 
-_getFormatedParcelJSON = (fipsCode) ->
-    _getParcelJSON(fipsCode)
+_getFormatedParcelJSON = (fipsCode, digimapsSetings) ->
+    _getParcelJSON(fipsCode, digimapsSetings)
     .then (stream) ->
         write = (obj) ->
           @queue _formatParcels(obj)
@@ -67,9 +67,8 @@ _execRawQuery = (geomType, val, method = 'insert') ->
         #     logger.debug "\n\n"
         q
 
-_uploadToParcelsDb = (fipsCode) ->
-
-    _getParcelJSON(fipsCode)
+_uploadToParcelsDb = (fipsCode, digimapsSetings) ->
+    _getParcelJSON(fipsCode, digimapsSetings)
     .then (stream) ->
         new Promise (resolve, reject) ->
           stream.on 'error', reject
