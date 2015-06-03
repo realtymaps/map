@@ -35,8 +35,8 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) ->
             .from('jq_task_config')
             .where(name:'parcel_update')
             .then (rows) ->
-                logger.debug rows
-                logger.debug 'ran query'
+                # logger.debug rows
+                # logger.debug 'ran query'
                 return unless rows.length
                 row = rows[0]
                 logger.debug row
