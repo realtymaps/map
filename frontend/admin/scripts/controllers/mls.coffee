@@ -55,22 +55,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
 
       modalInstance.result.then(
         (mlsModalData) ->
-          console.log "#### received modal data:"
-          console.log mlsModalData
-          newMls = Restangular.one('/api/mls_config')
-          _.merge newMls, mlsModalData
-
-          newMls.post().then (res) ->
-            console.log "#### res:"
-            console.log res
-            console.log "#### newMls"
-            console.log newMls
-            if res
-              $scope.idOptions.push(newMls)
-              $scope.mlsData.current = newMls
-          #debugger
-          # rmapsMlsService.postConfig($scope.mlsData.current)
-          # .then (res) ->
+          rmapsMlsService.postConfig(mlsModalData, $scope.idOptions).then (newMls) ->
+            $scope.mlsData.current = newMls
 
           $scope.proceedTo(1)
         , () ->

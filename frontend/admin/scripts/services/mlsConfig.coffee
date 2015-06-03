@@ -9,11 +9,18 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   getConfigs = () ->
     Restangular.all('/api/mls_config').getList()
 
-  postConfig = (configObj) ->
-    console.log "#### configObj:"
-    console.log configObj
-    #mlsConfigRestangular.post("mlsConfig", configObj)
-    Restangular.all('/api/mls_config').post(configObj)
+  postConfig = (configObj, collection) ->
+    # console.log "#### configObj:"
+    # console.log configObj
+    # #mlsConfigRestangular.post("mlsConfig", configObj)
+    # Restangular.all('/api/mls_config').post(configObj)
+    newMls = Restangular.one('/api/mls_config')
+    _.merge newMls, configObj
+    newMls.post().then (res) ->
+      if collection
+        collection.push(newMls)
+      newMls
+
 
   getDatabaseList = (configId) ->
     Restangular.all('/api/mls').one(configId).all('databases').getList()
