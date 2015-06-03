@@ -13,6 +13,9 @@ taskHelpers = require './tasks/util.taskHelpers'
 logger = require '../config/logger'
 jobQueue = require './util.jobQueue'
 validation = require './util.validation'
+require '../config/promisify'
+memoize = require 'memoizee'
+vm = require 'vm'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -189,6 +192,21 @@ getColumnList = (serverInfo, databaseName, tableName) ->
   .finally () ->
     retsClient.logout()
 
+_getValidations = (dataSourceId) ->
+  jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
+  .where(data_source_id: dataSourceId)
+  .orderBy('output_group')
+  .orderBy('display_order')
+  .then (validations=[]) ->
+    validationMap = {}
+    context = vm.createContext(validators: validation.validators)
+    for validation in validations
+      validationMap[validation.output_group] ?= []
+      validation.transform = vm.runInContext(validation.transform, context)
+      validationMap[validation.output_group].push(validation)
+    validationMap
+# memoize it to cache js evals, but only for up to 10 minutes at a time
+_getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000)
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) ->
@@ -198,16 +216,7 @@ normalizeData = (subtask, options) ->
     rowsPromise = dbs.properties.knex(rawTableName)
     .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
     # get validations
-    validationPromise = jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
-    .where(data_source_id: options.dataSourceId)
-    .orderBy('output_group')
-    .orderBy('display_order')
-    .then (validations=[]) ->
-      validationMap = {}
-      for validation in validations
-        validationMap[validation.output_group] ?= []
-        validationMap[validation.output_group].push(validation)
-      validationMap
+    validationPromise = _getValidations(options.dataSourceId)
     # get start time for "last updated" stamp
     startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
     Promise.join(rowsPromise, validationPromise, startTimePromise)
