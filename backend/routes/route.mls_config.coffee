@@ -71,6 +71,17 @@ module.exports =
         500
 
   # Privileged
+  createById: (req, res, next) ->
+    mlsConfigService.create req.body req.params.id
+    .then (result) ->
+      next new ExpressResponse(result)
+    .catch (error) ->
+      next new ExpressResponse
+        alert:
+          msg: error.message
+        500
+
+  # Privileged
   delete: (req, res, next) ->
     mlsConfigService.delete req.params.id
     .then (result) ->

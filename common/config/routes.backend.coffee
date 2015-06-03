@@ -44,7 +44,8 @@ module.exports =
         update:                 "#{apiBase}/mls_config/:id"
         updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
         updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
-        create:                 "#{apiBase}/mls_config"
+        create:                 "#{apiBase}/mls_config/"
+        createById:             "#{apiBase}/mls_config/:id"
         delete:                 "#{apiBase}/mls_config/:id"
     mls:
         getDatabaseList:  "#{apiBase}/mls/:id/databases"
