@@ -39,6 +39,9 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService'
       step: 0
       heading: "Select MLS"
       formFields:
+        id:
+          type: "text"
+          label: "ID"
         name:
           type: "text"
           label: "Name"
