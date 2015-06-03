@@ -1,19 +1,14 @@
 app = require '../app.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'mlsConfig', ($http) ->
-  getDatabaseList = (url, username, password, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getDatabaseList}?url=#{url}&username=#{user}&password=#{password}"
-    $http.get(mlsUrl, cache)
+app.service 'rmapsMlsService', (Restangular) ->
+  getDatabaseList = (configId) ->
+    Restangular.all('/api/mls').one(configId).all('databases').getList()
 
-  getTableList = (url, username, password, database, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getTableList}?url=#{url}&username=#{user}&password=#{password}&database=#{database}"
-    $http.get(mlsUrl, cache)
+  getTableList = (configId, databaseName) ->
+    Restangular.all('/ap/mls').one(configId).all('tables').getList
+      databaseName: databaseName
 
-  getFieldList = (url, username, password, database, table, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getTableList}?url=#{url}&username=#{user}&password=#{password}&database=#{database}&table=#{table}"
-    $http.get(mlsUrl, cache)
-
-  saveMlsConfig = (config, cache) ->
-    mlsUrl = "#{backendRoutes.mls.saveConfig}?"
-    $http.post(mlsUrl, cache)
+  getFieldList = (configId, databaseName, tableName) ->
+    Restangular.all('/api/mls').one(configId).all('columns').getList
+      databaseName: databaseName,
+      tableName: tableName

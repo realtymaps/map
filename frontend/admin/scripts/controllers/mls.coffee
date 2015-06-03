@@ -1,8 +1,11 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
-  ($scope, $state) ->
+app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService'
+  ($scope, $state, rmapsMlsService) ->
+
+    console.log 'rmapsMlsCtrl'
+
     $scope.mock =
       db: ['dbOne', 'dbTwo']
       table: ['tableOne', 'tableTwo']
@@ -10,7 +13,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
 
     $scope.alert = ""
 
-    $scope.mlsData = 
+    $scope.mlsData =
       id: null
       name: null
       notes: null
@@ -35,7 +38,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
     $scope.formItems = [
       step: 0
       heading: "Select MLS"
-      formFields:         
+      formFields:
         name:
           type: "text"
           label: "Name"
@@ -54,7 +57,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
           $scope.formItems[1].disabled = false
           console.log "#### Step 1 validated"
       disabled: false
-      active: isActive(0)      
+      active: isActive(0)
     ,
       step: 1
       heading: "Choose Database"
