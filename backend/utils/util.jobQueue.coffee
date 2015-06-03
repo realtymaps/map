@@ -105,7 +105,9 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     taskImpl = require("./tasks/task.#{task.name}")
     subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
     subtaskConfigPromise = transaction.table(tables.subtaskConfig)
-    .where(task_name: task.name)
+    .where
+      task_name: task.name
+      auto_enqueue: true
     .then (subtaskConfig=[]) ->
       subtaskConfig
     Promise.props
@@ -147,26 +149,50 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
       return _taskData
     transaction.table(tables.taskHistory)
     .where(current: true, name: subtasks[0].task_name)
-  .then (task) ->
-    task?[0]?.data
+    .then (task) ->
+      task?[0]?.data
   .then (taskData) ->
     Promise.all _.map(subtasks, queueSubtask.bind(null, transaction, batchId, taskData))
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
-queueSubtask = (transaction, batchId, _taskData, subtask) ->
+# convenience function to get another subtask config and then enqueue it based on the current subtask 
+queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
+  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+  .then (laterSubtask) ->
+    queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
+
+queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
     if _taskData != undefined
       return _taskData
     transaction.table(tables.taskHistory)
     .where(current: true, name: subtask.task_name)
-  .then (task) ->
-    task?[0]?.data
+    .then (task) ->
+      task?[0]?.data
   .then (taskData) ->
-    if _.isArray subtask.data    # an array for data means to create multiple subtasks, one for each element of data
-      Promise.map subtask.data, (data) ->
+    if manualData?
+      if replace
+        subtaskData = manualData
+      else
+        if _.isArray manualData && _.isArray subtask.data
+          throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.task_name}/#{subtask.name}")
+        else if _.isArray manualData
+          subtaskData = manualData
+          mergeData = subtask.data
+        else if _.isArray subtask.data
+          subtaskData = subtask.data
+          mergeData = manualData
+        else
+          subtaskData = _.extend(subtask.data||{}, manualData)
+    else
+      subtaskData = subtask.data
+    if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
+      Promise.map subtaskData, (data) ->
         singleSubtask = _.clone(subtask)
         singleSubtask.data = data
+        if mergeData?
+          _.extend(singleSubtask.data, mergeData)
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
         singleSubtask.batch_id = batchId
@@ -176,6 +202,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask) ->
         return subtask.data.length
     else
       singleSubtask = _.clone(subtask)
+      singleSubtask.data = subtaskData
       singleSubtask.task_data = taskData
       singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
       singleSubtask.batch_id = batchId
@@ -384,6 +411,38 @@ getQueueNeeds = () ->
   .then (needs) ->
     needs || []
 
+# convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask 
+queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
+  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+  .then (laterSubtask) ->
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
+    
+queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
+  if total == 0
+    return
+  subtasks = Math.ceil(total/maxPage)
+  subtasksQueued = 0
+  countHandled = 0
+  data = []
+  for i in [1..subtasks]
+    datum =
+      offset: subtasksQueued
+      count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
+    data.push datum
+    subtasksQueued++
+    countHandled += datum.count
+  queueSubtask(transaction, batchId, taskData, subtask, data)
+  
+getSubtaskConfig = (transaction, subtaskName, taskName) ->
+  transaction(tables.subtaskConfig)
+  .where
+    name: subtaskName
+    task_name: taskName
+  .then (subtasks) ->
+    if !subtasks?.length
+      throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
+    return subtasks[0]
+    
 
 module.exports =
   withSchedulingLock: withSchedulingLock
@@ -398,6 +457,8 @@ module.exports =
   sendNotification: sendNotification
   updateTaskCounts: updateTaskCounts
   getQueueNeeds: getQueueNeeds
+  queuePaginatedSubtask: queuePaginatedSubtask
+  getSubtaskConfig: getSubtaskConfig
   SoftFail: SoftFail
   HardFail: HardFail
   tables: tables

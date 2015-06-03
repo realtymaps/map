@@ -58,7 +58,7 @@ describe 'utils/http.request.validators.array()'.ns().ns('Backend'), ->
         value.should.eql(['abc', 'def', 'ghi', 'jkl'])
     ]
 
-  promiseIt 'should perform subvalidation when configured', () ->
+  promiseIt 'should perform subvalidation on each element of array', () ->
     customIndexAwareSubvalidation = (paramName, value, index, length) ->
       if index < 2
         validators.integer()(paramName, value)
@@ -67,16 +67,37 @@ describe 'utils/http.request.validators.array()'.ns().ns('Backend'), ->
       else
         Promise.resolve("value #{index+1} of #{length}: #{value}")
     [
-      expectResolve(validators.array(subValidation: validators.integer())(param, [1, 1, "2", "3", 5, 8])).then (value) ->
+      expectResolve(validators.array(subValidateEach: validators.integer())(param, [1, 1, "2", "3", 5, 8])).then (value) ->
         value.should.eql([1, 1, 2, 3, 5, 8])
-      expectResolve(validators.array(subValidation: validators.string(forceUpperCase: true))(param, ["abc", "def"])).then (value) ->
+      expectResolve(validators.array(subValidateEach: validators.string(forceUpperCase: true))(param, ["abc", "def"])).then (value) ->
         value.should.eql(["ABC", "DEF"])
-      expectResolve(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer())(param, "1,2, 3, 4 ,5")).then (value) ->
+      expectResolve(validators.array(split: /\s*,\s* ?/, subValidateEach: validators.integer())(param, "1,2, 3, 4 ,5")).then (value) ->
         value.should.eql([1,2,3,4,5])
-      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer())(param, "1,2, 3.4, 4 ,5"), DataValidationError)
-      expectReject(validators.array(split: /\s*,\s* ?/, subValidation: validators.integer(max: 3))(param, "1,2, 3, 4 ,5"), DataValidationError)
-      expectResolve(validators.array(subValidation: customIndexAwareSubvalidation)(param, ["1", 2, "asdf", "qwert", "zxcv"])).then (value) ->
+      expectReject(validators.array(split: /\s*,\s* ?/, subValidateEach: validators.integer())(param, "1,2, 3.4, 4 ,5"), DataValidationError)
+      expectReject(validators.array(split: /\s*,\s* ?/, subValidateEach: validators.integer(max: 3))(param, "1,2, 3, 4 ,5"), DataValidationError)
+      expectResolve(validators.array(subValidateEach: customIndexAwareSubvalidation)(param, ["1", 2, "asdf", "qwert", "zxcv"])).then (value) ->
         value.should.eql([1,2,"value 3 of 5: asdf","QWERT","ZXCV"])
+      # similar as the above, but using subValidateSeparate instead
+      arrayValidator = validators.array
+        subValidateSeparate: [
+          validators.integer()
+          validators.integer()
+          validators.string(forceLowerCase: true)
+          validators.string(forceUpperCase: true)
+          # there's 1 more element than there are validators, so last element will be passed through
+        ]
+      expectResolve(arrayValidator(param, ["1", 2, "aSDf", "aSDf", "aSDf"])).then (value) ->
+        value.should.eql([1,2,"asdf","ASDF","aSDf"])
+      # again, but with more validators than elements
+      arrayValidator = validators.array
+        subValidateSeparate: [
+          validators.integer()
+          validators.integer()
+          [validators.defaults(defaultValue: "qwERt"), validators.string(forceLowerCase: true)]
+          [validators.defaults(defaultValue: "qwERt"), validators.string(forceLowerCase: true)]
+        ]
+      expectResolve(arrayValidator(param, ["1", 2, "aSDf"])).then (value) ->
+        value.should.eql([1,2,"asdf","qwert"])
     ]
 
   promiseIt 'can perform iterative subvalidations passed as an array', () ->
@@ -86,5 +107,9 @@ describe 'utils/http.request.validators.array()'.ns().ns('Backend'), ->
     choices = [a,b,c]
     equalsTester = (id, obj) -> obj.key == id
     # split the string, convert each element into an integer, then use each id to find the matching object from in choices
-    expectResolve(validators.array(split: ',', subValidation: [validators.integer(), validators.choice(choices: choices, equalsTester: equalsTester)])(param, "2,1,1,3")).then (value) ->
+    expectResolve(validators.array(split: ',', subValidateEach: [validators.integer(), validators.choice(choices: choices, equalsTester: equalsTester)])(param, "2,1,1,3")).then (value) ->
       value.should.eql([b,a,a,c])
+
+  promiseIt 'should join elements when configured', () ->
+    expectResolve(validators.array(split: ',', subValidateEach: validators.integer(), join: '_')(param, "2,1,1,3")).then (value) ->
+      value.should.eql('2_1_1_3')
