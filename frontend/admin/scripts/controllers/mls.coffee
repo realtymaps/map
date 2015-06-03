@@ -1,14 +1,48 @@
 app = require '../app.coffee'
+mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
+modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
-  ($scope, $state) ->
+app.controller 'rmapsMlsCtrl', [ '$scope', '$state', '$modal',
+  ($scope, $state, $modal) ->
     $scope.mock =
       db: ['dbOne', 'dbTwo']
       table: ['tableOne', 'tableTwo']
       field: ['fieldOne', 'fieldTwo']
 
-    $scope.alert = ""
+    $scope.idOptions = []
+    $scope.dbOptions = []
+    $scope.tableOptions = []
+    $scope.fieldOptions = []
+
+    #$scope.step0.$valid
+
+    $scope.mlsModalData =
+      id: null
+      name: null
+      notes: null
+      username: null
+      password: null
+      url: null
+    $scope.animationsEnabled = true
+    $scope.open = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        #templateUrl: '../../html/views/templates/newMlsConfig.jade'
+        #templateUrl: 'templates/newMlsConfig.jade'
+        template: modalTemplate
+        controller: 'ModalInstanceCtrl'
+        resolve:
+          mlsModalData: () ->
+            return $scope.mlsModalData
+
+      modalInstance.result.then(
+        (mlsModalData) ->
+          console.log "#### received modal data:"
+          console.log mlsModalData
+        , () ->
+          console.log "#### modal screwed up!"
+      )
 
     $scope.mlsData = 
       id: null
@@ -35,41 +69,17 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
     $scope.formItems = [
       step: 0
       heading: "Select MLS"
-      formFields:
-        id:
-          type: "text"
-          label: "ID"
-        name:
-          type: "text"
-          label: "Name"
-        url:
-          type: "text"
-          label: "URL"
-        username:
-          type: "text"
-          label: "Username"
-        password:
-          type: "password"
-          label: "Password"
       validate: () ->
-        thisValidates = true
+        id = $scope.mlsData.id
+        thisValidates = $scope.step0.$valid
         if thisValidates
           $scope.formItems[1].disabled = false
           console.log "#### Step 1 validated"
       disabled: false
-      active: isActive(0)      
+      active: isActive(0)    
     ,
       step: 1
       heading: "Choose Database"
-      formFields:
-        db:
-          type: "select"
-          label: "Database"
-          options:
-            one: "db1"
-            two: "db2"
-            three: "db3"
-            four: "db4"
       validate: () ->
         thisValidates = true
         if thisValidates
@@ -80,13 +90,6 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
     ,
       step: 2
       heading: "Choose Table"
-      formFields:
-        table:
-          type: "select"
-          label: "Table"
-          options:
-            one: "table1"
-            two: "table2"
       validate: () ->
         thisValidates = true
         if thisValidates
@@ -97,18 +100,6 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
     ,
       step: 3
       heading: "Choose Field"
-      formFields:
-        field:
-          type: "select"
-          label: "Field"
-          options:
-            one: "field1"
-            two: "field2"
-            three: "field3"
-        query:
-          type: "text"
-          label: "Query Template"
-          default: "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
       validate: () ->
         thisValidates = true
         if thisValidates
@@ -129,25 +120,18 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state',
       else
         $scope.alert = "Cannot proceed to step #{toStep}!"
         console.log $scope.alert
+]
 
 
+app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
+  ($scope, $modalInstance, mlsModalData) ->
+    $scope.mlsModalData = mlsModalData;
 
+    $scope.ok = () ->
+      $modalInstance.close($scope.mlsModalData)
 
+    $scope.cancel = () ->
+      $modalInstance.dismiss('cancel')
 
-
-
-    # $scope.open = (step) ->
-    #   modalInstance = $modal.open
-    #     animation: 1
-    #     templateUrl: "templates/mlsOne.jade"
-    #     resolve:
-    #       data: () ->
-    #         return $scope.data
-
-    #   modalInstance.result.then \
-    #     ((selectedItem) ->
-    #       $scope.selected = selectedItem),
-    #     (() ->
-    #       console.log "#### dismissed ")
 ]
 

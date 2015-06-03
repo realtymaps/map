@@ -3,17 +3,17 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'mlsConfig', ($http) ->
   getDatabaseList = (url, username, password, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getDatabaseList}?url=#{url}&username=#{user}&password=#{password}"
+    mlsUrl = "#{backendRoutes.mls.getDatabaseList}"
     $http.get(mlsUrl, cache)
 
   getTableList = (url, username, password, database, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getTableList}?url=#{url}&username=#{user}&password=#{password}&database=#{database}"
+    mlsUrl = "#{backendRoutes.mls.getTableList}"
     $http.get(mlsUrl, cache)
 
   getFieldList = (url, username, password, database, table, cache=true) ->
-    mlsUrl = "#{backendRoutes.mls.getTableList}?url=#{url}&username=#{user}&password=#{password}&database=#{database}&table=#{table}"
+    mlsUrl = "#{backendRoutes.mls.getTableList}"
     $http.get(mlsUrl, cache)
 
   saveMlsConfig = (config, cache) ->
-    mlsUrl = "#{backendRoutes.mls.saveConfig}?"
+    mlsUrl = "#{backendRoutes.mls.saveConfig}"
     $http.post(mlsUrl, cache)
