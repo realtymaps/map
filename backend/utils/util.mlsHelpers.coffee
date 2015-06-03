@@ -257,7 +257,9 @@ _updateRecord = (normalizedData) ->
     # check for an existing row
     dbs.properties.knex(taskHelpers.tables.mlsData)
     .select('*')
-    .where(rm_property_id: updateRow.rm_property_id)
+    .where
+      mls_uuid: updateRow.mls_uuid
+      data_source_id: updateRow.data_source_id
     .then (result) ->
       if !result?.length
         # no existing row, just insert
@@ -270,7 +272,9 @@ _updateRecord = (normalizedData) ->
         if !_.isEmpty changes
           updateRow.change_history.push changes
         dbs.properties.knex(taskHelpers.tables.mlsData)
-        .where(rm_property_id: updateRow.rm_property_id)
+        .where
+          mls_uuid: updateRow.mls_uuid
+          data_source_id: updateRow.data_source_id
         .update(updateRow)
 
 
