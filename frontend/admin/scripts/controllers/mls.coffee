@@ -6,6 +6,11 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService'
 
     console.log 'rmapsMlsCtrl'
 
+    rmapsMlsService.getConfigs()
+    .then (configs) ->
+      angular.forEach configs, (config) ->
+        console.log config
+
     $scope.mock =
       db: ['dbOne', 'dbTwo']
       table: ['tableOne', 'tableTwo']
