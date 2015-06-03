@@ -116,13 +116,9 @@ loadRetsTableUpdates = (subtask, options) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-        subtaskStep3Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'markDeleted', subtask.task_name)
-        #subtaskStep5Promise = jobQueue.getSubtaskConfig(jobQueue.knex, subtask.batch_id, subtask.task_data, 'removeExtraRows', subtask.task_name)
-        #Promise.join(subtaskStep3Promise, subtaskStep5Promise)
-        .then (subtaskStep3, subtaskStep5) ->
-          queueStep3 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep3)
-          #queueStep5 = jobQueue.queueSubtask(jobQueue.knex, subtask.batch_id, subtask.task_data, subtaskStep5)
-          #Promise.join(queueStep3, queueStep5)
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'markDeleted')
+        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'removeExtraRows')
+        Promise.join(step3Promise, step5Promise)
         .then () ->
           return new Date(0)
       else
