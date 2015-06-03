@@ -40,14 +40,25 @@ module.exports =
         getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
         uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
     mls_config:
-        apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation
-        getAll:                 "#{apiBaseMlsConfig}"
-        getById:                "#{apiBaseMlsConfig}/:id"
-        update:                 "#{apiBaseMlsConfig}/:id"
-        updatePropertyData:     "#{apiBaseMlsConfig}/:id/propertyData"
-        updateServerInfo:       "#{apiBaseMlsConfig}/:id/serverInfo"
-        create:                 "#{apiBaseMlsConfig}"
-        delete:                 "#{apiBaseMlsConfig}/:id"
+# <<<<<<< HEAD
+#         apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation
+#         getAll:                 "#{apiBaseMlsConfig}"
+#         getById:                "#{apiBaseMlsConfig}/:id"
+#         update:                 "#{apiBaseMlsConfig}/:id"
+#         updatePropertyData:     "#{apiBaseMlsConfig}/:id/propertyData"
+#         updateServerInfo:       "#{apiBaseMlsConfig}/:id/serverInfo"
+#         create:                 "#{apiBaseMlsConfig}"
+#         delete:                 "#{apiBaseMlsConfig}/:id"
+# =======
+        getAll:                 "#{apiBase}/mls_config"
+        getById:                "#{apiBase}/mls_config/:id"
+        update:                 "#{apiBase}/mls_config/:id"
+        updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
+        updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
+        create:                 "#{apiBase}/mls_config/"
+        createById:             "#{apiBase}/mls_config/:id"
+        delete:                 "#{apiBase}/mls_config/:id"
+
     mls:
         apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
         getDatabaseList:  "#{apiBaseMls}/:id/databases"
