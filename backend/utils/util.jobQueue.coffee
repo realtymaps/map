@@ -156,6 +156,12 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
+# convenience function to get another subtask config and then enqueue it based on the current subtask 
+queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
+  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+  .then (laterSubtask) ->
+    queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
+
 queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
     if _taskData != undefined
@@ -405,6 +411,12 @@ getQueueNeeds = () ->
   .then (needs) ->
     needs || []
 
+# convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask 
+queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
+  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+  .then (laterSubtask) ->
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
+    
 queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
   if total == 0
     return
@@ -421,14 +433,14 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
     countHandled += datum.count
   queueSubtask(transaction, batchId, taskData, subtask, data)
   
-getSubtaskConfig = (transaction, name, taskName) ->
+getSubtaskConfig = (transaction, subtaskName, taskName) ->
   transaction(tables.subtaskConfig)
   .where
-    name: name
+    name: subtaskName
     task_name: taskName
   .then (subtasks) ->
     if !subtasks?.length
-      throw new Error("specified subtask not found: #{taskName}/#{name}")
+      throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
     
 
