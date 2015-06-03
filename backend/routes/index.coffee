@@ -99,6 +99,9 @@ routesConfig =
         create:
             method: 'post'
             middleware: auth.requireLogin(redirectOnFail: true) # privileged
+        createById:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
         delete:
             method: 'delete'
             middleware: auth.requireLogin(redirectOnFail: true) # privileged
