@@ -3,8 +3,9 @@ Object list of the defined routes. It's purpose is to keep the
 frontend and backend in sync
 ###
 
-apiBase = '/api'
-
+apiBase = "/api"
+apiBaseMls = "#{apiBase}/mls"
+apiBaseMlsConfig = "#{apiBase}/mls_config"
 
 module.exports =
     wildcard:
@@ -39,15 +40,17 @@ module.exports =
         getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
         uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
     mls_config:
-        getAll:                 "#{apiBase}/mls_config"
-        getById:                "#{apiBase}/mls_config/:id"
-        update:                 "#{apiBase}/mls_config/:id"
-        updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
-        updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
-        create:                 "#{apiBase}/mls_config"
-        delete:                 "#{apiBase}/mls_config/:id"
+        apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation
+        getAll:                 "#{apiBaseMlsConfig}"
+        getById:                "#{apiBaseMlsConfig}/:id"
+        update:                 "#{apiBaseMlsConfig}/:id"
+        updatePropertyData:     "#{apiBaseMlsConfig}/:id/propertyData"
+        updateServerInfo:       "#{apiBaseMlsConfig}/:id/serverInfo"
+        create:                 "#{apiBaseMlsConfig}"
+        delete:                 "#{apiBaseMlsConfig}/:id"
     mls:
-        getDatabaseList:  "#{apiBase}/mls/:id/databases"
-        getTableList:     "#{apiBase}/mls/:id/tables"
-        getColumnList:    "#{apiBase}/mls/:id/columns"
+        apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
+        getDatabaseList:  "#{apiBaseMls}/:id/databases"
+        getTableList:     "#{apiBaseMls}/:id/tables"
+        getColumnList:    "#{apiBaseMls}/:id/columns"
     # hirefire secret value set from within backend/config/config.coffee

@@ -15,33 +15,32 @@ div
             .panel-body
               div.animate-container.wizardContent
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step").animate-show
-                  ng-form(ng-if="formItem.step == 0" name="step0")
-                    select(type="text" ng-model="mlsData.id" ng-options="idOptions" ng-click="")
+                  div(ng-if="formItem.step == 0" name="step0")
+                    select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="proceedTo(1)")
+                    //- select(type="text" ng-model="mlsData" ng-options="value.id for value in idOptions")
                     button(ng-click="open()") Create New MLS Config
-                    div.submitButton
-                      button(ng-click="proceedTo(1)" ng-disabled="step0.$valid") Submit
 
-                  div(ng-if="formItem.step == 1")
+                  ng-form(ng-if="formItem.step == 1" name="step1")
                     table
                       tr
                         td
                           label.data-label Database:
                         td
-                          select(type="text" ng-model="mlsData.main_property_data.db" ng-options="dbOptions")
-                  div(ng-if="formItem.step == 2")
+                          //- select(type="text" ng-model="mlsData.main_property_data.db" ng-options="label for value in dbOptions")
+                  ng-form(ng-if="formItem.step == 2" name="step2")
                     table
                       tr
                         td
                           label.data-label Table:
                         td
-                          select(type="text" ng-model="mlsData.main_property_data.table" ng-options="tableOptions")
-                  div(ng-if="formItem.step == 3")
+                          //- select(type="text" ng-model="mlsData.main_property_data.table" ng-options="tableOptions")
+                  ng-form(ng-if="formItem.step == 3" name="step3")
                     table
                       tr
                         td
                           label.data-label Field:
                         td
-                          select(type="text" ng-model="mlsData.main_property_data.field" ng-options="fieldOptions")
+                          //- select(type="text" ng-model="mlsData.main_property_data.field" ng-options="fieldOptions")
                       tr
                         td
                           label.data-label Formatting:
@@ -75,9 +74,22 @@ div
               h3 MLS Data
             .panel-body
               table.table-striped
-                tr(ng-repeat="(key, value) in mlsData")
+                tr(ng-repeat="(key, value) in mlsData.current.plain()")
                   td
                     label.data-label {{key}}
                   td
                     span.data-entry {{value}}
+              //- table.table-striped
+              //-   tr
+              //-     td
+              //-       label.data-label ID
+              //-     td
+              //-       span.data-entry {{mlsData.id}}
+              //-   tr
+              //-     td
+              //-       label.data-label Name
+              //-     td
+              //-       span.data-entry {{mlsData.name}}
+
+
 

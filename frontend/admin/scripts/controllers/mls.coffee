@@ -1,70 +1,83 @@
+_ = require 'lodash'
 app = require '../app.coffee'
 mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal',
-  ($scope, $state, rmapsMlsService, $modal) ->
+app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular',
+  ($scope, $state, rmapsMlsService, $modal, Restangular) ->
 
     console.log 'rmapsMlsCtrl'
 
     rmapsMlsService.getConfigs()
     .then (configs) ->
-      angular.forEach configs, (config) ->
-        console.log config
+      $scope.idOptions = configs
+      console.log "#### configs:"
+      console.log $scope.idOptions
 
     $scope.mock =
       db: ['dbOne', 'dbTwo']
       table: ['tableOne', 'tableTwo']
       field: ['fieldOne', 'fieldTwo']
 
-    $scope.idOptions = []
     $scope.dbOptions = []
     $scope.tableOptions = []
     $scope.fieldOptions = []
 
-    #$scope.step0.$valid
 
-    $scope.mlsModalData =
-      id: null
-      name: null
-      notes: null
-      username: null
-      password: null
-      url: null
+    $scope.mlsData =
+      current:
+        id: null
+        name: null
+        notes: ""
+        active: false
+        username: null
+        password: null
+        url: null
+        main_property_data: {}
+
+    # $scope.mlsModalData =
+    #   id: null
+    #   name: null
+    #   notes: null
+    #   username: null
+    #   password: null
+    #   url: null
     $scope.animationsEnabled = true
     $scope.open = () ->
       modalInstance = $modal.open
         animation: $scope.animationsEnabled
-        #templateUrl: '../../html/views/templates/newMlsConfig.jade'
-        #templateUrl: 'templates/newMlsConfig.jade'
         template: modalTemplate
         controller: 'ModalInstanceCtrl'
         resolve:
           mlsModalData: () ->
-            return $scope.mlsModalData
+            return $scope.mlsData.current
 
       modalInstance.result.then(
         (mlsModalData) ->
           console.log "#### received modal data:"
           console.log mlsModalData
+          newMls = Restangular.one('/api/mls_config')
+          _.merge newMls, mlsModalData
+
+          newMls.post('').then (res) ->
+            console.log "#### res:"
+            console.log res
+            console.log "#### newMls"
+            console.log newMls
+            debugger
+            if res
+              $scope.idOptions.push(newMls)
+              $scope.mlsData.current = newMls
+          #debugger
+          # rmapsMlsService.postConfig($scope.mlsData.current)
+          # .then (res) ->
+
+          $scope.proceedTo(1)
         , () ->
           console.log "#### modal screwed up!"
       )
 
-    $scope.mlsData =
-      id: null
-      name: null
-      notes: null
-      active: null
-      username: null
-      password: null
-      url: null
-      main_property_data:
-        db: null
-        table: null
-        field: null
-        queryTemplate: null
     $scope.adminRoutes = adminRoutes
     $scope.$state = $state
 
@@ -78,8 +91,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       step: 0
       heading: "Select MLS"
       validate: () ->
-        id = $scope.mlsData.id
-        thisValidates = $scope.step0.$valid
+        thisValidates = true#$scope.step0.$valid
         if thisValidates
           $scope.formItems[1].disabled = false
           console.log "#### Step 1 validated"
@@ -89,7 +101,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       step: 1
       heading: "Choose Database"
       validate: () ->
-        thisValidates = true
+        thisValidates = $scope.step1.$valid
         if thisValidates
           $scope.formItems[2].disabled = false
           console.log "#### Step 2 validated"
@@ -99,7 +111,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       step: 2
       heading: "Choose Table"
       validate: () ->
-        thisValidates = true
+        thisValidates = $scope.step2.$valid
         if thisValidates
           $scope.formItems[3].disabled = false
           console.log "#### Step 3 validated"
@@ -109,7 +121,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       step: 3
       heading: "Choose Field"
       validate: () ->
-        thisValidates = true
+        thisValidates = $scope.step3.$valid
         if thisValidates
           console.log "#### Step 4 validated"
       disabled: true
