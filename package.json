@@ -115,7 +115,7 @@
     "lodash": "~3.9.3",
     "main-bower-files": "^2.0.0",
     "mapbox-upload": "^3.1.0",
-    "memoizee": "^0.3.7",
+    "memoizee": "^0.3.8",
     "memwatch-next": "^0.2.3",
     "method-override": "2.2.x",
     "mkdirp": "^0.5.0",
