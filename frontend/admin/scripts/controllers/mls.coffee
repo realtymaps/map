@@ -3,8 +3,11 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state', '$modal',
-  ($scope, $state, $modal) ->
+app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal',
+  ($scope, $state, rmapsMlsService, $modal) ->
+
+    console.log 'rmapsMlsCtrl'
+
     $scope.mock =
       db: ['dbOne', 'dbTwo']
       table: ['tableOne', 'tableTwo']
@@ -44,7 +47,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', '$modal',
           console.log "#### modal screwed up!"
       )
 
-    $scope.mlsData = 
+    $scope.mlsData =
       id: null
       name: null
       notes: null
@@ -76,7 +79,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', '$modal',
           $scope.formItems[1].disabled = false
           console.log "#### Step 1 validated"
       disabled: false
-      active: isActive(0)    
+      active: isActive(0)
     ,
       step: 1
       heading: "Choose Database"
