@@ -80,6 +80,8 @@ routesConfig =
             method: 'get'
         uploadToParcelsDb:
             method: 'get'
+        defineImports:
+            method: 'get'
     mls_config:
         getAll:
             method: 'get'

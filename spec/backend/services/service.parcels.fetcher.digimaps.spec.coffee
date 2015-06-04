@@ -26,22 +26,8 @@ describe 'service.digimaps', ->
                     return new StringStream(fileName)
                 return new StringStream('Does not exist!')
 
-    it '_getLatestDir', (done) ->
-        _getLatestDir = @subject.__get__('_getLatestDir')
-        _getLatestDir(@mockFtpClient, name:'DMP_DELIVERY_')
-        .then (val) ->
-            expect(val).to.be.eql 'DMP_DELIVERY_20150519'
-            done()
-
-    it '_goToLatestDir', (done) ->
-        _goToLatestDir = @subject.__get__('_goToLatestDir')
-        _goToLatestDir(@mockFtpClient)
-        .then (val) ->
-            expect(val).to.be.eql 'ZIPS'
-            done()
-
-    it 'root', (done) ->
-        @subject(123, Promise.resolve @mockFtpClient)
+    it 'getParcelZipFileStream', (done) ->
+        @subject.getParcelZipFileStream(123, '/ZIPS',Promise.resolve @mockFtpClient)
         .then (stream) ->
             str = ''
             stream.on 'data', (buf)->

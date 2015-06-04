@@ -5,6 +5,7 @@ logger = require '../config/logger'
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 parcelFetcher = require './service.parcels.fetcher.digimaps'
+parcelFetcher = parcelFetcher.getParcelZipFileStream
 {WGS84, UTM} = require '../../common/utils/enums/util.enums.map.coord_system'
 shp2json = require 'shp2jsonx'
 _ = require 'lodash'
@@ -29,14 +30,14 @@ _formatParcels = (featureCollection)  ->
     logger.debug featureCollection.features.length
     featureCollection.features.map (f) -> _formatParcel(f)
 
-_getParcelJSON = (fipsCode, digimapsSetings) ->
+_getParcelJSON = (fipsCode, fullPath, digimapsSetings) ->
     parcelFetcher(fipsCode, digimapsSetings)
     .then (stream) ->
         shp2json(stream)
         .pipe(JSONStream.parse('*.features.*'))
 
-_getFormatedParcelJSON = (fipsCode, digimapsSetings) ->
-    _getParcelJSON(fipsCode, digimapsSetings)
+_getFormatedParcelJSON = (fipsCode, fullPath, digimapsSetings) ->
+    _getParcelJSON(fipsCode, fullPath, digimapsSetings)
     .then (stream) ->
         write = (obj) ->
           @queue _formatParcels(obj)
@@ -68,8 +69,8 @@ _execRawQuery = (val, method = 'insert') ->
         # logger.debug "\n\n"
         q
 
-_uploadToParcelsDb = (fipsCode, digimapsSetings) -> Promise.try ->
-    _getParcelJSON(fipsCode, digimapsSetings)
+_uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
+    _getParcelJSON(fipsCode, fullPath, digimapsSetings)
     .then (stream) ->
         inserts = {}
         updates = {}
