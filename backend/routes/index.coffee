@@ -69,7 +69,6 @@ routesConfig =
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
     cartodb:
-        #TODO: API_KEY middleware
         getByFipsCodeAsFile:
             method: 'get'
         getByFipsCodeAsStream:

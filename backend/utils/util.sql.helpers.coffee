@@ -176,6 +176,13 @@ module.exports =
       extra = ", #{passedFilters} as \"passedFilters\""
     knex.select(knex.raw(prepend + _columns[which] + extra))
 
+  singleRow:(q) -> Promise.try ->
+      errMsg = 'Expected a Single Result and '
+      q.then (rows) ->
+          throw errMsg + 'rows are empty!' unless rows?.length
+          ret = rows[0]
+          throw errMsg + 'row is undefined' unless ret?
+          ret
   whereIn: whereIn
   orWhereIn: orWhereIn
   whereNotIn: whereNotIn
