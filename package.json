@@ -159,7 +159,8 @@
     "verror": "^1.6.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",
-    "winston": "0.8.x"
+    "winston": "0.8.x",
+    "node-uuid": "1.4.3"
   },
   "devDependencies": {
     "coffee-script": "^1.8.0",
