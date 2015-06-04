@@ -5,9 +5,9 @@ adminRoutes = require '../../../../common/config/routes.admin.coffee'
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
 
-module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider', 'RestangularProvider'
-  ($stateProvider, $stickyStateProvider, $urlRouterProvider, RestangularProvider) ->
+module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider',
 
+  ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
     buildState = (name, overrides = {}) ->
       state =
         name:         name
@@ -35,6 +35,4 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'pageNotFound', controller: null
 
     $urlRouterProvider.when '/admin/', adminRoutes.home
-
-    # RestangularProvider.setBaseUrl '/api/'
 ]
