@@ -17,7 +17,6 @@ div
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step").animate-show
                   div(ng-if="formItem.step == 0" name="step0")
                     select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="proceedTo(1)")
-                    //- select(type="text" ng-model="mlsData" ng-options="value.id for value in idOptions")
                     button(ng-click="open()") Create New MLS Config
 
                   ng-form(ng-if="formItem.step == 1" name="step1")
@@ -26,14 +25,14 @@ div
                         td
                           label.data-label Database:
                         td
-                          //- select(type="text" ng-model="mlsData.main_property_data.db" ng-options="label for value in dbOptions")
+                          select(type="text" ng-model="mlsData.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions")
                   ng-form(ng-if="formItem.step == 2" name="step2")
                     table
                       tr
                         td
                           label.data-label Table:
                         td
-                          //- select(type="text" ng-model="mlsData.main_property_data.table" ng-options="tableOptions")
+                          select(type="text" ng-model="mlsData.main_property_data.table" ng-options="value.ResourceID as value.ResourceID for value in tableOptions")
                   ng-form(ng-if="formItem.step == 3" name="step3")
                     table
                       tr
