@@ -5,7 +5,7 @@ div
         .col-md-6
           .progressPills
             tabset(type="pills")
-              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active()" ng-click="!formItem.disabled && proceedTo($index)")
+              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active" ng-click="!formItem.disabled && proceedTo($index)")
         .col-md-6
       .row
         .col-md-6
@@ -19,32 +19,32 @@ div
                     select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="proceedTo(1)")
                     button(ng-click="open()") Create New MLS Config
 
-                  ng-form(ng-if="formItem.step == 1" name="step1")
+                  div(ng-if="formItem.step == 1" name="step1")
                     table
                       tr
                         td
                           label.data-label Database:
                         td
-                          select(type="text" ng-model="mlsData.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions")
+                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="proceedTo(2)")
                   ng-form(ng-if="formItem.step == 2" name="step2")
                     table
                       tr
                         td
                           label.data-label Table:
                         td
-                          select(type="text" ng-model="mlsData.main_property_data.table" ng-options="value.ResourceID as value.ResourceID for value in tableOptions")
+                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ResourceID as value.ResourceID for value in tableOptions")
                   ng-form(ng-if="formItem.step == 3" name="step3")
                     table
                       tr
                         td
                           label.data-label Field:
                         td
-                          //- select(type="text" ng-model="mlsData.main_property_data.field" ng-options="fieldOptions")
+                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="fieldOptions")
                       tr
                         td
                           label.data-label Formatting:
                         td
-                          input(type="text" ng-model="mlsData.main_property_data.queryTemplate")
+                          input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate")
 
 
 

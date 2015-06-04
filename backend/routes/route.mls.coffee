@@ -33,7 +33,7 @@ module.exports =
             msg: "Config not found for MLS #{req.params.id}, try adding it first"
           404
       else
-        retsHelper.getTableList mlsConfig req.params.databaseName
+        retsHelper.getTableList mlsConfig, req.params.databaseName
         .then (list) ->
           next new ExpressResponse(list)
         .catch (error) ->
@@ -52,7 +52,7 @@ module.exports =
             msg: "Config not found for MLS #{req.params.id}, try adding it first"
           404
       else
-        retsHelper.getColumnList mlsConfig req.params.databaseName req.params.tableName
+        retsHelper.getColumnList mlsConfig, req.params.databaseName, req.params.tableName
         .then (list) ->
           next new ExpressResponse(list)
         .catch (error) ->

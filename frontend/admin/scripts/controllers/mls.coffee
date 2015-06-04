@@ -4,8 +4,8 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular',
-  ($scope, $state, rmapsMlsService, $modal, Restangular) ->
+app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q',
+  ($scope, $state, rmapsMlsService, $modal, Restangular, $q) ->
 
     console.log 'rmapsMlsCtrl'
 
@@ -68,61 +68,103 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
     $scope.formItems = [
       step: 0
       heading: "Select MLS"
-      validate: () ->
-        thisValidates = true#$scope.step0.$valid
-        if thisValidates
-          $scope.formItems[1].disabled = false
+      process: () ->
+        console.log "Processing step 0..."
+        if $scope.dbOptions.length == 0 and $scope.mlsData.current.id
+          console.log "dbOptions is empty, populating with id=#{$scope.mlsData.current.id}..."
           rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
           .then (data) ->
             $scope.dbOptions = data
+            $scope.formItems[1].disabled = false
+            console.log "#### Step 0 processed"
             console.log "#### dbOptions:"
             console.log $scope.dbOptions
-          console.log "#### Step 0 validated"
+
+          .catch (err) ->
+            # need to put in alert pane
+            console.log "#### error step 0: #{err}"
+        else
+          console.log "dbOptions is populated, no request needed..."
+          return $q.when()
+
       disabled: false
-      active: isActive(0)
+      active: true
     ,
       step: 1
       heading: "Choose Database"
-      validate: () ->
-        thisValidates = $scope.step1.$valid
-        if thisValidates
-          $scope.formItems[2].disabled = false
-          console.log "#### Step 1 validated"
+      process: () ->
+        console.log "Processing step 1..."
+        if $scope.tableOptions.length == 0 and $scope.mlsData.current.main_property_data.db
+          console.log "tableOptions is empty, populating with db=#{$scope.mlsData.current.main_property_data.db}..."
+          rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
+          .then (data) ->
+            $scope.tableOptions = data
+            $scope.formItems[2].disabled = false
+            console.log "#### Step 1 processed"
+            console.log "#### tableOptions:"
+            console.log $scope.tableOptions
+
+          .catch (err) ->
+            # need to put in alert pane
+            console.log "#### error step 1: #{err}"
+        else
+          return $q.when()
+
+
       disabled: true
-      active: isActive(1)
+      active: false
     ,
       step: 2
       heading: "Choose Table"
-      validate: () ->
-        thisValidates = $scope.step2.$valid
-        if thisValidates
-          $scope.formItems[3].disabled = false
-          console.log "#### Step 2 validated"
+      process: () ->
+        console.log "Processing step 2..."
+        # when going BACK to this step, only re-query if Options for next step is empty
+        if $scope.fieldOptions.length == 0 or $scope.mlsData.current.main_property_data.table
+          console.log "fieldOptions is empty, populating..."
+          rmapsMlsService.getFieldList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
+          .then (data) ->
+            $scope.fieldOptions = data
+            $scope.formItems[3].disabled = false
+            console.log "#### Step 2 processed"
+            console.log "#### fieldOptions:"
+            console.log $scope.fieldOptions
+
+          .catch (err) ->
+            # need to put in alert pane
+            console.log "#### error step 2: #{err}"
+        else
+          return $q.when()
+
       disabled: true
-      active: isActive(2)
+      active: false
     ,
       step: 3
       heading: "Choose Field"
-      validate: () ->
-        thisValidates = $scope.step3.$valid
+      process: () ->
+        thisValidates = true#$scope.step3.$valid
         if thisValidates
-          console.log "#### Step 3 validated"
+          console.log "#### Step 3 processed"
       disabled: true
-      active: isActive(3)
+      active: false
     ]
 
     $scope.proceedTo = (toStep) ->
+      console.log "#### trying to advance to step #{toStep}"
       thisStep = $scope.step
-      if toStep > thisStep
-        # run proceed() of this step, which validates
-        $scope.formItems[thisStep].validate()
 
-      # incr active step if allowed
-      if _.every($scope.formItems[..toStep], {disabled: false}) and toStep < ($scope.formItems.length)
-        $scope.step = toStep
-      else
-        $scope.alert = "Cannot proceed to step #{toStep}!"
-        console.log $scope.alert
+      # run proceed() of this step, which validates
+      $scope.formItems[thisStep].process()
+      .then () ->
+        # incr active step if allowed
+        if _.every($scope.formItems[..toStep], {disabled: false}) and toStep < ($scope.formItems.length)
+          $scope.step = toStep
+          console.log "Now on step #{$scope.step}"
+          $scope.formItems[thisStep].active = false
+          $scope.formItems[toStep].active = true
+        else
+          $scope.alert = "Cannot proceed to step #{toStep}!"
+          console.log $scope.alert
+
 ]
 
 

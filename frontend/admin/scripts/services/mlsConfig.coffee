@@ -21,7 +21,8 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     Restangular.all('/api/mls').one(configId).all('databases').getList()
 
   getTableList = (configId, databaseName) ->
-    Restangular.all('/ap/mls').one(configId).all('tables').getList
+    console.log "#### service: attempting call with configId=#{configId}, databaseName=#{databaseName}"
+    Restangular.all('/api/mls').one(configId).all('tables').getList
       databaseName: databaseName
 
   getColumnList = (configId, databaseName, tableName) ->

@@ -48,7 +48,7 @@ app = require '../app.coffee'
 ###
 
 module.exports = app.controller 'rmapsAlertsCtrl',
-  ($scope, $timeout, $sce, rmapsevents, rmapsMainOptions, $log) ->
+  ($scope, $timeout, $sce, rmapsevents, $log) ->
     $scope.alerts = []
     alertsMap = {}
     anonymousAlertCounter = 1

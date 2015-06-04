@@ -3,4 +3,4 @@ include ../includes/navbar.jade
 div(roll="main").adminWorkspace
   div(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", ng-show="$state.is(state.name)", ng-cloak).adminPage
 
-//include ../includes/alerts.jade
+include ../includes/alerts.jade
