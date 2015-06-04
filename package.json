@@ -9,7 +9,7 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "0.10.38",
+    "node": "0.12.4",
     "npm": "2.9.x"
   },
   "scripts": {
