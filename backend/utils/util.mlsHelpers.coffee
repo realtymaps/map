@@ -140,9 +140,9 @@ loadRetsTableUpdates = (subtask, options) ->
       _streamArrayToDbTable(results, rawTableName, fields)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-  .finally () ->
-    # always log out the RETS client when we're done
-    retsClient.logout()
+    .finally () ->
+      # always log out the RETS client when we're done
+      retsClient.logout()
 
 _getRetsClient = (loginUrl, username, password) ->
   Promise.try () ->
@@ -153,22 +153,15 @@ _getRetsClient = (loginUrl, username, password) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "RETS client could not be created")
   .then (retsClient) ->
-    logger.info 'RETS CLIENT'
-    logger.info retsClient
     retsClient.login()
     .catch isUnhandled, (error) ->
       if error.replyCode
         error = new Error("#{error.replyText} (#{error.replyCode})")
       throw new PartiallyHandledError(error, "RETS login failed")
-    .then () ->
-      logger.info "LOGIN SUCCESS"
-      retsClient
 
 getDatabaseList = (serverInfo) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
   .then (retsClient) ->
-    logger.info 'GET DBS! (HOPE WE LOGGED IN FIRST)'
-    logger.info _.keys(retsClient.metadata)
     retsClient.metadata.getResources()
     .catch (error) ->
       logger.error error.stack
@@ -192,7 +185,8 @@ getTableList = (serverInfo, databaseName) ->
     .then (response) ->
       _.map response.Classes, (r) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
-    .finally retsClient.logout
+    .finally () ->
+      retsClient.logout()
 
 getColumnList = (serverInfo, databaseName, tableName) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
@@ -203,7 +197,8 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .then (response) ->
       _.map response.Fields, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
-    .finally retsClient.logout
+    .finally () ->
+      retsClient.logout()
 
 _getValidations = (dataSourceId) ->
   jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)

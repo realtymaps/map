@@ -61,7 +61,7 @@ module.exports =
 
     mls:
         apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
-        getDatabaseList:  "#{apiBaseMls}/:id/databases"
-        getTableList:     "#{apiBaseMls}/:id/tables"
-        getColumnList:    "#{apiBaseMls}/:id/columns"
+        getDatabaseList:  "#{apiBaseMls}/:mlsId/databases"
+        getTableList:     "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
+        getColumnList:    "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
     # hirefire secret value set from within backend/config/config.coffee
