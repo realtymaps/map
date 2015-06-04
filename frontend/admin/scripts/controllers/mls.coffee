@@ -34,7 +34,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         username: null
         password: null
         url: null
-        main_property_data: {}
+        main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
 
     $scope.animationsEnabled = true
     $scope.open = () ->
@@ -70,8 +70,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       heading: "Select MLS"
       process: () ->
         console.log "Processing step 0..."
-        if $scope.dbOptions.length == 0 and $scope.mlsData.current.id
-          console.log "dbOptions is empty, populating with id=#{$scope.mlsData.current.id}..."
+        if $scope.mlsData.current.id
+          console.log "populating dbOptions with id=#{$scope.mlsData.current.id}..."
           rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
           .then (data) ->
             $scope.dbOptions = data
@@ -82,9 +82,11 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
 
           .catch (err) ->
             # need to put in alert pane
+            $scope.dbOptions = []
+            $scope.tableOptions = []
+            $scope.fieldOptions = []
             console.log "#### error step 0: #{err}"
         else
-          console.log "dbOptions is populated, no request needed..."
           return $q.when()
 
       disabled: false
@@ -95,7 +97,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       process: () ->
         console.log "Processing step 1..."
         if $scope.tableOptions.length == 0 and $scope.mlsData.current.main_property_data.db
-          console.log "tableOptions is empty, populating with db=#{$scope.mlsData.current.main_property_data.db}..."
+          console.log "populating tableOptions with db=#{$scope.mlsData.current.main_property_data.db}..."
           rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
           .then (data) ->
             $scope.tableOptions = data
@@ -105,6 +107,8 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
             console.log $scope.tableOptions
 
           .catch (err) ->
+            $scope.tableOptions = []
+            $scope.fieldOptions = []
             # need to put in alert pane
             console.log "#### error step 1: #{err}"
         else
@@ -118,18 +122,20 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       heading: "Choose Table"
       process: () ->
         console.log "Processing step 2..."
-        # when going BACK to this step, only re-query if Options for next step is empty
-        if $scope.fieldOptions.length == 0 or $scope.mlsData.current.main_property_data.table
-          console.log "fieldOptions is empty, populating..."
-          rmapsMlsService.getFieldList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
+        # when going BACK to this step, only re-query if we have a table to use
+        if $scope.mlsData.current.main_property_data.table
+          console.log "populating fieldOptions with table=#{$scope.mlsData.current.main_property_data.table}..."
+          rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
           .then (data) ->
-            $scope.fieldOptions = data
+            r = /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
+            $scope.fieldOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
             $scope.formItems[3].disabled = false
             console.log "#### Step 2 processed"
             console.log "#### fieldOptions:"
             console.log $scope.fieldOptions
 
           .catch (err) ->
+            $scope.fieldOptions = []
             # need to put in alert pane
             console.log "#### error step 2: #{err}"
         else
@@ -141,9 +147,11 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       step: 3
       heading: "Choose Field"
       process: () ->
-        thisValidates = true#$scope.step3.$valid
-        if thisValidates
+        $scope.mlsData.current.save()
+        .then (res) ->
           console.log "#### Step 3 processed"
+        .catch (err) ->
+          console.log "#### Step 3 errored: #{err}"
       disabled: true
       active: false
     ]
@@ -161,9 +169,6 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
           console.log "Now on step #{$scope.step}"
           $scope.formItems[thisStep].active = false
           $scope.formItems[toStep].active = true
-        else
-          $scope.alert = "Cannot proceed to step #{toStep}!"
-          console.log $scope.alert
 
 ]
 

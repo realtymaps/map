@@ -21,10 +21,10 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     Restangular.all('/api/mls').one(configId).all('databases').getList()
 
   getTableList = (configId, databaseId) ->
-    Restangular.all('/api/mls').one(configId).all('databases').one(databaseId).all('tables')
+    Restangular.all('/api/mls').one(configId).all('databases').one(databaseId).all('tables').getList()
 
   getColumnList = (configId, databaseId, tableId) ->
-    Restangular.all('/api/mls').one(configId).all('databases').one(databaseId).all('tables').one(tableId).all('columns')
+    Restangular.all('/api/mls').one(configId).all('databases').one(databaseId).all('tables').one(tableId).all('columns').getList()
 
   service =
     getConfigs: getConfigs,

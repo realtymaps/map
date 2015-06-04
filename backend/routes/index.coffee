@@ -88,7 +88,7 @@ routesConfig =
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         update:
-            method: 'patch'
+            method: 'put'
             middleware: auth.requireLogin(redirectOnFail: true)
         updatePropertyData:
             method: 'patch'

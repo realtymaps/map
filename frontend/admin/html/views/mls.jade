@@ -26,20 +26,20 @@ div
                           label.data-label Database:
                         td
                           select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="proceedTo(2)")
-                  ng-form(ng-if="formItem.step == 2" name="step2")
+                  div(ng-if="formItem.step == 2" name="step2")
                     table
                       tr
                         td
                           label.data-label Table:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ResourceID as value.ResourceID for value in tableOptions")
-                  ng-form(ng-if="formItem.step == 3" name="step3")
+                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="proceedTo(3)")
+                  div(ng-if="formItem.step == 3" name="step3")
                     table
                       tr
                         td
                           label.data-label Field:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="fieldOptions")
+                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.SystemName+' '+value.LongName for value in fieldOptions " ng-change="proceedTo(4)")
                       tr
                         td
                           label.data-label Formatting:
