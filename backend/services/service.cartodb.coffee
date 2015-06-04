@@ -5,12 +5,19 @@ _parcelTable = sqlHelpers.tableName(Parcel)
 Promise = require "bluebird"
 logger = require '../config/logger'
 {CARTODB} = require '../config/config'
-cartodbUpload = require 'cartodb-upload'
+cartodb = require 'cartodb-api'
+cartodbSql = require '../utils/util.cartodb.sql'
+
 
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 mapboxUpload = require '../utils/util.mapbox'
 fs = require 'fs'
+
+_execCartodbSql = (sql) ->
+  cartodb.sql
+    apiKey: CARTODB.API_KEY
+    sql:sql
 
 _upload = (stream, fileName) -> Promise.try ->
   # writeStream = fs.createWriteStream './output.json'
@@ -27,7 +34,7 @@ _upload = (stream, fileName) -> Promise.try ->
       logger.debug 'done processing stream'
 
       resolve Promise.all _.map MAPBOX.MAPS, (mapId) ->
-        cartodbUpload
+        cartodb.upload
           apiKey: CARTODB.API_KEY
           stream: filteredStream
           uploadFileName: fileName
@@ -51,11 +58,17 @@ _fipsCodeQuery = (opts) ->
 
 _parcel =
   upload: (fipscode) ->
-    _upload _fipsCodeQuery(fipscode: fipscode).stream(), 'parcels-' + fipsCode
+    _upload _fipsCodeQuery(fipscode: fipscode).stream(), fipsCode
 
-  #initiates cartodb to synchronize (callback to us for a file)
-  synchronize: (fipsCode) ->
-    #need to add synchronize API to cartodb-upload
+  #merge data to parcels cartodb table
+  synchronize: (fipsCode) -> Promise.try ->
+      _execCartodbSql(cartodbSql.update(fipsCode))
+    .then ->
+      _execCartodbSql(cartodbSql.insert(fipsCode))
+    .then ->
+      _execCartodbSql(cartodbSql.delete(fipsCode))
+    .then ->
+      _execCartodbSql(cartodbSql.drop(fipsCode))
 
   getByFipsCode: (opts) ->
     _fipsCodeQuery(opts)

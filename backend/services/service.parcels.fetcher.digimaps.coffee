@@ -1,8 +1,11 @@
 Promise = require "bluebird"
 logger = require '../config/logger'
-{DIGIMAPS} = require '../config/config'
 ftp = require 'ftp'
 _ = require 'lodash'
+
+DIGIMAPS =
+    DIRECTORIES:[{name:"DELIVERIES"}, {name: "DMP_DELIVERY_", doParseDate:true}, {name:"ZIPS"}]
+    FILE:{name:"Parcels_", appendFipsCode:true, ext:".zip"}
 
 _createFtp = (url, account, password) ->
     c = Promise.promisifyAll(new ftp())
@@ -17,6 +20,7 @@ _createFtp = (url, account, password) ->
     c.onAsync 'ready'
     .catch (err) ->
         logger.error(err)
+        throw err
     .then ->
         logger.debug("new client connected")
         c
@@ -59,9 +63,14 @@ _getFileName = (fipsCode) ->
         return DIGIMAPS.FILE.name + String(fipsCode) + DIGIMAPS.FILE.ext
     DIGIMAPS.FILE.name
 
-_getParcelZipFileStream = (fipsCode, clientPromise = _createFtp(DIGIMAPS.URL, DIGIMAPS.ACCOUNT, DIGIMAPS.PASSWORD)) ->
-    clientPromise
-    .then (client) ->
+_getParcelZipFileStream = (fipsCode, digiMapsSettings) ->
+    if _.isFunction digiMapsSettings?.then
+        promise = digiMapsSettings
+    else
+        {URL, ACCOUNT, PASSWORD} = digiMapsSettings
+        promise = _createFtp(URL, ACCOUNT, PASSWORD)
+
+    promise.then (client) ->
         fileName = _getFileName(fipsCode)
         logger.debug(fileName)
         _goToLatestDir(client)
