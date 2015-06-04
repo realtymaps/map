@@ -35,9 +35,9 @@ module.exports =
         getByFipsCodeAsFile:      "#{apiBase}/cartodb/fipscodeFile/:fipscode"
         getByFipsCodeAsStream:    "#{apiBase}/cartodb/fipscodeStream/:fipscode"
     parcel:
-        getByFipsCode:            "#{apiBase}/parcel/fipscode"
-        getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted"
-        uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload"
+        getByFipsCode:            "#{apiBase}/parcel"
+        getByFipsCodeFormatted:   "#{apiBase}/parcel/formatted"
+        uploadToParcelsDb:        "#{apiBase}/parcel/upload"
         defineImports:            "#{apiBase}/parcel/defineimports"
     mls_config:
         getAll:                 "#{apiBase}/mls_config"

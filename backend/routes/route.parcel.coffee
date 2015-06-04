@@ -31,19 +31,18 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) -> Promis
 
     validation.validateAndTransform(allParams, transforms)
     .then (validParams) ->
-        logger.debug validParams
-        logger.debug 'getting creds'
         getCredentials().then (creds) ->
+            logger.debug validParams.fullpath
             fn(validParams.fipscode, validParams.fullpath, creds)
             .then (s) ->
                 _handleRes(s, res, isStream)
 
-.catch validation.DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
-.catch (error) ->
-    if _.isString error
-        return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus[error])
-    throw error
+    .catch validation.DataValidationError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    .catch (error) ->
+        if _.isString error
+            return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus.NOT_FOUND)
+        throw error
 
 module.exports =
     getByFipsCode: _getByFipsCode

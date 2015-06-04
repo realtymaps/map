@@ -9,14 +9,16 @@ DIGIMAPS =
     DIRECTORIES:[{name:"DELIVERIES"}, {name: "DMP_DELIVERY_", doParseDate:true}, {name:"ZIPS"}]
     FILE:{name:"Parcels_", appendFipsCode:true, ext:".zip"}
 
-
-
 _getClientFromDigiSettings = (digiMapsSettings) ->
+    logger.debug digiMapsSettings
     if _.isFunction digiMapsSettings?.then
         return digiMapsSettings
     {URL, ACCOUNT, PASSWORD} = digiMapsSettings
     _createFtp(URL, ACCOUNT, PASSWORD)
 
+
+_fipsCodesFromListing = (ls) ->
+    ls.map (l) -> l.name.replace(/\D/g, '')
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
@@ -60,7 +62,7 @@ _defineImports = (digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endD
                         logger.debug "pwd: #{path}"
                     getClient.listAsync()
                 .then (ls) ->
-                    fipsCodes = ls.map (l) -> l.name.replace(/\D/g, '')
+                    fipsCodes = _fipsCodesFromListing(ls)
                     toImport =
                         folder_name: folderName
                         fips_codes:JSON.stringify fipsCodes
@@ -69,7 +71,6 @@ _defineImports = (digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endD
                     logger.debug "defineImports: step 2"
                     # logger.debug toImport
                     importsToAdd.push toImport
-
 
             for key, name of folderNamesToAdd
                 fullPath = "/#{rootDir}/#{name}/#{endDir}"
@@ -96,10 +97,21 @@ _getParcelZipFileStream = (fipsCode, fullPath, digiMapsSettings) ->
         fileName = _getFileName(fipsCode)
         logger.debug(fileName)
         client.cwdAsync(fullPath)
+        .then ->
+            client.pwdAsync()
         .then (dirName) ->
-            logger.debug("downloading: #{fileName} in #{dirName}")
+            new Promise (resolve, reject) ->
+                client.listAsync()
+                .then (ls) ->
+                    hasFipsCode = _.contains _fipsCodesFromListing(ls), fipsCode
+                    if hasFipsCode
+                        logger.debug("downloading: #{fileName} in #{dirName}")
+                        return resolve(dirName)
+                    return reject('FipsCode does not exist.')
+                .catch reject
+        .then ->
             client.getAsync(fileName)
-        .then (stream) ->
+        .then (stream) -> Promise.try ->
             logger.debug("download complete: #{fileName}")
             stream.on 'error', (err) ->
                 logger.debug "stream error: #{err}"
@@ -109,7 +121,6 @@ _getParcelZipFileStream = (fipsCode, fullPath, digiMapsSettings) ->
                 logger.debug 'stream close'
                 client.end()
             stream
-
 
 module.exports =
     getParcelZipFileStream: _getParcelZipFileStream
