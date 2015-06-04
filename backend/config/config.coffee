@@ -105,7 +105,6 @@ base =
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
-  DIGIMAPS: _getAllConfigs('DIGIMAPS', ['ACCOUNT', 'URL', 'PASSWORD',{name:'DIRECTORIES', isJson: true}, {name:'FILE', isJson: true}])
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =
