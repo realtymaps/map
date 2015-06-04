@@ -4,10 +4,11 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular',
-  ($scope, $state, rmapsMlsService, $modal, Restangular) ->
+app.controller 'rmapsMlsCtrl', [ '$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', 'rmapsevents'
+  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, rmapsevents) ->
 
     console.log 'rmapsMlsCtrl'
+    $rootScope.$emit rmapsevents.alert.spawn, { msg: 'FFFUUU' }
 
     rmapsMlsService.getConfigs()
     .then (configs) ->
