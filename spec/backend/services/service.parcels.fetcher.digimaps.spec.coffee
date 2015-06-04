@@ -13,12 +13,9 @@ describe 'service.digimaps', ->
                 currentDir = dirName
                 Promise.resolve dirName
             pwdAsync: ->
-                Promise.resolve dirName
+                Promise.resolve currentDir
             listAsync: sinon.stub().returns Promise.resolve [
-                    {name:'DMP_DELIVERY_20141011'}
-                    {name:'DMP_DELIVERY_20150108'}
-                    {name:'DMP_DELIVERY_20150519'}
-                    {name:'DMP_DELIVERY_20150208'}
+                    {name:'Points123.zip'}
                 ]
             getAsync: (fileName) -> Promise.try ->
                 console.log "currentDir: #{currentDir}"

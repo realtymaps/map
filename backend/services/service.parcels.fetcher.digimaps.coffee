@@ -103,7 +103,7 @@ _getParcelZipFileStream = (fipsCode, fullPath, digiMapsSettings) ->
             new Promise (resolve, reject) ->
                 client.listAsync()
                 .then (ls) ->
-                    hasFipsCode = _.contains _fipsCodesFromListing(ls), fipsCode
+                    hasFipsCode = _.contains _fipsCodesFromListing(ls), String(fipsCode)
                     if hasFipsCode
                         logger.debug("downloading: #{fileName} in #{dirName}")
                         return resolve(dirName)
