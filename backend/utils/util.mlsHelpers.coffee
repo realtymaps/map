@@ -20,13 +20,6 @@ vm = require 'vm'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
-
-_getClient = (loginUrl, username, password) ->
-  new rets.Client
-    loginUrl: loginUrl
-    username: username
-    password: encryptor.decrypt(password)
-
 _streamArrayToDbTable = (objects, tableName, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
   # first.  Eventually, we can rewrite the rets-promise client to use hyperquest and a streaming xml parser
@@ -151,53 +144,66 @@ loadRetsTableUpdates = (subtask, options) ->
     # always log out the RETS client when we're done
     retsClient.logout()
 
-getDatabaseList = (serverInfo) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
+_getRetsClient = (loginUrl, username, password) ->
+  Promise.try () ->
+    new rets.Client
+      loginUrl: loginUrl
+      username: username
+      password: encryptor.decrypt(password)
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(error, "RETS client could not be created")
+  .then (retsClient) ->
+    logger.info 'RETS CLIENT'
+    logger.info retsClient
+    retsClient.login()
+    .catch isUnhandled, (error) ->
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "RETS login failed")
+    .then () ->
+      logger.info "LOGIN SUCCESS"
+      retsClient
 
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+getDatabaseList = (serverInfo) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
+    logger.info 'GET DBS! (HOPE WE LOGGED IN FIRST)'
+    logger.info _.keys(retsClient.metadata)
     retsClient.metadata.getResources()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS databases")
-  .then (response) ->
-    _.map response.Resources, (r) ->
-      _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch (error) ->
+      logger.error error.stack
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "Failed to retrieve RETS databases")
+    .then (response) ->
+      _.map response.Resources, (r) ->
+        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+    .finally () ->
+      retsClient.logout()
 
 getTableList = (serverInfo, databaseName) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
-
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
     retsClient.metadata.getClass(databaseName)
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS tables")
-  .then (response) ->
-    _.map response.Classes, (r) ->
-      _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "Failed to retrieve RETS tables")
+    .then (response) ->
+      _.map response.Classes, (r) ->
+        _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+    .finally retsClient.logout
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
-
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
-  .then (response) ->
-    _.map response.Fields, (r) ->
-      _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
+    .then (response) ->
+      _.map response.Fields, (r) ->
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+    .finally retsClient.logout
 
 _getValidations = (dataSourceId) ->
   jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
@@ -280,7 +286,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
         dbs.properties.knex(taskHelpers.tables.mlsData)
         .insert(updateRow)
       else
-        # found an existing row, so need to update, but include change log 
+        # found an existing row, so need to update, but include change log
         updateRow.change_history = result.change_history ? []
         changes = _diff(updateRow, result, diffExcludeKeys)
         if !_.isEmpty changes
