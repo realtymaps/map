@@ -5,13 +5,13 @@ mlsConfigService = require '../services/service.mls_config'
 
 module.exports =
   getDatabaseList: (req, res, next) ->
-    logger.info 'mls.getDatabaseList', req.params.id
-    mlsConfigService.getById(req.params.id)
+    logger.info 'mls.getDatabaseList', req.params.mlsId
+    mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
         next new ExpressResponse
           alert:
-            msg: "Config not found for MLS #{req.params.id}, try adding it first"
+            msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
           404
       else
         retsHelper.getDatabaseList mlsConfig
@@ -24,16 +24,16 @@ module.exports =
             500
 
   getTableList: (req, res, next) ->
-    logger.info 'mls.getTableList', req.params.id
-    mlsConfigService.getById(req.params.id)
+    logger.info 'mls.getTableList', req.params.mlsId, req.params.databaseId
+    mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
         next new ExpressResponse
           alert:
-            msg: "Config not found for MLS #{req.params.id}, try adding it first"
+            msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
           404
       else
-        retsHelper.getTableList mlsConfig, req.params.databaseName
+        retsHelper.getTableList mlsConfig, req.params.databaseId
         .then (list) ->
           next new ExpressResponse(list)
         .catch (error) ->
@@ -43,16 +43,16 @@ module.exports =
             500
 
   getColumnList: (req, res, next) ->
-    logger.info 'mls.getColumnList', req.params.id
-    mlsConfigService.getById(req.params.id)
+    logger.info 'mls.getColumnList', req.params.mlsId, req.params.databaseId, req.params.tableId
+    mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
         next new ExpressResponse
           alert:
-            msg: "Config not found for MLS #{req.params.id}, try adding it first"
+            msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
           404
       else
-        retsHelper.getColumnList mlsConfig, req.params.databaseName, req.params.tableName
+        retsHelper.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
         .then (list) ->
           next new ExpressResponse(list)
         .catch (error) ->
