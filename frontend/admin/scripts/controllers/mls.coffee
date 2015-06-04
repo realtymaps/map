@@ -8,7 +8,7 @@ app.controller 'rmapsMlsCtrl', [ '$rootScope', '$scope', '$state', 'rmapsMlsServ
   ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents) ->
 
     console.log 'rmapsMlsCtrl'
-    $rootScope.$emit rmapsevents.alert.spawn, { msg: 'FFFUUU' }
+    $rootScope.$emit rmapsevents.alert.spawn, { msg: 'This should be a dismissable alert' }
 
     rmapsMlsService.getConfigs()
     .then (configs) ->
