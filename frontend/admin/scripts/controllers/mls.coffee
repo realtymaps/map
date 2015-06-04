@@ -36,13 +36,6 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         url: null
         main_property_data: {}
 
-    # $scope.mlsModalData =
-    #   id: null
-    #   name: null
-    #   notes: null
-    #   username: null
-    #   password: null
-    #   url: null
     $scope.animationsEnabled = true
     $scope.open = () ->
       modalInstance = $modal.open
@@ -57,8 +50,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         (mlsModalData) ->
           rmapsMlsService.postConfig(mlsModalData, $scope.idOptions).then (newMls) ->
             $scope.mlsData.current = newMls
-
-          $scope.proceedTo(1)
+            $scope.proceedTo(1)
         , () ->
           console.log "#### modal screwed up!"
       )
@@ -72,6 +64,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       () ->
         return ($scope.step == configStep)
 
+
     $scope.formItems = [
       step: 0
       heading: "Select MLS"
@@ -79,7 +72,12 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         thisValidates = true#$scope.step0.$valid
         if thisValidates
           $scope.formItems[1].disabled = false
-          console.log "#### Step 1 validated"
+          rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
+          .then (data) ->
+            $scope.dbOptions = data
+            console.log "#### dbOptions:"
+            console.log $scope.dbOptions
+          console.log "#### Step 0 validated"
       disabled: false
       active: isActive(0)
     ,
@@ -89,7 +87,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         thisValidates = $scope.step1.$valid
         if thisValidates
           $scope.formItems[2].disabled = false
-          console.log "#### Step 2 validated"
+          console.log "#### Step 1 validated"
       disabled: true
       active: isActive(1)
     ,
@@ -99,7 +97,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
         thisValidates = $scope.step2.$valid
         if thisValidates
           $scope.formItems[3].disabled = false
-          console.log "#### Step 3 validated"
+          console.log "#### Step 2 validated"
       disabled: true
       active: isActive(2)
     ,
@@ -108,7 +106,7 @@ app.controller 'rmapsMlsCtrl', [ '$scope', '$state', 'rmapsMlsService', '$modal'
       validate: () ->
         thisValidates = $scope.step3.$valid
         if thisValidates
-          console.log "#### Step 4 validated"
+          console.log "#### Step 3 validated"
       disabled: true
       active: isActive(3)
     ]

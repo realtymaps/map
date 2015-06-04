@@ -42,27 +42,34 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
     return objects.length
 
 
+_getValues = (obj, list) ->
+  for item in list
+    obj[item.name] = item.value
+
 # this performs a diff of 2 sets of MLS data, returning only the changed/new/deleted fields as keys, with the value
-# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data
-_diff = (row1, row2) ->
+# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data,
+# excluding those that are expected to be date-related derived values (notably DOM and CDOM)
+_diff = (row1, row2, diffExcludeKeys=[]) ->
   result = {}
   fields1 = {}
   fields2 = {}
 
   # first, flatten the objects
   for groupName, groupList of row1.client_groups
-    _.extend fields1, groupList
-    _.extend fields2, row2.client_groups[groupName]
+    _getValues fields1, groupList
+    _getValues fields2, row2.client_groups[groupName]
   for groupName, groupList of row1.realtor_groups
-    _.extend fields1, groupList
-    _.extend fields2, row2.realtor_groups[groupName]
-  _.extend fields1, row2.realtor_groups.hidden_fields
-  _.extend fields2, row2.realtor_groups.hidden_fields
-  _.extend fields1, row2.realtor_groups.ungrouped_fields
-  _.extend fields2, row2.realtor_groups.ungrouped_fields
+    _getValues fields1, groupList
+    _getValues fields2, row2.realtor_groups[groupName]
+  _getValues fields1, row2.realtor_groups.hidden_fields
+  _getValues fields2, row2.realtor_groups.hidden_fields
+  _getValues fields1, row2.realtor_groups.ungrouped_fields
+  _getValues fields2, row2.realtor_groups.ungrouped_fields
 
   # then get changes from row1 to row2
   for fieldName, value1 of fields1
+    if fieldName in diffExcludeKeys
+      continue
     if !_.isEqual value1, fields2[fieldName]
       result[fieldName] = if fieldName in fields2 then fields2[fieldName] else null
 
@@ -233,37 +240,39 @@ normalizeData = (subtask, options) ->
       for validationDefinition in validationList
         if validationDefinition.input?
           if _.isObject validationDefinition.input
-            usedKeys.concat Object.keys(validationDefinition.input)
+            newKeys = Object.keys(validationDefinition.input)
           else
-            usedKeys.concat validationDefinition.input
+            newKeys = validationDefinition.input
         else
-          usedKeys.push(validationDefinition.output)
-    Promise.map rows, _updateRecord
+          newKeys = [validationDefinition.output]
+        usedKeys.concat(newKeys)
+        if validationDefinition.list == 'base' && validationDefinition.output = 'days_on_market'
+          diffExcludeKeys = newKeys
+    Promise.map rows, (row) ->
+      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)).then _updateRecord.bind(null, diffExcludeKeys, usedKeys))
 
-_updateRecord = (normalizedData) ->
-  Promise.props _.mapValues(validationMap, validation.validateAndTransform.bind(null, row))
-  .then (transformedValues) ->
-    # build the row's new values
-    _.extend values.base,
-      data_source_id: options.dataSourceId
-      batch_id: subtask.batch_id
-      deleted: false
-      up_to_date: startTime
-      client_groups:
-        general: values.general
-        details: values.details
-        listing: values.listing
-        building: values.building
-        dimensions: values.dimensions
-        lot: values.lot
-        location: values.location
-        restrictions: values.restrictions
-      realtor_groups:
-        contacts: values.contacts
-        realtor: values.realtor
-        sale: values.sale
-      hidden_fields: values.hidden
-      ungrouped_fields: _.omit(row, usedKeys)
+_updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
+  # build the row's new values
+  _.extend normalizedData.base,
+    data_source_id: options.dataSourceId
+    batch_id: subtask.batch_id
+    deleted: false
+    up_to_date: startTime
+    client_groups:
+      general: normalizedData.general
+      details: normalizedData.details
+      listing: normalizedData.listing
+      building: normalizedData.building
+      dimensions: normalizedData.dimensions
+      lot: normalizedData.lot
+      location: normalizedData.location
+      restrictions: normalizedData.restrictions
+    realtor_groups:
+      contacts: normalizedData.contacts
+      realtor: normalizedData.realtor
+      sale: normalizedData.sale
+    hidden_fields: normalizedData.hidden
+    ungrouped_fields: _.omit(row, usedKeys)
   .then (updateRow) ->
     # check for an existing row
     dbs.properties.knex(taskHelpers.tables.mlsData)
@@ -279,7 +288,7 @@ _updateRecord = (normalizedData) ->
       else
         # found an existing row, so need to update, but include change log
         updateRow.change_history = result.change_history ? []
-        changes = _diff(updateRow, result)
+        changes = _diff(updateRow, result, diffExcludeKeys)
         if !_.isEmpty changes
           updateRow.change_history.push changes
         dbs.properties.knex(taskHelpers.tables.mlsData)
