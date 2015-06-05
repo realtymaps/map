@@ -85,7 +85,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
           .then (newMls) ->
             $scope.mlsData.current = newMls
-            $scope.updateObjectOptions(scope.mlsData.current)
+            $scope.updateObjectOptions($scope.mlsData.current)
           .catch (err) ->
             $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error saving MLS data.' }
             console.log "#### error saving MLS data:"

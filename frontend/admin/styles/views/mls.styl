@@ -1,37 +1,40 @@
 $wizardPaneWidth = 775px
 $wizardPaneHeight = 250px
 
+*
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
+
+.nav *, .panel-heading
+  letter-spacing: 0.2em
+
+.nav-pills li a
+  border-radius: 0
+
+.nav-pills li.active
+  a, a:hover, a:focus
+    color: black
+    background-color: white !important
+
 .data-entry
-  font-size: 16px
-  font-weight: normal
-  padding-left: 10px
+  font-family: "Courier New", fixed
+  padding-left: 1em
 
 .data-label
   font-size: 16px
   font-weight: bold
   text-align: left;
 
-.panel
-  border-radius 10px
-
 .panel > .panel-heading
-  background-color rm-medium-blue
-  border none
-  font-size 14px
-  border-top-right-radius 10px
-  border-top-left-radius 10px
-  padding 5px 10px
+  background-color: white
+  padding: 1em
 
 .panel > .panel-body
-  background-color white
-  color #000
-  padding 5px
-  font-size 12px
-  border-bottom-right-radius 10px
-  border-bottom-left-radius 10px
-  border 1px solid rgb(157,157,157)
-  position: relative
-  
+  border: 0
+  padding: 1em
+  overflow: scroll
+  table
+    width: 100%
+
 .animate-container {
   position: relative
   height: $wizardPaneHeight
@@ -62,9 +65,6 @@ $wizardPaneHeight = 250px
 
 .progressPills ul
   margin: auto
-  
-.submitButton
-  bottom: 0
-  
-.model-content
-  border-radius: 10px
+
+button
+  margin-right: 1em
