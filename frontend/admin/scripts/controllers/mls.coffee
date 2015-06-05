@@ -36,31 +36,26 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
 
-    # when leading new mlsData, update the dropdowns as needed
+    # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
       console.log "#### processing obj"
       console.log obj
       deferred = $q.defer()
       promises = []
-      if obj.main_property_data.db
-        promises.push getDbOptions()
+      promises.push getDbOptions()
 
-        if obj.main_property_data.table
-          promises.push getTableOptions()
+      if obj.main_property_data.db?
+        promises.push getTableOptions()
 
-          if obj.main_property_data.field
-            promises.push getColumnOptions()
-          else
-            $scope.tableOptions = []
-            $scope.formItems[3].disabled = true
-
+        if obj.main_property_data.table?
+          promises.push getColumnOptions()
         else
           $scope.tableOptions = []
-          $scope.formItems[2].disabled = true
+          $scope.formItems[3].disabled = true
 
       else
-        $scope.dbOptions = []
-        $scope.formItems[1].disabled = true
+        $scope.tableOptions = []
+        $scope.formItems[2].disabled = true
 
       $q.all(promises)
       .then (results) ->
@@ -107,13 +102,12 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           console.log $scope.dbOptions
 
         .catch (err) ->
-          # need to put in alert pane
           $scope.dbOptions = []
           $scope.tableOptions = []
           $scope.columnOptions = []
-          #$scope.formItems[1].disabled = false
-          $scope.formItems[2].disabled = false
-          $scope.formItems[3].disabled = false
+          $scope.formItems[2].disabled = true
+          $scope.formItems[3].disabled = true
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving databases from MLS.' }
           console.log "#### error getting dbOptions: #{err}"
       else
         return $q.when()
@@ -133,8 +127,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .catch (err) ->
           $scope.tableOptions = []
           $scope.columnOptions = []
-          #$scope.formItems[2].disabled = false
-          $scope.formItems[3].disabled = false
+          $scope.formItems[3].disabled = true
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving tables from MLS.' }
           console.log "#### error getting tableOptions: #{err}"
       else
         return $q.when()
@@ -155,7 +149,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 
         .catch (err) ->
           $scope.columnOptions = []
-          #$scope.formItems[3].disabled = false
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving columns from MLS.' }
           console.log "#### error getting columnOptions: #{err}"
       else
         return $q.when()
