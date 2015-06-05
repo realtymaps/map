@@ -5,7 +5,7 @@ div
         .col-md-6
           .progressPills
             tabset(type="pills")
-              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active" ng-click="!formItem.disabled && proceedTo($index)")
+              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active" ng-click="!formItem.disabled && proceed($index)")
         .col-md-6
       .row
         .col-md-6
@@ -16,41 +16,38 @@ div
               div.animate-container.wizardContent
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step").animate-show
                   div(ng-if="formItem.step == 0" name="step0")
-                    select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="proceedTo(1)")
+                    select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="updateObjectOptions(mlsData.current)")
                     button(ng-click="open()") Create New MLS Config
 
-                  div(ng-if="formItem.step == 1" name="step1")
+                  div(ng-if="formItem.step == 1")
                     table
                       tr
                         td
                           label.data-label Database:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="proceedTo(2)")
-                  div(ng-if="formItem.step == 2" name="step2")
+                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="processAndProceed(2)")
+                  div(ng-if="formItem.step == 2")
                     table
                       tr
                         td
                           label.data-label Table:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="proceedTo(3)")
-                  div(ng-if="formItem.step == 3" name="step3")
+                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
+                  div(ng-if="formItem.step == 3")
                     table
                       tr
                         td
                           label.data-label Field:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.SystemName+' '+value.LongName for value in fieldOptions " ng-change="proceedTo(4)")
+                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.SystemName+' '+value.LongName for value in columnOptions")
                       tr
                         td
                           label.data-label Formatting:
                         td
                           input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate")
-
-
-
-
-
-
+                      tr(colSpan="2")
+                        td
+                          button(ng-click="saveMlsData()") Save MLS Config
 
                   //-   tr(ng-repeat="(formField, settings) in formItem.formFields")
                   //-     td

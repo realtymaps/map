@@ -13,6 +13,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     newMls = Restangular.one('/api/mls_config')
     _.merge newMls, configObj
     newMls.post().then (res) ->
+      # add to our collection (by reference, for adding to existing dropdowns, etc)
       if collection
         collection.push(newMls)
       newMls
