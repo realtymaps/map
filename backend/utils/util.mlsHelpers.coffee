@@ -126,13 +126,15 @@ loadRetsTableUpdates = (subtask, options) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'markDeleted')
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: true}, true)
         step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'removeExtraRows')
         Promise.join(step3Promise, step5Promise)
         .then () ->
           return new Date(0)
       else
-        return lastSuccess
+        jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: false}, true)
+        .then () ->
+          return lastSuccess
     .then (refreshThreshold) ->
       # query for everything changed since then
       retsClient.search.query(options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
@@ -293,17 +295,45 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
 
 
 markOtherRowsDeleted = (subtask) ->
-  # mark any rows not updated by this subtask as deleted -- we only do this when doing a full refresh of all data,
-  # because this would be overzealous if we're just doing an incremental update
+  # mark any rows not updated by this subtask (and not already marked) as deleted -- we only do this when doing a full
+  # refresh of all data, because this would be overzealous if we're just doing an incremental update
   dbs.properties.knex(taskHelpers.tables.mlsData)
-  .where(batch_id: subtask.batch_id)
+  .whereNot
+    batch_id: subtask.batch_id
+    deleted: false
   .update(deleted: true)
 
+  
+recordChangeCounts = (subtask) ->
+  Promise.try () ->
+    deletedPromise = Promise.resolve(0)
+    if subtask.data.markOtherRowsDeleted
+      deletedPromise = dbs.properties.knex(taskHelpers.tables.mlsData)
+      .whereNot
+        batch_id: subtask.batch_id
+        deleted: false
+      .update(deleted: true)
+    return deletedPromise
+  .then (deletedCount) ->
+    insertedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    .where
+        batch_id: subtask.batch_id
+        change_history: null
+    updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    .where(batch_id: subtask.batch_id)
+    .whereNotNull('change_history')
+    dbs.properties.knex(taskHelpers.tables.dataLoadHistory)
+    .where(batch_id: subtask.batch_id)
+    .update
+      inserted_rows: insertedSubquery
+      updated_rows: updatedSubquery
+      deleted_rows: deletedCount
 
+      
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData
-  markOtherRowsDeleted: markOtherRowsDeleted
   getDatabaseList: getDatabaseList
   getTableList: getTableList
   getColumnList: getColumnList
+  recordChangeCounts: recordChangeCounts
