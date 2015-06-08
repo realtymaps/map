@@ -218,17 +218,16 @@ _getValidations = (dataSourceId) ->
 _getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000)
 
 # normalizes data from the raw data table into the permanent data table
-normalizeData = (subtask, options) ->
-  Promise.try () ->
-    rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
-    # get rows for this subtask
-    rowsPromise = dbs.properties.knex(rawTableName)
-    .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
-    # get validations
-    validationPromise = _getValidations(options.dataSourceId)
-    # get start time for "last updated" stamp
-    startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
-    Promise.join(rowsPromise, validationPromise, startTimePromise)
+normalizeData = (subtask, options) -> Promise.try () ->
+  rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
+  # get rows for this subtask
+  rowsPromise = dbs.properties.knex(rawTableName)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  # get validations
+  validationPromise = _getValidations(options.dataSourceId)
+  # get start time for "last updated" stamp
+  startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
+  Promise.join(rowsPromise, validationPromise, startTimePromise)
   .then (rows, validationMap, startTime) ->
     # calculate the keys that are grouped for later
     usedKeys = []
@@ -245,7 +244,17 @@ normalizeData = (subtask, options) ->
         if validationDefinition.list == 'base' && validationDefinition.output = 'days_on_market'
           diffExcludeKeys = newKeys
     Promise.map rows, (row) ->
-      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)).then _updateRecord.bind(null, diffExcludeKeys, usedKeys))
+      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
+      .then _updateRecord.bind(null, diffExcludeKeys, usedKeys)
+      .then () ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: true)
+      .catch validation.DataValidationError, (err) ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: err.toString())
+        
 
 _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
   # build the row's new values
