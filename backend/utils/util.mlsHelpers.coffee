@@ -298,7 +298,8 @@ recordChangeCounts = (subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
-      # refresh of all data, because this would be overzealous if we're just doing an incremental update
+      # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
+      # will resolve to a count of affected rows
       return dbs.properties.knex(taskHelpers.tables.mlsData)
       .whereNot
         batch_id: subtask.batch_id
@@ -308,13 +309,17 @@ recordChangeCounts = (subtask) ->
       # return 0 because we use this as the count of deleted rows
       return 0
   .then (deletedCount) ->
+    # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
     .where
-        batch_id: subtask.batch_id
-        change_history: null
+      batch_id: subtask.batch_id
+      change_history: null
+    .count('*')
+    # get a count of rows from this batch without a null change history, i.e. newly-updated rows 
     updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
     .where(batch_id: subtask.batch_id)
     .whereNotNull('change_history')
+    .count('*')
     dbs.properties.knex(taskHelpers.tables.dataLoadHistory)
     .where(batch_id: subtask.batch_id)
     .update
