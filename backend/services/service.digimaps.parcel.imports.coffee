@@ -2,7 +2,15 @@ db = require('../config/dbs').users
 _tableName = 'digimaps_parcel_imports'
 {singleRow} = require '../utils/util.sql.helpers'
 config = require '../config/config'
-encryptor = new (require '../utils/util.encryptor')(cipherKey: config.ENCRYPTION_AT_REST)
+encryptor = null
+
+try
+    encryptor = new (require '../utils/util.encryptor')(cipherKey: config.ENCRYPTION_AT_REST)
+catch err
+    if process.env.CIRCLECI
+        return logger.warn "CIRCLECI: #{err}"
+    throw err
+
 logger = require '../config/logger'
 
 _get = ->
@@ -18,7 +26,7 @@ module.exports =
         q.toString()
         logger.debug q
         q
-        
+
     getCredentials: ->
         singleRow(db.knex.select().from('jq_task_config').where(name:'parcel_update'))
         .then (row) ->
