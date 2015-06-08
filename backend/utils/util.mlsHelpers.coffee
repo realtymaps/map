@@ -293,27 +293,20 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
           data_source_id: updateRow.data_source_id
         .update(updateRow)
 
-
-markOtherRowsDeleted = (subtask) ->
-  # mark any rows not updated by this subtask (and not already marked) as deleted -- we only do this when doing a full
-  # refresh of all data, because this would be overzealous if we're just doing an incremental update
-  dbs.properties.knex(taskHelpers.tables.mlsData)
-  .whereNot
-    batch_id: subtask.batch_id
-    deleted: false
-  .update(deleted: true)
-
   
 recordChangeCounts = (subtask) ->
   Promise.try () ->
-    deletedPromise = Promise.resolve(0)
     if subtask.data.markOtherRowsDeleted
-      deletedPromise = dbs.properties.knex(taskHelpers.tables.mlsData)
+      # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
+      # refresh of all data, because this would be overzealous if we're just doing an incremental update
+      return dbs.properties.knex(taskHelpers.tables.mlsData)
       .whereNot
         batch_id: subtask.batch_id
         deleted: false
       .update(deleted: true)
-    return deletedPromise
+    else
+      # return 0 because we use this as the count of deleted rows
+      return 0
   .then (deletedCount) ->
     insertedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
     .where
