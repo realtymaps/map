@@ -87,6 +87,15 @@ _columns =
 _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 
+_getPartialPoint = (objOrArray, arrayDex, param) ->
+    if _.isArray(objOrArray) then objOrArray[arrayDex] else objOrArray[param]
+
+_getLat = (objOrArray) ->
+    _getPartialPoint(objOrArray, 0, 'lat')
+
+_getLon = (objOrArray) ->
+    _getPartialPoint(objOrArray, 1, 'lon')
+
 _whereInBounds = (query, column, bounds) ->
   results = {}
   if bounds.length > 2
@@ -95,12 +104,17 @@ _whereInBounds = (query, column, bounds) ->
     results.sql = "ST_WITHIN(#{column}, ST_GeomFromText(MULTIPOLYGON(((#{boundsFlattened.markers}))), #{coordSys.UTM}))"
     results.bindings = boundsFlattened.bindings
   else
+    neLat = _getLat(bounds[0])
+    neLon = _getLon(bounds[0])
+
+    swLat = _getLat(bounds[1])
+    swLon = _getLon(bounds[1])
     # it's the whole map, so let's put a margin on each side
-    minLon = Math.min(bounds[0].lon, bounds[1].lon)
-    maxLon = Math.max(bounds[0].lon, bounds[1].lon)
+    minLon = Math.min(neLon, swLon)
+    maxLon = Math.max(neLon, swLon)
     marginLon = (maxLon - minLon)*_MARGIN
-    minLat = Math.min(bounds[0].lat, bounds[1].lat)
-    maxLat = Math.max(bounds[0].lat, bounds[1].lat)
+    minLat = Math.min(neLat, swLat)
+    maxLat = Math.max(neLat, swLat)
     marginLat = (maxLat - minLat)*_MARGIN
 
     results.sql = "#{column} && ST_MakeEnvelope(?, ?, ?, ?, #{coordSys.UTM})"
