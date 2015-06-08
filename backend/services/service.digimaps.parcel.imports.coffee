@@ -3,6 +3,7 @@ _tableName = 'digimaps_parcel_imports'
 {singleRow} = require '../utils/util.sql.helpers'
 config = require '../config/config'
 encryptor = null
+logger = require '../config/logger'
 
 try
     encryptor = new (require '../utils/util.encryptor')(cipherKey: config.ENCRYPTION_AT_REST)
