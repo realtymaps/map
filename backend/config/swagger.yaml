@@ -1,0 +1,146 @@
+swagger: "2.0"
+info:
+  version: "0.1"
+  title: RealtyMaps API
+  contact:
+    name: RealtyMaps
+    url: http://realtymaps.com
+host: dev.realtymaps.com:4000
+basePath: /api
+schemes:
+  - http
+produces:
+  - application/json
+
+paths:
+  /mls/{mlsId}/databases:
+    x-swagger-router-controller: "route.mls"
+    get:
+      operationId: getDatabaseList
+      summary: List MLS databases
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+      responses:
+        200:
+          description: MLS database list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsDatabase"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+  /mls/{mlsId}/databases/{databaseId}:
+    x-swagger-router-controller: "route.mls"
+    get:
+      operationId: getTableList
+      summary: List MLS database tables
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+        - name: databaseId
+          in: path
+          type: string
+          required: true
+          description: Database ResourceId (eg. Property)
+      responses:
+        200:
+          description: MLS table list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsTable"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+  /mls/{mlsId}/databases/{databaseId}/tables/{tableId}:
+    x-swagger-router-controller: "route.mls"
+    get:
+      operationId: getColumnList
+      summary: List MLS table columns
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+        - name: databaseId
+          in: path
+          type: string
+          required: true
+          description: Database ResourceId (eg. Property)
+        - name: tableId
+          in: path
+          type: string
+          required: true
+          description: Table ClassName (eg. RES)
+      responses:
+        200:
+          description: MLS table list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsTable"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+definitions:
+  MlsDatabase:
+    type: 'object'
+    properties:
+      ResourceId:
+        type: string
+      VisibleName:
+        type: string
+      StandardName:
+        type: string
+      ObjectVersion:
+        type: string
+  MlsTable:
+    type: 'object'
+    properties:
+      ClassName:
+        type: string
+      StandardName:
+        type: string
+      VisibleName:
+        type: string
+      TableVersion:
+        type: string
+  MlsColumn:
+    type: 'object'
+    properties:
+      MetadataEntryID:
+        type: string
+      SystemName:
+        type: string
+      ShortName:
+        type: string
+      LongName:
+        type: string
+      DataType:
+        type: string
+  ExpressError:
+    required:
+      - alert
+    properties:
+      alert:
+        type: object
+        properties:
+          msg:
+            type: string
+
+

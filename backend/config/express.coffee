@@ -31,6 +31,7 @@ status = require '../../common/utils/httpStatus'
 
 app = express()
 
+swagger = require 'swagger-tools'
 
 # security headers
 app.use helmet.xframe()
@@ -76,8 +77,15 @@ app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 app.use connectFlash()
 
 # bootstrap routes
-require("../routes")(app)
-
+swaggerObject = require('js-yaml').load(require('fs').readFileSync(__dirname + '/swagger.yaml'))
+swagger.initializeMiddleware swaggerObject, (middleware) ->
+  app.use middleware.swaggerMetadata()
+  app.use middleware.swaggerValidator validateResponse: true
+  app.use middleware.swaggerRouter
+    useStubs: true
+    controllers: __dirname + '/../routes'
+  app.use middleware.swaggerUi()
+  require("../routes")(app)
 
 app.use (data, req, res, next) ->
   if data instanceof ExpressResponse

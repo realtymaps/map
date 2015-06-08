@@ -124,4 +124,4 @@ module.exports = (app) ->
         r?.route?
     ).forEach (r) ->
         path = r.route.path
-        logger.info path
+        logger.info path, _.keys(r.route.methods).join(',')
