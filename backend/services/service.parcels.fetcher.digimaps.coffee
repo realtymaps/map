@@ -22,7 +22,7 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
 _numbersInString = (str) -> str.replace(/\D/g, '')
 
 _fipsCodesFromListing = (ls) ->
-    ls.map (l) -> _numbersInString(l)
+    ls.map (l) -> _numbersInString(l.name)
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
