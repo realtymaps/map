@@ -9,10 +9,6 @@ div
           .panel.panel-default
             .panel-body
               div.animate-container
-                div(ng-show="loading").loading-show
-                  .loading-panel
-                    img(src="/assets/icon_loading_earth.gif").loading-image
-                    p Loading...
                 div(ng-repeat="formItem in formItems" ng-show="formItem.step == step" ng-class="{loadingfade: loading}").animate-show
                   div(ng-if="formItem.step == 0" name="step0")
                     table
@@ -60,7 +56,10 @@ div
                       tr(colSpan="2")
                         td
                           button(ng-click="saveMlsData()") Save MLS Config
-
+                div(ng-show="loading").loading-show
+                  .loading-panel
+                    img(src="/assets/icon_loading_earth.gif").loading-image
+                    p Loading...
 
         .col-md-6(ng-show="mlsData.current.id")
           .progressPills(ng-show="mlsData.current.id")
