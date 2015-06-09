@@ -66,6 +66,8 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
             promises = []
 
             _getImports = (lPath) ->
+                #unique client for each pwd / ls combo as multiple Promises will occur at once
+                #otherwise a single client will race itself and cause wierd errors
                 _getClientFromDigiSettings(digiMapsSettings).then (getClient) ->
                     getClient.cwdAsync(lPath).then ->
                         getClient.pwdAsync().then (path) ->
