@@ -13,6 +13,150 @@ produces:
   - application/json
 
 paths:
+  /mls_config:
+    x-swagger-router-controller: "route.mls_config"
+    get:
+      operationId: getAll
+      summary: Get All MLS Configs
+      responses:
+        200:
+          description: MLS config list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsConfig"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    post:
+      operationId: create
+      summary: Create MLS Config
+      parameters:
+        - name: mlsConfig
+          in: body
+          type: object
+          required: true
+          description: MLS config object
+      responses:
+        200:
+          description: MLS create result
+          type: boolean
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}:
+    x-swagger-router-controller: "route.mls_config"
+    get:
+      operationId: getById
+      summary: Get MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: MLS config ID (eg. swflmls)
+      responses:
+        200:
+          description: MLS config
+          schema:
+            $ref: "#/definitions/MlsConfig"
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    post:
+      operationId: createById
+      summary: Create MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: New MLS config Id
+        - name: mlsConfig
+          in: body
+          type: object
+          required: true
+          description: New MLS config object
+      responses:
+        200:
+          description: MLS create result
+          type: boolean
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    patch:
+      operationId: update
+      summary: Update MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          type: object
+          required: true
+          description: MLS config object
+      responses:
+        200:
+          description: MLS update result
+          type: boolean
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}/propertyData:
+    x-swagger-router-controller: "route.mls_config"
+    patch:
+      operationId: updatePropertyData
+      summary: Update MLS Property Data
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          type: object
+          required: true
+          description: MLS property data
+      responses:
+        200:
+          description: MLS property data update result
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}/serverInfo:
+    x-swagger-router-controller: "route.mls_config"
+    patch:
+      operationId: updateServerInfo
+      summary: Update MLS Server Info
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          type: object
+          required: true
+          description: MLS server info
+      responses:
+        200:
+          description: MLS server info update result
+        default:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
   /mls/{mlsId}/databases:
     x-swagger-router-controller: "route.mls"
     get:
@@ -98,6 +242,25 @@ paths:
             $ref: "#/definitions/ExpressError"
 
 definitions:
+  MlsConfig:
+    type: 'object'
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      notes:
+        type: string
+      active:
+        type: string
+      username:
+        type: string
+      password:
+        type: string
+      url:
+        type: string
+      main_property_data:
+        type: string #json
   MlsDatabase:
     type: 'object'
     properties:
