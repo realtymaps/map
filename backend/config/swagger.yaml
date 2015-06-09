@@ -178,6 +178,125 @@ paths:
           schema:
             $ref: "#/definitions/ExpressError"
 
+  /mls_config/{mlsId}/normalizations:
+    x-swagger-router-controller: "route.mls_normalizations"
+    get:
+      tags:
+        - MLS Normalizations
+      operationId: getRule
+      summary: Get MLS Normalization rules
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+      responses:
+        200:
+          description: MLS normalization list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsNormalization"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsId}/normalizations/{list}:
+    x-swagger-router-controller: "route.mls_normalizations"
+    post:
+      tags:
+        - MLS Normalizations
+      operationId: createRule
+      summary: Create MLS Normalization rule
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: list
+          in: path
+          type: string
+          required: true
+          description: Existing list
+      responses:
+        200:
+          description: MLS normalization insert result
+          schema:
+            type: boolean
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsId}/normalizations/{list}/{ordering}:
+    x-swagger-router-controller: "route.mls_normalizations"
+    patch:
+      tags:
+        - MLS Normalizations
+      operationId: updateRule
+      summary: Update MLS Normalizations rule
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: list
+          in: path
+          type: string
+          required: true
+          description: Existing list
+        - name: ordering
+          in: path
+          type: string
+          required: true
+          description: Existing ordering
+        - name: mlsOrdering
+          in: body
+          schema:
+            $ref: "#/definitions/MlsNormalization"
+          required: true
+          description: MLS normalization
+      responses:
+        200:
+          description: MLS normalization update result
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    delete:
+      tags:
+        - MLS Normalizations
+      operationId: delete
+      summary: Delete MLS Normalization rules
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS id
+        - name: list
+          in: path
+          type: string
+          required: true
+          description: Existing list
+        - name: ordering
+          in: path
+          type: string
+          required: true
+          description: Existing ordering
+      responses:
+        200:
+          description: MLS normalization delete result
+          schema:
+            type: boolean
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+
   /mls/{mlsId}/databases:
     x-swagger-router-controller: "route.mls"
     get:
@@ -295,6 +414,28 @@ definitions:
         type: string
       main_property_data:
         type: object
+  MlsNormalization:
+    type: 'object'
+    required:
+      - data_source_id
+      - list
+      - ordering
+      - required
+    properties:
+      data_source_id:
+        type: string
+      list:
+        type: string
+      output:
+        type: string
+      ordering:
+        type: integer
+      required:
+        type: boolean
+      input:
+        type: string
+      transform:
+        type: string
   MlsPropertyData:
     type: 'object'
     properties:

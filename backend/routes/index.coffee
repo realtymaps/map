@@ -115,6 +115,19 @@ routesConfig =
         getColumnList:
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
+    mls_normalization:
+        getRules:
+            method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        createRule:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        updateRule:
+            method: 'patch'
+            middleware: auth.requireLogin(redirectOnFail: true)
+        deleteRule:
+            method: 'delete'
+            middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->
     _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
