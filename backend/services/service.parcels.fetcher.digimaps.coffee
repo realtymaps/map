@@ -1,9 +1,11 @@
 Promise = require "bluebird"
 logger = require '../config/logger'
 _ = require 'lodash'
+momment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
+{getRawTableName, getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
+dataSourceType = 'parcels'
 
-_digiMapsImports =  require './service.digimaps.parcel.imports'
 
 DIGIMAPS =
     DIRECTORIES:[{name:"DELIVERIES"}, {name: "DMP_DELIVERY_", doParseDate:true}, {name:"ZIPS"}]
@@ -17,21 +19,22 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
     _createFtp(URL, ACCOUNT, PASSWORD)
 
 
-_fipsCodesFromListing = (ls) ->
+_numbersInString = (ls) ->
     ls.map (l) -> l.name.replace(/\D/g, '')
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
-- 1 First we need to get alll directories that are not imported_time
-  - listAsync all DELIVERY_ ..folderNames
-  - then get all imported fodlerNames to remove drom the all listed
-- 2 then get all fipsCodes for all the non imported folderNames
-   - traverse into Zips and listAsync all files and parse all fipsCodes
+- 1
+    Get All new Imports (folderNamesToProcess) post last_start_time
+- 2
+    For each folderNamesToProcess create an entry to process each FILE
 - 3 then insert each object into digimaps_parcel_imports
 ###
-_defineImports = (digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endDir = DIGIMAPS.DIRECTORIES[2].name) -> Promise.try ->
+_defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endDir = DIGIMAPS.DIRECTORIES[2].name) -> Promise.try ->
     folderNamesToAdd = null
     importsToAdd = []
+    rawTableName = getRawTableName(subtask)
+
     _getClientFromDigiSettings(digiMapsSettings)
     .then (client) -> #step 1
         client.cwdAsync './' + rootDir
@@ -40,48 +43,48 @@ _defineImports = (digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endD
             client.listAsync()
             .then (ls) ->
                 logger.debug 'defineImports: step 1 listing folderNames'
-                #get the primary keys
-                folderNames = ls.map (l) -> l.name
-                #only get fipsCodes for the imports that have not been run
-                _digiMapsImports.get().then (rows) ->
-                    folderNamesToRemove = rows.map (r) -> r.folder_name
-                    logger.debug "folderNamesToRemove: #{folderNamesToRemove}"
-                    folderNamesToAdd = _.reject folderNames, (name) ->
-                        _.contains folderNamesToRemove, name
-                    logger.debug "defineImports: step 1, folderNamesToAdd: #{folderNamesToAdd}"
 
-                    logger.debug "Nothing to add to import!!!!!" unless folderNamesToAdd?.length
+                folderObjs = ls.map (l) ->
+                    name: l.name
+                    momment: moment(_numbersInString(ls.name), 'YYYYMMDD').utc()
 
-        .then -> #step 2
+                getLastStartTime(subtask)
+                .then (lastStartDate) ->
+                    lastStartDate = moment(lastStartDate).utc()
+                    folderObjs = _.filter folderObjs, (o) ->
+                        unixTime = o.momment.unix() - lastStartDate.unix()
+                        unixTime > 0
+
+                    folderObjs.map (f) -> f.name
+
+        .then (folderNamesToProcess) -> #step 2
             logger.debug 'defineImports: step 2'
             promises = []
 
-            _getImport = (lPath, folderName, getClient) ->
+            _getImports = (lPath, getClient) ->
                 getClient.cwdAsync(lPath).then ->
                     getClient.pwdAsync().then (path) ->
                         logger.debug "pwd: #{path}"
                     getClient.listAsync()
                 .then (ls) ->
-                    fipsCodes = _fipsCodesFromListing(ls)
-                    toImport =
-                        folder_name: folderName
-                        fips_codes:JSON.stringify fipsCodes
-                        full_path: lPath
+                    ls.forEach (l) ->
+                        importsToAdd.push
+                            data_source_id: "#{lPath}/#{l.name}"
+                            data_source_type: dataSourceType
+                            batch_id: subtask.batch_id
+                            raw_table_name: rawTableName
 
-                    logger.debug "defineImports: step 2"
-                    # logger.debug toImport
-                    importsToAdd.push toImport
-
-            for key, name of folderNamesToAdd
+            for key, name of folderNamesToProcess
                 fullPath = "/#{rootDir}/#{name}/#{endDir}"
                 logger.debug "defineImports: step 2, fullPath: #{fullPath}"
-                promises.push _getImport(fullPath, name, client)
+                promises.push _getImports(fullPath, client)
 
+            logger.debug "defineImports: step 2"
             Promise.all promises
         .then -> #step 3
             logger.debug 'defineImports: step 3'
             logger.debug importsToAdd
-            _digiMapsImports.insert(importsToAdd)
+            createDataHistoryEntry(importsToAdd)
         .finally ->
             logger.debug "closing client"
             client.end()

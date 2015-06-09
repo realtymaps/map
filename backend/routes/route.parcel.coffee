@@ -7,7 +7,7 @@ httpStatus = require '../../common/utils/httpStatus'
 _ = require 'lodash'
 {getParcelJSON, getFormatedParcelJSON, uploadToParcelsDb} = require '../services/service.parcels.saver'
 {defineImports} = require '../services/service.parcels.fetcher.digimaps'
-{getCredentials} = require '../services/service.digimaps.parcel.imports'
+getDigiCreds =  require '../utils/util.digimaps.creds'
 
 JSONStream = require 'JSONStream'
 
@@ -53,7 +53,7 @@ module.exports =
     defineImports: (req, res, next) -> Promise.try ->
         logger.debug 'defineImports for digimaps_parcel_imports'
         logger.debug 'getting creds'
-        getCredentials()
+        getDigiCreds()
         .then (creds) ->
             defineImports(creds)
         .catch validation.DataValidationError, (err) ->
