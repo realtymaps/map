@@ -61,6 +61,8 @@ module.exports =
                 task_name: 'digimaps_define_imports_route'
                 batch_id: uuid.v4()
             ,creds)
+        .then (result) ->
+            res.json(result)
         .catch validation.DataValidationError, (err) ->
             next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
         .catch (error) ->

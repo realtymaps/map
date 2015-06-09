@@ -20,6 +20,9 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
 
 
 _numbersInString = (str) -> str.replace(/\D/g, '')
+
+_fipsCodesFromListing = (ls) ->
+    ls.map (l) -> _numbersInString(l)
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
@@ -55,38 +58,42 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                         unixTime > 0
 
                     folderObjs.map (f) -> f.name
-
+        .finally ->
+            logger.debug "closing client"
+            client.end()
         .then (folderNamesToProcess) -> #step 2
             logger.debug 'defineImports: step 2'
             promises = []
 
-            _getImports = (lPath, getClient) ->
-                getClient.cwdAsync(lPath).then ->
-                    getClient.pwdAsync().then (path) ->
-                        logger.debug "pwd: #{path}"
-                    getClient.listAsync()
-                .then (ls) ->
-                    ls.forEach (l) ->
-                        importsToAdd.push
-                            data_source_id: "#{lPath}/#{l.name}"
-                            data_source_type: dataSourceType
-                            batch_id: subtask.batch_id
-                            raw_table_name: rawTableName
+            _getImports = (lPath) ->
+                _getClientFromDigiSettings(digiMapsSettings).then (getClient) ->
+                    getClient.cwdAsync(lPath).then ->
+                        getClient.pwdAsync().then (path) ->
+                            logger.debug "pwd: #{path}"
+                        getClient.listAsync()
+                    .then (ls) ->
+                        logger.debug "defineImports: step 2, file count: #{ls?.length}"
+                        ls?.forEach (l) ->
+                            importsToAdd.push
+                                data_source_id: "#{lPath}/#{l.name}"
+                                data_source_type: dataSourceType
+                                batch_id: subtask.batch_id
+                                raw_table_name: rawTableName
+                    .finally ->
+                        logger.debug "closing getClient"
+                        getClient.end();
 
             for key, name of folderNamesToProcess
                 fullPath = "/#{rootDir}/#{name}/#{endDir}"
                 logger.debug "defineImports: step 2, fullPath: #{fullPath}"
-                promises.push _getImports(fullPath, client)
+                promises.push _getImports(fullPath)
 
             logger.debug "defineImports: step 2"
             Promise.all promises
         .then -> #step 3
             logger.debug 'defineImports: step 3'
-            logger.debug importsToAdd
+            # logger.debug importsToAdd
             createDataHistoryEntry(importsToAdd)
-        .finally ->
-            logger.debug "closing client"
-            client.end()
 
 _getFileName = (fipsCode) ->
     if DIGIMAPS.FILE?.appendFipsCode == true

@@ -5,6 +5,11 @@ db = require('../../config/dbs').properties
 Encryptor = require '../util.encryptor'
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
+_getCreds: (subtask) ->
+    taskData = JSON.parse subtask.task_data
+    for k, val of taskData.DIGIMAPS
+        taskData.DIGIMAPS[k] = encryptor.decrypt(val)
+    taskData.DIGIMAPS
 
 _subtasks =
     ###
@@ -17,13 +22,13 @@ _subtasks =
        - traverse into Zips and listAsync all files and parse all fipsCodes
     - 3 then insert each object into digimaps_parcel_imports
     ###
-    digimaps_define_imports : _defineImports
+    digimaps_define_imports : (subtask) ->
+        _defineImports(subtask, _getCreds(subtask))
 
-    digimaps: (subtask) ->
-        taskData = JSON.parse subtask.task_data
-        for k, val of taskData.DIGIMAPS
-            taskData.DIGIMAPS[k] = encryptor.decrypt(val)
-        uploadToParcelsDb(taskData.fipsCode[0], taskData.DIGIMAPS)
+    digimaps_raw_download: (subtask) ->
+
+    digimaps_transform: (subtask) ->
+        #uploadToParcelsDb(taskData.fipsCode[0], _getCreds(subtask))
 
     sync_mv_parcels: (subtask) -> Promise.try ->
         db.knex.raw("SELECT stage_dirty_views();")
