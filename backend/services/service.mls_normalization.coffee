@@ -17,16 +17,19 @@ module.exports =
     .where
       data_source_id: mlsId
     .then (data) ->
-      data?[0]
+      data
 
-  createRule: (mlsId, listId, mlsNormalization) ->
-    knex.table(table.mlsNormalization)
+  createRule: (mlsId, list, mlsNormalization) ->
+    mlsNormalization.data_source_id = mlsId
+    mlsNormalization.list = list
+
+    knex.table(tables.mlsNormalization)
     .count('* as count')
     .where
       data_source_id: mlsId
-      list: listId
+      list: list
     .then (result) ->
-        mlsNormalization.id = result[0].count
+        mlsNormalization.ordering = result[0].count
         knex.table(tables.mlsNormalization)
         .insert(mlsNormalization)
         .then (result) ->
@@ -35,6 +38,10 @@ module.exports =
           throw new PartiallyHandledError(error)
 
   updateRule: (mlsId, list, ordering, mlsNormalization) ->
+    mlsNormalization.data_source_id = mlsId
+    mlsNormalization.list = list
+    mlsNormalization.ordering = ordering
+
     knex.table(tables.mlsNormalization)
     .where
       data_source_id: mlsId,
@@ -49,7 +56,7 @@ module.exports =
   deleteRule: (mlsId, list, ordering) ->
     knex.table(tables.mlsNormalization)
     .where
-      id: mlsId,
+      data_source_id: mlsId,
       list: list,
       ordering: ordering
     .delete()

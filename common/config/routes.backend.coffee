@@ -48,10 +48,10 @@ module.exports =
         createById:             "#{apiBase}/mls_config/:id"
         delete:                 "#{apiBase}/mls_config/:id"
     mls_normalization:
-        getRules:      "#{apiBase}/mls/:mlsId/normalizations"
-        createRule:   "#{apiBase}/mls/:mlsId/normalizations/:list"
-        updateRule:   "#{apiBase}/mls/:mlsId/normalizations/:list/:ordering"
-        deleteRule:   "#{apiBase}/mls/:mlsId/normalizations/:list/:ordering"
+        getRules:      "#{apiBase}/mls_config/:mlsId/normalizations"
+        createRule:   "#{apiBase}/mls_config/:mlsId/normalizations/:list"
+        updateRule:   "#{apiBase}/mls_config/:mlsId/normalizations/:list/:ordering"
+        deleteRule:   "#{apiBase}/mls_config/:mlsId/normalizations/:list/:ordering"
     mls:
         getDatabaseList:  "#{apiBase}/mls/:mlsId/databases"
         getTableList:     "#{apiBase}/mls/:mlsId/databases/:databaseId/tables"

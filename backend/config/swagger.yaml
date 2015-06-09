@@ -220,6 +220,10 @@ paths:
           type: string
           required: true
           description: Existing list
+        - name: MlsNormalization
+          in: body
+          schema:
+            $ref: '#/definitions/MlsNormalization'
       responses:
         200:
           description: MLS normalization insert result
@@ -419,7 +423,6 @@ definitions:
     required:
       - data_source_id
       - list
-      - ordering
       - required
     properties:
       data_source_id:
@@ -433,7 +436,7 @@ definitions:
       required:
         type: boolean
       input:
-        type: string
+        type: object
       transform:
         type: string
   MlsPropertyData:

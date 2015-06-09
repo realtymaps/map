@@ -13,7 +13,7 @@ module.exports =
         500
 
   createRule: (req, res, next) ->
-    mlsNormalizationService.createRule req.params.mlsId, req.params.list, req.params.ordering, req.body
+    mlsNormalizationService.createRule req.params.mlsId, req.params.list, req.body
     .then (result) ->
       if result
         next new ExpressResponse result
