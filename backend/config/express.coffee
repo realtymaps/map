@@ -76,15 +76,27 @@ app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 # enable flash messages
 app.use connectFlash()
 
-# bootstrap routes
+
 swaggerObject = require('js-yaml').load(require('fs').readFileSync(__dirname + '/swagger.yaml'))
 swagger.initializeMiddleware swaggerObject, (middleware) ->
+  # This middleware is required by the other swagger middlewares
   app.use middleware.swaggerMetadata()
-  app.use middleware.swaggerValidator validateResponse: true
-  app.use middleware.swaggerRouter
-    useStubs: true
-    controllers: __dirname + '/../routes'
+
+  # Validate requests only, not responses
+  # Response validation could be enabled once we have some nicer handling for validation errors
+  #  It is not clear to me how to do this since swaggerValidator wraps res.end()
+  app.use middleware.swaggerValidator
+    validateResponse: false
+
+  # This code could be enabled to turn on routing middleware
+  # app.use middleware.swaggerRouter
+  #   useStubs: true
+  #   controllers: __dirname + '/../routes'
+
+  # This middleware provides interactive API docs
   app.use middleware.swaggerUi()
+
+  # bootstrap routes
   require("../routes")(app)
 
 app.use (data, req, res, next) ->
@@ -112,6 +124,5 @@ if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
 
 app.set("trust proxy", config.TRUST_PROXY)
-
 
 module.exports = app
