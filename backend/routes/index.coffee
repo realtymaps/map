@@ -99,6 +99,9 @@ routesConfig =
         create:
             method: 'post'
             middleware: auth.requireLogin(redirectOnFail: true) # privileged
+        createById:
+            method: 'post'
+            middleware: auth.requireLogin(redirectOnFail: true) # privileged
         delete:
             method: 'delete'
             middleware: auth.requireLogin(redirectOnFail: true) # privileged
@@ -120,8 +123,12 @@ module.exports = (app) ->
 
     logger.info '\n'
     logger.info "available routes: "
+    paths = {}
     app._router.stack.filter((r) ->
         r?.route?
     ).forEach (r) ->
-        path = r.route.path
-        logger.info path
+        methods = paths[r.route.path] || []
+        paths[r.route.path] = methods.concat(_.keys(r.route.methods))
+
+    _.forEach paths, (methods, path) ->
+      logger.info path, '(' + (if methods.length >= 25 then 'all' else methods.join(',')) + ')'

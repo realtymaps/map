@@ -44,10 +44,11 @@ module.exports =
         update:                 "#{apiBase}/mls_config/:id"
         updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
         updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
-        create:                 "#{apiBase}/mls_config"
+        create:                 "#{apiBase}/mls_config/"
+        createById:             "#{apiBase}/mls_config/:id"
         delete:                 "#{apiBase}/mls_config/:id"
     mls:
-        getDatabaseList:  "#{apiBase}/mls/:id/databases"
-        getTableList:     "#{apiBase}/mls/:id/tables"
-        getColumnList:    "#{apiBase}/mls/:id/columns"
+        getDatabaseList:  "#{apiBase}/mls/:mlsId/databases"
+        getTableList:     "#{apiBase}/mls/:mlsId/databases/:databaseId/tables"
+        getColumnList:    "#{apiBase}/mls/:mlsId/databases/:databaseId/tables/:tableId/columns"
     # hirefire secret value set from within backend/config/config.coffee
