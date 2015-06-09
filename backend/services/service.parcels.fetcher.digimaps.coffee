@@ -1,7 +1,7 @@
 Promise = require "bluebird"
 logger = require '../config/logger'
 _ = require 'lodash'
-momment = require 'moment'
+moment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
 {getRawTableName, getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
 dataSourceType = 'parcels'
@@ -19,8 +19,7 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
     _createFtp(URL, ACCOUNT, PASSWORD)
 
 
-_numbersInString = (ls) ->
-    ls.map (l) -> l.name.replace(/\D/g, '')
+_numbersInString = (str) -> str.replace(/\D/g, '')
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
@@ -46,13 +45,13 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
 
                 folderObjs = ls.map (l) ->
                     name: l.name
-                    momment: moment(_numbersInString(ls.name), 'YYYYMMDD').utc()
+                    moment: moment(_numbersInString(l.name), 'YYYYMMDD').utc()
 
-                getLastStartTime(subtask)
+                getLastStartTime(subtask.task_name)
                 .then (lastStartDate) ->
                     lastStartDate = moment(lastStartDate).utc()
                     folderObjs = _.filter folderObjs, (o) ->
-                        unixTime = o.momment.unix() - lastStartDate.unix()
+                        unixTime = o.moment.unix() - lastStartDate.unix()
                         unixTime > 0
 
                     folderObjs.map (f) -> f.name

@@ -31,8 +31,8 @@ getLastStartTime = (taskName, successOnly=true) ->
     knex
     .table(jobQueue.tables.taskHistory)
     .max('started AS last_start_time')
-    .where
-    .then () ->
+    .where(criteria)
+    .then (result) ->
         result?[0]?.last_start_time || new Date(0)
 
 

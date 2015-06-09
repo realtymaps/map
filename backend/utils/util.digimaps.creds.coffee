@@ -13,8 +13,10 @@ catch err
     throw err
 
 
-module.exports = Promise.try ->    
-    singleRow(db.knex.select().from('jq_task_config').where(name:'parcel_update'))
+module.exports = -> Promise.try ->
+    singleRow(db.knex.select()
+    .from('jq_task_config')
+    .where(name:'parcel_update'))
     .then (row) ->
         # logger.debug row
         for k, val of row.data.DIGIMAPS

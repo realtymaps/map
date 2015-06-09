@@ -157,6 +157,7 @@
     "touch": "0.0.3",
     "twilio": "2.2.0",
     "url-loader": "^0.5.5",
+    "uuid": "^2.0.1",
     "verror": "^1.6.0",
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",

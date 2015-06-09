@@ -76,12 +76,16 @@ routesConfig =
     parcel:
         getByFipsCode:
             method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
         getByFipsCodeFormatted:
             method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
         uploadToParcelsDb:
             method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
         defineImports:
             method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
     mls_config:
         getAll:
             method: 'get'

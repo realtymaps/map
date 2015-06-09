@@ -8,6 +8,7 @@ _ = require 'lodash'
 {getParcelJSON, getFormatedParcelJSON, uploadToParcelsDb} = require '../services/service.parcels.saver'
 {defineImports} = require '../services/service.parcels.fetcher.digimaps'
 getDigiCreds =  require '../utils/util.digimaps.creds'
+uuid = require 'uuid'
 
 JSONStream = require 'JSONStream'
 
@@ -55,7 +56,11 @@ module.exports =
         logger.debug 'getting creds'
         getDigiCreds()
         .then (creds) ->
-            defineImports(creds)
+            #Basically create a mock subtask to satisfy all of defineImports deps
+            defineImports(
+                task_name: 'digimaps_define_imports_route'
+                batch_id: uuid.v4()
+            ,creds)
         .catch validation.DataValidationError, (err) ->
             next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
         .catch (error) ->
