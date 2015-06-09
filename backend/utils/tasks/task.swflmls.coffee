@@ -18,11 +18,14 @@ normalizeData = (subtask) ->
     rawTableSuffix: 'main'
     dataSourceId: 'swflmls'
 
-    
+#finalizeDataPrep = (subtask) ->
+
+
 subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  markDeleted: mlsHelpers.markOtherRowsDeleted
+  recordChangeCounts: mlsHelpers.recordChangeCounts
+  #finalizeDataPrep: finalizeDataPrep
   #finalizeData: finalizeData
   #removeExtraRows: removeExtraRows
 
