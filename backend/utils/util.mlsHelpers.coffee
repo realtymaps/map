@@ -261,7 +261,6 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
   _.extend normalizedData.base,
     data_source_id: options.dataSourceId
     batch_id: subtask.batch_id
-    deleted: false
     up_to_date: startTime
     client_groups:
       general: normalizedData.general
@@ -310,10 +309,9 @@ recordChangeCounts = (subtask) ->
       # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
       # will resolve to a count of affected rows
       return dbs.properties.knex(taskHelpers.tables.mlsData)
-      .whereNot
-        batch_id: subtask.batch_id
-        deleted: false
-      .update(deleted: true)
+      .whereNot(batch_id: subtask.batch_id)
+      .whereNotNull('deleted')
+      .update(deleted: subtask.batch_id)
     else
       # return 0 because we use this as the count of deleted rows
       return 0
