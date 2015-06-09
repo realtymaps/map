@@ -7,18 +7,8 @@ modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents',
   ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents) ->
 
-    # extract existing configs, populate idOptions
-    rmapsMlsService.getConfigs()
-    .then (configs) ->
-      $scope.idOptions = configs
-      console.log "#### configs:"
-      console.log $scope.idOptions
-    .catch (err) ->
-      $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving existing configs.' }
-      console.log "#### error getting configs:"
-      console.log err
-
     # init our dropdowns & mlsData
+    $scope.loading = false
     $scope.adminRoutes = adminRoutes
     $scope.$state = $state
     $scope.step = 0
@@ -36,10 +26,19 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
 
+    # extract existing configs, populate idOptions
+    $scope.loading = true
+    rmapsMlsService.getConfigs()
+    .then (configs) ->
+      $scope.idOptions = configs
+    .catch (err) ->
+      $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving existing configs.', type: 'danger' }
+    .finally () ->
+      $scope.loading = false
+
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
-      console.log "#### processing obj"
-      console.log obj
+      $scope.loading = true
       deferred = $q.defer()
       promises = []
       promises.push getDbOptions()
@@ -59,9 +58,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 
       $q.all(promises)
       .then (results) ->
-        console.log "#### results:"
-        console.log results
-        # hide wait icon
+        $scope.proceed(1)
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving MLS data.', type: 'danger' }
+      .finally () ->
+        $scope.loading = false
 
     # modal for create-new mlsData
     $scope.animationsEnabled = true
@@ -82,24 +83,18 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
             $scope.mlsData.current = newMls
             $scope.updateObjectOptions($scope.mlsData.current)
           .catch (err) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error saving MLS data.' }
-            console.log "#### error saving MLS data:"
-            console.log err
+            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error saving MLS data.', type: 'danger' }
         , () ->
           console.log "modal closed"
       )
 
     # pull db options and enable next step as appropriate
     getDbOptions = () ->
-      console.log "Getting db data..."
       if $scope.mlsData.current.id
-        console.log "populating dbOptions with id=#{$scope.mlsData.current.id}..."
         rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
         .then (data) ->
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
-          console.log "#### dbOptions:"
-          console.log $scope.dbOptions
 
         .catch (err) ->
           $scope.dbOptions = []
@@ -107,62 +102,52 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           $scope.columnOptions = []
           $scope.formItems[2].disabled = true
           $scope.formItems[3].disabled = true
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving databases from MLS.' }
-          console.log "#### error getting dbOptions: #{err}"
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving databases from MLS.', type: 'danger' }
       else
         return $q.when()
 
     # pull table options and enable next step as appropriate
     getTableOptions = () ->
-      console.log "Getting table data..."
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
-        console.log "populating tableOptions with db=#{$scope.mlsData.current.main_property_data.db}..."
         rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
         .then (data) ->
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
-          console.log "#### tableOptions:"
-          console.log $scope.tableOptions
 
         .catch (err) ->
           $scope.tableOptions = []
           $scope.columnOptions = []
           $scope.formItems[3].disabled = true
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving tables from MLS.' }
-          console.log "#### error getting tableOptions: #{err}"
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving tables from MLS.', type: 'danger' }
       else
         return $q.when()
 
     # pull column options and enable next step as appropriate
     getColumnOptions = () ->
-      console.log "Getting column data..."
       # when going BACK to this step, only re-query if we have a table to use
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
-        console.log "populating columnOptions with table=#{$scope.mlsData.current.main_property_data.table}..."
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
         .then (data) ->
           r = /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
-          console.log "#### columnOptions:"
-          console.log $scope.columnOptions
 
         .catch (err) ->
           $scope.columnOptions = []
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving columns from MLS.' }
-          console.log "#### error getting columnOptions: #{err}"
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving columns from MLS.', type: 'danger' }
       else
         return $q.when()
 
     # button behavior for saving mls
-    saveMlsData = () ->
+    $scope.saveMlsData = () ->
+      $scope.loading = true
       $scope.mlsData.current.save()
       .then (res) ->
-        console.log "#### Step 3 processed"
-        # need to output "Saved" message
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'success' }
       .catch (err) ->
-        console.log "#### Step 3 errored: #{err}"
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.', type: 'danger' }
+      .finally () ->
+        $scope.loading = false
 
     # tracking steps, active/disabled etc
     $scope.formItems = [
@@ -189,7 +174,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->
-      console.log "#### processing before advancing to step #{toStep}"
+      $scope.loading = true
       if $scope.step == 1 # db option just changed, reset table and fields
         $scope.tableOptions = []
         $scope.columnOptions = []
@@ -199,7 +184,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         $scope.formItems[3].disabled = true
         promise = getTableOptions()
 
-      else if $scope.step == 2 # db option just changed, reset table and fields
+      else if $scope.step == 2 # table option just changed, reset table and fields
         $scope.columnOptions = []
         $scope.mlsData.current.main_property_data.field = ""
         $scope.formItems[3].disabled = true
@@ -211,16 +196,15 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       promise.then () ->
         $scope.proceed(toStep)
       .catch (err) ->
-        console.log "#### error with proceeding:"
-        console.log err
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in processing #{$scope.mlsData.current.id}.', type: 'danger' }
+      .finally () ->
+        $scope.loading = false
 
     # switching basic step flags
     $scope.proceed = (toStep) ->
-      console.log "#### proceeding to step #{toStep}"
       $scope.formItems[$scope.step].active = false
       $scope.formItems[toStep].active = true
       $scope.step = toStep
-      # hide loading icon
 
 ]
 
