@@ -26,11 +26,11 @@ _fipsCodesFromListing = (ls) ->
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
-- 1
-    Get All new Imports (folderNamesToProcess) post last_start_time
-- 2
-    For each folderNamesToProcess create an entry to process each FILE
-- 3 then insert each object into digimaps_parcel_imports
+- 1 Get All new Imports (folderNamesToProcess) post last_start_time
+
+- 2 For each folderNamesToProcess create an entry to process each FILE
+
+- 3 then insert each object into data_load_history
 ###
 _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endDir = DIGIMAPS.DIRECTORIES[2].name) -> Promise.try ->
     folderNamesToAdd = null
