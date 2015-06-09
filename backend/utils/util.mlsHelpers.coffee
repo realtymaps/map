@@ -119,13 +119,15 @@ loadRetsTableUpdates = (subtask, options) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'markDeleted')
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: true}, true)
         step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'removeExtraRows')
         Promise.join(step3Promise, step5Promise)
         .then () ->
           return new Date(0)
       else
-        return lastSuccess
+        jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: false}, true)
+        .then () ->
+          return lastSuccess
     .then (refreshThreshold) ->
       # query for everything changed since then
       retsClient.search.query(options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
@@ -217,17 +219,16 @@ _getValidations = (dataSourceId) ->
 _getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000)
 
 # normalizes data from the raw data table into the permanent data table
-normalizeData = (subtask, options) ->
-  Promise.try () ->
-    rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
-    # get rows for this subtask
-    rowsPromise = dbs.properties.knex(rawTableName)
-    .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
-    # get validations
-    validationPromise = _getValidations(options.dataSourceId)
-    # get start time for "last updated" stamp
-    startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
-    Promise.join(rowsPromise, validationPromise, startTimePromise)
+normalizeData = (subtask, options) -> Promise.try () ->
+  rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
+  # get rows for this subtask
+  rowsPromise = dbs.properties.knex(rawTableName)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  # get validations
+  validationPromise = _getValidations(options.dataSourceId)
+  # get start time for "last updated" stamp
+  startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
+  Promise.join(rowsPromise, validationPromise, startTimePromise)
   .then (rows, validationMap, startTime) ->
     # calculate the keys that are grouped for later
     usedKeys = []
@@ -244,7 +245,17 @@ normalizeData = (subtask, options) ->
         if validationDefinition.list == 'base' && validationDefinition.output = 'days_on_market'
           diffExcludeKeys = newKeys
     Promise.map rows, (row) ->
-      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)).then _updateRecord.bind(null, diffExcludeKeys, usedKeys))
+      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
+      .then _updateRecord.bind(null, diffExcludeKeys, usedKeys)
+      .then () ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: true)
+      .catch validation.DataValidationError, (err) ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: err.toString())
+        
 
 _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
   # build the row's new values
@@ -292,19 +303,45 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
           data_source_id: updateRow.data_source_id
         .update(updateRow)
 
+  
+recordChangeCounts = (subtask) ->
+  Promise.try () ->
+    if subtask.data.markOtherRowsDeleted
+      # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
+      # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
+      # will resolve to a count of affected rows
+      return dbs.properties.knex(taskHelpers.tables.mlsData)
+      .whereNot
+        batch_id: subtask.batch_id
+        deleted: false
+      .update(deleted: true)
+    else
+      # return 0 because we use this as the count of deleted rows
+      return 0
+  .then (deletedCount) ->
+    # get a count of rows from this batch with null change history, i.e. newly-inserted rows
+    insertedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    .where
+      batch_id: subtask.batch_id
+      change_history: null
+    .count('*')
+    # get a count of rows from this batch without a null change history, i.e. newly-updated rows 
+    updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    .where(batch_id: subtask.batch_id)
+    .whereNotNull('change_history')
+    .count('*')
+    dbs.properties.knex(taskHelpers.tables.dataLoadHistory)
+    .where(batch_id: subtask.batch_id)
+    .update
+      inserted_rows: insertedSubquery
+      updated_rows: updatedSubquery
+      deleted_rows: deletedCount
 
-markOtherRowsDeleted = (subtask) ->
-  # mark any rows not updated by this subtask as deleted -- we only do this when doing a full refresh of all data,
-  # because this would be overzealous if we're just doing an incremental update
-  dbs.properties.knex(taskHelpers.tables.mlsData)
-  .where(batch_id: subtask.batch_id)
-  .update(deleted: true)
-
-
+      
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData
-  markOtherRowsDeleted: markOtherRowsDeleted
   getDatabaseList: getDatabaseList
   getTableList: getTableList
   getColumnList: getColumnList
+  recordChangeCounts: recordChangeCounts
