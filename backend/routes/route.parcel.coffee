@@ -14,9 +14,6 @@ JSONStream = require 'JSONStream'
 
 
 transforms =
-    fipscode:
-        transform: validators.string(minLength:1)
-        required: true
     fullpath:
         transform: validators.string(minLength:1)
         required: true
@@ -32,18 +29,17 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) -> Promis
 
     validation.validateAndTransform(allParams, transforms)
     .then (validParams) ->
-        getCredentials().then (creds) ->
+        getDigiCreds().then (creds) ->
             logger.debug validParams.fullpath
-            fn(validParams.fipscode, validParams.fullpath, creds)
+            fn(validParams.fullpath, creds)
             .then (s) ->
                 _handleRes(s, res, isStream)
 
     .catch validation.DataValidationError, (err) ->
         next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
     .catch (error) ->
-        if _.isString error
-            return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus.NOT_FOUND)
-        throw error
+        return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus.NOT_FOUND)
+
 
 module.exports =
     getByFipsCode: _getByFipsCode

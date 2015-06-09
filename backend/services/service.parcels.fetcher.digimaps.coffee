@@ -3,8 +3,9 @@ logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
-{getRawTableName, getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
+{getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
 dataSourceType = 'parcels'
+{dataHistoryQuery} = require '../utils/tasks/util.taskHelpers'
 
 
 DIGIMAPS =
@@ -35,7 +36,6 @@ To define an import in digimaps_parcel_imports we need to get folderNames and fi
 _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endDir = DIGIMAPS.DIRECTORIES[2].name) -> Promise.try ->
     folderNamesToAdd = null
     importsToAdd = []
-    rawTableName = getRawTableName(subtask)
 
     _getClientFromDigiSettings(digiMapsSettings)
     .then (client) -> #step 1
@@ -80,7 +80,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                                 data_source_id: "#{lPath}/#{l.name}"
                                 data_source_type: dataSourceType
                                 batch_id: subtask.batch_id
-                                raw_table_name: rawTableName
+
                     .finally ->
                         logger.debug "closing getClient"
                         getClient.end();
@@ -96,36 +96,15 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
             logger.debug 'defineImports: step 3'
             # logger.debug importsToAdd
             createDataHistoryEntry(importsToAdd)
+            importsToAdd
 
-_getFileName = (fipsCode) ->
-    if DIGIMAPS.FILE?.appendFipsCode == true
-        return DIGIMAPS.FILE.name + String(fipsCode) + DIGIMAPS.FILE.ext
-    DIGIMAPS.FILE.name
-
-_getParcelZipFileStream = (fipsCode, fullPath, digiMapsSettings) ->
-    _getClientFromDigiSettings(digiMapsSettings)
-    .then (client) ->
-        fileName = _getFileName(fipsCode)
-        logger.debug(fileName)
-        client.cwdAsync(fullPath)
-        .then ->
-            client.pwdAsync()
-        .then (dirName) ->
-            new Promise (resolve, reject) ->
-                client.listAsync()
-                .then (ls) ->
-                    hasFipsCode = _.contains _fipsCodesFromListing(ls), String(fipsCode)
-                    if hasFipsCode
-                        logger.debug("downloading: #{fileName} in #{dirName}")
-                        return resolve(dirName)
-                    return reject('FipsCode does not exist.')
-                .catch reject
-        .then ->
-            client.getAsync(fileName)
+_getParcelZipFileStream = (fullPath, digiMapsSettings) -> Promise.try ->
+    _getClientFromDigiSettings(digiMapsSettings).then (client) ->
+        client.getAsync(fullPath)
         .then (stream) -> Promise.try ->
-            logger.debug("download complete: #{fileName}")
+            logger.debug("download complete: #{fullPath}")
             stream.on 'error', (err) ->
-                logger.debug "stream error: #{err}"
+                logger.error "stream error: #{err}"
                 client.end()
                 throw err
             stream.on 'close', ->

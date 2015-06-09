@@ -44,7 +44,7 @@ createDataHistoryEntry = (entry) ->
     .into(tables.dataLoadHistory)
 
 
-dataHistoryEntryQuery = () ->
+dataHistoryQuery = () ->
     dbs.properties.knex(tables.dataLoadHistory)
 
 createRawTempTable = (tableName, textFields, jsonFields) ->
@@ -64,4 +64,4 @@ module.exports =
     createDataHistoryEntry: createDataHistoryEntry
     createRawTempTable: createRawTempTable
     getRawTableName: getRawTableName
-    dataHistoryEntryQuery: dataHistoryEntryQuery
+    dataHistoryQuery: dataHistoryQuery

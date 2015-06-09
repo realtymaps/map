@@ -18,19 +18,16 @@ describe 'service.digimaps', ->
                     {name:'Points123.zip'}
                 ]
             getAsync: (fileName) -> Promise.try ->
-                console.log "currentDir: #{currentDir}"
-                if currentDir.indexOf('ZIPS') != -1
-                    return new StringStream(fileName)
-                return new StringStream('Does not exist!')
+                return new StringStream(fileName)
 
     it 'getParcelZipFileStream', (done) ->
-        @subject.getParcelZipFileStream(123, '/ZIPS',Promise.resolve @mockFtpClient)
+        @subject.getParcelZipFileStream('/ZIPS/Parcels_123.zip', Promise.resolve @mockFtpClient)
         .then (stream) ->
             str = ''
             stream.on 'data', (buf)->
                 str += String(buf)
             stream.on 'end', ->
-                expect(str).to.be.eql('Parcels_123.zip')
+                expect(str).to.be.eql('/ZIPS/Parcels_123.zip')
                 done()
         .catch (err) ->
             throw err

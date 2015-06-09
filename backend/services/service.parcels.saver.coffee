@@ -26,14 +26,14 @@ _formatParcel = (feature) ->
             name: "EPSG:26910"
     obj
 
-_getParcelJSON = (fipsCode, fullPath, digimapsSetings) ->
-    parcelFetcher(fipsCode, fullPath, digimapsSetings)
+_getParcelJSON = (fullPath, digimapsSetings) ->
+    parcelFetcher(fullPath, digimapsSetings)
     .then (stream) ->
         shp2json(stream)
         .pipe(JSONStream.parse('*.features.*'))
 
-_getFormatedParcelJSON = (fipsCode, fullPath, digimapsSetings) ->
-    _getParcelJSON(fipsCode, fullPath, digimapsSetings)
+_getFormatedParcelJSON = (fullPath, digimapsSetings) ->
+    _getParcelJSON(fullPath, digimapsSetings)
     .then (stream) ->
         write = (obj) ->
           @queue _formatParcel(obj)
@@ -65,8 +65,8 @@ _execRawQuery = (val, method = 'insert') ->
         # logger.debug "\n\n"
         q
 
-_uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
-    _getParcelJSON(fipsCode, fullPath, digimapsSetings)
+_uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
+    _getParcelJSON(fullPath, digimapsSetings)
     .then (stream) ->
         inserts = {}
         updates = {}
@@ -74,6 +74,7 @@ _uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
         new Promise (resolve, reject) ->
             stream.on 'error', reject
             stream.on 'end', ->
+                invalidCtr = insertsCtr = updatesCtr = 0
                 pointsInserted = (_.filter _.values(inserts) , (v) -> v == 'Point').length
                 polysUpdated = (_.filter _.values(updates) , (v) -> v == 'Polygon').length
                 #verify Points inserted matches what the DB has
@@ -99,7 +100,11 @@ _uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
                 logger.debug "done kicking off insert/updates for parcels fipsCode: #{fipsCode}"
                 db.knex.raw("SELECT dirty_materialized_view('parcels', FALSE);")
                 .catch reject
-                .then resolve
+                .then ->
+                    resolve
+                        invalidCtr: invalidCtr
+                        insertsCtr: insertsCtr
+                        updatesCtr: updatesCtr
 
             stream.on 'data', (feature) ->
               #logger.debug feature
@@ -116,6 +121,10 @@ _uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
                   return if inserts?[val.rm_property_id]
                   inserts[val.rm_property_id] = geomType
                   _execRawQuery(val)
+                  .then ->
+                      insertsCtr += 1
+                  .catch ->
+                      invalidCtr += 1
               update = (old) ->
                   return if updates?[val.rm_property_id]
                   updates[val.rm_property_id] = geomType
@@ -124,6 +133,10 @@ _uploadToParcelsDb = (fipsCode, fullPath, digimapsSetings) -> Promise.try ->
                   # logger.debug updateObj
                   # logger.debug "\n\n"
                   _execRawQuery(updateObj, 'update')
+                  .then ->
+                      updatesCtr += 1
+                  .catch ->
+                      invalidCtr += 1
 
               parcelSvc.upsert val, insert, update
 
