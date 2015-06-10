@@ -21,17 +21,18 @@ outputAdmin =
   chunkFilename: paths.dest.scripts + "/adminChunk.wp.js"
 
 # webpack confs per each environment & app
-conf = configFact(output, [
+conf = configFact output, [
   new HtmlWebpackPlugin
     template: paths.rmap.index
     filename: "rmap.html"
-])
-mockConf = configFact(output, mockIndexes.map (fileName) ->
+]
+
+mockConf = configFact output, mockIndexes.map (fileName) ->
   new HtmlWebpackPlugin
     template: paths.mockIndexes + '/' + fileName
     filename: "mocks/#{fileName}"
-)
-prodConf = configFact(output, [
+
+prodConf = configFact output, [
   new HtmlWebpackPlugin
     template: paths.rmap.index
     filename: "rmap.html"
@@ -39,8 +40,9 @@ prodConf = configFact(output, [
     compress: {
       warnings: false
     }}
-], '!')
-adminConf = configFact(outputAdmin, [
+], '!'
+
+adminConf = configFact outputAdmin, [
   new HtmlWebpackPlugin
     template: paths.admin.index
     filename: "admin.html"
@@ -48,7 +50,7 @@ adminConf = configFact(outputAdmin, [
     compress: {
       warnings: false
     }}
-])
+]
 
 # modify staging settings that are only needed for staging
 # (we may want to have an organized staging vs. prod config defined

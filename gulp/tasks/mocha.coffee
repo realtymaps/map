@@ -9,7 +9,8 @@ runMocha = (files, reporter = 'spec') ->
   gulp.src files, read: false
   .pipe plumber()
   .pipe(mocha(reporter: reporter))
-  .once 'error', () ->
+  .once 'error', (err) ->
+    console.log(err.stack ? err)
     process.exit(1)
 
 gulp.task 'backendSpec', ->
