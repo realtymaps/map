@@ -8,4 +8,5 @@ module.exports =
       request.setHeader('Content-Type', 'application/json;charset=utf-8')
       request.on 'error', reject
       request.on 'response', resolve
-      request.post(CARTODB.WAKE_URL)
+      CARTODB.WAKE_URLS.forEach (url) ->
+          request.post(url)
