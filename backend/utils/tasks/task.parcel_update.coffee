@@ -18,7 +18,7 @@ _subtasks =
         _defineImports(subtask, _getCreds(subtask))
         .then (imports) ->
             fileToDownload = imports.map (f) -> f.source_id
-            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'digimaps_raw_download' ,fileToDownload, true
+            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'digimaps_save' ,fileToDownload, true
 
     digimaps_save: (subtask) ->
         #all saving and upserting is handled in this function
