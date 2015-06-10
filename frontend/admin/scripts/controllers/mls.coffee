@@ -32,7 +32,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
     .then (configs) ->
       $scope.idOptions = configs
     .catch (err) ->
-      $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving existing configs.', type: 'danger' }
+      $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
     .finally () ->
       $scope.loading = false
 
@@ -60,11 +60,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       .then (results) ->
         $scope.proceed(1)
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving MLS data.', type: 'danger' }
+        msg = "Error in retrieving MLS data: #{err.message}"
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
+        $q.reject(new Error(msg))
       .finally () ->
         $scope.loading = false
 
-    # modal for create-new mlsData
+    # modal for create & edit mlsData
     $scope.animationsEnabled = true
     $scope.open = () ->
       modalInstance = $modal.open
@@ -78,12 +80,17 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       # ok/cancel behavior of modal
       modalInstance.result.then(
         (mlsModalData) ->
-          rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
-          .then (newMls) ->
-            $scope.mlsData.current = newMls
-            $scope.updateObjectOptions($scope.mlsData.current)
-          .catch (err) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error saving MLS data.', type: 'danger' }
+          # we want to save if our mls already exists; idOptions represents already-saved mls's
+          if _.some($scope.idOptions, {'id': mlsModalData.id})
+            $scope.saveMlsData()
+          else
+            rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
+            .then (newMls) ->
+              $scope.mlsData.current = newMls
+              $scope.updateObjectOptions($scope.mlsData.current)
+            .catch (err) ->
+              msg = "Error saving MLS."
+              $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
         , () ->
           console.log "modal closed"
       )
@@ -95,14 +102,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
-
         .catch (err) ->
           $scope.dbOptions = []
           $scope.tableOptions = []
           $scope.columnOptions = []
           $scope.formItems[2].disabled = true
           $scope.formItems[3].disabled = true
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving databases from MLS.', type: 'danger' }
+          $q.reject(new Error("Error retrieving databases from MLS."))
       else
         return $q.when()
 
@@ -113,12 +119,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
-
         .catch (err) ->
           $scope.tableOptions = []
           $scope.columnOptions = []
           $scope.formItems[3].disabled = true
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving tables from MLS.', type: 'danger' }
+          $q.reject(new Error("Error retrieving tables from MLS."))
       else
         return $q.when()
 
@@ -134,7 +139,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 
         .catch (err) ->
           $scope.columnOptions = []
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error retrieving columns from MLS.', type: 'danger' }
+          $q.reject(new Error("Error retrieving columns from MLS."))
       else
         return $q.when()
 
@@ -143,9 +148,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       $scope.loading = true
       $scope.mlsData.current.save()
       .then (res) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'success' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.', type: 'danger' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
       .finally () ->
         $scope.loading = false
 
@@ -196,7 +201,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       promise.then () ->
         $scope.proceed(toStep)
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in processing #{$scope.mlsData.current.id}.', type: 'danger' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in processing #{$scope.mlsData.current.id}.' }
       .finally () ->
         $scope.loading = false
 
@@ -211,7 +216,21 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 
 app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
   ($scope, $modalInstance, mlsModalData) ->
-    $scope.mlsModalData = mlsModalData;
+    $scope.mlsModalData = mlsModalData
+    # state of editing if id is truthy
+    $scope.editing = !!mlsModalData.id
+
+    $scope.clear = () ->
+      $scope.editing = false
+      $scope.mlsModalData = 
+        id: null
+        name: null
+        notes: ""
+        active: false
+        username: null
+        password: null
+        url: null
+        main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
 
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)

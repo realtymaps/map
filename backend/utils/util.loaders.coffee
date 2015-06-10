@@ -7,7 +7,7 @@ _ = require 'lodash'
 
 
 module.exports =
-  
+
   loadRouteHandles: (dirname, routesConfig) ->
     normalizedRoutes = []
     for moduleId,routes of routesConfig
@@ -19,7 +19,7 @@ module.exports =
         msg = "error loading route module '#{moduleId}' from '#{modulePath}':\n#{err.stack}"
         logger.error(msg)
         throw new Error msg
-    
+
       for routeId,options of routes
         route =
           moduleId: moduleId
@@ -29,17 +29,16 @@ module.exports =
           method: options.method || 'get'
           middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
           order: options.order || 0
-    
         if route.path and not route.handle
           throw new Error "route: #{moduleId}.#{routeId} has no handle"
         if route.handle and not route.path
           throw new Error "route: #{moduleId}.#{routeId} has no path"
         if not route.handle and not route.path
           throw new Error "route: #{moduleId}.#{routeId} has no handle or path"
-    
+
         normalizedRoutes.push(route)
     normalizedRoutes
-    
+
   loadSubmodules: (directoryName, regex) ->
     result = {}
     fs.readdirSync(directoryName).forEach (file) ->

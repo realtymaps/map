@@ -158,7 +158,7 @@ _getRetsClient = (loginUrl, username, password) ->
     retsClient.login()
     .catch isUnhandled, (error) ->
       if error.replyCode
-        error = new Error("#{error.replyCode}")
+        error = new Error("#{error.replyText} (#{error.replyCode})")
       throw new PartiallyHandledError(error, "RETS login failed")
 
 getDatabaseList = (serverInfo) ->

@@ -3,12 +3,13 @@
     h3 Create New MLS Config
   .panel-body
     form(name=newMlsForm)
+      button(ng-click="clear()").btn.btn-primary Clear for new MLS
       table
         tr
           td
             label.data-label ID:
           td
-            input(type="text" ng-model="mlsModalData.id")
+            input(type="text" ng-model="mlsModalData.id" ng-disabled="editing")
         tr
           td
             label.data-label Name:
@@ -34,7 +35,12 @@
             label.data-label Notes:
           td
             textarea(ng-model="mlsModalData.notes")
+        tr
+          td
+            label.data-label Active:
+          td
+            input(type="checkbox" ng-model="mlsModalData.active")
 
 
-      button(ng-click="ok()").btn.btn-success OK
+      button(ng-click="ok()").btn.btn-success Save
       button(ng-click="cancel()").btn.btn-danger Cancel

@@ -22,7 +22,7 @@ div
                         td
                           label.data-label Or
                         td
-                          button.btn.btn-primary(ng-click="open()") New MLS
+                          button.btn.btn-primary(ng-click="open()") Edit/New MLS
 
                   div(ng-if="formItem.step == 1")
                     table
@@ -68,8 +68,55 @@ div
           .panel.panel-default
             .panel-body
               table.table-striped
-                tr(ng-repeat="(key, value) in mlsData.current.plain()")
+                tr
                   td
-                    label.data-label {{key}}
+                    label.data-label ID:
                   td
-                    span.data-entry {{value}}
+                    span.data-entry {{mlsData.current.id}}
+                tr
+                  td
+                    label.data-label Name:
+                  td
+                    span.data-entry {{mlsData.current.name}}
+                tr
+                  td
+                    label.data-label Username:
+                  td
+                    span.data-entry {{mlsData.current.username}}
+                tr
+                  td
+                    label.data-label URL:
+                  td
+                    span.data-entry {{mlsData.current.url}}
+                tr
+                  td
+                    label.data-label Timestamp Column Data
+                  td
+                    table
+                      tr
+                        td
+                          label.data-label Database:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.db}}
+                      tr
+                        td
+                          label.data-label Table:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.table}}
+                      tr
+                        td
+                          label.data-label Column:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.field}}
+
+                tr
+                  td
+                    label.data-label Notes:
+                  td
+                    span.data-entry {{mlsData.current.notes}}
+                tr
+                  td
+                    label.data-label Active:
+                  td
+                    span.data-entry {{mlsData.current.active}}
+

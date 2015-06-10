@@ -1,0 +1,352 @@
+swagger: "2.0"
+info:
+  version: "0.1"
+  title: RealtyMaps API
+  contact:
+    name: Jesse
+    url: http://realtymaps.com
+basePath: /api
+schemes:
+  - http
+produces:
+  - application/json
+
+paths:
+  /mls_config:
+    x-swagger-router-controller: "route.mls_config"
+    get:
+      tags:
+        - MLS Config
+      operationId: getAll
+      summary: Get All MLS Configs
+      responses:
+        200:
+          description: MLS config list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsConfig"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    post:
+      tags:
+        - MLS Config
+      operationId: create
+      summary: Create MLS Config
+      parameters:
+        - name: mlsConfig
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/MlsConfig"
+          description: MLS config object
+      responses:
+        200:
+          description: MLS create result
+          schema:
+            type: boolean
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}:
+    x-swagger-router-controller: "route.mls_config"
+    get:
+      tags:
+        - MLS Config
+      operationId: getById
+      summary: Get MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: MLS config ID (eg. swflmls)
+      responses:
+        200:
+          description: MLS config
+          schema:
+            $ref: "#/definitions/MlsConfig"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    post:
+      tags:
+        - MLS Config
+      operationId: createById
+      summary: Create MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: New MLS config Id
+        - name: mlsConfig
+          in: body
+          schema:
+            $ref: "#/definitions/MlsConfig"
+          required: true
+          description: New MLS config object
+      responses:
+        200:
+          description: MLS create result
+          schema:
+            type: boolean
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+    patch:
+      tags:
+        - MLS Config
+      operationId: update
+      summary: Update MLS Config
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          schema:
+            $ref: "#/definitions/MlsConfig"
+          required: true
+          description: MLS config object
+      responses:
+        200:
+          description: MLS update result
+          schema:
+            type: boolean
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}/propertyData:
+    x-swagger-router-controller: "route.mls_config"
+    patch:
+      tags:
+        - MLS Config
+      operationId: updatePropertyData
+      summary: Update MLS Property Data
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          schema:
+            $ref: "#/definitions/MlsPropertyData"
+          required: true
+          description: MLS property data
+      responses:
+        200:
+          description: MLS property data update result
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+  /mls_config/{mlsConfigId}/serverInfo:
+    x-swagger-router-controller: "route.mls_config"
+    patch:
+      tags:
+        - MLS Config
+      operationId: updateServerInfo
+      summary: Update MLS Server Info
+      parameters:
+        - name: mlsConfigId
+          in: path
+          type: string
+          required: true
+          description: Existing MLS config Id
+        - name: mlsConfig
+          in: body
+          schema:
+            $ref: "#/definitions/MlsConfig"
+          required: true
+          description: MLS server info
+      responses:
+        200:
+          description: MLS server info update result
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+  /mls/{mlsId}/databases:
+    x-swagger-router-controller: "route.mls"
+    get:
+      tags:
+        - MLS Discovery
+      operationId: getDatabaseList
+      summary: List MLS databases
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+      responses:
+        200:
+          description: MLS database list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsDatabase"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+  /mls/{mlsId}/databases/{databaseId}/tables:
+    x-swagger-router-controller: "route.mls"
+    get:
+      tags:
+        - MLS Discovery
+      operationId: getTableList
+      summary: List MLS database tables
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+        - name: databaseId
+          in: path
+          type: string
+          required: true
+          description: Database ResourceId (eg. Property)
+      responses:
+        200:
+          description: MLS table list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsTable"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+  /mls/{mlsId}/databases/{databaseId}/tables/{tableId}/columns:
+    x-swagger-router-controller: "route.mls"
+    get:
+      tags:
+        - MLS Discovery
+      operationId: getColumnList
+      summary: List MLS table columns
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+        - name: databaseId
+          in: path
+          type: string
+          required: true
+          description: Database ResourceId (eg. Property)
+        - name: tableId
+          in: path
+          type: string
+          required: true
+          description: Table ClassName (eg. RES)
+      responses:
+        200:
+          description: MLS table list
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsColumn"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
+definitions:
+  MlsConfig:
+    type: 'object'
+    required:
+      - name
+      - active
+      - username
+      - password
+      - url
+      - main_property_data
+    properties:
+      id:
+        type: string
+      name:
+        type: string
+      notes:
+        type: string
+      active:
+        type: boolean
+      username:
+        type: string
+      password:
+        type: string
+      url:
+        type: string
+      main_property_data:
+        type: object
+  MlsPropertyData:
+    type: 'object'
+    properties:
+      db:
+        type: string
+      table:
+        type: string
+      field:
+        type: string
+  MlsDatabase:
+    type: 'object'
+    properties:
+      ResourceId:
+        type: string
+      VisibleName:
+        type: string
+      StandardName:
+        type: string
+      ObjectVersion:
+        type: string
+  MlsTable:
+    type: 'object'
+    properties:
+      ClassName:
+        type: string
+      StandardName:
+        type: string
+      VisibleName:
+        type: string
+      TableVersion:
+        type: string
+  MlsColumn:
+    type: 'object'
+    properties:
+      MetadataEntryID:
+        type: string
+      SystemName:
+        type: string
+      ShortName:
+        type: string
+      LongName:
+        type: string
+      DataType:
+        type: string
+  ExpressError:
+    required:
+      - alert
+    properties:
+      alert:
+        type: object
+        properties:
+          msg:
+            type: string
+
+
