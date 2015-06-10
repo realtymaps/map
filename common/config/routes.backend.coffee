@@ -36,9 +36,10 @@ module.exports =
         getByFipsCodeAsFile:      "#{apiBase}/cartodb/fipscodeFile/:fipscode"
         getByFipsCodeAsStream:    "#{apiBase}/cartodb/fipscodeStream/:fipscode"
     parcel:
-        getByFipsCode:            "#{apiBase}/parcel/fipscode/:fipscode"
-        getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
-        uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
+        getByFipsCode:            "#{apiBase}/parcel"
+        getByFipsCodeFormatted:   "#{apiBase}/parcel/formatted"
+        uploadToParcelsDb:        "#{apiBase}/parcel/upload"
+        defineImports:            "#{apiBase}/parcel/defineimports"
     mls_config:
         apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
         getAll:                 "#{apiBaseMlsConfig}"
@@ -49,6 +50,18 @@ module.exports =
         create:                 "#{apiBaseMlsConfig}"
         createById:             "#{apiBaseMlsConfig}/:id"
         delete:                 "#{apiBaseMlsConfig}/:id"
+    mls_normalization:
+        getMlsRules:        "#{apiBaseMlsConfig}/:mlsId/rules"
+        createMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        putMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        deleteMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        getListRules:       "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        createListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        putListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        deleteListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        getRule:            "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
+        updateRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
+        deleteRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
     mls:
         apiBaseMls: apiBaseMls # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
         getDatabaseList:  "#{apiBaseMls}/:mlsId/databases"

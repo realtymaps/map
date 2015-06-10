@@ -10,59 +10,62 @@ JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 
 transforms =
-  fipscode:
-    transform: validators.string(minLength:1)
-    required: true
-  limit: validators.integer()
-  start_rm_property_id: validators.string(minLength: 5)
-  api_key:
-    transform: [
-      validators.string(minLength: 36)
-      validators.string(maxLength: 36)
-    ]
-    required: true
+    nesw:
+        transform: validators.neSwBounds
+        required: false
+    fipscode:
+        transform: validators.string(minLength:1)
+        required: true
+    limit: validators.integer()
+    start_rm_property_id: validators.string(minLength: 5)
+    api_key:
+        transform: [
+            validators.string(minLength: 36)
+            validators.string(maxLength: 36)
+        ]
+        required: true
 
 _getByFipsCode = (req, res, next, headersCb) ->
-  Promise.try ->
-    allParams = _.extend {}, req.params, req.query
+    Promise.try ->
+        allParams = _.extend {}, req.params, req.query
 
-    validation.validateAndTransform(allParams, transforms)
-    .then (validParams) ->
-      headersCb(validParams, res) if headersCb
-      # logger.debug(req, true)
-      getByFipsCode(validParams)
-      .stream()
-      .pipe(geoJsonFormatter([
-        'rm_property_id'
-        'street_address_num'
-        'is_active'
-        'fips_code'
-        'num_updates'
-      ]))
-      .pipe(res)
+        validation.validateAndTransform(allParams, transforms)
+        .then (validParams) ->
+            headersCb(validParams, res) if headersCb
+            # logger.debug(req, true)
+            getByFipsCode(validParams)
+            .stream()
+            .pipe(geoJsonFormatter([
+                'rm_property_id'
+                'street_address_num'
+                'is_active'
+                'fips_code'
+                'num_updates'
+            ]))
+            .pipe(res)
 
-  .catch validation.DataValidationError, (err) ->
-    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
-  .catch (error) ->
-    if _.isString error
-      return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus[error])
-    throw error
+    .catch validation.DataValidationError, (err) ->
+        next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    .catch (error) ->
+        if _.isString error
+            return next new ExpressResponse(alert: {msg: "#{error} for #{req.path}."}, httpStatus[error])
+        throw error
 
 
 module.exports =
-  getByFipsCodeAsFile: (req, res, next) ->
-    _getByFipsCode req, res, next, (validParams,res) ->
-      dispistion = "attachment; filename=#{req.params.fipscode}"
-      #if we have options set them to the file name seperated by "-"
-      #fipscode-rm_property_id-limit.json
-      if validParams.fipscode? #error handled in service
-        ['start_rm_property_id', 'limit'].forEach (prop) ->
-          if validParams[prop]?
-             dispistion += "-#{validParams[prop]}"
-        res.setHeader 'Content-disposition', dispistion + '.json'
-        res.setHeader 'Content-type', 'application/json'
+    getByFipsCodeAsFile: (req, res, next) ->
+        _getByFipsCode req, res, next, (validParams,res) ->
+            dispistion = "attachment; filename=#{req.params.fipscode}"
+            #if we have options set them to the file name seperated by "-"
+            #fipscode-rm_property_id-limit.json
+            if validParams.fipscode? #error handled in service
+                ['start_rm_property_id', 'limit'].forEach (prop) ->
+                    if validParams[prop]?
+                        dispistion += "-#{validParams[prop]}"
+                res.setHeader 'Content-disposition', dispistion + '.json'
+                res.setHeader 'Content-type', 'application/json'
 
-  getByFipsCodeAsStream: (req, res, next) ->
-    #limiting the size since this endppoint is for testing
-    # req.query.limit = 100
-    _getByFipsCode req, res, next
+    getByFipsCodeAsStream: (req, res, next) ->
+        #limiting the size since this endppoint is for testing
+        # req.query.limit = 100
+        _getByFipsCode req, res, next
