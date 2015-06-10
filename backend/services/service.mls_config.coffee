@@ -4,7 +4,7 @@ logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
 Encryptor = require '../utils/util.encryptor'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.PartiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
