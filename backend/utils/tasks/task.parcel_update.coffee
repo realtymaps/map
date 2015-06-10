@@ -24,7 +24,7 @@ _subtasks =
         #all saving and upserting is handled in this function
         #is data_load_history row considered in-progress if inserted_rows, updated_rows, deleted_rows, and invalid_rows are all null
         #should there not be a column to indicate that imports have started for this history item?
-        uploadToParcelsDb(subtask.task_data, _getCreds(subtask))
+        uploadToParcelsDb(subtask.data, _getCreds(subtask))
         .then ({invalidCtr, insertsCtr, updatesCtr}) ->
             dataHistoryQuery
             .update
@@ -36,14 +36,14 @@ _subtasks =
                 data_source_type: 'parcels'
                 data_source_id: subtask.data
         .then ->
-            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_mv_parcels', subtask.task_data, true
+            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_mv_parcels', subtask.data, true
 
     sync_mv_parcels: (subtask) -> Promise.try ->
         db.knex.raw("SELECT stage_dirty_views();")
         .then ->
             db.knex.raw("SELECT push_staged_views(FALSE);")
         .then ->
-            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_cartodb', subtask.task_data, true
+            jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_cartodb', subtask.data, true
 
     sync_cartodb: (subtask) -> Promise.try ->
         fileName = _.last subtask.task_data.split('/')
