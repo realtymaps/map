@@ -9,7 +9,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
   ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
 
     buildState = (name, overrides = {}) ->
-      state = 
+      state =
         name:         name
         parent:       'main'
         url:          adminRoutes[name],
@@ -26,11 +26,12 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
       $stateProvider.state(state)
       state
-    
+
     buildState 'main', parent: null, url: adminRoutes.index, sticky: true
     buildState 'home'
     buildState 'mls'
-    
+    buildState 'normalize'
+
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
 

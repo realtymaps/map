@@ -18,7 +18,9 @@ app = window.angular.module appName, [
   'ui.router'
   'ct.ui.router.extras'
   'ngAnimate'
-  'infinite-scroll'
+  'infinite-scroll',
+  'restangular',
+  'ngDragDrop'
 ]
 
 module.exports = app

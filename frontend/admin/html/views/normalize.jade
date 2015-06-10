@@ -1,0 +1,14 @@
+div.normalize-container
+
+div.row Select MLS:
+  select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
+    option(value="" disabled)
+
+div.row.panel
+  div.field-container
+    div.field(data-drop="true" ng-model='columns' data-jqyoui-options="{accept:'.btn-draggable:not([ng-model=columns])'}" jqyoui-droppable="{index: {{$index}}}" ng-repeat="item in columns")
+      div.btn.btn-info.btn-draggable(data-drag="true" data-jqyoui-options="{revert: 'invalid'}" ng-model="columns" jqyoui-draggable="{index: {{$index}}, placeholder: true, animate: true}" ng-hide="!item.SystemName") {{item.SystemName}}
+
+  div.category-container
+    div.btn.btn-warning.category(data-drop="true" ng-model='categories' data-jqyoui-options="categories" jqyoui-droppable="{multiple:true}" ng-repeat="category in categories") {{ category.label }}
+      div.btn.btn-info.btn-draggable(ng-repeat="item in category.items track by item.MetadataEntryID" ng-show="item.SystemName" data-drag="true" data-jqyoui-options="{revert: 'invalid'}" ng-model="" jqyoui-draggable="{index: {{$index}}, animate: true}") {{item.SystemName}}

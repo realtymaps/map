@@ -2,6 +2,7 @@
   "name": "mean.coffee",
   "version": "0.0.1",
   "dependencies": {
+    "angular-dragdrop": "^1.0.11",
     "bootstrap-css-only": "~3.3.4",
     "isteven-angular-multiselect": "~2.0.2",
     "lodash": "~2.4.1",
@@ -29,6 +30,7 @@
     "leaflet-search": "https://github.com/realtymaps/leaflet-search.git#1.5.6-rmaps",
     "leaflet.markercluster": "~0.4.0",
     "leaflet.zoombox": "https://github.com/realtymaps/Leaflet.ZoomBox/archive/d66f81d1ef1cdcfd2e2047c309e6e69535c2fbe5.zip",
+    "restangular": "1.5.1",
     "d3": "~3.5.5"
   },
   "overrides": {
@@ -48,6 +50,11 @@
     },
     "leaflet.zoombox": {
       "ignore": true
+    },
+    "angular-dragdrop": {
+      "dependencies": {
+        "jquery-ui": "latest"
+      }
     }
   }
 }
