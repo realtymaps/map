@@ -3,8 +3,9 @@ Object list of the defined routes. It's purpose is to keep the
 frontend and backend in sync
 ###
 
-apiBase = '/api'
-
+apiBase = "/api"
+apiBaseMls = "#{apiBase}/mls"
+apiBaseMlsConfig = "#{apiBase}/mls_config"
 
 module.exports =
     wildcard:
@@ -35,19 +36,36 @@ module.exports =
         getByFipsCodeAsFile:      "#{apiBase}/cartodb/fipscodeFile/:fipscode"
         getByFipsCodeAsStream:    "#{apiBase}/cartodb/fipscodeStream/:fipscode"
     parcel:
-        getByFipsCode:            "#{apiBase}/parcel/fipscode/:fipscode"
-        getByFipsCodeFormatted:   "#{apiBase}/parcel/fipscode/formatted/:fipscode"
-        uploadToParcelsDb:        "#{apiBase}/parcel/fipscode/upload/:fipscode"
+        getByFipsCode:            "#{apiBase}/parcel"
+        getByFipsCodeFormatted:   "#{apiBase}/parcel/formatted"
+        uploadToParcelsDb:        "#{apiBase}/parcel/upload"
+        defineImports:            "#{apiBase}/parcel/defineimports"
     mls_config:
-        getAll:                 "#{apiBase}/mls_config"
-        getById:                "#{apiBase}/mls_config/:id"
-        update:                 "#{apiBase}/mls_config/:id"
-        updatePropertyData:     "#{apiBase}/mls_config/:id/propertyData"
-        updateServerInfo:       "#{apiBase}/mls_config/:id/serverInfo"
-        create:                 "#{apiBase}/mls_config"
-        delete:                 "#{apiBase}/mls_config/:id"
+        apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
+        getAll:                 "#{apiBaseMlsConfig}"
+        getById:                "#{apiBaseMlsConfig}/:id"
+        update:                 "#{apiBaseMlsConfig}/:id"
+        updatePropertyData:     "#{apiBaseMlsConfig}/:id/propertyData"
+        updateServerInfo:       "#{apiBaseMlsConfig}/:id/serverInfo"
+        create:                 "#{apiBaseMlsConfig}"
+        createById:             "#{apiBaseMlsConfig}/:id"
+        delete:                 "#{apiBaseMlsConfig}/:id"
+    mls_normalization:
+        getMlsRules:        "#{apiBaseMlsConfig}/:mlsId/rules"
+        createMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        putMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        deleteMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        getListRules:       "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        createListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        putListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        deleteListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        getRule:            "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
+        updateRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
+        deleteRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
     mls:
-        getDatabaseList:  "#{apiBase}/mls/:id/databases"
-        getTableList:     "#{apiBase}/mls/:id/tables"
-        getColumnList:    "#{apiBase}/mls/:id/columns"
+        apiBaseMls: apiBaseMls # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
+        getDatabaseList:  "#{apiBaseMls}/:mlsId/databases"
+        getTableList:     "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
+        getColumnList:    "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
+
     # hirefire secret value set from within backend/config/config.coffee

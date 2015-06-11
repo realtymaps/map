@@ -12,6 +12,7 @@ _mapBoxFactory = (name, id) ->
   layerOptions:
     apikey: _mapboxKey
     mapid: id
+    maxZoom: 21
 
 _googleFactory = (name, type, options) ->
   ret =
@@ -35,6 +36,7 @@ _baseLayers =
     layerOptions:
       subdomains: ['a', 'b', 'c'],
       attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      maxZoom: 21
       continuousWorld: true
 
 

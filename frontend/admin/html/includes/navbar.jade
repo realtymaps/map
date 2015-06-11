@@ -12,7 +12,7 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
       li
         a(ui-sref="mls") MLS
       li(ng-hide="$state.is('main')")
-        +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+        +spinner()
       //- li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
       //-   a(href="{{frontendRoutes.login}}") Sign In
       //- li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right

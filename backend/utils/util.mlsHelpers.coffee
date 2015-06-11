@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require './util.PartiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 rets = require 'rets-client'
 Encryptor = require './util.encryptor'
 moment = require('moment')
@@ -22,15 +22,7 @@ sqlHelpers = require './../utils/util.sql.helpers'
 Parcel = require "../models/model.parcels"
 
 
-
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
-
-
-_getClient = (loginUrl, username, password) ->
-  new rets.Client
-    loginUrl: loginUrl
-    username: username
-    password: encryptor.decrypt(password)
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
@@ -154,57 +146,65 @@ loadRetsTableUpdates = (subtask, options) ->
       _streamArrayToDbTable(results, rawTableName, fields)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-  .finally () ->
-    # always log out the RETS client when we're done
-    retsClient.logout()
+    .finally () ->
+      # always log out the RETS client when we're done
+      retsClient.logout()
+
+_getRetsClient = (loginUrl, username, password) ->
+  Promise.try () ->
+    new rets.Client
+      loginUrl: loginUrl
+      username: username
+      password: encryptor.decrypt(password)
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(error, "RETS client could not be created")
+  .then (retsClient) ->
+    retsClient.login()
+    .catch isUnhandled, (error) ->
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "RETS login failed")
 
 getDatabaseList = (serverInfo) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
-
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
     retsClient.metadata.getResources()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS databases")
-  .then (response) ->
-    _.map response.Resources, (r) ->
-      _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch (error) ->
+      logger.error error.stack
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "Failed to retrieve RETS databases")
+    .then (response) ->
+      _.map response.Resources, (r) ->
+        _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+    .finally () ->
+      retsClient.logout()
 
 getTableList = (serverInfo, databaseName) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
-
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
     retsClient.metadata.getClass(databaseName)
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS tables")
-  .then (response) ->
-    _.map response.Classes, (r) ->
-      _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, "Failed to retrieve RETS tables")
+    .then (response) ->
+      _.map response.Classes, (r) ->
+        _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
+    .finally () ->
+      retsClient.logout()
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  retsClient = _getClient serverInfo.url, serverInfo.username, serverInfo.password
-
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
-  .then (response) ->
-    _.map response.Fields, (r) ->
-      _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
-  .finally () ->
-    retsClient.logout()
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
+    .then (response) ->
+      _.map response.Fields, (r) ->
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+    .finally () ->
+      retsClient.logout()
 
 _getValidations = (dataSourceId) ->
   jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
@@ -259,7 +259,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         dbs.properties.knex(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
-        
+
 
 _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
   # build the row's new values
@@ -295,7 +295,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
         dbs.properties.knex(taskHelpers.tables.mlsData)
         .insert(updateRow)
       else
-        # found an existing row, so need to update, but include change log 
+        # found an existing row, so need to update, but include change log
         updateRow.change_history = result.change_history ? []
         changes = _diff(updateRow, result, diffExcludeKeys)
         if !_.isEmpty changes
@@ -306,7 +306,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
           data_source_id: updateRow.data_source_id
         .update(updateRow)
 
-  
+
 recordChangeCounts = (subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
@@ -327,7 +327,7 @@ recordChangeCounts = (subtask) ->
       batch_id: subtask.batch_id
       change_history: null
     .count('*')
-    # get a count of rows from this batch without a null change history, i.e. newly-updated rows 
+    # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
     .where(batch_id: subtask.batch_id)
     .whereNotNull('change_history')
@@ -399,7 +399,6 @@ activateNewData = (subtask) ->
         batch_id: subtask.batch_id
         active: false
       .delete()
-    
     
 
 module.exports =

@@ -13,41 +13,21 @@ describe 'service.digimaps', ->
                 currentDir = dirName
                 Promise.resolve dirName
             pwdAsync: ->
-                Promise.resolve dirName
+                Promise.resolve currentDir
             listAsync: sinon.stub().returns Promise.resolve [
-                    {name:'DMP_DELIVERY_20141011'}
-                    {name:'DMP_DELIVERY_20150108'}
-                    {name:'DMP_DELIVERY_20150519'}
-                    {name:'DMP_DELIVERY_20150208'}
+                    {name:'Points123.zip'}
                 ]
             getAsync: (fileName) -> Promise.try ->
-                console.log "currentDir: #{currentDir}"
-                if currentDir.indexOf('ZIPS') != -1
-                    return new StringStream(fileName)
-                return new StringStream('Does not exist!')
+                return new StringStream(fileName)
 
-    it '_getLatestDir', (done) ->
-        _getLatestDir = @subject.__get__('_getLatestDir')
-        _getLatestDir(@mockFtpClient, name:'DMP_DELIVERY_')
-        .then (val) ->
-            expect(val).to.be.eql 'DMP_DELIVERY_20150519'
-            done()
-
-    it '_goToLatestDir', (done) ->
-        _goToLatestDir = @subject.__get__('_goToLatestDir')
-        _goToLatestDir(@mockFtpClient)
-        .then (val) ->
-            expect(val).to.be.eql 'ZIPS'
-            done()
-
-    it 'root', (done) ->
-        @subject(123, Promise.resolve @mockFtpClient)
+    it 'getParcelZipFileStream', (done) ->
+        @subject.getParcelZipFileStream('/ZIPS/Parcels_123.zip', Promise.resolve @mockFtpClient)
         .then (stream) ->
             str = ''
             stream.on 'data', (buf)->
                 str += String(buf)
             stream.on 'end', ->
-                expect(str).to.be.eql('Parcels_123.zip')
+                expect(str).to.be.eql('/ZIPS/Parcels_123.zip')
                 done()
         .catch (err) ->
             throw err

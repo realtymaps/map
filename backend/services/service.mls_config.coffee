@@ -4,7 +4,7 @@ logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
 Encryptor = require '../utils/util.encryptor'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.PartiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
@@ -60,7 +60,9 @@ module.exports =
       throw new PartiallyHandledError(error)
 
   # Privileged
-  create: (mlsConfig) ->
+  create: (mlsConfig, id) ->
+    if id
+      mlsConfig.id = id
     if mlsConfig.password
       mlsConfig.password = encryptor.encrypt(mlsConfig.password)
     knex.table(tables.mlsConfig)

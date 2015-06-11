@@ -5,6 +5,8 @@ ngAnnotatePlugin = require 'ng-annotate-webpack-plugin'
 Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
   obj =
 #    watch:true
+    stats:
+        assets: false
     verbose:false
     #http://webpack.github.io/docs/configuration.html#devtool
     #devtool: '#eval'  #'#eval-source-map' #eval is the fastest it is source map js, where eval-source-map is coffee and jade (ef that)
@@ -31,6 +33,7 @@ Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
         { test: /\.coffee$/, loader: 'coffee' }
         { test: /\.png$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.jpg$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
+        { test: /\.gif$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.woff$/, loader:"url?prefix=font/&limit=5000&mimetype=application/font-woff" }
         { test: /\.ico$/, loader: 'url?name=./assets/[name].[ext]&limit=10000' }
         { test: /\.ttf$/, loader: "file?prefix=font/" }
