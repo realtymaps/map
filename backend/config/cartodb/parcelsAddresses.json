@@ -1,0 +1,36 @@
+{
+  "version": "0.0.1",
+  "name": "parcelsAddresses",
+  "auth": {
+    "method": "open"
+  },
+  "layergroup": {
+    "layers": [{
+          "type": "cartodb",
+          "options": {
+            "cartocss_version": "2.1.1",
+            "cartocss": "#layer {
+              polygon-fill: transparent;
+              polygon-opacity: 0.7;
+              line-color: #1269D8;
+              line-width: 1.5;
+              line-opacity: 1;
+            }
+            #parcels::labels {
+              text-name: [street_address_num];
+              text-face-name: 'DejaVu Sans Book';
+              text-size: 10;
+              text-label-position-tolerance: 10;
+              text-fill: #000;
+              text-halo-fill: #FFF;
+              text-halo-radius: 1;
+              text-dy: 0;
+              text-allow-overlap: true;
+              text-placement: interior;
+              text-placement-type: simple;
+            }",
+        "sql": "select * from parcels"
+      }
+    }]
+  }
+}

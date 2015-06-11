@@ -187,9 +187,9 @@ app.factory 'rmapsMap',
           )
 
           if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays["cartodb parcels"].visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
+            @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
             @scope.map.layers.overlays.filterSummary.visible = false
-            @scope.map.layers.overlays.addresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
+            @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
             promises.push(
               rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
               .then (data) =>
@@ -199,9 +199,9 @@ app.factory 'rmapsMap',
                   style: @layerFormatter.Parcels.getStyle
             )
           else
-            @scope.map.layers.overlays["cartodb parcels"].visible = false
+            @scope.map.layers.overlays.parcels.visible = false
             @scope.map.layers.overlays.filterSummary.visible = true
-            @scope.map.layers.overlays.addresses.visible = false
+            @scope.map.layers.overlays.parcelsAddresses.visible = false
         promises
 
       redraw: (cache = true) =>
@@ -209,14 +209,6 @@ app.factory 'rmapsMap',
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
              rmapsZoomLevel.isParcel(@scopeM().center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom)
-          if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-              rmapsZoomLevel.dblClickZoom.disable(@scope)
-
-              promises.push rmapsProperties.getAddresses(@hash, @mapState, cache).then (data) =>
-                @scope.map.markers.addresses = @layerFormatter.setDataOptions(
-                  _.cloneDeep(data),
-                  @layerFormatter.Parcels.labelFromStreetNum
-                )
 
           promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?

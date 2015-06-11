@@ -89,7 +89,8 @@ base =
       ROOT_URL: root
       API_URL: apiUrl
       TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
-      WAKE_URL: "#{root}/map/named/#{ret.TEMPLATE}?#{apiUrl}"
+      WAKE_URLS: ret.MAPS.map (m) -> "#{root}/map/named/#{m.name}?#{apiUrl}"
+      
   TWILIO:
     ACCOUNT: process.env.TWILIO_ACCOUNT
     API_KEY: process.env.TWILIO_API_KEY
