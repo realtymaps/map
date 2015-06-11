@@ -13,8 +13,6 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
 
   $scope.categories = [
       'base',
-      'hidden',
-      'base'
       'contacts',
       'location',
       'hidden',

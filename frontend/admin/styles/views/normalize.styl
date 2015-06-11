@@ -7,6 +7,8 @@ select, input
 .panel
   border-radius 0
   height 500px
+  overflow-y scroll
+
 
   .panel-heading
     background-color rm-medium-blue
@@ -25,27 +27,24 @@ select, input
     border-bottom-left-radius 0
     border 0
 
-.field, .category
+.field, .category-container
+  z-index 3
   display block
   margin 3px
+  overflow hidden
   .btn
+    overflow hidden
+    z-index 3
     text-align left
     width 100%
 
 .field-container
+  margin: 1em
+  background-color: #eee
+  z-index 2
   display inline-block
   overflow-y scroll
   height: 100%
+  margin: 5px
   float left
-  top 0
-  left 0
-  width 25%
-
-.category-container
-  display inline-block
-  overflow-y scroll
-  height: 100%
-  float right
-  top 0
-  right 0
-  width 75%
+  overflow-x hidden
