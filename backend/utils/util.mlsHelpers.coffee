@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require './util.PartiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 rets = require 'rets-client'
 Encryptor = require './util.encryptor'
 moment = require('moment')
@@ -255,7 +255,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         dbs.properties.knex(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
-        
+
 
 _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
   # build the row's new values
@@ -303,7 +303,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
           data_source_id: updateRow.data_source_id
         .update(updateRow)
 
-  
+
 recordChangeCounts = (subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
@@ -325,7 +325,7 @@ recordChangeCounts = (subtask) ->
       batch_id: subtask.batch_id
       change_history: null
     .count('*')
-    # get a count of rows from this batch without a null change history, i.e. newly-updated rows 
+    # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
     .where(batch_id: subtask.batch_id)
     .whereNotNull('change_history')
@@ -337,7 +337,7 @@ recordChangeCounts = (subtask) ->
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
 
-      
+
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData

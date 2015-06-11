@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require "bluebird"
 dbs = require '../config/dbs'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.PartiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 knex = dbs.users.knex
 
 tables =
