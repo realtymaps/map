@@ -20,7 +20,7 @@ loadDataRawMain = (subtask) ->
     retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+)]"
     retsId: 'swflmls'
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, 'normalizeData')
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
   mlsHelpers.normalizeData subtask,
@@ -34,7 +34,7 @@ finalizeDataPrep = (subtask) ->
   .select(dbs.properties.knex.raw('count(distinct "rm_property_id")'))
   .where(batch_id: subtask.batch_id)
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, 'finalizeData')
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   dbs.properties.knex(taskHelpers.tables.mlsData)
@@ -49,12 +49,12 @@ finalizeData = (subtask) ->
       
 
 subtasks =
-  loadDataRawMain: loadDataRawMain
-  normalizeData: normalizeData
-  recordChangeCounts: mlsHelpers.recordChangeCounts
-  finalizeDataPrep: finalizeDataPrep
-  finalizeData: finalizeData
-  activateNewData: mlsHelpers.activateNewData
+  swflmls_loadDataRawMain: loadDataRawMain
+  swflmls_normalizeData: normalizeData
+  swflmls_recordChangeCounts: mlsHelpers.recordChangeCounts
+  swflmls_finalizeDataPrep: finalizeDataPrep
+  swflmls_finalizeData: finalizeData
+  swflmls_activateNewData: mlsHelpers.activateNewData
 
 module.exports =
   executeSubtask: (subtask) ->

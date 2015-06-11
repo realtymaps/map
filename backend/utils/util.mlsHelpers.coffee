@@ -127,8 +127,8 @@ loadRetsTableUpdates = (subtask, options) ->
         doDeletes = true
       else
         doDeletes = false
-      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: doDeletes}, true)
-      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'activateNewData', {deleteUntouchedRows: doDeletes}, true)
+      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
       Promise.join(step3Promise, step5Promise)
       .then () ->
         return lastSuccess
