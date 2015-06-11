@@ -7,11 +7,8 @@ logger = require '../config/logger'
 {CARTODB} = require '../config/config'
 cartodb = require 'cartodb-api'
 cartodbSql = require '../utils/util.cartodb.sql'
-
-
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
-mapboxUpload = require '../utils/util.mapbox'
 fs = require 'fs'
 
 _execCartodbSql = (sql) ->
