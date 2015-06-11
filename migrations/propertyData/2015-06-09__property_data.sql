@@ -44,18 +44,18 @@ CREATE TRIGGER update_modified_time_combined_data
   AFTER UPDATE ON combined_data
   FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column();
 
-CREATE INDEX ON property_data USING GIST (geometry_raw);
-CREATE INDEX ON property_data (rm_property_id);
-CREATE INDEX ON property_data (price);
-CREATE INDEX ON property_data (close_date);
-CREATE INDEX ON property_data (days_on_market);
-CREATE INDEX ON property_data (bedrooms);
-CREATE INDEX ON property_data (baths_full);
-CREATE INDEX ON property_data (acres);
-CREATE INDEX ON property_data (sqft_finished);
-CREATE INDEX ON property_data (status);
-CREATE INDEX ON property_data (owner_name);
-CREATE INDEX ON property_data (owner_name_2);
-CREATE INDEX ON property_data (active);
-CREATE INDEX ON property_data (data_source_type);
-CREATE INDEX ON property_data (data_source_id);
+CREATE INDEX ON combined_data USING GIST (geometry_raw);
+CREATE INDEX ON combined_data (rm_property_id);
+CREATE INDEX ON combined_data (price);
+CREATE INDEX ON combined_data (close_date);
+CREATE INDEX ON combined_data (days_on_market);
+CREATE INDEX ON combined_data (bedrooms);
+CREATE INDEX ON combined_data (baths_full);
+CREATE INDEX ON combined_data (acres);
+CREATE INDEX ON combined_data (sqft_finished);
+CREATE INDEX ON combined_data (status);
+CREATE INDEX ON combined_data (owner_name);
+CREATE INDEX ON combined_data (owner_name_2);
+CREATE INDEX ON combined_data (active);
+CREATE INDEX ON combined_data (data_source_type);
+CREATE INDEX ON combined_data (data_source_id);
