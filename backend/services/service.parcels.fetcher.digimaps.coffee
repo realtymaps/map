@@ -3,9 +3,8 @@ logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
-{getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
+taskHelpers = require '../utils/tasks/util.taskHelpers'
 dataSourceType = 'parcels'
-{dataHistoryQuery} = require '../utils/tasks/util.taskHelpers'
 
 
 DIGIMAPS =
@@ -50,7 +49,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                     name: l.name
                     moment: moment(_numbersInString(l.name), 'YYYYMMDD').utc()
 
-                getLastStartTime(subtask.task_name)
+                taskHelpers.getLastStartTime(subtask.task_name)
                 .then (lastStartDate) ->
                     lastStartDate = moment(lastStartDate).utc()
                     folderObjs = _.filter folderObjs, (o) ->
@@ -95,7 +94,8 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
         .then -> #step 3
             logger.debug 'defineImports: step 3'
             # logger.debug importsToAdd
-            createDataHistoryEntry(importsToAdd)
+            taskHelpers.queries.dataLoadHistory()
+            .insert(importsToAdd)
             importsToAdd
 
 _getParcelZipFileStream = (fullPath, digiMapsSettings) -> Promise.try ->

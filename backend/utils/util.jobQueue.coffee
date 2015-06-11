@@ -18,13 +18,13 @@ SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 sendNotification = notification("jobQueue")
 knex = dbs.users.knex
 
-tables =
-  taskConfig: 'jq_task_config'
-  subtaskConfig: 'jq_subtask_config'
-  queueConfig: 'jq_queue_config'
-  taskHistory: 'jq_task_history'
-  currentSubtasks: 'jq_current_subtasks'
-  subtaskErrorHistory: 'jq_subtask_error_history'
+queries = sqlHelpers.buildQueries
+  taskConfig: 'users.jq_task_config'
+  subtaskConfig: 'users.jq_subtask_config'
+  queueConfig: 'users.jq_queue_config'
+  taskHistory: 'users.jq_task_history'
+  currentSubtasks: 'users.jq_current_subtasks'
+  subtaskErrorHistory: 'users.jq_subtask_error_history'
 
 class SoftFail extends Error
   constructor: (@message) ->
@@ -63,32 +63,32 @@ queueReadyTasks = (transaction) -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    transaction.select()
-    .from(tables.taskConfig)
+    queries.taskConfig(transaction)
+    .select()
     .where(active: true)                  # only consider active tasks
     .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
     .where () ->
       sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
       sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
       .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
-        this.select()
-        .from(tables.taskHistory)
-        .whereRaw("#{tables.taskConfig}.name = #{tables.taskHistory}.name")
+        queries.taskHistory(this)
+        .select()
+        .whereRaw("#{queries.taskConfig.tableName}.name = #{queries.taskHistory.tableName}.name")
         .where () ->
           this
-          .whereNull("#{tables.taskConfig}.repeat_period_minutes")   # ... it isn't set to repeat ... 
+          .whereNull("#{queries.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ... 
           .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
-          .orWhereRaw("started + #{tables.taskConfig}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
+          .orWhereRaw("started + #{queries.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
   .then (readyTasks=[]) ->
     Promise.map readyTasks, (task) ->
       queueTask(transaction, batchId, task, '<scheduler>')
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  transaction.table(tables.taskHistory)
+  queries.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
   .then () ->
-    transaction.table(tables.taskHistory)
+    queries.taskHistory(transaction)
     .insert
       name: task.name
       data: task.data
@@ -97,14 +97,14 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
   .then () -> # clear out any subtasks for prior runs of this task
-    knex.table(tables.currentSubtasks)
+    queries.currentSubtasks()
     .where(task_name: task.name)
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
     taskImpl = require("./tasks/task.#{task.name}")
     subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
-    subtaskConfigPromise = transaction.table(tables.subtaskConfig)
+    subtaskConfigPromise = queries.subtaskConfig(transaction)
     .where
       task_name: task.name
       auto_enqueue: true
@@ -134,7 +134,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       .then (count) ->
         return subtaskCount+count  # add up the counts from overridden and config-based subtasks
   .then (count) ->
-    transaction.table(tables.taskHistory)
+    queries.taskHistory(transaction)
     .where
       name: task.name
       current: true
@@ -147,7 +147,7 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
   Promise.try () ->
     if _taskData != undefined || !subtasks?.length
       return _taskData
-    transaction.table(tables.taskHistory)
+    queries.taskHistory(transaction)
     .where(current: true, name: subtasks[0].task_name)
     .then (task) ->
       task?[0]?.data
@@ -166,7 +166,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
   Promise.try () ->
     if _taskData != undefined
       return _taskData
-    transaction.table(tables.taskHistory)
+    queries.taskHistory(transaction)
     .where(current: true, name: subtask.task_name)
     .then (task) ->
       task?[0]?.data
@@ -196,7 +196,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
         singleSubtask.batch_id = batchId
-        transaction.table(tables.currentSubtasks)
+        queries.currentSubtasks(transaction)
         .insert singleSubtask
       .then () ->
         return subtask.data.length
@@ -206,7 +206,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       singleSubtask.task_data = taskData
       singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
       singleSubtask.batch_id = batchId
-      transaction.table(tables.currentSubtasks)
+      queries.currentSubtasks(transaction)
       .insert singleSubtask
       .then () ->
         return 1
@@ -214,7 +214,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that work poll to watch for a cancel message
-  knex.table(tables.taskHistory)
+  queries.taskHistory()
   .where
     name: taskName
     current: true
@@ -223,7 +223,7 @@ cancelTask = (taskName, status) ->
     status: status
     status_changed: knex.raw('NOW()')
   .then () ->
-    knex.table(tables.currentSubtasks)
+    queries.currentSubtasks()
     .where
       task_name: taskName
       status: 'queued'
@@ -232,7 +232,7 @@ cancelTask = (taskName, status) ->
       finished: knex.raw('NOW()')
 
 executeSubtask = (subtask) ->
-  knex.table(tables.currentSubtasks)
+  queries.currentSubtasks()
   .where(id: subtask.id)
   .update
     status: 'running'
@@ -241,7 +241,7 @@ executeSubtask = (subtask) ->
     taskImpl = require("./tasks/task.#{subtask.task_name}")
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .then () ->
-      knex.table(tables.currentSubtasks)
+      queries.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
@@ -283,20 +283,20 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started')
         retrySubtask.retry_num++
         retrySubtask.ignore_until = knex.raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
-        knex.table(tables.currentSubtasks)
+        queries.currentSubtasks()
         .insert retrySubtask
   .then () ->
-    knex.table(tables.currentSubtasks)
+    queries.currentSubtasks()
     .where(id: subtask.id)
     .update
       status: status
       finished: knex.raw('NOW()')
   .then () ->
-    knex.table(tables.currentSubtasks)
+    queries.currentSubtasks()
     .where(id: subtask.id)
   .then (updatedSubtask) ->
     updatedSubtask[0].error = "subtask: #{error}"
-    knex.table(tables.subtaskErrorHistory)
+    queries.subtaskErrorHistory()
     .insert updatedSubtask[0]
   .then () ->
     if hard
@@ -318,7 +318,7 @@ getQueuedSubtask = (queue_name) ->
 
 _sendLongTaskWarnings = () ->
   # warn about long-running tasks
-  knex.table(tables.taskHistory)
+  queries.taskHistory()
   .whereNull('finished')
   .whereNotNull('warn_timeout_minutes')
   .where(current: true)
@@ -331,7 +331,7 @@ _sendLongTaskWarnings = () ->
 
 _killLongTasks = () ->
   # kill long-running tasks
-  knex.table(tables.taskHistory)
+  queries.taskHistory()
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
   .where(current: true)
@@ -347,7 +347,7 @@ _killLongTasks = () ->
 
 _handleZombies = () ->
   # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks 
-  knex.table(tables.currentSubtasks)
+  queries.currentSubtasks()
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
@@ -358,11 +358,11 @@ _handleZombies = () ->
 
 _handleSuccessfulTasks = () ->
   # mark running tasks with no unfinished or error subtasks as successful
-  knex.table(tables.taskHistory)
+  queries.taskHistory()
   .where(status: 'running')
   .whereNotExists () ->
-    this.table(tables.currentSubtasks)
-    .whereRaw("#{tables.currentSubtasks}.task_name = #{tables.taskHistory}.name")
+    queries.currentSubtasks(this)
+    .whereRaw("#{queries.currentSubtasks.tableName}.task_name = #{queries.taskHistory.tableName}.name")
     .where () ->
       this
       .whereNull('finished')
@@ -379,12 +379,12 @@ _handleSuccessfulTasks = () ->
 
 _setFinishedTimestamps = () ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
-  knex.table(tables.currentSubtasks)
+  queries.currentSubtasks()
   .select('task_name', knex.raw('MAX(finished) AS finished'))
   .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
-      knex.table(tables.taskHistory)
+      queries.taskHistory()
       .where
         current: true
         name: task.task_name
@@ -434,7 +434,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
   queueSubtask(transaction, batchId, taskData, subtask, data)
   
 getSubtaskConfig = (transaction, subtaskName, taskName) ->
-  transaction(tables.subtaskConfig)
+  queries.subtaskConfig(transaction)
   .where
     name: subtaskName
     task_name: taskName
@@ -461,5 +461,5 @@ module.exports =
   getSubtaskConfig: getSubtaskConfig
   SoftFail: SoftFail
   HardFail: HardFail
-  tables: tables
+  queries: queries
   knex: knex
