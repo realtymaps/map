@@ -1,28 +1,38 @@
-DROP TABLE IF EXISTS property_data;
-CREATE TABLE property_data (
+DROP TABLE IF EXISTS combined_data;
+CREATE TABLE combined_data (
   rm_inserted_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
   rm_modified_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
 
   data_source_id TEXT NOT NULL,
+  data_source_type TEXT NOT NULL,
   batch_id TEXT NOT NULL,
-  deleted BOOLEAN NOT NULL,
   up_to_date TIMESTAMP NOT NULL,
+  active BOOLEAN NOT NULL,
   
   change_history JSON,
+  prior_listings JSON,
   
   rm_property_id TEXT NOT NULL,
   fips_code INTEGER NOT NULL,
   parcel_id TEXT NOT NULL,
   address JSON NOT NULL,
-  price NUMERIC NOT NULL,
-  days_on_market INTEGER NOT NULL,
+  price NUMERIC,
+  close_date TIMESTAMP,
+  days_on_market INTEGER,
   bedrooms INTEGER,
   baths_full INTEGER,
   acres NUMERIC,
   sqft_finished INTEGER,
-  status TEXT NOT NULL,
-  substatus TEXT NOT NULL,
-  status_display TEXT NOT NULL,
+  status TEXT,
+  substatus TEXT,
+  status_display TEXT,
+  
+  owner_name TEXT,
+  owner_name_2 TEXT,
+  
+  geometry JSON NOT NULL,
+  geometry_center JSON NOT NULL,
+  geometry_raw GEOMETRY(MultiPolygon,26910),
   
   client_groups JSON NOT NULL,
   realtor_groups JSON NOT NULL,
@@ -30,6 +40,22 @@ CREATE TABLE property_data (
   ungrouped_fields JSON NOT NULL
 );
 
-CREATE TRIGGER update_modified_time_property_data
-  AFTER UPDATE ON property_data
+CREATE TRIGGER update_modified_time_combined_data
+  AFTER UPDATE ON combined_data
   FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column();
+
+CREATE INDEX ON property_data USING GIST (geometry_raw);
+CREATE INDEX ON property_data (rm_property_id);
+CREATE INDEX ON property_data (price);
+CREATE INDEX ON property_data (close_date);
+CREATE INDEX ON property_data (days_on_market);
+CREATE INDEX ON property_data (bedrooms);
+CREATE INDEX ON property_data (baths_full);
+CREATE INDEX ON property_data (acres);
+CREATE INDEX ON property_data (sqft_finished);
+CREATE INDEX ON property_data (status);
+CREATE INDEX ON property_data (owner_name);
+CREATE INDEX ON property_data (owner_name_2);
+CREATE INDEX ON property_data (active);
+CREATE INDEX ON property_data (data_source_type);
+CREATE INDEX ON property_data (data_source_id);

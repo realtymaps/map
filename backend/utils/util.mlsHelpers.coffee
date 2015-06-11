@@ -16,6 +16,11 @@ validation = require './util.validation'
 require '../config/promisify'
 memoize = require 'memoizee'
 vm = require 'vm'
+sqlHelpers = require './../utils/util.sql.helpers'
+
+# we should probably clean up these old Bookshelf models somehow so we have a better way of getting their table names
+Parcel = require "../models/model.parcels"
+
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -126,15 +131,15 @@ loadRetsTableUpdates = (subtask, options) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: true}, true)
-        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'removeExtraRows')
-        Promise.join(step3Promise, step5Promise)
-        .then () ->
-          return new Date(0)
+        lastSuccess = new Date(0)
+        doDeletes = true
       else
-        jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: false}, true)
-        .then () ->
-          return lastSuccess
+        doDeletes = false
+      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: doDeletes}, true)
+      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'activateNewData', {deleteUntouchedRows: doDeletes}, true)
+      Promise.join(step3Promise, step5Promise)
+      .then () ->
+        return lastSuccess
     .then (refreshThreshold) ->
       # query for everything changed since then
       retsClient.search.query(options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
@@ -334,7 +339,69 @@ recordChangeCounts = (subtask) ->
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
 
-      
+
+finalizeData = (subtask, id) ->
+  listingsPromise = dbs.properties.knex(taskHelpers.tables.mlsData)
+  .select('*')
+  .where(rm_property_id: id)
+  .orderByRaw('close_date NULLS FIRST DESC')
+  parcelPromise = dbs.properties.knex(sqlHelpers.tableName(Parcel))
+  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+  .where(rm_property_id: id)
+  # we also need to select from the tax table for owner name info 
+  Promise.join(listingsPromise, parcelsPromise)
+  .then (listings, parcel=[]) ->
+    listing = listings.shift()
+    listing.prior_listings = listings
+    listing.data_source_type = 'mls'
+    listing.active = false
+    delete listing.deleted
+    _.extend(listing, parcel)
+    dbs.properties.knex('combined_data')
+    .insert(listing)
+
+
+activateNewData = (subtask) ->
+  # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
+  if subtask.data.deleteUntouchedRows
+    # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
+    # full data sync, and if we didn't touch it that means it should be deleted
+    dbs.properties.knex('combined_data')
+    .where(data_source_id: subtask.data_source_id)
+    .update(active: dbs.properties.knex.raw('NOT "active"'))
+    .then () ->
+      dbs.properties.knex('combined_data')
+      .where
+        data_source_id: subtask.data_source_id
+        active: false
+      .delete()
+  else
+    # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
+    # the rm_property_id that has been updated in this batch
+    dbs.properties.knex('combined_data')
+    .where
+      data_source_id: subtask.data_source_id
+      batch_id: subtask.batch_id
+    .whereExists () ->
+      this.select()
+      .from('check')
+      .where
+        "check.data_source_id": subtask.data_source_id
+        "check.batch_id": subtask.batch_id
+        "check.active": false
+        "check.rm_property_id": dbs.properties.knex.raw('combined_data.rm_property_id')
+      .as('check')
+    .update(active: dbs.properties.knex.raw('NOT "active"'))
+    .then () ->
+      dbs.properties.knex('combined_data')
+      .where
+        data_source_id: subtask.data_source_id
+        batch_id: subtask.batch_id
+        active: false
+      .delete()
+    
+    
+
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData
@@ -342,3 +409,5 @@ module.exports =
   getTableList: getTableList
   getColumnList: getColumnList
   recordChangeCounts: recordChangeCounts
+  finalizeData: finalizeData
+  activateNewData: activateNewData
