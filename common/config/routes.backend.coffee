@@ -30,8 +30,6 @@ module.exports =
     snail:
         quote:            "#{apiBase}/snail/quote"
         send:             "#{apiBase}/snail/send"
-    mapbox:
-        upload:            "#{apiBase}/mapbox/upload"
     cartodb:
         getByFipsCodeAsFile:      "#{apiBase}/cartodb/fipscodeFile/:fipscode"
         getByFipsCodeAsStream:    "#{apiBase}/cartodb/fipscodeStream/:fipscode"

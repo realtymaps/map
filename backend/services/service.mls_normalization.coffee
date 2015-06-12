@@ -52,18 +52,18 @@ _putRules = (query, rules) ->
       throw new PartiallyHandledError(error)
 
 _deleteRules = (query) ->
-    knex.table(tables.mlsNormalization)
-    .where query
-    .delete()
-    .then (result) ->
-      result >= 0
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error)
+  knex.table(tables.mlsNormalization)
+  .where query
+  .delete()
+  .then (result) ->
+    result >= 0
+  .catch isUnhandled, (error) ->
+    throw new PartiallyHandledError(error)
 
 module.exports =
 
   getRules: (mlsId) ->
-    _getRules {}
+    _getRules data_source_id: mlsId
 
   createRules: (mlsId, rules) ->
     _createRules data_source_id: mlsId, rules

@@ -10,7 +10,6 @@ tables = require '../config/tables'
 
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
-mapboxUpload = require '../utils/util.mapbox'
 fs = require 'fs'
 
 _execCartodbSql = (sql) ->
