@@ -7,7 +7,7 @@ logger = require '../config/logger'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 {notification} = require './util.notifications.coffee'
-tables = require '../../config/tables'
+tables = require '../config/tables'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this

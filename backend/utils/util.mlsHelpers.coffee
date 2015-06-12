@@ -350,7 +350,7 @@ finalizeData = (subtask, id) ->
   .select('*')
   .where(rm_property_id: id)
   .orderByRaw('close_date NULLS FIRST DESC')
-  parcelPromise = tables.propertyData.parcel
+  parcelPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
   # we also need to select from the tax table for owner name info 
@@ -362,7 +362,7 @@ finalizeData = (subtask, id) ->
     listing.active = false
     delete listing.deleted
     _.extend(listing, parcel[0])
-    tables.propertyData.combined
+    tables.propertyData.combined()
     .insert(listing)
 
 
@@ -371,11 +371,11 @@ activateNewData = (subtask) ->
   if subtask.data.deleteUntouchedRows
     # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
     # full data sync, and if we didn't touch it that means it should be deleted
-    tables.propertyData.combined
+    tables.propertyData.combined()
     .where(data_source_id: subtask.data_source_id)
     .update(active: dbs.properties.knex.raw('NOT "active"'))
     .then () ->
-      tables.propertyData.combined
+      tables.propertyData.combined()
       .where
         data_source_id: subtask.data_source_id
         active: false
@@ -383,7 +383,7 @@ activateNewData = (subtask) ->
   else
     # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
     # the rm_property_id that has been updated in this batch
-    tables.propertyData.combined
+    tables.propertyData.combined()
     .where
       data_source_id: subtask.data_source_id
       batch_id: subtask.batch_id
@@ -398,7 +398,7 @@ activateNewData = (subtask) ->
       .as('check')
     .update(active: dbs.properties.knex.raw('NOT "active"'))
     .then () ->
-      tables.propertyData.combined
+      tables.propertyData.combined()
       .where
         data_source_id: subtask.data_source_id
         batch_id: subtask.batch_id

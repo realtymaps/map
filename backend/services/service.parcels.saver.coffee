@@ -11,7 +11,7 @@ shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
 {singleRow} =  require '../utils/util.sql.helpers'
-tables = require '../../config/tables'
+tables = require '../config/tables'
 
 _parcelsTblName = 'parcels'
 _toReplace = "REPLACE_ME"
@@ -51,9 +51,8 @@ _fixGeometrySql = (val, method = 'insert') ->
     key = if val.geometry.type == 'Point' then 'geom_point' else 'geom_polys'
     delete val.geometry
     val[key] = _toReplace
-    ################################################
-    q = [method](val)
-    q = q.where(rm_property_id: val.rm_property_id) if method == 'update'
+    q = tables.propertyData.rootParcel[method](val)
+    .where(rm_property_id: val.rm_property_id) if method == 'update'
     raw = q.toString()
     raw.replace("'#{_toReplace}'", toReplaceWith)
 

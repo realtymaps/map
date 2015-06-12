@@ -5,7 +5,7 @@ validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 _ = require 'lodash'
-tables = require '../../config/tables'
+tables = require '../config/tables'
 
 
 transforms =
