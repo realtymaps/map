@@ -3,19 +3,18 @@ Promise = require "bluebird"
 dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 knex = dbs.users.knex
+tables = require '../config/tables'
 
-tables =
-  mlsNormalization: 'data_normalization_config'
 
 _getRules = (query) ->
-  knex.table(tables.mlsNormalization)
+  tables.config.dataNormalization()
   .where query
 
 _createRules = (query, rules) ->
-  table = knex.table tables.mlsNormalization
-  table.select knex.raw('max(ordering) as count, list')
+  tables.config.dataNormalization()
+  .select(knex.raw('max(ordering) as count, list'))
   .groupBy('list')
-  .where data_source_id: query.data_source_id
+  .where(data_source_id: query.data_source_id)
   .then (counts) ->
     _addRules query, rules, counts
   .then (result) ->
@@ -34,17 +33,16 @@ _addRules = (query, rules, counts) ->
       if !idx[r.list]?
         idx[r.list] = 0
       r.ordering = ++idx[r.list]
-  knex.table tables.mlsNormalization
-  .insert rules
+  tables.config.dataNormalization()
+  .insert(rules)
 
 _putRules = (query, rules) ->
-  table = knex.table tables.mlsNormalization
   knex.transaction (trx) ->
-    table.transacting trx
+    tables.config.dataNormalization(trx)
     .delete()
-    .where query
+    .where(query)
     .then (result) ->
-      _addRules query, rules
+      _addRules(query, rules)
     .then (result) ->
       trx.commit()
     .catch (error) ->
@@ -52,8 +50,8 @@ _putRules = (query, rules) ->
       throw new PartiallyHandledError(error)
 
 _deleteRules = (query) ->
-  knex.table(tables.mlsNormalization)
-  .where query
+  tables.config.dataNormalization()
+  .where(query)
   .delete()
   .then (result) ->
     result >= 0
@@ -93,9 +91,9 @@ module.exports =
 
   updateRule: (mlsId, list, ordering, mlsRule) ->
     query = data_source_id: mlsId, list: list, ordering: ordering
-    knex.table tables.mlsNormalization
-    .update _.extend(mlsRule, query)
-    .where query
+    tables.config.dataNormalization()
+    .update(_.extend(mlsRule, query))
+    .where(query)
     .then (result) ->
       result == 1
     .catch isUnhandled, (error) ->
@@ -103,6 +101,3 @@ module.exports =
 
   deleteRule: (mlsId, list, ordering) ->
     _deleteRules data_source_id: mlsId, list: list, ordering: ordering
-
-  knex: knex,
-  tables: tables

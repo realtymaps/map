@@ -16,6 +16,7 @@ module.exports =
     dataNormalization: 'users.data_normalization_config'
     group: 'users.auth_group'
     permission: 'users.auth_permission'
+    mls: 'users.mls_config'
   propertyData:
     mls: 'properties.mls_data'
     rootParcel: 'properties.parcels'

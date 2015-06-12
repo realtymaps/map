@@ -5,31 +5,28 @@ dbs = require '../config/dbs'
 config = require '../config/config'
 Encryptor = require '../utils/util.encryptor'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
+tables = require '../config/tables'
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 
-knex = dbs.users.knex
-
-tables =
-  mlsConfig: 'mls_config'
 
 module.exports =
 
   getAll: () ->
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .then (data) ->
       data
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error)
 
   getById: (id) ->
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .where(id: id)
     .then (data) ->
       data?[0]
 
   update: (id, mlsConfig) ->
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .where(id: id)
     .update _.pick(mlsConfig, ['name', 'notes', 'active', 'main_property_data'])
     .then (result) ->
@@ -38,7 +35,7 @@ module.exports =
       throw new PartiallyHandledError(error)
 
   updatePropertyData: (id, propertyData) ->
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .where(id: id)
     .update
       main_property_data: JSON.stringify(propertyData)
@@ -51,7 +48,7 @@ module.exports =
   updateServerInfo: (id, serverInfo) ->
     if serverInfo.password
       serverInfo.password = encryptor.encrypt(serverInfo.password)
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .where(id: id)
     .update _.pick(serverInfo, ['url', 'username', 'password'])
     .then (result) ->
@@ -65,7 +62,7 @@ module.exports =
       mlsConfig.id = id
     if mlsConfig.password
       mlsConfig.password = encryptor.encrypt(mlsConfig.password)
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .insert(mlsConfig)
     .then (result) ->
       result.rowCount == 1
@@ -74,13 +71,10 @@ module.exports =
 
   # Privileged
   delete: (id) ->
-    knex.table(tables.mlsConfig)
+    tables.config.mls()
     .where(id: id)
     .delete()
     .then (result) ->
       result == 1
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error)
-
-  knex: knex,
-  tables: tables
