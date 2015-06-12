@@ -7,6 +7,7 @@ logger = require '../config/logger'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 {notification} = require './util.notifications.coffee'
+tables = require '../../config/tables'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -17,14 +18,6 @@ SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 
 sendNotification = notification("jobQueue")
 knex = dbs.users.knex
-
-queries = sqlHelpers.buildQueries
-  taskConfig: 'users.jq_task_config'
-  subtaskConfig: 'users.jq_subtask_config'
-  queueConfig: 'users.jq_queue_config'
-  taskHistory: 'users.jq_task_history'
-  currentSubtasks: 'users.jq_current_subtasks'
-  subtaskErrorHistory: 'users.jq_subtask_error_history'
 
 class SoftFail extends Error
   constructor: (@message) ->
@@ -63,7 +56,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    queries.taskConfig(transaction)
+    tables.jobQueue.taskConfig(transaction)
     .select()
     .where(active: true)                  # only consider active tasks
     .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
@@ -71,24 +64,24 @@ queueReadyTasks = (transaction) -> Promise.try () ->
       sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
       sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
       .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
-        queries.taskHistory(this)
+        tables.jobQueue.taskHistory(this)
         .select()
-        .whereRaw("#{queries.taskConfig.tableName}.name = #{queries.taskHistory.tableName}.name")
+        .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
         .where () ->
           this
-          .whereNull("#{queries.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ... 
+          .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ... 
           .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
-          .orWhereRaw("started + #{queries.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
+          .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
   .then (readyTasks=[]) ->
     Promise.map readyTasks, (task) ->
       queueTask(transaction, batchId, task, '<scheduler>')
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  queries.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
   .then () ->
-    queries.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction)
     .insert
       name: task.name
       data: task.data
@@ -97,14 +90,14 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
   .then () -> # clear out any subtasks for prior runs of this task
-    queries.currentSubtasks()
+    tables.jobQueue.currentSubtasks()
     .where(task_name: task.name)
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
     taskImpl = require("./tasks/task.#{task.name}")
     subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
-    subtaskConfigPromise = queries.subtaskConfig(transaction)
+    subtaskConfigPromise = tables.jobQueue.subtaskConfig(transaction)
     .where
       task_name: task.name
       auto_enqueue: true
@@ -134,7 +127,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       .then (count) ->
         return subtaskCount+count  # add up the counts from overridden and config-based subtasks
   .then (count) ->
-    queries.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction)
     .where
       name: task.name
       current: true
@@ -147,7 +140,7 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
   Promise.try () ->
     if _taskData != undefined || !subtasks?.length
       return _taskData
-    queries.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction)
     .where(current: true, name: subtasks[0].task_name)
     .then (task) ->
       task?[0]?.data
@@ -166,7 +159,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
   Promise.try () ->
     if _taskData != undefined
       return _taskData
-    queries.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction)
     .where(current: true, name: subtask.task_name)
     .then (task) ->
       task?[0]?.data
@@ -196,7 +189,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
         singleSubtask.batch_id = batchId
-        queries.currentSubtasks(transaction)
+        tables.jobQueue.currentSubtasks(transaction)
         .insert singleSubtask
       .then () ->
         return subtask.data.length
@@ -206,7 +199,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       singleSubtask.task_data = taskData
       singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
       singleSubtask.batch_id = batchId
-      queries.currentSubtasks(transaction)
+      tables.jobQueue.currentSubtasks(transaction)
       .insert singleSubtask
       .then () ->
         return 1
@@ -214,7 +207,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that work poll to watch for a cancel message
-  queries.taskHistory()
+  tables.jobQueue.taskHistory()
   .where
     name: taskName
     current: true
@@ -223,7 +216,7 @@ cancelTask = (taskName, status) ->
     status: status
     status_changed: knex.raw('NOW()')
   .then () ->
-    queries.currentSubtasks()
+    tables.jobQueue.currentSubtasks()
     .where
       task_name: taskName
       status: 'queued'
@@ -232,7 +225,7 @@ cancelTask = (taskName, status) ->
       finished: knex.raw('NOW()')
 
 executeSubtask = (subtask) ->
-  queries.currentSubtasks()
+  tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
   .update
     status: 'running'
@@ -241,7 +234,7 @@ executeSubtask = (subtask) ->
     taskImpl = require("./tasks/task.#{subtask.task_name}")
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .then () ->
-      queries.currentSubtasks()
+      tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
@@ -283,20 +276,20 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started')
         retrySubtask.retry_num++
         retrySubtask.ignore_until = knex.raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
-        queries.currentSubtasks()
+        tables.jobQueue.currentSubtasks()
         .insert retrySubtask
   .then () ->
-    queries.currentSubtasks()
+    tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
     .update
       status: status
       finished: knex.raw('NOW()')
   .then () ->
-    queries.currentSubtasks()
+    tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
   .then (updatedSubtask) ->
     updatedSubtask[0].error = "subtask: #{error}"
-    queries.subtaskErrorHistory()
+    tables.jobQueue.subtaskErrorHistory()
     .insert updatedSubtask[0]
   .then () ->
     if hard
@@ -318,7 +311,7 @@ getQueuedSubtask = (queue_name) ->
 
 _sendLongTaskWarnings = () ->
   # warn about long-running tasks
-  queries.taskHistory()
+  tables.jobQueue.taskHistory()
   .whereNull('finished')
   .whereNotNull('warn_timeout_minutes')
   .where(current: true)
@@ -331,7 +324,7 @@ _sendLongTaskWarnings = () ->
 
 _killLongTasks = () ->
   # kill long-running tasks
-  queries.taskHistory()
+  tables.jobQueue.taskHistory()
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
   .where(current: true)
@@ -347,7 +340,7 @@ _killLongTasks = () ->
 
 _handleZombies = () ->
   # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks 
-  queries.currentSubtasks()
+  tables.jobQueue.currentSubtasks()
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
@@ -358,11 +351,11 @@ _handleZombies = () ->
 
 _handleSuccessfulTasks = () ->
   # mark running tasks with no unfinished or error subtasks as successful
-  queries.taskHistory()
+  tables.jobQueue.taskHistory()
   .where(status: 'running')
   .whereNotExists () ->
-    queries.currentSubtasks(this)
-    .whereRaw("#{queries.currentSubtasks.tableName}.task_name = #{queries.taskHistory.tableName}.name")
+    tables.jobQueue.currentSubtasks(this)
+    .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
       this
       .whereNull('finished')
@@ -379,12 +372,12 @@ _handleSuccessfulTasks = () ->
 
 _setFinishedTimestamps = () ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
-  queries.currentSubtasks()
+  tables.jobQueue.currentSubtasks()
   .select('task_name', knex.raw('MAX(finished) AS finished'))
   .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
-      queries.taskHistory()
+      tables.jobQueue.taskHistory()
       .where
         current: true
         name: task.task_name
@@ -434,7 +427,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
   queueSubtask(transaction, batchId, taskData, subtask, data)
   
 getSubtaskConfig = (transaction, subtaskName, taskName) ->
-  queries.subtaskConfig(transaction)
+  tables.jobQueue.subtaskConfig(transaction)
   .where
     name: subtaskName
     task_name: taskName
@@ -461,5 +454,4 @@ module.exports =
   getSubtaskConfig: getSubtaskConfig
   SoftFail: SoftFail
   HardFail: HardFail
-  queries: queries
   knex: knex

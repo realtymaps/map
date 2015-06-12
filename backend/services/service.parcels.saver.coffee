@@ -11,8 +11,11 @@ shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
 {singleRow} =  require '../utils/util.sql.helpers'
+tables = require '../../config/tables'
+
 _parcelsTblName = 'parcels'
 _toReplace = "REPLACE_ME"
+
 
 _formatParcel = (feature) ->
     #match the db attributes
@@ -48,7 +51,8 @@ _fixGeometrySql = (val, method = 'insert') ->
     key = if val.geometry.type == 'Point' then 'geom_point' else 'geom_polys'
     delete val.geometry
     val[key] = _toReplace
-    q = parcelSvc.rootDb()[method](val)
+    ################################################
+    q = [method](val)
     q = q.where(rm_property_id: val.rm_property_id) if method == 'update'
     raw = q.toString()
     raw.replace("'#{_toReplace}'", toReplaceWith)
@@ -79,7 +83,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
                 polysUpdated = (_.filter _.values(updates) , (v) -> v == 'Polygon').length
                 #verify Points inserted matches what the DB has
                 #should we reject?
-                singleRow(db.knex(_parcelsTblName).count()
+                singleRow(tables.propertyData.rootParcel().count()
                 .where(fips: fipsCode)
                 .whereNotNull('geom_point'))
                 .then (row) ->
@@ -88,7 +92,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
                         logger.warn "Point Count MisMatch: Db Count #{row.count} vs pointsInserted: #{pointsInserted}"
                 #verify Polys updated matches what the DB has
                 #should we reject?
-                singleRow(db.knex(_parcelsTblName).count()
+                singleRow(tables.propertyData.rootParcel().count()
                 .where(fips: fipsCode)
                 .whereNotNull('geom_point')
                 .whereNotNull('geom_polys'))

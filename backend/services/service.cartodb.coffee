@@ -1,12 +1,11 @@
 db = require('../config/dbs').properties
-Parcel = require "../models/model.parcels"
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
-_parcelTable = sqlHelpers.tableName(Parcel)
 Promise = require "bluebird"
 logger = require '../config/logger'
 {CARTODB} = require '../config/config'
 cartodb = require 'cartodb-api'
 cartodbSql = require '../utils/util.cartodb.sql'
+tables = require '../config/tables'
 
 
 JSONStream = require 'JSONStream'
@@ -43,8 +42,7 @@ _fipsCodeQuery = (opts) ->
     throw "opts.fipscode required!" unless opts?.fipscode?
 
     query =
-    sqlHelpers.select(db.knex, 'cartodb_parcel', false, 'distinct on (rm_property_id)')
-    .from _parcelTable
+    sqlHelpers.select(tables.propertyData.parcel, 'cartodb_parcel', false, 'distinct on (rm_property_id)')
     .where fips_code:opts.fipscode
     .whereNotNull 'rm_property_id'
     .orderBy 'rm_property_id'
@@ -59,7 +57,7 @@ _fipsCodeQuery = (opts) ->
     # logger.debug query.toString()
     query
 
-_parcel =
+parcel =
     upload: (fipscode) ->
         _upload _fipsCodeQuery(fipscode: fipscode).stream(), fipsCode
 
@@ -78,7 +76,7 @@ _parcel =
 
 module.exports =
 
-    parcel: _parcel
+    parcel: parcel
     restful:
         getByFipsCode: (opts) ->
             # logger.debug opts,true
@@ -87,6 +85,6 @@ module.exports =
             if !opts.fipscode?
                 throw 'BADREQUEST'
 
-            _parcel.getByFipsCode(opts)
+            parcel.getByFipsCode(opts)
         uploadParcel: (state, filters) -> Promise.try ->
-            _parcel.uploadParcel(filters.fips_code)
+            parcel.uploadParcel(filters.fips_code)

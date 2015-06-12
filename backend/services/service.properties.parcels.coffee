@@ -1,11 +1,12 @@
 db = require('../config/dbs').properties
-Parcel = require "../models/model.parcels"
 Promise = require "bluebird"
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 _ = require 'lodash'
+tables = require '../../config/tables'
+
 
 transforms =
     bounds:
@@ -16,8 +17,8 @@ transforms =
         ]
         required: true
 
-_tableName = sqlHelpers.tableName(Parcel)
-_rootTableName = 'parcels'
+_tableName = tables.propertyData.parcel.tableName
+_rootTableName = tables.propertyData.rootParcel.tableName
 
 _getBaseParcelQuery = (tblName = _tableName) ->
     sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
@@ -39,7 +40,7 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
 
 _get = (rm_property_id, tblName = _tableName) ->
     throw "rm_property_id must be of type String" unless _.isString rm_property_id
-    #nmccready - note this might not be unqiue enough, I think parcels has dupes
+    #nmccready - note this might not be unique enough, I think parcels has dupes
     db.knex.select().from(tblName)
     .where rm_property_id: rm_property_id
 
@@ -61,5 +62,3 @@ module.exports =
             type: "FeatureCollection"
             features: data
     upsert: _upsert
-    rootDb: ->
-        db.knex(_rootTableName)

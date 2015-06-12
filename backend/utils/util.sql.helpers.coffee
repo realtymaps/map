@@ -3,8 +3,6 @@ memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 logger = require '../config/logger'
 Promise = require "bluebird"
-dbs = require '../config/dbs'
-
 
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
@@ -197,21 +195,10 @@ singleRow = (q) -> Promise.try ->
     ret = rows[0]
     throw errMsg + 'row is undefined' unless ret?
     ret
-
-buildQueries = (tables) ->
-  queries = {}
-  for id,tableSpecifier of tables
-    [dbName, tableName] = tableSpecifier.split('.')
-    db = dbs[dbName]
-    query = (transaction=db.knex) -> transaction(tableName)
-    query.tableName = query()._single.table
-    queries[id] = query
-  queries
   
 module.exports =
   between: between
   tableName: tableName
-  buildQueries: buildQueries
   ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
   orderByDistanceFromPoint: orderByDistanceFromPoint
   allPatternsInAnyColumn: allPatternsInAnyColumn
