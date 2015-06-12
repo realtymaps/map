@@ -286,7 +286,6 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
       sale: normalizedData.sale
     hidden_fields: normalizedData.hidden
     ungrouped_fields: _.omit(row, usedKeys)
-    deleted: normalizedData.base.deleted ? false
   .then (updateRow) ->
     # check for an existing row
     tables.propertyData.mls()
@@ -320,7 +319,7 @@ recordChangeCounts = (subtask) ->
       # will resolve to a count of affected rows
       return tables.propertyData.mls()
       .whereNot(batch_id: subtask.batch_id)
-      .whereNotNull('deleted')
+      .whereNull('deleted')
       .update(deleted: subtask.batch_id)
     else
       # return 0 because we use this as the count of deleted rows
@@ -349,6 +348,7 @@ finalizeData = (subtask, id) ->
   listingsPromise = tables.propertyData.mls()
   .select('*')
   .where(rm_property_id: id)
+  .whereNull('deleted')
   .orderByRaw('close_date NULLS FIRST DESC')
   parcelPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
@@ -356,6 +356,9 @@ finalizeData = (subtask, id) ->
   # we also need to select from the tax table for owner name info 
   Promise.join(listingsPromise, parcelsPromise)
   .then (listings, parcel=[]) ->
+    if listings?.length == 0
+      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
+      return
     listing = listings.shift()
     listing.prior_listings = listings
     listing.data_source_type = 'mls'

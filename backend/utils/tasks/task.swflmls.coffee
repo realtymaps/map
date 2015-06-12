@@ -17,7 +17,7 @@ loadDataRawMain = (subtask) ->
     rawTableSuffix: 'main'
     retsDbName: 'Property'
     retsTableName: 'RES'
-    retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+)]"
+    retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+),(ListingOnInternetYN=1)]"
     retsId: 'swflmls'
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
