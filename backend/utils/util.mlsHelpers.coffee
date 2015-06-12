@@ -107,7 +107,8 @@ loadRetsTableUpdates = (subtask, options) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to determine table fields")
   .then (fields) ->
-    taskHelpers.createDataHistoryEntry
+    taskHelpers.queries.dataLoadHistory()
+    .insert
       data_source_id: options.retsId
       data_source_type: 'mls'
       batch_id: subtask.batch_id
@@ -127,8 +128,8 @@ loadRetsTableUpdates = (subtask, options) ->
         doDeletes = true
       else
         doDeletes = false
-      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'recordChangeCounts', {markOtherRowsDeleted: doDeletes}, true)
-      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, 'activateNewData', {deleteUntouchedRows: doDeletes}, true)
+      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
       Promise.join(step3Promise, step5Promise)
       .then () ->
         return lastSuccess
@@ -207,7 +208,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       retsClient.logout()
 
 _getValidations = (dataSourceId) ->
-  jobQueue.knex(taskHelpers.tables.dataNormalizationConfig)
+  taskHelpers.queries.dataNormalizationConfig()
   .where(data_source_id: dataSourceId)
   .orderBy('output_group')
   .orderBy('display_order')
@@ -284,7 +285,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
     ungrouped_fields: _.omit(row, usedKeys)
   .then (updateRow) ->
     # check for an existing row
-    dbs.properties.knex(taskHelpers.tables.mlsData)
+    taskHelpers.queries.mlsData()
     .select('*')
     .where
       mls_uuid: updateRow.mls_uuid
@@ -292,7 +293,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
     .then (result) ->
       if !result?.length
         # no existing row, just insert
-        dbs.properties.knex(taskHelpers.tables.mlsData)
+        taskHelpers.queries.mlsData()
         .insert(updateRow)
       else
         # found an existing row, so need to update, but include change log
@@ -300,7 +301,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
         changes = _diff(updateRow, result, diffExcludeKeys)
         if !_.isEmpty changes
           updateRow.change_history.push changes
-        dbs.properties.knex(taskHelpers.tables.mlsData)
+        taskHelpers.queries.mlsData()
         .where
           mls_uuid: updateRow.mls_uuid
           data_source_id: updateRow.data_source_id
@@ -313,7 +314,7 @@ recordChangeCounts = (subtask) ->
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
       # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
       # will resolve to a count of affected rows
-      return dbs.properties.knex(taskHelpers.tables.mlsData)
+      return taskHelpers.queries.mlsData()
       .whereNot(batch_id: subtask.batch_id)
       .whereNotNull('deleted')
       .update(deleted: subtask.batch_id)
@@ -322,17 +323,17 @@ recordChangeCounts = (subtask) ->
       return 0
   .then (deletedCount) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
-    insertedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    insertedSubquery = taskHelpers.queries.mlsData()
     .where
       batch_id: subtask.batch_id
       change_history: null
     .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-    updatedSubquery = dbs.properties.knex(taskHelpers.tables.mlsData)
+    updatedSubquery = taskHelpers.queries.mlsData()
     .where(batch_id: subtask.batch_id)
     .whereNotNull('change_history')
     .count('*')
-    dbs.properties.knex(taskHelpers.tables.dataLoadHistory)
+    taskHelpers.queries.dataLoadHistory()
     .where(batch_id: subtask.batch_id)
     .update
       inserted_rows: insertedSubquery
@@ -341,7 +342,7 @@ recordChangeCounts = (subtask) ->
 
 
 finalizeData = (subtask, id) ->
-  listingsPromise = dbs.properties.knex(taskHelpers.tables.mlsData)
+  listingsPromise = taskHelpers.queries.mlsData()
   .select('*')
   .where(rm_property_id: id)
   .orderByRaw('close_date NULLS FIRST DESC')
