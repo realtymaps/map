@@ -64,11 +64,9 @@ routesConfig =
             middleware: auth.requireLogin(redirectOnFail: true)
     hirefire:
         info: {}
-    mapbox:
-        upload:
-            method: 'get'
-            middleware: auth.requireLogin(redirectOnFail: true)
+
     cartodb:
+        #note security for this route set is an API_KEY provided to CartoDB
         getByFipsCodeAsFile:
             method: 'get'
         getByFipsCodeAsStream:
@@ -94,7 +92,7 @@ routesConfig =
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
         update:
-            method: 'patch'
+            method: 'put'
             middleware: auth.requireLogin(redirectOnFail: true)
         updatePropertyData:
             method: 'patch'

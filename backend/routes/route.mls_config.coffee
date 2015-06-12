@@ -72,7 +72,7 @@ module.exports =
 
   # Privileged
   createById: (req, res, next) ->
-    mlsConfigService.create req.body req.params.id
+    mlsConfigService.create req.body, req.params.id
     .then (result) ->
       next new ExpressResponse(result)
     .catch (error) ->

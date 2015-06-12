@@ -1,89 +1,122 @@
 div
   form(name="mlsForm")
-    .col-md-6
+    .col-md-12
       .row
-        button(ng-click="").btn.btn-default
-          p Show Example
-        button(ng-click="").btn.btn-default
-          p Show Preview
-        //- button(ng-click="open('setTable')").btn.btn-default
-        //- button(ng-click="open('setField')").btn.btn-default
-      .row
-        .col-md-12
+        .col-md-6
+          .progressPills
+            tabset(type="pills")
+              tab(ng-repeat="formItem in formItems track by $index" heading="{{formItem.heading}}" disable="formItem.disabled" active="formItem.active" ng-click="!formItem.disabled && proceed($index)")
           .panel.panel-default
-            .panel-heading
-              h3 MLS Data Entry
             .panel-body
-              div
-                //- carousel.mls-wizard
-                //-   slide(ng-repeat="formItem in formItems" active="formItem.disabled")
-                //-     div.slide-content
-                //-       table
-                //-         tr(ng-repeat="(formField, settings) in formItem.formFields")
-                //-           td
-                //-             label.data-label {{settings.label}}
-                //-           td
-                //-             input(ng-if="settings.type != select" type="{{settings.type}}")
-                //-             select(ng-if="settings.type == select")
-                //-               option(value="1") One
-                //-               option(value="2") Two
-                //-               option(value="3") Three
-                accordion(close-others="oneAtATime").accordion
-                  accordion-group(ng-repeat="formItem in formItems" heading="{{formItem.heading}}" is-open="true")
-                    div(style="border: 5px")
-                      table
-                        tr(ng-repeat="(formField, settings) in formItem.formFields")
-                          td
-                            label.data-label {{settings.label}}&nbsp({{settings.type}})
-                          td
-                            input(ng-if="settings.type != 'select'" type="{{settings.type}}" value="{{settings.default}}")
-                            select(ng-if="settings.type == 'select'")
-                              option(ng-repeat="(value, text) in settings.options" value="{{value}}") {{text}}
-                      button(ng-click="proceed(formItem.step)") Submit
+              div.animate-container
+                div(ng-repeat="formItem in formItems" ng-show="formItem.step == step" ng-class="{loadingfade: loading}").animate-show
+                  div(ng-if="formItem.step == 0" name="step0")
+                    table
+                      tr
+                        td
+                          label.data-label Select existing MLS:
+                        td
+                          select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="updateObjectOptions(mlsData.current)")
+                            option(value="" disabled)
+                      tr
+                        td
+                          label.data-label Or
+                        td
+                          button.btn.btn-primary(ng-click="open()") Edit/New MLS
 
-                //- div(ng-repeat="formItem in formItems" ng-animate="{enter: 'animate-enter, leave: 'animate-leave'}")
-                //-   p {{formItem.step}}
-      .row
-        br
-      .row
-        .col-md-12
+                  div(ng-if="formItem.step == 1")
+                    table
+                      tr
+                        td
+                          label.data-label Database:
+                        td
+                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="processAndProceed(2)")
+                            option(value="" disabled)
+                  div(ng-if="formItem.step == 2" name="step2")
+                    table
+                      tr
+                        td
+                          label.data-label Table:
+                        td
+                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
+                            option(value="" disabled)
+                  div(ng-if="formItem.step == 3" name="step3")
+                    table
+                      tr
+                        td
+                          label.data-label Field:
+                        td
+                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.SystemName+' '+value.LongName for value in columnOptions")
+                            option(value="" disabled)
+                      tr
+                        td
+                          label.data-label Formatting:
+                        td
+                          input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate")
+                      tr(colSpan="2")
+                        td
+                          button(ng-click="saveMlsData()") Save MLS Config
+                div(ng-show="loading").loading-show
+                  .loading-panel
+                    img(src="/assets/icon_loading_earth.gif").loading-image
+                    p Loading...
+
+        .col-md-6(ng-show="mlsData.current.id")
+          .progressPills(ng-show="mlsData.current.id")
+            tabset(type="pills")
+              tab(heading="MLS Data")
           .panel.panel-default
-            .panel-heading
-              h3 MLS Data
             .panel-body
               table.table-striped
-                tr(ng-repeat="(key, value) in mlsData")
+                tr
                   td
-                    label.data-label {{key}}
+                    label.data-label ID:
                   td
-                    span.data-entry {{value}}
-              //- p
-              //-   label.data-label ID:
-              //-   span.data-entry
-              //-     {{ mlsData.id }}
-    .col-md-6
-      .row
-        .col-sm-4
-          .panel.panel-default
-            .panel-heading
-              h3 Example
-            .panel-body
-              table.table-striped
+                    span.data-entry {{mlsData.current.id}}
                 tr
-                  td Some
+                  td
+                    label.data-label Name:
+                  td
+                    span.data-entry {{mlsData.current.name}}
                 tr
-                  td Example
+                  td
+                    label.data-label Username:
+                  td
+                    span.data-entry {{mlsData.current.username}}
                 tr
-                  td Data
-        .col-sm-4
-          .panel.panel-default
-            .panel-heading
-              h3 Preview
-            .panel-body
-              table.table-striped
+                  td
+                    label.data-label URL:
+                  td
+                    span.data-entry {{mlsData.current.url}}
                 tr
-                  td Some
+                  td
+                    label.data-label Timestamp Column Data
+                  td
+                    table
+                      tr
+                        td
+                          label.data-label Database:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.db}}
+                      tr
+                        td
+                          label.data-label Table:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.table}}
+                      tr
+                        td
+                          label.data-label Column:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.field}}
+
                 tr
-                  td Preview
+                  td
+                    label.data-label Notes:
+                  td
+                    span.data-entry {{mlsData.current.notes}}
                 tr
-                  td Data
+                  td
+                    label.data-label Active:
+                  td
+                    span.data-entry {{mlsData.current.active}}
+
