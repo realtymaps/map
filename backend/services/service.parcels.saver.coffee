@@ -51,7 +51,7 @@ _fixGeometrySql = (val, method = 'insert') ->
     key = if val.geometry.type == 'Point' then 'geom_point' else 'geom_polys'
     delete val.geometry
     val[key] = _toReplace
-    q = tables.propertyData.rootParcel[method](val)
+    q = tables.propertyData.rootParcel()[method](val)
     .where(rm_property_id: val.rm_property_id) if method == 'update'
     raw = q.toString()
     raw.replace("'#{_toReplace}'", toReplaceWith)
