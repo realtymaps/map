@@ -1,12 +1,16 @@
 app = require '../app.coffee'
 require '../services/mlsConfig.coffee'
 require '../services/normalize.coffee'
+require '../directives/dragdrop.coffee'
 swflmls_fields = require '../../../../common/samples/swflmls_fields.coffee'
 
 app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', ($scope, $state, rmapsMlsService, rmapsNormalizeService) ->
   $scope.$state = $state
 
   $scope.mlsData =
+    current: {}
+
+  $scope.fieldData =
     current: {}
 
   $scope.columns = swflmls_fields # Test data
@@ -40,4 +44,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     rmapsMlsService.getColumnList config.id, config.main_property_data.db, config.main_property_data.table
     .then (columns) ->
       $scope.columns = columns
+
+  $scope.selectField = (field) ->
+    $scope.fieldData.current = field
 ]

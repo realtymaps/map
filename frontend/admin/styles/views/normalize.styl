@@ -1,50 +1,72 @@
-select, input
+body
+  overflow auto
+
+.normalize-container
+  width 100%
+
+select
   margin 1em
 
 .page
   position relative
+  top 0
 
 .panel
   border-radius 0
-  height 500px
-  overflow-y scroll
-
-
-  .panel-heading
-    background-color rm-medium-blue
-    border none
-    font-size 14px
-    border-top-right-radius 0
-    border-top-left-radius 0
-    padding 5px 10px
+  height 400px
 
   .panel-body
     background-color white
     color black
     padding 5px
     font-size 12px
-    border-bottom-right-radius 0
-    border-bottom-left-radius 0
+    border-radius 0
     border 0
 
-.field, .category-container
-  z-index 3
-  display block
+.field, .category
   margin 3px
   overflow hidden
-  .btn
-    overflow hidden
-    z-index 3
-    text-align left
-    width 100%
+  text-overflow ellipsis
 
-.field-container
-  margin: 1em
-  background-color: #eee
-  z-index 2
+  .datatype
+    margin-left 1em
+    color black
+    background-color white
+    padding 3px
+    border-radius 10px
+    font-size 75%
+    opacity 0.8
+
+    &.datatype-string:before
+      padding 1em
+      content: "abc"
+    &.datatype-number:before
+      padding 1em
+      content "123"
+    &.datatype-yn:before
+      padding 1em
+      content "yes/no"
+
+.field
+  display block
+  text-align left
+
+.category
   display inline-block
+  vertical-align top
+  width 30%
+  min-height 4em
+
+.field-container, .category-container
   overflow-y scroll
-  height: 100%
-  margin: 5px
-  float left
-  overflow-x hidden
+  height 100%
+
+.properties-container
+  color black
+
+h3
+  color black
+
+.rmaps-drop-target
+  background-color white
+  color #f0ad4e

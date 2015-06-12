@@ -2,7 +2,6 @@
   "name": "mean.coffee",
   "version": "0.0.1",
   "dependencies": {
-    "angular-dragdrop": "^1.0.11",
     "bootstrap-css-only": "~3.3.4",
     "isteven-angular-multiselect": "~2.0.2",
     "lodash": "~2.4.1",
@@ -50,11 +49,6 @@
     },
     "leaflet.zoombox": {
       "ignore": true
-    },
-    "angular-dragdrop": {
-      "dependencies": {
-        "jquery-ui": "latest"
-      }
     }
   }
 }

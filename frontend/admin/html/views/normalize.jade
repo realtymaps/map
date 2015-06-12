@@ -1,29 +1,42 @@
 div.normalize-container
+  div.row
+    div.col-md-12 Select MLS
+      select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
+        option(value="" disabled)
 
-div.row Select MLS:
-  select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
-    option(value="" disabled)
+  div.row.panel
+    div.col-md-12
+      h3 Group Assignment
+    div.col-md-4.field-container(rmaps-droppable)
+      div.field.btn.btn-info(
+        ng-click="selectField(item)"
+        rmaps-draggable
+        ng-repeat="item in columns track by item.MetadataEntryID") {{item.SystemName}}
+        span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', 'datatype-number': item.DataType == 'Int' || item.DataType == 'Decimal' || item.DataType == 'Long', 'datatype-yn': item.DataType == 'Boolean' }")
 
-div.row.panel
-  ul.field-container(
-    data-drop="true"
-    jqyoui-droppable=""
-    data-jqyoui-options="{accept:'.btn-draggable:not([ng-model=columns])'}")
-    li.field.btn.btn-info.btn-draggable(
-      data-drag="true"
-      data-jqyoui-options="{revert: 'invalid'}"
-      jqyoui-draggable="{index: {{$index}}, placeholder: true, animate: true}"
-      ng-repeat="item in columns track by item.MetadataEntryID"
-      ng-model="columns") {{item.SystemName}}
+    div.col-md-8.category-container
+      div.category.btn.btn-warning(
+        rmaps-droppable
+        ng-repeat="category in categories track by category.label") {{ category.label }}
+        div.field.btn.btn-info(
+          ng-click="selectField(item)"
+          rmaps-draggable
+          ng-repeat="item in category.items track by item.MetadataEntryID") {item.SystemName}}
 
-  ul.category-container.btn.btn-danger(
-    data-drop="true"
-    jqyoui-droppable=""
-    data-jqyoui-options="{multiple: true}"
-    ng-repeat="category in categories track by category.label") {{ category.label }}
-    li.field.btn.btn-info.btn-draggable(
-      data-drag="true"
-      data-jqyoui-options="{revert: 'invalid'}"
-      jqyoui-draggable="{index: {{$index}}, placeholder: false, animate: true}"
-      ng-repeat="item in category.items track by item.MetadataEntryID"
-      ng-model="category.items") {{item.SystemName}}
+  div.row.panel
+    div.col-md-12.properties-container
+      h3 Field Properties
+      div.row
+        div.col-md-4 System name:
+        div.col-md-8 {{fieldData.current.SystemName}}
+      div.row
+        div.col-md-4 Long name:
+        div.col-md-8 {{fieldData.current.LongName}}
+      div.row
+        div.col-md-4 Data Type:
+        div.col-md-8 {{fieldData.current.DataType}}
+      div.row
+        div.col-md-4 Alias:
+        div.col-md-8
+      div.row
+        div.col-md-4 Other options...
