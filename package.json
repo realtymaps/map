@@ -68,6 +68,7 @@
     "gulp-exit": "0.0.2",
     "gulp-express": "0.1.0",
     "gulp-flatten": "0.0.x",
+    "gulp-gzip": "^1.1.0",
     "gulp-help": "^1.1.0",
     "gulp-if": "^1.2.4",
     "gulp-imagemin": "^1.0.x",
