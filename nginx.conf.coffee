@@ -43,12 +43,17 @@ http {
 
     set $home "/app";
 
+    location @node {
+      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
+      proxy_redirect  off;
+      proxy_pass  http://app_server;
+    }
+
     location / {
       error_page 502 = @delayed_retry;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_redirect off;
-      proxy_pass http://app_server;
+      rewrite ^/(.*)/$ /$1 break;
+      try_files uri @node;
     }
 
     location ~ ^/(assets|fonts|scripts|styles)/  {
@@ -63,6 +68,8 @@ http {
       gzip_disable "MSIE [1-6]\.";
       gzip_min_length 1000;
       gzip_buffers 32 8k;
+
+      try_files uri @node;
     }
 
     # because we need everything else that is a non .{whatever} or non file route to hit scalatra
@@ -75,16 +82,14 @@ http {
       add_header        Cache-Control public;
       add_header        Last-Modified "";
       add_header        ETag "";
+      try_files uri @node;
     }
 
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error
     location @delayed_retry {
       error_page 502 = @delayed_retry;
       delay #{process.env["STARTUP_RETRY_TIME"]}s;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_redirect off;
-      proxy_pass http://app_server;
+      try_files uri @node;
     }
   }
 }
