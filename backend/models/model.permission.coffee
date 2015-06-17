@@ -2,6 +2,8 @@ dbs = require '../config/dbs'
 Group = require './model.group'
 User = require './model.user'
 
+# DEPRECATED: we will stop using this (and bookshelf.js) in favor of /config/tables.coffee and knex
+
 module.exports = dbs.users.Model.extend
   tableName: "auth_permission",
   users: () ->

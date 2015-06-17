@@ -16,10 +16,7 @@ validation = require './util.validation'
 require '../config/promisify'
 memoize = require 'memoizee'
 vm = require 'vm'
-sqlHelpers = require './../utils/util.sql.helpers'
-
-# we should probably clean up these old Bookshelf models somehow so we have a better way of getting their table names
-Parcel = require "../models/model.parcels"
+tables = require '../config/tables'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -107,7 +104,7 @@ loadRetsTableUpdates = (subtask, options) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to determine table fields")
   .then (fields) ->
-    taskHelpers.queries.dataLoadHistory()
+    tables.jobQueue.dataLoadHistory()
     .insert
       data_source_id: options.retsId
       data_source_type: 'mls'
@@ -208,10 +205,10 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       retsClient.logout()
 
 _getValidations = (dataSourceId) ->
-  taskHelpers.queries.dataNormalizationConfig()
+  tables.config.dataNormalization()
   .where(data_source_id: dataSourceId)
-  .orderBy('output_group')
-  .orderBy('display_order')
+  .orderBy('list')
+  .orderBy('ordering')
   .then (validations=[]) ->
     validationMap = {}
     context = vm.createContext(validators: validation.validators)
@@ -222,6 +219,15 @@ _getValidations = (dataSourceId) ->
     validationMap
 # memoize it to cache js evals, but only for up to 10 minutes at a time
 _getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000)
+
+_getUsedKeys = (validationDefinition) ->
+  if validationDefinition.input?
+    if _.isObject validationDefinition.input
+      return Object.keys(validationDefinition.input)
+    else
+      return validationDefinition.input
+  else
+    return [validationDefinition.output]
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
@@ -237,18 +243,15 @@ normalizeData = (subtask, options) -> Promise.try () ->
   .then (rows, validationMap, startTime) ->
     # calculate the keys that are grouped for later
     usedKeys = []
+    diffExcludeKeys = []
     for groupName, validationList of validationMap
       for validationDefinition in validationList
-        if validationDefinition.input?
-          if _.isObject validationDefinition.input
-            newKeys = Object.keys(validationDefinition.input)
-          else
-            newKeys = validationDefinition.input
-        else
-          newKeys = [validationDefinition.output]
-        usedKeys.concat(newKeys)
-        if validationDefinition.list == 'base' && validationDefinition.output = 'days_on_market'
-          diffExcludeKeys = newKeys
+        if validationDefinition.list != 'base'
+          # don't count the 'base' fields as being used
+          usedKeys.concat(_getUsedKeys(validationDefinition))
+        else if validationDefinition.output == 'days_on_market'
+          # explicitly exclude these keys from diff, because they are derived values based on date
+          diffExcludeKeys = _getUsedKeys(validationDefinition)
     Promise.map rows, (row) ->
       Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
       .then _updateRecord.bind(null, diffExcludeKeys, usedKeys)
@@ -285,7 +288,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
     ungrouped_fields: _.omit(row, usedKeys)
   .then (updateRow) ->
     # check for an existing row
-    taskHelpers.queries.mlsData()
+    tables.propertyData.mls()
     .select('*')
     .where
       mls_uuid: updateRow.mls_uuid
@@ -293,7 +296,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
     .then (result) ->
       if !result?.length
         # no existing row, just insert
-        taskHelpers.queries.mlsData()
+        tables.propertyData.mls()
         .insert(updateRow)
       else
         # found an existing row, so need to update, but include change log
@@ -301,7 +304,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
         changes = _diff(updateRow, result, diffExcludeKeys)
         if !_.isEmpty changes
           updateRow.change_history.push changes
-        taskHelpers.queries.mlsData()
+        tables.propertyData.mls()
         .where
           mls_uuid: updateRow.mls_uuid
           data_source_id: updateRow.data_source_id
@@ -314,26 +317,26 @@ recordChangeCounts = (subtask) ->
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
       # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
       # will resolve to a count of affected rows
-      return taskHelpers.queries.mlsData()
+      return tables.propertyData.mls()
       .whereNot(batch_id: subtask.batch_id)
-      .whereNotNull('deleted')
+      .whereNull('deleted')
       .update(deleted: subtask.batch_id)
     else
       # return 0 because we use this as the count of deleted rows
       return 0
   .then (deletedCount) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
-    insertedSubquery = taskHelpers.queries.mlsData()
+    insertedSubquery = tables.propertyData.mls()
     .where
       batch_id: subtask.batch_id
       change_history: null
     .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-    updatedSubquery = taskHelpers.queries.mlsData()
+    updatedSubquery = tables.propertyData.mls()
     .where(batch_id: subtask.batch_id)
     .whereNotNull('change_history')
     .count('*')
-    taskHelpers.queries.dataLoadHistory()
+    tables.jobQueue.dataLoadHistory()
     .where(batch_id: subtask.batch_id)
     .update
       inserted_rows: insertedSubquery
@@ -342,23 +345,27 @@ recordChangeCounts = (subtask) ->
 
 
 finalizeData = (subtask, id) ->
-  listingsPromise = taskHelpers.queries.mlsData()
+  listingsPromise = tables.propertyData.mls()
   .select('*')
   .where(rm_property_id: id)
+  .whereNull('deleted')
   .orderByRaw('close_date NULLS FIRST DESC')
-  parcelPromise = dbs.properties.knex(sqlHelpers.tableName(Parcel))
+  parcelPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
   # we also need to select from the tax table for owner name info 
   Promise.join(listingsPromise, parcelsPromise)
   .then (listings, parcel=[]) ->
+    if listings?.length == 0
+      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
+      return
     listing = listings.shift()
     listing.prior_listings = listings
     listing.data_source_type = 'mls'
     listing.active = false
     delete listing.deleted
-    _.extend(listing, parcel)
-    dbs.properties.knex('combined_data')
+    _.extend(listing, parcel[0])
+    tables.propertyData.combined()
     .insert(listing)
 
 
@@ -367,11 +374,11 @@ activateNewData = (subtask) ->
   if subtask.data.deleteUntouchedRows
     # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
     # full data sync, and if we didn't touch it that means it should be deleted
-    dbs.properties.knex('combined_data')
+    tables.propertyData.combined()
     .where(data_source_id: subtask.data_source_id)
     .update(active: dbs.properties.knex.raw('NOT "active"'))
     .then () ->
-      dbs.properties.knex('combined_data')
+      tables.propertyData.combined()
       .where
         data_source_id: subtask.data_source_id
         active: false
@@ -379,7 +386,7 @@ activateNewData = (subtask) ->
   else
     # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
     # the rm_property_id that has been updated in this batch
-    dbs.properties.knex('combined_data')
+    tables.propertyData.combined()
     .where
       data_source_id: subtask.data_source_id
       batch_id: subtask.batch_id
@@ -390,11 +397,11 @@ activateNewData = (subtask) ->
         "check.data_source_id": subtask.data_source_id
         "check.batch_id": subtask.batch_id
         "check.active": false
-        "check.rm_property_id": dbs.properties.knex.raw('combined_data.rm_property_id')
+        "check.rm_property_id": dbs.properties.knex.raw("#{tables.propertyData.combined.tableName}.rm_property_id")
       .as('check')
     .update(active: dbs.properties.knex.raw('NOT "active"'))
     .then () ->
-      dbs.properties.knex('combined_data')
+      tables.propertyData.combined()
       .where
         data_source_id: subtask.data_source_id
         batch_id: subtask.batch_id

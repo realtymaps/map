@@ -8,13 +8,12 @@ describe 'service.cartodb', ->
     @limitStub = sinon.stub()
     @sqlHelpersMock =
       select: sinon.stub().returns
-        from: sinon.stub().returns
-          where: sinon.stub().returns
-            whereNotNull: sinon.stub().returns
-              orderBy: sinon.stub().returns
-                limit: @limitStub
-                then: sinon.stub()
-                stream: sinon.stub()
+        where: sinon.stub().returns
+          whereNotNull: sinon.stub().returns
+            orderBy: sinon.stub().returns
+              limit: @limitStub
+              then: sinon.stub()
+              stream: sinon.stub()
 
 
     @subject.__set__ sqlHelpers: @sqlHelpersMock

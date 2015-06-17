@@ -2,15 +2,8 @@
 # in a general util module
 
 _ = require 'lodash'
-jobQueue = require '../util.jobQueue'
+tables = require '../../config/tables'
 dbs = require '../../config/dbs'
-sqlHelpers = require '../util.sql.helpers'
-
-
-queries = sqlHelpers.buildQueries
-    dataLoadHistory: 'properties.data_load_history'
-    dataNormalizationConfig: 'users.data_normalization_config'
-    mlsData: 'properties.mls_data'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -26,7 +19,7 @@ getLastStartTime = (taskName, successOnly=true) ->
         current: false
     if successOnly
         criteria.status = 'success'
-    jobQueue.queries.taskHistory()
+    tables.jobQueue.taskHistory()
     .max('started AS last_start_time')
     .where(criteria)
     .then (result) ->
@@ -45,7 +38,6 @@ createRawTempTable = (tableName, textFields, jsonFields) ->
 
 
 module.exports =
-    queries: queries
     getLastStartTime: getLastStartTime
     createRawTempTable: createRawTempTable
     getRawTableName: getRawTableName

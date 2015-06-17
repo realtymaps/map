@@ -1,7 +1,6 @@
-db = require('../config/dbs').properties
 config = require '../config/config'
 sqlHelpers = require './../utils/util.sql.helpers'
-PropertyDetails = require "../models/model.propertyDetails"
+tables = require '../config/tables'
 logger = require '../config/logger'
 _ = require 'lodash'
 
@@ -28,8 +27,7 @@ _getMissingProperties = (state, properties) ->
 
 
 _savedPropertiesQuery = (limit, filters, missingProperties) ->
-  query = sqlHelpers.select(db.knex, "filter", false)
-  .from(sqlHelpers.tableName(PropertyDetails))
+  query = sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", false)
 
   if limit
     #logger.sql("PropertyDetails is being limited to: #{limit}")
