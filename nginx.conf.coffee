@@ -53,7 +53,7 @@ http {
     location / {
       error_page 502 = @delayed_retry;
       gzip_static on; # to serve pre-gzipped version
-      add_header        Cache-Control "public, must-revalidate";
+      add_header        Cache-Control "public, must-revalidate, max-age=0";
       expires           10m;
       try_files $uri /$uri /rmap.html @node;
     }
@@ -69,7 +69,7 @@ http {
       gzip_static on; # to serve pre-gzipped version
       expires           max;
 
-      add_header        Cache-Control "public, must-revalidate";
+      add_header        Cache-Control "public";
       add_header        Last-Modified "";
 
       try_files $uri /$uri;
