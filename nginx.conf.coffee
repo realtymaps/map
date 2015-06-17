@@ -41,7 +41,7 @@ http {
     server_name _;
     keepalive_timeout 5;
 
-    set $home "/app";
+    root "/app/_public";
 
     location @node {
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -52,37 +52,28 @@ http {
 
     location / {
       error_page 502 = @delayed_retry;
-      rewrite ^/(.*)/$ /$1 break;
-      try_files uri @node;
+      gzip_static on; # to serve pre-gzipped version
+      add_header        Cache-Control "public, must-revalidate";
+      expires           10m;
+      try_files $uri /$uri /rmap.html @node;
     }
 
-    location ~ ^/(assets|fonts|scripts|styles)/  {
-      root '$home/_public/';
-      expires 59m;
-
-      add_header        Cache-Control public;
-      add_header        Last-Modified "";
-      add_header        ETag "";
-
-      gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript application/javascript text/x-js;
-      gzip_disable "MSIE [1-6]\.";
-      gzip_min_length 1000;
-      gzip_buffers 32 8k;
-
-      try_files uri @node;
+    location ~ ^/(api|login)/ {
+      try_files $uri @node;
     }
 
     # because we need everything else that is a non .{whatever} or non file route to hit scalatra
     # we handle all root resources (non /assets/ resource files here and route to node root)
-    location ~* ^.+\.(html|js|css|woff|ttf|svg|htc|png){
-      root '$home/_public/';
-      gzip_static on; # to serve pre-gzipped version
-      expires           59m;
+    location ~* ^.+\.(woff|ttf|svg|htc|png){
 
-      add_header        Cache-Control public;
+      gzip_static on; # to serve pre-gzipped version
+      expires           max;
+
+      add_header        Cache-Control "public, must-revalidate";
       add_header        Last-Modified "";
-      add_header        ETag "";
-      try_files uri @node;
+
+      try_files $uri /$uri;
+
     }
 
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error
