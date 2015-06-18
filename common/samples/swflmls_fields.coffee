@@ -1,801 +1,1611 @@
 module.exports =
 [
   {
-    'MetadataEntryID': '2035'
-    'SystemName': 'Acres'
-    'ShortName': 'Acres'
-    'LongName': 'Acres'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2037'
-    'SystemName': 'Amenities'
-    'ShortName': 'Amenities'
-    'LongName': 'Amenities'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2038'
-    'SystemName': 'Approval'
-    'ShortName': 'Approval'
-    'LongName': 'Approval'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2039'
-    'SystemName': 'ApproxDistanceToGulfMiles'
-    'ShortName': 'Approx Distance To Gulf '
-    'LongName': 'Approx Distance To Gulf Miles'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2040'
-    'SystemName': 'ApproxDistanceToGulfMins'
-    'ShortName': 'Approx Distance To Gulf '
-    'LongName': 'Approx Distance To Gulf Mins'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2041'
-    'SystemName': 'AVMYN'
-    'ShortName': 'AVMYN'
-    'LongName': 'AVMYN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2042'
-    'SystemName': 'Block'
-    'ShortName': 'Block'
-    'LongName': 'Block'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2043'
-    'SystemName': 'BloggingYN'
-    'ShortName': 'Blogging YN'
-    'LongName': 'Blogging YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2045'
-    'SystemName': 'BoatLiftType'
-    'ShortName': 'Boat Lift Type'
-    'LongName': 'Boat Lift Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2329'
-    'SystemName': 'CanalWidth'
-    'ShortName': 'Canal Width'
-    'LongName': 'Canal Width'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2049'
-    'SystemName': 'CDOM'
-    'ShortName': 'CDOM'
-    'LongName': 'CDOM'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2057'
-    'SystemName': 'City'
-    'ShortName': 'City'
-    'LongName': 'City'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2058'
-    'SystemName': 'CloseDate'
-    'ShortName': 'Close Date'
-    'LongName': 'Close Date'
-    'DataType': 'DateTime'
-  }
-  {
-    'MetadataEntryID': '2059'
-    'SystemName': 'ClosePrice'
-    'ShortName': 'Close Price'
-    'LongName': 'Close Price'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2060'
-    'SystemName': 'CoListAgent_MUI'
-    'ShortName': 'Co List Agent MUI'
-    'LongName': 'Co List Agent MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2061'
-    'SystemName': 'CoListAgentDirectWorkPhone'
-    'ShortName': 'Co List Agent Direct Wor'
-    'LongName': 'Co List Agent Direct Work Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2063'
-    'SystemName': 'CoListAgentFullName'
-    'ShortName': 'Co List Agent Full Name'
-    'LongName': 'Co List Agent Full Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2064'
-    'SystemName': 'CoListAgentMLSID'
-    'ShortName': 'Co List Agent MLSID'
-    'LongName': 'Co List Agent MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2065'
-    'SystemName': 'CoListOffice_MUI'
-    'ShortName': 'Co List Office MUI'
-    'LongName': 'Co List Office MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2066'
-    'SystemName': 'CoListOfficeMLSID'
-    'ShortName': 'Co List Office MLSID'
-    'LongName': 'Co List Office MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2067'
-    'SystemName': 'CoListOfficeName'
-    'ShortName': 'Co List Office Name'
-    'LongName': 'Co List Office Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2068'
-    'SystemName': 'CoListOfficePhone'
-    'ShortName': 'Co List Office Phone'
-    'LongName': 'Co List Office Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2076'
-    'SystemName': 'CountyOrParish'
-    'ShortName': 'County Or Parish'
-    'LongName': 'County Or Parish'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2077'
-    'SystemName': 'CreatedDate'
-    'ShortName': 'Created Date'
-    'LongName': 'Created Date'
-    'DataType': 'DateTime'
-  }
-  {
-    'MetadataEntryID': '2078'
-    'SystemName': 'CurrentPrice'
-    'ShortName': 'Current Price'
-    'LongName': 'Current Price'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2338'
-    'SystemName': 'Development'
-    'ShortName': 'Development'
-    'LongName': 'Development'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2080'
-    'SystemName': 'DockConstruction'
-    'ShortName': 'Dock Construction'
-    'LongName': 'Dock Construction'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2081'
-    'SystemName': 'DockOwnership'
-    'ShortName': 'Dock Ownership'
-    'LongName': 'Dock Ownership'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2087'
-    'SystemName': 'DOM'
-    'ShortName': 'DOM'
-    'LongName': 'DOM'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2088'
-    'SystemName': 'DrySlipHeight'
-    'ShortName': 'Dry Slip Height'
-    'LongName': 'Dry Slip Height'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2089'
-    'SystemName': 'DrySlipLength'
-    'ShortName': 'Dry Slip Length'
-    'LongName': 'Dry Slip Length'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2090'
-    'SystemName': 'DrySlipWidth'
-    'ShortName': 'Dry Slip Width'
-    'LongName': 'Dry Slip Width'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2093'
-    'SystemName': 'FLLandLeaseTransferTax'
-    'ShortName': 'FL Land Lease Transfer T'
-    'LongName': 'FL Land Lease Transfer Tax'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2094'
-    'SystemName': 'ForeclosedREOYN'
-    'ShortName': 'Foreclosed REOYN'
-    'LongName': 'Foreclosed REOYN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2095'
-    'SystemName': 'FullAddress'
-    'ShortName': 'Full Address'
-    'LongName': 'Full Address'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2096'
-    'SystemName': 'GulfAccessType'
-    'ShortName': 'Gulf Access Type'
-    'LongName': 'Gulf Access Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2330'
-    'SystemName': 'GulfAccessYN'
-    'ShortName': 'Gulf Access YN'
-    'LongName': 'Gulf Access YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2101'
-    'SystemName': 'LandLeaseYN'
-    'ShortName': 'Land Lease YN'
-    'LongName': 'Land Lease YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2102'
-    'SystemName': 'LastChangeTimestamp'
-    'ShortName': 'Last Change Timestamp'
-    'LongName': 'Last Change Timestamp'
-    'DataType': 'DateTime'
-  }
-  {
-    'MetadataEntryID': '2103'
-    'SystemName': 'LastChangeType'
-    'ShortName': 'Last Change Type'
-    'LongName': 'Last Change Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2107'
-    'SystemName': 'LegalDesc'
-    'ShortName': 'Legal Desc'
-    'LongName': 'Legal Desc'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2303'
-    'SystemName': 'LegalUnit'
-    'ShortName': 'Legal Unit'
-    'LongName': 'Legal Unit'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2304'
-    'SystemName': 'LiftCapacity'
-    'ShortName': 'Lift Capacity'
-    'LongName': 'Lift Capacity'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2109'
-    'SystemName': 'ListAgent_MUI'
-    'ShortName': 'List Agent MUI'
-    'LongName': 'List Agent MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2110'
-    'SystemName': 'ListAgentDirectWorkPhone'
-    'ShortName': 'List Agent Direct Work P'
-    'LongName': 'List Agent Direct Work Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2112'
-    'SystemName': 'ListAgentFullName'
-    'ShortName': 'List Agent Full Name'
-    'LongName': 'List Agent Full Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2113'
-    'SystemName': 'ListAgentMLSID'
-    'ShortName': 'List Agent MLSID'
-    'LongName': 'List Agent MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2115'
-    'SystemName': 'ListingOnInternetYN'
-    'ShortName': 'Listing On Internet YN'
-    'LongName': 'Listing On Internet YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2117'
-    'SystemName': 'ListOffice_MUI'
-    'ShortName': 'List Office MUI'
-    'LongName': 'List Office MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2118'
-    'SystemName': 'ListOfficeMLSID'
-    'ShortName': 'List Office MLSID'
-    'LongName': 'List Office MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2119'
-    'SystemName': 'ListOfficeName'
-    'ShortName': 'List Office Name'
-    'LongName': 'List Office Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2120'
-    'SystemName': 'ListOfficePhone'
-    'ShortName': 'List Office Phone'
-    'LongName': 'List Office Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2121'
-    'SystemName': 'ListPrice'
-    'ShortName': 'List Price'
-    'LongName': 'List Price'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2328'
-    'SystemName': 'LotUnit'
-    'ShortName': 'Lot Unit'
-    'LongName': 'Lot Unit'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2272'
-    'SystemName': 'MarinaName'
-    'ShortName': 'Marina Name'
-    'LongName': 'Marina Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2124'
-    'SystemName': 'matrix_unique_id'
-    'ShortName': 'Matrix Unique ID'
-    'LongName': 'Matrix Unique ID'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2125'
-    'SystemName': 'MatrixModifiedDT'
-    'ShortName': 'Matrix Modified DT'
-    'LongName': 'Matrix Modified DT'
-    'DataType': 'DateTime'
-  }
-  {
-    'MetadataEntryID': '2127'
-    'SystemName': 'MaxPermittedDraft'
-    'ShortName': 'Max Permitted Draft'
-    'LongName': 'Max Permitted Draft'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2128'
-    'SystemName': 'MaxWaterDepthMLT'
-    'ShortName': 'Max Water Depth MLT'
-    'LongName': 'Max Water Depth MLT'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2129'
-    'SystemName': 'MaxWetSlipBeam'
-    'ShortName': 'Max Wet Slip Beam'
-    'LongName': 'Max Wet Slip Beam'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2130'
-    'SystemName': 'MaxWetSlipLenghtOverall'
-    'ShortName': 'Max Wet Slip Lenght Over'
-    'LongName': 'Max Wet Slip Lenght Overall'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2131'
-    'SystemName': 'MeanLowTide'
-    'ShortName': 'Mean Low Tide'
-    'LongName': 'Mean Low Tide'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2298'
-    'SystemName': 'MLS'
-    'ShortName': 'MLS'
-    'LongName': 'MLS'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2132'
-    'SystemName': 'MLSAreaMajor'
-    'ShortName': 'MLS Area Major'
-    'LongName': 'MLS Area Major'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2133'
-    'SystemName': 'MLSNumber'
-    'ShortName': 'MLS Number'
-    'LongName': 'MLS Number'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2135'
-    'SystemName': 'NumberOfSlipsInMarina'
-    'ShortName': 'Number Of Slips In Marin'
-    'LongName': 'Number Of Slips In Marina'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2138'
-    'SystemName': 'OriginalListPrice'
-    'ShortName': 'Original List Price'
-    'LongName': 'Original List Price'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2140'
-    'SystemName': 'ParcelNumber'
-    'ShortName': 'Parcel Number'
-    'LongName': 'Parcel Number'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2270'
-    'SystemName': 'PhotoCount'
-    'ShortName': 'Photo Count'
-    'LongName': 'Photo Count'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2144'
-    'SystemName': 'PhotoModificationTimestamp'
-    'ShortName': 'Photo Modification Times'
-    'LongName': 'Photo Modification Timestamp'
-    'DataType': 'DateTime'
-  }
-  {
-    'MetadataEntryID': '2145'
-    'SystemName': 'Possession'
-    'ShortName': 'Possession'
-    'LongName': 'Possession'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2146'
-    'SystemName': 'PostalCode'
-    'ShortName': 'Postal Code'
-    'LongName': 'Postal Code'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2314'
-    'SystemName': 'PostalCodePlus4'
-    'ShortName': 'Postal Code Plus 4'
-    'LongName': 'Postal Code Plus 4'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2148'
-    'SystemName': 'PotentialShortSaleYN'
-    'ShortName': 'Potential Short Sale YN'
-    'LongName': 'Potential Short Sale YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2150'
-    'SystemName': 'PropertyAddressonInternetYN'
-    'ShortName': 'Property Addresson Inter'
-    'LongName': 'Property Addresson Internet YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2151'
-    'SystemName': 'PropertyInformation'
-    'ShortName': 'Property Information'
-    'LongName': 'Property Information'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2305'
-    'SystemName': 'PropertyType'
-    'ShortName': 'Property Type'
-    'LongName': 'Property Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2155'
-    'SystemName': 'Range'
-    'ShortName': 'Range'
-    'LongName': 'Range'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2161'
-    'SystemName': 'RoomCount'
-    'ShortName': 'Room Count'
-    'LongName': 'Room Count'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2162'
-    'SystemName': 'Section'
-    'ShortName': 'Section'
-    'LongName': 'Section'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2164'
-    'SystemName': 'SellingAgent_MUI'
-    'ShortName': 'Selling Agent MUI'
-    'LongName': 'Selling Agent MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2165'
-    'SystemName': 'SellingAgentDirectWorkPhone'
-    'ShortName': 'Selling Agent Direct Wor'
-    'LongName': 'Selling Agent Direct Work Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2167'
-    'SystemName': 'SellingAgentFullName'
-    'ShortName': 'Selling Agent Full Name'
-    'LongName': 'Selling Agent Full Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2168'
-    'SystemName': 'SellingAgentMLSID'
-    'ShortName': 'Selling Agent MLSID'
-    'LongName': 'Selling Agent MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2169'
-    'SystemName': 'SellingOffice_MUI'
-    'ShortName': 'Selling Office MUI'
-    'LongName': 'Selling Office MUI'
-    'DataType': 'Long'
-  }
-  {
-    'MetadataEntryID': '2170'
-    'SystemName': 'SellingOfficeMLSID'
-    'ShortName': 'Selling Office MLSID'
-    'LongName': 'Selling Office MLSID'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2171'
-    'SystemName': 'SellingOfficeName'
-    'ShortName': 'Selling Office Name'
-    'LongName': 'Selling Office Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2172'
-    'SystemName': 'SellingOfficePhone'
-    'ShortName': 'Selling Office Phone'
-    'LongName': 'Selling Office Phone'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2177'
-    'SystemName': 'SlipCoveredYN'
-    'ShortName': 'Slip Covered YN'
-    'LongName': 'Slip Covered YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2178'
-    'SystemName': 'SlipNumber'
-    'ShortName': 'Slip Number'
-    'LongName': 'Slip Number'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2179'
-    'SystemName': 'SlipType'
-    'ShortName': 'Slip Type'
-    'LongName': 'Slip Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2182'
-    'SystemName': 'SpecialInformation'
-    'ShortName': 'Special Information'
-    'LongName': 'Special Information'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2183'
-    'SystemName': 'StateOrProvince'
-    'ShortName': 'State Or Province'
-    'LongName': 'State Or Province'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2184'
-    'SystemName': 'Status'
-    'ShortName': 'Status'
-    'LongName': 'Status'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2185'
-    'SystemName': 'StatusType'
-    'ShortName': 'Status Type'
-    'LongName': 'Status Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2317'
-    'SystemName': 'StreetDirPrefix'
-    'ShortName': 'Street Dir Prefix'
-    'LongName': 'Street Dir Prefix'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2186'
-    'SystemName': 'StreetDirSuffix'
-    'ShortName': 'Street Dir Suffix'
-    'LongName': 'Street Dir Suffix'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2187'
-    'SystemName': 'StreetName'
-    'ShortName': 'Street Name'
-    'LongName': 'Street Name'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2188'
-    'SystemName': 'StreetNumber'
-    'ShortName': 'Street Number'
-    'LongName': 'Street Number'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2318'
-    'SystemName': 'StreetNumberModifier'
-    'ShortName': 'Street Number Modifier'
-    'LongName': 'Street Number Modifier'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2189'
-    'SystemName': 'StreetSuffix'
-    'ShortName': 'Street Suffix'
-    'LongName': 'Street Suffix'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2193'
-    'SystemName': 'Table'
-    'ShortName': 'Table'
-    'LongName': 'Table'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2195'
-    'SystemName': 'TaxDesc'
-    'ShortName': 'Tax Desc'
-    'LongName': 'Tax Desc'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2196'
-    'SystemName': 'TaxDistrictType'
-    'ShortName': 'Tax District Type'
-    'LongName': 'Tax District Type'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2197'
-    'SystemName': 'Taxes'
-    'ShortName': 'Taxes'
-    'LongName': 'Taxes'
-    'DataType': 'Decimal'
-  }
-  {
-    'MetadataEntryID': '2198'
-    'SystemName': 'TaxYear'
-    'ShortName': 'Tax Year'
-    'LongName': 'Tax Year'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2201'
-    'SystemName': 'TotalBuildings'
-    'ShortName': 'Total Buildings'
-    'LongName': 'Total Buildings'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2202'
-    'SystemName': 'Township'
-    'ShortName': 'Township'
-    'LongName': 'Township'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2204'
-    'SystemName': 'UnitNumber'
-    'ShortName': 'Unit Number'
-    'LongName': 'Unit Number'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2206'
-    'SystemName': 'VirtualTourURL'
-    'ShortName': 'Virtual Tour URL'
-    'LongName': 'Virtual Tour URL'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2331'
-    'SystemName': 'WaterfrontDesc'
-    'ShortName': 'Waterfront Desc'
-    'LongName': 'Waterfront Desc'
-    'DataType': 'Character'
-  }
-  {
-    'MetadataEntryID': '2332'
-    'SystemName': 'WaterfrontYN'
-    'ShortName': 'Waterfront YN'
-    'LongName': 'Waterfront YN'
-    'DataType': 'Boolean'
-  }
-  {
-    'MetadataEntryID': '2208'
-    'SystemName': 'YearBuilt'
-    'ShortName': 'Year Built'
-    'LongName': 'Year Built'
-    'DataType': 'Int'
-  }
-  {
-    'MetadataEntryID': '2209'
-    'SystemName': 'YearsRemainingOnLandLease'
-    'ShortName': 'Years Remaining On Land '
-    'LongName': 'Years Remaining On Land Lease'
-    'DataType': 'Int'
+    "MetadataEntryID": "597",
+    "SystemName": "Acres",
+    "ShortName": "Acres",
+    "LongName": "Acres",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "598",
+    "SystemName": "ActiveOpenHouseCount",
+    "ShortName": "Active Open House Count",
+    "LongName": "Active Open House Count",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "599",
+    "SystemName": "AdditionalRooms",
+    "ShortName": "Additional Rooms",
+    "LongName": "Additional Rooms",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "601",
+    "SystemName": "Amenities",
+    "ShortName": "Amenities",
+    "LongName": "Amenities",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "602",
+    "SystemName": "AmenityRecFee",
+    "ShortName": "Amenity Rec Fee",
+    "LongName": "Amenity Rec Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "603",
+    "SystemName": "AmenRecFreq",
+    "ShortName": "Amen Rec Freq",
+    "LongName": "Amen Rec Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "606",
+    "SystemName": "ApplicationFee",
+    "ShortName": "Application Fee",
+    "LongName": "Application Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "607",
+    "SystemName": "Approval",
+    "ShortName": "Approval",
+    "LongName": "Approval",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "608",
+    "SystemName": "ApproxLivingArea",
+    "ShortName": "Approx Living Area",
+    "LongName": "Approx Living Area",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "609",
+    "SystemName": "AssociationMngmtPhone",
+    "ShortName": "Association Mngmt Phone",
+    "LongName": "Association Mngmt Phone",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "612",
+    "SystemName": "BathsFull",
+    "ShortName": "Baths Full",
+    "LongName": "Baths Full",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "613",
+    "SystemName": "BathsHalf",
+    "ShortName": "Baths Half",
+    "LongName": "Baths Half",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "614",
+    "SystemName": "BathsTotal",
+    "ShortName": "Baths Total",
+    "LongName": "Baths Total",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "615",
+    "SystemName": "BedroomDesc",
+    "ShortName": "Bedroom Desc",
+    "LongName": "Bedroom Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2242",
+    "SystemName": "Bedrooms",
+    "ShortName": "Bedrooms",
+    "LongName": "Bedrooms",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "616",
+    "SystemName": "BedsTotal",
+    "ShortName": "Beds Total",
+    "LongName": "Beds Total",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "617",
+    "SystemName": "Block",
+    "ShortName": "Block",
+    "LongName": "Block",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "618",
+    "SystemName": "BloggingYN",
+    "ShortName": "Blogging YN",
+    "LongName": "Blogging YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "621",
+    "SystemName": "BoatAccess",
+    "ShortName": "Boat Access",
+    "LongName": "Boat Access",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "624",
+    "SystemName": "BuilderProductYN",
+    "ShortName": "Builder Product YN",
+    "LongName": "Builder Product YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "625",
+    "SystemName": "BuildingDesc",
+    "ShortName": "Building Desc",
+    "LongName": "Building Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "626",
+    "SystemName": "BuildingDesign",
+    "ShortName": "Building Design",
+    "LongName": "Building Design",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "627",
+    "SystemName": "BuildingNumber",
+    "ShortName": "Building Number",
+    "LongName": "Building Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "629",
+    "SystemName": "CableAvailableYN",
+    "ShortName": "Cable Available YN",
+    "LongName": "Cable Available YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "630",
+    "SystemName": "CanalWidth",
+    "ShortName": "Canal Width",
+    "LongName": "Canal Width",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "632",
+    "SystemName": "CarportDesc",
+    "ShortName": "Carport Desc",
+    "LongName": "Carport Desc",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "633",
+    "SystemName": "CarportSpaces",
+    "ShortName": "Carport Spaces",
+    "LongName": "Carport Spaces",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "634",
+    "SystemName": "CDOM",
+    "ShortName": "CDOM",
+    "LongName": "CDOM",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "642",
+    "SystemName": "City",
+    "ShortName": "City",
+    "LongName": "City",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "643",
+    "SystemName": "CloseDate",
+    "ShortName": "Close Date",
+    "LongName": "Close Date",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "644",
+    "SystemName": "ClosePrice",
+    "ShortName": "Close Price",
+    "LongName": "Close Price",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "645",
+    "SystemName": "CoListAgent_MUI",
+    "ShortName": "Co List Agent MUI",
+    "LongName": "Co List Agent MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "648",
+    "SystemName": "CoListAgentFullName",
+    "ShortName": "Co List Agent Full Name",
+    "LongName": "Co List Agent Full Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "650",
+    "SystemName": "CoListOffice_MUI",
+    "ShortName": "Co List Office MUI",
+    "LongName": "Co List Office MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "651",
+    "SystemName": "CoListOfficeMLSID",
+    "ShortName": "Co List Office MLSID",
+    "LongName": "Co List Office MLSID",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "652",
+    "SystemName": "CoListOfficeName",
+    "ShortName": "Co List Office Name",
+    "LongName": "Co List Office Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "653",
+    "SystemName": "CoListOfficePhone",
+    "ShortName": "Co List Office Phone",
+    "LongName": "Co List Office Phone",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "654",
+    "SystemName": "CommunityType",
+    "ShortName": "Community Type",
+    "LongName": "Community Type",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "655",
+    "SystemName": "ConditionalDate",
+    "ShortName": "Conditional Date",
+    "LongName": "Conditional Date",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "656",
+    "SystemName": "CondoFee",
+    "ShortName": "Condo Fee",
+    "LongName": "Condo Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "657",
+    "SystemName": "CondoFeeFreq",
+    "ShortName": "Condo Fee Freq",
+    "LongName": "Condo Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "659",
+    "SystemName": "Construction",
+    "ShortName": "Construction",
+    "LongName": "Construction",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "662",
+    "SystemName": "Cooling",
+    "ShortName": "Cooling",
+    "LongName": "Cooling",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "672",
+    "SystemName": "CountyOrParish",
+    "ShortName": "County Or Parish",
+    "LongName": "County Or Parish",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "673",
+    "SystemName": "CreatedDate",
+    "ShortName": "Created Date",
+    "LongName": "Created Date",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "674",
+    "SystemName": "CurrentPrice",
+    "ShortName": "Current Price",
+    "LongName": "Current Price",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "2333",
+    "SystemName": "Development",
+    "ShortName": "Development",
+    "LongName": "Development",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "675",
+    "SystemName": "DevelopmentName",
+    "ShortName": "Development Name",
+    "LongName": "Development Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "2273",
+    "SystemName": "DiningDescription",
+    "ShortName": "Dining Description",
+    "LongName": "Dining Description",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "682",
+    "SystemName": "DOM",
+    "ShortName": "DOM",
+    "LongName": "DOM",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "683",
+    "SystemName": "ElementarySchool",
+    "ShortName": "Elementary School",
+    "LongName": "Elementary School",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "684",
+    "SystemName": "Elevator",
+    "ShortName": "Elevator",
+    "LongName": "Elevator",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "685",
+    "SystemName": "Equipment",
+    "ShortName": "Equipment",
+    "LongName": "Equipment",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "688",
+    "SystemName": "ExteriorFeatures",
+    "ShortName": "Exterior Features",
+    "LongName": "Exterior Features",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "689",
+    "SystemName": "ExteriorFinish",
+    "ShortName": "Exterior Finish",
+    "LongName": "Exterior Finish",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "691",
+    "SystemName": "Flooring",
+    "ShortName": "Flooring",
+    "LongName": "Flooring",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "692",
+    "SystemName": "FloorPlanType",
+    "ShortName": "Floor Plan Type",
+    "LongName": "Floor Plan Type",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "693",
+    "SystemName": "ForeclosedREOYN",
+    "ShortName": "Foreclosed REOYN",
+    "LongName": "Foreclosed REOYN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "694",
+    "SystemName": "FullAddress",
+    "ShortName": "Full Address",
+    "LongName": "Full Address",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "695",
+    "SystemName": "FurnishedDesc",
+    "ShortName": "Furnished Desc",
+    "LongName": "Furnished Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "696",
+    "SystemName": "GarageDesc",
+    "ShortName": "Garage Desc",
+    "LongName": "Garage Desc",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "697",
+    "SystemName": "GarageDimension",
+    "ShortName": "Garage Dimension",
+    "LongName": "Garage Dimension",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "698",
+    "SystemName": "GarageSpaces",
+    "ShortName": "Garage Spaces",
+    "LongName": "Garage Spaces",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "699",
+    "SystemName": "GuestHouseDesc",
+    "ShortName": "Guest House Desc",
+    "LongName": "Guest House Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "700",
+    "SystemName": "GuestHouseLivingArea",
+    "ShortName": "Guest House Living Area",
+    "LongName": "Guest House Living Area",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "701",
+    "SystemName": "GulfAccessType",
+    "ShortName": "Gulf Access Type",
+    "LongName": "Gulf Access Type",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "702",
+    "SystemName": "GulfAccessYN",
+    "ShortName": "Gulf Access YN",
+    "LongName": "Gulf Access YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "703",
+    "SystemName": "Heat",
+    "ShortName": "Heat",
+    "LongName": "Heat",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "704",
+    "SystemName": "HighSchool",
+    "ShortName": "High School",
+    "LongName": "High School",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "705",
+    "SystemName": "HOADesc",
+    "ShortName": "HOA Desc",
+    "LongName": "HOA Desc",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "706",
+    "SystemName": "HOAFee",
+    "ShortName": "HOA Fee",
+    "LongName": "HOA Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "707",
+    "SystemName": "HOAFeeFreq",
+    "ShortName": "HOA Fee Freq",
+    "LongName": "HOA Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "710",
+    "SystemName": "InteriorFeatures",
+    "ShortName": "Interior Features",
+    "LongName": "Interior Features",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "711",
+    "SystemName": "InternetSites",
+    "ShortName": "Internet Sites",
+    "LongName": "Internet Sites",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "712",
+    "SystemName": "Irrigation",
+    "ShortName": "Irrigation",
+    "LongName": "Irrigation",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2299",
+    "SystemName": "KitchenDescription",
+    "ShortName": "Kitchen Description",
+    "LongName": "Kitchen Description",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "715",
+    "SystemName": "LandLeaseFee",
+    "ShortName": "Land Lease Fee",
+    "LongName": "Land Lease Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "716",
+    "SystemName": "LandLeaseFeeFreq",
+    "ShortName": "Land Lease Fee Freq",
+    "LongName": "Land Lease Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "717",
+    "SystemName": "LastChangeTimestamp",
+    "ShortName": "Last Change Timestamp",
+    "LongName": "Last Change Timestamp",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "718",
+    "SystemName": "LastChangeType",
+    "ShortName": "Last Change Type",
+    "LongName": "Last Change Type",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "722",
+    "SystemName": "LeaseLimitsYN",
+    "ShortName": "Lease Limits YN",
+    "LongName": "Lease Limits YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "723",
+    "SystemName": "LeasesPerYear",
+    "ShortName": "Leases Per Year",
+    "LongName": "Leases Per Year",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "724",
+    "SystemName": "LegalDesc",
+    "ShortName": "Legal Desc",
+    "LongName": "Legal Desc",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "725",
+    "SystemName": "LegalUnit",
+    "ShortName": "Legal Unit",
+    "LongName": "Legal Unit",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "727",
+    "SystemName": "ListAgent_MUI",
+    "ShortName": "List Agent MUI",
+    "LongName": "List Agent MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "728",
+    "SystemName": "ListAgentDirectWorkPhone",
+    "ShortName": "List Agent Direct Work P",
+    "LongName": "List Agent Direct Work Phone",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "730",
+    "SystemName": "ListAgentFullName",
+    "ShortName": "List Agent Full Name",
+    "LongName": "List Agent Full Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "731",
+    "SystemName": "ListAgentMLSID",
+    "ShortName": "List Agent MLSID",
+    "LongName": "List Agent MLSID",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "733",
+    "SystemName": "ListingOnInternetYN",
+    "ShortName": "Listing On Internet YN",
+    "LongName": "Listing On Internet YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "734",
+    "SystemName": "ListOffice_MUI",
+    "ShortName": "List Office MUI",
+    "LongName": "List Office MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "735",
+    "SystemName": "ListOfficeMLSID",
+    "ShortName": "List Office MLSID",
+    "LongName": "List Office MLSID",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "736",
+    "SystemName": "ListOfficeName",
+    "ShortName": "List Office Name",
+    "LongName": "List Office Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "737",
+    "SystemName": "ListOfficePhone",
+    "ShortName": "List Office Phone",
+    "LongName": "List Office Phone",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "738",
+    "SystemName": "ListPrice",
+    "ShortName": "List Price",
+    "LongName": "List Price",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "740",
+    "SystemName": "LotBack",
+    "ShortName": "Lot Back",
+    "LongName": "Lot Back",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "854",
+    "SystemName": "LotDesc",
+    "ShortName": "Lot Desc",
+    "LongName": "Lot Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "741",
+    "SystemName": "LotFrontage",
+    "ShortName": "Lot Frontage",
+    "LongName": "Lot Frontage",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "742",
+    "SystemName": "LotLeft",
+    "ShortName": "Lot Left",
+    "LongName": "Lot Left",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "743",
+    "SystemName": "LotRight",
+    "ShortName": "Lot Right",
+    "LongName": "Lot Right",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "746",
+    "SystemName": "LotUnit",
+    "ShortName": "Lot Unit",
+    "LongName": "Lot Unit",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "856",
+    "SystemName": "Maintenance",
+    "ShortName": "Maintenance",
+    "LongName": "Maintenance",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2274",
+    "SystemName": "Management",
+    "ShortName": "Management",
+    "LongName": "Management",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "747",
+    "SystemName": "MandatoryClubFee",
+    "ShortName": "Mandatory Club Fee",
+    "LongName": "Mandatory Club Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "857",
+    "SystemName": "MandatoryClubFeeFreq",
+    "ShortName": "Mandatory Club Fee Freq",
+    "LongName": "Mandatory Club Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "748",
+    "SystemName": "MandatoryHOAYN",
+    "ShortName": "Mandatory HOAYN",
+    "LongName": "Mandatory HOAYN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "2275",
+    "SystemName": "MasterBathDescription",
+    "ShortName": "Master Bath Description",
+    "LongName": "Master Bath Description",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "749",
+    "SystemName": "MasterHOAFee",
+    "ShortName": "Master HOA Fee",
+    "LongName": "Master HOA Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "858",
+    "SystemName": "MasterHOAFeeFreq",
+    "ShortName": "Master HOA Fee Freq",
+    "LongName": "Master HOA Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "750",
+    "SystemName": "matrix_unique_id",
+    "ShortName": "Matrix Unique ID",
+    "LongName": "Matrix Unique ID",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "751",
+    "SystemName": "MatrixModifiedDT",
+    "ShortName": "Matrix Modified DT",
+    "LongName": "Matrix Modified DT",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "753",
+    "SystemName": "MiddleSchool",
+    "ShortName": "Middle School",
+    "LongName": "Middle School",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "754",
+    "SystemName": "MinDaysofLease",
+    "ShortName": "Min Daysof Lease",
+    "LongName": "Min Daysof Lease",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "859",
+    "SystemName": "MLS",
+    "ShortName": "MLS",
+    "LongName": "MLS",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "860",
+    "SystemName": "MLSAreaMajor",
+    "ShortName": "MLS Area Major",
+    "LongName": "MLS Area Major",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "755",
+    "SystemName": "MLSNumber",
+    "ShortName": "MLS Number",
+    "LongName": "MLS Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "757",
+    "SystemName": "NumberofCeilingFans",
+    "ShortName": "Numberof Ceiling Fans",
+    "LongName": "Numberof Ceiling Fans",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "2487",
+    "SystemName": "NumUnitFloor",
+    "ShortName": "Num Unit Floor",
+    "LongName": "Num Unit Floor",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "760",
+    "SystemName": "OneTimeLandLeaseFee",
+    "ShortName": "One Time Land Lease Fee",
+    "LongName": "One Time Land Lease Fee",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "761",
+    "SystemName": "OneTimeMandatoryClubFee",
+    "ShortName": "One Time Mandatory Club ",
+    "LongName": "One Time Mandatory Club Fee",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "762",
+    "SystemName": "OneTimeOtheFee",
+    "ShortName": "One Time Othe Fee",
+    "LongName": "One Time Othe Fee",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "763",
+    "SystemName": "OneTimeRecLeaseFee",
+    "ShortName": "One Time Rec Lease Fee",
+    "LongName": "One Time Rec Lease Fee",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "764",
+    "SystemName": "OneTimeSpecialAssessmentFee",
+    "ShortName": "One Time Special Assessm",
+    "LongName": "One Time Special Assessment Fee",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "768",
+    "SystemName": "OriginalListPrice",
+    "ShortName": "Original List Price",
+    "LongName": "Original List Price",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "862",
+    "SystemName": "OwnershipDesc",
+    "ShortName": "Ownership Desc",
+    "LongName": "Ownership Desc",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "770",
+    "SystemName": "ParcelNumber",
+    "ShortName": "Parcel Number",
+    "LongName": "Parcel Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "863",
+    "SystemName": "Parking",
+    "ShortName": "Parking",
+    "LongName": "Parking",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "864",
+    "SystemName": "Pets",
+    "ShortName": "Pets",
+    "LongName": "Pets",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "774",
+    "SystemName": "PetsLimitMaxNumber",
+    "ShortName": "Pets Limit Max Number",
+    "LongName": "Pets Limit Max Number",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "775",
+    "SystemName": "PetsLimitMaxWeight",
+    "ShortName": "Pets Limit Max Weight",
+    "LongName": "Pets Limit Max Weight",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "776",
+    "SystemName": "PetsLimitOther",
+    "ShortName": "Pets Limit Other",
+    "LongName": "Pets Limit Other",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "777",
+    "SystemName": "PhotoCount",
+    "ShortName": "Photo Count",
+    "LongName": "Photo Count",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "778",
+    "SystemName": "PhotoModificationTimestamp",
+    "ShortName": "Photo Modification Times",
+    "LongName": "Photo Modification Timestamp",
+    "DataType": "DateTime",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "865",
+    "SystemName": "Possession",
+    "ShortName": "Possession",
+    "LongName": "Possession",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "779",
+    "SystemName": "PostalCode",
+    "ShortName": "Postal Code",
+    "LongName": "Postal Code",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "780",
+    "SystemName": "PostalCodePlus4",
+    "ShortName": "Postal Code Plus 4",
+    "LongName": "Postal Code Plus 4",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "782",
+    "SystemName": "PotentialShortSaleYN",
+    "ShortName": "Potential Short Sale YN",
+    "LongName": "Potential Short Sale YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "786",
+    "SystemName": "PricePerSqFt",
+    "ShortName": "Price Per Sq Ft",
+    "LongName": "Price Per Sq Ft",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "866",
+    "SystemName": "PrivatePoolDesc",
+    "ShortName": "Private Pool Desc",
+    "LongName": "Private Pool Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "787",
+    "SystemName": "PrivatePoolYN",
+    "ShortName": "Private Pool YN",
+    "LongName": "Private Pool YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "867",
+    "SystemName": "PrivateSpaDesc",
+    "ShortName": "Private Spa Desc",
+    "LongName": "Private Spa Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "788",
+    "SystemName": "PrivateSpaYN",
+    "ShortName": "Private Spa YN",
+    "LongName": "Private Spa YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "789",
+    "SystemName": "PropertyAddressonInternetYN",
+    "ShortName": "Property Addresson Inter",
+    "LongName": "Property Addresson Internet YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "791",
+    "SystemName": "PropertyInformation",
+    "ShortName": "Property Information",
+    "LongName": "Property Information",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "869",
+    "SystemName": "PropertyType",
+    "ShortName": "Property Type",
+    "LongName": "Property Type",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "794",
+    "SystemName": "Range",
+    "ShortName": "Range",
+    "LongName": "Range",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "870",
+    "SystemName": "RearExposure",
+    "ShortName": "Rear Exposure",
+    "LongName": "Rear Exposure",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "871",
+    "SystemName": "Restrictions",
+    "ShortName": "Restrictions",
+    "LongName": "Restrictions",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "872",
+    "SystemName": "Road",
+    "ShortName": "Road",
+    "LongName": "Road",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "873",
+    "SystemName": "Roof",
+    "ShortName": "Roof",
+    "LongName": "Roof",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "800",
+    "SystemName": "RoomCount",
+    "ShortName": "Room Count",
+    "LongName": "Room Count",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "801",
+    "SystemName": "Section",
+    "ShortName": "Section",
+    "LongName": "Section",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "804",
+    "SystemName": "SellingAgent_MUI",
+    "ShortName": "Selling Agent MUI",
+    "LongName": "Selling Agent MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "807",
+    "SystemName": "SellingAgentFullName",
+    "ShortName": "Selling Agent Full Name",
+    "LongName": "Selling Agent Full Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "808",
+    "SystemName": "SellingAgentMLSID",
+    "ShortName": "Selling Agent MLSID",
+    "LongName": "Selling Agent MLSID",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "809",
+    "SystemName": "SellingOffice_MUI",
+    "ShortName": "Selling Office MUI",
+    "LongName": "Selling Office MUI",
+    "DataType": "Long",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "810",
+    "SystemName": "SellingOfficeMLSID",
+    "ShortName": "Selling Office MLSID",
+    "LongName": "Selling Office MLSID",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "811",
+    "SystemName": "SellingOfficeName",
+    "ShortName": "Selling Office Name",
+    "LongName": "Selling Office Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "812",
+    "SystemName": "SellingOfficePhone",
+    "ShortName": "Selling Office Phone",
+    "LongName": "Selling Office Phone",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "813",
+    "SystemName": "SellPricePerSqFt",
+    "ShortName": "Sell Price Per Sq Ft",
+    "LongName": "Sell Price Per Sq Ft",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "875",
+    "SystemName": "Sewer",
+    "ShortName": "Sewer",
+    "LongName": "Sewer",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2276",
+    "SystemName": "SourceofMeasureLivingArea",
+    "ShortName": "Sourceof Measure Living ",
+    "LongName": "Sourceof Measure Living Area",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2277",
+    "SystemName": "SourceofMeasureLotDimensions",
+    "ShortName": "Sourceof Measure Lot Dim",
+    "LongName": "Sourceof Measure Lot Dimensions",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "878",
+    "SystemName": "SourceofMeasureLotSize",
+    "ShortName": "Sourceof Measurements",
+    "LongName": "Sourceof Measurements",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "2278",
+    "SystemName": "SourceofMeasureTotalArea",
+    "ShortName": "Sourceof Measure Total A",
+    "LongName": "Sourceof Measure Total Area",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "817",
+    "SystemName": "SpecialAssessment",
+    "ShortName": "Special Assessment",
+    "LongName": "Special Assessment",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "879",
+    "SystemName": "SpecialAssessmentFeeFreq",
+    "ShortName": "Special Assessment Fee F",
+    "LongName": "Special Assessment Fee Freq",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "881",
+    "SystemName": "SpecialInformation",
+    "ShortName": "Special Information",
+    "LongName": "Special Information",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "819",
+    "SystemName": "StateOrProvince",
+    "ShortName": "State Or Province",
+    "LongName": "State Or Province",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "883",
+    "SystemName": "Status",
+    "ShortName": "Status",
+    "LongName": "Status",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "884",
+    "SystemName": "StatusType",
+    "ShortName": "Status Type",
+    "LongName": "Status Type",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "885",
+    "SystemName": "StormProtection",
+    "ShortName": "Storm Protection",
+    "LongName": "Storm Protection",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "886",
+    "SystemName": "StreetDirPrefix",
+    "ShortName": "Street Dir Prefix",
+    "LongName": "Street Dir Prefix",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "887",
+    "SystemName": "StreetDirSuffix",
+    "ShortName": "Street Dir Suffix",
+    "LongName": "Street Dir Suffix",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "822",
+    "SystemName": "StreetName",
+    "ShortName": "Street Name",
+    "LongName": "Street Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "823",
+    "SystemName": "StreetNumber",
+    "ShortName": "Street Number",
+    "LongName": "Street Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "824",
+    "SystemName": "StreetNumberModifier",
+    "ShortName": "Street Number Modifier",
+    "LongName": "Street Number Modifier",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "888",
+    "SystemName": "StreetSuffix",
+    "ShortName": "Street Suffix",
+    "LongName": "Street Suffix",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "826",
+    "SystemName": "SubCondoName",
+    "ShortName": "Sub Condo Name",
+    "LongName": "Sub Condo Name",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "827",
+    "SystemName": "SubdivisionNumber",
+    "ShortName": "Subdivision Number",
+    "LongName": "Subdivision Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "889",
+    "SystemName": "Table",
+    "ShortName": "Table",
+    "LongName": "Table",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "890",
+    "SystemName": "TaxDesc",
+    "ShortName": "Tax Desc",
+    "LongName": "Tax Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "891",
+    "SystemName": "TaxDistrictType",
+    "ShortName": "Tax District Type",
+    "LongName": "Tax District Type",
+    "DataType": "Character",
+    "Interpretation": "Lookup"
+  },
+  {
+    "MetadataEntryID": "831",
+    "SystemName": "Taxes",
+    "ShortName": "Taxes",
+    "LongName": "Taxes",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "832",
+    "SystemName": "TaxYear",
+    "ShortName": "Tax Year",
+    "LongName": "Tax Year",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "835",
+    "SystemName": "TotalArea",
+    "ShortName": "Total Area",
+    "LongName": "Total Area",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "837",
+    "SystemName": "TotalFloors",
+    "ShortName": "Total Floors",
+    "LongName": "Total Floors",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "838",
+    "SystemName": "Township",
+    "ShortName": "Township",
+    "LongName": "Township",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "840",
+    "SystemName": "TransferFee",
+    "ShortName": "Transfer Fee",
+    "LongName": "Transfer Fee",
+    "DataType": "Decimal",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "841",
+    "SystemName": "UnitCount",
+    "ShortName": "Unit Count",
+    "LongName": "Unit Count",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "842",
+    "SystemName": "UnitFloor",
+    "ShortName": "Unit Floor",
+    "LongName": "Unit Floor",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "843",
+    "SystemName": "UnitNumber",
+    "ShortName": "Unit Number",
+    "LongName": "Unit Number",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "844",
+    "SystemName": "UnitsinBuilding",
+    "ShortName": "Unitsin Building",
+    "LongName": "Unitsin Building",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "845",
+    "SystemName": "UnitsinComplex",
+    "ShortName": "Unitsin Complex",
+    "LongName": "Unitsin Complex",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "893",
+    "SystemName": "View",
+    "ShortName": "View",
+    "LongName": "View",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "847",
+    "SystemName": "VirtualTourURL",
+    "ShortName": "Virtual Tour URL",
+    "LongName": "Virtual Tour URL",
+    "DataType": "Character",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "894",
+    "SystemName": "Water",
+    "ShortName": "Water",
+    "LongName": "Water",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "895",
+    "SystemName": "WaterfrontDesc",
+    "ShortName": "Waterfront Desc",
+    "LongName": "Waterfront Desc",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "849",
+    "SystemName": "WaterfrontYN",
+    "ShortName": "Waterfront YN",
+    "LongName": "Waterfront YN",
+    "DataType": "Boolean",
+    "Interpretation": ""
+  },
+  {
+    "MetadataEntryID": "896",
+    "SystemName": "Windows",
+    "ShortName": "Windows",
+    "LongName": "Windows",
+    "DataType": "Character",
+    "Interpretation": "LookupMulti"
+  },
+  {
+    "MetadataEntryID": "851",
+    "SystemName": "YearBuilt",
+    "ShortName": "Year Built",
+    "LongName": "Year Built",
+    "DataType": "Int",
+    "Interpretation": "Number"
+  },
+  {
+    "MetadataEntryID": "852",
+    "SystemName": "ZoningCode",
+    "ShortName": "Zoning Code",
+    "LongName": "Zoning Code",
+    "DataType": "Character",
+    "Interpretation": ""
   }
 ]

@@ -1,42 +1,82 @@
 div.normalize-container
-  div.row
+
+  div.row.mls-select
     div.col-md-12 Select MLS
       select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
         option(value="" disabled)
 
   div.row.panel
     div.col-md-12
-      h3 Group Assignment
-    div.col-md-4.field-container(rmaps-droppable)
-      div.field.btn.btn-info(
+      h4 Group Assignment
+    div.col-md-4.col-xs-2.field-container(rmaps-droppable="columns" on-drop="onDrop")
+      div.field(
+      ng-click="selectField(item)"
+      rmaps-draggable="item" rmaps-draggable-collection="columns"
+      ng-repeat="item in columns track by item.MetadataEntryID ") {{item.LongName}}
+        span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
+         'datatype-number': item.Interpretation == 'Number', \
+         'datatype-yn': item.DataType == 'Boolean', \
+         'datatype-date': item.DataType == 'DateTime' }")
+
+    div.col-md-8.col-xs-10.category-container
+      div.category(
+      rmaps-droppable="category.items" on-drop="onDrop"
+      ng-repeat="category in categories track by category.label") {{ category.label }}
+        div.field(
         ng-click="selectField(item)"
-        rmaps-draggable
-        ng-repeat="item in columns track by item.MetadataEntryID") {{item.SystemName}}
-        span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', 'datatype-number': item.DataType == 'Int' || item.DataType == 'Decimal' || item.DataType == 'Long', 'datatype-yn': item.DataType == 'Boolean' }")
+        rmaps-draggable="item" rmaps-draggable-collection="category.items"
+        ng-repeat="item in category.items track by item.MetadataEntryID") {{item.LongName}}
 
-    div.col-md-8.category-container
-      div.category.btn.btn-warning(
-        rmaps-droppable
-        ng-repeat="category in categories track by category.label") {{ category.label }}
-        div.field.btn.btn-info(
-          ng-click="selectField(item)"
-          rmaps-draggable
-          ng-repeat="item in category.items track by item.MetadataEntryID") {item.SystemName}}
 
-  div.row.panel
-    div.col-md-12.properties-container
-      h3 Field Properties
+  div.row.panel.properties-container(ng-show="fieldData.current.SystemName")
+    div.col-md-12
+      h4 Field Validation
       div.row
-        div.col-md-4 System name:
-        div.col-md-8 {{fieldData.current.SystemName}}
+        div.col-md-3 Long name:
+        div.col-md-9 {{fieldData.current.LongName}}
       div.row
-        div.col-md-4 Long name:
-        div.col-md-8 {{fieldData.current.LongName}}
+        div.col-md-3 System name:
+        div.col-md-9 {{fieldData.current.SystemName}}
       div.row
-        div.col-md-4 Data Type:
-        div.col-md-8 {{fieldData.current.DataType}}
+        div.col-md-3 Data Type:
+        div.col-md-9 {{fieldData.current.DataType}}
       div.row
-        div.col-md-4 Alias:
-        div.col-md-8
+        div.col-md-3 Interpretation:
+        div.col-md-9 {{fieldData.current.Interpretation}}
       div.row
-        div.col-md-4 Other options...
+        div.col-md-3 Alias:
+        div.col-md-9
+          input(type="text" ng-model="fieldData.current.alias" placeholder="")
+      div(ng-show="fieldData.current.Interpretation == 'Number'")
+        div.row
+          div.col-md-3 0 (zero) counts as null
+          div.col-md-9
+            input(type="checkbox" ng-model="fieldData.current.nullZero" checked="checked")
+        div.row
+          div.col-md-3 Specific value counts as null
+          div.col-md-9
+            input(type="text" ng-model="fieldData.current.nullNumber" placeholder="example: -1")
+        div.row(ng-show="fieldData.current.DataType == 'Decimal'")
+          div.col-md-3 Round / truncate decimal
+          div.col-md-9
+            input(type="checkbox" ng-model="fieldData.current.floorDecimal" checked="checked")
+      div(ng-show="fieldData.current.DataType == 'Character'")
+        div.row
+          div.col-md-3 Empty counts as null
+          div.col-md-9
+            input(type="checkbox" ng-model="fieldData.current.nullEmpty" checked="checked")
+        div.row
+          div.col-md-3 Specific value(s) count as null
+          div.col-md-9
+            input(type="text" ng-model="fieldData.current.nullString" rmaps-list-input placeholder="no, false, n/a")
+        div.row
+          div.col-md-3 Transform
+          div.col-md-9
+            select(ng-model="fieldData.current.transformString" ng-options="option.label as option.value for option in transformOptions")
+        div.row(ng-show="fieldData.current.lookups")
+          div.col-md-3 Replace values with RealtyMaps values (Lookup)
+          div.col-md-9
+        div.row(ng-repeat="lookup in fieldData.current.lookups")
+          div.col-md-3 {{lookup.LongValue}} ({{lookup.ShortValue}})
+          div.col-md-9
+            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.mapString")
