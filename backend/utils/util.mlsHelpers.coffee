@@ -200,7 +200,18 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
     .then (response) ->
       _.map response.Fields, (r) ->
-        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation']
+    .finally () ->
+      retsClient.logout()
+
+getLookupTypes = (serverInfo, databaseName, lookupId) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  .then (retsClient) ->
+    retsClient.metadata.getLookupTypes(databaseName, lookupId)
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS types")
+    .then (response) ->
+      response.LookupTypes
     .finally () ->
       retsClient.logout()
 
@@ -353,7 +364,7 @@ finalizeData = (subtask, id) ->
   parcelPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
-  # we also need to select from the tax table for owner name info 
+  # we also need to select from the tax table for owner name info
   Promise.join(listingsPromise, parcelsPromise)
   .then (listings, parcel=[]) ->
     if listings?.length == 0
@@ -407,7 +418,7 @@ activateNewData = (subtask) ->
         batch_id: subtask.batch_id
         active: false
       .delete()
-    
+
 
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
@@ -415,6 +426,7 @@ module.exports =
   getDatabaseList: getDatabaseList
   getTableList: getTableList
   getColumnList: getColumnList
+  getLookupTypes: getLookupTypes
   recordChangeCounts: recordChangeCounts
   finalizeData: finalizeData
   activateNewData: activateNewData

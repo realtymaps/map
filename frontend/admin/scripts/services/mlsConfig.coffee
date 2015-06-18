@@ -27,12 +27,16 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   getColumnList = (configId, databaseId, tableId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').one(databaseId).all('tables').one(tableId).all('columns').getList()
 
+  getLookupTypes = (configId, databaseId, lookupId) ->
+    Restangular.all(mlsAPI).one(configId).all('databases').one(databaseId).all('lookups').one(lookupId).all('types').getList()
+
   service =
     getConfigs: getConfigs,
     postConfig: postConfig,
     getDatabaseList: getDatabaseList,
     getTableList: getTableList,
-    getColumnList: getColumnList
+    getColumnList: getColumnList,
+    getLookupTypes: getLookupTypes
 
   service
 ]
