@@ -25,7 +25,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
 
   $scope.categories = [
       group: 'hidden'
-      label: 'Hiden'
+      label: 'Hidden'
     ,
       group: 'general'
       label: 'General'
