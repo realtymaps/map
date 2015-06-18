@@ -206,19 +206,6 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .finally () ->
       retsClient.logout()
 
-getLookups = (serverInfo, databaseName) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
-  .then (retsClient) ->
-    retsClient.metadata.getLookups(databaseName)
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS lookups")
-    .then (response) ->
-      _.map response.Lookups, (r) ->
-        r
-        # _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation']
-    .finally () ->
-      retsClient.logout()
-
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
   .then (retsClient) ->
@@ -226,9 +213,7 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS types")
     .then (response) ->
-      _.map response.LookupTypes, (r) ->
-        r
-        # _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation']
+      response.LookupTypes
     .finally () ->
       retsClient.logout()
 
@@ -433,7 +418,6 @@ module.exports =
   getDatabaseList: getDatabaseList
   getTableList: getTableList
   getColumnList: getColumnList
-  getLookups: getLookups
   getLookupTypes: getLookupTypes
   recordChangeCounts: recordChangeCounts
   finalizeData: finalizeData

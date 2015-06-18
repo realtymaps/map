@@ -5,7 +5,7 @@ div.normalize-container
       select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
         option(value="" disabled)
 
-  div.row.panel
+  div.row.panel(ng-show="columns.length")
     div.col-md-12
       h4 Group Assignment
     div.col-md-4.col-xs-2.field-container(rmaps-droppable="columns" on-drop="onDrop")

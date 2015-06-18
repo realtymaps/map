@@ -5,7 +5,6 @@ require '../services/normalize.coffee'
 require '../directives/dragdrop.coffee'
 require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
-swflmls_fields = require '../../../../common/samples/swflmls_fields.coffee'
 
 app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', ($scope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder) ->
   $scope.$state = $state
@@ -16,7 +15,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
   $scope.fieldData =
     current: {}
 
-  $scope.columns = swflmls_fields # Test data
+  $scope.columns = []
 
   $scope.transformOptions = [
     { label: 'Uppercase', value: 'forceUpperCase' },
@@ -54,6 +53,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
 
     rmapsMlsService.getColumnList config.id, config.main_property_data.db, config.main_property_data.table
     .then (columns) ->
+      $scope.columns = columns
       # todo: create un-assigned rules for any fields that weren't already configured
 
   # Show field options

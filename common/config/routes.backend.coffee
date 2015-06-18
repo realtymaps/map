@@ -65,7 +65,6 @@ module.exports =
         getDatabaseList:  "#{apiBaseMls}/:mlsId/databases"
         getTableList:     "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
         getColumnList:    "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
-        getLookups:       "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups"
         getLookupTypes:       "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
 
     # hirefire secret value set from within backend/config/config.coffee

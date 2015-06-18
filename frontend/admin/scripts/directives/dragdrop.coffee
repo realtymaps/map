@@ -1,5 +1,9 @@
 app = require '../app.coffee'
 
+# HTML5 drag and drop driective
+# --------
+# Intended to be used with e.g. ng-repeat so items can be moved between lists
+
 app.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
   _src = null
   _target = null
@@ -75,11 +79,9 @@ app.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
         )
 
       $rootScope.$on 'rmaps-drag-start', ->
-        # console.log 'rmaps-drag-start'
         angular.element(el).addClass 'rmaps-drop-target'
 
       $rootScope.$on 'rmaps-drag-end', ->
-        # console.log 'rmaps-drag-end'
         angular.element(el).removeClass 'rmaps-drop-target'
         angular.element(el).removeClass 'rmaps-drag-over'
   }

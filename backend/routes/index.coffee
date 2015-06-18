@@ -119,12 +119,9 @@ routesConfig =
         getColumnList:
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
-        getLookups:
-            method: 'get'
-            # middleware: auth.requireLogin(redirectOnFail: true)
         getLookupTypes:
             method: 'get'
-            # middleware: auth.requireLogin(redirectOnFail: true)
+            middleware: auth.requireLogin(redirectOnFail: true)
     mls_normalization:
         getMlsRules:
             method: 'get'
