@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
+Promise = require 'bluebird'
 require '../services/mlsConfig.coffee'
 require '../services/normalize.coffee'
 require '../directives/dragdrop.coffee'
@@ -10,12 +11,10 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
   $scope.$state = $state
 
   $scope.mlsData =
-    current: {}
+    current: null
 
   $scope.fieldData =
-    current: {}
-
-  $scope.columns = []
+    current: null
 
   $scope.transformOptions = [
     { label: 'Uppercase', value: 'forceUpperCase' },
@@ -23,44 +22,54 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     { label: 'Init Caps', value: 'forceInitCaps' }
   ];
 
+  $scope.allCategories = {}
+
   $scope.categories = [
-      group: 'hidden'
+      list: 'hidden'
       label: 'Hidden'
     ,
-      group: 'general'
+      list: 'general'
       label: 'General'
     ,
-      group: 'details'
+      list: 'details'
       label: 'Details'
     ,
-      group: 'listing'
+      list: 'listing'
       label: 'Listing'
     ,
-      group: 'building'
+      list: 'building'
       label: 'Building'
     ,
-      group: 'lot'
+      list: 'lot'
       label: 'Lot'
     ,
-      group: 'location'
+      list: 'location'
       label: 'Location & Schools'
     ,
-      group: 'dimensions'
+      list: 'dimensions'
       label: 'Room Dimensions'
     ,
-      group: 'restrictions'
+      list: 'restrictions'
       label: 'Taxes, Fees, and Restrictions'
     ,
-      group: 'contacts'
+      list: 'contacts'
       label: 'Listing Contacts (realtor only)'
     ,
-      group: 'realtor'
+      list: 'realtor'
       label: 'Listing Details (realtor only)'
     ,
-      group: 'sale'
+      list: 'sale'
       label: 'Sale Details (realtor only)'
   ].map (c) ->
+    $scope.allCategories[c.list] = c
     _.extend c, items: []
+
+  $scope.unassigned =
+    list: 'unassigned'
+    label: 'Unassigned'
+    items: []
+
+  $scope.allFields = {}
 
   # Load list of MLS
   rmapsMlsService.getConfigs()
@@ -70,14 +79,40 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
   # Load saved MLS config and MLS field list
   $scope.selectMls = () ->
     config = $scope.mlsData.current
-    rmapsNormalizeService.getRules config.id
-    .then (rules) ->
-      # todo: place rules into categories here
-
-    rmapsMlsService.getColumnList config.id, config.main_property_data.db, config.main_property_data.table
-    .then (columns) ->
-      $scope.columns = columns
-      # todo: create un-assigned rules for any fields that weren't already configured
+    $scope.mlsLoading =
+      rmapsNormalizeService.getRules(config.id)
+      .then (rules) ->
+        _.forEach rules, (rule) ->
+          # console.log rule
+          if rule.list == 'base'
+            # todo: filter fields
+          else
+            list = $scope.allCategories[rule.list] || $scope.unassigned
+            if !rule.input
+              $scope.allFields[rule.output] = rule
+              rule.label = rule.output
+              list.items.push(rule)
+            else if _.isString rule.input
+              $scope.allFields[rule.input] = rule
+              rule.label = rule.input
+              list.items.push(rule)
+            # else if _.isArray rule.input
+              # todo: composite
+            # else if _.isObject rule.input
+              # todo: composite
+        rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
+      .then (columns) ->
+        _.forEach columns, (c) ->
+          # console.log c
+          rule = $scope.allFields[c.LongName]
+          if rule and not rule.LongName
+            # console.log 'matched', c.LongName
+            _.extend rule, c
+            rule.label = c.LongName
+          else
+            $scope.unassigned.items.push(c)
+            c.label = c.LongName
+            # todo load defaults
 
   # Show field options
   $scope.selectField = (field) ->
@@ -86,8 +121,8 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     field.type = lookupType(field)
     if not field.vOptions
       field.vOptions = {}
-    if field.type?.name == 'string' and field.Interpretation.indexOf('Lookup') == 0
-      rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.SystemName
+    if field.type?.name == 'string' and field.Interpretation.indexOf('Lookup') == 0 and not field.lookups
+      $scope.fieldLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.SystemName
       .then (lookups) ->
         field.lookups = lookups
 
