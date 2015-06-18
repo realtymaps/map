@@ -32,17 +32,11 @@ div.normalize-container
     div.col-md-12
       h4 Field Validation
       div.row
-        div.col-md-3 Long name:
+        div.col-md-3 RETS Name:
         div.col-md-9 {{fieldData.current.LongName}}
       div.row
-        div.col-md-3 System name:
-        div.col-md-9 {{fieldData.current.SystemName}}
-      div.row
         div.col-md-3 Data Type:
-        div.col-md-9 {{fieldData.current.DataType}}
-      div.row
-        div.col-md-3 Interpretation:
-        div.col-md-9 {{fieldData.current.Interpretation}}
+        div.col-md-9 {{fieldData.current.type.label}}
       div.row
         div.col-md-3 Alias:
         div.col-md-9
@@ -73,13 +67,14 @@ div.normalize-container
           div.col-md-3 Transform
           div.col-md-9
             select(ng-model="fieldData.current.vOptions.transformString" ng-options="option.value as option.label for option in transformOptions" ng-change="getTransform()")
+              option(value="") None
         div.row(ng-show="fieldData.current.lookups")
           div.col-md-3 Replace values with RealtyMaps values (Lookup)
           div.col-md-9
         div.row(ng-repeat="lookup in fieldData.current.lookups")
-          div.col-md-3 {{lookup.LongValue}} ({{lookup.ShortValue}})
+          div.col-md-3 {{lookup.LongValue}}
           div.col-md-9
-            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.vOptions.mapString[lookup.ShortValue]" ng-change="getTransform()")
+            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.vOptions.mapString[lookup.LongValue]" ng-change="getTransform()")
 
     div.col-md-12
       h4 Field Transform

@@ -22,10 +22,10 @@ app.directive 'rmapsListInput', [ () ->
           ctrl.$formatters.push (value) ->
             if angular.isArray(value)
               if attr.rmapsListInput != 'multi'
+                value.join ', '
+              else
                 value.map (r) ->
                   r.join ', '
                 .join '\n'
-              else
-                r.join ', '
     }
 ]
