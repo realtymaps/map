@@ -46,37 +46,48 @@ div.normalize-container
       div.row
         div.col-md-3 Alias:
         div.col-md-9
-          input(type="text" ng-model="fieldData.current.alias" placeholder="")
+          input(type="text" ng-model="fieldData.current.vOptions.alias" ng-change="getTransform()")
       div(ng-show="fieldData.current.Interpretation == 'Number'")
         div.row
           div.col-md-3 0 (zero) counts as null
           div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.nullZero" checked="checked")
+            input(type="checkbox" ng-model="fieldData.current.vOptions.nullZero" ng-change="getTransform()")
         div.row
           div.col-md-3 Specific value counts as null
           div.col-md-9
-            input(type="text" ng-model="fieldData.current.nullNumber" placeholder="example: -1")
+            input(type="text" ng-model="fieldData.current.vOptions.nullNumber" placeholder="example: -1" ng-change="getTransform()")
         div.row(ng-show="fieldData.current.DataType == 'Decimal'")
           div.col-md-3 Round / truncate decimal
           div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.floorDecimal" checked="checked")
+            input(type="checkbox" ng-model="fieldData.current.vOptions.floorDecimal" ng-change="getTransform()")
       div(ng-show="fieldData.current.DataType == 'Character'")
         div.row
           div.col-md-3 Empty counts as null
           div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.nullEmpty" checked="checked")
+            input(type="checkbox" ng-model="fieldData.current.vOptions.nullEmpty" ng-change="getTransform()")
         div.row
           div.col-md-3 Specific value(s) count as null
           div.col-md-9
-            input(type="text" ng-model="fieldData.current.nullString" rmaps-list-input placeholder="no, false, n/a")
+            input(type="text" ng-model="fieldData.current.vOptions.nullString" rmaps-list-input placeholder="no, false, n/a" ng-change="getTransform()")
         div.row
           div.col-md-3 Transform
           div.col-md-9
-            select(ng-model="fieldData.current.transformString" ng-options="option.label as option.value for option in transformOptions")
+            select(ng-model="fieldData.current.vOptions.transformString" ng-options="option.value as option.label for option in transformOptions" ng-change="getTransform()")
         div.row(ng-show="fieldData.current.lookups")
           div.col-md-3 Replace values with RealtyMaps values (Lookup)
           div.col-md-9
         div.row(ng-repeat="lookup in fieldData.current.lookups")
           div.col-md-3 {{lookup.LongValue}} ({{lookup.ShortValue}})
           div.col-md-9
-            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.mapString")
+            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.vOptions.mapString[lookup.ShortValue]" ng-change="getTransform()")
+
+    div.col-md-12
+      h4 Field Transform
+      div.row
+        div.col-md-3 Enable editing (advanced)
+        div.col-md-9
+          input(type="checkbox" ng-model="fieldData.current.advanced" ng-change="getTransform()")
+      div.row
+        div.col-md-12
+          textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.advanced")
+
