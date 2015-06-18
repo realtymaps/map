@@ -23,6 +23,7 @@ module.exports =
       throw new PartiallyHandledError(error)
 
   getById: (id) ->
+    logger.info "#### mls_config service: getById"
     knex.table(tables.mlsConfig)
     .where(id: id)
     .then (data) ->

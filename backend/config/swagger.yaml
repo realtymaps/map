@@ -580,6 +580,31 @@ paths:
           schema:
             $ref: "#/definitions/ExpressError"
 
+/mls/{mlsId}/data:
+    x-swagger-router-controller: "route.mls"
+    get:
+      tags:
+        - MLS Data Acquisition
+      operationId: getDataDump
+      summary: Dump of MLS data for usage
+      parameters:
+        - name: mlsId
+          in: path
+          type: string
+          required: true
+          description: MLS identifier (eg. swflmls)
+      responses:
+        200:
+          description: all current MLS data
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MlsData"
+        500:
+          description: Unexpected error
+          schema:
+            $ref: "#/definitions/ExpressError"
+
 definitions:
   MlsConfig:
     type: 'object'
@@ -672,6 +697,8 @@ definitions:
         type: string
       DataType:
         type: string
+  MlsData:
+  
   ExpressError:
     required:
       - alert

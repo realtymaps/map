@@ -119,6 +119,9 @@ routesConfig =
         getColumnList:
             method: 'get'
             middleware: auth.requireLogin(redirectOnFail: true)
+        getDataDump:
+            method: 'get'
+            middleware: auth.requireLogin(redirectOnFail: true)
     mls_normalization:
         getMlsRules:
             method: 'get'
