@@ -140,23 +140,9 @@ loadRetsTableUpdates = (subtask, options) ->
       # always log out the RETS client when we're done
       retsClient.logout()
 
-_getData = (client, database, table, momentThreshold) ->
-  logger.info "#### mlsHelper: _getData"
-  # if !momentThreshold?
-  #   momentThreshold = moment.utc(new Day(0)).format(options.retsQueryTemplate)
-
-  # query for any data newer than momentThreshold
-  console.log "#### _getData database:"
-  console.log database
-  console.log "#### _getData table:"
-  console.log table
-
-
-  client.search.query(database, table, momentThreshold)
-
+_getData = (client, database, table, momentThreshold, queryOptions) ->
+  client.search.query(database, table, momentThreshold, queryOptions)
   .catch isUnhandled, (error) ->
-    console.log '#### _getData error:'
-    console.log error
     if error.replyCode == "20201"
       # code for 0 results, not really an error (DMQL is a clunky language)
       return []
@@ -164,17 +150,13 @@ _getData = (client, database, table, momentThreshold) ->
     # code for too many results, must manually paginate or something to get all the data
     throw new PartiallyHandledError(error, "failed to query RETS system")
 
-getDataDump = (mlsInfo) ->
-  logger.info "#### mlsHelper: getDataDump"
+getDataDump = (mlsInfo, limit=1000) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
   .then (retsClient) ->
     momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
-    _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: 1000)
-    # list = [
-    #   { "test": "0.00", "test2": "None", "test3": "str1" },
-    #   { "test": "3.00", "test2": "2", "test3": "" }
-    # ]
-    # list
+    # _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
+    list = [{"test1": 1}]
+    list
 
 _getRetsClient = (loginUrl, username, password) ->
   Promise.try () ->
@@ -231,7 +213,6 @@ getColumnList = (serverInfo, databaseName, tableName) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType']
     .finally () ->
       retsClient.logout()
-
 
 _getValidations = (dataSourceId) ->
   tables.config.dataNormalization()

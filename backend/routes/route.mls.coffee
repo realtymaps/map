@@ -5,7 +5,6 @@ mlsConfigService = require '../services/service.mls_config'
 
 module.exports =
   getDatabaseList: (req, res, next) ->
-    logger.info 'mls.getDatabaseList', req.params.mlsId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -24,7 +23,6 @@ module.exports =
             500
 
   getTableList: (req, res, next) ->
-    logger.info 'mls.getTableList', req.params.mlsId, req.params.databaseId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -43,7 +41,6 @@ module.exports =
             500
 
   getColumnList: (req, res, next) ->
-    logger.info 'mls.getColumnList', req.params.mlsId, req.params.databaseId, req.params.tableId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -62,7 +59,6 @@ module.exports =
             500
 
   getDataDump: (req, res, next) ->
-    logger.info 'mls.getDataDump', req.params.mlsId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -71,13 +67,9 @@ module.exports =
             msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
           404
       else
-        console.log "#### mlsConfig"
-        console.log mlsConfig
-        retsHelper.getDataDump mlsConfig#, req.params.databaseId, req.params.tableId
+        limit = if req.query.limit? then req.query.limit else 1000
+        retsHelper.getDataDump mlsConfig, limit
         .then (list) ->
-          # console.log "#### list:"
-          # console.log list
-          # res.attachment('testing.csv')
           resObj = new ExpressResponse(list)
           resObj.format = "csv"
           next resObj
