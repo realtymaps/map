@@ -1,5 +1,3 @@
-db = require('../config/dbs').properties
-PropertyDetails = require "../models/model.propertyDetails"
 Promise = require "bluebird"
 logger = require '../config/logger'
 config = require '../config/config'
@@ -7,6 +5,7 @@ validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers'
 filterStatuses = require '../enums/filterStatuses'
 _ = require 'lodash'
+tables = require '../config/tables'
 
 
 validators = validation.validators
@@ -52,12 +51,9 @@ minMaxes = _.transform(minMaxValidations, makeMinMaxes)
 
 transforms = _.extend {}, otherValidations, minMaxes
 
-_tableName = sqlHelpers.tableName(PropertyDetails)
-
 
 _getDefaultQuery = ->
-  sqlHelpers.select(db.knex, "filter", true, 'distinct on (rm_property_id)')
-  .from(_tableName)
+  sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
   # logger.debug filters, true
@@ -113,8 +109,6 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
     query
 
 module.exports =
-  tableName:_tableName
-
   getDefaultQuery: _getDefaultQuery
 
   validateAndTransform: (state, rawFilters) ->

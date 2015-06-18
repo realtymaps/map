@@ -6,6 +6,8 @@ Encryptor = require '../util.encryptor'
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 jobQueue = require '../util.jobQueue'
 _ = require 'lodash'
+tables = require '../../config/tables'
+
 
 _getCreds: (subtask) ->
     taskData = JSON.parse subtask.task_data
@@ -26,7 +28,7 @@ _subtasks =
         #should there not be a column to indicate that imports have started for this history item?
         uploadToParcelsDb(subtask.data, _getCreds(subtask))
         .then ({invalidCtr, insertsCtr, updatesCtr}) ->
-            dataHistoryQuery
+            tables.jobQueue.dataLoadHistory()
             .update
                 inserted_rows: insertsCtr
                 updated_rows: updatesCtr

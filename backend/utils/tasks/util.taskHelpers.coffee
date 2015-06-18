@@ -2,17 +2,8 @@
 # in a general util module
 
 _ = require 'lodash'
-jobQueue = require '../util.jobQueue'
+tables = require '../../config/tables'
 dbs = require '../../config/dbs'
-
-
-knex = jobQueue.knex
-
-
-tables =
-    dataLoadHistory: 'data_load_history'
-    dataNormalizationConfig: 'data_normalization_config'
-    mlsData: 'mls_data'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -28,25 +19,13 @@ getLastStartTime = (taskName, successOnly=true) ->
         current: false
     if successOnly
         criteria.status = 'success'
-    knex
-    .table(jobQueue.tables.taskHistory)
+    tables.jobQueue.taskHistory()
     .max('started AS last_start_time')
     .where(criteria)
     .then (result) ->
         result?[0]?.last_start_time || new Date(0)
 
-
-createDataHistoryEntry = (entry) ->
-    # insert a new entry into the data load history table -- this will be used for the raw table cleanup task, as
-    # well as monitoring for problems with row parsing/validation
-    dbs.properties.knex
-    .insert entry
-    .into(tables.dataLoadHistory)
-
-
-dataHistoryQuery = () ->
-    dbs.properties.knex(tables.dataLoadHistory)
-
+        
 createRawTempTable = (tableName, textFields, jsonFields) ->
     dbs.properties.knex.schema.createTable tableName, (table) ->
         table.increments('rm_raw_id').notNullable()
@@ -59,9 +38,6 @@ createRawTempTable = (tableName, textFields, jsonFields) ->
 
 
 module.exports =
-    tables: tables
     getLastStartTime: getLastStartTime
-    createDataHistoryEntry: createDataHistoryEntry
     createRawTempTable: createRawTempTable
     getRawTableName: getRawTableName
-    dataHistoryQuery: dataHistoryQuery

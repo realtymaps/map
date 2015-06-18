@@ -1,7 +1,7 @@
 mlsHelpers = require '../util.mlsHelpers'
-taskHelpers = require './util.taskHelpers'
 jobQueue = require '../util.jobQueue'
 dbs = require '../../config/dbs'
+tables = require '../config/tables'
 
 
 # NOTE: This file is actually going to go away.  We don't want to have an explicit task file for each of the hundreds
@@ -17,10 +17,10 @@ loadDataRawMain = (subtask) ->
     rawTableSuffix: 'main'
     retsDbName: 'Property'
     retsTableName: 'RES'
-    retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+)]"
+    retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+),(ListingOnInternetYN=1)]"
     retsId: 'swflmls'
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, 'normalizeData')
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
   mlsHelpers.normalizeData subtask,
@@ -30,14 +30,14 @@ normalizeData = (subtask) ->
 finalizeDataPrep = (subtask) ->
   # slightly hackish raw query needed for count(distinct blah):
   # https://github.com/tgriesser/knex/issues/238
-  dbs.properties.knex(taskHelpers.tables.mlsData)
+  tables.propertyData.mls()
   .select(dbs.properties.knex.raw('count(distinct "rm_property_id")'))
   .where(batch_id: subtask.batch_id)
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, 'finalizeData')
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
-  dbs.properties.knex(taskHelpers.tables.mlsData)
+  tables.propertyData.mls()
   .distinct('rm_property_id')
   .select()
   .where(batch_id: subtask.batch_id)
@@ -49,12 +49,12 @@ finalizeData = (subtask) ->
       
 
 subtasks =
-  loadDataRawMain: loadDataRawMain
-  normalizeData: normalizeData
-  recordChangeCounts: mlsHelpers.recordChangeCounts
-  finalizeDataPrep: finalizeDataPrep
-  finalizeData: finalizeData
-  activateNewData: mlsHelpers.activateNewData
+  swflmls_loadDataRawMain: loadDataRawMain
+  swflmls_normalizeData: normalizeData
+  swflmls_recordChangeCounts: mlsHelpers.recordChangeCounts
+  swflmls_finalizeDataPrep: finalizeDataPrep
+  swflmls_finalizeData: finalizeData
+  swflmls_activateNewData: mlsHelpers.activateNewData
 
 module.exports =
   executeSubtask: (subtask) ->

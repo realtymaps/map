@@ -96,7 +96,7 @@ _getLat = (objOrArray) ->
 _getLon = (objOrArray) ->
     _getPartialPoint(objOrArray, 1, 'lon')
 
-_whereInBounds = (query, column, bounds) ->
+whereInBounds = (query, column, bounds) ->
   results = {}
   if bounds.length > 2
     # it must be a user-specified boundary
@@ -121,7 +121,7 @@ _whereInBounds = (query, column, bounds) ->
     results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
   _whereRawSafe query, results
 
-_getClauseString = (query, remove = /.*where/) ->
+getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
 whereIn = (query, column, values) ->
@@ -148,58 +148,65 @@ whereNotIn = (query, column, values) ->
 orWhereNotIn = (query, column, values) ->
   query.orWhere () -> whereNotIn(@, column, values)
 
+between = (query, column, min, max) ->
+  if min and max
+    query.whereBetween(column, [min, max])
+  else if min
+    query.where(column, '>=', min)
+  else if max
+    query.where(column, '<=', max)
+
+tableName = memoize (model) ->
+  model.query()._single.table
+
+ageOrDaysFromStartToNow = (query, listingAge, beginDate, operator, val) ->
+  _whereRawSafe query,
+    sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
+    bindings: [ val ]
+
+orderByDistanceFromPoint = (query, column, point) ->
+  # order by distance from point
+  # http://boundlessgeo.com/2011/09/indexed-nearest-neighbour-search-in-postgis/
+  #geom <-> st_setsrid(st_makepoint(-90,40),4326)
+  _orderByRawSafe query,
+    sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
+    bindings: [point.longitude, point.latitude]
+
+allPatternsInAnyColumn = (query, patterns, columns) ->
+  patterns.forEach (pattern) ->
+    query.where () ->
+      subquery = @
+      columns.forEach (column) ->
+        _orWhereRawSafe subquery,
+          sql: "#{column} ~* ?"
+          bindings: [ pattern ]
+
+select = (knex, which, passedFilters=null, prepend='') ->
+  prepend += ' ' if prepend?
+  extra = ''
+  if passedFilters
+    extra = ", #{passedFilters} as \"passedFilters\""
+  knex.select(knex.raw(prepend + _columns[which] + extra))
+
+singleRow = (q) -> Promise.try ->
+  errMsg = 'Expected a Single Result and '
+  q.then (rows) ->
+    throw errMsg + 'rows are empty!' unless rows?.length
+    ret = rows[0]
+    throw errMsg + 'row is undefined' unless ret?
+    ret
+  
 module.exports =
-
-  between: (query, column, min, max) ->
-    if min and max
-      query.whereBetween(column, [min, max])
-    else if min
-      query.where(column, '>=', min)
-    else if max
-      query.where(column, '<=', max)
-
-  tableName: memoize (model) ->
-    model.query()._single.table
-
-  ageOrDaysFromStartToNow: (query, listingAge, beginDate, operator, val) ->
-    _whereRawSafe query,
-      sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
-      bindings: [ val ]
-
-  orderByDistanceFromPoint: (query, column, point) ->
-    # order by distance from point
-    # http://boundlessgeo.com/2011/09/indexed-nearest-neighbour-search-in-postgis/
-    #geom <-> st_setsrid(st_makepoint(-90,40),4326)
-    _orderByRawSafe query,
-      sql: "#{column} <-> st_setsrid(st_makepoint(?,?),#{coordSys.UTM})"
-      bindings: [point.longitude, point.latitude]
-
-  allPatternsInAnyColumn: (query, patterns, columns) ->
-    patterns.forEach (pattern) ->
-      query.where () ->
-        subquery = @
-        columns.forEach (column) ->
-          _orWhereRawSafe subquery,
-            sql: "#{column} ~* ?"
-            bindings: [ pattern ]
-
-  select: (knex, which, passedFilters=null, prepend='') ->
-    prepend += ' ' if prepend?
-    extra = ''
-    if passedFilters
-      extra = ", #{passedFilters} as \"passedFilters\""
-    knex.select(knex.raw(prepend + _columns[which] + extra))
-
-  singleRow:(q) -> Promise.try ->
-      errMsg = 'Expected a Single Result and '
-      q.then (rows) ->
-          throw errMsg + 'rows are empty!' unless rows?.length
-          ret = rows[0]
-          throw errMsg + 'row is undefined' unless ret?
-          ret
+  between: between
+  tableName: tableName
+  ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
+  orderByDistanceFromPoint: orderByDistanceFromPoint
+  allPatternsInAnyColumn: allPatternsInAnyColumn
+  select: select
+  singleRow: singleRow
   whereIn: whereIn
   orWhereIn: orWhereIn
   whereNotIn: whereNotIn
   orWhereNotIn: orWhereNotIn
-  whereInBounds: _whereInBounds
-  getClauseString: _getClauseString
+  whereInBounds: whereInBounds
+  getClauseString: getClauseString
