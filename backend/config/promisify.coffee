@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require './logger'
+
 
 module.exports = {}
 
@@ -19,18 +19,11 @@ bcrypt.compareAsync = Promise.promisify(bcrypt.compare)
 # we don't have access to promisify the entire session class, so we have to
 # export it as middleware and promisify each instance
 promisifySession = (req, res) -> Promise.try () ->
-  logger.debug "promisifySession"
   Promise.promisifyAll(req.session)
-
   req.session.regenerateAsyncImpl = req.session.regenerateAsync
-
   req.session.regenerateAsync = () ->
-    logger.debug "session.regenerateAsync"
-
-    # logger.debug "regenerateAsyncImpl #{req.session.regenerateAsyncImpl}"
     req.session.regenerateAsyncImpl()
     .then () ->
-      logger.debug "regenerateAsyncImpl.then"
       promisifySession(req, res)
   Promise.resolve()
 
