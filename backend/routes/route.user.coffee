@@ -8,7 +8,6 @@ userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
-_ = require 'lodash'
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
@@ -18,9 +17,9 @@ login = (req, res, next) -> Promise.try () ->
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
-      logger.debug "attempting session regenerateAsync"
+      # logger.debug "attempting session regenerateAsync"
       req.session.regenerateAsync()
-      logger.debug "post session regenerateAsync"
+      # logger.debug "post session regenerateAsync"
   else
     promise = Promise.resolve()
 
