@@ -140,8 +140,8 @@ loadRetsTableUpdates = (subtask, options) ->
       # always log out the RETS client when we're done
       retsClient.logout()
 
-_getData = (client, database, table, momentThreshold, queryOptions) ->
-  client.search.query(database, table, momentThreshold, queryOptions)
+_getData = (client, database, table, dmqlQueryString, queryOptions) ->
+  client.search.query(database, table, dmqlQueryString, queryOptions)
   .catch isUnhandled, (error) ->
     if error.replyCode == "20201"
       # code for 0 results, not really an error (DMQL is a clunky language)
