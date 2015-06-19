@@ -13,16 +13,18 @@ app.factory 'validatorBuilder', () ->
     # handle primitave types
     if _.every(_.values(vOptions), (v) -> typeof v != 'object')
       JSON.stringify(vOptions)
+    else
+      JSON.stringify(vOptions)
 
 
   _getValidationString = (type, vOptions) ->
-    vOptionsStr = getOptionsString(vOptions);
+    vOptionsStr = _getOptionsString(vOptions);
     "validation.#{type}(#{vOptionsStr})"
 
 
   getTransform = (options) ->
     #   options:
-    #     
+    #
     #     type: integer | float | string | fips | choice | currency | ...
     #       Maps to a validation handler.
     #       EG if type = "integer", we will expect:
@@ -34,5 +36,5 @@ app.factory 'validatorBuilder', () ->
     #     choices:
     #       key-value mapping for choice field
     #       present if type is choices
-    #     
+    #
     _getValidationString(options.type, options.vOptions)

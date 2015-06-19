@@ -30,6 +30,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'main', parent: null, url: adminRoutes.index, sticky: true
     buildState 'home'
     buildState 'mls'
+    buildState 'normalize'
 
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
