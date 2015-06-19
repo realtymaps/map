@@ -1,0 +1,30 @@
+#!/bin/bash
+
+RUN_AS=${1:-'ubuntu'}
+MY_PATH=`dirname "$0"`
+APP_NAME="map"
+
+#SERVER_LIST=$(cat "$MY_PATH"/aws_serverlist)
+
+echo Process will run as "$RUN_AS"
+echo
+
+for i in $(cat "$MY_PATH"/aws_serverlist)
+do
+  echo $i
+  echo ssh -i ~/.ssh/rmaps.locust.pem -t $RUN_AS@$i
+  ssh -i ~/.ssh/rmaps.locust.pem -t $RUN_AS@$i 'sudo mkdir -p /opt/swarm/www/utils && sudo chmod 777 -R /opt/swarm/$APP_NAME  && rm -f /opt/swarm/$APP_NAME/* && rm -f /opt/swarm/$APP_NAME/utils/*'
+  echo "$MY_PATH"/python_scripts/
+  for j in $(echo `ls "$MY_PATH"/python_scripts/`)
+  do
+    scp -i ~/.ssh/rmaps.locust.pem  "$MY_PATH"/python_scripts/$j $RUN_AS@$i:/opt/swarm/$APP_NAME
+  done
+
+  for j in $(echo `ls "$MY_PATH"/python_scripts/utils/`)
+  do
+    scp -i ~/.ssh/rmaps.locust.pem  "$MY_PATH"/python_scripts/utils/$j $RUN_AS@$i:/opt/swarm/$APP_NAME/utils
+  done
+
+  ssh -i ~/.ssh/rmaps.locust.pem  -t $RUN_AS@$ 'sudo chmod 755 -R /opt/swarm/$APP_NAME'
+  ssh -i ~/.ssh/rmaps.locust.pem  -t $RUN_AS@$i 'sudo chown -R root:root /opt/swarm/$APP_NAME'
+done

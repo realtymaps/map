@@ -1,0 +1,12 @@
+#!/bin/bash
+RUNAS=${1:-$(whoami)}
+
+for i in $(echo {1,2,3,8,9})
+do
+  echo
+	echo killing locust on server testbox$i.tl.com as user $RUNAS
+	echo
+    #if [[ $i != 3 ]]; then
+  	  ssh -i ~/.ssh/id_rsa -t $RUNAS@testbox$i.tl.com 'sudo killall locust'
+    #fi
+done
