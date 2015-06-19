@@ -13,4 +13,6 @@ curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-
 
 echo ./bash_profile >> $HOME/.bash_profile
 
-pyenv install 2.7.8
+pyenv install 2.7.9
+
+pyenv global 2.7.9
