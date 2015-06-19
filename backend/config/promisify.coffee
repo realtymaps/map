@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-
+logger = require './logger'
 
 module.exports = {}
 
@@ -19,11 +19,18 @@ bcrypt.compareAsync = Promise.promisify(bcrypt.compare)
 # we don't have access to promisify the entire session class, so we have to
 # export it as middleware and promisify each instance
 promisifySession = (req, res) -> Promise.try () ->
+  logger.debug "promisifySession"
   Promise.promisifyAll(req.session)
+
   req.session.regenerateAsyncImpl = req.session.regenerateAsync
+
   req.session.regenerateAsync = () ->
-    req.session.regenerateAsyncImpl
+    logger.debug "session.regenerateAsync"
+
+    # logger.debug "regenerateAsyncImpl #{req.session.regenerateAsyncImpl}"
+    req.session.regenerateAsyncImpl()
     .then () ->
+      logger.debug "regenerateAsyncImpl.then"
       promisifySession(req, res)
   Promise.resolve()
 
@@ -39,7 +46,7 @@ module.exports.sessionMiddleware = promisifySession
 # is spread:true, which will cause an array resolution to be passed as a splat
 # to the callback rather than as an array.  For details on options available:
 # https://github.com/petkaantonov/bluebird/blob/master/API.md#nodeifyfunction-callback--object-options---promise
-# 
+#
 # TL;DR: Returns a nodeback-style version of the passed function.  If there
 # are multiple values to pass to the nodeback, pass {spread: true} to the
 # wrapper call.
