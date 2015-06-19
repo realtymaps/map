@@ -25,7 +25,7 @@ gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'webpackAdmin', 'ex
 
 gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
-gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'webpackAdmin', 'minify', 'gzip', 'express'
+gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'webpackAdmin', 'minify', 'gzip'
 
 gulp.task 'default', gulp.series 'develop'
 
