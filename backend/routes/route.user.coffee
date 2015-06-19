@@ -9,7 +9,6 @@ ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
 
-
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
   if req.user
@@ -18,7 +17,9 @@ login = (req, res, next) -> Promise.try () ->
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
+      # logger.debug "attempting session regenerateAsync"
       req.session.regenerateAsync()
+      # logger.debug "post session regenerateAsync"
   else
     promise = Promise.resolve()
 
@@ -39,7 +40,9 @@ login = (req, res, next) -> Promise.try () ->
       }, httpStatus.UNAUTHORIZED)
     else
       req.user = user
+      logger.debug "session: #{req.session}"
       req.session.userid = user.id
+
       userUtils.cacheUserValues(req)
       .then () ->
         req.session.saveAsync()
@@ -85,7 +88,7 @@ identity = (req, res, next) ->
     res.json
       identity: null
 
-      
+
 updateState = (req, res, next) ->
   userService.updateUserState(req.session, req.body)
   .then () ->
