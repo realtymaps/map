@@ -155,6 +155,8 @@ getDataDump = (mlsInfo, limit=1000) ->
   .then (retsClient) ->
     momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
     _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
+    .finally () ->
+      retsClient.logout()
 
 _getRetsClient = (loginUrl, username, password) ->
   Promise.try () ->
