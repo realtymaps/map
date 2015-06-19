@@ -69,7 +69,12 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     label: 'Unassigned'
     items: []
 
-  $scope.allFields = {}
+  $scope.allCategories['base'] =
+    list: 'base'
+    label: 'Filters'
+    items: []
+
+  $scope.allRules = {}
 
   # Load list of MLS
   rmapsMlsService.getConfigs()
@@ -82,37 +87,52 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     $scope.mlsLoading =
       rmapsNormalizeService.getRules(config.id)
       .then (rules) ->
-        _.forEach rules, (rule) ->
-          # console.log rule
-          if rule.list == 'base'
-            # todo: filter fields
+        # Regular rule
+        _.forEach _.where(rules, (r) -> !r.input?), (rule) ->
+          list = $scope.allCategories[rule.list]
+          if not $scope.allRules[rule.output]
+            $scope.allRules[rule.output] = rule
+            rule.label = rule.output
+            list.items.push(rule)
           else
-            list = $scope.allCategories[rule.list] || $scope.unassigned
-            if !rule.input
-              $scope.allFields[rule.output] = rule
-              rule.label = rule.output
-              list.items.push(rule)
-            else if _.isString rule.input
-              $scope.allFields[rule.input] = rule
-              rule.label = rule.input
-              list.items.push(rule)
-            # else if _.isArray rule.input
-              # todo: composite
-            # else if _.isObject rule.input
-              # todo: composite
+            _.extend $scope.allRules[rule.output], rule
+
+        addFilter = (rule, keys) ->
+          list = $scope.allCategories[rule.list]
+          _.forEach keys, (key) ->
+            if $scope.allRules[key]
+              $scope.allRules[key].assigned = true
+            else
+              $scope.unassigned.items.push(
+                $scope.allRules[key] =
+                assigned: true
+                label: rule.key
+              )
+          list.items.push $scope.allRules[rule.output] =
+            _.extend rule,
+            composite: true
+            label: rule.output
+
+        # Filter, simple
+        _.forEach _.where(rules, (r) -> _.isString r.input), (rule) ->
+          addFilter(rule, [rule.input])
+
+        # Filter, array
+        _.forEach _.where(rules, (r) -> _.isArray r.input), (rule) ->
+          addFilter(rule, rule.input)
+
+        # Filter, object
+        _.forEach _.where(rules, (r) -> _.isPlainObject r.input), (rule) ->
+          addFilter(rule, _.values(rule.input))
+
         rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
       .then (columns) ->
         _.forEach columns, (c) ->
-          # console.log c
-          rule = $scope.allFields[c.LongName]
+          rule = $scope.allRules[c.LongName]
           if rule and not rule.LongName
-            # console.log 'matched', c.LongName
-            _.extend rule, c
-            rule.label = c.LongName
+            _.extend rule, c, label: c.LongName
           else
-            $scope.unassigned.items.push(c)
-            c.label = c.LongName
-            # todo load defaults
+            $scope.unassigned.items.push _.extend c, label: c.LongName # todo load defaults
 
   # Show field options
   $scope.selectField = (field) ->
@@ -127,7 +147,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
         field.lookups = lookups
 
   # Move fields between categories
-  $scope.onDrop = (drag, drop, target) ->
+  $scope.onDropCategory = (drag, drop, target) ->
     _.pull drag.collection, drag.model
     drop.collection.splice _.indexOf(drop.collection, target), 0, drag.model
     $scope.$evalAsync()

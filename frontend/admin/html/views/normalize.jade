@@ -8,23 +8,32 @@ div.normalize-container
   div.row.panel(cg-busy="mlsLoading")
     div.col-md-12
       h4 Group Assignment
-    div.col-md-3.col-xs-2.field-container(rmaps-droppable="columns" on-drop="onDrop")
-      div.field(
-      ng-click="selectField(item)"
-      rmaps-draggable="item" rmaps-draggable-collection="columns"
-      ng-repeat="item in unassigned.items") {{item.label}}
-        span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
-         'datatype-number': item.Interpretation == 'Number', \
-         'datatype-yn': item.DataType == 'Boolean', \
-         'datatype-date': item.DataType == 'DateTime' }"
-         ng-show="item.DataType || item.Interpretation")
 
-    div.col-md-9.col-xs-10.category-container
+    div.col-md-2.col-xs-2.field-container
+      div.field.composite(
+      ng-click="selectFilter(item)"
+      ng-repeat="item in allCategories['base'].items") {{item.label}}
+
+    div.col-md-2.col-xs-2.field-container(
+      rmaps-droppable="unassigned.items" on-drop="onDropCategory")
+        div.field(
+        ng-class="{ 'assigned': item.assigned }"
+        ng-click="selectField(item)"
+        rmaps-draggable="item" rmaps-draggable-collection="unassigned.items"
+        ng-repeat="item in unassigned.items") {{item.label}}
+          span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
+           'datatype-number': item.Interpretation == 'Number', \
+           'datatype-yn': item.DataType == 'Boolean', \
+           'datatype-date': item.DataType == 'DateTime' }"
+           ng-show="item.DataType || item.Interpretation")
+
+    div.col-md-8.col-xs-10.category-container
       div.category(
-      rmaps-droppable="category.items" on-drop="onDrop"
+      rmaps-droppable="category.items" on-drop="onDropCategory"
       ng-repeat="category in categories track by category.label") {{ category.label }}
         div.field-list
           div.field(
+          ng-class="{ 'assigned': item.assigned }"
           ng-click="selectField(item)"
           rmaps-draggable="item" rmaps-draggable-collection="category.items"
           ng-repeat="item in category.items") {{item.label}}
