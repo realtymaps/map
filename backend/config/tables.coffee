@@ -5,7 +5,10 @@ _buildQueries = (tables) ->
   for id, tableSpecifier of tables
     do (id, tableSpecifier) ->
       [dbName, tableName] = tableSpecifier.split('.')
-      query = (transaction=dbs[dbName].knex) -> transaction(tableName)
+      query = (transaction=dbs[dbName].knex) ->
+        ret = transaction(tableName)
+        ret.raw = transaction.raw
+        ret
       query.tableName = tableName
       queries[id] = query
   queries
@@ -36,7 +39,7 @@ module.exports =
     sessionSecurity: 'users.session_security'
     user: 'users.auth_user'
     userState: 'users.user_state'
-    
+
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports
   module.exports[key] = _buildQueries(val)

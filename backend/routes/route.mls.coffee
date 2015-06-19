@@ -60,3 +60,22 @@ module.exports =
             alert:
               msg: error.message
             500
+
+  getLookupTypes: (req, res, next) ->
+    logger.info 'mls.getColumnList', req.params.mlsId, req.params.databaseId, req.params.lookupId
+    mlsConfigService.getById(req.params.mlsId)
+    .then (mlsConfig) ->
+      if !mlsConfig
+        next new ExpressResponse
+          alert:
+            msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
+          404
+      else
+        retsHelper.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
+        .then (list) ->
+          next new ExpressResponse(list)
+        .catch (error) ->
+          next new ExpressResponse
+            alert:
+              msg: error.message
+            500
