@@ -5,7 +5,7 @@ sudo apt-get update
 
 sudo apt-get install linux-headers-$(uname -r) build-essential
 
-sudo apt-get install libreadline6 libreadline6-dev libbz2-dev libsqlite3-dev libssl-dev
+sudo apt-get install libevent-dev python-all-dev libreadline6 libreadline6-dev libbz2-dev libsqlite3-dev libssl-dev
 
 sudo apt-get install git
 
