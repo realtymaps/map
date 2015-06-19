@@ -14,7 +14,7 @@ fi
 
 if [ -n "$IS_HEROKU" ]; then
   gulp prod
-  coffee ../backend/server.coffee
+  coffee /app/backend/server.coffee
 else
   gulp
 fi
