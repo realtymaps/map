@@ -39,7 +39,7 @@ module.exports =
         uploadToParcelsDb:        "#{apiBase}/parcel/upload"
         defineImports:            "#{apiBase}/parcel/defineimports"
     mls_config:
-        apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
+        apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation
         getAll:                 "#{apiBaseMlsConfig}"
         getById:                "#{apiBaseMlsConfig}/:id"
         update:                 "#{apiBaseMlsConfig}/:id"
@@ -51,20 +51,22 @@ module.exports =
     mls_normalization:
         getMlsRules:        "#{apiBaseMlsConfig}/:mlsId/rules"
         createMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
-        putMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
+        putMlsRules:        "#{apiBaseMlsConfig}/:mlsId/rules"
         deleteMlsRules:     "#{apiBaseMlsConfig}/:mlsId/rules"
         getListRules:       "#{apiBaseMlsConfig}/:mlsId/rules/:list"
         createListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
-        putListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
+        putListRules:       "#{apiBaseMlsConfig}/:mlsId/rules/:list"
         deleteListRules:    "#{apiBaseMlsConfig}/:mlsId/rules/:list"
         getRule:            "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
         updateRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
         deleteRule:         "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
     mls:
-        apiBaseMls: apiBaseMls # Exposed for Restangular instantiation (commented for now b/c it clobbers the loader here)
-        getDatabaseList:  "#{apiBaseMls}/:mlsId/databases"
-        getTableList:     "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
-        getColumnList:    "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
-        getLookupTypes:       "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
+        apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
+        getDatabaseList:    "#{apiBaseMls}/:mlsId/databases"
+        getTableList:       "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
+        getColumnList:      "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
+        getDataDump:        "#{apiBaseMls}/:mlsId/data"
+        getLookupTypes:     "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
+
 
     # hirefire secret value set from within backend/config/config.coffee
