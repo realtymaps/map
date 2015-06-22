@@ -7,7 +7,7 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
-PropertyDetails = require "../models/model.propertyDetails"
+tables = require '../config/tables'
 _ = require 'lodash'
 
 _getZoom = (position) ->

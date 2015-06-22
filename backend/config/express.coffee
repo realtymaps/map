@@ -76,7 +76,6 @@ app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 # enable flash messages
 app.use connectFlash()
 
-
 swaggerObject = require('js-yaml').load(require('fs').readFileSync(__dirname + '/swagger.yaml'))
 swagger.initializeMiddleware swaggerObject, (middleware) ->
   # This middleware is required by the other swagger middlewares
@@ -108,8 +107,9 @@ app.use (data, req, res, next) ->
       # status indicates that it is
       analysis = analyzeValue(data)
       logger.error (JSON.stringify(analysis,null,2))
-    payload = if data.payload? then data.payload else ""
-    return res.status(data.status).send payload
+
+    return data.send(res)
+
 
   # otherwise, it's probably a thrown Error
   analysis = analyzeValue(data)

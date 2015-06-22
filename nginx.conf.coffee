@@ -12,9 +12,11 @@ events {
 
 http {
   recursive_error_pages on;
-  
+
   gzip on;
-  gzip_comp_level 2;
+  gzip_vary on;
+  gzip_proxied any;
+  gzip_comp_level 9;
   gzip_min_length 512;
 
   server_tokens off;
@@ -39,22 +41,45 @@ http {
     server_name _;
     keepalive_timeout 5;
 
+    root "/app/_public";
+
+    location @node {
+      proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_set_header  Host $http_host;
+      proxy_redirect  off;
+      proxy_pass  http://app_server;
+    }
+
     location / {
       error_page 502 = @delayed_retry;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_redirect off;
-      proxy_pass http://app_server;
+      gzip_static on; # to serve pre-gzipped version
+      add_header        Cache-Control "public, must-revalidate, max-age=0";
+      expires           10m;
+      try_files $uri /$uri /rmap.html @node;
+    }
+
+    location ~ ^/(api|login)/ {
+      try_files $uri @node;
+    }
+
+    # we handle all root resources (non /assets/ resource files here and route to node root)
+    location ~* ^.+\.(woff|ttf|svg|htc|png){
+
+      gzip_static on; # to serve pre-gzipped version
+      expires           max;
+
+      add_header        Cache-Control "public";
+      add_header        Last-Modified "";
+
+      try_files $uri /$uri;
+
     }
 
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error
     location @delayed_retry {
       error_page 502 = @delayed_retry;
       delay #{process.env["STARTUP_RETRY_TIME"]}s;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-      proxy_set_header Host $http_host;
-      proxy_redirect off;
-      proxy_pass http://app_server;
+      try_files uri @node;
     }
   }
 }

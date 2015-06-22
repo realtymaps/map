@@ -82,7 +82,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     SessionSecurity.where(user_id: req.user.id, app: config.SESSION_SECURITY.app).fetchAll()
   .then (sessionSecurities) ->
     return sessionSecurities.toJSON()
-  
+
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     #logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
     if maxLogins <= sessionSecurities.length

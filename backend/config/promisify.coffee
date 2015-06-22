@@ -22,7 +22,7 @@ promisifySession = (req, res) -> Promise.try () ->
   Promise.promisifyAll(req.session)
   req.session.regenerateAsyncImpl = req.session.regenerateAsync
   req.session.regenerateAsync = () ->
-    req.session.regenerateAsyncImpl
+    req.session.regenerateAsyncImpl()
     .then () ->
       promisifySession(req, res)
   Promise.resolve()
@@ -39,7 +39,7 @@ module.exports.sessionMiddleware = promisifySession
 # is spread:true, which will cause an array resolution to be passed as a splat
 # to the callback rather than as an array.  For details on options available:
 # https://github.com/petkaantonov/bluebird/blob/master/API.md#nodeifyfunction-callback--object-options---promise
-# 
+#
 # TL;DR: Returns a nodeback-style version of the passed function.  If there
 # are multiple values to pass to the nodeback, pass {spread: true} to the
 # wrapper call.

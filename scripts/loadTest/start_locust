@@ -1,0 +1,35 @@
+#!/bin/bash
+RUN_AS=${1:-$(whoami)}
+
+
+SLAVE_CMD="nohup locust -f /opt/swarm//www/map_video_was.py --slave --master-host=testbox1.tl.com --host=http://10.1.10.195 &>/dev/null &"
+MASTER_CMD="nohup locust -f /opt/swarm/www/map_video_was.py --master --host=http://10.1.10.195 &>/dev/null &"
+
+start_instances()
+{
+  CMD=$1
+  SERVER=$2
+  INSTANCES=$3
+
+  echo "Running as '$RUN_AS', running command $CMD on server $SERVER $INSTANCES times"
+
+  for j in $(seq 1 "$INSTANCES")
+  do
+    ssh -i ~/.ssh/id_rsa -t "$RUN_AS"@"$SERVER" "$CMD" &>/dev/null &
+    echo slave instance "$j" running
+    sleep .25
+  done
+}
+#locust documentation specifies that a master should start first, and then slaves
+#https://github.com/locustio/locust/blob/master/docs/quickstart.rst
+
+#start master
+start_instances "$MASTER_CMD" testbox1.tl.com 1
+
+sleep 5
+
+#start slaves
+for i in $(echo {1,2,3,8,9})
+do
+  start_instances "$SLAVE_CMD" testbox$i.tl.com 4
+done

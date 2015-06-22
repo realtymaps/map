@@ -3,15 +3,16 @@ logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
-{getLastStartTime, createDataHistoryEntry} = require '../utils/tasks/util.taskHelpers'
-dataSourceType = 'parcels'
-{dataHistoryQuery} = require '../utils/tasks/util.taskHelpers'
+taskHelpers = require '../utils/tasks/util.taskHelpers'
+tables = require '../config/tables'
 
 
 DIGIMAPS =
     DIRECTORIES:[{name:"DELIVERIES"}, {name: "DMP_DELIVERY_", doParseDate:true}, {name:"ZIPS"}]
     FILE:{name:"Parcels_", appendFipsCode:true, ext:".zip"}
 
+DATA_SOURCE_TYPE = 'parcels'
+    
 _getClientFromDigiSettings = (digiMapsSettings) ->
     logger.debug digiMapsSettings
     if _.isFunction digiMapsSettings?.then
@@ -50,7 +51,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                     name: l.name
                     moment: moment(_numbersInString(l.name), 'YYYYMMDD').utc()
 
-                getLastStartTime(subtask.task_name)
+                taskHelpers.getLastStartTime(subtask.task_name)
                 .then (lastStartDate) ->
                     lastStartDate = moment(lastStartDate).utc()
                     folderObjs = _.filter folderObjs, (o) ->
@@ -78,7 +79,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                         ls?.forEach (l) ->
                             importsToAdd.push
                                 data_source_id: "#{lPath}/#{l.name}"
-                                data_source_type: dataSourceType
+                                data_source_type: DATA_SOURCE_TYPE
                                 batch_id: subtask.batch_id
 
                     .finally ->
@@ -95,7 +96,8 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
         .then -> #step 3
             logger.debug 'defineImports: step 3'
             # logger.debug importsToAdd
-            createDataHistoryEntry(importsToAdd)
+            tables.jobQueue.dataLoadHistory()
+            .insert(importsToAdd)
             importsToAdd
 
 _getParcelZipFileStream = (fullPath, digiMapsSettings) -> Promise.try ->

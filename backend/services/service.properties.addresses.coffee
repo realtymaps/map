@@ -1,5 +1,4 @@
 db = require('../config/dbs').properties
-Parcel = require "../models/model.parcels"
 Promise = require "bluebird"
 logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'
