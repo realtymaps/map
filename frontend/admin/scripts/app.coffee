@@ -20,6 +20,7 @@ app = window.angular.module appName, [
   'ngAnimate'
   'infinite-scroll'
   'restangular'
+  'cgBusy'
 ]
 
 module.exports = app

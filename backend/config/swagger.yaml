@@ -610,9 +610,8 @@ definitions:
   MlsNormalization:
     type: 'object'
     required:
-      - data_source_id
-      - list
-      - required
+      - config
+      - transform
     properties:
       data_source_id:
         type: string
@@ -625,6 +624,8 @@ definitions:
       required:
         type: boolean
       input:
+        type: object
+      config:
         type: object
       transform:
         type: string

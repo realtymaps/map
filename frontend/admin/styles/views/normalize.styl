@@ -14,8 +14,6 @@ body
 
 .panel
   border-radius 0
-  height 500px
-  border-bottom 1px solid gray
 
   .panel-body
     background-color white
@@ -28,13 +26,10 @@ body
 .field, .category
   border 2px solid transparent
   margin 3px
-  overflow hidden
-  text-overflow ellipsis
   display inline-block
   padding 6px 12px
   margin-bottom 0
   text-align center
-  white-space nowrap
   cursor pointer
   -webkit-user-select none
   -moz-user-select none
@@ -47,21 +42,19 @@ body
     color black
     background-color white
     padding 3px
-    border-radius 10px
+    border-radius 5px
     font-size 75%
     opacity 0.8
 
+    &:before
+      padding 0.25em
     &.datatype-string:before
-      padding 1em
       content: "abc"
     &.datatype-number:before
-      padding 1em
       content "123"
     &.datatype-yn:before
-      padding 1em
       content "yes/no"
     &.datatype-date:before
-      padding 1em
       content "date"
 
 .field
@@ -71,6 +64,17 @@ body
   color #fff
   background-color #5bc0de
   border-color #46b8da
+  &.assigned
+    background-color #aaa
+    border-color #999
+  &.composite:before
+    content 'RM'
+    background-color #313145
+    margin-right 1em
+    padding 3px
+    border-radius 5px
+    font-size 75%
+    opacity 0.8
 
 .category
   display inline-block
@@ -82,25 +86,40 @@ body
   background-color #f0ad4e
   border-color #eea236
 
+  .field-list
+    max-height 200px
+    overflow-y scroll
+
 .field-container, .category-container
   border 2px solid transparent
   overflow-y scroll
   height 450px
+  padding 2px
 
 .properties-container
-  height: auto
-  padding-bottom 1em
+  height 40%
+  overflow scroll
+  position fixed !important
+  bottom 0
+  width 80%
   color black
   .row
     min-height 30px
   input
     width 90%
 
+  -webkit-transition  0.5s all linear
+  transition all linear 0.5s
+  opacity 1
+
+.properties-container.ng-hide
+  opacity 0
+
 h4
   color black
 
 .category.rmaps-drop-target
-  border: 2px dashed #888
+  border  2px dashed #888
 
 .category.rmaps-drag-over, .field.rmaps-drag-over
   -webkit-filter invert(20%)
@@ -109,3 +128,17 @@ h4
 .transform
   width 100%
 
+.close-icon
+  position absolute
+  right 1em
+  top 1em
+  background-color lightgray
+  border-radius 0.5em
+  padding 0em 0.35em
+  font-weight bold
+  z-index 5
+  cursor pointer
+  -webkit-user-select none
+  -moz-user-select none
+  -ms-user-select none
+  user-select none

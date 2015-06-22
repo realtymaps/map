@@ -210,7 +210,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
     .then (response) ->
       _.map response.Fields, (r) ->
-        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation']
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
     .finally () ->
       retsClient.logout()
 

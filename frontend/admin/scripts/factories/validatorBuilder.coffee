@@ -2,23 +2,8 @@ app = require '../app.coffee'
 
 app.factory 'validatorBuilder', () ->
 
-  _getOptionsString = (vOptions) ->
-    # placeholder function for when we have to handle nested validations
-    # could be recursive if that makes sense
-    # returns regular json string if it's simple
-    #
-    # vOptions:
-    #   key-value pairs to deliver as arguments to validation
-
-    # handle primitave types
-    if _.every(_.values(vOptions), (v) -> typeof v != 'object')
-      JSON.stringify(vOptions)
-    else
-      JSON.stringify(vOptions)
-
-
   _getValidationString = (type, vOptions) ->
-    vOptionsStr = _getOptionsString(vOptions);
+    vOptionsStr = JSON.stringify(vOptions)
     "validation.#{type}(#{vOptionsStr})"
 
 
@@ -37,4 +22,14 @@ app.factory 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-    _getValidationString(options.type, options.vOptions)
+    transform = null
+    switch options.baseName
+      when 'bedrooms'
+        transform = 'validators.integer()'
+      #when 'status':
+        # special logic
+      # ...
+      else
+        transform = _getValidationString(options.type, options.vOptions)
+
+    transform
