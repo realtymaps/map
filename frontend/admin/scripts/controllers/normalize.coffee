@@ -1,13 +1,12 @@
 app = require '../app.coffee'
 _ = require 'lodash'
-Promise = require 'bluebird'
 require '../services/mlsConfig.coffee'
 require '../services/normalize.coffee'
 require '../directives/dragdrop.coffee'
 require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
 
-app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', ($scope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder) ->
+app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', ($scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents) ->
   $scope.$state = $state
 
   $scope.mlsData =
@@ -16,140 +15,114 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
   $scope.fieldData =
     current: null
 
-  $scope.transformOptions = [
-    { label: 'Uppercase', value: 'forceUpperCase' },
-    { label: 'Lowercase', value: 'forceLowerCase' },
-    { label: 'Init Caps', value: 'forceInitCaps' }
-  ];
+  $scope.transformOptions =
+    'Uppercase': 'forceUpperCase'
+    'Lowercase': 'forceLowerCase'
+    'Init Caps': 'forceInitCaps'
 
-  $scope.allCategories = {}
+  $scope.categories = {}
+  $scope.targetCategories = _.map
+    base: 'Base'
+    unassigned: 'Unassigned'
+    hidden: 'Hidden'
+    general: 'General'
+    details: 'Details'
+    listing: 'Listing'
+    building: 'Building'
+    lot: 'Lot'
+    location: 'Location & Schools'
+    dimensions: 'Room Dimensions'
+    restrictions: 'Taxes, Fees, and Restrictions'
+    contacts: 'Listing Contacts (realtor only)'
+    realtor: 'Listing Details (realtor only)'
+    sale: 'Sale Details (realtor only)',
+    (label, list) ->
+      label: label
+      items: $scope.categories[list] = []
 
-  $scope.categories = [
-      list: 'hidden'
-      label: 'Hidden'
-    ,
-      list: 'general'
-      label: 'General'
-    ,
-      list: 'details'
-      label: 'Details'
-    ,
-      list: 'listing'
-      label: 'Listing'
-    ,
-      list: 'building'
-      label: 'Building'
-    ,
-      list: 'lot'
-      label: 'Lot'
-    ,
-      list: 'location'
-      label: 'Location & Schools'
-    ,
-      list: 'dimensions'
-      label: 'Room Dimensions'
-    ,
-      list: 'restrictions'
-      label: 'Taxes, Fees, and Restrictions'
-    ,
-      list: 'contacts'
-      label: 'Listing Contacts (realtor only)'
-    ,
-      list: 'realtor'
-      label: 'Listing Details (realtor only)'
-    ,
-      list: 'sale'
-      label: 'Sale Details (realtor only)'
-  ].map (c) ->
-    $scope.allCategories[c.list] = c
-    _.extend c, items: []
-
-  $scope.unassigned =
-    list: 'unassigned'
-    label: 'Unassigned'
-    items: []
-
-  $scope.allCategories['base'] =
-    list: 'base'
-    label: 'Filters'
-    items: []
-
-  $scope.allRules = {}
-
-  # Load list of MLS
+  # Load MLS list
   rmapsMlsService.getConfigs()
   .then (configs) ->
     $scope.mlsConfigs = configs
 
-  # Load saved MLS config and MLS field list
+  allRules = {}
+
+  # Handles parsing existing rules for display
+  parseRules = (rules) ->
+
+    addRule = (rule, list) ->
+      _.extend rule,
+        label: rule.output
+        ordering: parseInt(rule.ordering, 10)
+      list.splice _.sortedIndex(list, rule, 'ordering'), 0, allRules[rule.output] = rule
+
+    addComplexRule = (rule, keys) ->
+      _.forEach keys, (key) ->
+        if allRules[key]
+          allRules[key].assigned = true
+        else
+          $scope.categories.unassigned.push(
+            allRules[key] =
+            assigned: true
+            label: rule.key
+          )
+      addRule _.extend(rule, composite: true), $scope.categories[rule.list]
+
+    # Regular rules
+    _.forEach _.where(rules, (r) -> !r.input?), (rule) ->
+      if not allRules[rule.output]
+        addRule rule, $scope.categories[rule.list]
+      else
+        $rootScope.$emit rmapsevents.alert.spawn, msg: "Duplicate rule for #{rule.output}!"
+
+    # Complex rules
+    _.forEach rules, (rule) ->
+      if _.isString rule.input
+        addComplexRule(rule, [rule.input])
+      else if _.isArray rule.input
+        addComplexRule(rule, rule.input)
+      else if _.isPlainObject rule.input
+        addComplexRule(rule, _.values(rule.input))
+
+  # Handles parsing RETS fields for display
+  parseFields = (fields) ->
+    _.forEach fields, (c) ->
+      _.extend c, label: c.LongName
+      rule = allRules[c.LongName]
+      if rule and not rule.LongName
+        _.extend rule, _.pick(c, ['label', 'DataType', 'Interpretation', 'LookupName'])
+      else
+        $scope.categories.unassigned.push c # todo load defaults
+
+  # Load saved MLS config and RETS fields
   $scope.selectMls = () ->
     config = $scope.mlsData.current
     $scope.mlsLoading =
       rmapsNormalizeService.getRules(config.id)
       .then (rules) ->
-        # Regular rule
-        _.forEach _.where(rules, (r) -> !r.input?), (rule) ->
-          list = $scope.allCategories[rule.list]
-          if not $scope.allRules[rule.output]
-            $scope.allRules[rule.output] = rule
-            rule.label = rule.output
-            list.items.push(rule)
-          else
-            _.extend $scope.allRules[rule.output], rule
-
-        addFilter = (rule, keys) ->
-          list = $scope.allCategories[rule.list]
-          _.forEach keys, (key) ->
-            if $scope.allRules[key]
-              $scope.allRules[key].assigned = true
-            else
-              $scope.unassigned.items.push(
-                $scope.allRules[key] =
-                assigned: true
-                label: rule.key
-              )
-          list.items.push $scope.allRules[rule.output] =
-            _.extend rule,
-            composite: true
-            label: rule.output
-
-        # Filter, simple
-        _.forEach _.where(rules, (r) -> _.isString r.input), (rule) ->
-          addFilter(rule, [rule.input])
-
-        # Filter, array
-        _.forEach _.where(rules, (r) -> _.isArray r.input), (rule) ->
-          addFilter(rule, rule.input)
-
-        # Filter, object
-        _.forEach _.where(rules, (r) -> _.isPlainObject r.input), (rule) ->
-          addFilter(rule, _.values(rule.input))
-
+        parseRules(rules)
         rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
-      .then (columns) ->
-        _.forEach columns, (c) ->
-          rule = $scope.allRules[c.LongName]
-          if rule and not rule.LongName
-            _.extend rule, c, label: c.LongName
-          else
-            $scope.unassigned.items.push _.extend c, label: c.LongName # todo load defaults
+      .then (fields) ->
+        parseFields(fields)
 
   # Show field options
   $scope.selectField = (field) ->
-    config = $scope.mlsData.current
-    $scope.fieldData.current = field
+    $scope.showProperties = true
     field.type = lookupType(field)
-    if not field.vOptions
-      field.vOptions = {}
-    if field.type?.name == 'string' and field.Interpretation.indexOf('Lookup') == 0 and not field.lookups
-      $scope.fieldLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.SystemName
+    if not field.config
+      field.config = {}
+    $scope.fieldData.current = field
+    if field.type?.name == 'string' and field.Interpretation?.indexOf('Lookup') == 0 and not field.lookups
+      config = $scope.mlsData.current
+      $scope.fieldLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
       .then (lookups) ->
         field.lookups = lookups
 
-  # Move fields between categories
+  # Move rules between categories
   $scope.onDropCategory = (drag, drop, target) ->
     _.pull drag.collection, drag.model
     drop.collection.splice _.indexOf(drop.collection, target), 0, drag.model
+    $scope.selectField(drag.model)
     $scope.$evalAsync()
     # todo: save
 
@@ -158,11 +131,14 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$state', 'rmapsMlsService', 'r
     field = $scope.fieldData.current
     if field.DataType
       options =
-        vOptions: _.pick field.vOptions, (v) -> v?
+        vOptions: _.pick field.config, (v) -> v?
         type: lookupType(field)?.name
       field.transform = validatorBuilder(options)
-      console.log field
-      # todo: save
+      $scope.saveRule field
+
+  $scope.saveRule = _.debounce (rule) ->
+    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule
+  , 2000
 
   lookupType = (field) ->
       types =
