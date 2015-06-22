@@ -4,11 +4,8 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents',
-  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents) ->
-
-    queryTemplate = "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
-    queryTemplateInet = "[(__MODIFIED_TIMESTAMP_FIELD___=]YYYY-MM-DD[T]HH:mm:ss[+),(__ALLOW_INTERNET_FIELD__=1)]"
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants',
+  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants) ->
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -18,7 +15,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
     $scope.dbOptions = []
     $scope.tableOptions = []
     $scope.columnOptions = []
-    $scope.allowInetOptions = []
     $scope.mlsData =
       current:
         id: null
@@ -28,7 +24,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         username: null
         password: null
         url: null
-        main_property_data: {"queryTemplate": queryTemplate}
+        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
     # extract existing configs, populate idOptions
     $scope.loading = true
@@ -39,13 +35,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
     .finally () ->
       $scope.loading = false
-
-    # update querytemplate whenever allowInet field is updated (it must compliment)
-    $scope.updateQueryTemplate = () ->
-      if !$scope.mlsData.current.main_property_data.allowInet?
-        $scope.mlsData.current.main_property_data.queryTemplate = queryTemplate
-      else
-        $scope.mlsData.current.main_property_data.queryTemplate = queryTemplateInet
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
@@ -146,7 +135,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           r = /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
-          $scope.allowInetOptions = data
           $scope.formItems[3].disabled = false
 
         .catch (err) ->
@@ -226,8 +214,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 ]
 
 
-app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
-  ($scope, $modalInstance, mlsModalData) ->
+app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'mlsConstants',
+  ($scope, $modalInstance, mlsModalData, mlsConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id
@@ -242,7 +230,7 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
         username: null
         password: null
         url: null
-        main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
+        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)

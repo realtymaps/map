@@ -49,12 +49,6 @@ div
                           select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions")
                             option(value="" disabled)
                       tr
-                        td
-                          label.data-label Allow on Internet (Optional):
-                        td
-                          select(type="text" ng-model="mlsData.current.main_property_data.allowInet" ng-options="value.SystemName as value.LongName for value in allowInetOptions | orderBy:'LongName'" ng-change="updateQueryTemplate()")
-                            option(value="") -- None --
-                      tr
                         td(colSpan="2")
                           label.data-label Formatting:
                       tr
@@ -115,11 +109,6 @@ div
                           label.data-label DateTime:
                         td
                           span.data-entry {{mlsData.current.main_property_data.field}}
-                      tr
-                        td
-                          label.data-label Allow Internet:
-                        td
-                          span.data-entry {{mlsData.current.main_property_data.allowInet}}
                 tr
                   td
                     label.data-label Formatting:
