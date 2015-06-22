@@ -46,17 +46,15 @@ body
     font-size 75%
     opacity 0.8
 
-    &.datatype-string:before
+    &:before
       padding 0.25em
+    &.datatype-string:before
       content: "abc"
     &.datatype-number:before
-      padding 0.25em
       content "123"
     &.datatype-yn:before
-      padding 0.25em
       content "yes/no"
     &.datatype-date:before
-      padding 0.25em
       content "date"
 
 .field
