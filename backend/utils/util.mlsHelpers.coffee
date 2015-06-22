@@ -131,21 +131,31 @@ loadRetsTableUpdates = (subtask, options) ->
       .then () ->
         return lastSuccess
     .then (refreshThreshold) ->
-      # query for everything changed since then
-      retsClient.search.query(options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
-    .catch isUnhandled, (error) ->
-      if error.replyCode == "20201"
-        # code for 0 results, not really an error (DMQL is a clunky language)
-        return []
-      # TODO: else if error.replyCode == "20208"
-      # code for too many results, must manually paginate or something to get all the data
-      throw new PartiallyHandledError(error, "failed to query RETS system")
+      _getData(retsClient, options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
     .then (results) ->
       _streamArrayToDbTable(results, rawTableName, fields)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .finally () ->
       # always log out the RETS client when we're done
+      retsClient.logout()
+
+_getData = (client, database, table, dmqlQueryString, queryOptions) ->
+  client.search.query(database, table, dmqlQueryString, queryOptions)
+  .catch isUnhandled, (error) ->
+    if error.replyCode == rets.replycode.NO_RECORDS_FOUND
+      # code for 0 results, not really an error (DMQL is a clunky language)
+      return []
+    # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
+    # code for too many results, must manually paginate or something to get all the data
+    throw new PartiallyHandledError(error, "failed to query RETS system")
+
+getDataDump = (mlsInfo, limit=1000) ->
+  _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
+  .then (retsClient) ->
+    momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
+    _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
+    .finally () ->
       retsClient.logout()
 
 _getRetsClient = (loginUrl, username, password) ->
@@ -419,7 +429,6 @@ activateNewData = (subtask) ->
         active: false
       .delete()
 
-
 module.exports =
   loadRetsTableUpdates: loadRetsTableUpdates
   normalizeData: normalizeData
@@ -430,3 +439,4 @@ module.exports =
   recordChangeCounts: recordChangeCounts
   finalizeData: finalizeData
   activateNewData: activateNewData
+  getDataDump: getDataDump

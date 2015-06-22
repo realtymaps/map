@@ -5,7 +5,6 @@ mlsConfigService = require '../services/service.mls_config'
 
 module.exports =
   getDatabaseList: (req, res, next) ->
-    logger.info 'mls.getDatabaseList', req.params.mlsId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -24,7 +23,6 @@ module.exports =
             500
 
   getTableList: (req, res, next) ->
-    logger.info 'mls.getTableList', req.params.mlsId, req.params.databaseId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -43,7 +41,6 @@ module.exports =
             500
 
   getColumnList: (req, res, next) ->
-    logger.info 'mls.getColumnList', req.params.mlsId, req.params.databaseId, req.params.tableId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
@@ -61,8 +58,28 @@ module.exports =
               msg: error.message
             500
 
+  getDataDump: (req, res, next) ->
+    mlsConfigService.getById(req.params.mlsId)
+    .then (mlsConfig) ->
+      if !mlsConfig
+        next new ExpressResponse
+          alert:
+            msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
+          404
+      else
+        limit = if req.query.limit? then req.query.limit else 1000
+        retsHelper.getDataDump mlsConfig, limit
+        .then (list) ->
+          resObj = new ExpressResponse(list)
+          resObj.format = "csv"
+          next resObj
+        .catch (error) ->
+          next new ExpressResponse
+            alert:
+              msg: error.message
+            500
+
   getLookupTypes: (req, res, next) ->
-    logger.info 'mls.getColumnList', req.params.mlsId, req.params.databaseId, req.params.lookupId
     mlsConfigService.getById(req.params.mlsId)
     .then (mlsConfig) ->
       if !mlsConfig
