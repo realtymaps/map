@@ -141,12 +141,15 @@ loadRetsTableUpdates = (subtask, options) ->
       retsClient.logout()
 
 _getData = (client, database, table, dmqlQueryString, queryOptions) ->
+  console.log "NO_RECORDS_FOUND code:"
+  console.log rets.replycode.NO_RECORDS_FOUND
+
   client.search.query(database, table, dmqlQueryString, queryOptions)
   .catch isUnhandled, (error) ->
-    if error.replyCode == "20201"
+    if error.replyCode == rets.replycode.NO_RECORDS_FOUND
       # code for 0 results, not really an error (DMQL is a clunky language)
       return []
-    # TODO: else if error.replyCode == "20208"
+    # TODO: else if error.replyCode == "20208"  # 20208 is rets.replycode.MAX_RECORDS_EXCEEDED
     # code for too many results, must manually paginate or something to get all the data
     throw new PartiallyHandledError(error, "failed to query RETS system")
 
