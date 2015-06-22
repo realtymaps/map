@@ -5,68 +5,91 @@ div.normalize-container
       select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
         option(value="" disabled)
 
-  div.row.panel(ng-show="columns.length")
-    div.col-md-12
-      h4 Group Assignment
-    div.col-md-4.col-xs-2.field-container(rmaps-droppable="columns" on-drop="onDrop")
+  div.row.panel(cg-busy="mlsLoading")
+    div.col-md-2.field-container
+      h4 Required
+      div.field.composite(
+      ng-click="selectFilter(item)"
+      ng-repeat="item in categories.base") {{item.label}}
+
+    div.col-md-2.field-container(
+      rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
+      h4 MLS
       div.field(
-      ng-click="selectField(item)"
-      rmaps-draggable="item" rmaps-draggable-collection="columns"
-      ng-repeat="item in columns track by item.MetadataEntryID ") {{item.LongName}}
+      ng-class="{ 'assigned': item.assigned, composite: item.composite }"
+      rmaps-click="selectField" rmaps-value-name-click="item"
+      rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
+      ng-repeat="item in categories.unassigned") {{item.label}}
         span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
          'datatype-number': item.Interpretation == 'Number', \
          'datatype-yn': item.DataType == 'Boolean', \
-         'datatype-date': item.DataType == 'DateTime' }")
+         'datatype-date': item.DataType == 'DateTime' }"
+         ng-show="item.DataType || item.Interpretation")
 
-    div.col-md-8.col-xs-10.category-container
+    div.col-md-8.category-container
+      h4 Groups
       div.category(
-      rmaps-droppable="category.items" on-drop="onDrop"
-      ng-repeat="category in categories track by category.label") {{ category.label }}
-        div.field(
-        ng-click="selectField(item)"
-        rmaps-draggable="item" rmaps-draggable-collection="category.items"
-        ng-repeat="item in category.items track by item.MetadataEntryID") {{item.LongName}}
+      rmaps-droppable="category.items" on-drop="onDropCategory"
+      ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
+        div.field-list
+          div.field(
+          ng-class="{ 'assigned': item.assigned, composite: item.composite }"
+          rmaps-click="selectField" rmaps-value-name-click="item"
+          rmaps-draggable="item" rmaps-draggable-collection="category.items"
+          ng-repeat="item in category.items") {{item.label}}
+            span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
+             'datatype-number': item.Interpretation == 'Number', \
+             'datatype-yn': item.DataType == 'Boolean', \
+             'datatype-date': item.DataType == 'DateTime' }"
+             ng-show="item.DataType || item.Interpretation")
 
 
-  div.row.panel.properties-container(ng-show="fieldData.current.SystemName")
+  div.row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
+    div.close-icon(ng-click="showProperties=false") X
     div.col-md-12
       h4 Field Validation
       div.row
         div.col-md-3 RETS Name:
-        div.col-md-9 {{fieldData.current.LongName}}
+        div.col-md-9 {{fieldData.current.label}}
       div.row
         div.col-md-3 Data Type:
         div.col-md-9 {{fieldData.current.type.label}}
       div.row
         div.col-md-3 Alias:
         div.col-md-9
-          input(type="text" ng-model="fieldData.current.vOptions.alias" ng-change="getTransform()")
+          input(type="text" ng-model="fieldData.current.config.alias" ng-change="getTransform()")
       div(ng-show="fieldData.current.Interpretation == 'Number'")
         div.row
           div.col-md-3 0 (zero) counts as null
-          div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.vOptions.nullZero" ng-change="getTransform()")
+          div.col-md-3
+            input(type="checkbox" ng-model="fieldData.current.config.nullZero" ng-change="getTransform()")
+          div.col-md-6
+            Pick the right value!
         div.row
           div.col-md-3 Specific value counts as null
-          div.col-md-9
-            input(type="text" ng-model="fieldData.current.vOptions.nullNumber" placeholder="example: -1" ng-change="getTransform()")
+          div.col-md-3
+            input(type="text" ng-model="fieldData.current.config.nullNumber" placeholder="example: -1" ng-change="getTransform()")
+          div.col-md-6
+            Pick the right value!
         div.row(ng-show="fieldData.current.DataType == 'Decimal'")
           div.col-md-3 Round / truncate decimal
-          div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.vOptions.floorDecimal" ng-change="getTransform()")
+          div.col-md-3
+            input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-change="getTransform()")
+          div.col-md-6
+            Pick the right value!
       div(ng-show="fieldData.current.DataType == 'Character'")
         div.row
           div.col-md-3 Empty counts as null
           div.col-md-9
-            input(type="checkbox" ng-model="fieldData.current.vOptions.nullEmpty" ng-change="getTransform()")
+            input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-change="getTransform()")
         div.row
           div.col-md-3 Specific value(s) count as null
           div.col-md-9
-            input(type="text" ng-model="fieldData.current.vOptions.nullString" rmaps-list-input placeholder="no, false, n/a" ng-change="getTransform()")
+            input(type="text" ng-model="fieldData.current.config.nullString" rmaps-list-input placeholder="no, false, n/a" ng-change="getTransform()")
         div.row
           div.col-md-3 Transform
           div.col-md-9
-            select(ng-model="fieldData.current.vOptions.transformString" ng-options="option.value as option.label for option in transformOptions" ng-change="getTransform()")
+            select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-change="getTransform()")
               option(value="") None
         div.row(ng-show="fieldData.current.lookups")
           div.col-md-3 Replace values with RealtyMaps values (Lookup)
@@ -74,7 +97,7 @@ div.normalize-container
         div.row(ng-repeat="lookup in fieldData.current.lookups")
           div.col-md-3 {{lookup.LongValue}}
           div.col-md-9
-            input(type="text" placeholder="realtymaps value" ng-model="fieldData.current.vOptions.mapString[lookup.LongValue]" ng-change="getTransform()")
+            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
 
     div.col-md-12
       h4 Field Transform

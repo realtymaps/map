@@ -210,7 +210,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
     .then (response) ->
       _.map response.Fields, (r) ->
-        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation']
+        _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
     .finally () ->
       retsClient.logout()
 
@@ -267,8 +267,9 @@ normalizeData = (subtask, options) -> Promise.try () ->
     diffExcludeKeys = []
     for groupName, validationList of validationMap
       for validationDefinition in validationList
-        if validationDefinition.list != 'base'
-          # don't count the 'base' fields as being used
+        # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
+        # fields for those don't have to be explicitly reused
+        if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
           usedKeys.concat(_getUsedKeys(validationDefinition))
         else if validationDefinition.output == 'days_on_market'
           # explicitly exclude these keys from diff, because they are derived values based on date
@@ -292,6 +293,7 @@ _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
     data_source_id: options.dataSourceId
     batch_id: subtask.batch_id
     up_to_date: startTime
+    hide_listing: normalizedData.base.hide_listing ? false
     client_groups:
       general: normalizedData.general
       details: normalizedData.details
@@ -370,6 +372,7 @@ finalizeData = (subtask, id) ->
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
+  .where(hide_listing: false)
   .orderByRaw('close_date NULLS FIRST DESC')
   parcelPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
