@@ -1,0 +1,12 @@
+#!/bin/bash
+#RUN_AS=${1:-$(whoami)}
+RUN_AS=${1:-'ec2-user'}
+MY_PATH=`dirname "$0"`
+
+
+for i in $(cat "$MY_PATH"/aws_serverlist)
+do
+    echo
+    echo killing locust on server $i as user $RUN_AS
+    ssh -i ~/.ssh/locust.pem -t $RUN_AS@$i 'sudo killall locust'
+done

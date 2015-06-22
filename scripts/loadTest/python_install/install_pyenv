@@ -1,0 +1,18 @@
+#!/bin/bash
+set -e
+
+sudo apt-get update
+
+sudo apt-get install linux-headers-$(uname -r) build-essential
+
+sudo apt-get install libevent-dev python-all-dev libreadline6 libreadline6-dev libbz2-dev libsqlite3-dev libssl-dev
+
+sudo apt-get install git
+
+curl -L https://raw.githubusercontent.com/yyuu/pyenv-installer/master/bin/pyenv-installer | bash
+
+echo ./bash_profile >> $HOME/.bash_profile
+
+pyenv install 2.7.9
+
+pyenv global 2.7.9
