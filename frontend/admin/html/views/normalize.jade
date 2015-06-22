@@ -17,7 +17,7 @@ div.normalize-container
       h4 MLS
       div.field(
       ng-class="{ 'assigned': item.assigned, composite: item.composite }"
-      ng-click="selectField(item)"
+      rmaps-click="selectField" rmaps-value-name-click="item"
       rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
       ng-repeat="item in categories.unassigned") {{item.label}}
         span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
@@ -34,7 +34,7 @@ div.normalize-container
         div.field-list
           div.field(
           ng-class="{ 'assigned': item.assigned, composite: item.composite }"
-          ng-click="selectField(item)"
+          rmaps-click="selectField" rmaps-value-name-click="item"
           rmaps-draggable="item" rmaps-draggable-collection="category.items"
           ng-repeat="item in category.items") {{item.label}}
             span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
