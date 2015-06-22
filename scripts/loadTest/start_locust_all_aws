@@ -1,0 +1,40 @@
+#!/bin/bash
+#RUN_AS=${1:-$(whoami)}
+RUN_AS=${1:-'ec2-user'}
+
+MY_PATH=`dirname "$0"`
+#SERVER_LIST=$(cat "$MY_PATH"/aws_serverlist)
+#api02.aws.tl.com
+API02='http://54.208.79.174'
+echo $API02
+SLAVE_CMD="nohup locust -f /opt/swarm/www/all_endpoints.py --slave --master-host=54.213.112.107 --host="$API02" &>/dev/null &"
+MASTER_CMD="nohup locust -f /opt/swarm/www/all_endpoints.py --master --host="$API02" &>/dev/null &"
+
+start_instances()
+{
+  CMD=$1
+  SERVER=$2
+  INSTANCES=$3
+
+  echo "Running as '$RUN_AS', running command $CMD on server $SERVER $INSTANCES times"
+
+  for j in $(seq 1 "$INSTANCES")
+  do
+    ssh -i ~/.ssh/locust.pem -t "$RUN_AS"@"$SERVER" "$CMD" &>/dev/null &
+    echo slave instance "$j" running
+    sleep .25
+  done
+}
+#locust documentation specifies that a master should start first, and then slaves
+#https://github.com/locustio/locust/blob/master/docs/quickstart.rst
+
+#start master
+start_instances "$MASTER_CMD" 54.213.112.107 1
+
+sleep 5
+
+#start slaves
+for i in $(cat "$MY_PATH"/aws_serverlist)
+do
+  start_instances "$SLAVE_CMD" $i 6
+done
