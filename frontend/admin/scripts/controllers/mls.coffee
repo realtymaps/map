@@ -4,8 +4,8 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents',
-  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants',
+  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants) ->
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -24,7 +24,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         username: null
         password: null
         url: null
-        main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
+        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
     # extract existing configs, populate idOptions
     $scope.loading = true
@@ -133,7 +133,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
         .then (data) ->
-          r = /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
+          r = mlsConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
 
@@ -214,8 +214,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
 ]
 
 
-app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
-  ($scope, $modalInstance, mlsModalData) ->
+app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'mlsConstants',
+  ($scope, $modalInstance, mlsModalData, mlsConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id
@@ -230,7 +230,7 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
         username: null
         password: null
         url: null
-        main_property_data: {"queryTemplate": "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"}
+        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)
