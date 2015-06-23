@@ -44,15 +44,16 @@ div
                     table
                       tr
                         td
-                          label.data-label Field:
+                          label.data-label DateTime:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.SystemName+' '+value.LongName for value in columnOptions")
+                          select(type="text" ng-model="mlsData.current.main_property_data.field" ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions")
                             option(value="" disabled)
                       tr
-                        td
+                        td(colSpan="2")
                           label.data-label Formatting:
-                        td
-                          input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate")
+                      tr
+                        td(colSpan="2")
+                          input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate" ng-minlength="20").max-width
                       tr(colSpan="2")
                         td
                           button(ng-click="saveMlsData()") Save MLS Config
@@ -105,10 +106,14 @@ div
                           span.data-entry {{mlsData.current.main_property_data.table}}
                       tr
                         td
-                          label.data-label Column:
+                          label.data-label DateTime:
                         td
                           span.data-entry {{mlsData.current.main_property_data.field}}
-
+                tr
+                  td
+                    label.data-label Formatting:
+                  td
+                    span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
                 tr
                   td
                     label.data-label Notes:
