@@ -75,6 +75,9 @@ body
     border-radius 5px
     font-size 75%
     opacity 0.8
+  &.invalid
+    background-color #ffa07a
+    border-color #efa07a
 
 .category
   display inline-block
@@ -112,11 +115,24 @@ body
   transition all linear 0.5s
   opacity 1
 
+  .field
+    display inline-block
+    span
+      margin-right 0.5em
+  .field.empty
+    background-color transparent
+    color #888
+    border 2px dashed #888
+    &:before
+      content "Drag here:"
+      padding-right 0.5em
+
 .properties-container.ng-hide
   opacity 0
 
 h4
   color black
+  text-transform capitalize
 
 .category.rmaps-drop-target
   border  2px dashed #888
@@ -128,10 +144,7 @@ h4
 .transform
   width 100%
 
-.close-icon
-  position absolute
-  right 1em
-  top 1em
+.clickable-icon
   background-color lightgray
   border-radius 0.5em
   padding 0em 0.35em
@@ -142,3 +155,14 @@ h4
   -moz-user-select none
   -ms-user-select none
   user-select none
+
+.close-icon
+  @extend .clickable-icon
+  position absolute
+  right 1em
+  top 1em
+    content
+
+.remove-icon
+  @extend .clickable-icon
+  float right
