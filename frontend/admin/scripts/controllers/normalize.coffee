@@ -20,6 +20,21 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     'Lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
 
+  $scope.addressOptions = _.map
+    'Street Number': 'streetNum'
+    'Street Name': 'streetName'
+    'City': 'city'
+    'State or Province': 'state'
+    'Postal Code': 'zip'
+    'Postal Code + 4': 'zip9'
+    'Street Dir Prefix': 'streetDirPrefix'
+    'Street Dir Suffix': 'streetDirSuffix'
+    'Street Number Modifier': 'streetNumModifier'
+    'Full Address': 'streetFull',
+    (key, label) ->
+      label: label
+      key: key
+
   $scope.categories = {}
   $scope.targetCategories = _.map
     base: 'Base'
@@ -38,6 +53,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     sale: 'Sale Details (realtor only)',
     (label, list) ->
       label: label
+      list: list
       items: $scope.categories[list] = []
 
   # Load MLS list
@@ -54,6 +70,9 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
       _.extend rule,
         label: rule.output
         ordering: parseInt(rule.ordering, 10)
+      if rule.list == 'base'
+        rule.baseName = rule.output
+        validateBase(rule)
       list.splice _.sortedIndex(list, rule, 'ordering'), 0, allRules[rule.output] = rule
 
     addComplexRule = (rule, keys) ->
@@ -124,21 +143,40 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     drop.collection.splice _.indexOf(drop.collection, target), 0, drag.model
     $scope.selectField(drag.model)
     $scope.$evalAsync()
-    # todo: save
+
+  # Move rules to base field config
+  $scope.onDropBase = (drag, drop, target) ->
+    field = $scope.fieldData.current
+    field.config[drop.collection] = drag.model.label
+    setTransform(field)
+    validateBase(field)
+
+  # Remove rules from base field config
+  $scope.removeBase = (key) ->
+    field = $scope.fieldData.current
+    delete field.config[key]
+    setTransform(field)
+    validateBase(field)
+
+  validateBase = (field) ->
+    config = field.config
+    if field.baseName == 'address'
+      field.valid = config.city && config.state && (config.zip || config.zip9) &&
+       ((config.streetName && config.streetNum) || config.streetFull)
+
+  # User input triggers this
+  $scope.getTransform = _.debounce (() -> setTransform($scope.fieldData.current)), 2000
 
   # Map configuration options to transform JSON
-  $scope.getTransform = () ->
-    field = $scope.fieldData.current
-    if field.DataType
-      options =
-        vOptions: _.pick field.config, (v) -> v?
-        type: lookupType(field)?.name
-      field.transform = validatorBuilder(options)
-      $scope.saveRule field
+  setTransform = (field) ->
+    field.transform = validatorBuilder
+      vOptions: _.pick field.config, (v) -> v?
+      type: lookupType(field)?.name
+      baseName: field.baseName
+    saveRule field
 
-  $scope.saveRule = _.debounce (rule) ->
+  saveRule = (rule) ->
     $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule
-  , 2000
 
   lookupType = (field) ->
       types =

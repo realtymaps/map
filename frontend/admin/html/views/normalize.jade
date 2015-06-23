@@ -9,7 +9,8 @@ div.normalize-container
     div.col-md-2.field-container
       h4 Required
       div.field.composite(
-      ng-click="selectFilter(item)"
+      ng-class="{ invalid: !item.valid }"
+      ng-click="selectField(item)"
       ng-repeat="item in categories.base") {{item.label}}
 
     div.col-md-2.field-container(
@@ -43,10 +44,9 @@ div.normalize-container
              'datatype-date': item.DataType == 'DateTime' }"
              ng-show="item.DataType || item.Interpretation")
 
-
   div.row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
     div.close-icon(ng-click="showProperties=false") X
-    div.col-md-12
+    div.col-md-12(ng-show="!fieldData.current.baseName")
       h4 Field Validation
       div.row
         div.col-md-3 RETS Name:
@@ -98,8 +98,7 @@ div.normalize-container
           div.col-md-3 {{lookup.LongValue}}
           div.col-md-9
             input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
-
-    div.col-md-12
+    div.col-md-12(ng-show="!fieldData.current.baseName")
       h4 Field Transform
       div.row
         div.col-md-3 Enable editing (advanced)
@@ -109,3 +108,10 @@ div.normalize-container
         div.col-md-12
           textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.advanced")
 
+    div.col-md-12(ng-show="fieldData.current.baseName == 'address'")
+      h4 {{fieldData.current.label}}
+      div.field(ng-repeat="option in addressOptions"
+        rmaps-droppable="option.key" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.config[option.key] }")
+        span(ng-show="fieldData.current.config[option.key]") {{fieldData.current.config[option.key]}}:
+        span {{option.label}}
+        span.remove-icon(ng-show="fieldData.current.config[option.key]" rmaps-click="removeBase" rmaps-value-name-click="option.key") X

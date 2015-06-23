@@ -24,11 +24,8 @@ app.factory 'validatorBuilder', () ->
     #
     transform = null
     switch options.baseName
-      when 'bedrooms'
-        transform = 'validators.integer()'
-      #when 'status':
-        # special logic
-      # ...
+      when 'address'
+        transform = _getValidationString('address', options.vOptions)
       else
         transform = _getValidationString(options.type, options.vOptions)
 
