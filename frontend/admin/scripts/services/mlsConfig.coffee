@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
+app.service 'rmapsMlsService', ['Restangular', '$window', (Restangular, $window) ->
 
   mlsAPI = backendRoutes.mls.apiBaseMls
   mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
@@ -30,6 +30,10 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   getLookupTypes = (configId, databaseId, lookupId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').one(databaseId).all('lookups').one(lookupId).all('types').getList()
 
+  getDataDumpUrl = (configId, limit) ->
+    # bypass XHR / $http file-dl drama, and Restangular req/res complication.
+    backendRoutes.mls.getDataDump.replace(":mlsId", configId) + "?limit=#{limit}"
+
   service =
     getConfigs: getConfigs,
     postConfig: postConfig,
@@ -37,6 +41,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     getTableList: getTableList,
     getColumnList: getColumnList,
     getLookupTypes: getLookupTypes
+    getDataDumpUrl: getDataDumpUrl
 
   service
 ]

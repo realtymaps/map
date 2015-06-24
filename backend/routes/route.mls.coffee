@@ -67,7 +67,7 @@ module.exports =
             msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
           404
       else
-        limit = if req.query.limit? then req.query.limit else 1000
+        limit = if req.query.limit? and typeof req.query.limit == "number" then req.query.limit else 1000
         retsHelper.getDataDump mlsConfig, limit
         .then (list) ->
           resObj = new ExpressResponse(list)
