@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsMlsService', ['Restangular', '$window', (Restangular, $window) ->
+app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
 
   mlsAPI = backendRoutes.mls.apiBaseMls
   mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
