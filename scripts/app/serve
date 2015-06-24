@@ -1,18 +1,20 @@
 #!/bin/bash
 set -e
 
-if [ ! -n "$IS_HEROKU" ]
+if [[ "$IS_HEROKU" == "" ]]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/.."
 fi
 
 
-if [[ $PORT -eq 5000 ]];then
+if [[ $PORT -eq 5000 ]]
+then
   unset PORT
 fi
 
-if [ -n "$IS_HEROKU" ]; then
+if [[ "$IS_HEROKU" != "" || "$BARE_EXPRESS_SERVER" != "" ]]
+then
   gulp prod
   coffee /app/backend/server.coffee
 else
