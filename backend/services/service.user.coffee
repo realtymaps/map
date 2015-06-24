@@ -6,6 +6,7 @@ logger = require '../config/logger'
 User = require "../models/model.user"
 {userData} = require "../config/tables"
 environmentSettingsService = require "../services/service.environmentSettings"
+{singleRow} = require '../utils/util.sql.helpers'
 
 
 getUser = (attributes) ->
@@ -84,8 +85,8 @@ verifyPassword = (username, password) ->
       return user
 
 getUserState = (userId) ->
-  userData.auth_user_profile()
-  .where(auth_user_id: userId)
+  singleRow(userData.auth_user_profile()
+  .where(auth_user_id: userId), false)
   .then (userState) ->
     if not userState
       userData.auth_user_profile()
@@ -94,7 +95,7 @@ getUserState = (userId) ->
       .then () ->
         return {}
     else
-      result = userState.toJSON()
+      result = userState
       delete result.id
       return result
 
@@ -114,13 +115,14 @@ updateUserState = (session, partialState) -> Promise.try () ->
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
 
   session.state.auth_user_id = session.userid
-  # delete session.state.id
+  # logger.debug "session.state.id: is deleted #{delete session.state.id}"
+  # logger.debug session.state.id
   # now save to the global state
-  logger.debug session.state
+  # logger.debug JSON.stringify session.state
 
-  userData.auth_user_profile()
+  singleRow(userData.auth_user_profile()
   .where(auth_user_id: session.userid)
-  .insert(session.state)
+  .update(session.state), false)
   .then (userState) ->
     if not userState
       return {}
