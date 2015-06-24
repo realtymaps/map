@@ -3,9 +3,9 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-User = require("../models/model.user")
-UserState = require("../models/model.userState")
-environmentSettingsService = require("../services/service.environmentSettings")
+User = require "../models/model.user"
+{userData} = require "../config/tables"
+environmentSettingsService = require "../services/service.environmentSettings"
 
 
 getUser = (attributes) ->
@@ -84,12 +84,13 @@ verifyPassword = (username, password) ->
       return user
 
 getUserState = (userId) ->
-  UserState.forge(id: userId)
-  .fetch()
+  userData.auth_user_profile()
+  .where(auth_user_id: userId)
   .then (userState) ->
     if not userState
-      UserState.forge({id: userId})
-      .save({id: userId}, {method: 'insert'})
+      userData.auth_user_profile()
+      .insert
+        auth_user_id: userId
       .then () ->
         return {}
     else
@@ -112,14 +113,19 @@ updateUserState = (session, partialState) -> Promise.try () ->
     _.extend(session.state, partialState)
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
 
+  session.state.auth_user_id = session.userid
+  # delete session.state.id
   # now save to the global state
-  UserState.forge(id: session.userid)
-  .save(session.state, {method: 'update'})
+  logger.debug session.state
+
+  userData.auth_user_profile()
+  .where(auth_user_id: session.userid)
+  .insert(session.state)
   .then (userState) ->
     if not userState
       return {}
     else
-      result = userState.toJSON()
+      result = userState
       delete result.id
       return result
 
