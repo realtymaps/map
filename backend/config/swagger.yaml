@@ -355,7 +355,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/MlsNormalization'
+              type: 'object'
       responses:
         200:
           description: MLS normalization create result
