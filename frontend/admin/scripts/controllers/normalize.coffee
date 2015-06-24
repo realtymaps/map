@@ -35,6 +35,23 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
       label: label
       key: key
 
+  $scope.statusOptions = [
+    'for sale',
+    'pending',
+    'not for sale',
+    'sold'
+  ]
+
+  $scope.subStatusOptions = [
+    'for sale',
+    'pending',
+    'pending-contingent',
+    'sold',
+    'terminated',
+    'expired',
+    'withdrawn'
+  ]
+
   $scope.categories = {}
   $scope.targetCategories = _.map
     base: 'Base'
@@ -131,11 +148,17 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     if not field.config
       field.config = {}
     $scope.fieldData.current = field
-    if field.type?.name == 'string' and field.Interpretation?.indexOf('Lookup') == 0 and not field.lookups
+    $scope.loadLookups(if field.baseName then allRules[field.input] else field)
+
+  $scope.loadLookups = (field) ->
+    if field?.lookups
+      $scope.fieldData.current.lookups = field.lookups
+    else if field && !field.lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.fieldLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
       .then (lookups) ->
-        field.lookups = lookups
+        $scope.fieldData.current.lookups = field.lookups = lookups
+        $scope.$evalAsync()
 
   # Move rules between categories
   $scope.onDropCategory = (drag, drop, target) ->
@@ -144,25 +167,45 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     $scope.selectField(drag.model)
     $scope.$evalAsync()
 
+  $scope.onDropBaseInput = (drag, drop, target) ->
+    field = $scope.fieldData.current
+    field.input[drop.collection] = drag.model.label
+    updateBase(field)
+
+  # Remove base field input
+  $scope.removeBaseInput = (key) ->
+    field = $scope.fieldData.current
+    delete field.input[key]
+    delete field.lookups
+    delete field.config.choices
+    updateBase(field)
+
   # Move rules to base field config
   $scope.onDropBase = (drag, drop, target) ->
     field = $scope.fieldData.current
-    field.config[drop.collection] = drag.model.label
-    setTransform(field)
-    validateBase(field)
+    field.input = drag.model.label
+    $scope.loadLookups(drag.model)
+    updateBase(field)
 
-  # Remove rules from base field config
-  $scope.removeBase = (key) ->
+  # Remove base field input
+  $scope.removeBase = () ->
     field = $scope.fieldData.current
-    delete field.config[key]
+    field.input = null
+    delete field.lookups
+    delete field.config.choices
+    updateBase(field)
+
+  updateBase = (field) ->
     setTransform(field)
     validateBase(field)
 
   validateBase = (field) ->
-    config = field.config
+    input = field.input
     if field.baseName == 'address'
-      field.valid = config.city && config.state && (config.zip || config.zip9) &&
-       ((config.streetName && config.streetNum) || config.streetFull)
+      field.valid = input.city && input.state && (input.zip || input.zip9) &&
+       ((input.streetName && input.streetNum) || input.streetFull)
+    else
+      field.valid = field.input?
 
   # User input triggers this
   $scope.getTransform = _.debounce (() -> setTransform($scope.fieldData.current)), 2000

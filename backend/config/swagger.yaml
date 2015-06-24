@@ -623,8 +623,6 @@ definitions:
         type: integer
       required:
         type: boolean
-      input:
-        type: object
       config:
         type: object
       transform:

@@ -3,7 +3,7 @@ app = require '../app.coffee'
 app.factory 'validatorBuilder', () ->
 
   _getValidationString = (type, vOptions) ->
-    vOptionsStr = JSON.stringify(vOptions)
+    vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
     "validation.#{type}(#{vOptionsStr})"
 
 
@@ -25,7 +25,11 @@ app.factory 'validatorBuilder', () ->
     transform = null
     switch options.baseName
       when 'address'
-        transform = _getValidationString('address', options.vOptions)
+        transform = _getValidationString('address')
+
+      when 'status', 'substatus', 'status_display'
+        transform = _getValidationString('choices', options.vOptions.choices || {})
+
       else
         transform = _getValidationString(options.type, options.vOptions)
 

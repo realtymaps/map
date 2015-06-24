@@ -9,7 +9,10 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
     Restangular.all(mlsConfigAPI).one(mlsId).all('rules').getList()
 
   updateRule = (mlsId, rule) ->
-    Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).patch(_.pick(rule, ['config', 'transform']))
+    Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).patch
+      input: JSON.stringify(rule.input) # ensure strings are quoted
+      config: rule.config
+      transform: rule.transform
 
   service =
     getRules: getRules
