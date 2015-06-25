@@ -1,13 +1,45 @@
 app = require '../app.coffee'
+_ = require 'lodash'
 
-app.factory 'validatorBuilder', () ->
+app.service 'validatorBuilder', () ->
 
   _getValidationString = (type, vOptions) ->
-    vOptionsStr = JSON.stringify(vOptions)
+    vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
     "validation.#{type}(#{vOptionsStr})"
 
+  lookupType = (field) ->
+    types =
+      Int:
+        name: 'integer'
+        label: 'Number'
+      Decimal:
+        name: 'float'
+        label: 'Number'
+      Long:
+        name: 'float'
+        label: 'Number'
+      Character:
+        name: 'string'
+      DateTime:
+        name: 'datetime'
+        label: 'Date and Time'
+      Boolean:
+        name: 'boolean'
+        label: 'Yes/No'
 
-  getTransform = (options) ->
+    type = types[field.DataType]
+
+    if type?.name == 'string'
+      if field.Interpretation == 'Lookup'
+        type.label = 'Restricted Text (single value)'
+      else if field.Interpretation == 'LookupMulti'
+        type.label = 'Restricted Text (multiple values)'
+      else
+        type.label = 'User-Entered Text'
+
+    type
+
+  getTransform = (field) ->
     #   options:
     #
     #     type: integer | float | string | fips | choice | currency | ...
@@ -22,11 +54,20 @@ app.factory 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-    transform = null
-    switch options.baseName
-      when 'address'
-        transform = _getValidationString('address', options.vOptions)
-      else
-        transform = _getValidationString(options.type, options.vOptions)
 
-    transform
+    vOptions = _.pick field.config, (v) -> v?
+    choices = vOptions.choices || {}
+    type = lookupType(field)?.name
+
+    switch field.output
+      when 'address'
+        _getValidationString('address')
+
+      when 'status', 'substatus', 'status_display'
+        _getValidationString('choices', choices)
+
+      else
+        _getValidationString(type, vOptions)
+
+  lookupType: lookupType
+  getTransform: getTransform
