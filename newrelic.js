@@ -6,7 +6,7 @@ if(!api_key)
   throw("config.NEW_RELIC.API_KEY not defined! Please define NEW_RELIC_API_KEY in your Heroku app's config vars or your .env file.");
 
 if(!appName)
-  throw("config.NEW_RELIC.APP_NAME not defined! Please define INSTANCE_NAME in your Heroku app's config vars or your local environment (like your .bash_rc, not your .env).");
+  throw("config.NEW_RELIC.APP_NAME not defined! Please define RMAPS_MAP_INSTANCE_NAME in your Heroku app's config vars or your local environment (like your .bash_rc, not your .env).");
 
 /*
 We use a different INSTANCE_NAME for each staging/dev instance, that way we can avoid duplicate apps in the APM manager
