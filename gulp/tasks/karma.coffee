@@ -16,7 +16,6 @@ karmaRunner = (done) ->
       log "Karma Callback Code: #{code}"
       done(code)
   catch e
-    console.log "KARMA ERROR: #{e}"
     log "KARMA ERROR: #{e}"
     done(e)
 
