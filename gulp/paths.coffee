@@ -22,7 +22,7 @@ getAssetCollection = (app) ->
     jade: app + 'html/**/*.jade'
     json: app + 'json/**/*.json'
     mockIndexes: app + 'html/mocks'
-    index: app + 'html/index.html'
+    index: app + 'html/index.jade'
     assets: app + 'assets/*'
   }
 

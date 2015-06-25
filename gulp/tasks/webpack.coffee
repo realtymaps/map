@@ -8,6 +8,8 @@ plumber = require 'gulp-plumber'
 _ = require 'lodash'
 fs = require 'fs'
 webpack = require 'webpack'
+jade = require 'jade'
+newrelic = require 'newrelic'
 
 mockIndexes = fs.readdirSync(paths.rmap.mockIndexes)
 
@@ -23,7 +25,9 @@ outputAdmin =
 # webpack confs per each environment & app
 conf = configFact output, [
   new HtmlWebpackPlugin
-    template: paths.rmap.index
+    templateContent: (templateParams, compilation, callback) ->
+      fs.readFile paths.rmap.index, "utf8",  (err, data) ->
+        callback(null, jade.render(data, {newrelic: newrelic.getBrowserTimingHeader(), pretty:true}))
     filename: "rmap.html"
 ]
 
@@ -34,7 +38,9 @@ mockConf = configFact output, mockIndexes.map (fileName) ->
 
 prodConf = configFact output, [
   new HtmlWebpackPlugin
-    template: paths.rmap.index
+    templateContent: (templateParams, compilation, callback) ->
+      fs.readFile paths.rmap.index, "utf8",  (err, data) ->
+        callback(null, jade.render(data, {newrelic: newrelic.getBrowserTimingHeader(), pretty:true}))
     filename: "rmap.html"
   new webpack.optimize.UglifyJsPlugin {
     compress: {
@@ -44,7 +50,9 @@ prodConf = configFact output, [
 
 adminConf = configFact outputAdmin, [
   new HtmlWebpackPlugin
-    template: paths.admin.index
+    templateContent: (templateParams, compilation, callback) ->
+      fs.readFile paths.admin.index, "utf8",  (err, data) ->
+        callback(null, jade.render(data, {newrelic: newrelic.getBrowserTimingHeader(), pretty:true}))
     filename: "admin.html"
   new webpack.optimize.UglifyJsPlugin {
     compress: {
