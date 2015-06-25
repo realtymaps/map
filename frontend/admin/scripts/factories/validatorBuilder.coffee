@@ -2,7 +2,6 @@ app = require '../app.coffee'
 _ = require 'lodash'
 
 app.service 'validatorBuilder', () ->
-
   _getValidationString = (type, vOptions) ->
     vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
     "validation.#{type}(#{vOptionsStr})"
@@ -54,17 +53,15 @@ app.service 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-
     vOptions = _.pick field.config, (v) -> v?
-    choices = vOptions.choices || {}
+    choices = if vOptions.choices? then {"choices": vOptions.choices} else {}
     type = lookupType(field)?.name
-
     switch field.output
       when 'address'
         _getValidationString('address')
 
       when 'status', 'substatus', 'status_display'
-        _getValidationString('choices', choices)
+        _getValidationString('choice', choices)
 
       else
         _getValidationString(type, vOptions)

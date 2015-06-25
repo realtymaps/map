@@ -11,7 +11,7 @@ options =
   ignore: [
     'node_modules/**'
     'bower_componets/**'
-    'app/**'
+    'frontend/**'
     '_public/**'
     'mean.coffee.log'
   ]
@@ -26,13 +26,11 @@ run_express = (done, nodeArgs) ->
   nodemon options
   done()
 
-
 gulp.task "express", gulp.series 'otherAssets', (done) ->
   run_express(done)
 
 gulp.task "express_debug", (done) ->
   run_express done, ['--debug=9999']
-
 
 gulp.task "pack_express", gulp.parallel 'webpack', 'otherAssets', (done) ->
   run_express(done)

@@ -116,7 +116,7 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
-    PORT: process.env.PORT || 4000
+    PORT: parseInt(process.env.PORT) || 4000
     USER_DB:
       debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:
