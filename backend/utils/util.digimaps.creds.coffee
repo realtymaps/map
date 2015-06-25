@@ -1,5 +1,5 @@
 db = require('../config/dbs').users
-{singleRow} = require '../utils/util.sql.helpers'
+{expectedSingleRow} = require '../utils/util.sql.helpers'
 config = require '../config/config'
 encryptor = null
 logger = require '../config/logger'
@@ -14,7 +14,7 @@ catch err
 
 
 module.exports = -> Promise.try ->
-    singleRow(db.knex.select()
+    expectedSingleRow(db.knex.select()
     .from('jq_task_config')
     .where(name:'parcel_update'))
     .then (row) ->
