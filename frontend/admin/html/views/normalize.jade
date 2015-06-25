@@ -8,19 +8,19 @@ div.normalize-container
   div.row.panel(cg-busy="mlsLoading")
     div.col-md-2.field-container
       h4 Required
-      div.field.composite(
+      div.field.base(
       ng-class="{ invalid: !item.valid }"
       ng-click="selectField(item)"
-      ng-repeat="item in categories.base") {{item.label}}
+      ng-repeat="item in categories.base") {{item.output}}
 
     div.col-md-2.field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
       h4 MLS
       div.field(
-      ng-class="{ 'assigned': item.assigned, composite: item.composite }"
-      rmaps-click="selectField" rmaps-value-name-click="item"
+      ng-class="{ 'assigned': item.assigned }"
+      ng-click="selectField(item)"
       rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-      ng-repeat="item in categories.unassigned") {{item.label}}
+      ng-repeat="item in categories.unassigned") {{item.output}}
         span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
          'datatype-number': item.Interpretation == 'Number', \
          'datatype-yn': item.DataType == 'Boolean', \
@@ -34,10 +34,10 @@ div.normalize-container
       ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
         div.field-list
           div.field(
-          ng-class="{ 'assigned': item.assigned, composite: item.composite }"
-          rmaps-click="selectField" rmaps-value-name-click="item"
+          ng-class="{ 'assigned': item.assigned, base: item.unselectable }"
+          ng-click="item.unselectable || selectField(item)"
           rmaps-draggable="item" rmaps-draggable-collection="category.items"
-          ng-repeat="item in category.items") {{item.label}}
+          ng-repeat="item in category.items") {{item.output}}
             span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
              'datatype-number': item.Interpretation == 'Number', \
              'datatype-yn': item.DataType == 'Boolean', \
@@ -46,11 +46,11 @@ div.normalize-container
 
   div.row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
     div.close-icon(ng-click="showProperties=false") X
-    div.col-md-12(ng-show="!fieldData.current.baseName")
+    div.col-md-12(ng-show="fieldData.current.list != 'base'")
       h4 Field Validation
       div.row
         div.col-md-3 RETS Name:
-        div.col-md-9 {{fieldData.current.label}}
+        div.col-md-9 {{fieldData.current.output}}
       div.row
         div.col-md-3 Data Type:
         div.col-md-9 {{fieldData.current.type.label}}
@@ -98,7 +98,7 @@ div.normalize-container
           div.col-md-3 {{lookup.LongValue}}
           div.col-md-9
             input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
-    div.col-md-12(ng-show="!fieldData.current.baseName")
+    div.col-md-12(ng-show="fieldData.current.list != 'base'")
       h4 Field Transform
       div.row
         div.col-md-3 Enable editing (advanced)
@@ -108,10 +108,48 @@ div.normalize-container
         div.col-md-12
           textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.advanced")
 
-    div.col-md-12(ng-show="fieldData.current.baseName == 'address'")
-      h4 {{fieldData.current.label}}
+    div.col-md-12(ng-show="fieldData.current.output == 'address'")
+      h4 RealtyMaps Address
+      div This field is shown to users within property details.
+      div.invalid-message(ng-show="!fieldData.current.valid") Select City and State. Select Zip or Zip+4. Select Full address or Street name + number.
       div.field(ng-repeat="option in addressOptions"
-        rmaps-droppable="option.key" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.config[option.key] }")
-        span(ng-show="fieldData.current.config[option.key]") {{fieldData.current.config[option.key]}}:
+        rmaps-droppable="option.key" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[option.key] }")
+        span(ng-show="fieldData.current.input[option.key]") {{fieldData.current.input[option.key]}}:
         span {{option.label}}
-        span.remove-icon(ng-show="fieldData.current.config[option.key]" rmaps-click="removeBase" rmaps-value-name-click="option.key") X
+        span.remove-icon(ng-show="fieldData.current.input[option.key]" ng-click="removeBaseInput(option.key)") X
+
+    div.col-md-12(ng-show="fieldData.current.output == 'status_display'")
+      h4 RealtyMaps Status Display
+      div This field is shown to users within property details. MLS values may be replaced if they would be confusing.
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span {{fieldData.current.output}}
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row(ng-repeat="lookup in fieldData.current.lookups")
+        div.col-md-3 {{lookup.LongValue}}
+        div.col-md-9
+          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'status'")
+      h4 RealtyMaps Status
+      div This field is made available for filtering/searching.
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span {{fieldData.current.output}}
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row(ng-repeat="lookup in fieldData.current.lookups")
+        div.col-md-3 {{lookup.LongValue}}
+        div.col-md-9
+          select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'substatus'")
+      h4 RealtyMaps Substatus
+      div This field is made available for filtering/searching.
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span {{fieldData.current.output}}
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row(ng-repeat="lookup in fieldData.current.lookups")
+        div.col-md-3 {{lookup.LongValue}}
+        div.col-md-9
+          select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")

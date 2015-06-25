@@ -11,4 +11,3 @@ if (not config.USER_DB.connection or not config.PROPERTY_DB.connection) and
   logger.error 'Database connection strings required! fatal and exiting!'
   require('../../backend/config/dbs').shutdown()
   process.exit 1
-  return
