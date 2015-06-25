@@ -10,8 +10,6 @@ gulp.task 'specs', gulp.parallel 'commonSpec', 'backendSpec','gulpSpec', 'fronte
 
 gulp.task 'spec', gulp.series 'webpack', 'webpackAdmin', 'specs'
 
-gulp.task 'specMock', gulp.series 'webpackMock','gulpSpec', 'frontendSpec'
-
 #front end coverage
 gulp.task 'coverage', gulp.series "spec", ->
   gulp.src('')

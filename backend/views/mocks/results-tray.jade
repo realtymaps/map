@@ -1,0 +1,11 @@
+doctype html
+html(lang='en', ng-app='rmapsapp')
+  head
+    meta(charset='utf-8')
+    title Results Tray Mock
+    base(href='/')
+    link(rel='stylesheet', href='styles/vendor.css')
+    script(src='scripts/vendor.js')
+    script(type='application/javascript', src='../#{paths.destFull.webpack.map.filename}')
+    body(ng-controller='RealtyMaps-MockResultsTrayCtrl')
+      ng-include(src='"results-tray.tpl.html"')

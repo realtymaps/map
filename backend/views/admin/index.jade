@@ -1,0 +1,8 @@
+extends ../layout
+
+block customHeader
+  title RealtyMaps Admin
+  
+block content
+  .realtymaps-main(ui-view='')
+  script(type='application/javascript', src='#{paths.destFull.webpack.admin.filename}')

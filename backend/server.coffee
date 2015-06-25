@@ -1,10 +1,8 @@
 
 touch = require 'touch'
-
 config = require './config/config'
-
-if config.NEW_RELIC.RUN
-  require 'newrelic'
+paths = require '../common/config/paths'
+_ = require 'lodash'
 
 require '../common/extensions/strings'
 
@@ -37,6 +35,20 @@ require('./config/cluster') (cluster) ->
   # express configuration
   app = require("./config/express")
 
+  if config.NEW_RELIC.RUN
+    newrelic = require 'newrelic'
+  else
+    newrelic =
+      getBrowserTimingHeader: () ->
+        '<!-- NEWRELIC NOT LOADED -->'
+
+  _.extend app.locals,
+    newrelic: newrelic
+    paths: paths
+
+  app.set('views', __dirname + '/views')
+
+  app.set('view engine', 'jade');
   try
     logger.info "Attempting to start backend on port #{config.PORT}."
     app.listen config.PORT, ->
@@ -46,4 +58,3 @@ require('./config/cluster') (cluster) ->
   catch e
     logger.error "backend failed to start with exception: #{e}"
     throw new Error(e)
-
