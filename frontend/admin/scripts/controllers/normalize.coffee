@@ -31,6 +31,8 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
+  $scope.stateOptions = _.values rmapsParcelEnums.states
+
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories, (label, list) ->
     label: label
@@ -150,11 +152,14 @@ app.controller 'rmapsNormalizeCtrl',
 
   validateBase = (field) ->
     input = field.input
-    if field.output == 'address'
-      field.valid = input.city && input.state && (input.zip || input.zip9) &&
-       ((input.streetName && input.streetNum) || input.streetFull)
-    else
-      field.valid = field.input?
+    switch field.output
+      when 'address'
+        field.valid = input.city && input.state && (input.zip || input.zip9) &&
+         ((input.streetName && input.streetNum) || input.streetFull)
+      when 'days_on_market'
+        field.valid = input[0] || input[1]
+      else
+        field.valid = field.input?
 
   # User input triggers this
   $scope.getTransform = _.debounce (() -> setTransform($scope.fieldData.current)), 2000

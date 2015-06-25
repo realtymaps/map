@@ -61,10 +61,34 @@ app.service 'validatorBuilder', () ->
 
     switch field.output
       when 'address'
-        _getValidationString('address')
+        _getValidationString('address', vOptions)
 
       when 'status', 'substatus', 'status_display'
-        _getValidationString('choices', choices)
+        _getValidationString('choices', choices: choices)
+
+      when 'parcel_id'
+        _getValidationString('string', vOptions)
+
+      when 'days_on_market'
+        'validators.pickFirst({criteria: validators.integer()})'
+
+      when 'baths_full', 'bedrooms', 'sqft_finished'
+        _getValidationString('integer', vOptions)
+
+      when 'price'
+        _getValidationString('currency', vOptions)
+
+      when 'rm_property_id'
+        _getValidationString('rm_property_id', vOptions)
+
+      when 'fips_code'
+        _getValidationString('fips', vOptions)
+
+      when 'acres'
+        _getValidationString('float', vOptions)
+
+      when 'hide_address'
+        _getValidationString('boolean', vOptions)
 
       else
         _getValidationString(type, vOptions)

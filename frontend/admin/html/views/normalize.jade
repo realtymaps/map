@@ -153,3 +153,79 @@ div.normalize-container
         div.col-md-3 {{lookup.LongValue}}
         div.col-md-9
           select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'days_on_market'")
+      h4 RealtyMaps Days on Market
+      div If possible, select Cumulative Days on Market (CDOM) first, then Days on Market. Only one is required though.
+      div.field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
+        span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+        span Cumulative Days on Market
+        span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
+      div.field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
+        span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+        span Days on Market
+        span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+
+    div.col-md-12(ng-show="fieldData.current.output == 'parcel_id'")
+      h4 RealtyMaps Parcel ID
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span Parcel ID
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row
+        div.col-md-3 Strip Formatting
+        div.col-md-3
+          input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'hide_address'")
+      h4 RealtyMaps Hide Address
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span Hide Listing
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row
+        div.col-md-3 Invert
+        div.col-md-3
+          input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'hide_listing'")
+      h4 RealtyMaps Hide Listing
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span Hide Listing
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row
+        div.col-md-3 Invert
+        div.col-md-3
+          input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'fips_code'")
+      h4 RealtyMaps FIPS code
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span FIPS code
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      div.row
+        div.col-md-3
+          select(multiple ng-options="lookup.LongValue as lookup.LongValue for lookup in fieldData.current.lookups" ng-model="fieldData.current.config.states" ng-change="getTransform()")
+
+    div.col-md-12(ng-show="fieldData.current.output == 'rm_property_id'")
+      h4 RealtyMaps Property ID
+      div.field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
+        span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+        span County or Parish
+        span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
+      div.field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
+        span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+        span Parcel Number
+        span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+
+    //- Generic
+    div.col-md-12(ng-show="['price', 'acres', 'baths_full', 'bedrooms', 'price', 'sqft_finished'].indexOf(fieldData.current.output) != -1")
+      h4 RealtyMaps {{fieldData.current.output}}
+      div.field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+        span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+        span {{fieldData.current.output}}
+        span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+
+
