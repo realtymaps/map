@@ -3,7 +3,7 @@ log = require('gulp').log
 gulpif = require 'gulp-if'
 size = require 'gulp-size'
 es = require 'event-stream'
-paths = require '../paths'
+paths = require '../../common/config/paths'
 plumber = require 'gulp-plumber'
 sourcemaps = require 'gulp-sourcemaps'
 

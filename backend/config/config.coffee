@@ -90,7 +90,7 @@ base =
       API_URL: apiUrl
       TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
       WAKE_URLS: ret.MAPS.map (m) -> "#{root}/map/named/#{m.name}?#{apiUrl}"
-      
+
   TWILIO:
     ACCOUNT: process.env.TWILIO_ACCOUNT
     API_KEY: process.env.TWILIO_API_KEY
@@ -134,9 +134,9 @@ environmentConfig =
       LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
     USE_ERROR_HANDLER: true
     NEW_RELIC:
-      RUN: false # can be flipped to true if needed for troubleshooting or testing
+      RUN: Boolean(process.env.NEW_RELIC_RUN)
       LOGLEVEL: 'info'
-      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-dev-realtymaps-map" else null
+      APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
 
   test: # test inherits from development below
     LOGGING:
@@ -161,7 +161,7 @@ environmentConfig =
     NEW_RELIC:
       RUN: true
       LOGLEVEL: 'info'
-      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-staging-realtymaps-map" else null
+      APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
     DB_CACHE_TIMES:

@@ -6,6 +6,7 @@ require '../directives/dragdrop.coffee'
 require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
 
+
 app.controller 'rmapsNormalizeCtrl',
 ['$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
 ($scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
@@ -36,6 +37,14 @@ app.controller 'rmapsNormalizeCtrl',
     label: label
     list: list
     items: $scope.categories[list] = []
+
+  # CSV Download items
+  $scope.csv =
+    rowCount: 1000
+    getUrl: (rows) ->
+      rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, rows)
+  $scope.dlCSV = (url) ->
+    $window.open url, "_self"
 
   # Load MLS list
   rmapsMlsService.getConfigs()

@@ -8,6 +8,10 @@ apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
 
 module.exports =
+    views:
+        rmap:            "/rmap.html"
+        admin:           "/admin.html"
+        mocksResults:    "/mocks/results.html"
     wildcard:
         admin:           "/admin/*"
         frontend:        "/*"

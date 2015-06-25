@@ -7,6 +7,14 @@ _ = require 'lodash'
 
 routesConfig =
 
+    views:
+        rmap:
+            method: 'get'
+        admin:
+            method: 'get'
+        mocksResults:
+            method: 'get'
+          
     wildcard:
         backend:
             method: 'all'
