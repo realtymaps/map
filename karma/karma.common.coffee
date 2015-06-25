@@ -17,6 +17,7 @@ module.exports = (config, webpackConf) ->
 # preprocess matching files before serving them to the browser
 # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
+    '../spec/admin/**/*spec.coffee': ['webpack']
     '../spec/common/**/*spec.coffee': ['webpack']
     '../spec/app/**/*spec.coffee': ['webpack']
     '../spec/fixtures/*.html': ['html2js']
@@ -37,12 +38,14 @@ module.exports = (config, webpackConf) ->
     '../_public/scripts/vendor.js'
     '../_public/styles/vendor.css'
     '../_public/scripts/main.wp.js'
+    '../_public/scripts/admin.wp.js'
     '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
     '../spec/fixtures/*.html'
     '../spec/fixtures/*.json'
     '../spec/app/bootstrap.spec.coffee'
     '../spec/common/**/*spec.coffee'
     '../spec/app/**/*spec.coffee'
+    '../spec/admin/**/*spec.coffee'
     #do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
     {pattern:'*coffee', included: false}
   ]
