@@ -11,7 +11,7 @@ options =
   ignore: [
     'node_modules/**'
     'bower_componets/**'
-    'app/**'
+    'frontend/**'
     '_public/**'
     'mean.coffee.log'
   ]
