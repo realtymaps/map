@@ -9,7 +9,8 @@ if(!appName)
   throw("config.NEW_RELIC.APP_NAME not defined! Please define RMAPS_MAP_INSTANCE_NAME in your Heroku app's config vars or your local environment (like your .bash_rc, not your .env).");
 
 /*
-We use a different INSTANCE_NAME for each staging/dev instance, that way we can avoid duplicate apps in the APM manager
+We use a different RMAPS_MAP_INSTANCE_NAME for each staging/dev instance,
+that way we can avoid duplicate apps in the APM manager
 of New Relic -- otherwise this would become a maintenance hell.
 
 Developers should limit their staging to 1 Dyno of the smallest size to keep cost down, especially when new relic is
