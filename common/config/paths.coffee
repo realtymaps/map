@@ -21,11 +21,8 @@ getAssetCollection = (app) ->
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'
     json: app + 'json/**/*.json'
-    mockIndexes: app + 'html/mocks'
-    index: app + 'html/index.html'
     assets: app + 'assets/*'
   }
-
 
 module.exports =
   bower: 'bower_components'
@@ -50,3 +47,10 @@ module.exports =
     fonts: dest.root + dest.fonts
     index: dest.root + 'rmap.html'
     admin: dest.root + 'admin.html'
+    webpack:
+      map:
+        filename: dest.scripts + "/main.wp.js"
+        chunkFilename: dest.scripts + "/main.wp.js"
+      admin:
+        filename: dest.scripts + "/admin.wp.js"
+        chunkFilename: dest.scripts + "/adminChunk.wp.js"

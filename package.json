@@ -122,7 +122,7 @@
     "mkdirp": "^0.5.0",
     "mocha": "1.21.x",
     "moment": "^2.10.3",
-    "newrelic": "^1.16.1",
+    "newrelic": "^1.20.2",
     "ng-annotate-webpack-plugin": "^0.1.2",
     "nib": "1.0.4",
     "node-sass": "^3.1.2",

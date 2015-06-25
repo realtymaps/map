@@ -1,10 +1,6 @@
 
 touch = require 'touch'
-
 config = require './config/config'
-
-if config.NEW_RELIC.RUN
-  require 'newrelic'
 
 require '../common/extensions/strings'
 
@@ -46,4 +42,3 @@ require('./config/cluster') (cluster) ->
   catch e
     logger.error "backend failed to start with exception: #{e}"
     throw new Error(e)
-

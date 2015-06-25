@@ -1,6 +1,6 @@
 _ = require 'lodash'
 gulp = require 'gulp'
-paths = require '../paths'
+paths = require '../../common/config/paths'
 plumber = require 'gulp-plumber'
 gzip = require 'gulp-gzip'
 

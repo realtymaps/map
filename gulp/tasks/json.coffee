@@ -1,5 +1,5 @@
 gulp = require 'gulp'
-paths = require '../paths'
+paths = require '../../common/config/paths'
 plumber = require 'gulp-plumber'
 
 gulp.task 'jsonMock', ->

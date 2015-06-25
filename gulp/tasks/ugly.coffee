@@ -1,4 +1,4 @@
-path = require '../paths'
+paths = require '../../common/config/paths'
 gulp = require 'gulp'
 uglify = require 'gulp-uglify'
 coffee = require 'gulp-coffee'
@@ -14,4 +14,4 @@ gulp.task 'ugly', gulp.series 'webpack', ->
   .pipe plumber()
   .pipe(uglify())
   .on 'error', log
-  .pipe(gulp.dest path.destFull.scripts)
+  .pipe(gulp.dest paths.destFull.scripts)

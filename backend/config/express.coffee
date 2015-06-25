@@ -1,6 +1,8 @@
 express = require 'express'
 path = require 'path'
 Promise = require 'bluebird'
+paths = require '../../common/config/paths'
+_ = require 'lodash'
 
 config = require './config'
 commonConfig = require '../../common/config/commonConfig'
@@ -124,5 +126,19 @@ if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
 
 app.set("trust proxy", config.TRUST_PROXY)
+
+if config.NEW_RELIC.RUN
+  newrelic = require 'newrelic'
+else
+  newrelic =
+    getBrowserTimingHeader: () ->
+      '<!-- NEWRELIC NOT LOADED -->'
+
+_.extend app.locals,
+  newrelic: newrelic
+  paths: paths
+
+app.set('views', __dirname.replace('/config','/views'))
+app.set('view engine', 'jade');
 
 module.exports = app

@@ -3,60 +3,35 @@ require './otherAssets'
 gWebpack = require 'webpack-stream'
 HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
-paths = require '../paths'
+paths = require '../../common/config/paths'
 plumber = require 'gulp-plumber'
 _ = require 'lodash'
 fs = require 'fs'
 webpack = require 'webpack'
 
-mockIndexes = fs.readdirSync(paths.rmap.mockIndexes)
-
-# outputs
-output =
-  filename: paths.dest.scripts + "/[name].wp.js"
-  chunkFilename: paths.dest.scripts + "/[id].wp.js"
-
-outputAdmin =
-  filename: paths.dest.scripts + "/admin.wp.js"
-  chunkFilename: paths.dest.scripts + "/adminChunk.wp.js"
-
+output = paths.destFull.webpack.map
+outputAdmin = paths.destFull.webpack.admin
 # webpack confs per each environment & app
-conf = configFact output, [
-  new HtmlWebpackPlugin
-    template: paths.rmap.index
-    filename: "rmap.html"
-]
+conf = configFact output
 
-mockConf = configFact output, mockIndexes.map (fileName) ->
-  new HtmlWebpackPlugin
-    template: paths.mockIndexes + '/' + fileName
-    filename: "mocks/#{fileName}"
-
-prodConf = configFact output, [
-  new HtmlWebpackPlugin
-    template: paths.rmap.index
-    filename: "rmap.html"
+prodConf = configFact output,
   new webpack.optimize.UglifyJsPlugin {
     compress: {
       warnings: false
     }}
-], '!'
+, '!'
 
-adminConf = configFact outputAdmin, [
-  new HtmlWebpackPlugin
-    template: paths.admin.index
-    filename: "admin.html"
+adminConf = configFact outputAdmin,
   new webpack.optimize.UglifyJsPlugin {
     compress: {
       warnings: false
     }}
-]
 
 # modify staging settings that are only needed for staging
 # (we may want to have an organized staging vs. prod config defined
 #   that accounts for special cases / exceptions-to-the-rule that
 #   we're hitting right now)
-stagingConfs = [conf, mockConf, adminConf]
+stagingConfs = [conf, adminConf]
 _.merge(c, {'devtool': '#eval'}) for c in stagingConfs
 
 # webpack task mgmt
@@ -76,9 +51,6 @@ runWebpack = (someConfig, app='rmap') ->
 
 gulp.task 'webpack', gulp.series 'otherAssets', ->
   runWebpack(conf)
-
-gulp.task 'webpackMock', gulp.series 'otherAssets', ->
-  runWebpack(mockConf)
 
 gulp.task 'webpackProd', gulp.series 'otherAssets', ->
   runWebpack(prodConf)
