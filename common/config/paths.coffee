@@ -21,7 +21,6 @@ getAssetCollection = (app) ->
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'
     json: app + 'json/**/*.json'
-    index: app + 'html/index.jade'
     assets: app + 'assets/*'
   }
 
