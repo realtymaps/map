@@ -1,7 +1,6 @@
 gulp = require 'gulp'
 require './otherAssets'
 gWebpack = require 'webpack-stream'
-HtmlWebpackPlugin = require 'html-webpack-plugin'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../../common/config/paths'
 plumber = require 'gulp-plumber'

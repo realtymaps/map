@@ -37,10 +37,10 @@ ng-init="resultsInit('results-list')")
             //div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
             div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property")
 
-                .card( ng-class="formatters.results.getAdditionalClasses(result)" id="l-el{{result.rm_property_id}}" ng-click="showDetails = !showDetails"
-                rmaps-click="formatters.results.click" rmaps-value-name-click="result"
-                rmaps-mouseenter="formatters.results.mouseenter" rmaps-value-name-mouseenter="result"
-                rmaps-mouseleave="formatters.results.mouseleave" rmaps-value-name-mouseleave="result")
+                .card( ng-class="formatters.results.getAdditionalClasses(result)" id="l-el{{result.rm_property_id}}"
+                ng-click="formatters.results.click(result,result);showDetails = !showDetails"
+                ng-mouseenter="formatters.results.mouseenter(result,result)"
+                ng-mouseleave="formatters.results.mouseleave(result,result)")
                     .photo()
                         img(ng-cloak ng-src="{{formatters.results.getCurbsideImage(result)}}")
                     .info

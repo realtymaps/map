@@ -10,5 +10,4 @@ mixin resultButtons(resultName)
       
   button.save-button.btn.btn-default.btn-xs(
   ng-class="{'label-saved-property':formatters.results.isSavedResult(#{resultName})}",
-  rmaps-click="formatters.results.clickSaveResultFromList",
-  rmaps-value-name-click="#{resultName}") {{formatters.results.isSavedResult(#{resultName}) ? 'Saved' : 'Save'}}
+  ng-click="formatters.results.clickSaveResultFromList(resultName)") {{formatters.results.isSavedResult(#{resultName}) ? 'Saved' : 'Save'}}

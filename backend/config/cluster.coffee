@@ -4,8 +4,15 @@ cluster = Promise.promisifyAll require('cluster')
 config = require './config'
 logger = require './logger'
 
-module.exports = (workerCb) ->
+#http://stackoverflow.com/questions/19796102/exit-event-in-worker-process-when-killed-from-master-within-a-node-js-cluster
+shutdownNow = ->
+  logger.debug('shutting down ...')
+  setTimeout () ->
+    logger.debug 'quitting'
+    process.exit(0)
+  , 10000
 
+module.exports = (workerCb) ->
   if cluster.isMaster
     headerMsg = "Master Cluster "
     logger.debug headerMsg + " Starting"
@@ -19,12 +26,13 @@ module.exports = (workerCb) ->
       cluster.forkAsync()
 
     cluster.onAsync('exit').then (worker) ->
-      logger.error('Worker ' + worker.id + ' died :(')
+      logger.error("Worker #{worker.id} died :(")
       logger.debug headerMsg + "forking new worker"
       cluster.fork()
 
     return
-
-
+    
   logger.debug "Worker Cluster ##{cluster.worker.id} Starting"
+  process.on 'SIGINT', shutdownNow
+  process.on 'SIGTERM', shutdownNow
   workerCb(cluster)
