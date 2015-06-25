@@ -10,7 +10,7 @@ parcelFetcher = parcelFetcher.getParcelZipFileStream
 shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
-{singleRow} =  require '../utils/util.sql.helpers'
+{expectedSingleRow} =  require '../utils/util.sql.helpers'
 tables = require '../config/tables'
 
 _parcelsTblName = 'parcels'
@@ -82,7 +82,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
                 polysUpdated = (_.filter _.values(updates) , (v) -> v == 'Polygon').length
                 #verify Points inserted matches what the DB has
                 #should we reject?
-                singleRow(tables.propertyData.rootParcel().count()
+                expectedSingleRow(tables.propertyData.rootParcel().count()
                 .where(fips: fipsCode)
                 .whereNotNull('geom_point'))
                 .then (row) ->
@@ -91,7 +91,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
                         logger.warn "Point Count MisMatch: Db Count #{row.count} vs pointsInserted: #{pointsInserted}"
                 #verify Polys updated matches what the DB has
                 #should we reject?
-                singleRow(tables.propertyData.rootParcel().count()
+                expectedSingleRow(tables.propertyData.rootParcel().count()
                 .where(fips: fipsCode)
                 .whereNotNull('geom_point')
                 .whereNotNull('geom_polys'))

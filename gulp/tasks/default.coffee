@@ -4,6 +4,7 @@ require './json'
 require './express'
 require './minify'
 require './gzip'
+require './complexity'
 
 #help = require('gulp-help')(gulp)
 del = require 'del'
