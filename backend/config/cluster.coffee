@@ -5,7 +5,7 @@ config = require './config'
 logger = require './logger'
 
 #http://stackoverflow.com/questions/19796102/exit-event-in-worker-process-when-killed-from-master-within-a-node-js-cluster
-shutdownNow = ->
+shutdownNow = () ->
   logger.debug('shutting down ...')
   setTimeout () ->
     logger.debug 'quitting'
@@ -31,7 +31,7 @@ module.exports = (workerCb) ->
       cluster.fork()
 
     return
-    
+
   logger.debug "Worker Cluster ##{cluster.worker.id} Starting"
   process.on 'SIGINT', shutdownNow
   process.on 'SIGTERM', shutdownNow
