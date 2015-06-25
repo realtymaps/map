@@ -136,7 +136,7 @@ environmentConfig =
     NEW_RELIC:
       RUN: Boolean(process.env.NEW_RELIC_RUN)
       LOGLEVEL: 'info'
-      APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-realtymaps-map" else null
+      APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
 
   test: # test inherits from development below
     LOGGING:
@@ -161,7 +161,7 @@ environmentConfig =
     NEW_RELIC:
       RUN: true
       LOGLEVEL: 'info'
-      APP_NAME: if process.env.INSTANCE_NAME then "#{process.env.INSTANCE_NAME}-staging-realtymaps-map" else null
+      APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
     DB_CACHE_TIMES:
