@@ -164,10 +164,10 @@
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",
     "webpack-stream": "^2.0.0",
-    "winston": "0.8.x"
+    "winston": "0.8.x",
+    "gulp-complexity": "git://github.com/nmccready/gulp-complexity.git"
   },
   "devDependencies": {
-    "gulp-complexity": "git://github.com/nmccready/gulp-complexity.git",
     "karma-chai": "^0.1.0",
     "karma-expect": "^1.1.0",
     "karma-mocha-reporter": "^0.3.1",
