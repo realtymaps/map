@@ -6,7 +6,10 @@ require '../directives/dragdrop.coffee'
 require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
 
-app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', ($scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents) ->
+app.controller 'rmapsNormalizeCtrl',
+['$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
+($scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
+
   $scope.$state = $state
 
   $scope.mlsData =
@@ -20,58 +23,19 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
     'Lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
 
-  $scope.addressOptions = _.map
-    'Street Number': 'streetNum'
-    'Street Name': 'streetName'
-    'City': 'city'
-    'State or Province': 'state'
-    'Postal Code': 'zip'
-    'Postal Code + 4': 'zip9'
-    'Street Dir Prefix': 'streetDirPrefix'
-    'Street Dir Suffix': 'streetDirSuffix'
-    'Street Number Modifier': 'streetNumModifier'
-    'Full Address': 'streetFull',
-    (key, label) ->
-      label: label
-      key: key
+  $scope.addressOptions = _.map rmapsParcelEnums.address, (label, key) ->
+    label: label
+    key: key
 
-  $scope.statusOptions = [
-    'for sale',
-    'pending',
-    'not for sale',
-    'sold'
-  ]
+  $scope.statusOptions = _.values rmapsParcelEnums.status
 
-  $scope.subStatusOptions = [
-    'for sale',
-    'pending',
-    'pending-contingent',
-    'sold',
-    'terminated',
-    'expired',
-    'withdrawn'
-  ]
+  $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
   $scope.categories = {}
-  $scope.targetCategories = _.map
-    base: 'Base'
-    unassigned: 'Unassigned'
-    hidden: 'Hidden'
-    general: 'General'
-    details: 'Details'
-    listing: 'Listing'
-    building: 'Building'
-    lot: 'Lot'
-    location: 'Location & Schools'
-    dimensions: 'Room Dimensions'
-    restrictions: 'Taxes, Fees, and Restrictions'
-    contacts: 'Listing Contacts (realtor only)'
-    realtor: 'Listing Details (realtor only)'
-    sale: 'Sale Details (realtor only)',
-    (label, list) ->
-      label: label
-      list: list
-      items: $scope.categories[list] = []
+  $scope.targetCategories = _.map rmapsParcelEnums.categories, (label, list) ->
+    label: label
+    list: list
+    items: $scope.categories[list] = []
 
   # Load MLS list
   rmapsMlsService.getConfigs()
@@ -80,33 +44,36 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
 
   allRules = {}
 
-  # Handles adding rules to each list
+  # Handles adding rules to categories
   addRule = (rule, list) ->
     _.extend rule,
       ordering: parseInt(rule.ordering||0, 10)
       config: rule.config || {}
       list: list
-    if rule.list == 'base'
-      validateBase(rule)
     category = $scope.categories[list]
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
 
   # Handles parsing existing rules for display
   parseRules = (rules) ->
-    _.forEach rules, (rule) ->
+    _.forEach _.where(rules, list: 'base'), (rule) ->
+      validateBase(rule)
+      addRule rule, rule.list
+    _.forEach _.where(rules, (r) -> r.list != 'base'), (rule) ->
+      if allRules[rule.output]?.list == 'base'
+        validateBase(rule)
+        rule.unselectable = true
       addRule rule, rule.list
 
   # Handles parsing RETS fields for display
   parseFields = (fields) ->
     _.forEach fields, (field) ->
-      _.extend field,
-        output: field.LongName
       rule = allRules[field.output]
-      if not rule
-        addRule field, 'unassigned'
+      if rule
+        _.extend rule, _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
       else
-        _.extend allRules[field.output], _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
+        field.output = field.LongName
+        addRule field, 'unassigned'
 
   # Load saved MLS config and RETS fields
   $scope.selectMls = () ->
@@ -138,6 +105,8 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
 
   # Move rules between categories
   $scope.onDropCategory = (drag, drop, target) ->
+    if drag.model.unselectable
+      return
     rmapsNormalizeService.moveRule $scope.mlsData.current.id,
       drag.model,
       _.find($scope.targetCategories, (c) -> c.items == drag.collection),
@@ -181,7 +150,7 @@ app.controller 'rmapsNormalizeCtrl', [ '$scope', '$rootScope', '$state', 'rmapsM
 
   validateBase = (field) ->
     input = field.input
-    if field.list == 'address'
+    if field.output == 'address'
       field.valid = input.city && input.state && (input.zip || input.zip9) &&
        ((input.streetName && input.streetNum) || input.streetFull)
     else
