@@ -11,7 +11,6 @@ app.run ($http, DSCacheFactory, $log) ->
     storageMode: 'memory' #options (memory , localStorage, sessionStorage)
     verifyIntegrity: true
     onExpire: (key, value) ->
-      $log "Cache Expired: key: #{key}, value: #{value}"
-
+      $log.debug "Cache Expired: key: #{key}"
 
   $http.defaults.cache = DSCacheFactory.get('defaultCache')

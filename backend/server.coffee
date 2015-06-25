@@ -28,7 +28,7 @@ process.on 'uncaughtException', (err) ->
    memwatch = require 'memwatch-next'
    memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
-require('./config/cluster') (cluster) ->
+require('./config/cluster') () ->
 
   # express configuration
   app = require("./config/express")
