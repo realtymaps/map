@@ -5,10 +5,14 @@ plumber = require 'gulp-plumber'
 
 getPaths = (app) ->
   return [
-    paths[app].scripts, paths[app].styles, paths[app].stylus,
-    paths[app].assets,
-    paths[app].stylus, paths[app].stylusWatch
-    paths[app].jade, paths[app].html
+    paths[app].scripts
+    paths[app].styles
+    paths[app].stylus
+    paths[app].assets
+    paths[app].stylus
+    paths[app].stylusWatch
+    paths[app].jade
+    paths[app].html
   ]
 
 gulp.task 'watch_rest', ->
