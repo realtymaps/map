@@ -26,6 +26,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
+    # keep track of readable names
     $scope.fieldNameMap =
       dbNames: {}
       tableNames: {}
@@ -90,35 +91,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         $q.reject(new Error(msg))
       .finally () ->
         $scope.loading = false
-
-    # modal for create & edit mlsData
-    $scope.animationsEnabled = true
-    $scope.open = () ->
-      modalInstance = $modal.open
-        animation: $scope.animationsEnabled
-        template: modalTemplate
-        controller: 'ModalInstanceCtrl'
-        resolve:
-          mlsModalData: () ->
-            return $scope.mlsData.current
-
-      # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (mlsModalData) ->
-          # we want to save if our mls already exists; idOptions represents already-saved mls's
-          if _.some($scope.idOptions, {'id': mlsModalData.id})
-            $scope.saveMlsData()
-          else
-            rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
-            .then (newMls) ->
-              $scope.mlsData.current = newMls
-              $scope.updateObjectOptions($scope.mlsData.current)
-            .catch (err) ->
-              msg = "Error saving MLS."
-              $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
-        , () ->
-          console.log "modal closed"
-      )
 
     # pull db options and enable next step as appropriate
     getDbOptions = () ->
@@ -237,6 +209,56 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       $scope.formItems[toStep].active = true
       $scope.step = toStep
 
+    # modal for Edit mlsData
+    $scope.animationsEnabled = true
+    $scope.openEdit = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'ModalInstanceCtrl'
+        resolve:
+          mlsModalData: () ->
+            return $scope.mlsData.current
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (mlsModalData) ->
+          $scope.saveMlsData()
+        , () ->
+          console.log "modal closed"
+      )
+
+    # modal for Create mlsData
+    $scope.animationsEnabled = true
+    $scope.openCreate = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'ModalInstanceCtrl'
+        resolve:
+          mlsModalData: () ->
+            return {
+              id: null
+              name: null
+              notes: ""
+              active: false
+              username: null
+              password: null
+              url: null
+              main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
+            }
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (mlsModalData) ->
+          rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
+          .then (newMls) ->
+            $scope.mlsData.current = newMls
+            $scope.updateObjectOptions($scope.mlsData.current)
+          .catch (err) ->
+            msg = "Error saving MLS."
+            $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
+        , () ->
+          console.log "modal closed"
+      )
 ]
 
 
@@ -246,18 +268,6 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id
 
-    $scope.clear = () ->
-      $scope.editing = false
-      $scope.mlsModalData = 
-        id: null
-        name: null
-        notes: ""
-        active: false
-        username: null
-        password: null
-        url: null
-        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
-
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)
 
@@ -265,4 +275,3 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
       $modalInstance.dismiss('cancel')
 
 ]
-

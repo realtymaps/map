@@ -22,7 +22,8 @@ div
                         td
                           label.data-label Or
                         td
-                          button.btn.btn-primary(ng-click="open()") Edit/New MLS
+                          button.btn.btn-primary(ng-click="openCreate()") Create MLS
+                          button.btn.btn-primary(ng-click="openEdit()" ng-disabled="!mlsData.current.id") Edit MLS
 
                   div(ng-if="formItem.step == 1")
                     table
