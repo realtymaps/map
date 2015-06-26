@@ -6,42 +6,59 @@ app.service 'validatorBuilder', () ->
   baseRules =
     acres:
       alias: 'Acres'
+      required: true
     address:
       alias: 'Address'
+      required: true
       input: {}
     baths_full:
       alias: 'Baths Full'
+      required: true
     bedrooms:
       alias: 'Bedrooms'
+      required: true
     days_on_market:
       alias: 'Days on Market'
+      required: true
       input: []
     fips_code:
       alias: 'FIPS code'
+      required: true
       input: []
     hide_address:
       alias: 'Hide Address'
+      required: false
     hide_listing:
       alias: 'Hide Listing'
+      required: false
     parcel_id:
       alias: 'Parcel ID'
+      required: true
     price:
       alias: 'Price'
+      required: true
     rm_property_id:
       alias: 'Property ID'
+      required: true
       input: []
     sqft_finished:
       alias: 'Finished Sq Ft'
+      required: true
     status:
       alias: 'Status'
+      required: true
     status_display:
       alias: 'Status Display'
+      required: true
     substatus:
       alias: 'Sub-Status'
+      required: true
     close_date:
       alias: 'Close Date'
+      required: false
     discontinued_date:
       alias: 'Discontinued Date'
+      required: false
 
   lookupType = (field) ->
     types =
