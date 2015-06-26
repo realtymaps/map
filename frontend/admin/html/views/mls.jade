@@ -30,7 +30,7 @@ div
                         td
                           label.data-label Database:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.ResourceID for value in dbOptions" ng-change="processAndProceed(2)")
+                          select(type="text" ng-model="mlsData.current.main_property_data.db" ng-options="value.ResourceID as value.VisibleName for value in dbOptions" ng-change="processAndProceed(2)")
                             option(value="" disabled)
                   div(ng-if="formItem.step == 2" name="step2")
                     table
@@ -99,17 +99,17 @@ div
                         td
                           label.data-label Database:
                         td
-                          span.data-entry {{mlsData.current.main_property_data.db}}
+                          span.data-entry {{fieldNameMap.dbNames[mlsData.current.main_property_data.db]}}
                       tr
                         td
                           label.data-label Table:
                         td
-                          span.data-entry {{mlsData.current.main_property_data.table}}
+                          span.data-entry {{fieldNameMap.tableNames[mlsData.current.main_property_data.table]}}
                       tr
                         td
                           label.data-label Update Timestamp Column:
                         td
-                          span.data-entry {{mlsData.current.main_property_data.field}}
+                          span.data-entry {{fieldNameMap.columnNames[mlsData.current.main_property_data.field]}}
                       tr
                         td
                           label.data-label Formatting:

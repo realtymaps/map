@@ -26,7 +26,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
-    $scope.fieldNameMap = {}
+    $scope.fieldNameMap =
+      dbNames: {}
+      tableNames: {}
+      columnNames: {}
 
     # tracking steps, active/disabled etc
     $scope.formItems = [
@@ -55,7 +58,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
     $scope.loading = true
     rmapsMlsService.getConfigs()
     .then (configs) ->
-      console.log "#### got configs..."
       $scope.idOptions = configs
     .catch (err) ->
       $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
@@ -80,7 +82,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
             console.log "#### columnData:"
             console.log columnData   
 
-      #$q.all(promises)
       .then (results) ->
         $scope.proceed(1)
       .catch (err) ->
@@ -126,6 +127,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
+          $scope.fieldNameMap.dbNames = {}
+          for datum in data
+            $scope.fieldNameMap.dbNames[datum.ResourceID] = datum.VisibleName
           data
         .catch (err) ->
           $scope.dbOptions = []
@@ -150,6 +154,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
+          $scope.fieldNameMap.tableNames = {}
+          for datum in data
+            $scope.fieldNameMap.tableNames[datum.ClassName] = datum.VisibleName
           data
         .catch (err) ->
           $scope.tableOptions = []
@@ -173,6 +180,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           r = mlsConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
+          $scope.fieldNameMap.columnNames = {}
+          for datum in data
+            $scope.fieldNameMap.columnNames[datum.SystemName] = datum.LongName
           data
         .catch (err) ->
           $scope.columnOptions = []

@@ -7,7 +7,6 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
 
   getConfigs = () ->
-    console.log "getList()"
     Restangular.all(mlsConfigAPI).getList()
 
   postConfig = (configObj, collection) ->
