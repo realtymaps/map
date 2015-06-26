@@ -1,4 +1,4 @@
-path = require '../../paths'
+path = require '../../../common/config/paths'
 
 log = require('gulp-util').log
 globDebug = require('../../debug/glob')

@@ -13,18 +13,22 @@ permissionsService = require '../services/service.permissions'
 cacheUserValues = (req) ->
   promises = []
   if not req.session.permissions
+    logger.debug "req.session.permissions"
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
       req.session.permissions = permissionsHash
     promises.push permissionsPromise
   if not req.session.groups
+    logger.debug "req.session.groups"
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
       req.session.groups = groupsHash
     promises.push groupsPromise
   if not req.session.state
+    logger.debug "req.session.state"
     statePromise = userService.getUserState(req.user.id)
     .then (state) ->
+      logger.debug "userService.getUserState.then"
       req.session.state = state
     promises.push statePromise
   return Promise.all(promises)

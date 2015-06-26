@@ -1,10 +1,6 @@
 
 touch = require 'touch'
-
 config = require './config/config'
-
-if config.NEW_RELIC.RUN
-  require 'newrelic'
 
 require '../common/extensions/strings'
 
@@ -32,7 +28,7 @@ process.on 'uncaughtException', (err) ->
    memwatch = require 'memwatch-next'
    memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
-require('./config/cluster') (cluster) ->
+require('./config/cluster') () ->
 
   # express configuration
   app = require("./config/express")
@@ -46,4 +42,3 @@ require('./config/cluster') (cluster) ->
   catch e
     logger.error "backend failed to start with exception: #{e}"
     throw new Error(e)
-

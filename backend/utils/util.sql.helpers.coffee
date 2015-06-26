@@ -188,14 +188,21 @@ select = (knex, which, passedFilters=null, prepend='') ->
     extra = ", #{passedFilters} as \"passedFilters\""
   knex.select(knex.raw(prepend + _columns[which] + extra))
 
-singleRow = (q) -> Promise.try ->
+singleRow = (q, doThrow = false) -> Promise.try ->
   errMsg = 'Expected a Single Result and '
   q.then (rows) ->
-    throw errMsg + 'rows are empty!' unless rows?.length
+    unless rows?.length
+      return unless doThrow
+      throw errMsg + 'rows are empty!'
     ret = rows[0]
-    throw errMsg + 'row is undefined' unless ret?
+    unless ret?
+      return unless doThrow
+      throw errMsg + 'row is undefined'
     ret
-  
+
+expectedSingleRow = (q) -> Promise.try ->
+  singleRow(q, true)
+
 module.exports =
   between: between
   tableName: tableName
@@ -204,6 +211,7 @@ module.exports =
   allPatternsInAnyColumn: allPatternsInAnyColumn
   select: select
   singleRow: singleRow
+  expectedSingleRow: expectedSingleRow
   whereIn: whereIn
   orWhereIn: orWhereIn
   whereNotIn: whereNotIn

@@ -94,17 +94,14 @@ app.service 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-
     vOptions = _.pick field.config, (v) -> v?
-    choices = vOptions.choices || {}
-    type = lookupType(field)?.name
 
     switch field.output
       when 'address'
         _getValidationString('address', vOptions)
 
       when 'status', 'substatus', 'status_display'
-        _getValidationString('choices', choices: choices)
+        _getValidationString('choice', choices: vOptions.choices ? {})
 
       when 'parcel_id'
         _getValidationString('string', vOptions)
@@ -134,7 +131,7 @@ app.service 'validatorBuilder', () ->
         _getValidationString('datetime', vOptions)
 
       else
-        _getValidationString(type, vOptions)
+        _getValidationString(lookupType(field)?.name, vOptions)
 
   validateBase = (field) ->
     # Ensure input is appropriate type before validating
