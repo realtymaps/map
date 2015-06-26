@@ -21,7 +21,7 @@ module.exports = (options = {}) ->
     value = value.toInitCaps()
     query = knex.select('*', knex.raw("similarity(county, '#{value}') AS similarity")).from('fips_lookup')
     if states?
-      sqlHelpers.whereIn(query, 'state', options.states)
+      sqlHelpers.whereIn(query, 'state', states)
     query
     .orderByRaw("similarity(county, '#{value}') DESC")
     .limit(1)
