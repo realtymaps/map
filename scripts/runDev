@@ -14,7 +14,7 @@ do
         --skip-dbsync)
             export SKIP_DBSYNC=true
             ;;
-        --base-server)
+        --bare-server)
             export BARE_EXPRESS_SERVER=true
             ;;
     esac
