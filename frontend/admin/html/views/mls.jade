@@ -38,7 +38,8 @@ div
                         td
                           label.data-label Table:
                         td
-                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
+                          //- select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
+                          select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
                             option(value="" disabled)
                   div(ng-if="formItem.step == 3" name="step3")
                     table
@@ -68,7 +69,7 @@ div
               tab(heading="MLS Data")
           .panel.panel-default
             .panel-body
-              table.table-striped
+              table.table.table-striped
                 tr
                   td
                     label.data-label ID:
@@ -91,9 +92,9 @@ div
                     span.data-entry {{mlsData.current.url}}
                 tr
                   td
-                    label.data-label Timestamp Column Data
+                    label.data-label Property Listings Schema
                   td
-                    table
+                    table.table
                       tr
                         td
                           label.data-label Database:
@@ -106,14 +107,14 @@ div
                           span.data-entry {{mlsData.current.main_property_data.table}}
                       tr
                         td
-                          label.data-label DateTime:
+                          label.data-label Update Timestamp Column:
                         td
                           span.data-entry {{mlsData.current.main_property_data.field}}
-                tr
-                  td
-                    label.data-label Formatting:
-                  td
-                    span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
+                      tr
+                        td
+                          label.data-label Formatting:
+                        td
+                          span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
                 tr
                   td
                     label.data-label Notes:

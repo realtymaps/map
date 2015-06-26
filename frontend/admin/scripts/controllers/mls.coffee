@@ -26,10 +26,36 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
+    $scope.fieldNameMap = {}
+
+    # tracking steps, active/disabled etc
+    $scope.formItems = [
+      step: 0
+      heading: "Select MLS"
+      disabled: false
+      active: true
+    ,
+      step: 1
+      heading: "Choose Database"
+      disabled: true
+      active: false
+    ,
+      step: 2
+      heading: "Choose Table"
+      disabled: true
+      active: false
+    ,
+      step: 3
+      heading: "Choose Field"
+      disabled: true
+      active: false
+    ]
+
     # extract existing configs, populate idOptions
     $scope.loading = true
     rmapsMlsService.getConfigs()
     .then (configs) ->
+      console.log "#### got configs..."
       $scope.idOptions = configs
     .catch (err) ->
       $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
@@ -41,22 +67,20 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       $scope.loading = true
       deferred = $q.defer()
       promises = []
-      promises.push getDbOptions()
+      getDbOptions()
+      .then (dbData) ->
+        console.log "#### dbData:"
+        console.log dbData
+        getTableOptions()
+        .then (tableData) ->
+          console.log "#### tableData:"
+          console.log tableData
+          getColumnOptions()
+          .then (columnData) ->
+            console.log "#### columnData:"
+            console.log columnData   
 
-      if obj.main_property_data.db?
-        promises.push getTableOptions()
-
-        if obj.main_property_data.table?
-          promises.push getColumnOptions()
-        else
-          $scope.tableOptions = []
-          $scope.formItems[3].disabled = true
-
-      else
-        $scope.tableOptions = []
-        $scope.formItems[2].disabled = true
-
-      $q.all(promises)
+      #$q.all(promises)
       .then (results) ->
         $scope.proceed(1)
       .catch (err) ->
@@ -102,6 +126,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
+          data
         .catch (err) ->
           $scope.dbOptions = []
           $scope.tableOptions = []
@@ -110,6 +135,12 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           $scope.formItems[3].disabled = true
           $q.reject(new Error("Error retrieving databases from MLS."))
       else
+        $scope.dbOptions = []
+        $scope.tableOptions = []
+        $scope.columnOptions = []
+        $scope.formItems[1].disabled = true
+        $scope.formItems[2].disabled = true
+        $scope.formItems[3].disabled = true
         return $q.when()
 
     # pull table options and enable next step as appropriate
@@ -119,12 +150,18 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         .then (data) ->
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
+          data
         .catch (err) ->
           $scope.tableOptions = []
           $scope.columnOptions = []
+          $scope.formItems[2].disabled = true
           $scope.formItems[3].disabled = true
           $q.reject(new Error("Error retrieving tables from MLS."))
       else
+        $scope.tableOptions = []
+        $scope.columnOptions = []
+        $scope.formItems[2].disabled = true
+        $scope.formItems[3].disabled = true
         return $q.when()
 
     # pull column options and enable next step as appropriate
@@ -136,11 +173,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
           r = mlsConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
-
+          data
         .catch (err) ->
           $scope.columnOptions = []
           $q.reject(new Error("Error retrieving columns from MLS."))
       else
+        $scope.columnOptions = []
+        $scope.formItems[3].disabled = true
         return $q.when()
 
     # button behavior for saving mls
@@ -153,29 +192,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
       .finally () ->
         $scope.loading = false
-
-    # tracking steps, active/disabled etc
-    $scope.formItems = [
-      step: 0
-      heading: "Select MLS"
-      disabled: false
-      active: true
-    ,
-      step: 1
-      heading: "Choose Database"
-      disabled: true
-      active: false
-    ,
-      step: 2
-      heading: "Choose Table"
-      disabled: true
-      active: false
-    ,
-      step: 3
-      heading: "Choose Field"
-      disabled: true
-      active: false
-    ]
 
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->
