@@ -57,7 +57,7 @@ _getDefaultQuery = ->
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
   # logger.debug filters, true
-    return [] if !filters or !filters?.status?.length or !query
+    return if !filters or !filters?.status?.length or !query
     # save out for use with saved properties
 
     query.limit(limit) if limit
