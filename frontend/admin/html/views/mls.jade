@@ -39,7 +39,6 @@ div
                         td
                           label.data-label Table:
                         td
-                          //- select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.ClassName+' '+value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
                           select(type="text" ng-model="mlsData.current.main_property_data.table" ng-options="value.ClassName as value.VisibleName for value in tableOptions" ng-change="processAndProceed(3)")
                             option(value="" disabled)
                   div(ng-if="formItem.step == 3" name="step3")

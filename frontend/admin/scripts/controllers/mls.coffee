@@ -72,16 +72,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       promises = []
       getDbOptions()
       .then (dbData) ->
-        console.log "#### dbData:"
-        console.log dbData
         getTableOptions()
         .then (tableData) ->
-          console.log "#### tableData:"
-          console.log tableData
           getColumnOptions()
           .then (columnData) ->
-            console.log "#### columnData:"
-            console.log columnData   
 
       .then (results) ->
         $scope.proceed(1)
