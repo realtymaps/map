@@ -4,7 +4,7 @@ set -e
 if [[ "$IS_HEROKU" == "" ]]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
-    cd "$DIR/.."
+    cd "$DIR/../.."
 fi
 
 
@@ -13,10 +13,14 @@ then
   unset PORT
 fi
 
-if [[ "$IS_HEROKU" != "" || "$BARE_EXPRESS_SERVER" != "" ]]
+if [[ "$IS_HEROKU" != "" ]]
 then
   gulp prod
   coffee /app/backend/server.coffee
+elif [[  "$BARE_EXPRESS_SERVER" != "" ]]
+then
+  gulp prod
+  coffee ./backend/server.coffee
 else
   gulp
 fi
