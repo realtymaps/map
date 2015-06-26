@@ -42,11 +42,8 @@ app.factory 'rmapsMap',
       scopeM: ->
         @scope.map
       constructor: ($scope, limits) ->
-        $scope.isReady = ->
-          $scope.map.center? and $scope.map.layers and baseIsLoaded
 
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
-        baseIsLoaded = true
         _initToggles $scope, limits.toggles
 
         $scope.zoomLevelService = rmapsZoomLevel
@@ -233,13 +230,14 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
-        return if !@directiveControls? or !@scope.isReady()
+        return !@scope.map.isReady
 
         @scope?.formatters?.results?.reset()
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of @scope.map.bounds
-            paths.push [b.lat, b.lng]
+            if b?
+              paths.push [b.lat, b.lng]
 
         if !paths? or paths.length < 2 or
           (@scope.map?.bounds.northEast.lat == @scope.map?.bounds.southWest.lat and @scope.map?.bounds.northEast.lon == @scope.map?.bounds.southWest.lon)

@@ -25,9 +25,9 @@ _googleFactory = (name, type, options) ->
   ret
 
 _baseLayers =
-  googleRoadmap: _googleFactory 'Streets', 'ROADMAP', mapOptions: googleOptions
-  googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
-  googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
+  # googleRoadmap: _googleFactory 'Streets', 'ROADMAP', mapOptions: googleOptions
+  # googleHybrid: _googleFactory 'Hybrid', 'HYBRID'
+  # googleTerrain: _googleFactory 'Terrain', 'TERRAIN'
   #NOTE OSM does not support a zoomLevel higher than 20
   osm:
     name: 'OpenStreetMap',
