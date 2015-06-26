@@ -23,7 +23,10 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
     rule.list = listTo.list
     rule.ordering = idx
     if rule.list != 'unassigned'
-      Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(listTo.list).customPUT _.map(listTo.items, _formatRule)
+      createListRules(mlsId, listTo.list, listTo.items)
+
+  createListRules = (mlsId, list, rules) ->
+    Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(list).customPUT _.map(rules, _formatRule)
 
   updateRule = (mlsId, rule) ->
     if rule.list != 'unassigned'
@@ -32,5 +35,6 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
   service =
     getRules: getRules
     moveRule: moveRule
+    createListRules: createListRules
     updateRule: updateRule
 ]

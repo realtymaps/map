@@ -67,6 +67,8 @@ body
   &.assigned
     background-color #aaa
     border-color #999
+  &.base
+    text-transform capitalize
   &.base:before
     content 'RM'
     background-color #313145
@@ -93,11 +95,17 @@ body
     max-height 200px
     overflow-y scroll
 
-.field-container, .category-container
-  border 2px solid transparent
-  overflow-y scroll
-  height 450px
+.list-container
   padding 2px
+  height 450px
+  h4
+    text-align center
+
+.field-container
+  // border 2px solid transparent
+  overflow-y scroll
+  height 400px
+  // padding 2px
 
 .properties-container
   height 40%
@@ -122,7 +130,7 @@ body
   .field.empty
     background-color transparent
     color #888
-    border 2px dashed #888
+    border 2px dashed #46b8da
     &:before
       content "Drag here:"
       padding-right 0.5em

@@ -31,8 +31,6 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
-  $scope.stateOptions = _.values rmapsParcelEnums.states
-
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories, (label, list) ->
     label: label
@@ -48,29 +46,42 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding rules to categories
   addRule = (rule, list) ->
+    category = $scope.categories[list]
     _.extend rule,
-      ordering: parseInt(rule.ordering||0, 10)
+      ordering: rule.ordering ? category.length
       config: rule.config || {}
       list: list
-    category = $scope.categories[list]
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
 
+  # Handles adding base rules
+  addBaseRule = (rule) ->
+    validatorBuilder.validateBase rule
+    addRule rule, 'base'
+
   # Handles parsing existing rules for display
   parseRules = (rules) ->
+    # Load existing base rules first
     _.forEach _.where(rules, list: 'base'), (rule) ->
-      validateBase(rule)
-      addRule rule, rule.list
+      addBaseRule rule
+    # Create base rules that don't exist yet
+    _.forEach validatorBuilder.baseRules, (rule, output) ->
+      if !allRules[output]
+        rule.output = output
+        addBaseRule rule
+    # Create remaining rules
     _.forEach _.where(rules, (r) -> r.list != 'base'), (rule) ->
       if allRules[rule.output]?.list == 'base'
-        validateBase(rule)
+        validatorBuilder.validateBase rule
         rule.unselectable = true
       addRule rule, rule.list
+    # Save base rules
+    $scope.baseLoading = rmapsNormalizeService.createListRules $scope.mlsData.current.id, 'base', $scope.categories.base
 
   # Handles parsing RETS fields for display
   parseFields = (fields) ->
     _.forEach fields, (field) ->
-      rule = allRules[field.output]
+      rule = allRules[field.LongName]
       if rule
         _.extend rule, _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
       else
@@ -147,27 +158,19 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field)
 
   updateBase = (field) ->
-    setTransform(field)
-    validateBase(field)
-
-  validateBase = (field) ->
-    input = field.input
-    switch field.output
-      when 'address'
-        field.valid = input.city && input.state && (input.zip || input.zip9) &&
-         ((input.streetName && input.streetNum) || input.streetFull)
-      when 'days_on_market'
-        field.valid = input[0] || input[1]
-      else
-        field.valid = field.input?
+    validatorBuilder.validateBase(field)
+    saveRule field
 
   # User input triggers this
-  $scope.getTransform = _.debounce (() -> setTransform($scope.fieldData.current)), 2000
+  $scope.updateRule = _.debounce () ->
+    field = $scope.fieldData.current
+    field.transform = validatorBuilder.getTransform field
+    saveRule field
+  , 2000
 
   # Map configuration options to transform JSON
   setTransform = (field) ->
     field.transform = validatorBuilder.getTransform(field)
-    saveRule field
 
   saveRule = (rule) ->
     $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule

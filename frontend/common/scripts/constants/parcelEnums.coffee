@@ -38,10 +38,6 @@ address =
   streetNumModifier: 'Street Number Modifier'
   streetFull: 'Full Street'
 
-states =
-  KY: 'Kentucky'
-  FL: 'Florida'
-
 module.exports =
   status: status
   subStatus: _.extend(status, subStatus)
