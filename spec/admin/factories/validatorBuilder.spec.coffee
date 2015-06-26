@@ -35,7 +35,7 @@ describe 'validatorBuilder', ->
 
     namedFieldTestMap = [
        field: {"output": "address"}
-       transform: 'validation.address()'
+       transform: 'validation.address({})'
       ,
        field: {"output": "status", "config": {"choices": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validation.choice({"choices":{"Active":"for sale","Pending":"pending"}})'

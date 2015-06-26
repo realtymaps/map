@@ -31,7 +31,7 @@ _addRules = (query, rules, counts) ->
   _.each rules, (r) ->
     if !r.order?
       if !idx[r.list]?
-        idx[r.list] = 0
+        idx[r.list] = -1
       r.ordering = ++idx[r.list]
   tables.config.dataNormalization()
   .insert(rules)
