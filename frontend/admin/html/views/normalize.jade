@@ -107,8 +107,8 @@
               option(value="") None
         .row(ng-show="fieldData.current.lookups")
           .col-md-3 Replace values with RealtyMaps values (Lookup)
-          .col-md-9
-        .row(ng-repeat="lookup in fieldData.current.lookups")
+          .col-md-9(ng-if="fieldData.current.lookups.length > 50") There are {{fieldData.current.lookups.length}} lookups, too many to show!
+        .row(ng-if="fieldData.current.lookups.length <= 50" ng-repeat="lookup in fieldData.current.lookups")
           .col-md-3 {{lookup.LongValue}}
           .col-md-9
             input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
