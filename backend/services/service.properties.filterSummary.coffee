@@ -20,6 +20,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
   _default = ->
     query = base.getFilterSummaryAsQuery(state, queryParams, 800)
+    return Promise.resolve([]) unless query
     # include saved id's in query so no need to touch db later
 
     propertiesIds = _.keys(state.properties_selected)
@@ -51,6 +52,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
     geojsonPolys: ->
       query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
+      return Promise.resolve([]) unless query
       # include saved id's in query so no need to touch db later
       propertiesIds = _.keys(state.properties_selected)
       if propertiesIds.length > 0

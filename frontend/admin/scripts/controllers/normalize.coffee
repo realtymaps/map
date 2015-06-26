@@ -8,8 +8,8 @@ require '../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-['$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
-($scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
+['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
+($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
 
   $scope.$state = $state
 
@@ -45,6 +45,7 @@ app.controller 'rmapsNormalizeCtrl',
       rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, rows)
   $scope.dlCSV = (url) ->
     $window.open url, "_self"
+    return true
 
   # Load MLS list
   rmapsMlsService.getConfigs()
