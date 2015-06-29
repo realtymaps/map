@@ -23,7 +23,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
             isDeep: false
 
         settings[mapPath] =
-            isReady: false
+            isReady: true
             defaults:
               maxZoom: options.maxZoom
               minZoom: options.minZoom
@@ -50,7 +50,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
 
         angular.extend @scope, settings
 
-      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['moveend', 'zoomend'])->
+      constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['resize','moveend', 'zoomend'])->
         _throttler =  _eventThrottler($log, options)
         @initScopeSettings(options, mapPath, baseLayers, mapEvents)
 
@@ -87,27 +87,28 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
         leafletData.getDirectiveControls(mapId)
         .then (controls) =>
           @directiveControls = controls
-        .then () =>
-          leafletData.getMap(mapId).then (map) =>
-            @map =  map
-            @map.whenReady  =>
-              @scope[mapPath].isReady = true
 
-            @zoomBox = L.control.zoomBox()
-            map.addControl(@zoomBox)
-            document.onkeydown = (e) =>
-              e = e || window.event;
-              if e.keyCode == 27 #esc
-                self.zoomBoxActive = false
-                @zoomBox.deactivate()
-              if e.altKey
-                self.zoomBoxActive = true
-                @zoomBox.activate()
+        leafletData.getMap(mapId).then (map) =>
+          @map =  map
+          @map.whenReady  =>
+            @scope[mapPath].isReady = true
 
-            $timeout =>
-              @map.invalidateSize()
-            , 1200
+          @zoomBox = L.control.zoomBox()
+          map.addControl(@zoomBox)
+          document.onkeydown = (e) =>
+            e = e || window.event;
+            if e.keyCode == 27 #esc
+              self.zoomBoxActive = false
+              @zoomBox.deactivate()
+            if e.altKey
+              self.zoomBoxActive = true
+              @zoomBox.activate()
 
+          #due to the router hiding the map and timing the map needs to be resized
+          #figuring out exactly when this is has been tricky (might try element .load)
+          #however this might be easier making our own directive instead of factories
+          $timeout =>
+            @map.invalidateSize()#map's bounds is not valid until after this call
             leafletPreNamespace = 'leafletDirectiveMap.'
             mapEvents.forEach (eventName) =>
               eventName =  leafletPreNamespace + eventName
@@ -115,6 +116,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
 
             _maybeDraw()
 
+          , 200
 
         #init
         mapElement = _.first document.getElementsByClassName(_mapClassContainerName)

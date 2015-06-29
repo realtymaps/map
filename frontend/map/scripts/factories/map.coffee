@@ -223,24 +223,28 @@ app.factory 'rmapsMap',
 
         $q.all(promises).then =>
           #every thing is setup, only draw once
-          @directiveControls.geojson.create(@scope.map.geojson)
-          @directiveControls.markers.create(@scope.map.markers)
+          if @directiveControls
+            @directiveControls.geojson.create(@scope.map.geojson)
+            @directiveControls.markers.create(@scope.map.markers)
           @scope.$evalAsync =>
             @scope.formatters.results?.reset()
 
 
       draw: (event, paths) =>
-        return !@scope.map.isReady
+        return if !@scope.map.isReady
 
         @scope?.formatters?.results?.reset()
+        #not getting bounds from scope as this is the most up to date and skips timing issues
+        lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
+        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lon == lBounds._southWest.lon
+
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
-          for k, b of @scope.map.bounds
+          for k, b of lBounds
             if b?
               paths.push [b.lat, b.lng]
 
-        if !paths? or paths.length < 2 or
-          (@scope.map?.bounds.northEast.lat == @scope.map?.bounds.southWest.lat and @scope.map?.bounds.northEast.lon == @scope.map?.bounds.southWest.lon)
+        if !paths? or paths.length < 2
             return
 
         @hash = _encode paths
