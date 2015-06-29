@@ -113,7 +113,13 @@ module.exports =
   updateRule: (req, res, next) ->
     mlsNormalizationService.updateRule req.params.mlsId, req.params.list, req.params.ordering, req.body
     .then (result) ->
-      next new ExpressResponse(result)
+      if result
+        next new ExpressResponse(result)
+      else
+        next new ExpressResponse
+          alert:
+            msg: "Unknown rule #{req.params.mlsId} #{req.params.list} #{req.params.ordering}"
+          404
     .catch (error) ->
       next new ExpressResponse
         alert:
@@ -123,7 +129,13 @@ module.exports =
   deleteRule: (req, res, next) ->
     mlsNormalizationService.deleteRule req.params.mlsId, req.params.list, req.params.ordering
     .then (result) ->
-      next new ExpressResponse(result)
+      if result
+        next new ExpressResponse(result)
+      else
+        next new ExpressResponse
+          alert:
+            msg: "Unknown rule #{req.params.mlsId} #{req.params.list} #{req.params.ordering}"
+          404
     .catch (error) ->
       next new ExpressResponse
         alert:

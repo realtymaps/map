@@ -26,133 +26,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         url: null
         main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
 
-    # extract existing configs, populate idOptions
-    $scope.loading = true
-    rmapsMlsService.getConfigs()
-    .then (configs) ->
-      $scope.idOptions = configs
-    .catch (err) ->
-      $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
-    .finally () ->
-      $scope.loading = false
-
-    # when getting new mlsData, update the dropdowns as needed
-    $scope.updateObjectOptions = (obj) ->
-      $scope.loading = true
-      deferred = $q.defer()
-      promises = []
-      promises.push getDbOptions()
-
-      if obj.main_property_data.db?
-        promises.push getTableOptions()
-
-        if obj.main_property_data.table?
-          promises.push getColumnOptions()
-        else
-          $scope.tableOptions = []
-          $scope.formItems[3].disabled = true
-
-      else
-        $scope.tableOptions = []
-        $scope.formItems[2].disabled = true
-
-      $q.all(promises)
-      .then (results) ->
-        $scope.proceed(1)
-      .catch (err) ->
-        msg = "Error in retrieving MLS data: #{err.message}"
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
-        $q.reject(new Error(msg))
-      .finally () ->
-        $scope.loading = false
-
-    # modal for create & edit mlsData
-    $scope.animationsEnabled = true
-    $scope.open = () ->
-      modalInstance = $modal.open
-        animation: $scope.animationsEnabled
-        template: modalTemplate
-        controller: 'ModalInstanceCtrl'
-        resolve:
-          mlsModalData: () ->
-            return $scope.mlsData.current
-
-      # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (mlsModalData) ->
-          # we want to save if our mls already exists; idOptions represents already-saved mls's
-          if _.some($scope.idOptions, {'id': mlsModalData.id})
-            $scope.saveMlsData()
-          else
-            rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
-            .then (newMls) ->
-              $scope.mlsData.current = newMls
-              $scope.updateObjectOptions($scope.mlsData.current)
-            .catch (err) ->
-              msg = "Error saving MLS."
-              $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
-        , () ->
-          console.log "modal closed"
-      )
-
-    # pull db options and enable next step as appropriate
-    getDbOptions = () ->
-      if $scope.mlsData.current.id
-        rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
-        .then (data) ->
-          $scope.dbOptions = data
-          $scope.formItems[1].disabled = false
-        .catch (err) ->
-          $scope.dbOptions = []
-          $scope.tableOptions = []
-          $scope.columnOptions = []
-          $scope.formItems[2].disabled = true
-          $scope.formItems[3].disabled = true
-          $q.reject(new Error("Error retrieving databases from MLS."))
-      else
-        return $q.when()
-
-    # pull table options and enable next step as appropriate
-    getTableOptions = () ->
-      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
-        rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
-        .then (data) ->
-          $scope.tableOptions = data
-          $scope.formItems[2].disabled = false
-        .catch (err) ->
-          $scope.tableOptions = []
-          $scope.columnOptions = []
-          $scope.formItems[3].disabled = true
-          $q.reject(new Error("Error retrieving tables from MLS."))
-      else
-        return $q.when()
-
-    # pull column options and enable next step as appropriate
-    getColumnOptions = () ->
-      # when going BACK to this step, only re-query if we have a table to use
-      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
-        rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
-        .then (data) ->
-          r = mlsConstants.dtColumnRegex
-          $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
-          $scope.formItems[3].disabled = false
-
-        .catch (err) ->
-          $scope.columnOptions = []
-          $q.reject(new Error("Error retrieving columns from MLS."))
-      else
-        return $q.when()
-
-    # button behavior for saving mls
-    $scope.saveMlsData = () ->
-      $scope.loading = true
-      $scope.mlsData.current.save()
-      .then (res) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
-      .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
-      .finally () ->
-        $scope.loading = false
+    # keep track of readable names
+    $scope.fieldNameMap =
+      dbNames: {}
+      tableNames: {}
+      columnNames: {}
 
     # tracking steps, active/disabled etc
     $scope.formItems = [
@@ -176,6 +54,120 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       disabled: true
       active: false
     ]
+
+    # extract existing configs, populate idOptions
+    $scope.loading = true
+    rmapsMlsService.getConfigs()
+    .then (configs) ->
+      $scope.idOptions = configs
+    .catch (err) ->
+      $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
+    .finally () ->
+      $scope.loading = false
+
+    # when getting new mlsData, update the dropdowns as needed
+    $scope.updateObjectOptions = (obj) ->
+      $scope.loading = true
+      deferred = $q.defer()
+      promises = []
+      getDbOptions()
+      .then (dbData) ->
+        getTableOptions()
+        .then (tableData) ->
+          getColumnOptions()
+          .then (columnData) ->
+
+      .then (results) ->
+        $scope.proceed(1)
+      .catch (err) ->
+        msg = "Error in retrieving MLS data: #{err.message}"
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
+        $q.reject(new Error(msg))
+      .finally () ->
+        $scope.loading = false
+
+    # pull db options and enable next step as appropriate
+    getDbOptions = () ->
+      if $scope.mlsData.current.id
+        rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
+        .then (data) ->
+          $scope.dbOptions = data
+          $scope.formItems[1].disabled = false
+          $scope.fieldNameMap.dbNames = {}
+          for datum in data
+            $scope.fieldNameMap.dbNames[datum.ResourceID] = datum.VisibleName
+          data
+        .catch (err) ->
+          $scope.dbOptions = []
+          $scope.tableOptions = []
+          $scope.columnOptions = []
+          $scope.formItems[2].disabled = true
+          $scope.formItems[3].disabled = true
+          $q.reject(new Error("Error retrieving databases from MLS."))
+      else
+        $scope.dbOptions = []
+        $scope.tableOptions = []
+        $scope.columnOptions = []
+        $scope.formItems[1].disabled = true
+        $scope.formItems[2].disabled = true
+        $scope.formItems[3].disabled = true
+        return $q.when()
+
+    # pull table options and enable next step as appropriate
+    getTableOptions = () ->
+      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
+        rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
+        .then (data) ->
+          $scope.tableOptions = data
+          $scope.formItems[2].disabled = false
+          $scope.fieldNameMap.tableNames = {}
+          for datum in data
+            $scope.fieldNameMap.tableNames[datum.ClassName] = datum.VisibleName
+          data
+        .catch (err) ->
+          $scope.tableOptions = []
+          $scope.columnOptions = []
+          $scope.formItems[2].disabled = true
+          $scope.formItems[3].disabled = true
+          $q.reject(new Error("Error retrieving tables from MLS."))
+      else
+        $scope.tableOptions = []
+        $scope.columnOptions = []
+        $scope.formItems[2].disabled = true
+        $scope.formItems[3].disabled = true
+        return $q.when()
+
+    # pull column options and enable next step as appropriate
+    getColumnOptions = () ->
+      # when going BACK to this step, only re-query if we have a table to use
+      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
+        rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
+        .then (data) ->
+          r = mlsConstants.dtColumnRegex
+          $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
+          $scope.formItems[3].disabled = false
+          $scope.fieldNameMap.columnNames = {}
+          for datum in data
+            $scope.fieldNameMap.columnNames[datum.SystemName] = datum.LongName
+          data
+        .catch (err) ->
+          $scope.columnOptions = []
+          $q.reject(new Error("Error retrieving columns from MLS."))
+      else
+        $scope.columnOptions = []
+        $scope.formItems[3].disabled = true
+        return $q.when()
+
+    # button behavior for saving mls
+    $scope.saveMlsData = () ->
+      $scope.loading = true
+      $scope.mlsData.current.save()
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+      .finally () ->
+        $scope.loading = false
 
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->
@@ -211,6 +203,56 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       $scope.formItems[toStep].active = true
       $scope.step = toStep
 
+    # modal for Edit mlsData
+    $scope.animationsEnabled = true
+    $scope.openEdit = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'ModalInstanceCtrl'
+        resolve:
+          mlsModalData: () ->
+            return $scope.mlsData.current
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (mlsModalData) ->
+          $scope.saveMlsData()
+        , () ->
+          console.log "modal closed"
+      )
+
+    # modal for Create mlsData
+    $scope.animationsEnabled = true
+    $scope.openCreate = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'ModalInstanceCtrl'
+        resolve:
+          mlsModalData: () ->
+            return {
+              id: null
+              name: null
+              notes: ""
+              active: false
+              username: null
+              password: null
+              url: null
+              main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
+            }
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (mlsModalData) ->
+          rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
+          .then (newMls) ->
+            $scope.mlsData.current = newMls
+            $scope.updateObjectOptions($scope.mlsData.current)
+          .catch (err) ->
+            msg = "Error saving MLS."
+            $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
+        , () ->
+          console.log "modal closed"
+      )
 ]
 
 
@@ -220,18 +262,6 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id
 
-    $scope.clear = () ->
-      $scope.editing = false
-      $scope.mlsModalData = 
-        id: null
-        name: null
-        notes: ""
-        active: false
-        username: null
-        password: null
-        url: null
-        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
-
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)
 
@@ -239,4 +269,3 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
       $modalInstance.dismiss('cancel')
 
 ]
-
