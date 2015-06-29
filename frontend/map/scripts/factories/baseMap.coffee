@@ -40,7 +40,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
               map:
                 enable: mapEvents,
                 logic: 'emit'
-            zoomBox: ->
+            zoomBox: =>
               if @zoomBoxActive
                 @zoomBoxActive = false
                 @zoomBox.deactivate()
