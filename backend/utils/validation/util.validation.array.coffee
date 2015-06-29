@@ -9,11 +9,12 @@ module.exports = (options = {}) ->
     Promise.try () ->
       if !values
         return null
+      logger.debug String(values)
       if options.split? and _.isString(values)
         arrayValues = values.split(options.split)
       else
         arrayValues = values
-    
+
       if !_.isArray arrayValues
         return Promise.reject new DataValidationError("array of values expected", param, values)
       if options.minLength? and arrayValues.length < options.minLength
