@@ -153,7 +153,11 @@ _getData = (client, database, table, dmqlQueryString, queryOptions) ->
 getDataDump = (mlsInfo, limit=1000) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
   .then (retsClient) ->
-    momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
+    if mlsInfo.main_property_data.queryTemplate and mlsInfo.main_property_data.field
+      momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
+    else
+      throw new PartiallyHandledError('Can not query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
+
     _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
     .finally () ->
       retsClient.logout()
