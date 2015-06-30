@@ -138,10 +138,10 @@
         .row
           .col-md-2 Street Address
           .col-md-10
-            .field(rmaps-droppable="'streetNumber'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNumber }")
-              span(ng-show="fieldData.current.input.streetNumber") {{fieldData.current.input.streetNumber}}:
+            .field(rmaps-droppable="'streetNum'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNum }")
+              span(ng-show="fieldData.current.input.streetNum") {{fieldData.current.input.streetNum}}:
               span Street Number
-              span.remove-icon(ng-show="fieldData.current.input.streetNumber" ng-click="removeBaseInput('streetNumber')") X
+              span.remove-icon(ng-show="fieldData.current.input.streetNum" ng-click="removeBaseInput('streetNum')") X
             .field(rmaps-droppable="'streetName'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetName }")
               span(ng-show="fieldData.current.input.streetName") {{fieldData.current.input.streetName}}:
               span Street Name
