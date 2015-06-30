@@ -6,42 +6,59 @@ app.service 'validatorBuilder', () ->
   baseRules =
     acres:
       alias: 'Acres'
+      required: true
     address:
       alias: 'Address'
+      required: true
       input: {}
     baths_full:
       alias: 'Baths Full'
+      required: true
     bedrooms:
       alias: 'Bedrooms'
+      required: true
     days_on_market:
       alias: 'Days on Market'
+      required: true
       input: []
     fips_code:
       alias: 'FIPS code'
+      required: true
       input: []
     hide_address:
       alias: 'Hide Address'
+      required: false
     hide_listing:
       alias: 'Hide Listing'
+      required: false
     parcel_id:
       alias: 'Parcel ID'
+      required: true
     price:
       alias: 'Price'
+      required: true
     rm_property_id:
       alias: 'Property ID'
+      required: true
       input: []
     sqft_finished:
       alias: 'Finished Sq Ft'
+      required: true
     status:
       alias: 'Status'
+      required: true
     status_display:
       alias: 'Status Display'
+      required: true
     substatus:
       alias: 'Sub-Status'
+      required: true
     close_date:
       alias: 'Close Date'
+      required: false
     discontinued_date:
       alias: 'Discontinued Date'
+      required: false
 
   lookupType = (field) ->
     types =
@@ -94,7 +111,7 @@ app.service 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-    vOptions = _.pick field.config, (v) -> v?
+    vOptions = _.pick field.config, (v) -> v? && (v == 0 || !!v)
 
     switch field.output
       when 'address'
@@ -136,9 +153,10 @@ app.service 'validatorBuilder', () ->
   validateBase = (field) ->
     # Ensure input is appropriate type before validating
     defaults = baseRules[field.output]
-    if !field.input?
-      field.input = defaults.input || ''
-    field.alias = defaults.alias
+    if defaults
+      if !field.input?
+        field.input = defaults.input || ''
+      field.alias = defaults.alias
     field.transform = getTransform(field)
     input = field.input
     switch field.output
@@ -153,6 +171,7 @@ app.service 'validatorBuilder', () ->
         field.valid = input[0] && input[1] && input[2]
       else
         field.valid = !field.required || !!input
+    field.valid = !!field.valid
 
   lookupType: lookupType
   getTransform: getTransform

@@ -40,6 +40,6 @@ address =
 
 module.exports =
   status: status
-  subStatus: _.extend(status, subStatus)
+  subStatus: _.extend(subStatus, status)
   categories: categories
   address: address

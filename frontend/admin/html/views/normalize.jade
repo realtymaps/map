@@ -16,7 +16,7 @@
 
   .row.panel(cg-busy="mlsLoading" ng-show="mlsData.current")
     .col-md-2.list-container
-      h4 Required
+      h4 Filters
       .field-container(cg-busy="baseLoading")
         .field.base(
         ng-class="{ invalid: !item.valid }"
@@ -38,15 +38,18 @@
            'datatype-date': item.DataType == 'DateTime' }"
            ng-show="item.DataType || item.Interpretation")
 
-    .col-md-8.list-container
+    .col-md-8.list-container(ng-show="baseFinished")
       h4 Groups
       .field-container
         .category(
+        cg-busy="category.loading"
+        ng-class="{collapse: !expanded}"
         rmaps-droppable="category.items" on-drop="onDropCategory"
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
+          .expand-icon(ng-click="expanded = !expanded")
           .field-list
             .field(
-            ng-class="{ 'assigned': item.assigned, base: item.unselectable }"
+            ng-class="{ 'assigned': item.assigned, base: item.unselectable, selected: item == fieldData.current && showProperties }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
@@ -59,183 +62,255 @@
                ng-show="item.DataType || item.Interpretation")
 
   .row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
+
     .close-icon(ng-click="showProperties=false") X
-    .col-md-12(ng-show="fieldData.current.list != 'base'")
-      h4 Field Validation
-      .row
-        .col-md-3 RETS Name:
-        .col-md-9 {{fieldData.current.output}}
-      .row
-        .col-md-3 Data Type:
-        .col-md-9 {{fieldData.current.type.label}}
-      .row
-        .col-md-3 Alias:
-        .col-md-9
-          input(type="text" ng-model="fieldData.current.config.alias" ng-change="updateRule()")
-      div(ng-show="fieldData.current.Interpretation == 'Number'")
-        .row
-          .col-md-3 0 (zero) counts as null
-          .col-md-3
-            input(type="checkbox" ng-model="fieldData.current.config.nullZero" ng-change="updateRule()")
-          .col-md-6
-            Pick the right value!
-        .row
-          .col-md-3 Specific value counts as null
-          .col-md-3
-            input(type="text" ng-model="fieldData.current.config.nullNumber" placeholder="example: -1" ng-change="updateRule()")
-          .col-md-6
-            Pick the right value!
-        .row(ng-show="fieldData.current.DataType == 'Decimal'")
-          .col-md-3 Round / truncate decimal
-          .col-md-3
-            input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-change="updateRule()")
-          .col-md-6
-            Pick the right value!
-      div(ng-show="fieldData.current.DataType == 'Character'")
-        .row
-          .col-md-3 Empty counts as null
-          .col-md-9
-            input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-change="updateRule()")
-        .row
-          .col-md-3 Specific value(s) count as null
-          .col-md-9
-            input(type="text" ng-model="fieldData.current.config.nullString" rmaps-list-input placeholder="no, false, n/a" ng-change="updateRule()")
-        .row
-          .col-md-3 Transform
-          .col-md-9
-            select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-change="updateRule()")
-              option(value="") None
-        .row(ng-show="fieldData.current.lookups")
-          .col-md-3 Replace values with RealtyMaps values (Lookup)
-          .col-md-9(ng-if="fieldData.current.lookups.length > 50") There are {{fieldData.current.lookups.length}} lookups, too many to show!
-        .row(ng-if="fieldData.current.lookups.length <= 50" ng-repeat="lookup in fieldData.current.lookups")
-          .col-md-3 {{lookup.LongValue}}
-          .col-md-9
-            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
-    .col-md-12(ng-show="fieldData.current.list == 'base'")
-      h4 RealtyMaps {{fieldData.current.alias}}
 
-      div(ng-show="fieldData.current.output == 'address'")
-        div This field is shown to users within property details.
-        .invalid-message(ng-show="!fieldData.current.valid") Select City and State. Select Zip or Zip+4. Select Full address or Street name + number.
-        .field(ng-repeat="option in addressOptions"
-          rmaps-droppable="option.key" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[option.key] }")
-          span(ng-show="fieldData.current.input[option.key]") {{fieldData.current.input[option.key]}}:
-          span {{option.label}}
-          span.remove-icon(ng-show="fieldData.current.input[option.key]" ng-click="removeBaseInput(option.key)") X
+    .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
+      .row
+        .col-md-2 RETS Name:
+        .col-md-2 {{fieldData.current.output}}
+      .row
+        .col-md-2 Data Type:
+        .col-md-2 {{fieldData.current.type.label}}
+      .row
+        .col-md-2 Alias:
+        .col-md-2
+          input(type="text" ng-model="fieldData.current.config.alias" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Supply a more readable name for this field if necessary
+      .row(ng-if="fieldData.current.Interpretation == 'Number'")
+        .col-md-2 Remove zero (0) values?
+        .col-md-2
+          input(type="checkbox" ng-model="fieldData.current.config.nullZero" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Any 0s found in this field will be removed and won't be visible
+      .row(ng-if="fieldData.current.Interpretation == 'Number'")
+        .col-md-2 Remove specific value(s)
+        .col-md-2
+          input(type="text" ng-model="fieldData.current.config.nullNumber" placeholder="1, 2, 3" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Any of the specified values found in this field will be removed and won't be visible. Multiple values may be entered separated by commas.
+      .row(ng-if="fieldData.current.DataType == 'Decimal'")
+        .col-md-2 Round / truncate decimal
+        .col-md-2
+          input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Values with decimals will be replaced with round numbers, for example 2.87 becomes 2
 
-      div(ng-show="fieldData.current.output == 'status_display'")
-        div This field is shown to users within property details. MLS values may be replaced if they would be confusing.
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span {{fieldData.current.alias}}
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      .row(ng-if="fieldData.current.DataType == 'Character'")
+        .col-md-2 Remove empty?
+        .col-md-2
+          input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Any empty values found in this field will be removed so they don't show up
+      .row(ng-if="fieldData.current.DataType == 'Character'")
+        .col-md-2 Remove specific value(s)
+        .col-md-2
+          input(type="text" ng-model="fieldData.current.config.nullString" rmaps-list-input placeholder="no, false, n/a" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Any empty values found in this field will be removed so they don't show up
+      .row(ng-if="fieldData.current.DataType == 'Character'")
+        .col-md-2 Transform
+        .col-md-2
+          select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+            option(value="") None
+        .col-md-8.help Value will be changed to uppercase, lowercase or capitalized
+      .row(ng-if="fieldData.current.DataType == 'Character' && fieldData.current.lookups.length > 50 && !fieldData.current.showLookups")
+        .col-md-2 Too many values to show.
+        .col-md-2
+          .btn.btn-primary(ng-click="fieldData.current.showLookups = true") See all {{fieldData.current.lookups.length}} values anyway?
+      .row(ng-if="fieldData.current.DataType == 'Character' && (fieldData.current.lookups.length <= 50 || fieldData.current.showLookups)" ng-repeat="lookup in fieldData.current.lookups")
+        .col-md-2 {{lookup.LongValue}}
+        .col-md-2
+          input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help(ng-show="$index == 0") Replace MLS values with more readable values where necessary
+
+    div(ng-show="fieldData.current.list == 'base'")
+      .col-md-12.scroll(ng-if="fieldData.current.output == 'address'")
+        .row
+          .col-md-2 RealtyMaps Address
+        .row
+          .col-md-2 City and State
+          .col-md-10
+            .field(rmaps-droppable="'city'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.city }")
+              span(ng-show="fieldData.current.input.city") {{fieldData.current.input.city}}:
+              span City
+              span.remove-icon(ng-show="fieldData.current.input.city" ng-click="removeBaseInput('city')") X
+            span.sep AND
+            .field(rmaps-droppable="'state'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.state }")
+              span(ng-show="fieldData.current.input.state") {{fieldData.current.input.state}}:
+              span State
+              span.remove-icon(ng-show="fieldData.current.input.state" ng-click="removeBaseInput('state')") X
+        .row
+          .col-md-2 Street Address
+          .col-md-10
+            .field(rmaps-droppable="'streetNum'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNum }")
+              span(ng-show="fieldData.current.input.streetNum") {{fieldData.current.input.streetNum}}:
+              span Street Number
+              span.remove-icon(ng-show="fieldData.current.input.streetNum" ng-click="removeBaseInput('streetNum')") X
+            .field(rmaps-droppable="'streetName'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetName }")
+              span(ng-show="fieldData.current.input.streetName") {{fieldData.current.input.streetName}}:
+              span Street Name
+              span.remove-icon(ng-show="fieldData.current.input.streetName" ng-click="removeBaseInput('streetName')") X
+            span.sep OR
+            .field(rmaps-droppable="'streetFull'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetFull }")
+              span(ng-show="fieldData.current.input.streetFull") {{fieldData.current.input.streetFull}}:
+              span Full Street
+              span.remove-icon(ng-show="fieldData.current.input.streetFull" ng-click="removeBaseInput('streetFull')") X
+        .row
+          .col-md-2 Zip Code
+          .col-md-10
+            .field(rmaps-droppable="'zip'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.zip }")
+              span(ng-show="fieldData.current.input.zip") {{fieldData.current.input.zip}}:
+              span Zip
+              span.remove-icon(ng-show="fieldData.current.input.zip" ng-click="removeBaseInput('zip')") X
+            span.sep OR
+            .field(rmaps-droppable="'zip9'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.zip9 }")
+              span(ng-show="fieldData.current.input.zip9") {{fieldData.current.input.zip9}}:
+              span Zip + 4
+              span.remove-icon(ng-show="fieldData.current.input.zip9" ng-click="removeBaseInput('zip9')") X
+        .row
+          .col-md-2 Optional
+          .col-md-10
+            .field(rmaps-droppable="'streetDirPrefix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetDirPrefix }")
+              span(ng-show="fieldData.current.input.streetDirPrefix") {{fieldData.current.input.streetDirPrefix}}:
+              span Direction Prefix
+              span.remove-icon(ng-show="fieldData.current.input.streetDirPrefix" ng-click="removeBaseInput('streetDirPrefix')") X
+            .field(rmaps-droppable="'streetDirSuffix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetDirSuffix }")
+              span(ng-show="fieldData.current.input.streetDirSuffix") {{fieldData.current.input.streetDirSuffix}}:
+              span Direction Suffix
+              span.remove-icon(ng-show="fieldData.current.input.streetDirSuffix" ng-click="removeBaseInput('streetDirSuffix')") X
+            .field(rmaps-droppable="'streetNumModifier'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNumModifier }")
+              span(ng-show="fieldData.current.input.streetNumModifier") {{fieldData.current.input.streetNumModifier}}:
+              span Number Modifier
+              span.remove-icon(ng-show="fieldData.current.input.streetNumModifier" ng-click="removeBaseInput('streetNumModifier')") X
+
+      .col-md-12.scroll(ng-if="fieldData.current.output == 'status_display'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-4
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+          .col-md-6.help This field is shown to users within property details.
         .row(ng-repeat="lookup in fieldData.current.lookups")
-          .col-md-3 {{lookup.LongValue}}
-          .col-md-9
+          .col-md-2 {{lookup.LongValue}}
+          .col-md-4
             input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+          .col-md-6.help(ng-show="$index == 0") MLS values may be replaced as necessary
 
-      div(ng-show="fieldData.current.output == 'status'")
-        div This field is made available for filtering/searching.
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span {{fieldData.current.alias}}
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'status'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-4
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.output}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
         .row(ng-repeat="lookup in fieldData.current.lookups")
-          .col-md-3 {{lookup.LongValue}}
-          .col-md-9
+          .col-md-2 {{lookup.LongValue}}
+          .col-md-4
             select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+          .col-md-6.help Select a RealtyMaps status
 
-      div(ng-show="fieldData.current.output == 'substatus'")
-        div This field is made available for filtering/searching.
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span {{fieldData.current.alias}}
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'substatus'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-4
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
         .row(ng-repeat="lookup in fieldData.current.lookups")
-          .col-md-3 {{lookup.LongValue}}
-          .col-md-9
+          .col-md-2 {{lookup.LongValue}}
+          .col-md-4
             select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+          .col-md-6.help Select a RealtyMaps SubStatus
 
-      div(ng-show="fieldData.current.output == 'days_on_market'")
-        div If possible, select Cumulative Days on Market (CDOM) first, then Days on Market. Only one is required though.
-        .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
-          span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
-          span Cumulative Days on Market
-          span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
-        .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
-          span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
-          span Days on Market
-          span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
-
-      div(ng-show="fieldData.current.output == 'parcel_id'")
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span Parcel ID
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'days_on_market'")
         .row
-          .col-md-3 Strip Formatting
-          .col-md-3
-            input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
-
-      div(ng-show="fieldData.current.output == 'hide_address'")
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span Hide Listing
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-3 Invert
-          .col-md-3
-            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
-
-      div(ng-show="fieldData.current.output == 'hide_listing'")
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span Hide Listing
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+          .col-md-2 Cumulative Days on Market
+          .col-md-4
+            .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
+              span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+              span Cumulative Days on Market
+              span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
+          .col-md-6.help May be abbreviated (CDOM). Preferred over Days on Market
         .row
-          .col-md-3 Invert
-          .col-md-3
-            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+          .col-md-2 Days on Market
+          .col-md-4
+            .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
+              span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+              span Days on Market
+              span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+          .col-md-6.help May be abbreviated (DOM).
 
-      div(ng-show="fieldData.current.output == 'fips_code'")
-        .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
-          span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
-          span County
-          span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
-        .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
-          span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
-          span State
-          span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'fips_code'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
+        .row
+          .col-md-2 County and State
+          .col-md-10
+            .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
+              span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+              span County
+              span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
+            .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
+              span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+              span State
+              span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
 
-      div(ng-show="fieldData.current.output == 'rm_property_id'")
-        .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
-          span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
-          span County
-          span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
-        .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
-          span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
-          span State
-          span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
-        .field(rmaps-droppable="2" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[2] }")
-          span(ng-show="fieldData.current.input[2]") {{fieldData.current.input[2]}}:
-          span Parcel
-          span.remove-icon(ng-show="fieldData.current.input[2]" ng-click="removeBaseInput(2)") X
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
+        .row
+          .col-md-2 County, State and Parcel
+          .col-md-10
+            .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
+              span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+              span County
+              span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
+            .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
+              span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+              span State
+              span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+            .field(rmaps-droppable="2" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[2] }")
+              span(ng-show="fieldData.current.input[2]") {{fieldData.current.input[2]}}:
+              span Parcel
+              span.remove-icon(ng-show="fieldData.current.input[2]" ng-click="removeBaseInput(2)") X
 
       //- Generic
-      div(ng-show="['price', 'acres', 'baths_full', 'bedrooms', 'price', 'sqft_finished', 'close_date', 'discontinued_date'].indexOf(fieldData.current.output) != -1")
-        .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
-          span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
-          span {{fieldData.current.alias}}
-          span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market'].indexOf(fieldData.current.output) == -1")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-10
+            .field(rmaps-droppable="'input'" on-drop="onDropBase" ng-class="{ empty: !fieldData.current.input }")
+              span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
+              span {{fieldData.current.alias}}
+              span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
+        .row(ng-if="['hide_listing', 'hide_address'].indexOf(fieldData.current.output) != -1")
+          .col-md-2 Invert
+          .col-md-4
+            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+          .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
+        .row(ng-if="['parcel_id'].indexOf(fieldData.current.output) != -1")
+          .col-md-2 Strip Formatting
+          .col-md-4
+            input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
+          .col-md-6.help Special characters will be removed.
 
-    .col-md-12
-      h4 Field Transform
-      .row
-        .col-md-3 Enable editing (advanced)
-        .col-md-9
-          input(type="checkbox" ng-model="fieldData.current.advanced" ng-change="updateRule()")
-      .row
-        .col-md-12
-          textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.advanced")
+    .col-md-12.scroll
+      .row.advanced
+        .col-md-2
+          .btn-group
+            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="false" ng-click="updateRule()") Simple
+            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true") Advanced
+        .col-md-10
+          textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
+
+    .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
+      .row.advanced
+        .col-md-2
+        .col-md-10
+          textarea.transform(ng-model="fieldData.current.inputString" disabled)
 
