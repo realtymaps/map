@@ -153,9 +153,10 @@ app.service 'validatorBuilder', () ->
   validateBase = (field) ->
     # Ensure input is appropriate type before validating
     defaults = baseRules[field.output]
-    if !field.input?
-      field.input = defaults.input || ''
-    field.alias = defaults.alias
+    if defaults
+      if !field.input?
+        field.input = defaults.input || ''
+      field.alias = defaults.alias
     field.transform = getTransform(field)
     input = field.input
     switch field.output
