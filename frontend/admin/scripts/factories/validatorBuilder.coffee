@@ -111,7 +111,7 @@ app.service 'validatorBuilder', () ->
     #       key-value mapping for choice field
     #       present if type is choices
     #
-    vOptions = _.pick field.config, (v) -> v?
+    vOptions = _.pick field.config, (v) -> v? && (v == 0 || !!v)
 
     switch field.output
       when 'address'
@@ -170,6 +170,7 @@ app.service 'validatorBuilder', () ->
         field.valid = input[0] && input[1] && input[2]
       else
         field.valid = !field.required || !!input
+    field.valid = !!field.valid
 
   lookupType: lookupType
   getTransform: getTransform
