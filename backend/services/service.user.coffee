@@ -7,6 +7,7 @@ User = require "../models/model.user"
 {userData} = require "../config/tables"
 environmentSettingsService = require "../services/service.environmentSettings"
 {singleRow} = require '../utils/util.sql.helpers'
+profileSvc = require './service.profiles'
 
 
 getUser = (attributes) ->
@@ -84,52 +85,7 @@ verifyPassword = (username, password) ->
         .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
       return user
 
-getUserState = (userId) ->
-  singleRow(userData.auth_user_profile()
-  .where(auth_user_id: userId), false)
-  .then (userState) ->
-    if not userState
-      userData.auth_user_profile()
-      .insert
-        auth_user_id: userId
-      .then () ->
-        return {}
-    else
-      result = userState
-      delete result.id
-      return result
 
-updateUserState = (session, partialState) -> Promise.try () ->
-  # need the id for lookup, so we don't want to allow it to be set this way
-  delete partialState.id
-
-  #avoid unnecessary saves as there is the possibility for race conditions
-  needsSave = false
-  for key,part of partialState
-    if !_.isEqual part, session.state[key]
-      needsSave = true
-      break
-#  logger.debug "service.user needsSave: #{needsSave}"
-  if needsSave
-    _.extend(session.state, partialState)
-    session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
-
-  session.state.auth_user_id = session.userid
-  # logger.debug "session.state.id: is deleted #{delete session.state.id}"
-  # logger.debug session.state.id
-  # now save to the global state
-  # logger.debug JSON.stringify session.state
-
-  singleRow(userData.auth_user_profile()
-  .where(auth_user_id: session.userid)
-  .update(session.state), false)
-  .then (userState) ->
-    if not userState
-      return {}
-    else
-      result = userState
-      delete result.id
-      return result
 
 ###
 map_position -  is to hold center, zoom, bounds.., altitude.. any kind of position relative map info
@@ -151,7 +107,7 @@ _commonCaptureState = (req, stateUpdate = {}) ->
     hasSomeState = true if stateUpdate[col]?
 
   if hasSomeState
-    updateUserState(req.session, stateUpdate)
+    profileSvc.updateFirst(req.session, stateUpdate)
   else
     Promise.resolve({})
 
@@ -168,12 +124,12 @@ captureMapFilterState = (req, res, next) -> Promise.try () ->
   .then () ->
     next()
 
-module.exports = {
+module.exports =
   getUser: getUser
   updateUser: updateUser
   verifyPassword: verifyPassword
-  getUserState: getUserState
-  updateUserState: updateUserState
+  getProfile: profileSvc.getFirst
+  updateProfile: profileSvc.updatreFirst
   captureMapState: captureMapState
   captureMapFilterState: captureMapFilterState
-}
+  getProfiles: profileSvc.getProfiles

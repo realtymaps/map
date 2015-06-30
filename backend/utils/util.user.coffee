@@ -26,9 +26,9 @@ cacheUserValues = (req) ->
     promises.push groupsPromise
   if not req.session.state
     logger.debug "req.session.state"
-    statePromise = userService.getUserState(req.user.id)
+    statePromise = userService.getProfile(req.user.id)
     .then (state) ->
-      logger.debug "userService.getUserState.then"
+      logger.debug "userService.getProfile.then"
       req.session.state = state
     promises.push statePromise
   return Promise.all(promises)

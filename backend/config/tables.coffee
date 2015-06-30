@@ -40,6 +40,7 @@ module.exports =
     user: 'users.auth_user'
     userState: 'users.user_state'
     auth_user_profile: 'users.auth_user_profile'
+    project: 'users.project'
 
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports

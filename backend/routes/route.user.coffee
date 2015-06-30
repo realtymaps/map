@@ -8,6 +8,11 @@ userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
+JSONStream = require 'JSONStream'
+{methodExec} = require '../utils/util.route.helpers'
+
+badRequest = (msg) ->
+  new ExpressResponse(alert: {msg: msg}, httpStatus.BAD_REQUEST)
 
 # handle login authentication, and do all the things needed for a new login session
 login = (req, res, next) -> Promise.try () ->
@@ -90,7 +95,7 @@ identity = (req, res, next) ->
 
 
 updateState = (req, res, next) ->
-  userService.updateUserState(req.session, req.body)
+  userService.updateProfile(req.session, req.body)
   .then () ->
     res.send()
   .catch (err) ->
@@ -98,8 +103,18 @@ updateState = (req, res, next) ->
     next(err)
 
 
+profiles = (req, res, next) ->
+  methodExec req,
+    GET: () ->
+      auth_user_id = req.session.userid
+      userService.getProfiles(auth_user_id)
+      .pipe(JSONStream.stringify()).pipe(res)
+    POST: () ->
+      res.send()
+
 module.exports =
   login: login
   logout: logout
   identity: identity
   updateState: updateState
+  profiles: profiles

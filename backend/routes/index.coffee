@@ -14,7 +14,7 @@ routesConfig =
             method: 'get'
         mocksResults:
             method: 'get'
-          
+
     wildcard:
         backend:
             method: 'all'
@@ -33,6 +33,10 @@ routesConfig =
         updateState:
             method: 'post'
             middleware: auth.requireLogin(redirectOnFail: true)
+        profiles:
+            methods: ['get', 'post']
+            middleware: auth.requireLogin(redirectOnFail: true)
+
     properties:
         filterSummary:
             middleware: [

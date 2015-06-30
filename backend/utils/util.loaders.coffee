@@ -5,6 +5,23 @@ logger = require '../config/logger'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
+createRoute = (routeId, moduleId, backendRoutes, routeModule, options) ->
+  route =
+    moduleId: moduleId
+    routeId: routeId
+    path: backendRoutes[moduleId]?[routeId]
+    handle: routeModule[routeId]
+    method: options.method || 'get'
+    middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
+    order: options.order || 0
+  if route.path and not route.handle
+    throw new Error "route: #{moduleId}.#{routeId} has no handle"
+  if route.handle and not route.path
+    throw new Error "route: #{moduleId}.#{routeId} has no path"
+  if not route.handle and not route.path
+    throw new Error "route: #{moduleId}.#{routeId} has no handle or path"
+  route
+
 
 module.exports =
 
@@ -21,22 +38,13 @@ module.exports =
         throw new Error msg
 
       for routeId,options of routes
-        route =
-          moduleId: moduleId
-          routeId: routeId
-          path: backendRoutes[moduleId]?[routeId]
-          handle: routeModule[routeId]
-          method: options.method || 'get'
-          middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
-          order: options.order || 0
-        if route.path and not route.handle
-          throw new Error "route: #{moduleId}.#{routeId} has no handle"
-        if route.handle and not route.path
-          throw new Error "route: #{moduleId}.#{routeId} has no path"
-        if not route.handle and not route.path
-          throw new Error "route: #{moduleId}.#{routeId} has no handle or path"
-
-        normalizedRoutes.push(route)
+        unless options.methods?
+          options.methods = [options.method]
+        options.methods.forEach (method) ->
+          route = createRoute routeId, moduleId, backendRoutes, routeModule
+          , _.extend({},options,method:method)
+          # logger.debug "route: #{route}"
+          normalizedRoutes.push(route)
     normalizedRoutes
 
   loadSubmodules: (directoryName, regex) ->
