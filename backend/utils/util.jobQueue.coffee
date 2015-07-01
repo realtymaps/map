@@ -206,7 +206,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
 
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
-  # worker that's executing that subtask, and we're not going to make that work poll to watch for a cancel message
+  # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   tables.jobQueue.taskHistory()
   .where
     name: taskName
@@ -297,7 +297,6 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         subject: 'subtask: hard fail'
         subtask: subtask
         error: "subtask: #{error}"
-    throw error
 
 # should this be rewritten to use a transaction and query built by knex?  I decided to implement it as a stored proc
 # in order to enforce the locking semantics, but I'm not sure if that's really a good reason
@@ -435,7 +434,17 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
     if !subtasks?.length
       throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
-    
+
+runWorker = (queueConfig) ->
+  getQueuedSubtask(queueConfig.name)
+  .then (subtask) ->
+    if subtask?
+      executeSubtask(subtask)
+    else
+      Promise.delay(30000) # poll again in 30 seconds
+  .then runWorker.bind(null, queueConfig)
+        
+
 
 module.exports =
   withSchedulingLock: withSchedulingLock
@@ -452,6 +461,7 @@ module.exports =
   getQueueNeeds: getQueueNeeds
   queuePaginatedSubtask: queuePaginatedSubtask
   getSubtaskConfig: getSubtaskConfig
+  runWorker: runWorker
   SoftFail: SoftFail
   HardFail: HardFail
   knex: knex

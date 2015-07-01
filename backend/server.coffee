@@ -1,35 +1,25 @@
 
-touch = require 'touch'
+
 config = require './config/config'
-
-require '../common/extensions/strings'
-
-# monitoring with nodetime
-if config.NODETIME
-  require('nodetime').profile(config.NODETIME)
 
 # "long stack traces" support
 if config.LOGGING.LONG_STACK_TRACES
   require 'longjohn'
 
-# promisify libraries
+require '../common/extensions/strings'
 require './config/promisify'
-
 logger = require './config/logger'
+cluster = require './config/cluster'
+touch = require 'touch'
 
-# catch all uncaught exceptions
-process.on 'uncaughtException', (err) ->
-  logger.error 'Something very bad happened: ', err.message
-  logger.error err.stack
-  process.exit 1  # because now, you are in unpredictable state!
 
- if config.MEM_WATCH.IS_ON
-   # watch and log any leak (a lot of false positive though)
-   memwatch = require 'memwatch-next'
-   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
+if config.MEM_WATCH.IS_ON
+  # watch and log any leak (a lot of false positive though)
+  memwatch = require 'memwatch-next'
+  memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
-require('./config/cluster') () ->
-
+     
+cluster 'web', config.PROC_COUNT, () ->
   # express configuration
   app = require("./config/express")
 
