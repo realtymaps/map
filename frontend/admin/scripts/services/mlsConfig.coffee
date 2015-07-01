@@ -4,7 +4,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
 
   mlsAPI = backendRoutes.mls.apiBaseMls
-  mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
+  mlsConfigAPI = backendRoutes.mls_config.apiBase
 
   getConfigs = () ->
     Restangular.all(mlsConfigAPI).getList()

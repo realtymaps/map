@@ -10,6 +10,17 @@ alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
 JSONStream = require 'JSONStream'
 {methodExec} = require '../utils/util.route.helpers'
+_ = require 'lodash'
+
+safeUserFields = [
+  'cell_phone'
+  'email'
+  'first_name'
+  'id'
+  'last_name'
+  'username'
+  'work_phone'
+]
 
 badRequest = (msg) ->
   new ExpressResponse(alert: {msg: msg}, httpStatus.BAD_REQUEST)
@@ -68,6 +79,7 @@ login = (req, res, next) -> Promise.try () ->
 logout = (req, res, next) -> Promise.try () ->
   if req.user
     logger.debug "attempting to log user out: #{req.user.username}"
+    delete req.session.current_profile_id
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.session.destroyAsync()
@@ -79,20 +91,33 @@ logout = (req, res, next) -> Promise.try () ->
     logger.error "error logging out user: #{err}"
     next(err)
 
-
 identity = (req, res, next) ->
   if req.user
     # here we should probaby return some things from the user's profile as well, such as name
     res.json
       identity:
+        user: _.pick req.user, safeUserFields
         permissions: req.session.permissions
         groups: req.session.groups
-        stateRecall: req.session.state
         environment: config.ENV
+        profiles: req.session.profiles
+        currentProfileId: req.session.current_profile_id
   else
     res.json
       identity: null
 
+currentProfile = (req, res, next) -> Promise.try () ->
+  unless req.body.currentProfileId
+    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
+
+  req.session.current_profile_id = req.body.currentProfileId
+  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+
+  userUtils.cacheUserValues(req)
+  .then () ->
+    req.session.saveAsync()
+  .then () ->
+    identity(req, res, next)
 
 updateState = (req, res, next) ->
   userService.updateProfile(req.session, req.body)
@@ -107,8 +132,9 @@ profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
       auth_user_id = req.session.userid
-      userService.getProfiles(auth_user_id)
-      .pipe(JSONStream.stringify()).pipe(res)
+      userService.getProfiles(auth_user_id).then (profiles) ->
+        res.json(profiles)
+
     POST: () ->
       res.send()
 
@@ -118,3 +144,4 @@ module.exports =
   identity: identity
   updateState: updateState
   profiles: profiles
+  currentProfile: currentProfile

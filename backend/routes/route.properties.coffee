@@ -7,6 +7,7 @@ addressService = require '../services/service.properties.addresses'
 validation = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
+{currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 
 
 handleRoute = (res, next, serviceCall) ->
@@ -16,6 +17,8 @@ handleRoute = (res, next, serviceCall) ->
     res.json(data)
   .catch validation.DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+  .catch CurrentProfileError, (err) ->
+    next new ExpressResponse({profileIsNeeded: true,alert: {msg: err.message}}, httpStatus.BAD_REQUEST)
   .catch (err) ->
     logger.error err.stack||err.toString()
     next(err)
@@ -25,15 +28,15 @@ module.exports =
 
   filterSummary: (req, res, next) ->
     handleRoute res, next, () ->
-      filterSummaryService.getFilterSummary(req.session.state, req.query)
+      filterSummaryService.getFilterSummary(currentProfile(req), req.query)
 
   parcelBase: (req, res, next) ->
     handleRoute res, next, () ->
-      parcelService.getBaseParcelData(req.session.state, req.query)
+      parcelService.getBaseParcelData(currentProfile(req), req.query)
 
   addresses: (req, res, next) ->
     handleRoute res, next, () ->
-      addressService.get(req.session.state, req.query)
+      addressService.get(currentProfile(req), req.query)
 
   detail: (req, res, next) ->
     handleRoute res, next, () ->

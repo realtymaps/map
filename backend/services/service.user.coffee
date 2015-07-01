@@ -85,14 +85,12 @@ verifyPassword = (username, password) ->
         .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
       return user
 
-
-
 ###
 map_position -  is to hold center, zoom, bounds.., altitude.. any kind of position relative map info
 map_results =
   selectedResult: {}
   results: [] #maybe
-NOTE: IF columns for user_state need to be deleted Session.state should be purged! Otherwise,
+NOTE: IF columns for auth_user_profile need to be deleted Session.state should be purged! Otherwise,
   a invalid bookshelf object of old state will be queried.
 ###
 _userStateCols = ['map_position', 'map_toggles', 'map_results']

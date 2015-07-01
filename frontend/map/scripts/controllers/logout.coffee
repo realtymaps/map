@@ -31,7 +31,9 @@ app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOption
         else
           $http.get backendRoutes.user.logout
           .success (data, status) ->
-            rmapsprincipal.unsetIdentity()
             delayedUrl($location.search().next || frontendRoutes.index)
+          .finally ->
+            rmapsprincipal.unsetIdentity()
+
         return
       return

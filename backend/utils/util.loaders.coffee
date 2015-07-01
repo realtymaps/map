@@ -40,7 +40,7 @@ module.exports =
       for routeId,options of routes
         unless options.methods?
           options.methods = [options.method]
-        options.methods.forEach (method) ->
+        for key, method of options.methods
           route = createRoute routeId, moduleId, backendRoutes, routeModule
           , _.extend({},options,method:method)
           # logger.debug "route: #{route}"

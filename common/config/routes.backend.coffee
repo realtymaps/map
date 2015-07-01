@@ -21,6 +21,7 @@ module.exports =
     updateState: "#{apiBase}/identity/state"
     login: "#{apiBase}/login"
     logout: "#{apiBase}/logout"
+    currentProfile: "#{apiBase}/currentProfile"
     profiles: "#{apiBase}/profiles"
   version:
     version: "#{apiBase}/version"
@@ -44,7 +45,7 @@ module.exports =
     uploadToParcelsDb: "#{apiBase}/parcel/upload"
     defineImports: "#{apiBase}/parcel/defineimports"
   mls_config:
-    apiBaseMlsConfig: apiBaseMlsConfig # Exposed for Restangular instantiation
+    apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
     getAll: "#{apiBaseMlsConfig}"
     getById: "#{apiBaseMlsConfig}/:id"
     update: "#{apiBaseMlsConfig}/:id"

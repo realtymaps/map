@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
 
-  mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
+  mlsConfigAPI = backendRoutes.mls_config.apiBase
 
   _formatRule = (rule) ->
     config: rule.config

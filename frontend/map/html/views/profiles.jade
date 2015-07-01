@@ -1,0 +1,13 @@
+include ../includes/navbar.jade
+
+section.profiles(ng-cloak)
+  .starter-template.light-message
+    h2 Welcome back, {{user.name}}!
+    .inline Select a profile or&nbsp;
+    a.inline(href="#") create a new one.
+    .list-group
+      a(ng-repeat="(key,item) in profiles" 
+        href="#"
+        ng-click="select(item)" 
+        class="list-group-item active") {{item.name}}
+        .fa.fa-chevron-right.fa-3.pull-right
