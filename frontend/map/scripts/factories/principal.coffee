@@ -10,7 +10,7 @@ app.factory 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
     _authenticated = false
     _resolved = false
     _deferred = null
-  
+
     setIdentity = (identity) ->
       _identity = identity
       _authenticated = !!identity
@@ -28,7 +28,7 @@ app.factory 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
       if _deferred
         _deferred.resolve(null)
         _deferred = null
-    
+
     isIdentityResolved: () ->
       return _resolved
     isAuthenticated: () ->
@@ -44,19 +44,19 @@ app.factory 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
     getIdentity: () ->
       if _deferred
         return _deferred.promise
-        
+
       if _resolved
         _deferred = $q.defer()
         _deferred.resolve(_identity)
         return _deferred.promise
-  
+
       # otherwise, create a promise, retrieve the identity data from the server, update the identity object, and then resolve.
       _deferred = $q.defer();
-      
-      $http.get(backendRoutes.user.identity)
+
+      $http.get(backendRoutes.userSession.identity)
       .success (data) ->
         setIdentity(data.identity)
       .error (err) ->
         unsetIdentity()
-        
+
       return _deferred.promise

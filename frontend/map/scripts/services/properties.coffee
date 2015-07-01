@@ -88,7 +88,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
             _.extend model, data
 
         #post state to database
-        statePromise = $http.post(backendRoutes.user.updateState, properties_selected: _savedProperties)
+        statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: _savedProperties)
         _saveThrottler.invokePromise statePromise
         statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
         statePromise.then () ->

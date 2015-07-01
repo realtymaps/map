@@ -5,7 +5,7 @@ _ = require 'lodash'
 
 logger = require '../config/logger'
 config = require '../config/config'
-userService = require '../services/service.user'
+userSessionService = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
@@ -28,11 +28,11 @@ class SessionSecurityError extends Error
 getSessionUser = (req) -> Promise.try () ->
   if not req.session.userid
     return Promise.resolve(false)
-  return userService.getUser(id: req.session.userid)
+  return userSessionService.getUser(id: req.session.userid)
   .catch (err) ->
     return false
-    
-    
+
+
 module.exports = {
 
   # this function gets used as app-wide middleware, so assume it will have run
@@ -46,11 +46,11 @@ module.exports = {
     .catch (err) ->
       logger.error "error while setting session data on request"
       Promise.reject(err)
-  
+
   # app-wide middleware to implement remember_me functionality
   checkSessionSecurity: (req, res) ->
     context = {}
-    
+
     Promise.try () ->
       cookie = req.signedCookies[config.SESSION_SECURITY.name]
       if not cookie
@@ -64,7 +64,7 @@ module.exports = {
         else
           return Promise.reject(new SessionSecurityError())
       context.cookieValues = {userId: parseInt(values[0]), sessionId: values[1], token: values[2]}
-      
+
       if (req.user)
         if req.user.id != context.cookieValues.userId
           return Promise.reject(new SessionSecurityError("user", "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}"))
@@ -153,7 +153,7 @@ module.exports = {
 #   permissions:
 #     parameter specifying what permission(s) the user needs in order to
 #     access the given route; can either be a single string, or an object
-#     with either "any" or "all" as a key and an array of strings as a value  
+#     with either "any" or "all" as a key and an array of strings as a value
 #   options:
 #     logoutOnFail: whether force a logout on failure, default false
   requirePermissions: (permissions, options = {}) ->

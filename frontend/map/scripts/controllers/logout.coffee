@@ -29,7 +29,7 @@ app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOption
         if not rmapsprincipal.isAuthenticated()
           delayedUrl($location.search().next || frontendRoutes.index)
         else
-          $http.get backendRoutes.user.logout
+          $http.get backendRoutes.userSession.logout
           .success (data, status) ->
             delayedUrl($location.search().next || frontendRoutes.index)
           .finally ->

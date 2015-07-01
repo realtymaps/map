@@ -6,6 +6,8 @@ frontend and backend in sync
 apiBase = "/api"
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
+apiBaseUsers = "#{apiBase}/users"
+apiBaseSession = "#{apiBase}/session"
 
 module.exports =
   views:
@@ -16,13 +18,18 @@ module.exports =
     admin: "/admin/*"
     frontend: "/*"
     backend: "#{apiBase}/*"
+  userSession:
+    apiBase: apiBaseSession
+    identity: "#{apiBaseSession}/identity"
+    updateState: "#{apiBaseSession}/identity/state"
+    login: "#{apiBaseSession}/login"
+    logout: "#{apiBaseSession}/logout"
+    currentProfile: "#{apiBaseSession}/currentProfile"
+    profiles: "#{apiBaseSession}/profiles"
   user:
-    identity: "#{apiBase}/identity"
-    updateState: "#{apiBase}/identity/state"
-    login: "#{apiBase}/login"
-    logout: "#{apiBase}/logout"
-    currentProfile: "#{apiBase}/currentProfile"
-    profiles: "#{apiBase}/profiles"
+    apiBase: apiBaseUsers
+    root: apiBaseUsers
+    byId: "#{apiBaseUsers}/:id"
   version:
     version: "#{apiBase}/version"
   config:
@@ -47,13 +54,15 @@ module.exports =
   mls_config:
     apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
     getAll: "#{apiBaseMlsConfig}"
+    create: "#{apiBaseMlsConfig}"
     getById: "#{apiBaseMlsConfig}/:id"
     update: "#{apiBaseMlsConfig}/:id"
-    updatePropertyData: "#{apiBaseMlsConfig}/:id/propertyData"
-    updateServerInfo: "#{apiBaseMlsConfig}/:id/serverInfo"
-    create: "#{apiBaseMlsConfig}"
     createById: "#{apiBaseMlsConfig}/:id"
     delete: "#{apiBaseMlsConfig}/:id"
+    updatePropertyData: "#{apiBaseMlsConfig}/:id/propertyData"
+    updateServerInfo: "#{apiBaseMlsConfig}/:id/serverInfo"
+
+
   mls_normalization:
     getMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
     createMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
