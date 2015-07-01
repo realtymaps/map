@@ -1,0 +1,1 @@
+ALTER TABLE jq_current_subtasks ADD COLUMN auto_enqueue BOOLEAN NOT NULL DEFAULT TRUE;

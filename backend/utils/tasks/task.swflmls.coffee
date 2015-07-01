@@ -1,7 +1,7 @@
 mlsHelpers = require '../util.mlsHelpers'
 jobQueue = require '../util.jobQueue'
 dbs = require '../../config/dbs'
-tables = require '../config/tables'
+tables = require '../../config/tables'
 
 
 # NOTE: This file is actually going to go away.  We don't want to have an explicit task file for each of the hundreds

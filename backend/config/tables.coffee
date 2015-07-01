@@ -6,7 +6,7 @@ _buildQueries = (tables) ->
     do (id, tableSpecifier) ->
       [dbName, tableName] = tableSpecifier.split('.')
       query = (transaction=dbs[dbName].knex) ->
-        ret = transaction(tableName)
+        ret = transaction.from(tableName)
         ret.raw = transaction.raw
         ret
       query.tableName = tableName
