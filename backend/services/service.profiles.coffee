@@ -38,13 +38,18 @@ get = (id, withProject = true) ->
   return auth_user_profile().where(id: id) unless withProject
 
 getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
-  return auth_user_profile().where(auth_user_id: userId) unless withProject
+  auth_user_profile().where(auth_user_id: auth_user_id)
+  .then (profilesNoProject) ->
+    hasAProject = _.some profilesNoProject, (p) -> !_.isUndefined(p.project_id)
+    if !withProject or !hasAProject
+      q =  auth_user_profile().select(cols...).innerJoin(project.tableName,
+      project.tableName + ".id", auth_user_profile.tableName + '.project_id')
+      .where(auth_user_id: auth_user_id)
+      # logger.debug q.toString()
+      return q
+    profilesNoProject
 
-  q = auth_user_profile().select(cols...).innerJoin(project.tableName,
-  project.tableName + ".id", auth_user_profile.tableName + '.project_id')
-  .where(auth_user_id: auth_user_id)
-  # logger.debug q.toString()
-  q.then (profiles) ->
+  .then (profiles) ->
     _.indexBy profiles, 'id'
 
 getFirst = (userId) ->
@@ -86,7 +91,7 @@ updateFirst = (session, partialState) ->
   .where(auth_user_id: session.userid, id: profile.id)
   .update(cropped)
 
-  logger.debug q.toString()
+  # logger.debug q.toString()
 
   singleRow(q)
   .then (userState) ->
