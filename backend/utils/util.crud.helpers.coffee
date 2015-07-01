@@ -31,6 +31,10 @@ class Crud
   delete: (id, doLogQuery = false) ->
     execQ @dbFn.where(id: id).delete(), doLogQuery
 
+  base: () ->
+    fnName = arguments.shift()
+    obj = arguments.shift()
+    Crud[fnname].apply(obj, arguments)
 ###
 NOTICE this really restricts how the crud is used!
 Many times ThenableCrud should not even be instantiated until the
@@ -65,6 +69,7 @@ class ThenableCrud extends Crud
 
   delete: (id, doLogQuery = false) ->
     singleResultBoolean super(id, doLogQuery)
+
 
 module.exports =
   Crud:Crud
