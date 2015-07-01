@@ -32,9 +32,7 @@ class Crud
     execQ @dbFn.where(id: id).delete(), doLogQuery
 
   base: () ->
-    fnName = arguments.shift()
-    obj = arguments.shift()
-    Crud[fnname].apply(obj, arguments)
+    super([Crud].concat(arguments)...)
 ###
 NOTICE this really restricts how the crud is used!
 Many times ThenableCrud should not even be instantiated until the
