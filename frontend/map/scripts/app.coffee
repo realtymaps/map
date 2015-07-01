@@ -33,6 +33,7 @@ app = window.angular.module appName, [
   'ct.ui.router.extras'
   'ngAnimate'
   'infinite-scroll'
+  'restangular'
 ]
 
 module.exports = app

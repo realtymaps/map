@@ -4,7 +4,7 @@ Promise = require 'bluebird'
 
 app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
 
-  mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
+  mlsConfigAPI = backendRoutes.mls_config.apiBase
 
   _formatRule = (rule) ->
     config: rule.config

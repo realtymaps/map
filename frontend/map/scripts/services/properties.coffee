@@ -17,7 +17,12 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
     $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
       rmapsprincipal.getIdentity().then (identity) ->
-        _savedProperties = _.extend {}, identity.stateRecall.properties_selected
+        _savedPropertie = []
+        if identity.currentProfileId and identity.profiles?.length
+          currentProfile = identity.profiles[identity.currentProfileId]
+
+        if currentProfile
+          _savedProperties = _.extend {}, currentProfile.properties_selected
 
     # this convention for a combined service call helps elsewhere because we know how to get the path used
     # by this call, which means we can do things with alerts related to it
