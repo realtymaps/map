@@ -1,6 +1,7 @@
 logger = require '../config/logger'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 {singleRow} = require './util.sql.helpers'
+_ = require 'lodash'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -11,6 +12,9 @@ execQ = (q, doLogQuery) ->
 
 class Crud
   constructor: (@dbFn) ->
+    unless _.isFunction @dbFn
+      throw 'dbFn must be a knex function'
+
   getAll: (doLogQuery = false) ->
     execQ @dbFn(), doLogQuery
 
@@ -35,7 +39,9 @@ Many times returning the query itself is sufficent so it can be piped (MUCH bett
 ###
 singleResultBoolean = (q) ->
   q.then (result) ->
-    result == 1
+    unless doRowCount
+      return result == 1
+    result.rowCount == 1
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error)
 
@@ -55,7 +61,7 @@ class ThenableCrud extends Crud
     singleResultBoolean super(id, entity, safe, doLogQuery)
 
   create: (entity, id, doLogQuery = false) ->
-    singleResultBoolean super(entity, id, doLogQuery)
+    singleResultBoolean super(entity, id, doLogQuery), true
 
   delete: (id, doLogQuery = false) ->
     singleResultBoolean super(id, doLogQuery)

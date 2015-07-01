@@ -8,7 +8,7 @@ Encryptor = require '../utils/util.encryptor'
 tables = require '../config/tables'
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
 {ThenableCrud} = require '../utils/util.crud.helpers.coffee'
-mainDb = tables.config.mls_config
+mainDb = tables.config.mls
 
 class MlsConfigCrud extends ThenableCrud
   update: (id, entity) ->
