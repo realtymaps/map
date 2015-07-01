@@ -10,7 +10,7 @@ permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
-userHandles = require '../routes/route.user'
+userHandles = require '../routes/route.userSession'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 
