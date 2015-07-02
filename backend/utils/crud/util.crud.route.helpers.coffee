@@ -1,8 +1,9 @@
 {methodExec} = require '../util.route.helpers'
 factory = require '../util.factory'
-# logger = require '../../config/logger'
+logger = require '../../config/logger'
+BaseObject = require '../../../common/utils/util.baseObject'
 
-class Crud
+class Crud extends BaseObject
   constructor: (@svc) ->
     unless @svc?
       throw '@svc must be defined'
@@ -30,6 +31,11 @@ class Crud
         self.svc.delete(req.body, req.params.id)
       PUT: () ->
         self.svc.update(req.params.id, req.body)
+
+  methodExec: methodExec
+
+  base: () ->
+    super([Crud,@].concat(_.toArray arguments)...)
 
 
 class StreamCrud extends Crud

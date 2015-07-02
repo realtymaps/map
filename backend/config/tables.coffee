@@ -38,6 +38,8 @@ module.exports =
     user: 'users.auth_user'
     auth_group: 'users.auth_group'
     auth_user_groups: 'users.auth_user_groups'
+    #consider renaming in the database to auth_user_permissions to be consistent
+    auth_user_user_permissions: 'users.auth_user_user_permissions'
     auth_permission: 'users.auth_permission'
     auth_group_permissions: 'users.auth_group_permissions'
 

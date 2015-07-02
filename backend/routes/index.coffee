@@ -52,6 +52,27 @@ routesConfig =
         auth.requireLogin(redirectOnFail: true)
         auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
       ]
+    #might want to twerk permissions required
+    permissions:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    #might want to twerk permissions required
+    groups:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    #might want to twerk permissions required
+    profiles:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
   user_user_groups:
     root:
       methods: ['get', 'post']
