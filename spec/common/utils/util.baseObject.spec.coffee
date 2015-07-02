@@ -1,4 +1,4 @@
-BaseObject = require '../../../common/utils/util.baseObject'
+BaseObject = require '../../../common/utils/util.baseObject.coffee'
 _ = require 'lodash'
 
 class Animal extends BaseObject
