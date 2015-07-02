@@ -15,7 +15,7 @@ class MlsConfigCrud extends ThenableCrud
     super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
 
   updatePropertyData: (id, propertyData) ->
-    base('getById', @, id)
+    base('getById', id)
     .update
       main_property_data: JSON.stringify(propertyData)
     .then (result) ->
@@ -27,7 +27,7 @@ class MlsConfigCrud extends ThenableCrud
   updateServerInfo: (id, serverInfo) ->
     if serverInfo.password
       serverInfo.password = encryptor.encrypt(serverInfo.password)
-    base('getById', @, id)
+    base('getById', id)
     .update _.pick(serverInfo, ['url', 'username', 'password'])
     .then (result) ->
       result == 1

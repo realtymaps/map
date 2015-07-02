@@ -32,7 +32,7 @@ class Crud
     execQ @dbFn.where(id: id).delete(), doLogQuery
 
   base: () ->
-    super([Crud].concat(arguments)...)
+    super([Crud,@].concat(_.toArray arguments)...)
 ###
 NOTICE this really restricts how the crud is used!
 Many times ThenableCrud should not even be instantiated until the
