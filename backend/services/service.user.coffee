@@ -1,4 +1,4 @@
 {userData} = require '../config/tables'
-{Crud} = require '../utils/util.crud.helpers.coffee'
+{crud} = require '../utils/crud/util.crud.service.helpers'
 
-module.exports = new Crud(userData.user)
+module.exports = crud(userData.user)

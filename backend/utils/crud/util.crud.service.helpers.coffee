@@ -1,7 +1,8 @@
-logger = require '../config/logger'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
-{singleRow} = require './util.sql.helpers'
+logger = require '../../config/logger'
+{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
+factory = require '../util.factory'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -68,7 +69,8 @@ class ThenableCrud extends Crud
   delete: (id, doLogQuery = false) ->
     singleResultBoolean super(id, doLogQuery)
 
-
 module.exports =
   Crud:Crud
+  crud: factory(Crud)
   ThenableCrud: ThenableCrud
+  thenableCrud: factory(ThenableCrud)
