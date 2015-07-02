@@ -6,5 +6,6 @@ module.exports =
   authenticating: 'authenticating'
   accessDenied:   'accessDenied'
   snail:          'snail'
+  profiles:       'profiles'
   # Note '*path' below is a special catchall syntax for ui-router
   pageNotFound:   '*path'

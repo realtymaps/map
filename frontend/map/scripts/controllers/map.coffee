@@ -2,6 +2,7 @@ app = require '../app.coffee'
 require '../factories/map.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
+{uiProfile} = require('../../../../common/utils/util.profile.coffee')
 
 ###
   Our Main Map Controller, logic
@@ -19,7 +20,7 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $timeout, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
@@ -35,13 +36,17 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $timeout, rmapsMap,
     rmapssearchbox('mainMap')
 
     restoreState = () ->
+      profile = null
       rmapsprincipal.getIdentity()
       .then (identity) ->
-        if not identity?.stateRecall
-          return
+        if not identity?.currentProfileId
+          return $location.path(frontendRoutes.profiles)
+
+        profile = uiProfile(identity)
+
         $rootScope.selectedFilters = {}
 
-        map_position = identity.stateRecall.map_position
+        map_position = profile.map_position
         #fix messed center
         if !map_position?.center?.lng or !map_position?.center?.lat
           map_position =
@@ -53,18 +58,18 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $timeout, rmapsMap,
         map_position =
           center: NgLeafletCenter map_position.center
 
-        if identity.stateRecall.filters
-          statusList = identity.stateRecall.filters.status || []
-          delete identity.stateRecall.filters.status
+        if profile.filters
+          statusList = profile.filters.status || []
+          delete profile.filters.status
           for key,status of rmapsParcelEnums.status
-            identity.stateRecall.filters[key] = (statusList.indexOf(status) > -1)
-          _.extend($rootScope.selectedFilters, identity.stateRecall.filters)
+            profile.filters[key] = (statusList.indexOf(status) > -1)
+          _.extend($rootScope.selectedFilters, profile.filters)
         if map
           if map_position?.center?
             $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
           if map_position?.zoom?
             $scope.map.center.zoom = Number map_position.zoom
-          $scope.rmapsMapToggles = new rmapsMapToggles(identity.stateRecall.map_toggles)
+          $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
         else
           if map_position?
             if map_position.center? and
@@ -75,13 +80,13 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $timeout, rmapsMap,
               rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
             if map_position.zoom?
               rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
-          rmapsMainOptions.map.toggles = new rmapsMapToggles(identity.stateRecall.map_toggles)
+          rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
           map = new rmapsMap($scope, rmapsMainOptions.map)
 
-          if identity.stateRecall.map_results?.selectedResultId? and map?
+          if profile.map_results?.selectedResultId? and map?
             $log.debug "attempting to reinstate selectedResult"
             rmapsProperties.getPropertyDetail(null,
-              identity.stateRecall.map_results.selectedResultId,"all")
+              profile.map_results.selectedResultId,"all")
             .then (data) ->
               map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 

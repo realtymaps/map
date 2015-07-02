@@ -18,8 +18,9 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
       li(ng-hide="$state.is('main')")
         +spinner()
       li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
-        a(href="{{adminRoutes.login}}") Sign In
-        //- a(href="http://localhost:4000/login") Sign In
+        //- a(href="{{adminRoutes.login}}") Sign In
+        //- a(href="{{frontendRoutes.login}}") Sign In
+        a(href="http://localhost:4000/admin/login") Sign In
       li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
         a(href="{{frontendRoutes.logout}}") Sign Out
 

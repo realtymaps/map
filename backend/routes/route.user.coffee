@@ -2,104 +2,34 @@ Promise = require 'bluebird'
 
 logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
-sessionSecurityService = require '../services/service.sessionSecurity'
 userService = require '../services/service.user'
-userUtils = require '../utils/util.user'
+# userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
-alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
+{methodExec} = require '../utils/util.route.helpers'
+_ = require 'lodash'
 
-# handle login authentication, and do all the things needed for a new login session
-login = (req, res, next) -> Promise.try () ->
-  if req.user
-    # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug "attempting to log user out (someone is logging in): #{req.user.username}"
-    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
-    .then () ->
-      req.user = null
-      # logger.debug "attempting session regenerateAsync"
-      req.session.regenerateAsync()
-      # logger.debug "post session regenerateAsync"
-  else
-    promise = Promise.resolve()
+mainSvc = userService
 
-  promise.then () ->
-    if !req.body.password
-      logger.debug "no password specified for login: #{req.body.username}"
-      return false
-    logger.debug "attempting to do login for username: #{req.body.username}"
-    userService.verifyPassword(req.body.username, req.body.password)
-  .catch (err) ->
-    logger.debug "failed authentication: #{err}"
-    return false
-  .then (user) ->
-    if not user
-      return next new ExpressResponse(alert: {
-        msg: "Username and/or password does not match our records."
-        id: alertIds.loginFailure
-      }, httpStatus.UNAUTHORIZED)
-    else
-      req.user = user
-      logger.debug "session: #{req.session}"
-      req.session.userid = user.id
+root = (req, res, next) ->
+  methodExec req,
+    GET: () ->
+      mainSvc.getAll().pipe(res)
 
-      userUtils.cacheUserValues(req)
-      .then () ->
-        req.session.saveAsync()
-      .then () ->
-        sessionSecurityService.ensureSessionCount(req)
-      .then () ->
-        sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
-      .then () ->
-        identity(req, res, next)
-  .catch (err) ->
-    logger.error "unexpected error during login(): #{err}"
-    next(err)
+    POST: () -> #create
+      mainSvc.create(req.body)
 
-
-# everything we need to do for a logout gets encapsulated here
-# JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
-# I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
-logout = (req, res, next) -> Promise.try () ->
-  if req.user
-    logger.debug "attempting to log user out: #{req.user.username}"
-    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
-    .then () ->
-      req.session.destroyAsync()
-  else
-    promise = Promise.resolve()
-  promise.then () ->
-    return res.json(identity: null)
-  .catch (err) ->
-    logger.error "error logging out user: #{err}"
-    next(err)
-
-
-identity = (req, res, next) ->
-  if req.user
-    # here we should probaby return some things from the user's profile as well, such as name
-    res.json
-      identity:
-        permissions: req.session.permissions
-        groups: req.session.groups
-        stateRecall: req.session.state
-        environment: config.ENV
-  else
-    res.json
-      identity: null
-
-
-updateState = (req, res, next) ->
-  userService.updateUserState(req.session, req.body)
-  .then () ->
-    res.send()
-  .catch (err) ->
-    logger.error "error updating user state via API: #{err}"
-    next(err)
-
+byId = (req, res, next) ->
+  methodExec req,
+    GET: () ->
+      mainSvc.get(req.body, req.params.id).pipe(res)
+    POST: () ->
+      mainSvc.create(req.body, req.params.id).pipe(res)
+    DELETE: () ->
+      mainSvc.delete(req.body, req.params.id).pipe(res)
+    PUT: () ->
+      mainSvc.update(req.params.id, req.body).pipe(res)
 
 module.exports =
-  login: login
-  logout: logout
-  identity: identity
-  updateState: updateState
+  root: root
+  byId: byId

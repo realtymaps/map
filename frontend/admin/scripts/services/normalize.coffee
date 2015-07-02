@@ -1,9 +1,10 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+Promise = require 'bluebird'
 
 app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
 
-  mlsConfigAPI = backendRoutes.mls_config.apiBaseMlsConfig
+  mlsConfigAPI = backendRoutes.mls_config.apiBase
 
   _formatRule = (rule) ->
     config: rule.config
@@ -16,14 +17,17 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
     Restangular.all(mlsConfigAPI).one(mlsId).all('rules').getList()
 
   moveRule = (mlsId, rule, listFrom, listTo, idx) ->
-    _.pull listFrom.items, rule
-    listTo.items.splice idx, 0, rule
-    if rule.list != 'unassigned'
-      Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).remove()
-    rule.list = listTo.list
-    rule.ordering = idx
-    if rule.list != 'unassigned'
-      createListRules(mlsId, listTo.list, listTo.items)
+    Promise.try () ->
+      _.pull listFrom.items, rule
+      if rule.list != 'unassigned' && listFrom.items != listTo.items
+        Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).remove()
+    .then () ->
+      listTo.items.splice idx, 0, rule
+      rule.list = listTo.list
+      if rule.list != 'unassigned'
+        createListRules(mlsId, listTo.list, listTo.items)
+    .then () ->
+      _.forEach listTo.items, (item, ordering) -> item.ordering = ordering
 
   createListRules = (mlsId, list, rules) ->
     Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(list).customPUT _.map(rules, _formatRule)

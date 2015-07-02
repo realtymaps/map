@@ -2,6 +2,7 @@ include ../includes/navbar.jade
 
 .full-width.container
   include ../views/home.jade
-  div(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", class="{{pageClass}}", ng-show="$state.includes(state.name)", ng-cloak).page
+  .page(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", 
+    class="{{pageClass}}", ng-show="$state.includes(state.name)", ng-cloak)
 
 include ../../../common/html/includes/alerts.jade

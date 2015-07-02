@@ -10,10 +10,12 @@ app.factory 'rmapsRedirectInterceptor', ($location, $rootScope) ->
     if response.data?.doLogin and $location.path() != '/'+frontendRoutes.login
       $rootScope.principal?.unsetIdentity()
       $location.url frontendRoutes.login+'?'+qs.stringify(next: $location.path()+'?'+qs.stringify($location.search()))
+    if response.data?.profileIsNeeded
+      $location.path frontendRoutes.profiles
     response
 
 .config ($httpProvider) ->
-  $httpProvider.interceptors.push 'RedirectInterceptor'.ns()
+  $httpProvider.interceptors.push 'rmapsRedirectInterceptor'
 
 app.factory 'rmapsAlertInterceptor', ($rootScope, $q, rmapsevents) ->
   defineNull = (value) ->

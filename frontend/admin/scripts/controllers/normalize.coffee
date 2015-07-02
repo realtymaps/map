@@ -85,6 +85,10 @@ app.controller 'rmapsNormalizeCtrl',
         validatorBuilder.validateBase rule
         rule.unselectable = true
       addRule rule, rule.list
+
+    # Validate base rules
+    $scope.baseFinished = _.every $scope.categories.base, valid: true
+
     # Save base rules
     $scope.baseLoading = rmapsNormalizeService.createListRules $scope.mlsData.current.id, 'base', $scope.categories.base
 
@@ -130,14 +134,17 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.onDropCategory = (drag, drop, target) ->
     if drag.model.unselectable
       return
-    rmapsNormalizeService.moveRule $scope.mlsData.current.id,
+    from = _.find($scope.targetCategories, (c) -> c.items == drag.collection)
+    to = _.find($scope.targetCategories, (c) -> c.items == drop.collection)
+    from.loading = to.loading = rmapsNormalizeService.moveRule(
+      $scope.mlsData.current.id,
       drag.model,
-      _.find($scope.targetCategories, (c) -> c.items == drag.collection),
-      _.find($scope.targetCategories, (c) -> c.items == drop.collection),
+      from,
+      to,
       _.indexOf(drop.collection, target)
-
-    $scope.selectField(drag.model)
-    $scope.$evalAsync()
+    ).then () ->
+      $scope.selectField(drag.model)
+      $scope.$evalAsync()
 
   $scope.onDropBaseInput = (drag, drop, target) ->
     field = $scope.fieldData.current
@@ -169,19 +176,18 @@ app.controller 'rmapsNormalizeCtrl',
 
   updateBase = (field) ->
     validatorBuilder.validateBase(field)
-    saveRule field
+    field.inputString = JSON.stringify(field.input) # for display
+    $scope.baseFinished = _.every $scope.categories.base, valid: true
+    saveRule()
 
   # User input triggers this
-  $scope.updateRule = _.debounce () ->
+  $scope.updateRule = () ->
     field = $scope.fieldData.current
     field.transform = validatorBuilder.getTransform field
-    saveRule field
-  , 2000
+    $scope.saveRuleDebounced()
 
-  # Map configuration options to transform JSON
-  setTransform = (field) ->
-    field.transform = validatorBuilder.getTransform(field)
+  saveRule = () ->
+    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, $scope.fieldData.current
 
-  saveRule = (rule) ->
-    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule
+  $scope.saveRuleDebounced = _.debounce saveRule, 2000
 ]
