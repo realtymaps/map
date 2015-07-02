@@ -65,6 +65,7 @@
     "gulp": "git://github.com/gulpjs/gulp.git#4.0",
     "gulp-changed": "^1.0.0",
     "gulp-coffee": "^2.3.1",
+    "gulp-complexity": "git://github.com/nmccready/gulp-complexity.git",
     "gulp-concat": "2.4.x",
     "gulp-exit": "0.0.2",
     "gulp-express": "0.1.0",
@@ -137,6 +138,7 @@
     "raw-loader": "^0.5.1",
     "readable-stream": "^1.0.32",
     "require-dir": "^0.1.0",
+    "require-directory": "^2.1.1",
     "rets-client": "git://github.com/sbruno81/rets-client.git#2.0.0-unstable",
     "sass-loader": "^1.0.2",
     "serve-favicon": "2.1.x",
@@ -164,8 +166,7 @@
     "webpack": "^1.4.13",
     "webpack-dev-server": "^1.6.5",
     "webpack-stream": "^2.0.0",
-    "winston": "0.8.x",
-    "gulp-complexity": "git://github.com/nmccready/gulp-complexity.git"
+    "winston": "0.8.x"
   },
   "devDependencies": {
     "karma-chai": "^0.1.0",

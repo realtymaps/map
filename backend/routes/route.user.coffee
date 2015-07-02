@@ -14,21 +14,21 @@ mainSvc = userService
 root = (req, res, next) ->
   methodExec req,
     GET: () ->
-      mainSvc.getAll().pipe(res)
+      mainSvc.getAll().stringify().pipe(res)
 
     POST: () -> #create
-      mainSvc.create(req.body)
+      mainSvc.create(req.body).stringify().pipe(res)
 
 byId = (req, res, next) ->
   methodExec req,
     GET: () ->
-      mainSvc.get(req.body, req.params.id).pipe(res)
+      mainSvc.getById(req.params.id).stringify().pipe(res)
     POST: () ->
-      mainSvc.create(req.body, req.params.id).pipe(res)
+      mainSvc.create(req.body, req.params.id).stringify().pipe(res)
     DELETE: () ->
-      mainSvc.delete(req.body, req.params.id).pipe(res)
+      mainSvc.delete(req.body, req.params.id).stringify().pipe(res)
     PUT: () ->
-      mainSvc.update(req.params.id, req.body).pipe(res)
+      mainSvc.update(req.params.id, req.body).stringify().pipe(res)
 
 module.exports =
   root: root
