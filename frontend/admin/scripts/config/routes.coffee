@@ -39,12 +39,12 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       state
 
     buildState 'main', parent: null, url: adminRoutes.index, sticky: true
-    buildState 'home'#, loginRequired: true
+    buildState 'home', loginRequired: true
     buildState 'mls'#, loginRequired: true
     buildState 'normalize'#, loginRequired: true
-    #buildState 'login', template: require("../../../map/html/views/login.jade")
+    buildState 'login'
     #buildState 'login', templatePath: "../../../map/html/views/login.jade"
-    # buildState 'authenticating', controller: null
+    buildState 'authenticating', controller: null
     # buildState 'logout'
 
 

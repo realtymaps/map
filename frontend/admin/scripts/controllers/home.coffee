@@ -1,7 +1,17 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 
-app.controller 'rmapsHomeCtrl', [ '$scope', '$state', ($scope, $state) ->
+app.controller 'rmapsHomeCtrl', ($scope, $state, rmapsevents, rmapsprincipal) ->
+  console.log "#### rmapsHomeCtrl"
+  console.log "#### rmapsevents:"
+  console.log rmapsevents
   $scope.adminRoutes = adminRoutes
   $scope.$state = $state
-]
+
+  # debugger
+
+  # $scope.$onRootScope rmapsevents.principal.login.success, () ->
+  #   restoreState()
+
+  # if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
+  #   restoreState()
