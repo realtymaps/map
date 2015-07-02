@@ -5,7 +5,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.controller 'rmapsProfilesCtrl', ($scope, $location, Restangular, rmapsprincipal) ->
   rmapsprincipal.getIdentity()
   .then (identity) ->
-    currentProfileSvc = Restangular.all(backendRoutes.user.currentProfile)
+    currentProfileSvc = Restangular.all(backendRoutes.userSession.currentProfile)
 
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ""

@@ -13,7 +13,7 @@ module.exports = app.controller 'rmapsLoginCtrl',
 
     $scope.form = {}
     $scope.doLoginPost = () ->
-      $http.post backendRoutes.user.login, $scope.form
+      $http.post backendRoutes.userSession.login, $scope.form
       .success (data, status) ->
         if !httpStatus.isWithinOK status
           return

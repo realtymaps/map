@@ -1,6 +1,6 @@
 logger = require '../config/logger'
 auth = require '../utils/util.auth'
-userService = require '../services/service.user'
+userSessionService = require '../services/service.userSession'
 loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 
@@ -25,7 +25,7 @@ routesConfig =
     frontend:
       method: 'all'
       order: 10000 # needs to be last
-  user:
+  userSession:
     login:
       method: 'post'
     logout: {}
@@ -39,27 +39,39 @@ routesConfig =
     profiles:
       methods: ['get', 'post']
       middleware: auth.requireLogin(redirectOnFail: true)
-
+  user:
+    root:
+      methods: ['get', 'post']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','get_user']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get', 'post', 'put', 'delete']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','get_user','delete_user','update_user']}, logoutOnFail:true)
+      ]
   properties:
     filterSummary:
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        userService.captureMapFilterState
+        userSessionService.captureMapFilterState
       ]
     parcelBase:
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        userService.captureMapState
+        userSessionService.captureMapState
       ]
     addresses:
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        userService.captureMapState
+        userSessionService.captureMapState
       ]
     detail:
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        userService.captureMapState
+        userSessionService.captureMapState
       ]
   version:
     version: {}
