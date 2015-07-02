@@ -1,3 +1,3 @@
-userService = require '../services/service.user'
+{user} = require '../services/services.user'
 crudRoute = require '../utils/crud/util.crud.route.helpers'
-module.exports = crudRoute.streamCrud(userService)
+module.exports = crudRoute.streamCrud(user)
