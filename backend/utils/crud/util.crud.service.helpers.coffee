@@ -1,7 +1,9 @@
-logger = require '../config/logger'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
-{singleRow} = require './util.sql.helpers'
+logger = require '../../config/logger'
+{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
+factory = require '../util.factory'
+BaseObject = require '../../../common/utils/util.baseObject'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -10,7 +12,7 @@ execQ = (q, doLogQuery) ->
   logQuery q, doLogQuery
   q
 
-class Crud
+class Crud extends BaseObject
   constructor: (@dbFn) ->
     unless _.isFunction @dbFn
       throw 'dbFn must be a knex function'
@@ -68,7 +70,8 @@ class ThenableCrud extends Crud
   delete: (id, doLogQuery = false) ->
     singleResultBoolean super(id, doLogQuery)
 
-
 module.exports =
   Crud:Crud
+  crud: factory(Crud)
   ThenableCrud: ThenableCrud
+  thenableCrud: factory(ThenableCrud)
