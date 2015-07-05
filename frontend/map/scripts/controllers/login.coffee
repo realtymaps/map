@@ -30,32 +30,16 @@ app.run ($rootScope, $location, rmapsprincipal) ->
       $location.url(nextLocation || frontendRoutes.map)
 
   $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
-    console.log "#### $stateChangeStart"
-    console.log "#### event:"
-    console.log event
-    console.log "#### toState:"
-    console.log toState
-    console.log "#### toParams:"
-    console.log toParams
-    console.log "#### fromState:"
-    console.log fromState
-    console.log "#### fromParams:"
-    console.log fromParams
 
     # if we're entering the login state...
-    console.log "#### toState?.url != frontendRoutes.login  #{toState.url} != #{frontendRoutes.login}?"
-    console.log (toState?.url != frontendRoutes.login)
     if toState?.url != frontendRoutes.login
       return
 
     # ... and we're already logged in, we'll move past the login state (now or when we find out)
     if rmapsprincipal.isIdentityResolved()
-      console.log "#### identity resolved! next redirect: #{toState.url}"
+
       doNextRedirect(toState, $location.search().next)
     else
-      console.log "#### identity not resolved, resolving..."
       rmapsprincipal.getIdentity()
       .then () ->
-        console.log "#### from rmapsprincipal.getIdentity:"
-        console.log d
         doNextRedirect(toState, $location.search().next)

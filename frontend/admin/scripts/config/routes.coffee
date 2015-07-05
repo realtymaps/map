@@ -41,8 +41,6 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'login'
     buildState 'logout'
     
-
-
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
 

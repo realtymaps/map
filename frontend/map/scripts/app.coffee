@@ -16,7 +16,6 @@ require '../styles/leaflet.styl'
 #require 'angular-leaflet-directive'
 
 appName = 'rmapsapp'
-#console.info "AppName: #{appName}"
 
 app = window.angular.module appName, [
   'logglyLogger.logger'

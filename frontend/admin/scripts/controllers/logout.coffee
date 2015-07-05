@@ -13,7 +13,6 @@ module.exports = app.controller 'LogoutCtrl'.ns(), () ->
 
 app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, adminOptions) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
-      console.log "#### stateChange to logout"
       # if we're not entering the logout state, or if we're already on the logout page, don't do anything
       if toState.url != adminRoutes.logout || fromState.url == adminRoutes.logout
         return
@@ -27,21 +26,14 @@ app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, adminOptions) -
       rmapsprincipal.getIdentity()
       .then () ->
         if not rmapsprincipal.isAuthenticated()
-          console.log "#### not authenticated"
           delayedUrl($location.search().next || adminRoutes.index)
         else
-          console.log "#### is authenticated"
           $http.get backendRoutes.userSession.logout
           .success (data, status) ->
-            console.log "#### logout success, data:"
-            console.log data
-            console.log "#### status:"
-            console.log status
             delayedUrl($location.search().next || adminRoutes.index)
           .finally ->
             rmapsprincipal.unsetIdentity()
             $rootScope.loadingCount = 0
-            console.log "#### identity unset, loadingCount == 0"
 
         return
       return
