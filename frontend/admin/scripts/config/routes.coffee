@@ -8,12 +8,6 @@ adminRoutes = require '../../../../common/config/routes.admin.coffee'
 module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider',
 
   ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
-    _getTemplate = (path) ->
-      try
-        template = require(path)
-      catch err
-        console.log "Error: #{err.message}  Could not import a valid template at #{path}."
-        #throw new Error "Error: #{err.message}  Could not import a valid template at #{path}."
 
     buildState = (name, overrides = {}) ->
       state =
@@ -39,17 +33,18 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       state
 
     buildState 'main', parent: null, url: adminRoutes.index, sticky: true
-    buildState 'home', loginRequired: true
-    buildState 'mls'#, loginRequired: true
-    buildState 'normalize'#, loginRequired: true
-    buildState 'login'
-    #buildState 'login', templatePath: "../../../map/html/views/login.jade"
+    buildState 'home', sticky: true, loginRequired: true
+    buildState 'mls', sticky: true, loginRequired: true
+    buildState 'normalize', sticky: true, loginRequired: true
     buildState 'authenticating', controller: null
-    # buildState 'logout'
+    buildState 'accessDenied', controller: null
+    buildState 'login'
+    buildState 'logout'
+    
 
 
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
 
-    $urlRouterProvider.when '/admin', adminRoutes.index+adminRoutes.home
+    $urlRouterProvider.when '/admin', adminRoutes.urls.home
 ]

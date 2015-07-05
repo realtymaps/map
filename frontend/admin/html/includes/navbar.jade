@@ -5,22 +5,18 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
     ul.nav.navbar-nav
       li
         .navbar-header
-          a(ui-sref="home").navbar-brand.navbar-hide
+          a(href="{{adminRoutes.urls.home}}").navbar-brand.navbar-hide
             img(src="/assets/logo.png")
       li
-        a(ui-sref="home") Home
+        a(href="{{adminRoutes.urls.home}}") Home
       li
-        a(ui-sref="mls") MLS
+        a(href="{{adminRoutes.urls.mls}}") MLS
       li
-        a(ui-sref="normalize") MLS Rules
-      li
-        a {{principal.isAuthenticated()}}
+        a(href="{{adminRoutes.urls.normalize}}") MLS Rules
       li(ng-hide="$state.is('main')")
         +spinner()
       li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
-        //- a(href="{{adminRoutes.login}}") Sign In
-        //- a(href="{{frontendRoutes.login}}") Sign In
-        a(href="http://localhost:4000/admin/login") Sign In
+        a(href="{{adminRoutes.urls.login}}") Sign In
       li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
-        a(href="{{frontendRoutes.logout}}") Sign Out
+        a(href="{{adminRoutes.urls.logout}}") Sign Out
 

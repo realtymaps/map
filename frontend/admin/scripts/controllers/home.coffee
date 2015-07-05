@@ -7,11 +7,4 @@ app.controller 'rmapsHomeCtrl', ($scope, $state, rmapsevents, rmapsprincipal) ->
   console.log rmapsevents
   $scope.adminRoutes = adminRoutes
   $scope.$state = $state
-
-  # debugger
-
-  # $scope.$onRootScope rmapsevents.principal.login.success, () ->
-  #   restoreState()
-
-  # if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
-  #   restoreState()
+  $scope.principal = rmapsprincipal
