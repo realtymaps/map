@@ -85,7 +85,7 @@ updateFirst = (session, partialState) ->
   profile.auth_user_id = session.userid
 
   cropped = authProfileOnly(profile)
-  logger.debug cropped
+  # logger.debug cropped
 
   q = userData.auth_user_profile()
   .where(auth_user_id: session.userid, id: profile.id)

@@ -1,5 +1,7 @@
 _ = require 'lodash'
-{userData} = require('../config/tables')
+logger = require '../config/logger'
+{userData} = require '../config/tables'
+userModel = require '../models/model.user'
 toInit = _.pick userData, [
   'auth_group'
   'auth_user_groups'
@@ -42,6 +44,9 @@ class UserCrud extends Crud
         userData.auth_user_user_permissions.tableName + '.permission_id')
       .where(user_id:user_id)
 
+      #note bookshelf is only promisified, no streams
+      # new userModel(id: user_id).permissions().fetch()
+
 
   groups: () ->
     getAll: (user_id) ->
@@ -54,6 +59,7 @@ class UserCrud extends Crud
 
   profiles: () ->
     getAll: (user_id) ->
+      # new userModel(id: user_id).profiles().fetch()
       userData.auth_user_profile().select().where(auth_user_id:user_id)
 
 module.exports.user = new UserCrud(userData.user)
