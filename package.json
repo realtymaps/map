@@ -90,6 +90,7 @@
     "gulp-watch": "1.0.x",
     "gulp-wrap": "^0.3.0",
     "helmet": "0.4.x",
+    "heroku-client": "^2.0.0",
     "html-loader": "^0.2.2",
     "http-status": "^0.1.8",
     "hyperquest": "^1.2.0",

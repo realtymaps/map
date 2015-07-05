@@ -46,6 +46,8 @@ module.exports =
     auth_user_profile: 'users.auth_user_profile'
     project: 'users.project'
 
+    externalAccounts: 'users.external_accounts'
+
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports
   module.exports[key] = _buildQueries(val)
