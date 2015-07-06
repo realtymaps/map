@@ -3,11 +3,10 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
-Encryptor = require '../utils/util.encryptor'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 tables = require '../config/tables'
-encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
-{ThenableCrud} = require '../utils/util.crud.helpers.coffee'
+encryptor = '../config/encryptor'
+{ThenableCrud} = require '../utils/crud/util.crud.service.helpers'
 mainDb = tables.config.mls
 
 class MlsConfigCrud extends ThenableCrud

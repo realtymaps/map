@@ -7,7 +7,14 @@ apiBase = "/api"
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
 apiBaseUsers = "#{apiBase}/users"
+apiBaseUsersGroups = "#{apiBase}/usersGroups"
+apiBaseGroups = "#{apiBase}/groups"
+apiBaseGroupsPermissions = "#{apiBase}/groupsPermissions"
+apiBasePermissions = "#{apiBase}/permissions"
+apiBaseProjects = "#{apiBase}/projects"
+apiBaseProfiles = "#{apiBase}/profiles"
 apiBaseSession = "#{apiBase}/session"
+
 
 module.exports =
   views:
@@ -30,6 +37,33 @@ module.exports =
     apiBase: apiBaseUsers
     root: apiBaseUsers
     byId: "#{apiBaseUsers}/:id"
+    permissions: "#{apiBaseUsers}/:id/permissions"
+    groups: "#{apiBaseUsers}/:id/groups"
+    profiles: "#{apiBaseUsers}/:id/profiles"
+  user_user_groups:
+    apiBase: apiBaseUsersGroups
+    root: apiBaseUsersGroups
+    byId: "#{apiBaseUsersGroups}/:id"
+  user_groups:
+    apiBase: apiBaseGroups
+    root: apiBaseGroups
+    byId: "#{apiBaseGroups}/:id"
+  user_group_permissions:
+    apiBase: apiBaseGroupsPermissions
+    root: apiBaseGroupsPermissions
+    byId: "#{apiBaseGroupsPermissions}/:id"
+  user_permissions:
+    apiBase: apiBasePermissions
+    root: apiBasePermissions
+    byId: "#{apiBasePermissions}/:id"
+  user_projects:
+    apiBase: apiBaseProjects
+    root: apiBaseProjects
+    byId: "#{apiBaseProjects}/:id"
+  user_profiles:
+    apiBase: apiBaseProfiles
+    root: apiBaseProfiles
+    byId: "#{apiBaseProfiles}/:id"
   version:
     version: "#{apiBase}/version"
   config:

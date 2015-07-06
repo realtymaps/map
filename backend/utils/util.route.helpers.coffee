@@ -1,6 +1,5 @@
 _ = require 'lodash'
 sessionHelper = require './util.session.helpers'
-logger = require '../config/logger'
 
 class CurrentProfileError extends Error
 

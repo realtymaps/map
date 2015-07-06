@@ -14,6 +14,7 @@ if config.LOGGING.LONG_STACK_TRACES
 
 # promisify libraries
 require './config/promisify'
+require './extensions'
 
 logger = require './config/logger'
 

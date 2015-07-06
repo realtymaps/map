@@ -44,13 +44,112 @@ routesConfig =
       methods: ['get', 'post']
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        auth.requirePermissions({all:['add_user','get_user']}, logoutOnFail:true)
+        auth.requirePermissions({all:['add_user','change_user']}, logoutOnFail:true)
       ]
     byId:
       methods: ['get', 'post', 'put', 'delete']
       middleware: [
         auth.requireLogin(redirectOnFail: true)
-        auth.requirePermissions({all:['add_user','get_user','delete_user','update_user']}, logoutOnFail:true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    #might want to twerk permissions required
+    permissions:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    #might want to twerk permissions required
+    groups:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    #might want to twerk permissions required
+    profiles:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+  user_user_groups:
+    root:
+      methods: ['get', 'post']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get', 'post', 'put', 'delete']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+  user_groups:#only see groups, using migrations to keep permissions in sync
+    root:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_group','change_group']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_group','change_group','delete_group']}, logoutOnFail:true)
+      ]
+  user_permissions: #only see permission, using migrations to keep permissions in sync
+    root:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_permission','change_permission']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_permission','change_permission','delete_permission']}, logoutOnFail:true)
+      ]
+  user_group_permissions:
+    root:
+      methods: ['get', 'post']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_permission','change_permission']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get', 'post', 'put', 'delete']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_permission','change_permission','delete_permission']}, logoutOnFail:true)
+      ]
+  user_projects:#STRICTLY FOR ADMIN, otherwise projects are used by session
+    root:
+      methods: ['get', 'post']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_project','change_project']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get', 'post', 'put', 'delete']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_project','change_project','delete_project']}, logoutOnFail:true)
+      ]
+  user_profiles:#STRICTLY FOR ADMIN, otherwise profiles are used by session
+    root:
+      methods: ['get', 'post']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_useraccountprofile','change_useraccountprofile']}, logoutOnFail:true)
+      ]
+    byId:
+      methods: ['get', 'post', 'put', 'delete']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_useraccountprofile','change_useraccountprofile','delete_useraccountprofile']}, logoutOnFail:true)
       ]
   properties:
     filterSummary:

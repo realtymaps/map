@@ -125,7 +125,7 @@ app.controller 'rmapsNormalizeCtrl',
       $scope.fieldData.current.lookups = field.lookups
     else if field && !field.lookups && field.LookupName
       config = $scope.mlsData.current
-      $scope.fieldLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
+      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current.lookups = field.lookups = lookups
         $scope.$evalAsync()
