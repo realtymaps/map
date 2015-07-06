@@ -18,14 +18,14 @@ app.config ['$provide', ($provide) ->
 ]
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams, rmapsprincipal) ->
+app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner) ->
     $rootScope.alerts = []
     $rootScope.frontendRoutes = frontendRoutes
     $rootScope.backendRoutes = backendRoutes
     $rootScope.principal = rmapsprincipal
     $rootScope.$state = $state
     $rootScope.$stateParams = $stateParams
-    # $rootScope.Spinner = rmapsSpinner
+    $rootScope.Spinner = rmapsSpinner
 
 
 

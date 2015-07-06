@@ -1,4 +1,4 @@
-include ../../../common/html/includes/mixins/spinner.jade
+include ./mixins/spinner.jade
 
 div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
   .collapse.navbar-collapse
@@ -14,7 +14,7 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
       li
         a(href="{{adminRoutes.urls.normalize}}") MLS Rules
       li(ng-hide="$state.is('main')")
-        +spinner()
+        +spinner()(ng-if="Spinner.getLoadingCount() > 0")
       li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
         a(href="{{adminRoutes.urls.login}}") Sign In
       li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right

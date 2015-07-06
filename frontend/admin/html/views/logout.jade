@@ -1,6 +1,6 @@
-include ../../../common/html/includes/mixins/spinner.jade
+include ../includes/mixins/spinner.jade
 
 section
   .starter-template.light-message
     h2 Logging you out...
-    +spinner()
+    +spinner()(ng-if="Spinner.getLoadingCount() > 0")

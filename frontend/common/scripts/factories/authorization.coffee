@@ -8,13 +8,8 @@ qs = require 'qs'
 
 module.exports = ($rootScope, $location, rmapsprincipal) ->
 
-  # Even though there are some states in routes that are represented with full urls,
-  # we need to apply the NS (i.e. admin) to all urls if needed to maintain generalized usage here
-
-  # _applyNs = (routeStates, ns='admin') ->
-  #   return _.mapValues routeStates, (v) ->
-  #     return if (/^\/admin/.test(v)) then v else "/#{ns}/#{v}" 
-
+  #some routes do not follow the state->map symmetry (like admin), so 
+  #  we can use a "urls" mapping provided in the routes structure to use instead
   _useUrls = (routeStates) ->
     if !routeStates.urls?
       throw new Error("'urls' must be defined for the routes of this namespace.")
