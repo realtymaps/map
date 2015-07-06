@@ -22,7 +22,7 @@ module.exports =
     admin: "/admin.html"
     mocksResults: "/mocks/results.html"
   wildcard:
-    admin: "/admin/*"
+    admin: "/admin*"
     frontend: "/*"
     backend: "#{apiBase}/*"
   userSession:

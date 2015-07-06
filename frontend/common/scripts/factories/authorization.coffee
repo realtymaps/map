@@ -1,23 +1,13 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
-
-adminRoutes = require '../../../../common/config/routes.admin.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-
+urlHelpers = require '../utils/util.urlHelpers.coffee'
 qs = require 'qs'
-
 
 module.exports = ($rootScope, $location, rmapsprincipal) ->
 
-  #some routes do not follow the state->map symmetry (like admin), so 
-  #  we can use a "urls" mapping provided in the routes structure to use instead
-  _useUrls = (routeStates) ->
-    if !routeStates.urls?
-      throw new Error("'urls' must be defined for the routes of this namespace.")
-    return routeStates.urls
-
-  routes = if /^\/admin/.test($location.path()) then _useUrls adminRoutes else frontendRoutes
+  routes = urlHelpers.getRoutes($location)
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
+
     if not rmapsprincipal.isAuthenticated()
       # user is not authenticated, but needs to be.
       # set the route they wanted as a query parameter
@@ -41,6 +31,7 @@ module.exports = ($rootScope, $location, rmapsprincipal) ->
 
 
   return authorize: (toState, toParams, fromState, fromParams) ->
+
     if !toState?.permissionsRequired && !toState?.loginRequired
       # anyone can go to this state
       return

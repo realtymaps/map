@@ -27,4 +27,4 @@ specCommon = "spec/common/**/*.coffee"
 gulp.task 'watch', gulp.series 'watch_rest', ->
   gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], gulp.series 'gulpSpec'
   gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon], gulp.series 'backendSpec'
-  gulp.watch ['frontend/**/*.coffee', 'spec/app/**/*.coffee', specCommon], gulp.series 'frontendSpec'
+  gulp.watch ['frontend/**/*.coffee', 'spec/app/**/*.coffee', 'spec/admin/**/*.coffee', specCommon], gulp.series 'frontendSpec'

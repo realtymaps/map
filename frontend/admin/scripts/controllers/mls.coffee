@@ -4,8 +4,8 @@ mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants',
-  ($rootScope, $scope, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
+  ($rootScope, $scope, $location, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -55,15 +55,23 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
       active: false
     ]
 
+
     # extract existing configs, populate idOptions
-    $scope.loading = true
-    rmapsMlsService.getConfigs()
-    .then (configs) ->
-      $scope.idOptions = configs
-    .catch (err) ->
-      $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
-    .finally () ->
-      $scope.loading = false
+    restoreState = () ->
+      # don't start pulling mls data unless identity checks out
+      rmapsprincipal.getIdentity()
+      .then (identity) ->
+        if not identity?.user?
+          return $location.path(adminRoutes.urls.login)
+        $scope.loading = true
+        rmapsMlsService.getConfigs()
+        .then (configs) ->
+          $scope.idOptions = configs
+        .catch (err) ->
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
+        .finally () ->
+          $scope.loading = false
+
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
@@ -253,6 +261,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$state', 'rmapsMlsServi
         , () ->
           console.log "modal closed"
       )
+
+    $scope.$onRootScope rmapsevents.principal.login.success, () ->
+      restoreState()
+
+    if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
+      restoreState()
+
 ]
 
 

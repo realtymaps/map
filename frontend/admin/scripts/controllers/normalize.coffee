@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
+adminRoutes = require '../../../../common/config/routes.admin.coffee'
 require '../services/mlsConfig.coffee'
 require '../services/normalize.coffee'
 require '../directives/dragdrop.coffee'
@@ -8,8 +9,8 @@ require '../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
-($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
+['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal',
+($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal) ->
 
   $scope.$state = $state
 
@@ -48,9 +49,15 @@ app.controller 'rmapsNormalizeCtrl',
     return true
 
   # Load MLS list
-  rmapsMlsService.getConfigs()
-  .then (configs) ->
-    $scope.mlsConfigs = configs
+  restoreState = () ->
+    # don't start pulling mls data unless identity checks out
+    rmapsprincipal.getIdentity()
+    .then (identity) ->
+      if not identity?.user?
+        return $location.path(adminRoutes.urls.login)
+      rmapsMlsService.getConfigs()
+      .then (configs) ->
+        $scope.mlsConfigs = configs
 
   allRules = {}
 
@@ -190,4 +197,13 @@ app.controller 'rmapsNormalizeCtrl',
     $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, $scope.fieldData.current
 
   $scope.saveRuleDebounced = _.debounce saveRule, 2000
+
+
+
+  $scope.$onRootScope rmapsevents.principal.login.success, () ->
+    restoreState()
+
+  if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
+    restoreState()
+
 ]

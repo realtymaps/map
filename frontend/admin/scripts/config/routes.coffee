@@ -44,5 +44,5 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
 
-    $urlRouterProvider.when '/admin', adminRoutes.urls.home
+    $urlRouterProvider.when /\/admin$/, adminRoutes.index
 ]
