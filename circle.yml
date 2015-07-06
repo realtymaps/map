@@ -17,5 +17,7 @@ deployment:
   staging:
     branch: /dev\/.*\/.*/
     commands:
+      - git rev-parse HEAD > git-rev
+      - git add -A; git commit -am "circle ci versioning for assets"
       - ./scripts/misc/pushTo heroku realtymaps-map --dbsync:
           timeout: 600
