@@ -5,7 +5,7 @@ dbs = require '../config/dbs'
 config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 tables = require '../config/tables'
-encryptor = '../config/encryptor'
+encryptor = require '../config/encryptor'
 {ThenableCrud} = require '../utils/crud/util.crud.service.helpers'
 mainDb = tables.config.mls
 
@@ -14,13 +14,7 @@ class MlsConfigCrud extends ThenableCrud
     super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
 
   updatePropertyData: (id, propertyData) ->
-    base('getById', id)
-    .update
-      main_property_data: JSON.stringify(propertyData)
-    .then (result) ->
-      result == 1
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error)
+    @update(id, propertyData)
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->
@@ -36,7 +30,7 @@ class MlsConfigCrud extends ThenableCrud
   # Privileged
   create: (entity, id) ->
     if entity.password
-      mlsConfig.password = encryptor.encrypt(mlsConfig.password)
+      entity.password = encryptor.encrypt(entity.password)
     super(entity,id)
 
 instance = new MlsConfigCrud(mainDb)
