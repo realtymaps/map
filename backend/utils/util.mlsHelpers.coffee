@@ -17,6 +17,7 @@ require '../config/promisify'
 memoize = require 'memoizee'
 vm = require 'vm'
 tables = require '../config/tables'
+validatorBuilder = require '../../common/utils/util.validatorBuilder'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -295,6 +296,10 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 
 _updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
+  # add base data to groups
+  _.forEach _.where(validatorBuilder.baseRules, 'group'), (rule, name) ->
+    normalizedData[rule.group].unshift normalizedData.base[name]
+
   # build the row's new values
   _.extend normalizedData.base,
     data_source_id: options.dataSourceId
