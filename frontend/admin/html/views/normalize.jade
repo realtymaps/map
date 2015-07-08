@@ -147,6 +147,11 @@
           select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
             option(value="") None
         .col-md-8.help Value will be changed to uppercase, lowercase or capitalized
+      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.Interpretation == 'LookupMulti'")
+        .col-md-2 Split by
+        .col-md-2
+          input(type="text" ng-model="fieldData.current.config.split" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Enter the separator to use for splitting values in this field (a comma ',' is typical)
       .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > 50")
         .col-md-2 Too many values to show.
         .col-md-2
@@ -156,6 +161,11 @@
         .col-md-2
           input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help(ng-show="$index == 0") Replace MLS values with more readable values where necessary
+      .row(ng-if="fieldData.current.type.name == 'boolean'")
+        .col-md-2 Remove values
+        .col-md-2
+          select(ng-model="fieldData.current.config.nullify" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+        .col-md-8.help Remove the selected value
 
     div(ng-show="fieldData.current.list == 'base'")
       .col-md-12.scroll(ng-if="fieldData.current.output == 'address'")
