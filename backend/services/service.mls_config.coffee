@@ -3,10 +3,9 @@ Promise = require "bluebird"
 logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
-Encryptor = require '../utils/util.encryptor'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 tables = require '../config/tables'
-encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
+encryptor = require '../config/encryptor'
 {ThenableCrud} = require '../utils/crud/util.crud.service.helpers'
 mainDb = tables.config.mls
 
@@ -36,8 +35,9 @@ class MlsConfigCrud extends ThenableCrud
 
   # Privileged
   create: (entity, id) ->
+    entity.id = id
     if entity.password
-      mlsConfig.password = encryptor.encrypt(mlsConfig.password)
+      entity.password = encryptor.encrypt(entity.password)
     super(entity,id)
 
 instance = new MlsConfigCrud(mainDb)

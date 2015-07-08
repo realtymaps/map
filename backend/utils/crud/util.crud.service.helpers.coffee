@@ -25,13 +25,13 @@ class Crud extends BaseObject
 
   #here down return thenables to be consistent on service returns for single items
   update: (id, entity, safe = [], doLogQuery = false) ->
-    execQ @dbFn.where(id: id).update _.pick(entity, safe), doLogQuery
+    execQ @dbFn().where(id: id).update _.pick(entity, safe), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
-    execQ @dbFn.insert(entity), doLogQuery
+    execQ @dbFn().insert(entity), doLogQuery
 
   delete: (id, doLogQuery = false) ->
-    execQ @dbFn.where(id: id).delete(), doLogQuery
+    execQ @dbFn().where(id: id).delete(), doLogQuery
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
@@ -41,7 +41,7 @@ Many times ThenableCrud should not even be instantiated until the
 route layer where you know that you will definatley want a response totally in memory.
 Many times returning the query itself is sufficent so it can be piped (MUCH better on memory)!
 ###
-singleResultBoolean = (q) ->
+singleResultBoolean = (q, doRowCount) ->
   q.then (result) ->
     unless doRowCount
       return result == 1

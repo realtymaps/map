@@ -15,13 +15,16 @@
     .col-md-6
 
   .row.panel(cg-busy="mlsLoading" ng-show="mlsData.current")
+
+    .close-icon(ng-click="showGrid=!showGrid") ☰
+
     .col-md-2.list-container
       h4 Filters
       .field-container(cg-busy="baseLoading")
         .field.base(
         ng-class="{ invalid: !item.valid }"
         ng-click="selectField(item)"
-        ng-repeat="item in categories.base") {{item.alias}}
+        ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
 
     .col-md-2.list-container
       h4 MLS
@@ -31,14 +34,45 @@
         ng-class="{ 'assigned': item.assigned }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned") {{item.output}}
-          span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
-           'datatype-number': item.Interpretation == 'Number', \
-           'datatype-yn': item.DataType == 'Boolean', \
-           'datatype-date': item.DataType == 'DateTime' }"
-           ng-show="item.DataType || item.Interpretation")
+        ng-repeat="item in categories.unassigned | orderBy : ['-assigned', 'output']") {{item.output}}
+          span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+           'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+           'datatype-yn': item.type.name == 'boolean', \
+           'datatype-date': item.type.name == 'datetime' }"
+           ng-show="item.type")
 
-    .col-md-8.list-container(ng-show="baseFinished")
+    .col-md-3.list-container(ng-if="!showGrid")
+      h4 Groups
+      .field-container(
+        cg-busy="fieldData.category.loading"
+        )
+        .field.category-item(
+        rmaps-droppable="category.items" on-drop="onDropCategory"
+        ng-click="fieldData.category = category"
+        ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
+
+    .col-md-3.list-container(ng-if="!showGrid")
+      h4 {{fieldData.category.label}}
+      .field-container(
+        rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
+        cg-busy="fieldData.category.loading")
+        .field(
+        class="base unselectable"
+        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
+        .field(
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+        ng-click="item.unselectable || selectField(item)"
+        rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
+        ng-repeat="item in fieldData.category.items")
+          span(ng-show="!item.unselectable") {{item.output}}
+          span(ng-show="item.unselectable") {{item.alias}}
+          span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+           'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+           'datatype-yn': item.type.name == 'boolean', \
+           'datatype-date': item.type.name == 'datetime' }"
+           ng-show="item.type")
+
+    .col-md-8.list-container(ng-if="showGrid")
       h4 Groups
       .field-container
         .category(
@@ -46,20 +80,23 @@
         ng-class="{collapse: !expanded}"
         rmaps-droppable="category.items" on-drop="onDropCategory"
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
-          .expand-icon(ng-click="expanded = !expanded")
+          .expand-icon(ng-click="expanded = !expanded" ng-show="category.items.length > 5")
           .field-list
             .field(
-            ng-class="{ 'assigned': item.assigned, base: item.unselectable, selected: item == fieldData.current && showProperties }"
+            class="base unselectable"
+            ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
+            .field(
+            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
               span(ng-show="!item.unselectable") {{item.output}}
               span(ng-show="item.unselectable") {{item.alias}}
-              span.datatype(ng-class="{ 'datatype-string': item.DataType == 'Character', \
-               'datatype-number': item.Interpretation == 'Number', \
-               'datatype-yn': item.DataType == 'Boolean', \
-               'datatype-date': item.DataType == 'DateTime' }"
-               ng-show="item.DataType || item.Interpretation")
+              span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+               'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+               'datatype-yn': item.type.name == 'boolean', \
+               'datatype-date': item.type.name == 'datetime' }"
+               ng-show="item.type")
 
   .row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
 
@@ -77,43 +114,43 @@
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.alias" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Supply a more readable name for this field if necessary
-      .row(ng-if="fieldData.current.Interpretation == 'Number'")
+      .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove zero (0) values?
         .col-md-2
           input(type="checkbox" ng-model="fieldData.current.config.nullZero" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any 0s found in this field will be removed and won't be visible
-      .row(ng-if="fieldData.current.Interpretation == 'Number'")
+      .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove specific value(s)
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.nullNumber" placeholder="1, 2, 3" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any of the specified values found in this field will be removed and won't be visible. Multiple values may be entered separated by commas.
-      .row(ng-if="fieldData.current.DataType == 'Decimal'")
+      .row(ng-if="fieldData.current.type.name == 'float'")
         .col-md-2 Round / truncate decimal
         .col-md-2
           input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Values with decimals will be replaced with round numbers, for example 2.87 becomes 2
 
-      .row(ng-if="fieldData.current.DataType == 'Character'")
+      .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Remove empty?
         .col-md-2
           input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any empty values found in this field will be removed so they don't show up
-      .row(ng-if="fieldData.current.DataType == 'Character'")
+      .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Remove specific value(s)
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.nullString" rmaps-list-input placeholder="no, false, n/a" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any empty values found in this field will be removed so they don't show up
-      .row(ng-if="fieldData.current.DataType == 'Character'")
+      .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Transform
         .col-md-2
           select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
             option(value="") None
         .col-md-8.help Value will be changed to uppercase, lowercase or capitalized
-      .row(ng-if="fieldData.current.DataType == 'Character' && fieldData.current.lookups.length > 50 && !fieldData.current.showLookups")
+      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.lookups.length > 50 && !fieldData.current.showLookups")
         .col-md-2 Too many values to show.
         .col-md-2
           .btn.btn-primary(ng-click="fieldData.current.showLookups = true") See all {{fieldData.current.lookups.length}} values anyway?
-      .row(ng-if="fieldData.current.DataType == 'Character' && (fieldData.current.lookups.length <= 50 || fieldData.current.showLookups)" ng-repeat="lookup in fieldData.current.lookups")
+      .row(ng-if="fieldData.current.type.name == 'string' && (fieldData.current.lookups.length <= 50 || fieldData.current.showLookups)" ng-repeat="lookup in fieldData.current.lookups")
         .col-md-2 {{lookup.LongValue}}
         .col-md-2
           input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
@@ -166,6 +203,21 @@
         .row
           .col-md-2 Optional
           .col-md-10
+            .field(rmaps-droppable="'unitNum'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.unitNum }")
+              span(ng-show="fieldData.current.input.unitNum") {{fieldData.current.input.unitNum}}:
+              span Unit Number
+              span.remove-icon(ng-show="fieldData.current.input.unitNum" ng-click="removeBaseInput('unitNum')") X
+            .field(rmaps-droppable="'streetNumSuffix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNumSuffix }")
+              span(ng-show="fieldData.current.input.streetNumSuffix") {{fieldData.current.input.streetNumSuffix}}:
+              span Number Suffix
+              span.remove-icon(ng-show="fieldData.current.input.streetNumSuffix" ng-click="removeBaseInput('streetNumSuffix')") X
+        .row
+          .col-md-2 Optional
+          .col-md-10
+            .field(rmaps-droppable="'streetSuffix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetSuffix }")
+              span(ng-show="fieldData.current.input.streetSuffix") {{fieldData.current.input.streetSuffix}}:
+              span Street Suffix
+              span.remove-icon(ng-show="fieldData.current.input.streetSuffix" ng-click="removeBaseInput('streetSuffix')") X
             .field(rmaps-droppable="'streetDirPrefix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetDirPrefix }")
               span(ng-show="fieldData.current.input.streetDirPrefix") {{fieldData.current.input.streetDirPrefix}}:
               span Direction Prefix
@@ -174,10 +226,6 @@
               span(ng-show="fieldData.current.input.streetDirSuffix") {{fieldData.current.input.streetDirSuffix}}:
               span Direction Suffix
               span.remove-icon(ng-show="fieldData.current.input.streetDirSuffix" ng-click="removeBaseInput('streetDirSuffix')") X
-            .field(rmaps-droppable="'streetNumModifier'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetNumModifier }")
-              span(ng-show="fieldData.current.input.streetNumModifier") {{fieldData.current.input.streetNumModifier}}:
-              span Number Modifier
-              span.remove-icon(ng-show="fieldData.current.input.streetNumModifier" ng-click="removeBaseInput('streetNumModifier')") X
 
       .col-md-12.scroll(ng-if="fieldData.current.output == 'status_display'")
         .row

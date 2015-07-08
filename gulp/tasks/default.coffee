@@ -5,6 +5,7 @@ require './express'
 require './minify'
 require './gzip'
 require './complexity'
+require './checkdir'
 
 #help = require('gulp-help')(gulp)
 del = require 'del'
@@ -26,7 +27,7 @@ gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'webpackAdmin', 'ex
 
 gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
-gulp.task 'prod', gulp.series 'clean', 'webpackProd', 'webpackAdmin', 'minify', 'gzip'
+gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'webpackProd', 'webpackAdmin', 'minify', 'gzip'
 
 gulp.task 'default', gulp.series 'develop'
 

@@ -6,7 +6,6 @@ require '../directives/dragdrop.coffee'
 require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
 
-
 app.controller 'rmapsNormalizeCtrl',
 ['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
 ($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
@@ -31,6 +30,8 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
+
+  $scope.baseRules = validatorBuilder.baseRules
 
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories, (label, list) ->
@@ -71,23 +72,17 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles parsing existing rules for display
   parseRules = (rules) ->
-    # Load existing base rules first
-    _.forEach _.where(rules, list: 'base'), (rule) ->
-      addBaseRule rule
+    # Load existing rules first
+    _.forEach rules, (rule) ->
+      if rule.list == 'base'
+        addBaseRule rule
+      else
+        addRule rule, rule.list
     # Create base rules that don't exist yet
-    _.forEach validatorBuilder.baseRules, (rule, output) ->
+    _.forEach $scope.baseRules, (rule, output) ->
       if !allRules[output]
         rule.output = output
         addBaseRule rule
-    # Create remaining rules
-    _.forEach _.where(rules, (r) -> r.list != 'base'), (rule) ->
-      if allRules[rule.output]?.list == 'base'
-        validatorBuilder.validateBase rule
-        rule.unselectable = true
-      addRule rule, rule.list
-
-    # Validate base rules
-    $scope.baseFinished = _.every $scope.categories.base, valid: true
 
     # Save base rules
     $scope.baseLoading = rmapsNormalizeService.createListRules $scope.mlsData.current.id, 'base', $scope.categories.base
@@ -99,8 +94,13 @@ app.controller 'rmapsNormalizeCtrl',
       if rule
         _.extend rule, _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
       else
-        field.output = field.LongName
-        addRule field, 'unassigned'
+        rule = field
+        rule.output = rule.LongName
+        addRule rule, 'unassigned'
+      rule.type = validatorBuilder.lookupType(field)
+      true
+
+    _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
 
   # Load saved MLS config and RETS fields
   $scope.selectMls = () ->
@@ -116,7 +116,6 @@ app.controller 'rmapsNormalizeCtrl',
   # Show field options
   $scope.selectField = (field) ->
     $scope.showProperties = true
-    field.type = validatorBuilder.lookupType(field)
     $scope.fieldData.current = field
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 
@@ -136,49 +135,66 @@ app.controller 'rmapsNormalizeCtrl',
       return
     from = _.find($scope.targetCategories, (c) -> c.items == drag.collection)
     to = _.find($scope.targetCategories, (c) -> c.items == drop.collection)
+    idx = _.indexOf(drop.collection, target)
+    if to.list != 'unassigned'
+      $scope.fieldData.category = to
     from.loading = to.loading = rmapsNormalizeService.moveRule(
       $scope.mlsData.current.id,
       drag.model,
       from,
       to,
-      _.indexOf(drop.collection, target)
+      if idx != -1 then idx else 0
     ).then () ->
       $scope.selectField(drag.model)
       $scope.$evalAsync()
 
   $scope.onDropBaseInput = (drag, drop, target) ->
     field = $scope.fieldData.current
-    field.input[drop.collection] = drag.model.output
-    updateBase(field)
+    key = drop.collection
+    removed = field.input[key]
+    field.input[key] = drag.model.output
+    updateAssigned(field)
+    updateBase(field, removed)
 
   # Remove base field input
   $scope.removeBaseInput = (key) ->
     field = $scope.fieldData.current
+    removed = field.input[key]
     delete field.input[key]
     delete field.lookups
     delete field.config.choices
-    updateBase(field)
+    updateBase(field, removed)
 
   # Move rules to base field config
   $scope.onDropBase = (drag, drop, target) ->
     field = $scope.fieldData.current
+    removed = field.input
     field.input = drag.model.output
     $scope.loadLookups(drag.model)
-    updateBase(field)
+    updateBase(field, removed)
 
   # Remove base field input
   $scope.removeBase = () ->
     field = $scope.fieldData.current
+    removed = field.input
     field.input = null
     delete field.lookups
     delete field.config.choices
-    updateBase(field)
+    updateBase(field, removed)
 
-  updateBase = (field) ->
+  updateBase = (field, removed) ->
     validatorBuilder.validateBase(field)
     field.inputString = JSON.stringify(field.input) # for display
-    $scope.baseFinished = _.every $scope.categories.base, valid: true
+    updateAssigned(field, removed)
     saveRule()
+
+  updateAssigned = (rule, removed) ->
+    if $scope.baseRules[rule.output].group
+      delete allRules[removed]?.assigned
+      if _.isString rule.input
+        allRules[rule.input]?.assigned = true
+      else _.forEach rule.input, (input) ->
+        allRules[input]?.assigned = true
 
   # User input triggers this
   $scope.updateRule = () ->
