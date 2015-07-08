@@ -35,8 +35,9 @@ groupsCols = [
 #crud with hasMany?
 
 class UserCrud extends Crud
-  permissions: () ->
-    getAll: (user_id) ->
+  constructor: () ->
+    super(arguments...)
+    @permsQuery = (user_id) ->
       userData.auth_user_user_permissions()
       .select(permissionCols...)
       .innerJoin(userData.auth_permission.tableName,
@@ -44,12 +45,7 @@ class UserCrud extends Crud
         userData.auth_user_user_permissions.tableName + '.permission_id')
       .where(user_id:user_id)
 
-      #note bookshelf is only promisified, no streams
-      # new userModel(id: user_id).permissions().fetch()
-
-
-  groups: () ->
-    getAll: (user_id) ->
+    @groupsQuery = (user_id) ->
       userData.auth_user_groups()
       .select(groupsCols...)
       .innerJoin(userData.auth_group.tableName,
@@ -57,9 +53,23 @@ class UserCrud extends Crud
         userData.auth_user_groups.tableName + '.group_id')
       .where(user_id:user_id)
 
-  profiles: () ->
-    getAll: (user_id) ->
+    @profilesQuery = (user_id) -> userData.auth_user_profile().select().where(auth_user_id:user_id)
+
+  permissions: () =>
+    getAll: (user_id) =>
+      @permsQuery(user_id)
+      #note bookshelf is only promisified, no streams
+      # new userModel(id: user_id).permissions().fetch()
+    getById:(user_id, permission_id) ->
+      @permsQuery(user_id).where(permission_id:permission_id)
+
+  groups: () =>
+    getAll: (user_id) =>
+      @groupsQuery(user_id)
+  profiles: () =>
+    getAll: (user_id) =>
+      @profilesQuery(user_id)
       # new userModel(id: user_id).profiles().fetch()
-      userData.auth_user_profile().select().where(auth_user_id:user_id)
+
 
 module.exports.user = new UserCrud(userData.user)
