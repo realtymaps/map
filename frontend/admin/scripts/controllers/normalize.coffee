@@ -48,11 +48,6 @@ app.controller 'rmapsNormalizeCtrl',
     $window.open url, "_self"
     return true
 
-  # Load MLS list
-  rmapsMlsService.getConfigs()
-  .then (configs) ->
-    $scope.mlsConfigs = configs
-
   allRules = {}
 
   # Handles adding rules to categories
@@ -102,17 +97,6 @@ app.controller 'rmapsNormalizeCtrl',
 
     _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
 
-  # Load saved MLS config and RETS fields
-  $scope.selectMls = () ->
-    config = $scope.mlsData.current
-    $scope.mlsLoading =
-      rmapsNormalizeService.getRules(config.id)
-      .then (rules) ->
-        parseRules(rules)
-        rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
-      .then (fields) ->
-        parseFields(fields)
-
   # Show field options
   $scope.selectField = (field) ->
     $scope.showProperties = true
@@ -120,13 +104,17 @@ app.controller 'rmapsNormalizeCtrl',
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 
   $scope.loadLookups = (field) ->
-    if field?.lookups
-      $scope.fieldData.current.lookups = field.lookups
-    else if field && !field.lookups && field.LookupName
+    if field?._lookups
+      $scope.fieldData.current._lookups = field._lookups
+      if field._lookups.length <= 50
+        $scope.fieldData.current.lookups = field._lookups
+    else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
       .then (lookups) ->
-        $scope.fieldData.current.lookups = field.lookups = lookups
+        $scope.fieldData.current._lookups = field._lookups = lookups
+        if lookups.length <= 50
+          $scope.fieldData.current.lookups = lookups
         $scope.$evalAsync()
 
   # Move rules between categories
@@ -206,4 +194,26 @@ app.controller 'rmapsNormalizeCtrl',
     $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, $scope.fieldData.current
 
   $scope.saveRuleDebounced = _.debounce saveRule, 2000
+
+  # Dropdown selection, reloads the view
+  $scope.selectMls = () ->
+    $state.go($state.current, { id: $scope.mlsData.current.id }, { reload: true })
+
+  # Load saved MLS config and RETS fields
+  loadMls = (config) ->
+    $scope.mlsLoading =
+      rmapsNormalizeService.getRules(config.id)
+      .then (rules) ->
+        parseRules(rules)
+        rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
+      .then (fields) ->
+        parseFields(fields)
+
+  # Load MLS list
+  rmapsMlsService.getConfigs()
+  .then (configs) ->
+    $scope.mlsConfigs = configs
+    if $state.params.id
+      $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
+      loadMls($scope.mlsData.current)
 ]
