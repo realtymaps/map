@@ -164,7 +164,7 @@
       .row(ng-if="fieldData.current.type.name == 'boolean'")
         .col-md-2 Remove values
         .col-md-2
-          select(ng-model="fieldData.current.config.nullify" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          select(ng-model="fieldData.current.config.value" ng-options="v as k for (k, v) in nullifyOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Remove the selected value
 
     div(ng-show="fieldData.current.list == 'base'")

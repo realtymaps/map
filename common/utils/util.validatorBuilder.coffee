@@ -114,7 +114,7 @@ getTransform = (field) ->
   #       present if type is choices
   #
 
-  if field.config.advanced
+  if field.config?.advanced
     return
 
   reserved = [ 'advanced' ]
@@ -158,7 +158,7 @@ getTransform = (field) ->
     else
       type = lookupType(field)
       if type.name == 'boolean'
-        _getValidationString('nullify', _.extend vOptions, value: vOptions.nullify)
+        _getValidationString('nullify', vOptions)
       else
         _getValidationString(type?.name, vOptions)
 

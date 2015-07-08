@@ -25,12 +25,8 @@ describe 'validatorBuilder', ->
        field: {"DataType": "DateTime"}
        transform: 'validation.datetime({})'
       ,
-       field: {"DataType": "Boolean"}
-       transform: 'validation.boolean({})'
-      ,
-       field: {"DataType": "Boolean", "config": {"invert": true}}
-       transform: 'validation.boolean({"invert":true})'
-
+       field: {"DataType": "Boolean", "config": {"value": false}}
+       transform: 'validation.nullify({"value":false})'
      ]
 
     namedFieldTestMap = [
