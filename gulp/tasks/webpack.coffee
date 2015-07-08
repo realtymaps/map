@@ -15,6 +15,7 @@ conf = configFact output
 
 prodConf = configFact output,
   new webpack.optimize.UglifyJsPlugin {
+    mangle: false,
     compress: {
       warnings: false
     }}

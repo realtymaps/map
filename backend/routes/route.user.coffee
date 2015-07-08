@@ -9,6 +9,8 @@ class UserCrud extends StreamCrud
       GET: () ->
         self.svc.permissions()
         .getAll(req.params.id).stringify().pipe(res)
+        # .then (models) ->
+        #   res.json(models)
 
   groups: (req, res, next) =>
     self = @
@@ -23,5 +25,6 @@ class UserCrud extends StreamCrud
       GET: () ->
         self.svc.profiles()
         .getAll(req.params.id).stringify().pipe(res)
-
+        # .then (models) ->
+        #   res.json(models)
 module.exports = new UserCrud(user)

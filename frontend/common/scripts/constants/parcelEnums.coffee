@@ -35,8 +35,10 @@ address =
   zip9: 'Postal Code + 4'
   streetDirPrefix: 'Street Dir Prefix'
   streetDirSuffix: 'Street Dir Suffix'
-  streetNumModifier: 'Street Number Modifier'
+  streetSuffix: "Street Suffix",
+  streetNumSuffix: 'Street Number Suffix'
   streetFull: 'Full Street'
+  unitNum: 'Unit Number'
 
 module.exports =
   status: status

@@ -29,6 +29,7 @@ class MlsConfigCrud extends ThenableCrud
 
   # Privileged
   create: (entity, id) ->
+    entity.id = id
     if entity.password
       entity.password = encryptor.encrypt(entity.password)
     super(entity,id)

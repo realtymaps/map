@@ -56,22 +56,30 @@ body
     &.datatype-date:before
       content "date"
 
+selectable(text, background, border, invert=true)
+  color text
+  background-color background
+  border-color border
+  &.selected
+    font-weight bold
+    if invert
+      background-color text
+      color background
+
 .field
   display block
   text-align left
 
-  color #fff
-  background-color #5bc0de
-  border-color #46b8da
+  selectable #fff, #5bc0de, #46b8da
+
   &.assigned
-    background-color #aaa
-    border-color #999
+    selectable #fff, #aaa, #999
   &.base
     text-transform capitalize
-    background-color #6Ec878
-    border-color #3Eb848
+    selectable #fff, #6ec878, #3eb848
   &.base:before
     content 'RM'
+    color #fff
     background-color #313145
     margin-right 1em
     padding 3px
@@ -79,10 +87,9 @@ body
     font-size 75%
     opacity 0.8
   &.invalid
-    background-color #DE7F79
-    border-color #bE5F59
-  &.selected
-    border-color yellow
+    selectable #fff, #de7f79, #be5f59
+  &.category-item
+    selectable #000, #ddd, #aaa, false
 
 .category
   display inline-block
@@ -105,7 +112,7 @@ body
 
 .field-container
   overflow-y scroll
-  height 450px
+  height 475px
   padding-left 10px
 
 .properties-container

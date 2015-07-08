@@ -5,9 +5,10 @@ module.exports =
   login: 'login'
   logout: 'logout'
   mls: 'mls'
-  normalize: 'normalize'
+  normalize: 'normalize?id'
   authenticating: 'authenticating'
-  accessDenied:   'accessDenied'
+  accessDenied: 'accessDenied'
+  pageNotFound: '*path'
 
   # the urls for states are needed
   urls:
