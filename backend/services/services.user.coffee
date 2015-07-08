@@ -12,7 +12,7 @@ toInit = _.pick userData, [
   'auth_user_user_permissions'
 ]
 
-{crud,Crud} = require '../utils/crud/util.crud.service.helpers'
+{crud,Crud, HasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 
 for key, val of toInit
   module.exports[key] = crud(val)
@@ -37,13 +37,6 @@ groupsCols = [
 class UserCrud extends Crud
   constructor: () ->
     super(arguments...)
-    @permsQuery = (user_id) ->
-      userData.auth_user_user_permissions()
-      .select(permissionCols...)
-      .innerJoin(userData.auth_permission.tableName,
-        userData.auth_permission.tableName+ ".id",
-        userData.auth_user_user_permissions.tableName + '.permission_id')
-      .where(user_id:user_id)
 
     @groupsQuery = (user_id) ->
       userData.auth_user_groups()
@@ -55,17 +48,12 @@ class UserCrud extends Crud
 
     @profilesQuery = (user_id) -> userData.auth_user_profile().select().where(auth_user_id:user_id)
 
-  permissions: () =>
-    getAll: (user_id) =>
-      @permsQuery(user_id)
-      #note bookshelf is only promisified, no streams
-      # new userModel(id: user_id).permissions().fetch()
-    getById:(user_id, permission_id) ->
-      @permsQuery(user_id).where(permission_id:permission_id)
+  permissions: new HasManyCrud(userData.auth_permission, permissionCols,
+    module.exports.auth_user_user_permissions, "permission_id", undefined, "auth_user_user_permissions.id")
 
-  groups: () =>
-    getAll: (user_id) =>
-      @groupsQuery(user_id)
+  groups: new HasManyCrud(userData.auth_group, groupsCols,
+    module.exports.auth_user_groups, "group_id", undefined, "group_id")
+  
   profiles: () =>
     getAll: (user_id) =>
       @profilesQuery(user_id)

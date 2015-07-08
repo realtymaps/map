@@ -14,10 +14,13 @@ execQ = (q, doLogQuery) ->
 
 class Crud extends BaseObject
   constructor: (@dbFn, @idKey = "id") ->
+    super()
     unless _.isFunction @dbFn
       throw 'dbFn must be a knex function'
   idObj: (val) ->
-    _.set {}, @idKey, val
+    obj = {}
+    obj[@idKey] = val
+    obj
 
   getAll: (doLogQuery = false) ->
     execQ @dbFn(), doLogQuery
@@ -25,7 +28,6 @@ class Crud extends BaseObject
   getById: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)), doLogQuery
 
-  #here down return thenables to be consistent on service returns for single items
   update: (id, entity, safe = [], doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)).update _.pick(entity, safe), doLogQuery
 
@@ -39,6 +41,38 @@ class Crud extends BaseObject
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
+
+class HasManyCrud extends Crud
+  constructor: (dbFn, @rootCols, @joinCrud, joinIdStr, rootIdStr, idKey) ->
+    super(dbFn, idKey)
+    unless @joinCrud instanceof Crud
+      throw "@joinCrud must be Instance of Crud"
+    @setIdStrs rootIdStr, joinIdStr
+
+  joinQuery: () ->
+    @joinCrud.dbFn()
+    .select(@rootCols...)
+    .innerJoin(@dbFn.tableName, @rootIdStr, @joinIdStr)
+
+  setIdStrs: (rootIdStr,joinIdStr) ->
+    @rootIdStr = rootIdStr or @dbFn.tableName + ".id"
+    @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
+
+  getAll: (entity, doLogQuery = false) ->
+    execQ @joinQuery().where(entity), doLogQuery
+
+  getById: (id, doLogQuery = false) ->
+    execQ @joinQuery().where(@idObj(id)), doLogQuery
+
+  create: (entity, id, doLogQuery = false) ->
+    @joinCrud.create(entity, id, doLogQuery)
+
+  update: (id, entity, safe = [], doLogQuery = false) ->
+    @joinCrud(id, entity, safe, doLogQuery)
+
+  base: () ->
+    super([HasManyCrud,@].concat(_.toArray arguments)...)
+
 ###
 NOTICE this really restricts how the crud is used!
 Many times ThenableCrud should not even be instantiated until the
@@ -76,6 +110,8 @@ class ThenableCrud extends Crud
 
 module.exports =
   Crud:Crud
-  crud: factory(Crud)
+  crud: factory Crud
   ThenableCrud: ThenableCrud
-  thenableCrud: factory(ThenableCrud)
+  thenableCrud: factory ThenableCrud
+  HasManyCrud: HasManyCrud
+  hasManyCrud: factory HasManyCrud
