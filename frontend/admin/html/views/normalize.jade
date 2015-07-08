@@ -22,7 +22,7 @@
       h4 Filters
       .field-container(cg-busy="baseLoading")
         .field.base(
-        ng-class="{ invalid: !item.valid }"
+        ng-class="{ invalid: !item.valid, selected: item == fieldData.current && showProperties }"
         ng-click="selectField(item)"
         ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
 
@@ -31,7 +31,7 @@
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .field(
-        ng-class="{ 'assigned': item.assigned }"
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
         ng-repeat="item in categories.unassigned | orderBy : ['-assigned', 'output']") {{item.output}}
@@ -48,6 +48,7 @@
         )
         .field.category-item(
         rmaps-droppable="category.items" on-drop="onDropCategory"
+        ng-class="{ selected: category == fieldData.category }"
         ng-click="fieldData.category = category"
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
 
@@ -105,10 +106,10 @@
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       .row
         .col-md-2 RETS Name:
-        .col-md-2 {{fieldData.current.output}}
+        .col-md-10 {{fieldData.current.output}}
       .row
         .col-md-2 Data Type:
-        .col-md-2 {{fieldData.current.type.label}}
+        .col-md-10 {{fieldData.current.type.label}}
       .row
         .col-md-2 Alias:
         .col-md-2
@@ -134,23 +135,23 @@
         .col-md-2 Remove empty?
         .col-md-2
           input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-        .col-md-8.help Any empty values found in this field will be removed so they don't show up
+        .col-md-8.help Any empty values will be removed so they don't show up
       .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Remove specific value(s)
         .col-md-2
           input(type="text" ng-model="fieldData.current.config.nullString" rmaps-list-input placeholder="no, false, n/a" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
-        .col-md-8.help Any empty values found in this field will be removed so they don't show up
+        .col-md-8.help The values listed will be removed so they don't show up
       .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Transform
         .col-md-2
           select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
             option(value="") None
         .col-md-8.help Value will be changed to uppercase, lowercase or capitalized
-      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.lookups.length > 50 && !fieldData.current.showLookups")
+      .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current._lookups.length > 50")
         .col-md-2 Too many values to show.
         .col-md-2
-          .btn.btn-primary(ng-click="fieldData.current.showLookups = true") See all {{fieldData.current.lookups.length}} values anyway?
-      .row(ng-if="fieldData.current.type.name == 'string' && (fieldData.current.lookups.length <= 50 || fieldData.current.showLookups)" ng-repeat="lookup in fieldData.current.lookups")
+          .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all {{fieldData.current._lookups.length}} values anyway?
+      .row(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
         .col-md-2 {{lookup.LongValue}}
         .col-md-2
           input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
