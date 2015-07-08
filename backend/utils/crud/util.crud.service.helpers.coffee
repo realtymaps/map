@@ -13,25 +13,29 @@ execQ = (q, doLogQuery) ->
   q
 
 class Crud extends BaseObject
-  constructor: (@dbFn) ->
+  constructor: (@dbFn, @idKey = "id") ->
     unless _.isFunction @dbFn
       throw 'dbFn must be a knex function'
+  idObj: (val) ->
+    _.set {}, @idKey, val
 
   getAll: (doLogQuery = false) ->
     execQ @dbFn(), doLogQuery
 
   getById: (id, doLogQuery = false) ->
-    execQ @dbFn().where(id: id), doLogQuery
+    execQ @dbFn().where(@idObj(id)), doLogQuery
 
   #here down return thenables to be consistent on service returns for single items
   update: (id, entity, safe = [], doLogQuery = false) ->
-    execQ @dbFn().where(id: id).update _.pick(entity, safe), doLogQuery
+    execQ @dbFn().where(@idObj(id)).update _.pick(entity, safe), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
-    execQ @dbFn().insert(entity), doLogQuery
+    obj = {}
+    obj = @idObj id if id?
+    execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
 
   delete: (id, doLogQuery = false) ->
-    execQ @dbFn().where(id: id).delete(), doLogQuery
+    execQ @dbFn().where(@idObj(id)).delete(), doLogQuery
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
