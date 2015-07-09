@@ -38,7 +38,9 @@ module.exports =
     root: apiBaseUsers
     byId: "#{apiBaseUsers}/:id"
     permissions: "#{apiBaseUsers}/:id/permissions"
+    permissionsById: "#{apiBaseUsers}/:id/permissions/:permission_id"
     groups: "#{apiBaseUsers}/:id/groups"
+    groupsById: "#{apiBaseUsers}/:id/groups/:group_id"
     profiles: "#{apiBaseUsers}/:id/profiles"
   user_user_groups:
     apiBase: apiBaseUsersGroups
