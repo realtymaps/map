@@ -61,13 +61,13 @@ app.controller 'rmapsNormalizeCtrl',
       ordering: rule.ordering ? category.length
       config: rule.config || {}
       list: list
-    validatorBuilder.getTransform(rule)
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
 
   # Handles adding base rules
   addBaseRule = (rule) ->
     validatorBuilder.validateBase rule
+    validatorBuilder.getTransform rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -180,7 +180,7 @@ app.controller 'rmapsNormalizeCtrl',
     validatorBuilder.validateBase(field)
     field.inputString = JSON.stringify(field.input) # for display
     updateAssigned(field, removed)
-    saveRule()
+    saveRule(field)
 
   updateAssigned = (rule, removed) ->
     if $scope.baseRules[rule.output].group
@@ -196,10 +196,16 @@ app.controller 'rmapsNormalizeCtrl',
     validatorBuilder.getTransform field
     $scope.saveRuleDebounced()
 
-  saveRule = () ->
-    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, $scope.fieldData.current
+  saveRule = (rule) ->
+    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule
 
-  $scope.saveRuleDebounced = _.debounce saveRule, 2000
+  # Separate debounce/timeout for each rule
+  saveFns = _.memoize((rule) ->
+    _.debounce(_.partial(saveRule, rule), 2000)
+  , (rule) -> rule.output)
+
+  $scope.saveRuleDebounced = () ->
+    saveFns($scope.fieldData.current)()
 
   # Dropdown selection, reloads the view
   $scope.selectMls = () ->
