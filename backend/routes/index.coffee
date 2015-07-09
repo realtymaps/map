@@ -59,8 +59,20 @@ routesConfig =
         auth.requireLogin(redirectOnFail: true)
         auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
       ]
+    permissionsById:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
     #might want to twerk permissions required
     groups:
+      methods: ['get']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+      ]
+    groupsById:
       methods: ['get']
       middleware: [
         auth.requireLogin(redirectOnFail: true)

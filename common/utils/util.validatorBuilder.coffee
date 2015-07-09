@@ -58,6 +58,9 @@ baseRules =
   discontinued_date:
     alias: 'Discontinued Date'
     required: false
+  mls_uuid:
+    alias: 'MLS Number'
+    required: true
 
 lookupType = (field) ->
   types =
@@ -111,8 +114,13 @@ getTransform = (field) ->
   #       present if type is choices
   #
 
-  vOptions = _.pick field.config, (v) -> v? && (v == 0 || !!v)
+  if field.config?.advanced
+    return
 
+  reserved = [ 'advanced' ]
+  vOptions = _.pick field.config, (v, k) -> v? && v != '' && !_.contains(reserved, k)
+
+  field.transform =
   switch field.output
     when 'address'
       _getValidationString('address', vOptions)
@@ -120,7 +128,7 @@ getTransform = (field) ->
     when 'status', 'substatus', 'status_display'
       _getValidationString('choice', choices: vOptions.choices ? {})
 
-    when 'parcel_id'
+    when 'parcel_id', 'mls_uuid'
       _getValidationString('string', vOptions)
 
     when 'days_on_market'
@@ -148,7 +156,11 @@ getTransform = (field) ->
       _getValidationString('datetime', vOptions)
 
     else
-      _getValidationString(lookupType(field)?.name, vOptions)
+      type = lookupType(field)
+      if type.name == 'boolean'
+        _getValidationString('nullify', vOptions)
+      else
+        _getValidationString(type?.name, vOptions)
 
 validateBase = (field) ->
   # Ensure input is appropriate type before validating
@@ -157,7 +169,6 @@ validateBase = (field) ->
     if !field.input?
       field.input = defaults.input || ''
     field.alias = defaults.alias
-  field.transform = getTransform(field)
   input = field.input
   switch field.output
     when 'address'

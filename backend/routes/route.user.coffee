@@ -7,17 +7,30 @@ class UserCrud extends StreamCrud
     self = @
     @methodExec req,
       GET: () ->
-        self.svc.permissions()
-        .getAll(req.params.id).stringify().pipe(res)
-        # .then (models) ->
-        #   res.json(models)
+        self.svc.permissions.getAll(user_id: req.params.id)
+        .stringify().pipe(res)
+
+  permissionsById: (req, res, next) =>
+    self = @
+    @methodExec req,
+      GET: () ->
+        self.svc.permissions.getById(req.params.permission_id)
+        .stringify().pipe(res)
 
   groups: (req, res, next) =>
     self = @
     @methodExec req,
       GET: () ->
-        self.svc.groups()
-        .getAll(req.params.id).stringify().pipe(res)
+        self.svc.groups.getAll(user_id: req.params.id)
+        .stringify().pipe(res)
+
+  groupsById: (req, res, next) =>
+    self = @
+    @methodExec req,
+      GET: () ->
+        self.svc.groups.getById(req.params.group_id)
+        .stringify().pipe(res)
+
 
   profiles: (req, res, next) =>
     self = @

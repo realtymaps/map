@@ -23,6 +23,10 @@ app.controller 'rmapsNormalizeCtrl',
     'Uppercase': 'forceUpperCase'
     'Lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
+  $scope.nullifyOptions =
+    'True': true
+    'False': false
+    'Neither': null
 
   $scope.addressOptions = _.map rmapsParcelEnums.address, (label, key) ->
     label: label
@@ -58,6 +62,7 @@ app.controller 'rmapsNormalizeCtrl',
       ordering: rule.ordering ? category.length
       config: rule.config || {}
       list: list
+    validatorBuilder.getTransform(rule)
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
 
@@ -172,6 +177,7 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
+    validatorBuilder.getTransform(field)
     validatorBuilder.validateBase(field)
     field.inputString = JSON.stringify(field.input) # for display
     updateAssigned(field, removed)
@@ -188,7 +194,7 @@ app.controller 'rmapsNormalizeCtrl',
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    field.transform = validatorBuilder.getTransform field
+    validatorBuilder.getTransform field
     $scope.saveRuleDebounced()
 
   saveRule = () ->

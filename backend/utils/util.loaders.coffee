@@ -9,8 +9,8 @@ createRoute = (routeId, moduleId, backendRoutes, routeModule, options) ->
   route =
     moduleId: moduleId
     routeId: routeId
-    path: backendRoutes[moduleId]?[routeId]
-    handle: routeModule[routeId]
+    path: if backendRoutes[moduleId]? then _.get(backendRoutes[moduleId], routeId) else undefined
+    handle: _.get routeModule, routeId
     method: options.method || 'get'
     middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
     order: options.order || 0
