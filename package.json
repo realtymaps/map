@@ -9,8 +9,8 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "0.12.4",
-    "npm": "2.11.x"
+    "node": "0.12.6",
+    "npm": "2.12.x"
   },
   "scripts": {
     "start": "./scripts/app/startAppWrapper",
