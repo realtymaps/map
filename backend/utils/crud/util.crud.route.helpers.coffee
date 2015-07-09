@@ -3,6 +3,9 @@ factory = require '../util.factory'
 logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
 
+#TODO: Break Root, and byId into classes so their functionality can be overriden
+# this would be useful for UseCrud on sub routes (permissions).
+# as you can see there is lots of cut and paste due to some inflexibility here.
 class Crud extends BaseObject
   constructor: (@svc) ->
     unless @svc?

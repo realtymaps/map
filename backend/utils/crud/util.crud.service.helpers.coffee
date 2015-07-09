@@ -28,8 +28,12 @@ class Crud extends BaseObject
   getById: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)), doLogQuery
 
-  update: (id, entity, safe = [], doLogQuery = false) ->
-    execQ @dbFn().where(@idObj(id)).update _.pick(entity, safe), doLogQuery
+  update: (id, entity, safe, doLogQuery = false) ->
+    if safe?
+      throw "safe must be Array type" unless _.isArray safe
+      if safe.length
+        entity = _.pick(entity, safe)
+    execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
     obj = {}
@@ -59,6 +63,8 @@ class HasManyCrud extends Crud
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
 
   getAll: (entity, doLogQuery = false) ->
+    if !_.isObject(entity) or !entity?
+      throw "entity must be defined or an Object."
     execQ @joinQuery().where(entity), doLogQuery
 
   getById: (id, doLogQuery = false) ->
@@ -67,8 +73,11 @@ class HasManyCrud extends Crud
   create: (entity, id, doLogQuery = false) ->
     @joinCrud.create(entity, id, doLogQuery)
 
-  update: (id, entity, safe = [], doLogQuery = false) ->
-    @joinCrud(id, entity, safe, doLogQuery)
+  update: (id, entity, safe, doLogQuery = false) ->
+    @joinCrud.update(id, entity, safe, doLogQuery)
+
+  delete: (id, doLogQuery = false) ->
+    @joinCrud.delete(id, doLogQuery)
 
   base: () ->
     super([HasManyCrud,@].concat(_.toArray arguments)...)
@@ -99,7 +108,7 @@ class ThenableCrud extends Crud
     singleRow super(id,doLogQuery)
 
   #here down return thenables to be consistent on service returns for single items
-  update: (id, entity, safe = [], doLogQuery = false) ->
+  update: (id, entity, safe, doLogQuery = false) ->
     singleResultBoolean super(id, entity, safe, doLogQuery)
 
   create: (entity, id, doLogQuery = false) ->
