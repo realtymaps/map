@@ -361,17 +361,17 @@ _handleSuccessfulTasks = () ->
   .where(status: 'running')
   .whereNotExists () ->
     tables.jobQueue.currentSubtasks(this)
-    .whereRaw("task_name = #{tables.jobQueue.taskHistory.tableName}.name")
+    .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
       this
-      .whereNull('finished')
-      .orWhereIn('status', ['hard fail', 'infrastructure fail', 'canceled'])
-      .orWhere
-        status: 'timeout'
-        hard_fail_timeouts: true
-      .orWhere
-        status: 'zombie'
-        hard_fail_zombies: true
+      .whereNull("#{tables.jobQueue.currentSubtasks.tableName}.finished")
+      .orWhereIn("#{tables.jobQueue.currentSubtasks.tableName}.status", ['hard fail', 'infrastructure fail', 'canceled'])
+      .orWhere () ->
+        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'timeout')
+        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_timeouts", true)
+      .orWhere () ->
+        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'zombie')
+        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true)
   .update
     status: 'success'
     status_changed: knex.raw('NOW()')
