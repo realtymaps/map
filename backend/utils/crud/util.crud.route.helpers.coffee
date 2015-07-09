@@ -31,7 +31,7 @@ class Crud extends BaseObject
       POST: () ->
         self.svc.create(req.body, req.params.id)
       DELETE: () ->
-        self.svc.delete(req.body, req.params.id)
+        self.svc.delete(req.params.id)
       PUT: () ->
         self.svc.update(req.params.id, req.body)
 

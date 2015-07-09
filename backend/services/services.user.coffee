@@ -18,22 +18,23 @@ for key, val of toInit
   module.exports[key] = crud(val)
 
 permissionCols = [
+  "#{userData.auth_user_user_permissions.tableName}.id as id"
   "user_id"
   "permission_id"
-  "#{userData.auth_user_user_permissions.tableName}.id as #{userData.auth_user_user_permissions.tableName}_id"
   "content_type_id"
   "name"
   "codename"
 ]
 
 groupsCols = [
+  "#{userData.auth_user_groups.tableName}.id as id"
   "user_id"
   "group_id"
   "name"
 ]
 
 profileCols = [
-  "#{userData.auth_user_profile.tableName}.id as #{userData.auth_user_profile.tableName}_id"
+  "#{userData.auth_user_profile.tableName}.id as id"
   "#{userData.auth_user_profile.tableName}.name as #{userData.auth_user_profile.tableName}_name"
   "#{userData.project.tableName}.name as #{userData.project.tableName}_name"
   'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
