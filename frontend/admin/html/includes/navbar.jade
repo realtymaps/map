@@ -1,21 +1,20 @@
-include ../../../common/html/includes/mixins/spinner.jade
+include ./mixins/spinner.jade
 
 div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
   .collapse.navbar-collapse
     ul.nav.navbar-nav
       li
         .navbar-header
-          a(ui-sref="home").navbar-brand.navbar-hide
+          a(href="{{adminRoutes.index}}").navbar-brand.navbar-hide
             img(src="/assets/logo.png")
       li
-        a(ui-sref="home") Home
+        a(href="{{adminRoutes.urls.mls}}") MLS
       li
-        a(ui-sref="mls") MLS
-      li
-        a(ui-sref="normalize") MLS Rules
+        a(href="{{adminRoutes.urls.normalize}}") MLS Rules
       li(ng-hide="$state.is('main')")
-        +spinner()
-      //- li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
-      //-   a(href="{{frontendRoutes.login}}") Sign In
-      //- li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
-      //-   a(href="{{frontendRoutes.logout}}") Sign Out
+        +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+      li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
+        a(href="{{adminRoutes.urls.login}}") Sign In
+      li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
+        a(href="{{adminRoutes.urls.logout}}") Sign Out
+

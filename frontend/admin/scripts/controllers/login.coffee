@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+adminRoutes = require '../../../../common/config/routes.admin.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 alertIds = require '../../../../common/utils/enums/util.enums.alertIds.coffee'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
@@ -20,19 +20,19 @@ module.exports = app.controller 'rmapsLoginCtrl',
         $rootScope.$emit rmapsevents.alert.dismiss, alertIds.loginFailure
         rmapsprincipal.setIdentity(data.identity)
         $location.replace()
-        $location.url($location.search().next || frontendRoutes.map)
+        $location.url($location.search().next || adminRoutes.urls.mls)
 
 app.run ($rootScope, $location, rmapsprincipal) ->
 
   doNextRedirect = (toState, nextLocation) ->
     if rmapsprincipal.isAuthenticated()
       $location.replace()
-      $location.url(nextLocation || frontendRoutes.map)
+      $location.url(nextLocation || adminRoutes.urls.mls)
 
   $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
 
     # if we're entering the login state...
-    if toState?.url != frontendRoutes.login
+    if toState?.url != adminRoutes.login #toState.url is really just the state name here in admin
       return
 
     # ... and we're already logged in, we'll move past the login state (now or when we find out)

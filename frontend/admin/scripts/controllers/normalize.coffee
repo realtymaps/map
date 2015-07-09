@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 _ = require 'lodash'
+adminRoutes = require '../../../../common/config/routes.admin.coffee'
 require '../services/mlsConfig.coffee'
 require '../services/normalize.coffee'
 require '../directives/dragdrop.coffee'
@@ -7,8 +8,8 @@ require '../directives/listinput.coffee'
 require '../factories/validatorBuilder.coffee'
 
 app.controller 'rmapsNormalizeCtrl',
-['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums',
-($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums) ->
+['$window', '$scope', '$rootScope', '$state', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal',
+($window, $scope, $rootScope, $state, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal) ->
 
   $scope.$state = $state
 
@@ -216,10 +217,23 @@ app.controller 'rmapsNormalizeCtrl',
         parseFields(fields)
 
   # Load MLS list
-  rmapsMlsService.getConfigs()
-  .then (configs) ->
-    $scope.mlsConfigs = configs
-    if $state.params.id
-      $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
-      loadMls($scope.mlsData.current)
+  restoreState = () ->
+    # don't start pulling mls data unless identity checks out
+    rmapsprincipal.getIdentity()
+    .then (identity) ->
+      if not identity?.user?
+        return $location.path(adminRoutes.urls.login)
+      rmapsMlsService.getConfigs()
+      .then (configs) ->
+        $scope.mlsConfigs = configs
+        if $state.params.id          
+          $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
+          loadMls($scope.mlsData.current)
+
+  $scope.$onRootScope rmapsevents.principal.login.success, () ->
+    restoreState()
+
+  if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
+    restoreState()
+
 ]
