@@ -12,7 +12,7 @@ toInit = _.pick userData, [
   'auth_user_user_permissions'
 ]
 
-{crud,Crud, hasManyCrud} = require '../utils/crud/util.crud.service.helpers'
+{crud,ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 
 for key, val of toInit
   module.exports[key] = crud(val)
@@ -41,19 +41,19 @@ profileCols = [
   'parent_auth_user_id', 'auth_user_id as user_id'
 ]
 
-class UserCrud extends Crud
+class UserCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
-    @profilesQuery = (user_id) -> userData.auth_user_profile().select().where(auth_user_id:user_id)
-
-  permissions: hasManyCrud(userData.auth_permission, permissionCols,
+  permissions: thenableHasManyCrud(userData.auth_permission, permissionCols,
     module.exports.auth_user_user_permissions, "permission_id", undefined, "auth_user_user_permissions.id")
+    .init(false)
 
-  groups: hasManyCrud(userData.auth_group, groupsCols,
-    module.exports.auth_user_groups, "group_id", undefined, "group_id")
+  groups: thenableHasManyCrud(userData.auth_group, groupsCols,
+    module.exports.auth_user_groups, "group_id", undefined, "group_id").init(false)
 
-  profiles: hasManyCrud(userData.project, profileCols, module.exports.auth_user_profile, "project_id")
+  profiles: thenableHasManyCrud(userData.project, profileCols,
+    module.exports.auth_user_profile, undefined, undefined, 'auth_user_profile.id').init(false)
 
 
 module.exports.user = new UserCrud(userData.user)

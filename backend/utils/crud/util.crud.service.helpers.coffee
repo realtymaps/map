@@ -96,26 +96,43 @@ singleResultBoolean = (q, doRowCount) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error)
 
-class ThenableCrud extends Crud
-  getAll: (doLogQuery = false) ->
-    super(doLogQuery)
-    .then (data) ->
-      data
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error)
+thenables = [Crud, HasManyCrud].map (baseKlass) ->
+  class Thenable extends baseKlass
+    constructor: ->
+      super(arguments...)
+      @init()
 
-  getById: (id, doLogQuery = false) ->
-    singleRow super(id,doLogQuery)
+    init:(@doWrapGetAllThen = true, @doWrapGetThen = true) =>
+      @
+    #Majority of the time GETS are the main functions you might want to stream
+    getAll: () =>
+      q = super(arguments...)
+      return q unless @doWrapGetAllThen
 
-  #here down return thenables to be consistent on service returns for single items
-  update: (id, entity, safe, doLogQuery = false) ->
-    singleResultBoolean super(id, entity, safe, doLogQuery)
+      q.then (data) ->
+        data
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
 
-  create: (entity, id, doLogQuery = false) ->
-    singleResultBoolean super(entity, id, doLogQuery), true
+    getById: () ->
+      q = super(arguments...)
+      return q unless @doWrapGetThen
+      singleRow q
 
-  delete: (id, doLogQuery = false) ->
-    singleResultBoolean super(id, doLogQuery)
+    #here down return thenables to be consistent on service returns for single items
+    update: () ->
+      singleResultBoolean super(arguments...)
+
+    create: () ->
+      singleResultBoolean super(arguments...), true
+
+    delete: () ->
+      singleResultBoolean super(arguments...)
+
+
+ThenableCrud = thenables[0]
+
+ThenableHasManyCrud = thenables[1]
 
 module.exports =
   Crud:Crud
@@ -124,3 +141,5 @@ module.exports =
   thenableCrud: factory ThenableCrud
   HasManyCrud: HasManyCrud
   hasManyCrud: factory HasManyCrud
+  ThenableHasManyCrud: ThenableHasManyCrud
+  thenableHasManyCrud: factory ThenableHasManyCrud

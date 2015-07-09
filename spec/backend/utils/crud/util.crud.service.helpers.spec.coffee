@@ -1,8 +1,17 @@
 require '../../../globals'
-{Crud, HasManyCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
+{Crud, HasManyCrud, hasManyCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
 {userData} = require '../../../../backend/config/tables'
 userServices = require '../../../../backend/services/services.user'
-HasManyCrudInstance = userServices.user.permissions
+
+
+HasManyCrudInstance = hasManyCrud(userData.auth_permission, [
+  "#{userData.auth_user_user_permissions.tableName}.id as id"
+  "user_id"
+  "permission_id"
+  "content_type_id"
+  "name"
+  "codename"
+], userServices.auth_user_user_permissions, "permission_id", undefined, "auth_user_user_permissions.id")
 
 describe 'util.crud.service.helpers', ->
   describe 'Crud', ->

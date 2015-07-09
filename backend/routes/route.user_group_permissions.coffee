@@ -1,3 +1,3 @@
 {auth_group_permissions} = require '../services/services.user'
-crudRoute = require '../utils/crud/util.crud.route.helpers'
-module.exports = crudRoute.streamCrud(auth_group_permissions)
+{routeCrud} = require '../utils/crud/util.crud.route.helpers'
+module.exports = routeCrud(auth_group_permissions)

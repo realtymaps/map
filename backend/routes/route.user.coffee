@@ -1,5 +1,5 @@
 {user} = require '../services/services.user'
-{StreamCrud} = require '../utils/crud/util.crud.route.helpers'
+{RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 logger = require '../config/logger'
 
 ###
@@ -8,7 +8,7 @@ TODO:
 - needs error handling
 - on all getById's a useful implementation using streaming to reduce an [] to {} for single results
 ###
-class UserCrud extends StreamCrud
+class UserCrud extends RouteCrud
   permissions: (req, res, next) =>
     self = @
     @methodExec req,
@@ -45,7 +45,7 @@ class UserCrud extends StreamCrud
     self = @
     @methodExec req,
       GET: () ->
-        self.svc.groups.getById(req.params.group_id).stringify().pipe(res)
+        self.svc.groups.getById(req.params.group_id, true).then (result) -> res.json result        
       POST: () ->
         self.svc.groups.create(req.body, req.params.group_id).stringify().pipe(res)
       DELETE: () ->
@@ -57,7 +57,10 @@ class UserCrud extends StreamCrud
     self = @
     @methodExec req,
       GET: () ->
-        self.svc.profiles.getAll(auth_user_id: req.params.id, true).stringify().pipe(res)
+        self.svc.profiles.getAll(auth_user_id: req.params.id, true)
+        .stringify (err) ->
+          next(err)
+        .pipe(res)
 
       POST: () -> #create
         self.profiles.svc.create(req.body).stringify().pipe(res)
@@ -66,8 +69,10 @@ class UserCrud extends StreamCrud
     self = @
     @methodExec req,
       GET: () ->
-        self.svc.profiles.getById(req.params.profile_id)
-        .stringify().pipe(res)
+        self.svc.profiles.getById(req.params.profile_id, true)
+        .stringify (err) ->
+          next(err)
+        .pipe(res)
       POST: () ->
         self.svc.profiles.create(req.body, req.params.profile_id).stringify().pipe(res)
       DELETE: () ->

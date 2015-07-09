@@ -2,6 +2,7 @@
 factory = require '../util.factory'
 logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
+_ = require 'lodash'
 
 #TODO: Break Root, and byId into classes so their functionality can be overriden
 # this would be useful for UseCrud on sub routes (permissions).
@@ -41,15 +42,23 @@ class Crud extends BaseObject
     super([Crud,@].concat(_.toArray arguments)...)
 
 
-class StreamCrud extends Crud
+class RouteCrud extends Crud
+  handleQuery: (q, res) ->
+    #if we have a stream avail pipe it
+    if q?.stringify? and _.isFunction q.stringify
+      return q.stringify().pipe(res)
+
+    q.then (result) ->
+      res.json(result)
+
   root: (req, res, next) ->
-    super(req, res, next).stringify().pipe(res)
+    @handleQuery super(req, res, next), res
 
   byId: (req, res, next) ->
-    super(req, res, next).stringify().pipe(res)
+    @handleQuery super(req, res, next), res
 
 module.exports =
   Crud:Crud
   crud: factory(Crud)
-  StreamCrud: StreamCrud
-  streamCrud: factory(StreamCrud)
+  RouteCrud: RouteCrud
+  routeCrud: factory(RouteCrud)
