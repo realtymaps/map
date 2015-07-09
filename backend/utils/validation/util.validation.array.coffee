@@ -2,14 +2,12 @@ _ = require 'lodash'
 Promise = require "bluebird"
 DataValidationError = require './util.error.dataValidation'
 doValidationSteps = require './util.impl.doValidationSteps'
-logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
   (param, values) ->
     Promise.try () ->
       if !values
         return null
-      logger.debug String(values)
       if options.split? and _.isString(values)
         arrayValues = values.split(options.split)
       else
@@ -36,6 +34,8 @@ module.exports = (options = {}) ->
       else
         return arrayValues
     .then (arrayValues) ->
+      if !arrayValues
+        return null
       if options.join?
         return arrayValues.join(options.join)
       else

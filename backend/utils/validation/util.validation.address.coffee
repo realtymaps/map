@@ -1,6 +1,6 @@
 Promise = require "bluebird"
 DataValidationError = require './util.error.dataValidation'
-validators = require '../util.validation'
+require '../../../common/extensions/strings'
 
 
 module.exports = (options = {}) ->
@@ -11,13 +11,15 @@ module.exports = (options = {}) ->
     if !value.city || !value.state || !(value.zip || value.zip9)
       throw new DataValidationError("required major address info not provided", param, value)
 
-    if (!value.streetName || !value.streetNum) && !value.streetFull && !value.hideStreetInfo
+    if (!value.streetName || !value.streetNum) && !value.streetFull && value.showStreetInfo
       throw new DataValidationError("required street address info not provided", param, value)
     
     result = []
 
-    if !value.hideStreetInfo
-      if value.streetName && value.streetNum
+    if value.showStreetInfo
+      if value.streetFull
+        result.push value.streetFull.toInitCaps()
+      else
         numParts = [value.streetNum]
         if value.streetNumPrefix
           numParts.unshift(value.streetNumPrefix)
@@ -33,13 +35,11 @@ module.exports = (options = {}) ->
           numParts.push(value.streetDirSuffix)
         
         result.push numParts.concat(nameParts).join(' ').toInitCaps()
-      else
-        result.push value.streetFull.toInitCaps()
-        
-      if value.unitNum
-        result.push "Unit #{value.unitNum}"
-      else if value.unit
-        result.push value.unit
+          
+        if value.unitNum
+          result.push "Unit #{value.unitNum}"
+        else if value.unit
+          result.push value.unit
 
     if value.zip9
       zip = value.zip9
@@ -48,3 +48,5 @@ module.exports = (options = {}) ->
       if value.zip4
         zip = "#{zip}-#{value.zip4}"
     result.push "#{value.city.toInitCaps()}, #{value.state.toUpperCase()} #{zip}"
+    
+    return result

@@ -30,7 +30,7 @@ tables.jobQueue.queueConfig()
     
   cluster queueName, queue.processes_per_dyno, () ->
     Promise.all for i in [1..queue.subtasks_per_process]
-      jobQueue.runWorker(queue)
+      jobQueue.runWorker(queue, i)
       
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"

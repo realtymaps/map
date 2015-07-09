@@ -1,5 +1,5 @@
 _ = require 'lodash'
-validators = require '../util.validation'
+defaultsValidation = require './util.validation.defaults'
 
 
 module.exports = (options = {}) ->
@@ -7,4 +7,4 @@ module.exports = (options = {}) ->
     values = [options.value]
   else
     values = options.values
-  return validators.defaults(test: values, defaultValue: null)
+  return defaultsValidation(test: values, defaultValue: null)

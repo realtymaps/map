@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.pickFirst()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.pickFirst()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve to the first element of the array when there are no criteria', () ->

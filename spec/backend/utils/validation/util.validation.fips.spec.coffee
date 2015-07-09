@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.fips()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
   param = 'fake'
 
   if process.env.CIRCLECI

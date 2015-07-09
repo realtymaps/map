@@ -203,6 +203,12 @@ singleRow = (q, doThrow = false) -> Promise.try ->
 expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
+safeJsonArray = (knex, arr) ->
+  if !arr?
+    return arr
+  rawJson = JSON.stringify(arr).replace(/'/g, "''")
+  knex.raw("'#{rawJson}'")
+  
 module.exports =
   between: between
   tableName: tableName
@@ -218,3 +224,4 @@ module.exports =
   orWhereNotIn: orWhereNotIn
   whereInBounds: whereInBounds
   getClauseString: getClauseString
+  safeJsonArray: safeJsonArray

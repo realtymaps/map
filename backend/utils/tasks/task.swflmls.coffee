@@ -9,7 +9,7 @@ tables = require '../../config/tables'
 # explicitly providing a file like this (if we find an edge case that doesn't obey the rules).
 
 
-NUM_ROWS_TO_PAGINATE = 30
+NUM_ROWS_TO_PAGINATE = 100
 
 
 loadDataRawMain = (subtask) ->

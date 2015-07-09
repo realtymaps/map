@@ -17,6 +17,8 @@ require '../config/promisify'
 memoize = require 'memoizee'
 vm = require 'vm'
 tables = require '../config/tables'
+sqlHelpers = require './util.sql.helpers'
+util = require 'util'
 
 
 encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
@@ -29,12 +31,13 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
   .then () -> new Promise (resolve, reject) ->
-    rawDataStream = pgClient.query(copyStream.from("COPY #{tableName} (\"#{Object.keys(fields.text).concat(Object.keys(fields.json)).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"))
+    copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+    rawDataStream = pgClient.query(copyStream.from(copyStart))
     rawDataStream.on('finish', resolve)
     rawDataStream.on('error', reject)
     # stream from array to object serializer stream to COPY FROM
     from(objects)
-    .pipe(utilStreams.objectsToPgText(_.mapValues(fields.text, 'SystemName'), _.mapValues(fields.json, 'SystemName')))
+    .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
     .pipe(rawDataStream)
   .finally () ->
     # always disconnect the db client when we're done
@@ -43,31 +46,38 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
     return objects.length
 
 
-_getValues = (obj, list) ->
+_getValues = (list, target) ->
+  if !target
+    target = {}
   for item in list
-    obj[item.name] = item.value
+    target[item.name] = item.value
+  target
+  
 
 # this performs a diff of 2 sets of MLS data, returning only the changed/new/deleted fields as keys, with the value
 # taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data,
 # excluding those that are expected to be date-related derived values (notably DOM and CDOM)
 _diff = (row1, row2, diffExcludeKeys=[]) ->
-  result = {}
   fields1 = {}
   fields2 = {}
-
+  
   # first, flatten the objects
   for groupName, groupList of row1.client_groups
-    _getValues fields1, groupList
-    _getValues fields2, row2.client_groups[groupName]
+    _getValues(groupList, fields1)
   for groupName, groupList of row1.realtor_groups
-    _getValues fields1, groupList
-    _getValues fields2, row2.realtor_groups[groupName]
-  _getValues fields1, row2.realtor_groups.hidden_fields
-  _getValues fields2, row2.realtor_groups.hidden_fields
-  _getValues fields1, row2.realtor_groups.ungrouped_fields
-  _getValues fields2, row2.realtor_groups.ungrouped_fields
+    _getValues(groupList, fields1)
+  _.extend(fields1, row1.hidden_fields)
+  _.extend(fields1, row1.ungrouped_fields)
+
+  for groupName, groupList of row2.client_groups
+    _getValues(groupList, fields2)
+  for groupName, groupList of row2.realtor_groups
+    _getValues(groupList, fields2)
+  _.extend(fields2, row2.hidden_fields)
+  _.extend(fields2, row2.ungrouped_fields)
 
   # then get changes from row1 to row2
+  result = {}
   for fieldName, value1 of fields1
     if fieldName in diffExcludeKeys
       continue
@@ -92,18 +102,7 @@ loadRetsTableUpdates = (subtask, options) ->
     # get info about the fields available in the table
     retsClient.metadata.getTable(options.retsDbName, options.retsTableName)
   .then (tableInfo) ->
-    fields =
-      text: {}
-      json: {}
-    for field in tableInfo.Fields
-      if field.Interpretation == 'LookupMulti'
-        fields.json[field.LongName] = field
-      else
-        fields.text[field.LongName] = field
-    return fields
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, "failed to determine table fields")
-  .then (fields) ->
+    fields = _.indexBy(tableInfo.Fields, 'LongName')
     tables.jobQueue.dataLoadHistory()
     .insert
       data_source_id: options.retsId
@@ -111,7 +110,7 @@ loadRetsTableUpdates = (subtask, options) ->
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
     .then () ->
-      taskHelpers.createRawTempTable(rawTableName, Object.keys(fields.text), Object.keys(fields.json))
+      taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
     .then () ->
@@ -127,8 +126,7 @@ loadRetsTableUpdates = (subtask, options) ->
         doDeletes = false
       step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
       step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-      Promise.join(step3Promise, step5Promise)
-      .then () ->
+      Promise.join step3Promise, step5Promise, () ->
         return lastSuccess
     .then (refreshThreshold) ->
       _getData(retsClient, options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
@@ -237,18 +235,18 @@ _getValidations = (dataSourceId) ->
   .then (validations=[]) ->
     validationMap = {}
     context = vm.createContext(validators: validation.validators)
-    for validation in validations
-      validationMap[validation.output_group] ?= []
-      validation.transform = vm.runInContext(validation.transform, context)
-      validationMap[validation.output_group].push(validation)
-    validationMap
+    for validationDef in validations
+      validationMap[validationDef.list] ?= []
+      validationDef.transform = vm.runInContext(validationDef.transform, context)
+      validationMap[validationDef.list].push(validationDef)
+    return validationMap
 # memoize it to cache js evals, but only for up to 10 minutes at a time
-_getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000)
+_getValidations = Promise.promisify memoize(Promise.nodeifyWrapper(_getValidations), maxAge: 600000, async: true)
 
 _getUsedKeys = (validationDefinition) ->
   if validationDefinition.input?
     if _.isObject validationDefinition.input
-      return Object.keys(validationDefinition.input)
+      return _.values(validationDefinition.input)
     else
       return validationDefinition.input
   else
@@ -264,23 +262,27 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = _getValidations(options.dataSourceId)
   # get start time for "last updated" stamp
   startTimePromise = taskHelpers.getLastStartTime(subtask.task_name, false)
-  Promise.join(rowsPromise, validationPromise, startTimePromise)
-  .then (rows, validationMap, startTime) ->
+  Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationMap, startTime) ->
     # calculate the keys that are grouped for later
-    usedKeys = []
+    usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
     diffExcludeKeys = []
     for groupName, validationList of validationMap
       for validationDefinition in validationList
         # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
         # fields for those don't have to be explicitly reused
         if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
-          usedKeys.concat(_getUsedKeys(validationDefinition))
+          usedKeys = usedKeys.concat(_getUsedKeys(validationDefinition))
         else if validationDefinition.output == 'days_on_market'
           # explicitly exclude these keys from diff, because they are derived values based on date
           diffExcludeKeys = _getUsedKeys(validationDefinition)
     Promise.map rows, (row) ->
+      stats =
+        data_source_id: options.dataSourceId
+        batch_id: subtask.batch_id
+        rm_raw_id: row.rm_raw_id
+        up_to_date: startTime
       Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
-      .then _updateRecord.bind(null, diffExcludeKeys, usedKeys)
+      .then _updateRecord.bind(null, stats, diffExcludeKeys, usedKeys, row)
       .then () ->
         dbs.properties.knex(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
@@ -291,51 +293,52 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .update(rm_valid: false, rm_error_msg: err.toString())
 
 
-_updateRecord = (diffExcludeKeys, usedKeys, normalizedData) -> Promise.try () ->
+_updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
   # build the row's new values
-  _.extend normalizedData.base,
-    data_source_id: options.dataSourceId
-    batch_id: subtask.batch_id
-    up_to_date: startTime
-    hide_listing: normalizedData.base.hide_listing ? false
+  base = _getValues(normalizedData.base || [])
+  data =
+    address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
+    hide_listing: base.hide_listing ? false
     client_groups:
-      general: normalizedData.general
-      details: normalizedData.details
-      listing: normalizedData.listing
-      building: normalizedData.building
-      dimensions: normalizedData.dimensions
-      lot: normalizedData.lot
-      location: normalizedData.location
-      restrictions: normalizedData.restrictions
+      general: normalizedData.general || []
+      details: normalizedData.details || []
+      listing: normalizedData.listing || []
+      building: normalizedData.building || []
+      dimensions: normalizedData.dimensions || []
+      lot: normalizedData.lot || []
+      location: normalizedData.location || []
+      restrictions: normalizedData.restrictions || []
     realtor_groups:
-      contacts: normalizedData.contacts
-      realtor: normalizedData.realtor
-      sale: normalizedData.sale
-    hidden_fields: normalizedData.hidden
-    ungrouped_fields: _.omit(row, usedKeys)
-  .then (updateRow) ->
-    # check for an existing row
-    tables.propertyData.mls()
-    .select('*')
-    .where
-      mls_uuid: updateRow.mls_uuid
-      data_source_id: updateRow.data_source_id
-    .then (result) ->
-      if !result?.length
-        # no existing row, just insert
-        tables.propertyData.mls()
-        .insert(updateRow)
-      else
-        # found an existing row, so need to update, but include change log
-        updateRow.change_history = result.change_history ? []
-        changes = _diff(updateRow, result, diffExcludeKeys)
-        if !_.isEmpty changes
-          updateRow.change_history.push changes
-        tables.propertyData.mls()
-        .where
-          mls_uuid: updateRow.mls_uuid
-          data_source_id: updateRow.data_source_id
-        .update(updateRow)
+      contacts: normalizedData.contacts || []
+      realtor: normalizedData.realtor || []
+      sale: normalizedData.sale || []
+    hidden_fields: _getValues(normalizedData.hidden || [])
+    ungrouped_fields: _.omit(rawData, usedKeys)
+  updateRow = _.extend base, stats, data
+  # check for an existing row
+  tables.propertyData.mls()
+  .select('*')
+  .where
+    mls_uuid: updateRow.mls_uuid
+    data_source_id: updateRow.data_source_id
+  .then (result) ->
+    if !result?.length
+      # no existing row, just insert
+      blah = tables.propertyData.mls()
+      .insert(updateRow)
+      blah
+    else
+      # found an existing row, so need to update, but include change log
+      result = result[0]
+      updateRow.change_history = result.change_history ? []
+      changes = _diff(updateRow, result, diffExcludeKeys)
+      if !_.isEmpty changes
+        updateRow.change_history.push changes
+      tables.propertyData.mls()
+      .where
+        mls_uuid: updateRow.mls_uuid
+        data_source_id: updateRow.data_source_id
+      .update(updateRow)
 
 
 recordChangeCounts = (subtask) ->
@@ -382,8 +385,7 @@ finalizeData = (subtask, id) ->
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
   # we also need to select from the tax table for owner name info
-  Promise.join(listingsPromise, parcelsPromise)
-  .then (listings, parcel=[]) ->
+  Promise.join listingsPromise, parcelsPromise, (listings, parcel=[]) ->
     if listings?.length == 0
       # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
       return

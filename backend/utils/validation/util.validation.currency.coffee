@@ -1,9 +1,10 @@
 Promise = require "bluebird"
-validators = require '../util.validation'
 moment = require 'moment'
+stringValidation = require './util.validation.string'
+floatValidation = require './util.validation.float'
 
 
 # convenience validator
 
 module.exports = (options = {}) ->
-  [validators.string(replace: [/[$,]/g, ""]), validators.float()]
+  [stringValidation(replace: [/[$,]/g, ""]), floatValidation()]

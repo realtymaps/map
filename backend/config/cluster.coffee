@@ -26,13 +26,13 @@ module.exports = (clusterName, workerCount, workerCb) ->
     return workerCb()
 
   getWorkerPrefix = (worker) ->
-    "Worker Process (#{clusterName}-#{worker.id})"
+    "Worker Process <#{clusterName}-#{worker.id}>"
 
 
   # catch all uncaught exceptions, no matter what process it happens on
     
   if cluster.isMaster
-    masterPrefix = "Master Process (#{clusterName})"
+    masterPrefix = "Master Process <#{clusterName}>"
     logger.debug "#{masterPrefix}: starting"
     process.on 'uncaughtException', catchUncaughtErrors.bind(null, masterPrefix)
     logger.debug "#{masterPrefix}: forking #{workerCount} workers"

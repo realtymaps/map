@@ -11,7 +11,10 @@ if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
   tClient = twilio(config.TWILIO.ACCOUNT, config.TWILIO.API_KEY)
 else
   tClient = null
+  # make sure we know there wasn't twilio login
+  logger.error "Twilio login not found in environment."
 
+  
 
 getSmsOptions = (to, subject) ->
   to = "+1"+to if "+" not in to
@@ -48,9 +51,6 @@ notification = (type) ->
     query
     .then (data) ->
       emailList = []
-      # make sure we know there wasn't twilio login
-      if not tClient?
-        logger.error "Twilio login not found in environment."
 
       # loop to build emailList as well as send sms
       # if notification lists grow large, we may need to refine this loop

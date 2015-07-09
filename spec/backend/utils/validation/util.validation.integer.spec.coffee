@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.integer()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.integer()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve strings that represent integers', () ->
