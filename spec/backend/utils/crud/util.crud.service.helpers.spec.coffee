@@ -95,7 +95,7 @@ describe 'util.crud.service.helpers', ->
 
         it 'getAll', ->
           @instance.getAll(user_id:1).toString().should.equal """
-          select "user_id", "permission_id", "auth_user_user_permissions"."id" as "auth_user_user_permissions_id",
+          select "auth_user_user_permissions"."id" as "id", "user_id", "permission_id",
            "content_type_id", "name", "codename" from "auth_user_user_permissions"
            inner join "auth_permission" on "auth_permission"."id" = "permission_id"
            where "user_id" = '1'""".replace(/\n/g, '')
@@ -103,7 +103,7 @@ describe 'util.crud.service.helpers', ->
         it 'getById', ->
           @instance.getById(1).toString()
           .should.equal """
-          select "user_id", "permission_id", "auth_user_user_permissions"."id" as "auth_user_user_permissions_id",
+          select "auth_user_user_permissions"."id" as "id", "user_id", "permission_id",
            "content_type_id", "name", "codename" from "auth_user_user_permissions"
            inner join "auth_permission" on "auth_permission"."id" = "permission_id"
            where "auth_user_user_permissions"."id" = '1'""".replace(/\n/g, '')
