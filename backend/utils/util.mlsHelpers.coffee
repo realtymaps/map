@@ -261,7 +261,6 @@ _getUsedKeys = (validationDefinition) ->
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
   rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
-  console.debug("Normalizing #{rawTableName}: #{subtask.data.offset+1} - #{subtask.data.offset+subtask.data.count}")
   # get rows for this subtask
   rowsPromise = dbs.properties.knex(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
@@ -284,7 +283,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
           diffExcludeKeys = _getUsedKeys(validationDefinition)
     promises = for row in rows
       do (row) ->
-        console.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@ normalizing row: #{row.rm_raw_id}")
         stats =
           data_source_id: options.dataSourceId
           batch_id: subtask.batch_id
@@ -304,7 +302,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 
 _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
-  console.debug("============================ updating row: #{stats.rm_raw_id}")
   # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.unshift(name: 'Address', value: base.address)
