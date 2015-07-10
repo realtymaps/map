@@ -19,7 +19,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
       newMls
 
   postMainPropertyData = (configId, mainPropertyData) ->
-    Restangular.all(mlsConfigAPI).one(configId).all('propertyData').customPUT(main_property_data: mainPropertyData)
+    Restangular.all(mlsConfigAPI).one(configId).all('propertyData').customPUT(mainPropertyData)
 
   getDatabaseList = (configId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').getList()
