@@ -12,8 +12,6 @@ class StringStream extends Readable
     @push @str
     @push null
 
-
-
 _escape = (str, delimiter) ->
   return str
   .replace(/\\/g, '\\\\')
@@ -40,7 +38,7 @@ objectsToPgText = (textFields, jsonFields, _options={}) ->
         return options.null
       else
         return _escape(JSON.stringify(val), options.delimiter)
-    
+
     @queue new Buffer(textParts.concat(jsonParts).join(options.delimiter)+'\n', options.encoding)
   end = () ->
     @queue new Buffer('\\.\n', options.encoding)
