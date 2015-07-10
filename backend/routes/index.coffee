@@ -54,7 +54,7 @@ routesConfig =
       ]
     #might want to twerk permissions required
     permissions:
-      methods: ['get', 'post', 'put', 'delete']
+      methods: ['get', 'post']
       middleware: [
         auth.requireLogin(redirectOnFail: true)
         auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
