@@ -21,7 +21,12 @@ module.exports = (options = {}) ->
           return arrayValues[0]
       Promise.settle(_.map(arrayValues, doValidationSteps.bind(null, options.criteria, param)))
       .then (validatedValues) ->
+        fulfilledNull = false
         for inspection in validatedValues
           if inspection.isFulfilled()
-            return inspection.value()
-        throw new DataValidationError("no array elements fulfilled validation criteria", param, values)
+            if inspection.value()?
+              return inspection.value()
+            fulfilledNull = true
+        if !fulfilledNull
+          throw new DataValidationError("no array elements fulfilled validation criteria", param, values)
+        return null

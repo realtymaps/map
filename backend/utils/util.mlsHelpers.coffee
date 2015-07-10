@@ -121,9 +121,11 @@ loadRetsTableUpdates = (subtask, options) ->
       now = new Date()
       if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
         # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+        logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
         lastSuccess = new Date(0)
         doDeletes = true
       else
+        logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
         doDeletes = false
       step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
       step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
@@ -142,7 +144,7 @@ loadRetsTableUpdates = (subtask, options) ->
 _getData = (client, database, table, dmqlQueryString, queryOptions) ->
   client.search.query(database, table, dmqlQueryString, queryOptions)
   .catch isUnhandled, (error) ->
-    if error.replyCode == rets.replycode.NO_RECORDS_FOUND
+    if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
       # code for 0 results, not really an error (DMQL is a clunky language)
       return []
     # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
@@ -155,7 +157,7 @@ getDataDump = (mlsInfo, limit=1000) ->
     if mlsInfo.main_property_data.queryTemplate and mlsInfo.main_property_data.field
       momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
     else
-      throw new PartiallyHandledError('Can not query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
+      throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
 
     _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
     .finally () ->
@@ -259,6 +261,7 @@ _getUsedKeys = (validationDefinition) ->
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
   rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
+  console.debug("Normalizing #{rawTableName}: #{subtask.data.offset+1} - #{subtask.data.offset+subtask.data.count}")
   # get rows for this subtask
   rowsPromise = dbs.properties.knex(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
@@ -279,25 +282,29 @@ normalizeData = (subtask, options) -> Promise.try () ->
         else if validationDefinition.output == 'days_on_market'
           # explicitly exclude these keys from diff, because they are derived values based on date
           diffExcludeKeys = _getUsedKeys(validationDefinition)
-    Promise.map rows, (row) ->
-      stats =
-        data_source_id: options.dataSourceId
-        batch_id: subtask.batch_id
-        rm_raw_id: row.rm_raw_id
-        up_to_date: startTime
-      Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
-      .then _updateRecord.bind(null, stats, diffExcludeKeys, usedKeys, row)
-      .then () ->
-        dbs.properties.knex(rawTableName)
-        .where(rm_raw_id: row.rm_raw_id)
-        .update(rm_valid: true)
-      .catch validation.DataValidationError, (err) ->
-        dbs.properties.knex(rawTableName)
-        .where(rm_raw_id: row.rm_raw_id)
-        .update(rm_valid: false, rm_error_msg: err.toString())
+    promises = for row in rows
+      do (row) ->
+        console.debug("@@@@@@@@@@@@@@@@@@@@@@@@@@@ normalizing row: #{row.rm_raw_id}")
+        stats =
+          data_source_id: options.dataSourceId
+          batch_id: subtask.batch_id
+          rm_raw_id: row.rm_raw_id
+          up_to_date: startTime
+        Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
+        .then _updateRecord.bind(null, stats, diffExcludeKeys, usedKeys, row)
+        .then () ->
+          dbs.properties.knex(rawTableName)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: true)
+        .catch validation.DataValidationError, (err) ->
+          dbs.properties.knex(rawTableName)
+          .where(rm_raw_id: row.rm_raw_id)
+          .update(rm_valid: false, rm_error_msg: err.toString())
+    Promise.all promises
 
 
 _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+  console.debug("============================ updating row: #{stats.rm_raw_id}")
   # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.unshift(name: 'Address', value: base.address)
@@ -353,31 +360,33 @@ recordChangeCounts = (subtask) ->
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
       # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
       # will resolve to a count of affected rows
-      return tables.propertyData.mls()
-      .whereNot(batch_id: subtask.batch_id)
-      .whereNull('deleted')
-      .update(deleted: subtask.batch_id)
+      return () ->
+        tables.propertyData.mls(this)
+        .whereNot(batch_id: subtask.batch_id)
+        .whereNull('deleted')
+        .update(deleted: subtask.batch_id)
     else
       # return 0 because we use this as the count of deleted rows
       return 0
-  .then (deletedCount) ->
+  .then (deletedSubquery) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
-    insertedSubquery = tables.propertyData.mls()
-    .where
-      batch_id: subtask.batch_id
-      change_history: null
-    .count('*')
+    insertedSubquery = () ->
+      tables.propertyData.mls(this)
+      .where(batch_id: subtask.batch_id)
+      .whereNull('change_history')
+      .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-    updatedSubquery = tables.propertyData.mls()
-    .where(batch_id: subtask.batch_id)
-    .whereNotNull('change_history')
-    .count('*')
+    updatedSubquery = () ->
+      tables.propertyData.mls(this)
+      .where(batch_id: subtask.batch_id)
+      .whereNotNull('change_history')
+      .count('*')
     tables.jobQueue.dataLoadHistory()
     .where(batch_id: subtask.batch_id)
     .update
       inserted_rows: insertedSubquery
       updated_rows: updatedSubquery
-      deleted_rows: deletedCount
+      deleted_rows: deletedSubquery
 
 
 finalizeData = (subtask, id) ->
@@ -422,24 +431,23 @@ activateNewData = (subtask) ->
   else
     # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
     # the rm_property_id that has been updated in this batch
+    checkSubquery = () ->
+      tables.propertyData.combined(this)
+      .select('rm_property_id')
+      .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+          active: false
     tables.propertyData.combined()
     .where
-      data_source_id: subtask.data_source_id
+      data_source_id: subtask.task_name
       batch_id: subtask.batch_id
-    .whereExists () ->
-      this.select()
-      .from('check')
-      .where
-        "check.data_source_id": subtask.data_source_id
-        "check.batch_id": subtask.batch_id
-        "check.active": false
-        "check.rm_property_id": dbs.properties.knex.raw("#{tables.propertyData.combined.tableName}.rm_property_id")
-      .as('check')
+    .whereIn 'rm_property_id', checkSubquery
     .update(active: dbs.properties.knex.raw('NOT "active"'))
     .then () ->
       tables.propertyData.combined()
       .where
-        data_source_id: subtask.data_source_id
+        data_source_id: subtask.task_name
         batch_id: subtask.batch_id
         active: false
       .delete()
