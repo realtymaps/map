@@ -1,7 +1,7 @@
 mlsHelpers = require '../util.mlsHelpers'
 jobQueue = require '../util.jobQueue'
 dbs = require '../../config/dbs'
-tables = require '../config/tables'
+tables = require '../../config/tables'
 
 
 # NOTE: This file is actually going to go away.  We don't want to have an explicit task file for each of the hundreds
@@ -9,7 +9,7 @@ tables = require '../config/tables'
 # explicitly providing a file like this (if we find an edge case that doesn't obey the rules).
 
 
-NUM_ROWS_TO_PAGINATE = 30
+NUM_ROWS_TO_PAGINATE = 100
 
 
 loadDataRawMain = (subtask) ->

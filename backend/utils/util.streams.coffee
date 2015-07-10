@@ -12,6 +12,7 @@ class StringStream extends Readable
     @push @str
     @push null
 
+
 _escape = (str, delimiter) ->
   return str
   .replace(/\\/g, '\\\\')
@@ -19,27 +20,20 @@ _escape = (str, delimiter) ->
   .replace(/\r/g, '\\r')
   .replace(new RegExp(delimiter, 'g'), '\\'+delimiter)
 
-objectsToPgText = (textFields, jsonFields, _options={}) ->
+objectsToPgText = (fields, _options={}) ->
   defaults =
     null: '\\N'
     delimiter: '\t'
     encoding: 'utf-8'
   options = _.extend({}, defaults, _options)
   write = (obj) ->
-    textParts = _.map textFields, (longName, systemKey) ->
+    parts = _.map fields, (systemKey) ->
       val = obj[systemKey]
       if !val?
         return options.null
       else
         return _escape(''+val, options.delimiter)
-    jsonParts = _.map jsonFields, (longName, systemKey) ->
-      val = obj[systemKey]
-      if !val?
-        return options.null
-      else
-        return _escape(JSON.stringify(val), options.delimiter)
-
-    @queue new Buffer(textParts.concat(jsonParts).join(options.delimiter)+'\n', options.encoding)
+    @queue new Buffer(parts.join(options.delimiter)+'\n', options.encoding)
   end = () ->
     @queue new Buffer('\\.\n', options.encoding)
     @queue null

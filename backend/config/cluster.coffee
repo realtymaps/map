@@ -5,36 +5,50 @@ config = require './config'
 logger = require './logger'
 
 #http://stackoverflow.com/questions/19796102/exit-event-in-worker-process-when-killed-from-master-within-a-node-js-cluster
-shutdownNow = () ->
-  logger.debug('shutting down ...')
+shutdownNow = (prefix, exitCode) ->
+  logger.debug "#{prefix}: shutting down ..."
   setTimeout () ->
-    logger.debug 'quitting'
-    process.exit(0)
+    logger.debug "#{prefix}: quitting"
+    process.exit(exitCode)
   , 10000
 
-module.exports = (workerCb) ->
-  # Count the machine's CPUs
-  cpuCount = config.PROC_COUNT
-  #Create a worker for each CPU
-  if cpuCount == 1
-    #dont fork to avoid fork issues with development and foreman
+  
+catchUncaughtErrors = (prefix, err) ->
+  logger.error "#{prefix}: Something very bad happened.  ", err.message
+  logger.error err.stack || err
+  # and now GTFO, because you are in unpredictable state
+  shutdownNow(prefix, 1)
+  
+
+module.exports = (clusterName, workerCount, workerCb) ->
+  if workerCount == 1
+    #dont add fork overhead if only 1 process is needed
     return workerCb()
 
+  getWorkerPrefix = (worker) ->
+    "Worker Process <#{clusterName}-#{worker.id}>"
+
+
+  # catch all uncaught exceptions, no matter what process it happens on
+    
   if cluster.isMaster
-    headerMsg = "Master Cluster "
-    logger.debug headerMsg + " Starting"
-    logger.debug headerMsg + "forking #{cpuCount} processes"
-    [1..cpuCount].forEach ->
+    masterPrefix = "Master Process <#{clusterName}>"
+    logger.debug "#{masterPrefix}: starting"
+    process.on 'uncaughtException', catchUncaughtErrors.bind(null, masterPrefix)
+    logger.debug "#{masterPrefix}: forking #{workerCount} workers"
+    [1..workerCount].forEach ->
       cluster.forkAsync()
 
     cluster.onAsync('exit').then (worker) ->
-      logger.error("Worker #{worker.id} died :(")
-      logger.debug headerMsg + "forking new worker"
+      logger.error "#{getWorkerPrefix(worker)}: exited"
+      logger.debug "#{masterPrefix}: forking new worker"
       cluster.forkAsync()
 
     return
 
-  logger.debug "Worker Cluster ##{cluster.worker.id} Starting"
-  process.on 'SIGINT', shutdownNow
-  process.on 'SIGTERM', shutdownNow
+  logger.debug "#{getWorkerPrefix(cluster.worker)}: starting"
+  process.on 'uncaughtException', catchUncaughtErrors.bind(null, getWorkerPrefix(cluster.worker))
+  for signal in ['SIGINT', 'SIGTERM']
+    process.on signal, shutdownNow.bind(null, getWorkerPrefix(cluster.worker), 0)
+    
   workerCb()

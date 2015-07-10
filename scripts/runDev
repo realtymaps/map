@@ -31,4 +31,4 @@ then
   foreman run npm install
 fi
 
-foreman start -c web=1
+foreman start web

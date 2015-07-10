@@ -61,7 +61,6 @@ base =
       httpOnly: true
       signed: true
       secure: true
-  NODETIME: false
   USE_ERROR_HANDLER: false
   DB_CACHE_TIMES:
     SLOW_REFRESH: 60*1000   # 1 minute

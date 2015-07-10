@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.defaults()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.defaults()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should replace undefined, null, and "" values with the defaultValue, resolving any other value as-is', () ->

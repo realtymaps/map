@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.pickFirst()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.pickFirst()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve to the first element of the array when there are no criteria', () ->
@@ -16,12 +16,14 @@ describe 'utils/http.request.validators.pickFirst()'.ns().ns('Backend'), ->
         value.should.equal('abc')
     ]
 
-  promiseIt 'should resolve to the first non-rejecting element of the array when there are criteria', () ->
+  promiseIt 'should resolve to the first non-rejecting element of the array with a defined value when there are criteria', () ->
     [
       expectResolve(validators.pickFirst(criteria: validators.integer(min: 8))(param, [5, 10])).then (value) ->
         value.should.equal(10)
       expectResolve(validators.pickFirst(criteria: validators.string(minLength: 5))(param, ['abc', 'defghij'])).then (value) ->
         value.should.equal('defghij')
+      expectResolve(validators.pickFirst(criteria: validators.integer(min: 8))(param, [null, 10])).then (value) ->
+        value.should.equal(10)
     ]
 
   promiseIt 'should nullify empty values', () ->

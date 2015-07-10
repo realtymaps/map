@@ -5,7 +5,7 @@ basePath = require '../../basePath'
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
-describe 'utils/http.request.validators.array()'.ns().ns('Backend'), ->
+describe 'utils/validation.validators.array()'.ns().ns('Backend'), ->
   param = 'fake'
 
   promiseIt 'should resolve arrays', () ->

@@ -8,6 +8,8 @@ module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
     if !values
       return null
+    if options.pluck
+      return values[options.pluck]
     if !_.isPlainObject values
       return Promise.reject new DataValidationError("plain object expected", param, values)
     if options.subValidateSeparate

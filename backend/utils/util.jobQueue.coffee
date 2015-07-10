@@ -8,6 +8,7 @@ analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 {notification} = require './util.notifications.coffee'
 tables = require '../config/tables'
+cluster = require 'cluster'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -145,7 +146,8 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
     .then (task) ->
       task?[0]?.data
   .then (taskData) ->
-    Promise.all _.map(subtasks, queueSubtask.bind(null, transaction, batchId, taskData))
+    Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
+      queueSubtask(transaction, batchId, taskData, subtask)  
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
@@ -192,7 +194,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         tables.jobQueue.currentSubtasks(transaction)
         .insert singleSubtask
       .then () ->
-        return subtask.data.length
+        return subtaskData.length
     else
       singleSubtask = _.clone(subtask)
       singleSubtask.data = subtaskData
@@ -206,7 +208,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
 
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
-  # worker that's executing that subtask, and we're not going to make that work poll to watch for a cancel message
+  # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   tables.jobQueue.taskHistory()
   .where
     name: taskName
@@ -215,6 +217,7 @@ cancelTask = (taskName, status) ->
   .update
     status: status
     status_changed: knex.raw('NOW()')
+    finished: knex.raw('NOW()')
   .then () ->
     tables.jobQueue.currentSubtasks()
     .where
@@ -266,7 +269,9 @@ executeSubtask = (subtask) ->
 
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
-    if !hard
+    if hard
+      logger.error("Error executing subtask #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>: #{error.stack||error}")
+    else
       if subtask.retry_max_count? && subtask.retry_max_count >= subtask.retry_num
         if subtask.hard_fail_after_retries
           hard = true
@@ -288,7 +293,9 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
   .then (updatedSubtask) ->
-    updatedSubtask[0].error = "subtask: #{error}"
+    updatedSubtask[0].error = "#{error}"
+    if error.stack
+      updatedSubtask[0].stack = error.stack 
     tables.jobQueue.subtaskErrorHistory()
     .insert updatedSubtask[0]
   .then () ->
@@ -297,7 +304,6 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         subject: 'subtask: hard fail'
         subtask: subtask
         error: "subtask: #{error}"
-    throw error
 
 # should this be rewritten to use a transaction and query built by knex?  I decided to implement it as a stored proc
 # in order to enforce the locking semantics, but I'm not sure if that's really a good reason
@@ -358,14 +364,14 @@ _handleSuccessfulTasks = () ->
     .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
       this
-      .whereNull('finished')
-      .orWhereIn('status', ['hard fail', 'infrastructure fail', 'canceled'])
-      .orWhere
-        status: 'timeout'
-        hard_fail_timeouts: true
-      .orWhere
-        status: 'zombie'
-        hard_fail_zombies: true
+      .whereNull("#{tables.jobQueue.currentSubtasks.tableName}.finished")
+      .orWhereIn("#{tables.jobQueue.currentSubtasks.tableName}.status", ['hard fail', 'infrastructure fail', 'canceled'])
+      .orWhere () ->
+        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'timeout')
+        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_timeouts", true)
+      .orWhere () ->
+        this.where("#{tables.jobQueue.currentSubtasks.tableName}.status", 'zombie')
+        .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true)
   .update
     status: 'success'
     status_changed: knex.raw('NOW()')
@@ -386,13 +392,15 @@ _setFinishedTimestamps = () ->
 
 doMaintenance = () ->
   Promise.try () ->
+    _handleSuccessfulTasks()
+  .then () ->
+    _setFinishedTimestamps()
+  .then () ->
     _sendLongTaskWarnings()
   .then () ->
     _killLongTasks()
   .then () ->
     _handleZombies()
-  .then () ->
-    _handleSuccessfulTasks()
   .then () ->
     _setFinishedTimestamps()
     
@@ -400,9 +408,53 @@ updateTaskCounts = () ->
   knex.select(knex.raw('jq_update_task_counts()'))
 
 getQueueNeeds = () ->
-  knex.select('*').from(knex.raw('jq_get_queue_needs()'))
-  .then (needs) ->
-    needs || []
+  queueNeeds = {}
+  queueZombies = {}
+  queueConfigPromise = tables.jobQueue.queueConfig()
+  .select('*')
+  .where(active: true)
+  subtasksPromise = tables.jobQueue.currentSubtasks()
+  .select('*')
+  
+  Promise.join queueConfigPromise , subtasksPromise, (queueConfigs, currentSubtasks) ->
+    queueConfigs = _.indexBy(queueConfigs, 'name')
+    for name of queueConfigs
+      queueNeeds[name] = 0
+      queueZombies[name] = 0
+    currentSubtasks = _.groupBy(currentSubtasks, 'task_name')
+    for taskName,taskList of currentSubtasks
+      if !queueConfigs[taskList[0]?.queue_name]?.active
+        # any task running on an inactive queue (or a queue without config) can be ignored without further processing
+        continue
+      taskSteps = _.groupBy(taskList, 'step_num')
+      steps = _.keys(taskSteps).sort()
+      # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
+      # anything from steps past that (in this task)
+      for step in steps
+        # this step is "acceptably done" if it only consists of subtasks with soft fail, canceled, and/or success
+        # statuses, and/or possibly timeout/zombie statuses if they isn't counted as a hard fail for the subtask
+        acceptablyDone = true
+        for subtask in taskSteps[step]
+          if (subtask.status not in ['soft fail', 'canceled', 'success']) && (subtask.status != 'timeout' || subtask.hard_fail_timeouts) && (subtask.status != 'zombie' || subtask.hard_fail_zombies)
+            acceptablyDone = false
+          if subtask.status in ['queued', 'preparing', 'running'] && (!subtask.ignore_until? || subtask.ignore_until < Date.now())
+            queueNeeds[subtask.queue_name]++
+          if subtask.status == 'zombie'
+            queueZombies[subtask.queue_name]++
+        if !acceptablyDone
+          continue
+    result = []
+    for name of queueConfigs
+      # if the queue has nothing that's not a zombie, let it scale down to 0; otherwise we need to leave something
+      # running for the zombies too, or else we could get ourselves stuck in deadlock where zombies have eaten all the
+      # resources (like they do)
+      needs = 0
+      if queueNeeds[name] > 0
+        needs = queueNeeds[name] * queueConfigs[name].priority_factor + queueZombies[name]
+        needs /= queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno
+        needs = Math.ceil(needs)
+      result.push(name: name, quantity: needs)
+    return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask 
 queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
@@ -435,7 +487,23 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
     if !subtasks?.length
       throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
-    
+
+runWorker = (queueConfig, id) ->
+  if cluster.worker?
+    prefix = "<#{queueConfig.name}-#{cluster.worker.id}-#{id}>"
+  else
+    prefix = "<#{queueConfig.name}-#{id}>"
+  getQueuedSubtask(queueConfig.name)
+  .then (subtask) ->
+    if subtask?
+      logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
+      executeSubtask(subtask)
+    else
+      logger.debug "#{prefix} No subtask ready for execution, waiting..."
+      Promise.delay(30000) # poll again in 30 seconds
+  .then runWorker.bind(null, queueConfig, id)
+        
+
 
 module.exports =
   withSchedulingLock: withSchedulingLock
@@ -443,6 +511,7 @@ module.exports =
   queueTask: queueTask
   queueSubtasks: queueSubtasks
   queueSubtask: queueSubtask
+  queueSubsequentSubtask: queueSubsequentSubtask
   cancelTask: cancelTask
   executeSubtask: executeSubtask
   getQueuedSubtask: getQueuedSubtask
@@ -451,7 +520,9 @@ module.exports =
   updateTaskCounts: updateTaskCounts
   getQueueNeeds: getQueueNeeds
   queuePaginatedSubtask: queuePaginatedSubtask
+  queueSubsequentPaginatedSubtask: queueSubsequentPaginatedSubtask
   getSubtaskConfig: getSubtaskConfig
+  runWorker: runWorker
   SoftFail: SoftFail
   HardFail: HardFail
   knex: knex
