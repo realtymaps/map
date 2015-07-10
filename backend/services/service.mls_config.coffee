@@ -14,7 +14,10 @@ class MlsConfigCrud extends ThenableCrud
     super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
 
   updatePropertyData: (id, propertyData) ->
-    @update(id, propertyData)
+    if Object.keys(propertyData).length == 1 && 'main_property_data' of propertyData
+      @update(id, propertyData)
+    else
+      throw new PartiallyHandledError("Invalid property data.")
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->
