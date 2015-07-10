@@ -97,7 +97,7 @@ singleResultBoolean = (q, doRowCount) ->
     throw new PartiallyHandledError(error)
 
 thenables = [Crud, HasManyCrud].map (baseKlass) ->
-  class Thenable extends baseKlass
+  class ThenableTrait extends baseKlass
     constructor: ->
       super(arguments...)
       @init()

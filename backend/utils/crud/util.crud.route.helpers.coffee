@@ -75,11 +75,10 @@ class HasManyCrud extends Crud
 TODO:
 - needs validation (leaving this to who actually is using it)
 - needs error handling
-- on all getById's a useful implementation using streaming to reduce an [] to {} for single results
 ###
 
 routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
-  class Routes extends baseKlass
+  class RoutesTrait extends baseKlass
     handleQuery: (q, res) ->
       #if we have a stream avail pipe it
       if q?.stringify? and _.isFunction q.stringify
