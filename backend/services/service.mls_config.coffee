@@ -14,13 +14,7 @@ class MlsConfigCrud extends ThenableCrud
     super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
 
   updatePropertyData: (id, propertyData) ->
-    base('getById', id)
-    .update
-      main_property_data: JSON.stringify(propertyData)
-    .then (result) ->
-      result == 1
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error)
+    @update(id, {main_property_data: propertyData})
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->

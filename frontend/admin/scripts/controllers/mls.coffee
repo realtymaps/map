@@ -169,7 +169,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     # button behavior for saving mls
     $scope.saveMlsData = () ->
       $scope.loading = true
-      $scope.mlsData.current.save()
+      rmapsMlsService.postMainPropertyData($scope.mlsData.current.id, $scope.mlsData.current.main_property_data)
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
       .catch (err) ->
@@ -224,7 +224,14 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       # ok/cancel behavior of modal
       modalInstance.result.then(
         (mlsModalData) ->
-          $scope.saveMlsData()
+          $scope.loading = true
+          $scope.mlsData.current.save()
+          .then (res) ->
+            $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
+          .catch (err) ->
+            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+          .finally () ->
+            $scope.loading = false
         , () ->
           console.log "modal closed"
       )
