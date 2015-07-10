@@ -54,7 +54,7 @@ routesConfig =
       ]
     #might want to twerk permissions required
     permissions:
-      methods: ['get']
+      methods: ['get', 'post']
       middleware: [
         auth.requireLogin(redirectOnFail: true)
         auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
@@ -231,22 +231,40 @@ routesConfig =
       middleware: auth.requireLogin(redirectOnFail: true)
     update:
       method: 'put'
-      middleware: auth.requireLogin(redirectOnFail: true)
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['change_mlsconfig']}, logoutOnFail:false)
+      ]
     updatePropertyData:
-      method: 'patch'
-      middleware: auth.requireLogin(redirectOnFail: true)
+      methods: ['patch', 'put']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true)
+        auth.requirePermissions({all:['change_mlsconfig_mainpropertydata']}, logoutOnFail:false)
+      ]
     updateServerInfo:
-      method: 'patch'
-      middleware: auth.requireLogin(redirectOnFail: true) # privileged
+      methods: ['patch', 'put']
+      middleware: [
+        auth.requireLogin(redirectOnFail: true) # privileged
+        auth.requirePermissions({all:['change_mlsconfig']}, logoutOnFail:false)
+      ]
     create:
       method: 'post'
-      middleware: auth.requireLogin(redirectOnFail: true) # privileged
+      middleware: [
+        auth.requireLogin(redirectOnFail: true) # privileged
+        auth.requirePermissions({all:['add_mlsconfig']}, logoutOnFail:false)
+      ]
     createById:
       method: 'post'
-      middleware: auth.requireLogin(redirectOnFail: true) # privileged
+      middleware: [
+        auth.requireLogin(redirectOnFail: true) # privileged
+        auth.requirePermissions({all:['add_mlsconfig']}, logoutOnFail:false)
+      ]
     delete:
       method: 'delete'
-      middleware: auth.requireLogin(redirectOnFail: true) # privileged
+      middleware: [
+        auth.requireLogin(redirectOnFail: true) # privileged
+        auth.requirePermissions({all:['delete_mlsconfig']}, logoutOnFail:false)
+      ]
   mls:
     getDatabaseList:
       method: 'get'
