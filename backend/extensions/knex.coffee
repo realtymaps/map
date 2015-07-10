@@ -7,5 +7,8 @@ libs = [
 ]
 
 for key, lib of libs
-  lib::stringify = () ->
-    @stream().stringify()
+  lib::stringify = (errCb) ->
+    @stream()
+    .on 'error', (err)->
+      errCb(err) if errCb
+    .stringify()

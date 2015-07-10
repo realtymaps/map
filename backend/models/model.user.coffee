@@ -18,5 +18,3 @@ module.exports = dbs.users.Model.extend
   profiles: () ->
     @belongsTo Profile, Profile.tableName
       , "auth_user_id", "id"
-  # projects: () ->
-  #   @hasOne(Project).through(Profile)

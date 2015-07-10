@@ -13,7 +13,6 @@ class StringStream extends Readable
     @push null
 
 
-
 _escape = (str, delimiter) ->
   return str
   .replace(/\\/g, '\\\\')
