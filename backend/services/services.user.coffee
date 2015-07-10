@@ -50,7 +50,7 @@ class UserCrud extends ThenableCrud
     .init(false)
 
   groups: thenableHasManyCrud(userData.auth_group, groupsCols,
-    module.exports.auth_user_groups, "group_id", undefined, "group_id").init(false)
+    module.exports.auth_user_groups, "group_id", undefined, "auth_user_groups.id").init(false)
 
   profiles: thenableHasManyCrud(userData.project, profileCols,
     module.exports.auth_user_profile, undefined, undefined, 'auth_user_profile.id').init(false)
