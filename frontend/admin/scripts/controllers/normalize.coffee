@@ -223,23 +223,13 @@ app.controller 'rmapsNormalizeCtrl',
         parseFields(fields)
 
   # Load MLS list
-  restoreState = () ->
-    # don't start pulling mls data unless identity checks out
-    rmapsprincipal.getIdentity()
-    .then (identity) ->
-      if not identity?.user?
-        return $location.path(adminRoutes.urls.login)
-      rmapsMlsService.getConfigs()
-      .then (configs) ->
-        $scope.mlsConfigs = configs
-        if $state.params.id          
-          $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
-          loadMls($scope.mlsData.current)
-
-  $scope.$onRootScope rmapsevents.principal.login.success, () ->
-    restoreState()
-
-  if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
-    restoreState()
+  # Register the logic that acquires data so it can be evaluated after auth
+  $rootScope.registerScopeData () ->
+    rmapsMlsService.getConfigs()
+    .then (configs) ->
+      $scope.mlsConfigs = configs
+      if $state.params.id          
+        $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
+        loadMls($scope.mlsData.current)
 
 ]

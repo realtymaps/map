@@ -55,23 +55,17 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       active: false
     ]
 
-
     # extract existing configs, populate idOptions
-    restoreState = () ->
-      # don't start pulling mls data unless identity checks out
-      rmapsprincipal.getIdentity()
-      .then (identity) ->
-        if not identity?.user?
-          return $location.path(adminRoutes.urls.login)
-        $scope.loading = true
-        rmapsMlsService.getConfigs()
-        .then (configs) ->
-          $scope.idOptions = configs
-        .catch (err) ->
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
-        .finally () ->
-          $scope.loading = false
-
+    # Register the logic that acquires data so it can be evaluated after auth
+    $rootScope.registerScopeData () ->
+      $scope.loading = true
+      rmapsMlsService.getConfigs()
+      .then (configs) ->
+        $scope.idOptions = configs
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
+      .finally () ->
+        $scope.loading = false
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
@@ -262,11 +256,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           console.log "modal closed"
       )
 
-    $scope.$onRootScope rmapsevents.principal.login.success, () ->
-      restoreState()
-
-    if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
-      restoreState()
+    #$rootScope.registerScopeState restoreState
 
 ]
 
