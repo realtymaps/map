@@ -28,7 +28,6 @@ body
   margin 3px
   display inline-block
   padding 6px 12px
-  margin-bottom 0
   text-align center
   cursor pointer
   -webkit-user-select none
@@ -57,20 +56,30 @@ body
     &.datatype-date:before
       content "date"
 
+selectable(text, background, border, invert=true)
+  color text
+  background-color background
+  border-color border
+  &.selected
+    font-weight bold
+    if invert
+      background-color text
+      color background
+
 .field
   display block
   text-align left
 
-  color #fff
-  background-color #5bc0de
-  border-color #46b8da
+  selectable #fff, #5bc0de, #46b8da
+
   &.assigned
-    background-color #aaa
-    border-color #999
+    selectable #fff, #aaa, #999
   &.base
     text-transform capitalize
+    selectable #fff, #6ec878, #3eb848
   &.base:before
     content 'RM'
+    color #fff
     background-color #313145
     margin-right 1em
     padding 3px
@@ -78,46 +87,65 @@ body
     font-size 75%
     opacity 0.8
   &.invalid
-    background-color #ffa07a
-    border-color #efa07a
+    selectable #fff, #de7f79, #be5f59
+  &.category-item
+    selectable #000, #ddd, #aaa, false
 
 .category
   display inline-block
   vertical-align top
-  width 30%
+  width 32%
   min-height 4em
 
   color black
   background-color #ddd
   border-color #aaa
 
-  .field-list
+  &.collapse .field-list
     max-height 200px
     overflow-y scroll
 
 .list-container
   padding 2px
-  height 450px
   h4
     text-align center
 
 .field-container
-  // border 2px solid transparent
   overflow-y scroll
-  height 400px
-  // padding 2px
+  height 475px
+  padding-left 10px
 
 .properties-container
-  height 40%
-  overflow scroll
+  height 325px
+  padding 10px
+  overflow-y scroll
   position fixed !important
   bottom 0
   width 80%
   color black
-  .row
-    min-height 30px
-  input
+  .scroll
+    overflow-y scroll
+    .row
+      height 3em
+      > div
+        top 50%
+        transform translateY(-50%)
+    .row:nth-child(even)
+      background-color #eee
+    .row.advanced > :first-child
+        text-align center
+
+  input, textarea
     width 90%
+    border 1px solid #ddd
+    padding 5px
+    &[disabled]
+      color #888
+      background-color #eee
+      cursor not-allowed
+
+  .btn
+    padding 5px
 
   -webkit-transition  0.5s all linear
   transition all linear 0.5s
@@ -134,6 +162,18 @@ body
     &:before
       content "Drag here:"
       padding-right 0.5em
+
+  .help
+    color #555
+    font-size 90%
+
+  .sep
+    margin 12px
+    font-weight bold
+
+  textarea
+    margin-top 20px
+    font-family courier, fixed
 
 .properties-container.ng-hide
   opacity 0
@@ -153,12 +193,11 @@ h4
   width 100%
 
 .clickable-icon
+  color black
   background-color lightgray
   border-radius 0.5em
   padding 0em 0.35em
-  font-weight bold
-  z-index 5
-  cursor pointer
+  cursor grab
   -webkit-user-select none
   -moz-user-select none
   -ms-user-select none
@@ -166,21 +205,35 @@ h4
 
 .close-icon
   @extend .clickable-icon
+  z-index 1
   position absolute
-  right 1em
-  top 1em
+  right 15px
+  top 15px
 
 .remove-icon
   @extend .clickable-icon
   float right
-  
+
 .download-csv-button
   margin-top 10px
   font-size 12px
   padding 2px
   height 22px
-  
+
 .download-csv-input
   margin-top 10px
   font-size 12px
   height 22px
+
+.expand-icon
+  @extend .clickable-icon
+  position absolute
+  font-wieght auto
+  right 3px
+  top 3px
+  &:before
+    content "-"
+
+.collapse .expand-icon:before
+    content "+"
+

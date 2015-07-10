@@ -1,4 +1,7 @@
 /* Set some basic rules */
+.inline
+  display: inline-block
+
 .tool
   for num in (1..200)
     .padding-top-{num}
@@ -222,7 +225,7 @@ form.comfy
     checkbox(24px)
   .help-block
     color: #BBB
-    
+
 .spacer
   margin-top: 25px
 
@@ -305,4 +308,3 @@ $fnMobileToolbarPadding()
 
 $fnRevertToolbarPadding()
   padding: 0px 0px $footerHeight 0px
-

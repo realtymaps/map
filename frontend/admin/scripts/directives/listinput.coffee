@@ -17,7 +17,6 @@ app.directive 'rmapsListInput', [ () ->
               else
                 result = viewValue.split(/\s*\n\s*/).map (r) ->
                   r.split /\s*,\s*/
-              console.log result
               result
           ctrl.$formatters.push (value) ->
             if angular.isArray(value)

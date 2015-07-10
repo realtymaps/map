@@ -13,7 +13,7 @@ module.exports = app.controller 'rmapsLoginCtrl',
 
     $scope.form = {}
     $scope.doLoginPost = () ->
-      $http.post backendRoutes.user.login, $scope.form
+      $http.post backendRoutes.userSession.login, $scope.form
       .success (data, status) ->
         if !httpStatus.isWithinOK status
           return
@@ -37,6 +37,7 @@ app.run ($rootScope, $location, rmapsprincipal) ->
 
     # ... and we're already logged in, we'll move past the login state (now or when we find out)
     if rmapsprincipal.isIdentityResolved()
+
       doNextRedirect(toState, $location.search().next)
     else
       rmapsprincipal.getIdentity()

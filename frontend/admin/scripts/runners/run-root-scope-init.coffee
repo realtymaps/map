@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+adminRoutes = require '../../../../common/config/routes.admin.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.config ['$provide', ($provide) ->
@@ -18,14 +18,14 @@ app.config ['$provide', ($provide) ->
 ]
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams) ->
+app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner) ->
     $rootScope.alerts = []
-    $rootScope.frontendRoutes = frontendRoutes
+    $rootScope.adminRoutes = adminRoutes
     $rootScope.backendRoutes = backendRoutes
-    # $rootScope.principal = rmapsprincipal
+    $rootScope.principal = rmapsprincipal
     $rootScope.$state = $state
     $rootScope.$stateParams = $stateParams
-    # $rootScope.Spinner = rmapsSpinner
+    $rootScope.Spinner = rmapsSpinner
 
 
 

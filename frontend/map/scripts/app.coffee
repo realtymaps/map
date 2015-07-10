@@ -16,7 +16,6 @@ require '../styles/leaflet.styl'
 #require 'angular-leaflet-directive'
 
 appName = 'rmapsapp'
-#console.info "AppName: #{appName}"
 
 app = window.angular.module appName, [
   'logglyLogger.logger'
@@ -33,6 +32,7 @@ app = window.angular.module appName, [
   'ct.ui.router.extras'
   'ngAnimate'
   'infinite-scroll'
+  'restangular'
 ]
 
 module.exports = app

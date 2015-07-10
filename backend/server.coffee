@@ -8,6 +8,8 @@ if config.LOGGING.LONG_STACK_TRACES
 
 require '../common/extensions/strings'
 require './config/promisify'
+require './extensions'
+
 logger = require './config/logger'
 cluster = require './config/cluster'
 touch = require 'touch'

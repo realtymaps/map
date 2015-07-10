@@ -17,6 +17,7 @@ require '../config/promisify'
 memoize = require 'memoizee'
 vm = require 'vm'
 tables = require '../config/tables'
+validatorBuilder = require '../../common/utils/util.validatorBuilder'
 sqlHelpers = require './util.sql.helpers'
 util = require 'util'
 
@@ -160,20 +161,31 @@ getDataDump = (mlsInfo, limit=1000) ->
     .finally () ->
       retsClient.logout()
 
-_getRetsClient = (loginUrl, username, password) ->
-  Promise.try () ->
-    new rets.Client
-      loginUrl: loginUrl
-      username: username
-      password: encryptor.decrypt(password)
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, "RETS client could not be created")
-  .then (retsClient) ->
-    retsClient.login()
+_getRetsClient = memoize(
+  (loginUrl, username, password) ->
+    Promise.try () ->
+      new rets.Client
+        loginUrl: loginUrl
+        username: username
+        password: encryptor.decrypt(password)
     .catch isUnhandled, (error) ->
-      if error.replyCode
-        error = new Error("#{error.replyText} (#{error.replyCode})")
-      throw new PartiallyHandledError(error, "RETS login failed")
+      _getRetsClient.delete(loginUrl, username, password)
+      throw new PartiallyHandledError(error, "RETS client could not be created")
+    .then (retsClient) ->
+      logger.info 'Logging in client ', loginUrl
+      retsClient.login()
+      .catch isUnhandled, (error) ->
+        _getRetsClient.delete(loginUrl, username, password)
+        if error.replyCode
+          error = new Error("#{error.replyText} (#{error.replyCode})")
+        throw new PartiallyHandledError(error, "RETS login failed")
+  ,
+    maxAge: 60000
+    dispose: (promise) ->
+      promise.then (retsClient) ->
+        logger.info 'Logging out client', retsClient?.urls?.Logout
+        retsClient.logout()
+)
 
 getDatabaseList = (serverInfo) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
@@ -187,8 +199,6 @@ getDatabaseList = (serverInfo) ->
     .then (response) ->
       _.map response.Resources, (r) ->
         _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
-    .finally () ->
-      retsClient.logout()
 
 getTableList = (serverInfo, databaseName) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
@@ -201,8 +211,6 @@ getTableList = (serverInfo, databaseName) ->
     .then (response) ->
       _.map response.Classes, (r) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
-    .finally () ->
-      retsClient.logout()
 
 getColumnList = (serverInfo, databaseName, tableName) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
@@ -213,8 +221,6 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .then (response) ->
       _.map response.Fields, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
-    .finally () ->
-      retsClient.logout()
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
@@ -224,8 +230,6 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS types")
     .then (response) ->
       response.LookupTypes
-    .finally () ->
-      retsClient.logout()
 
 _getValidations = (dataSourceId) ->
   tables.config.dataNormalization()
@@ -296,6 +300,8 @@ normalizeData = (subtask, options) -> Promise.try () ->
 _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = _getValues(normalizedData.base || [])
+  normalizedData.unshift(name: 'Address', value: base.address)
+  normalizedData.unshift(name: 'Status', value: base.status_display)
   data =
     address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
     hide_listing: base.hide_listing ? false
