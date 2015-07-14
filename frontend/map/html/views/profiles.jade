@@ -12,7 +12,8 @@ section.profiles(ng-cloak)
           div(ng-if="!profile.showProfileNameInput") {{profile.name}}
             .fa.fa-chevron-right.fa-3.pull-right
             .fa.fa-edit.fa-3.pull-right(ng-click="activateInput(profile, $event)")
-          input(ng-model="profile.name" 
+          input(
+            ng-model="profile.name" 
             ng-required="true"
             ng-minlength="2"
             ng-if="profile.showProfileNameInput" 
