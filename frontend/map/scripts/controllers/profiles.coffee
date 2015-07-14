@@ -25,5 +25,5 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, Restangular,
 
     $rootScope.$on 'rmapsRootClick', ->
       if $scope.showProfileNameInput
-        $scope.evalAsync ->
+        $scope.$evalAsync ->
           $scope.showProfileNameInput = false

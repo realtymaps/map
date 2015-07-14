@@ -7,9 +7,9 @@ section.profiles(ng-cloak)
     a.inline(href="#") create a new one.
     .list-group
       button(ng-repeat="(key,item) in profiles" 
-        ng-click="select(item);$event.stopPropagation()" 
+        ng-click="select(item, $event)" 
         ng-dblclick="activateInput($event)"
         class="list-group-item active") 
           div(ng-if="!showProfileNameInput") {{item.name}}
+            .fa.fa-chevron-right.fa-3.pull-right
           input(ng-if="showProfileNameInput" text="item.name")
-        .fa.fa-chevron-right.fa-3.pull-right
