@@ -21,18 +21,17 @@ cols =  [
   "#{project.tableName}.name as #{project.tableName}_name",
 ]
 
-omitsOnSave = [
-  'id'
-  'rm_modified_time'
-  'rm_inserted_time'
+safe = [
+  'filters'
+  'properties_selected'
+  'map_toggles'
+  'map_position'
+  'map_results'
+  'parent_auth_user_id'
+  'auth_user_id'
+  'name'
+  'project_id'
 ]
-
-authProfileOnly = (joinedObj) ->
-  clone = _.clone joinedObj
-  for key, value of clone
-    if _.contains(key, project.tableName) && key != 'project_id'
-      delete clone[key]
-  _.omit clone, omitsOnSave
 
 get = (id, withProject = true) ->
   return auth_user_profile().where(id: id) unless withProject
@@ -84,12 +83,10 @@ updateFirst = (session, partialState) ->
 
   profile.auth_user_id = session.userid
 
-  cropped = authProfileOnly(profile)
-  # logger.debug cropped
 
   q = userData.auth_user_profile()
   .where(auth_user_id: session.userid, id: profile.id)
-  .update(cropped)
+  .update(_.pick profile, safe)
 
   # logger.debug q.toString()
 
@@ -106,4 +103,3 @@ module.exports =
   getProfiles: getProfiles
   updateFirst: updateFirst
   getFirst: getFirst
-  authProfileOnly: authProfileOnly

@@ -37,7 +37,7 @@ routesConfig =
       method: 'post'
       middleware: auth.requireLogin(redirectOnFail: true)
     profiles:
-      methods: ['get', 'post']
+      methods: ['get', 'put']
       middleware: auth.requireLogin(redirectOnFail: true)
   user:
     root:
