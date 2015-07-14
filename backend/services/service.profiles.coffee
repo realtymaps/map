@@ -23,9 +23,9 @@ cols =  [
 
 safe = [
   'filters'
-  'map_position'
   'properties_selected'
   'map_toggles'
+  'map_position'
   'map_results'
   'parent_auth_user_id'
   'auth_user_id'
