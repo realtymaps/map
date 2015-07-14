@@ -12,8 +12,8 @@ knex = dbs.users.knex
 module.exports = (options = {}) ->
   minSimilarity = options.minSimilarity ? 0.4
   (param, value) -> Promise.try () ->
-    if !value || !value.stateCode || !value.county || !value.parcelId
-      throw new DataValidationError("state, county, and parcelId are all required", param, value)
+    if !value || !value.stateCode || !value.county
+      throw new DataValidationError("stateCode and county are required", param, value)
     # force correct caps
     county = value.county.toInitCaps()
     state = value.stateCode.toUpperCase()
