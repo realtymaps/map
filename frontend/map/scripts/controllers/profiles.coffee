@@ -2,10 +2,9 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, Restangular, rmapsprincipal) ->
+app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmapsprincipal) ->
   rmapsprincipal.getIdentity()
   .then (identity) ->
-    currentProfileSvc = Restangular.all(backendRoutes.userSession.currentProfile)
 
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ""
@@ -15,15 +14,30 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, Restangular,
       user: user
       profiles: profiles
 
-      select: (profile) ->
-        # currentProfileSvc.post(currentProfileId: profile.id)
-        # $location.path(frontendRoutes.map)
-
-      activateInput: ($event) ->
+      select: (profile, $event) ->
         $event.stopPropagation()
-        $scope.showProfileNameInput = !$scope.showProfileNameInput
+        if $scope.showProfileNameInput
+          $scope.showProfileNameInput = false
+          return
+        $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+        $location.path(frontendRoutes.map)
+
+      change:(profile) ->
+        profile.needsUpdate = true
+
+      activateInput: (profile, $event) ->
+        $event.stopPropagation()
+        profile.showProfileNameInput = !profile.showProfileNameInput
+
+      blur: ->
+        anyToTurnOff = _.any $scope.profiles, (p) ->
+          p.showProfileNameInput
+        if anyToTurnOff
+          $scope.$evalAsync ->
+            for key, profile of $scope.profiles
+              profile.showProfileNameInput = false
+              if profile.needsUpdate
+                $http.put(backendRoutes.userSession.profiles, _.omit profile, ['needToUpdate', 'showProfileNameInput'])
 
     $rootScope.$on 'rmapsRootClick', ->
-      if $scope.showProfileNameInput
-        $scope.$evalAsync ->
-          $scope.showProfileNameInput = false
+      $scope.blur()

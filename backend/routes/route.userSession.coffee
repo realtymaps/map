@@ -125,14 +125,18 @@ updateState = (req, res, next) ->
 
 
 profiles = (req, res, next) ->
+  auth_user_id = req.session.userid
   methodExec req,
     GET: () ->
-      auth_user_id = req.session.userid
-      userSessionService.getProfiles(auth_user_id).then (profiles) ->
-        res.json(profiles)
+      userSessionService.getProfiles(auth_user_id)
 
-    POST: () ->
-      res.send()
+    PUT: () ->
+      userSessionService.updateProfile(req.session, req.body)
+
+  .then (result) ->
+    res.json result
+  .catch (err) ->
+    logger.error err
 
 module.exports =
   login: login

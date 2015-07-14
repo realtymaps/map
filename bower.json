@@ -16,7 +16,7 @@
     "angular-state-files": "*",
     "angular-ui-router": "~0.2.10",
     "angular-loggly-logger": "~0.1.1",
-    "rmaps-angular-utils": "https://github.com/realtymaps/rmaps-angular-utils.git#rootElementDirectives",
+    "rmaps-angular-utils": "1.0.1",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
     "fontawesome": "~4.2.0",
     "ng-infinite-scroller-origin": "~1.2.0",

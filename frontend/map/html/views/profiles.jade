@@ -6,10 +6,16 @@ section.profiles(ng-cloak)
     .inline Select a profile or&nbsp;
     a.inline(href="#") create a new one.
     .list-group
-      button(ng-repeat="(key,item) in profiles" 
-        ng-click="select(item, $event)" 
-        ng-dblclick="activateInput($event)"
+      button(ng-repeat="(key,profile) in profiles" 
+        ng-click="select(profile, $event)" 
         class="list-group-item active") 
-          div(ng-if="!showProfileNameInput") {{item.name}}
+          div(ng-if="!profile.showProfileNameInput") {{profile.name}}
             .fa.fa-chevron-right.fa-3.pull-right
-          input(ng-if="showProfileNameInput" text="item.name")
+            .fa.fa-edit.fa-3.pull-right(ng-click="activateInput(profile, $event)")
+          input(ng-model="profile.name" 
+            ng-required="true"
+            ng-minlength="2"
+            ng-if="profile.showProfileNameInput" 
+            ng-click="$event.stopPropagation()"
+            ng-change="change(profile)"
+            ng-blur="blur()")

@@ -127,7 +127,7 @@ module.exports =
   updateUser: updateUser
   verifyPassword: verifyPassword
   getProfile: profileSvc.getFirst
-  updateProfile: profileSvc.updatreFirst
+  updateProfile: profileSvc.updateFirst
   captureMapState: captureMapState
   captureMapFilterState: captureMapFilterState
   getProfiles: profileSvc.getProfiles
