@@ -37,6 +37,8 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
               profile.showProfileNameInput = false
               if profile.needsUpdate
                 $http.put(backendRoutes.userSession.profiles, _.omit profile, ['needToUpdate', 'showProfileNameInput'])
+                .success ->
+                  rmapsprincipal.unsetIdentity()
 
     $rootScope.$on 'rmapsRootClick', ->
       $scope.blur()

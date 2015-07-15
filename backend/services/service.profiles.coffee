@@ -65,7 +65,20 @@ getFirst = (userId) ->
       delete result.id
       return result
 
-updateFirst = (session, partialState) ->
+update = (profile) ->
+  q = userData.auth_user_profile()
+  .where(_.pick profile, ['auth_user_id', 'id'])
+  .update(_.pick profile, safe)
+  # logger.debug q.toString()
+  singleRow(q)
+  .then (userState) ->
+    if not userState
+      return {}
+    result = userState
+    delete result.id
+    return result
+
+updateCurrent = (session, partialState) ->
   # need the id for lookup, so we don't want to allow it to be set this way
   delete partialState.id
 
@@ -80,26 +93,11 @@ updateFirst = (session, partialState) ->
   if needsSave
     _.extend(profile, partialState)
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
-
-  profile.auth_user_id = session.userid
-
-
-  q = userData.auth_user_profile()
-  .where(auth_user_id: session.userid, id: profile.id)
-  .update(_.pick profile, safe)
-
-  # logger.debug q.toString()
-
-  singleRow(q)
-  .then (userState) ->
-    if not userState
-      return {}
-    result = userState
-    delete result.id
-    return result
+  update(profile)
 
 module.exports =
   get: get
   getProfiles: getProfiles
-  updateFirst: updateFirst
+  updateCurrent: updateCurrent
+  update: update
   getFirst: getFirst
