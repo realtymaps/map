@@ -4,7 +4,7 @@ loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
 
-routesConfig = loaders.loadSubmodules(path.join(__dirname, 'config'), /^config\.(\w+)\.coffee$/)
+routesConfig = loaders.loadSubmodules(path.join(__dirname, 'config'), /^route\.config\.(\w+)\.coffee$/)
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
