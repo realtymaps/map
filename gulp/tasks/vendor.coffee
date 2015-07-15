@@ -14,12 +14,22 @@ vendorPipe = require '../pipeline/scripts/vendor'
 vendorCssPipe = require '../pipeline/styles/vendor'
 vendorFontsPipe = require '../pipeline/fonts/vendor'
 
+rework = require 'gulp-rework'
+rework_url = require 'rework-plugin-url'
+path = require 'path'
 
 gulp.task 'vendor_css', ->
   gulp.src(vendorCssPipe)
   .pipe plumber()
   .pipe(onlyDirs es)
   .pipe(concat 'vendor.css')
+  .pipe rework rework_url  (url) ->
+    if url.match /[.](woff|woff2|ttf|eot|otf)(#.*)?$/
+      "./#{url}".replace path.dirname("./#{url}"), '/fonts'
+    else if url.match /[.](jpg|jpeg|gif|png|svg|ico)$/
+      "./#{url}".replace path.dirname("./#{url}"), '/assets'
+    else
+      url
   .pipe(gulp.dest paths.destFull.styles)
 
 gulp.task 'vendor_fonts', ->

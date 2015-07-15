@@ -7,12 +7,9 @@ bowerFilesLoader = require('main-bower-files')
 bowerPath = "bower_components/"
 
 bower = bowerFilesLoader
+  filter: /[.](woff|woff2|ttf|eot|otf)$/
   checkExistence: true
-#  debugging:true
-
-
-bower = bower.filter (f) ->
-  f.contains('fonts')
+  # debugging:true
 
 #globDebug bower, 'bower'
 

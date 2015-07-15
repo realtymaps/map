@@ -2,12 +2,6 @@
 
 require '../../../common/extensions/strings.coffee'
 
-# require '../../../bower_components/angular-ui-grid/ui-grid.js'
-# require '../../../bower_components/angular-ui-grid/ui-grid.woff'
-# require '../../../bower_components/angular-ui-grid/ui-grid.ttf'
-# require '../../../bower_components/angular-ui-grid/ui-grid.svg'
-# require '../../../bower_components/angular-ui-grid/ui-grid.css'
-
 appName = 'rmapsadminapp'
 
 
