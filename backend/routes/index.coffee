@@ -322,6 +322,10 @@ routesConfig =
       method: 'delete'
       middleware: auth.requireLogin(redirectOnFail: true)
 
+  jobs:
+    root:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
