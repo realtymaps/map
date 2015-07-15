@@ -6,6 +6,7 @@ module.exports =
   logout: 'logout'
   mls: 'mls'
   normalize: 'normalize?id'
+  jobs: 'jobs'
   authenticating: 'authenticating'
   accessDenied: 'accessDenied'
   pageNotFound: '*path'
@@ -16,6 +17,7 @@ module.exports =
     logout: '/admin/logout'
     mls: '/admin/mls'
     normalize: '/admin/normalize'
+    jobs: '/admin/jobs'
     authenticating: '/admin/authenticating'
     accessDenied: '/admin/accessDenied'
-  
+

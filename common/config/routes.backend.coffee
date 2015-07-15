@@ -14,6 +14,7 @@ apiBasePermissions = "#{apiBase}/permissions"
 apiBaseProjects = "#{apiBase}/projects"
 apiBaseProfiles = "#{apiBase}/profiles"
 apiBaseSession = "#{apiBase}/session"
+apiBaseJobs = "#{apiBase}/jobs"
 
 
 module.exports =
@@ -119,5 +120,9 @@ module.exports =
     getColumnList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
     getDataDump: "#{apiBaseMls}/:mlsId/data"
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
+
+  jobs:
+    apiBase: apiBaseJobs
+    root: apiBaseJobs
 
   # hirefire secret value set from within backend/config/config.coffee
