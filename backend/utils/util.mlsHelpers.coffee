@@ -53,7 +53,7 @@ _getValues = (list, target) ->
   for item in list
     target[item.name] = item.value
   target
-  
+
 
 # this performs a diff of 2 sets of MLS data, returning only the changed/new/deleted fields as keys, with the value
 # taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data,
@@ -61,7 +61,7 @@ _getValues = (list, target) ->
 _diff = (row1, row2, diffExcludeKeys=[]) ->
   fields1 = {}
   fields2 = {}
-  
+
   # first, flatten the objects
   for groupName, groupList of row1.client_groups
     _getValues(groupList, fields1)
@@ -141,16 +141,6 @@ loadRetsTableUpdates = (subtask, options) ->
       # always log out the RETS client when we're done
       retsClient.logout()
 
-_getData = (client, database, table, dmqlQueryString, queryOptions) ->
-  client.search.query(database, table, dmqlQueryString, queryOptions)
-  .catch isUnhandled, (error) ->
-    if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
-      # code for 0 results, not really an error (DMQL is a clunky language)
-      return []
-    # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
-    # code for too many results, must manually paginate or something to get all the data
-    throw new PartiallyHandledError(error, "failed to query RETS system")
-
 getDataDump = (mlsInfo, limit=1000) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
   .then (retsClient) ->
@@ -159,9 +149,14 @@ getDataDump = (mlsInfo, limit=1000) ->
     else
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
 
-    _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
-    .finally () ->
-      retsClient.logout()
+    retsClient.search.query(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
+    .catch isUnhandled, (error) ->
+      if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
+        # code for 0 results, not really an error (DMQL is a clunky language)
+        return []
+      # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
+      # code for too many results, must manually paginate or something to get all the data
+      throw new PartiallyHandledError(error, "failed to query RETS system")
 
 _getRetsClient = memoize(
   (loginUrl, username, password) ->
