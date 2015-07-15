@@ -95,7 +95,8 @@ swagger.initializeMiddleware swaggerObject, (middleware) ->
   #   controllers: __dirname + '/../routes'
 
   # This middleware provides interactive API docs
-  app.use middleware.swaggerUi()
+  if process.env.NODE_ENV == 'development'
+    app.use middleware.swaggerUi()
 
   # bootstrap routes
   require("../routes")(app)
