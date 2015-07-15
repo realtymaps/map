@@ -9,7 +9,7 @@ bowerPath = "bower_components/"
 bower = bowerFilesLoader
   filter: /[.](woff|woff2|ttf|eot|otf)$/
   checkExistence: true
-  debugging:true
+  # debugging:true
 
 #globDebug bower, 'bower'
 
