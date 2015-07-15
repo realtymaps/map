@@ -18,7 +18,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
         # templatePath: "../../html/views/#{name}.jade"
         controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl"
       _.extend(state, overrides)
-      
+
       # state.template = _getTemplate(state.templatePath)
       # delete state.templatePath
       if state.parent
@@ -36,11 +36,12 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'home', sticky: true, loginRequired: true
     buildState 'mls', sticky: true, loginRequired: true
     buildState 'normalize', sticky: true, loginRequired: true
+    buildState 'jobs', sticky: true, loginRequired: true
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null
     buildState 'login'
     buildState 'logout'
-    
+
     # this one has to be last, since it is a catch-all
     buildState 'pageNotFound', controller: null
 

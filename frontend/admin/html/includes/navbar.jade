@@ -11,6 +11,9 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         a(href="{{adminRoutes.urls.mls}}") MLS
       li
         a(href="{{adminRoutes.urls.normalize}}") MLS Rules
+      li
+        a(href="{{adminRoutes.urls.jobs}}") Job Status
+
       li(ng-hide="$state.is('main')")
         +spinner()(ng-if="Spinner.getLoadingCount() > 0")
       li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
