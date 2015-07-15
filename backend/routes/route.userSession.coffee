@@ -102,27 +102,28 @@ identity = (req, res, next) ->
     res.json
       identity: null
 
-currentProfile = (req, res, next) -> Promise.try () ->
-  unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
-
-  req.session.current_profile_id = req.body.currentProfileId
-  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-
+updateCache = (req, res, next) ->
   userUtils.cacheUserValues(req)
   .then () ->
     req.session.saveAsync()
   .then () ->
     identity(req, res, next)
 
+currentProfile = (req, res, next) -> Promise.try () ->
+  unless req.body.currentProfileId
+    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
+
+  req.session.current_profile_id = req.body.currentProfileId
+  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+  updateCache(req, res, next)
+
 updateState = (req, res, next) ->
-  userSessionService.updateProfile(req.session, req.body)
+  userSessionService.updateCurrentProfile(req.session, req.body)
   .then () ->
     res.send()
   .catch (err) ->
     logger.error "error updating user state via API: #{err}"
     next(err)
-
 
 profiles = (req, res, next) ->
   auth_user_id = req.session.userid
@@ -131,8 +132,10 @@ profiles = (req, res, next) ->
       userSessionService.getProfiles(auth_user_id)
 
     PUT: () ->
-      userSessionService.updateProfile(req.session, req.body)
-
+      q = userSessionService.updateProfile(req.body)
+      q.then ()->
+        delete req.session.profiles#to force profiles refresh in cache
+        updateCache(req, res, next)
   .then (result) ->
     res.json result
   .catch (err) ->
