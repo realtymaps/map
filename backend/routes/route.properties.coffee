@@ -8,7 +8,8 @@ validation = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
 {currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
-
+auth = require '../utils/util.auth'
+userSessionService = require '../services/service.userSession'
 
 handleRoute = (res, next, serviceCall) ->
   Promise.try () ->
@@ -26,22 +27,42 @@ handleRoute = (res, next, serviceCall) ->
 
 module.exports =
 
-  filterSummary: (req, res, next) ->
-    handleRoute res, next, () ->
-      filterSummaryService.getFilterSummary(currentProfile(req), req.query)
+  filterSummary:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      userSessionService.captureMapFilterState
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        filterSummaryService.getFilterSummary(currentProfile(req), req.query)
 
-  parcelBase: (req, res, next) ->
-    handleRoute res, next, () ->
-      parcelService.getBaseParcelData(currentProfile(req), req.query)
+  parcelBase:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      userSessionService.captureMapFilterState
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        parcelService.getBaseParcelData(currentProfile(req), req.query)
 
-  addresses: (req, res, next) ->
-    handleRoute res, next, () ->
-      addressService.get(currentProfile(req), req.query)
+  addresses:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      userSessionService.captureMapFilterState
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        addressService.get(currentProfile(req), req.query)
 
-  detail: (req, res, next) ->
-    handleRoute res, next, () ->
-      detailService.getDetail(req.query)
-      .then (property) ->
-        if property
-          return property
-        return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND
+  detail:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      userSessionService.captureMapFilterState
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        detailService.getDetail(req.query)
+        .then (property) ->
+          if property
+            return property
+          return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND

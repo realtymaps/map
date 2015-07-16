@@ -15,10 +15,16 @@ currentProfile = (req) ->
   catch e
     throw new CurrentProfileError(e.message)
 
-
+mergeHandles = (handles, config) ->
+  for key of config
+    _.extend config[key],
+      handle: handles[key]
+  # console.debug config
+  config
 
 module.exports =
   methodExec: methodExec
   currentProfile: currentProfile
   CurrentProfileError: CurrentProfileError
   badRequest: badRequest
+  mergeHandles: mergeHandles
