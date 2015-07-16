@@ -46,14 +46,23 @@ module.exports =
 
   loadRouteOptions: (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
     normalizedRoutes = []
+
+    create = ->
+      route = createRoute routeId, moduleId, backendRoutes, options
+      normalizedRoutes.push(route)
+
     modules = loadSubmodules(directoryName, regex)
     for moduleId, routeOptions of modules
       for routeId, options of routeOptions
         unless options.methods?
-          options.methods = [options.method]
+          create()
+          continue;
+
         for key, method of options.methods
-          route = createRoute routeId, moduleId, backendRoutes, options
-          , _.extend({},options,method:method)
-          # logger.debug "route: #{route}"
-          normalizedRoutes.push(route)
+          #clone route options to have a new instance of a method
+          options = _.merge {}, options, method: method
+          # logger.debug method
+          # logger.debug _.keys options
+          create()
+
     normalizedRoutes
