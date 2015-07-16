@@ -10,7 +10,6 @@ permissionsService = require '../services/service.permissions'
 sessionSecurityService = require '../services/service.sessionSecurity'
 permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
-userHandles = require '../routes/route.userSession'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
 
@@ -31,6 +30,25 @@ getSessionUser = (req) -> Promise.try () ->
   return userSessionService.getUser(id: req.session.userid)
   .catch (err) ->
     return false
+
+# everything we need to do for a logout gets encapsulated here
+# JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
+# I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
+# (nem) moved here to avoid circular dependency on userSession route
+logout = (req, res, next) -> Promise.try () ->
+  if req.user
+    logger.debug "attempting to log user out: #{req.user.username}"
+    delete req.session.current_profile_id
+    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
+    .then () ->
+      req.session.destroyAsync()
+  else
+    promise = Promise.resolve()
+  promise.then () ->
+    return res.json(identity: null)
+  .catch (err) ->
+    logger.error "error logging out user: #{err}"
+    next(err)
 
 
 module.exports = {
@@ -172,8 +190,10 @@ module.exports = {
       if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
         logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"
         if options.logoutOnFail
-          return userHandles.logout(req, res, next)
+          return logout(req, res, next)
         else
           return next new ExpressResponse(alert: {msg: "You do not have permission to access #{req.path}."}, httpStatus.UNAUTHORIZED)
       return process.nextTick(next)
+
+  logout: logout
 }

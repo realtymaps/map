@@ -1,6 +1,8 @@
+auth = require '../utils/util.auth'
 {user} = require '../services/services.user'
 {RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 logger = require '../config/logger'
+{mergeHandles} = require '../utils/util.route.helpers'
 
 class UserCrud extends RouteCrud
   init: () ->
@@ -17,4 +19,56 @@ class UserCrud extends RouteCrud
     @profilesById = @profilesCrud.byId
     super()
 
-module.exports = new UserCrud(user)
+
+module.exports = mergeHandles new UserCrud(user),
+  root:
+    methods: ['get', 'post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user']}, logoutOnFail:true)
+    ]
+  byId:
+    methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  #might want to twerk permissions required
+  permissions:
+    methods: ['get', 'post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  permissionsById:
+    methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  #might want to twerk permissions required
+  groups:
+    methods: ['get', 'post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  groupsById:
+    methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  #might want to twerk permissions required
+  profiles:
+    methods: ['get', 'post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]
+  profilesById:
+    methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_user','change_user','delete_user']}, logoutOnFail:true)
+    ]

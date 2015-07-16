@@ -10,6 +10,9 @@ alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
+auth = require '../utils/util.auth.coffee'
+
+logger.functions auth
 
 safeUserFields = [
   'cell_phone'
@@ -68,25 +71,6 @@ login = (req, res, next) -> Promise.try () ->
     logger.error "unexpected error during login(): #{err}"
     next(err)
 
-
-# everything we need to do for a logout gets encapsulated here
-# JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
-# I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
-logout = (req, res, next) -> Promise.try () ->
-  if req.user
-    logger.debug "attempting to log user out: #{req.user.username}"
-    delete req.session.current_profile_id
-    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
-    .then () ->
-      req.session.destroyAsync()
-  else
-    promise = Promise.resolve()
-  promise.then () ->
-    return res.json(identity: null)
-  .catch (err) ->
-    logger.error "error logging out user: #{err}"
-    next(err)
-
 identity = (req, res, next) ->
   if req.user
     # here we should probaby return some things from the user's profile as well, such as name
@@ -142,9 +126,25 @@ profiles = (req, res, next) ->
     logger.error err
 
 module.exports =
-  login: login
-  logout: logout
+  login:
+    method: 'post'
+    handle: login
+
+  logout: auth.logout
+
   identity: identity
-  updateState: updateState
-  profiles: profiles
-  currentProfile: currentProfile
+
+  updateState:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: updateState
+
+  profiles:
+    methods: ['get', 'put']
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: profiles
+
+  currentProfile:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: currentProfile

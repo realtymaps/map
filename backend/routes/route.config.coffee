@@ -1,11 +1,18 @@
 logger = require '../config/logger'
 config = require '../config/config'
 memoize = require 'memoizee'
+auth = require '../utils/util.auth'
 
 module.exports =
-  mapboxKey: memoize (req, res, next) ->
-    key = config.MAPBOX.API_KEY
-    res.send key
+  mapboxKey:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: memoize (req, res, next) ->
+      key = config.MAPBOX.API_KEY
+      res.send key
 
-  cartodb: memoize (req, res, next) ->
-    res.send config.CARTODB
+  cartodb:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: memoize (req, res, next) ->
+      res.send config.CARTODB

@@ -4,10 +4,8 @@ loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
 
-routesConfig = loaders.loadSubmodules(path.join(__dirname, 'config'), /^route\.config\.(\w+)\.coffee$/)
-
 module.exports = (app) ->
-  _.forEach _.sortBy(loaders.loadRouteHandles(__dirname, routesConfig), 'order'), (route) ->
+  _.forEach _.sortBy(loaders.loadRouteOptions(__dirname), 'order'), (route) ->
     logger.infoRoute "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     app[route.method](route.path, route.middleware..., route.handle)
 
