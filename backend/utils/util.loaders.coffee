@@ -5,12 +5,15 @@ logger = require '../config/logger'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-createRoute = (routeId, moduleId, backendRoutes, routeModule, options) ->
+createRoute = (routeId, moduleId, backendRoutes, options) ->
+  # logger.debug "moduleId: #{moduleId}"
+  # logger.debug "routeId: #{routeId}"
+  # logger.debug "options: #{_.keys options}"
   route =
     moduleId: moduleId
     routeId: routeId
     path: if backendRoutes[moduleId]? then _.get(backendRoutes[moduleId], routeId) else undefined
-    handle: _.get routeModule, routeId
+    handle: if _.isFunction options then options else options.handle
     method: options.method || 'get'
     middleware: if _.isFunction(options.middleware) then [options.middleware] else (options.middleware || [])
     order: options.order || 0
@@ -23,41 +26,43 @@ createRoute = (routeId, moduleId, backendRoutes, routeModule, options) ->
   route
 
 
+loadSubmodules = (directoryName, regex) ->
+  result = {}
+  fs.readdirSync(directoryName).forEach (file) ->
+    submoduleHandle = null
+    if regex
+      match = regex.exec(file)
+      if (match)
+        submoduleHandle = match[1]
+    else
+      submoduleHandle = file
+    if submoduleHandle
+      filePath = path.join directoryName, file
+      result[submoduleHandle] = require(filePath)
+  return result
+
 module.exports =
+  loadSubmodules: loadSubmodules
 
-  loadRouteHandles: (dirname, routesConfig) ->
+  loadRouteOptions: (directoryName, regex = /^route\.(\w+)\.coffee$/) ->
     normalizedRoutes = []
-    for moduleId,routes of routesConfig
-      routeModule = null
-      modulePath = path.join(dirname, "route.#{moduleId}.coffee")
-      try
-        routeModule = require modulePath
-      catch err
-        msg = "error loading route module '#{moduleId}' from '#{modulePath}':\n#{err.stack}"
-        logger.error(msg)
-        throw new Error msg
 
-      for routeId,options of routes
+    create = ->
+      route = createRoute routeId, moduleId, backendRoutes, options
+      normalizedRoutes.push(route)
+
+    modules = loadSubmodules(directoryName, regex)
+    for moduleId, routeOptions of modules
+      for routeId, options of routeOptions
         unless options.methods?
-          options.methods = [options.method]
-        for key, method of options.methods
-          route = createRoute routeId, moduleId, backendRoutes, routeModule
-          , _.extend({},options,method:method)
-          # logger.debug "route: #{route}"
-          normalizedRoutes.push(route)
-    normalizedRoutes
+          create()
+          continue;
 
-  loadSubmodules: (directoryName, regex) ->
-    result = {}
-    fs.readdirSync(directoryName).forEach (file) ->
-      submoduleHandle = null
-      if regex
-        match = regex.exec(file)
-        if (match)
-          submoduleHandle = match[1]
-      else
-        submoduleHandle = file
-      if submoduleHandle
-        filePath = path.join directoryName, file
-        result[submoduleHandle] = require(filePath)
-    return result
+        for key, method of options.methods
+          #clone route options to have a new instance of a method
+          options = _.merge {}, options, method: method
+          # logger.debug method
+          # logger.debug _.keys options
+          create()
+
+    normalizedRoutes

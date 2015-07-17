@@ -8,6 +8,7 @@ _ = require 'lodash'
 JSONStream = require 'JSONStream'
 {validators} = require '../utils/util.validation'
 {geoJsonFormatter} = require '../utils/util.streams'
+auth = require '../utils/util.auth'
 
 transforms =
     nesw:
@@ -53,7 +54,9 @@ _getByFipsCode = (req, res, next, headersCb) ->
 
 
 module.exports =
-    getByFipsCodeAsFile: (req, res, next) ->
+    getByFipsCodeAsFile:
+      method: 'get'
+      handle: (req, res, next) ->
         _getByFipsCode req, res, next, (validParams,res) ->
             dispistion = "attachment; filename=#{req.params.fipscode}"
             #if we have options set them to the file name seperated by "-"
@@ -65,7 +68,9 @@ module.exports =
                 res.setHeader 'Content-disposition', dispistion + '.json'
                 res.setHeader 'Content-type', 'application/json'
 
-    getByFipsCodeAsStream: (req, res, next) ->
+    getByFipsCodeAsStream:
+      method: 'get'
+      handle: (req, res, next) ->
         #limiting the size since this endppoint is for testing
         # req.query.limit = 100
         _getByFipsCode req, res, next

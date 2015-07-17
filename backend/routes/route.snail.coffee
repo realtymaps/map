@@ -8,6 +8,7 @@ escape = require('escape-html')
 pdfUtils = require '../../common/utils/util.pdf'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
+auth = require '../utils/util.auth'
 
 
 lookupErrorMessage =
@@ -30,7 +31,7 @@ getPropertyData = (rm_property_id) -> Promise.try () ->
     if property
       return property
     return Promise.reject new ExpressResponse
-      errmsg: 
+      errmsg:
         text: lookupErrorMessage
         troubleshooting: "id: #{rm_property_id}",
       httpStatus.INTERNAL_SERVER_ERROR
@@ -52,24 +53,30 @@ generateErrorHandler = (actionMsg) ->
         troubleshooting: "#{escape(err.message||err)}",
       httpStatus.INTERNAL_SERVER_ERROR
 
-    
+
 module.exports =
-  quote: (req, res, next) -> Promise.try () ->
-    getPropertyData(req.body.rm_property_id)
-    .then (property) ->
-      lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
-    .then (price) ->
-      new ExpressResponse(price: price)
-    .catch generateErrorHandler("get a price quote for that mailing")
-    .then (response) ->
-      next(response)
-  
-  send: (req, res, next) -> Promise.try () ->
-    getPropertyData(req.body.rm_property_id)
-    .then (property) ->
-      lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
-    .then () ->
-      new ExpressResponse({})
-    .catch generateErrorHandler("send your mailing")
-    .then (response) ->
-      next(response)
+  quote:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) -> Promise.try () ->
+      getPropertyData(req.body.rm_property_id)
+      .then (property) ->
+        lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      .then (price) ->
+        new ExpressResponse(price: price)
+      .catch generateErrorHandler("get a price quote for that mailing")
+      .then (response) ->
+        next(response)
+
+  send:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) -> Promise.try () ->
+      getPropertyData(req.body.rm_property_id)
+      .then (property) ->
+        lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      .then () ->
+        new ExpressResponse({})
+      .catch generateErrorHandler("send your mailing")
+      .then (response) ->
+        next(response)

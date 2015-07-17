@@ -12,13 +12,13 @@ shutdownNow = (prefix, exitCode) ->
     process.exit(exitCode)
   , 10000
 
-  
+
 catchUncaughtErrors = (prefix, err) ->
   logger.error "#{prefix}: Something very bad happened.  ", err.message
   logger.error err.stack || err
   # and now GTFO, because you are in unpredictable state
   shutdownNow(prefix, 1)
-  
+
 
 module.exports = (clusterName, workerCount, workerCb) ->
   if workerCount == 1
@@ -30,7 +30,7 @@ module.exports = (clusterName, workerCount, workerCb) ->
 
 
   # catch all uncaught exceptions, no matter what process it happens on
-    
+
   if cluster.isMaster
     masterPrefix = "Master Process <#{clusterName}>"
     logger.debug "#{masterPrefix}: starting"
@@ -50,5 +50,5 @@ module.exports = (clusterName, workerCount, workerCb) ->
   process.on 'uncaughtException', catchUncaughtErrors.bind(null, getWorkerPrefix(cluster.worker))
   for signal in ['SIGINT', 'SIGTERM']
     process.on signal, shutdownNow.bind(null, getWorkerPrefix(cluster.worker), 0)
-    
+
   workerCb()
