@@ -18,6 +18,11 @@ module.exports =
     mls: '/admin/mls'
     normalize: '/admin/normalize'
     jobs: '/admin/jobs'
+    jobsCurrent: '/admin/jobs/current'
+    jobsHistory: '/history?name'
+    jobsQueue: '/queue'
+    jobsTask: '/task'
+    jobsSubtask: '/subtask'
     authenticating: '/admin/authenticating'
     accessDenied: '/admin/accessDenied'
 
