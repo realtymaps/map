@@ -21,18 +21,17 @@ cols =  [
   "#{project.tableName}.name as #{project.tableName}_name",
 ]
 
-omitsOnSave = [
-  'id'
-  'rm_modified_time'
-  'rm_inserted_time'
+safe = [
+  'filters'
+  'properties_selected'
+  'map_toggles'
+  'map_position'
+  'map_results'
+  'parent_auth_user_id'
+  'auth_user_id'
+  'name'
+  'project_id'
 ]
-
-authProfileOnly = (joinedObj) ->
-  clone = _.clone joinedObj
-  for key, value of clone
-    if _.contains(key, project.tableName) && key != 'project_id'
-      delete clone[key]
-  _.omit clone, omitsOnSave
 
 get = (id, withProject = true) ->
   return auth_user_profile().where(id: id) unless withProject
@@ -66,7 +65,20 @@ getFirst = (userId) ->
       delete result.id
       return result
 
-updateFirst = (session, partialState) ->
+update = (profile) ->
+  q = userData.auth_user_profile()
+  .where(_.pick profile, ['auth_user_id', 'id'])
+  .update(_.pick profile, safe)
+  # logger.debug q.toString()
+  singleRow(q)
+  .then (userState) ->
+    if not userState
+      return {}
+    result = userState
+    delete result.id
+    return result
+
+updateCurrent = (session, partialState) ->
   # need the id for lookup, so we don't want to allow it to be set this way
   delete partialState.id
 
@@ -81,29 +93,11 @@ updateFirst = (session, partialState) ->
   if needsSave
     _.extend(profile, partialState)
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
-
-  profile.auth_user_id = session.userid
-
-  cropped = authProfileOnly(profile)
-  # logger.debug cropped
-
-  q = userData.auth_user_profile()
-  .where(auth_user_id: session.userid, id: profile.id)
-  .update(cropped)
-
-  # logger.debug q.toString()
-
-  singleRow(q)
-  .then (userState) ->
-    if not userState
-      return {}
-    result = userState
-    delete result.id
-    return result
+  update(profile)
 
 module.exports =
   get: get
   getProfiles: getProfiles
-  updateFirst: updateFirst
+  updateCurrent: updateCurrent
+  update: update
   getFirst: getFirst
-  authProfileOnly: authProfileOnly

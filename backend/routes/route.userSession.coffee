@@ -10,6 +10,9 @@ alertIds = require '../../common/utils/enums/util.enums.alertIds'
 config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
+auth = require '../utils/util.auth.coffee'
+
+logger.functions auth
 
 safeUserFields = [
   'cell_phone'
@@ -68,25 +71,6 @@ login = (req, res, next) -> Promise.try () ->
     logger.error "unexpected error during login(): #{err}"
     next(err)
 
-
-# everything we need to do for a logout gets encapsulated here
-# JWI: for some reason, my debug output seems to indicate the logout route is getting called twice for every logout.
-# I have no idea why that is, but the second time it seems the user is already logged out.  Strange.
-logout = (req, res, next) -> Promise.try () ->
-  if req.user
-    logger.debug "attempting to log user out: #{req.user.username}"
-    delete req.session.current_profile_id
-    promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
-    .then () ->
-      req.session.destroyAsync()
-  else
-    promise = Promise.resolve()
-  promise.then () ->
-    return res.json(identity: null)
-  .catch (err) ->
-    logger.error "error logging out user: #{err}"
-    next(err)
-
 identity = (req, res, next) ->
   if req.user
     # here we should probaby return some things from the user's profile as well, such as name
@@ -102,42 +86,65 @@ identity = (req, res, next) ->
     res.json
       identity: null
 
-currentProfile = (req, res, next) -> Promise.try () ->
-  unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
-
-  req.session.current_profile_id = req.body.currentProfileId
-  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-
+updateCache = (req, res, next) ->
   userUtils.cacheUserValues(req)
   .then () ->
     req.session.saveAsync()
   .then () ->
     identity(req, res, next)
 
+currentProfile = (req, res, next) -> Promise.try () ->
+  unless req.body.currentProfileId
+    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
+
+  req.session.current_profile_id = req.body.currentProfileId
+  logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+  updateCache(req, res, next)
+
 updateState = (req, res, next) ->
-  userSessionService.updateProfile(req.session, req.body)
+  userSessionService.updateCurrentProfile(req.session, req.body)
   .then () ->
     res.send()
   .catch (err) ->
     logger.error "error updating user state via API: #{err}"
     next(err)
 
-
 profiles = (req, res, next) ->
+  auth_user_id = req.session.userid
   methodExec req,
     GET: () ->
-      auth_user_id = req.session.userid
-      userSessionService.getProfiles(auth_user_id).then (profiles) ->
-        res.json(profiles)
+      userSessionService.getProfiles(auth_user_id)
 
-    POST: () ->
-      res.send()
+    PUT: () ->
+      q = userSessionService.updateProfile(req.body)
+      q.then ()->
+        delete req.session.profiles#to force profiles refresh in cache
+        updateCache(req, res, next)
+  .then (result) ->
+    res.json result
+  .catch (err) ->
+    logger.error err
 
 module.exports =
-  login: login
-  logout: logout
+  login:
+    method: 'post'
+    handle: login
+
+  logout: auth.logout
+
   identity: identity
-  updateState: updateState
-  profiles: profiles
-  currentProfile: currentProfile
+
+  updateState:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: updateState
+
+  profiles:
+    methods: ['get', 'put']
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: profiles
+
+  currentProfile:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: currentProfile

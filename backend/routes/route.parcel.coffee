@@ -9,6 +9,7 @@ _ = require 'lodash'
 {defineImports} = require '../services/service.parcels.fetcher.digimaps'
 getDigiCreds =  require '../utils/util.digimaps.creds'
 uuid = require 'uuid'
+auth = require '../utils/util.auth'
 
 JSONStream = require 'JSONStream'
 
@@ -42,12 +43,27 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) -> Promis
 
 
 module.exports =
-    getByFipsCode: _getByFipsCode
-    getByFipsCodeFormatted: (req, res, next) ->
+    getByFipsCode:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+      handle: _getByFipsCode
+
+    getByFipsCodeFormatted:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+      handle: (req, res, next) ->
         _getByFipsCode(req, res, next, getFormatedParcelJSON)
-    uploadToParcelsDb: (req, res, next) ->
+
+    uploadToParcelsDb:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+      handle: (req, res, next) ->
         _getByFipsCode(req, res, next, uploadToParcelsDb, false)
-    defineImports: (req, res, next) -> Promise.try ->
+
+    defineImports:
+      method: 'get'
+      middleware: auth.requireLogin(redirectOnFail: true)
+      handle:(req, res, next) -> Promise.try ->
         logger.debug 'defineImports for digimaps_parcel_imports'
         logger.debug 'getting creds'
         getDigiCreds()

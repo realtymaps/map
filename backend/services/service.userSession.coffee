@@ -105,7 +105,7 @@ _commonCaptureState = (req, stateUpdate = {}) ->
     hasSomeState = true if stateUpdate[col]?
 
   if hasSomeState
-    profileSvc.updateFirst(req.session, stateUpdate)
+    profileSvc.updateCurrent(req.session, stateUpdate)
   else
     Promise.resolve({})
 
@@ -127,7 +127,8 @@ module.exports =
   updateUser: updateUser
   verifyPassword: verifyPassword
   getProfile: profileSvc.getFirst
-  updateProfile: profileSvc.updatreFirst
+  updateCurrentProfile: profileSvc.updateCurrent
+  updateProfile: profileSvc.update
   captureMapState: captureMapState
   captureMapFilterState: captureMapFilterState
   getProfiles: profileSvc.getProfiles
