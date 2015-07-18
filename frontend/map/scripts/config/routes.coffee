@@ -34,6 +34,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'authenticating', controller: null
   buildState 'snail', sticky: true
   buildState 'profiles', sticky:true, loginRequired:true
+  buildState 'user', sticky:true, loginRequired:true
 
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null

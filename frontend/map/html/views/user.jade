@@ -1,0 +1,30 @@
+include ../includes/navbar.jade
+
+section.user(ng-cloak)
+  .starter-template.light-message
+    form.form-group()
+      .row
+        .col-md-6
+          lable First Name
+          input(type="text")
+        .col-md-6
+          lable Last Name
+          input(type="text")
+            
+      .row Address
+        input(type="text", ng-model="form.address_1")
+        input(type="text", ng-model="form.address_2")
+      .row 
+        label City  
+        input(type="text", ng-model="form.city")
+      .row 
+        .col-md-6
+          label State  
+          select(type="text", ng-model="form.state")
+            option(ng-repeat="s in us_states") {{s.code}} - {{s.name}}
+        .col-md-6
+          label Zip  
+          input(type="text", ng-model="form.zip")
+      .row
+        button(validation-submit="Form", ng-click="submit()") Submit
+        button(validation-reset="Form") Reset

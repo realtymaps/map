@@ -37,6 +37,7 @@ CREATE TABLE company (
 	"id" SERIAL NOT NULL,
 	"address_1" varchar,
   "address_2" varchar,
+	"city" varchar,
   "zip" varchar,
   "us_state_id" int,
   "phone" varchar,
@@ -56,4 +57,5 @@ alter table auth_user add column address_2 varchar;
 alter table auth_user add column zip varchar;
 alter table auth_user add column website_url varchar;
 alter table auth_user add column account_use_type_id int;
+alter table auth_user add column city varchar;
 ALTER TABLE auth_user ADD CONSTRAINT "fk_auth_user_account_use_type_id" FOREIGN KEY (account_use_type_id) REFERENCES account_use_types (id) ON UPDATE CASCADE ON DELETE SET NULL;
