@@ -25,7 +25,7 @@ app.controller 'rmapsJobsTaskCtrl',
     ,
       field: 'description'
       displayName: 'Description'
-      width: 100
+      width: 300
     ,
       field: 'data'
       displayName: 'Data'
@@ -39,6 +39,7 @@ app.controller 'rmapsJobsTaskCtrl',
   ].concat _.map [
       field: 'repeat_period_minutes'
       displayName: 'Repeat Minutes'
+      width: 100
     ,
       field: 'warn_timeout_minutes'
       displayName: 'Warn TO'
@@ -51,6 +52,8 @@ app.controller 'rmapsJobsTaskCtrl',
   $scope.loadTasks = () ->
     $scope.jobsBusy = rmapsJobsService.getTasks()
     .then (tasks) ->
+      _.each tasks, (task) ->
+        task.ignore_until = new Date(task.ignore_until)
       $scope.jobsGrid.data = tasks
 
   $rootScope.registerScopeData () ->
