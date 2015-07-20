@@ -1,30 +1,81 @@
 include ../includes/navbar.jade
 
 section.user(ng-cloak)
-  .starter-template.light-message
-    form.form-group()
+  .container
+      h1.page-header Edit Profile
       .row
-        .col-md-6
-          lable First Name
-          input(type="text")
-        .col-md-6
-          lable Last Name
-          input(type="text")
+        // left column
+        .col-md-4.col-sm-6.col-xs-12
+          .text-center
+            img.avatar.img-circle.img-thumbnail(src='http://lorempixel.com/200/200/people/9/', alt='avatar')
+            h6 Upload a different photo...
+            input.text-center.center-block.well.well-sm(type='file')
+        // edit form column
+        .col-md-8.col-sm-6.col-xs-12.personal-info
+          .alert.alert-info.alert-dismissable
+            a.panel-close.close(data-dismiss='alert') ×
+            i.fa.fa-coffee
+            |         This is an 
+            strong .alert
+            | . Use this to show important messages to the user.
+          h3 Personal info
+          form.form-horizontal(role='form')
+            .form-group
+              label.col-lg-3.control-label First name:
+              .col-lg-8
+                input.form-control(ng-model="user.first_name", type='text')
+            .form-group
+              label.col-lg-3.control-label Last name:
+              .col-lg-8
+                input.form-control(ng-model="user.last_name", type='text')
+            .form-group
+              label.col-lg-3.control-label Company:
+              .col-lg-8
+                input.form-control(value='', type='text')
+            .form-group
+              label.col-lg-3.control-label Mobile Phone:
+              .col-lg-8
+                input.form-control(ng-model="user.cell_phone", type='text')
+            .form-group
+              label.col-lg-3.control-label Phone:
+              .col-lg-8
+                input.form-control(ng-model="user.work_phone", type='text')
+            .form-group
+              label.col-lg-3.control-label Email:
+              .col-lg-8
+                input.form-control(ng-model="user.email", type='text')
+            .form-group
+              label.col-lg-3.control-label Website Url:
+              .col-lg-8
+                input.form-control(ng-model="user.website_url", type='text')
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save Changes', type='button')
+                span
+                input.btn.btn-default(value='Cancel', type='reset')
+      .row
+        // left column
+        .col-md-4.col-sm-6.col-xs-12
+        .col-md-8.col-sm-6.col-xs-12.personal-info
+          h3 Edit Username / Password
+          form.form-horizontal(role='form')
+            .form-group
+              label.col-md-3.control-label Username:
+              .col-md-8
+                input.form-control(ng-model="user.username", type='text')
+            .form-group
+              label.col-md-3.control-label Password:
+              .col-md-8
+                input.form-control(value='11111122333', type='password')
+            .form-group
+              label.col-md-3.control-label Confirm password:
+              .col-md-8
+                input.form-control(value='11111122333', type='password')
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save Changes', type='button')
+                span
+                input.btn.btn-default(value='Cancel', type='reset')
             
-      .row Address
-        input(type="text", ng-model="form.address_1")
-        input(type="text", ng-model="form.address_2")
-      .row 
-        label City  
-        input(type="text", ng-model="form.city")
-      .row 
-        .col-md-6
-          label State  
-          select(type="text", ng-model="form.state")
-            option(ng-repeat="s in us_states") {{s.code}} - {{s.name}}
-        .col-md-6
-          label Zip  
-          input(type="text", ng-model="form.zip")
-      .row
-        button(validation-submit="Form", ng-click="submit()") Submit
-        button(validation-reset="Form") Reset

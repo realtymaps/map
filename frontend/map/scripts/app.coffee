@@ -33,6 +33,7 @@ app = window.angular.module appName, [
   'ngAnimate'
   'infinite-scroll'
   'restangular'
+  'validation'
 ]
 
 module.exports = app

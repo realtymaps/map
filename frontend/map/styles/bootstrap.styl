@@ -46,7 +46,7 @@ Place for our custom Theming of bootstrap
     &:hover
       border-color #428bca
       color #FFF
-      background-color #428bca  
+      background-color #428bca
     .fa
       color inherit
 
@@ -151,7 +151,7 @@ Place for our custom Theming of bootstrap
       &:after
         color rm-saved-hover
         border-top-color rm-saved-hover !important
-  
+
   &.label-sale-property
   /.label-sale-property
     background-color rm-property-sale-green
@@ -163,7 +163,7 @@ Place for our custom Theming of bootstrap
       &:after
         color rm-sale-hover
         border-top-color rm-sale-hover !important
-  
+
   &.label-sold-property
   /.label-sold-property
     background-color rm-property-sold-red
@@ -175,7 +175,7 @@ Place for our custom Theming of bootstrap
       &:after
         color rm-sold-hover
         border-top-color rm-sold-hover !important
-  
+
   &.label-pending-property
   /.label-pending-property
     background-color rm-highlight-purple
@@ -187,7 +187,7 @@ Place for our custom Theming of bootstrap
       &:after
         color rm-pending-hover
         border-top-color rm-pending-hover !important
-  
+
   &.label-notsale-property
   /.label-notsale-property
     background-color rm-highlight-blue
@@ -199,3 +199,18 @@ Place for our custom Theming of bootstrap
       &:after
         color rm-notsale-hover
         border-top-color rm-notsale-hover !important
+
+label
+  color textColor
+
+.page-header
+  color textColor
+
+input.btn.btn-primary
+  color textColor
+/*
+set all page h tag overrides
+*/
+for num in (1...7)
+  h{num}
+    color textColor
