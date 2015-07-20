@@ -16,7 +16,10 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           a(href="{{frontendRoutes.map}}") Map
         li(ng-hide="$state.is('main')")
           +spinner()(ng-if="Spinner.getLoadingCount() > 0")
-        li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-right
+      ul.nav.navbar-nav.navbar-right
+        li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-float-right
           a(href="{{frontendRoutes.login}}") Sign In
-        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-right
+        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
           a(href="{{frontendRoutes.logout}}") Sign Out
+        li(ng-show="principal.isStaff()", ng-cloak).navbar-float-right
+          a(href="{{adminRoutes.index}}" target="_self") Admin

@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.config ['$provide', ($provide) ->
@@ -21,6 +22,7 @@ app.config ['$provide', ($provide) ->
 app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner, rmapsevents) ->
     $rootScope.alerts = []
     $rootScope.adminRoutes = adminRoutes
+    $rootScope.frontendRoutes = frontendRoutes
     $rootScope.backendRoutes = backendRoutes
     $rootScope.principal = rmapsprincipal
     $rootScope.$state = $state
@@ -45,7 +47,6 @@ app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner, rmapsev
       # if not auth'ed, push to container to be evaluated later
       # due to nature of $states, we don't need to worry about multiple restoreStates from one controller bloating here
       $rootScope.stateData.push restoreState
-
 
 app.run [ '$rootScope', 'Restangular', 'rmapsevents',
     ($rootScope, Restangular, rmapsevents) ->

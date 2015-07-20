@@ -9,6 +9,7 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
     _identity = null
     _authenticated = false
     _resolved = false
+    _isStaff = null
     _deferred = null
 
     setIdentity = (identity) ->
@@ -25,6 +26,7 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
       _identity = null
       _authenticated = false
       _resolved = false
+      _isStaff = null
       if _deferred
         _deferred.resolve(null)
         _deferred = null
@@ -39,6 +41,10 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
       return _authenticated && _identity.groups[group]
     isDebugEnvironment: () ->
       return _authenticated && _identity.environment == 'development'
+    isStaff: () ->
+      if !_isStaff? && _identity?
+        _isStaff = permissionsUtil.checkAllowed("access_staff",_identity.permissions)
+      return _authenticated && _isStaff
     setIdentity: setIdentity
     unsetIdentity: unsetIdentity
     getIdentity: () ->
