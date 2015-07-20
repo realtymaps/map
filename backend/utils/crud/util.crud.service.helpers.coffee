@@ -22,8 +22,8 @@ class Crud extends BaseObject
     obj[@idKey] = val
     obj
 
-  getAll: (doLogQuery = false) ->
-    execQ @dbFn(), doLogQuery
+  getAll: (query = {}, doLogQuery = false) ->
+    execQ @dbFn().where(query), doLogQuery
 
   getById: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)), doLogQuery

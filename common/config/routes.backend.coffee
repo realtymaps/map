@@ -123,6 +123,13 @@ module.exports =
 
   jobs:
     apiBase: apiBaseJobs
-    root: apiBaseJobs
+    taskHistory: "#{apiBaseJobs}/history"
+    queues: "#{apiBaseJobs}/queues/"
+    queuesById: "#{apiBaseJobs}/queues/:name"
+    tasks: "#{apiBaseJobs}/tasks"
+    tasksById: "#{apiBaseJobs}/tasks/:name"
+    subtasks: "#{apiBaseJobs}/subtasks"
+    subtasksById: "#{apiBaseJobs}/subtasks/:name"
+
 
   # hirefire secret value set from within backend/config/config.coffee

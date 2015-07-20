@@ -46,7 +46,6 @@ app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner, rmapsev
       # due to nature of $states, we don't need to worry about multiple restoreStates from one controller bloating here
       $rootScope.stateData.push restoreState
 
-
 app.run [ '$rootScope', 'Restangular', 'rmapsevents',
     ($rootScope, Restangular, rmapsevents) ->
       Restangular.setErrorInterceptor (response, deferred, responseHandler) ->

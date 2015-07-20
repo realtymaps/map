@@ -17,7 +17,7 @@ class Crud extends BaseObject
     @
 
   rootGET: (req, res, next) =>
-    @svc.getAll(@doLogQuery)
+    @svc.getAll(req.query, @doLogQuery)
 
   rootPOST: (req, res, next) =>
     @svc.create(req.body, undefined, @doLogQuery)

@@ -21,6 +21,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'name'
       displayName: 'Task'
       width: 100
+      cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
       footerCellTemplate: '<div>Totals</div>'
     ,
       field: 'status'
@@ -102,7 +103,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       _.extend num, numericDefaults
 
   $scope.loadCurrent = () ->
-    $scope.jobsBusy = rmapsJobsService.getAll()
+    $scope.jobsBusy = rmapsJobsService.getCurrent()
     .then (jobs) ->
       _.each jobs, (job) ->
         job.started = new Date(job.started)
