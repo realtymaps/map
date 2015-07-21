@@ -46,11 +46,11 @@
     "leaflet": {
       "main": "dist/leaflet-src.js"
     },
-    "leaflet-plugins": {
-      "ignore": true
-    },
     "leaflet.zoombox": {
-      "ignore": true
+      "main": [
+        "L.Control.ZoomBox.css",
+        "L.Control.ZoomBox.js"
+      ]
     },
     "angular-ui-grid": {
       "dependencies": {
