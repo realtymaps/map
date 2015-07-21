@@ -4,9 +4,32 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.service 'rmapsJobsService', (Restangular) ->
 
   jobsAPI = backendRoutes.jobs.apiBase
+  getIdFromElem = Restangular.configuration.getIdFromElem
+  Restangular.configuration.getIdFromElem = (elem) ->
+    switch elem.route
+      when 'queues', 'tasks', 'subtasks'
+        elem.name
+      else
+        getIdFromElem(elem)
 
-  getAll = () ->
-    Restangular.all(jobsAPI).getList()
+  getCurrent = () ->
+    Restangular.all(jobsAPI).all('history').getList( current: true )
+
+  getHistory = (taskName) ->
+    Restangular.all(jobsAPI).all('history').getList( name: taskName )
+
+  getQueues = () ->
+    Restangular.all(jobsAPI).all('queues').getList()
+
+  getTasks = () ->
+    Restangular.all(jobsAPI).all('tasks').getList()
+
+  getSubtasks = () ->
+    Restangular.all(jobsAPI).all('subtasks').getList()
 
   service =
-    getAll: getAll
+    getCurrent: getCurrent
+    getHistory: getHistory
+    getQueues: getQueues
+    getTasks: getTasks
+    getSubtasks: getSubtasks

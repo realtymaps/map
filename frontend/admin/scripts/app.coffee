@@ -23,6 +23,8 @@ app = window.angular.module appName, [
   'restangular'
   'cgBusy'
   'ui.grid'
+  'ui.grid.resizeColumns'
+  'ui.grid.edit'
 ]
 
 module.exports = app

@@ -19,7 +19,7 @@ app.config ['$provide', ($provide) ->
 ]
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner, rmapsevents) ->
+app.run ($rootScope, $state, $stateParams, $timeout, rmapsprincipal, rmapsSpinner, rmapsevents) ->
     $rootScope.alerts = []
     $rootScope.adminRoutes = adminRoutes
     $rootScope.frontendRoutes = frontendRoutes
@@ -32,8 +32,9 @@ app.run ($rootScope, $state, $stateParams, rmapsprincipal, rmapsSpinner, rmapsev
 
     # evaluate any scopeData routines that have built up upon login
     $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
-      while $rootScope.stateData.length
-        $rootScope.stateData.pop()()
+      $timeout () ->
+        while $rootScope.stateData.length
+          $rootScope.stateData.pop()()
 
     # Since controller logic is evaluated when accessing the respective states (like via navbar)
     #   we need to register any controller logic that involves things like API calls that require auth.

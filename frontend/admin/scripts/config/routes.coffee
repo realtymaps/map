@@ -36,7 +36,14 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'home', sticky: true, loginRequired: true
     buildState 'mls', sticky: true, loginRequired: true
     buildState 'normalize', sticky: true, loginRequired: true
+
     buildState 'jobs', sticky: true, loginRequired: true
+    buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsHistory', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsQueue', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsTask', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsSubtask', sticky: true, parent: 'jobs', loginRequired: true
+
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null
     buildState 'login'
