@@ -2,7 +2,8 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprincipal) ->
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprincipal, rmapsevents) ->
+  maxImagePixles = 200
   rmapsprincipal.getIdentity()
   .then (identity) ->
 
@@ -14,11 +15,26 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprin
     .then (data) ->
       $scope.us_states = data.data
 
+    spawnImageAlert = (msg) ->
+      imageAlert =
+        type:'rm-info'
+
+      imageAlert.msg = msg
+      $rootScope.$broadcast rmapsevents.alert.spawn, imageAlert
+
     _.extend $scope,
       imageForm:
+        clearErrors: ->
+          $scope.imageForm.errors = []
         save: ->
-          if @blob
-            $http.put backendRoutes.userSession.image, blob:@blob
+          return unless @blob?
+
+          if @errors?.length
+            @errors.forEach (e) ->
+              spawnImageAlert e
+            return
+
+          $http.put backendRoutes.userSession.image, blob:@blob
 
       user: user
       profiles: profiles
