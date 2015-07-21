@@ -21,3 +21,4 @@ module.exports =
     authenticating: '/admin/authenticating'
     accessDenied: '/admin/accessDenied'
 
+

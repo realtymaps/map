@@ -205,6 +205,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.formItems[toStep].active = true
       $scope.step = toStep
 
+    # goes to the 'normalize' state with selected mlsData
+    $scope.goNormalize = () ->
+      $state.go($state.get("normalize"), { id: $scope.mlsData.current.id }, { reload: true })
+
     # modal for Edit mlsData
     $scope.animationsEnabled = true
     $scope.openEdit = () ->
