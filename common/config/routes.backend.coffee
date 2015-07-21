@@ -15,7 +15,10 @@ apiBaseProjects = "#{apiBase}/projects"
 apiBaseProfiles = "#{apiBase}/profiles"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
-
+apiBaseCompanies = "#{apiBase}/companies"
+apiBaseUsStates = "#{apiBase}/usStates"
+apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
+apiBaseAccountImages = "#{apiBase}/accountImages"
 
 module.exports =
   views:
@@ -34,6 +37,7 @@ module.exports =
     logout: "#{apiBaseSession}/logout"
     currentProfile: "#{apiBaseSession}/currentProfile"
     profiles: "#{apiBaseSession}/profiles"
+    image: "#{apiBaseSession}/image"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -68,6 +72,22 @@ module.exports =
     apiBase: apiBaseProfiles
     root: apiBaseProfiles
     byId: "#{apiBaseProfiles}/:id"
+  company:
+    apiBase: apiBaseCompanies
+    root: apiBaseCompanies
+    byId: "#{apiBaseCompanies}/:id"
+  us_states:
+    apiBase: apiBaseUsStates
+    root: apiBaseUsStates
+    byId: "#{apiBaseUsStates}/:id"
+  account_images:
+    apiBase: apiBaseAccountImages
+    root: apiBaseAccountImages
+    byId: "#{apiBaseAccountImages}/:id"
+  account_use_types:
+    apiBase: apiBaseAccountUseTypes
+    root: apiBaseAccountUseTypes
+    byId: "#{apiBaseAccountUseTypes}/:id"
   version:
     version: "#{apiBase}/version"
   config:

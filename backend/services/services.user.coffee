@@ -10,6 +10,11 @@ toInit = _.pick userData, [
   'auth_user_profile'
   'project'
   'auth_user_user_permissions'
+  'us_states'
+  'company'
+  'account_images'
+  'account_use_types'
+  'website_url'
 ]
 
 {crud,ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'

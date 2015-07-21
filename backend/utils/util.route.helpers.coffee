@@ -2,6 +2,7 @@ _ = require 'lodash'
 sessionHelper = require './util.session.helpers'
 
 class CurrentProfileError extends Error
+class NotFoundError extends Error
 
 badRequest = (msg) ->
   new ExpressResponse(alert: {msg: msg}, httpStatus.BAD_REQUEST)
@@ -28,3 +29,4 @@ module.exports =
   CurrentProfileError: CurrentProfileError
   badRequest: badRequest
   mergeHandles: mergeHandles
+  NotFoundError: NotFoundError

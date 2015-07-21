@@ -13,7 +13,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
       parent:       'main'
       url:          frontendRoutes[name],
       template:     require("../../html/views/#{name}.jade")
-      controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl"
+      controller:   "rmaps#{name.toInitCaps()}Ctrl"
     _.extend(state, overrides)
     if state.parent
       state.views = {}
@@ -33,8 +33,8 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'accessDenied', controller: null
   buildState 'authenticating', controller: null
   buildState 'snail', sticky: true
+  buildState 'user', sticky:true, loginRequired:true
   buildState 'profiles', sticky:true, loginRequired:true
-
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null
 

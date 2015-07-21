@@ -11,6 +11,7 @@ config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
+{NotFoundError} =  require '../utils/util.route.helpers'
 
 logger.functions auth
 
@@ -22,6 +23,12 @@ safeUserFields = [
   'last_name'
   'username'
   'work_phone'
+  'account_image_id'
+  'company_id'
+  'address_1'
+  'address_2'
+  'us_state_id'
+  'zip'
 ]
 
 # handle login authentication, and do all the things needed for a new login session
@@ -125,6 +132,39 @@ profiles = (req, res, next) ->
   .catch (err) ->
     logger.error err
 
+image = (req, res, next) ->
+  methodExec req,
+    GET: () -> Promise.try ->
+      userSessionService.getImage(req.user)
+      .then (result) ->
+        unless result?.blob?
+          return next new ExpressResponse({} , httpStatus.NOT_FOUND)
+
+        blob = new Buffer(result.blob)
+
+        dataString = blob.toString()
+        # logger.debug blob
+        matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
+
+        if (matches.length != 3)
+          return next new ExpressResponse({alert: "image is corrupted"} , httpStatus.NOT_FOUND)
+
+        type = matches[1];
+        res.setHeader("Content-Type", type)
+        res.send(new Buffer(matches[2], 'base64'))
+
+    PUT: () -> Promise.try ->
+      # logger.debug req.body.blob
+      if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
+        return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
+
+      if !req.body?
+        return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
+
+      userSessionService.upsertImage(req.user, req.body.blob)
+      .then ()->
+        updateCache(req, res, next)
+
 module.exports =
   login:
     method: 'post'
@@ -148,3 +188,8 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: currentProfile
+
+  image:
+    methods: ['get', 'put']
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: image

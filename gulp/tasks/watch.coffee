@@ -15,13 +15,18 @@ getPaths = (app) ->
     paths[app].html
   ]
 
-gulp.task 'watch_rest', ->
-  rmapPaths = getPaths('rmap').concat([paths.common])
-  adminPaths = getPaths('admin').concat([paths.common])
+rmapPaths = getPaths('rmap').concat([paths.common])
+adminPaths = getPaths('admin').concat([paths.common])
 
-  gulp.watch rmapPaths, gulp.series 'webpack'
-  gulp.watch adminPaths, gulp.series 'webpackAdmin'
+gulp.task 'watch_vendor', ->
   gulp.watch paths.bower, gulp.series 'vendor'
+
+gulp.task 'watch_front', ->
+  gulp.watch rmapPaths, gulp.series 'webpack'
+
+gulp.task 'watch_rest', gulp.parallel 'watch_front', 'watch_vendor', ->
+  gulp.watch adminPaths, gulp.series 'webpackAdmin'
+
 
 specCommon = "spec/common/**/*.coffee"
 gulp.task 'watch', gulp.series 'watch_rest', ->
