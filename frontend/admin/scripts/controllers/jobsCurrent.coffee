@@ -9,7 +9,6 @@ app.controller 'rmapsJobsCurrentCtrl',
     type: 'number'
     width: 75
     cellClass: 'numberCell'
-    headerCellClass: 'numberCell'
     footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
 
   dateFilter = 'date:"MM/dd HH:mm"'
@@ -23,6 +22,8 @@ app.controller 'rmapsJobsCurrentCtrl',
       width: 100
       cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
       footerCellTemplate: '<div>Totals</div>'
+      sort:
+        direction: uiGridConstants.ASC
     ,
       field: 'status'
       displayName: 'Status'
@@ -33,7 +34,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       width: 75
     ,
       field: 'started'
-      displayName: 'Subtasks'
+      displayName: 'Started'
       type: 'date'
       width: 100
       cellFilter: dateFilter

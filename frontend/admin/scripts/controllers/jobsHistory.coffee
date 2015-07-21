@@ -7,7 +7,6 @@ app.controller 'rmapsJobsHistoryCtrl',
   numericDefaults =
     type: 'number'
     width: 75
-    cellClass: 'numberCell'
     headerCellClass: 'numberCell'
 
   dateFilter = 'date:"MM/dd HH:mm"'
@@ -30,7 +29,7 @@ app.controller 'rmapsJobsHistoryCtrl',
       width: 75
     ,
       field: 'started'
-      displayName: 'Subtasks'
+      displayName: 'Started'
       type: 'date'
       width: 100
       cellFilter: dateFilter

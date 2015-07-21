@@ -14,22 +14,27 @@ app.controller 'rmapsJobsQueueCtrl',
       field: 'name'
       displayName: 'Name'
       width: 150
+      enableCellEdit: false
     ,
       field: 'lock_id'
       displayName: 'Lock ID'
       width: 150
+      enableCellEdit: false
     ,
       field: 'processes_per_dyno'
       displayName: 'Processes Per Dyno'
-      width: 100
+      type: 'number'
+      width: 175
     ,
       field: 'subtasks_per_process'
       displayName: 'Subtasks Per Process'
-      width: 150
+      type: 'number'
+      width: 175
     ,
       field: 'priority_factor'
       displayName: 'Priority Factor'
-      width: 100
+      type: 'number'
+      width: 150
     ,
       field: 'active'
       displayName: 'Active'

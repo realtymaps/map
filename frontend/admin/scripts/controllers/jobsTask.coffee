@@ -6,9 +6,8 @@ app.controller 'rmapsJobsTaskCtrl',
 
   numericDefaults =
     type: 'number'
-    width: 100
+    width: 125
     cellClass: 'numberCell'
-    headerCellClass: 'numberCell'
 
   dateFilter = 'date:"MM/dd HH:mm"'
 
@@ -20,7 +19,7 @@ app.controller 'rmapsJobsTaskCtrl',
         rowEntity.save()
     columnDefs:[
       field: 'name'
-      displayName: 'Task'
+      displayName: 'Name'
       width: 100
     ,
       field: 'description'
@@ -29,7 +28,7 @@ app.controller 'rmapsJobsTaskCtrl',
     ,
       field: 'data'
       displayName: 'Data'
-      width: 200
+      width: 250
     ,
       field: 'ignore_until'
       displayName: 'Ignore Until'
@@ -38,14 +37,13 @@ app.controller 'rmapsJobsTaskCtrl',
       cellFilter: dateFilter
   ].concat _.map [
       field: 'repeat_period_minutes'
-      displayName: 'Repeat Minutes'
-      width: 100
+      displayName: 'Repeat min'
     ,
       field: 'warn_timeout_minutes'
-      displayName: 'Warn TO'
+      displayName: 'Warn TO min'
     ,
       field: 'kill_timeout_minutes'
-      displayName: 'Kill TO'
+      displayName: 'Kill TO min'
     ], (num) ->
       _.extend num, numericDefaults
 

@@ -9,7 +9,6 @@ app.controller 'rmapsJobsSubtaskCtrl',
     type: 'number'
     width: 75
     cellClass: 'numberCell'
-    headerCellClass: 'numberCell'
     footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
 
   dateFilter = 'date:"MM/dd HH:mm"'
@@ -22,16 +21,18 @@ app.controller 'rmapsJobsSubtaskCtrl',
         rowEntity.save()
     columnDefs:[
       field: 'name'
-      displayName: 'Task'
+      displayName: 'Name'
       width: 100
     ,
       field: 'task_name'
       displayName: 'Task'
       width: 75
+      enableCellEdit: false
     ,
       field: 'queue_name'
       displayName: 'Queue'
       width: 75
+      enableCellEdit: false
     ,
       field: 'step_num'
       displayName: 'Step#'

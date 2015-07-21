@@ -13,7 +13,7 @@ app.service 'rmapsJobsService', (Restangular) ->
         getIdFromElem(elem)
 
   getCurrent = () ->
-    Restangular.all(jobsAPI).all('history').getList( status: 'running' )
+    Restangular.all(jobsAPI).all('history').getList( current: true )
 
   getHistory = (taskName) ->
     Restangular.all(jobsAPI).all('history').getList( name: taskName )
