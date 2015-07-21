@@ -14,6 +14,7 @@ toInit = _.pick userData, [
   'company'
   'account_images'
   'account_use_types'
+  'website_url'
 ]
 
 {crud,ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'

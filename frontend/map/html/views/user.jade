@@ -1,15 +1,23 @@
 include ../includes/navbar.jade
 
-section.user(ng-cloak)
+section.user.text-wrap(ng-cloak ng-if="ready")
   .container
       h1.page-header Edit Profile
       .row
         // left column
         .col-md-4.col-sm-6.col-xs-12
-          .text-center
-            img.avatar.img-circle.img-thumbnail(src='http://lorempixel.com/200/200/people/9/', alt='avatar')
-            h6 Upload a different photo...
-            input.text-center.center-block.well.well-sm(type='file')
+            form.form-horizontal(role='form')
+              .form-group.text-center
+                img.avatar.img-thumbnail(ng-cloak ng-if="!user.account_image_id" src='/assets/avatar.svg')
+                img.avatar.img-thumbnail(ng-cloak ng-if="user.account_image_id" src='/api/session/image')
+                h6 Upload a different photo...
+                input.text-center.center-block.well.well-sm(type='file', accept='image/*' fileread="imageForm.blob")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save', type='button' ng-click="imageForm.save()")
+                span
+                input.btn.btn-default(value='Cancel', type='reset')
         // edit form column
         .col-md-8.col-sm-6.col-xs-12.personal-info
           .alert.alert-info.alert-dismissable
@@ -29,9 +37,29 @@ section.user(ng-cloak)
               .col-lg-8
                 input.form-control(ng-model="user.last_name", type='text')
             .form-group
-              label.col-lg-3.control-label Company:
+              label.col-lg-3.control-label Address:
               .col-lg-8
-                input.form-control(value='', type='text')
+                input.form-control(ng-model="user.address_1" value='', type='text')
+            .form-group
+              label.col-lg-3.control-label
+              .col-lg-8
+                input.form-control(ng-model="user.address_2" value='', type='text')
+            .form-group
+              label.col-lg-3.control-label City:
+              .col-lg-8
+                input.form-control(ng-model="user.city" value='', type='text')
+            .form-group
+              label.col-lg-3.control-label State:
+              .col-lg-8
+                select.form-control(ng-model="user.us_state_id")
+                  option(
+                    ng-repeat="s in us_states"
+                    ng-selected="{{s.id == user.us_state_id}}"
+                    value="{{s.id}}"){{s.code}} - {{s.name}}
+            .form-group
+              label.col-lg-3.control-label Zip:
+              .col-lg-8
+                input.form-control(ng-model="user.zip" value='', type='text')
             .form-group
               label.col-lg-3.control-label Mobile Phone:
               .col-lg-8
@@ -51,7 +79,7 @@ section.user(ng-cloak)
             .form-group
               label.col-md-3.control-label
               .col-md-8
-                input.btn.btn-primary(value='Save Changes', type='button')
+                input.btn.btn-primary(value='Save', type='button')
                 span
                 input.btn.btn-default(value='Cancel', type='reset')
       .row
@@ -75,7 +103,7 @@ section.user(ng-cloak)
             .form-group
               label.col-md-3.control-label
               .col-md-8
-                input.btn.btn-primary(value='Save Changes', type='button')
+                input.btn.btn-primary(value='Save', type='button')
                 span
                 input.btn.btn-default(value='Cancel', type='reset')
             

@@ -48,10 +48,10 @@ CREATE TABLE company (
 )
 WITH (OIDS=FALSE);
 
-ALTER TABLE company ADD CONSTRAINT "fk_company_us_state_id" FOREIGN KEY (us_state_id) REFERENCES auth_user (id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE company ADD CONSTRAINT "fk_company_us_state_id" FOREIGN KEY (us_state_id) REFERENCES us_states (id) ON UPDATE CASCADE ON DELETE SET NULL;
 
 alter table auth_user add column us_state_id int4;
-ALTER TABLE auth_user ADD CONSTRAINT "fk_auth_user_us_state_id" FOREIGN KEY (us_state_id) REFERENCES auth_user (id) ON UPDATE CASCADE ON DELETE SET NULL;
+ALTER TABLE auth_user ADD CONSTRAINT "fk_auth_user_us_state_id" FOREIGN KEY (us_state_id) REFERENCES us_states (id) ON UPDATE CASCADE ON DELETE SET NULL;
 alter table auth_user add column address_1 varchar;
 alter table auth_user add column address_2 varchar;
 alter table auth_user add column zip varchar;

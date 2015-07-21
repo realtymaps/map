@@ -8,7 +8,8 @@ User = require "../models/model.user"
 environmentSettingsService = require "../services/service.environmentSettings"
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'
-
+accountImagesSvc = require('./services.user').account_images
+{NotFoundError} =  require '../utils/util.route.helpers'
 
 getUser = (attributes) ->
   User.forge(attributes)
@@ -122,6 +123,26 @@ captureMapFilterState = (req, res, next) -> Promise.try () ->
   .then () ->
     next()
 
+getImage = (user) ->
+  return Promise.resolve(null) unless user?.account_image_id?
+  singleRow accountImagesSvc.getById(user.account_image_id)
+
+upsertImage = (user, blob) ->
+  getImage(user)
+  .then (image) ->
+    if image
+      #update
+      logger.debug "updating image"
+      accountImagesSvc.update(user.account_image_id, blob:blob)
+      return
+    #create
+    logger.debug "creating image"
+    singleRow accountImagesSvc.create(blob:blob).returning("id")
+    .then (id) ->
+      logger.debug "saving account_image_id.id(#{id}) for user"
+      userData.user().update(account_image_id: id)
+      .where(id:user.id)
+
 module.exports =
   getUser: getUser
   updateUser: updateUser
@@ -132,3 +153,5 @@ module.exports =
   captureMapState: captureMapState
   captureMapFilterState: captureMapFilterState
   getProfiles: profileSvc.getProfiles
+  getImage: getImage
+  upsertImage: upsertImage

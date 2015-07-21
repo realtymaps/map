@@ -15,7 +15,13 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprin
       $scope.us_states = data.data
 
     _.extend $scope,
+      imageForm:
+        save: ->
+          if @blob
+            $http.put backendRoutes.userSession.image, blob:@blob
+
       user: user
       profiles: profiles
 
       submit: ->
+      ready: true
