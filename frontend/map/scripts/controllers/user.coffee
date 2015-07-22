@@ -24,17 +24,27 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprin
 
     _.extend $scope,
       imageForm:
+        cropBlob: ''
         clearErrors: ->
-          $scope.imageForm.errors = []
+          $scope.$evalAsync ->
+            $scope.imageForm.errors = {}
+        toRender: ->
+          if @cropBlob.length
+            return @cropBlob
+          if user.account_image_id?
+            return @blob || "/api/session/image"
+          "/assets/avatar.svg"
         save: ->
-          return unless @blob?
+          return spawnImageAlert "No Image to Save." unless @blob?
 
-          if @errors?.length
-            @errors.forEach (e) ->
+          if _.keys(@errors).length
+            _.each @errors, (e) ->
               spawnImageAlert e
             return
 
-          $http.put backendRoutes.userSession.image, blob:@blob
+          $http.put backendRoutes.userSession.image, blob: @cropBlob
+          delete @cropBlob
+          delete @blob
 
       user: user
       profiles: profiles

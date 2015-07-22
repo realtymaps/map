@@ -26,24 +26,32 @@ app.directive 'rmapsFileRead', () ->
 # reader.readAsBinaryString(img);
 
 ['width', 'height'].forEach (name) ->
-  directiveName = "rmapsGet#{name.toInitCaps()}"
-  app.directive directiveName, ->
-    scope: false
-    link: (scope, element, attrs) ->
-      obj = scope.$eval(attrs[directiveName])
-      max = parseInt attrs["rmapsGetMax#{name.toInitCaps()}"]
-      eleType = attrs["rmapsMsgReplace"]
-      msg = "element #{name} is > #{max} pixles. element must be smaller."
-      if eleType
-        msg.replace(/element/g, eleType)
-      update = ->
-        scope.$evalAsync ->
-          obj[name] = element[0]['client' + name.toInitCaps()]
-          if obj[name] > max
-            obj.errors = if !obj.errors? then [msg] else obj.errors.concat [msg]
+  ['client', 'natural'].forEach (heightType) ->
+    directiveName = "rmapsGet#{heightType.toInitCaps()}#{name.toInitCaps()}"
+    app.directive directiveName, ->
+      scope: false
+      link: (scope, element, attrs) ->
+        prop = heightType + name.toInitCaps()
+        obj = scope.$eval(attrs[directiveName])
+        max = parseInt attrs["rmapsGetMax#{heightType.toInitCaps()}#{name.toInitCaps()}"]
+        eleType = attrs["rmapsMsgReplace"]
+        msg = "element #{prop} is > #{max} pixles. element must be smaller."
+        if eleType
+          msg.replace(/element/g, eleType)
+        update = ->
+          scope.$evalAsync ->
+            obj[prop] = element[0][prop]
+            if obj[prop] > max
+              if !obj.errors?
+                obj.errors = {}
+              return obj.errors[prop] = msg
+            else
+              if obj.errors?[prop]
+                delete obj.errors[prop]
 
-      element.on 'change', update
-      element.on 'load', update
+        element.on 'change', update
+        element.on 'load', update
+
 
 
 app.directive 'rmapsGetElement', ->

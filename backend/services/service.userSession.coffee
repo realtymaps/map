@@ -132,14 +132,13 @@ upsertImage = (user, blob) ->
   .then (image) ->
     if image
       #update
-      logger.debug "updating image"
-      accountImagesSvc.update(user.account_image_id, blob:blob)
-      return
+      logger.debug "updating image for account_image_id: #{user.account_image_id}"
+      return accountImagesSvc.update(user.account_image_id, blob:blob)
     #create
     logger.debug "creating image"
     singleRow accountImagesSvc.create(blob:blob).returning("id")
     .then (id) ->
-      logger.debug "saving account_image_id.id(#{id}) for user"
+      logger.debug "saving account_image_id: #{id}"
       userData.user().update(account_image_id: id)
       .where(id:user.id)
 
