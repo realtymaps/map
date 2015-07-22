@@ -11,6 +11,11 @@ config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
+{NotFoundError} = require '../utils/util.route.helpers'
+{parseBase64} = require '../utils/util.image'
+sizeOf = require 'image-size'
+
+dimensionLimits = config.IMAGES.dimensions.profile
 
 logger.functions auth
 
@@ -22,6 +27,12 @@ safeUserFields = [
   'last_name'
   'username'
   'work_phone'
+  'account_image_id'
+  'company_id'
+  'address_1'
+  'address_2'
+  'us_state_id'
+  'zip'
 ]
 
 # handle login authentication, and do all the things needed for a new login session
@@ -125,6 +136,41 @@ profiles = (req, res, next) ->
   .catch (err) ->
     logger.error err
 
+image = (req, res, next) ->
+  methodExec req,
+    GET: () -> Promise.try ->
+      userSessionService.getImage(req.user)
+      .then (result) ->
+        unless result?.blob?
+          return next new ExpressResponse({} , httpStatus.NOT_FOUND)
+
+        parsed = parseBase64(result.blob)
+        res.setHeader("Content-Type", parsed.type)
+        buf = new Buffer(parsed.data, 'base64')
+        dim = sizeOf buf
+        if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+          logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"
+        res.send(buf)
+
+    PUT: () -> Promise.try ->
+      # logger.debug req.body.blob
+      if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
+        return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
+
+      if !req.body?
+        return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
+
+      parsed = parseBase64(req.body.blob)
+      buf = new Buffer(parsed.data, 'base64')
+      dim = sizeOf buf
+
+      if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+        return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
+
+      userSessionService.upsertImage(req.user, req.body.blob)
+      .then ()->
+        updateCache(req, res, next)
+
 module.exports =
   login:
     method: 'post'
@@ -148,3 +194,8 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: currentProfile
+
+  image:
+    methods: ['get', 'put']
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: image

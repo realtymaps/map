@@ -14,5 +14,11 @@ commonConfig =
         ordering: 12
         roundOne: 12
         roundNone: 9
+  images:
+    dimensions:
+      profile:
+        width: 200
+        height: 200
+
 
 module.exports = commonConfig

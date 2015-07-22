@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.config ['$provide', ($provide) ->
@@ -21,6 +22,7 @@ app.config ['$provide', ($provide) ->
 app.run ($rootScope, $state, $stateParams, $timeout, rmapsprincipal, rmapsSpinner, rmapsevents) ->
     $rootScope.alerts = []
     $rootScope.adminRoutes = adminRoutes
+    $rootScope.frontendRoutes = frontendRoutes
     $rootScope.backendRoutes = backendRoutes
     $rootScope.principal = rmapsprincipal
     $rootScope.$state = $state

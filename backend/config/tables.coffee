@@ -48,6 +48,10 @@ module.exports =
     project: 'users.project'
 
     externalAccounts: 'users.external_accounts'
+    us_states: 'users.us_states'
+    company: 'users.company'
+    account_images: 'users.account_images'
+    account_use_types:'users.account_use_types'
 
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports
