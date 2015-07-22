@@ -5,5 +5,5 @@ block customHeader
   title RealtyMaps
   
 block content
-  .realtymaps-main(ui-view='')
+  .realtymaps-main(ui-view='' ng-controller="rmapsAppController")
   script(type='application/javascript', src='#{paths.destFull.webpack.map.filename}')

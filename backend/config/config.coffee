@@ -99,6 +99,7 @@ base =
     PASSWORD: process.env.GMAIL_PASSWORD
 
   MAP: common.map
+  IMAGES: common.images
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY

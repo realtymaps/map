@@ -2,16 +2,36 @@ include ../includes/navbar.jade
 
 section.user.text-wrap(ng-cloak ng-if="ready")
   .container
-      h1.page-header Edit Profile
+      h1.page-header Edit User
       .row
         // left column
         .col-md-4.col-sm-6.col-xs-12
             form.form-horizontal(role='form')
               .form-group.text-center
-                img.avatar.img-thumbnail(ng-cloak ng-if="!user.account_image_id" src='/assets/avatar.svg')
-                img.avatar.img-thumbnail(ng-cloak ng-if="user.account_image_id" src='/api/session/image')
+                img.avatar.img-thumbnail(
+                  ng-cloak
+                  ng-src='{{imageForm.toRender()}}' 
+                  rmaps-get-natural-width="imageForm" 
+                  rmaps-get-client-width="imageForm" 
+                  rmaps-get-natural-max-width="200" 
+                  rmaps-get-natural-height="imageForm"
+                  rmaps-get-client-height="imageForm"
+                  rmaps-get-natural-max-height="200"
+                  rmaps-msg-replace="Image")
+                .avatar.img-crop-area(
+                  ng-if="!!imageForm.blob" 
+                  ng-style="{'width': '{{imageForm.clientWidth}}' + 'px', 'height': '{{imageForm.clientHeight}}' + 'px'}")
+                  img-crop(
+                    area-type="square" image="imageForm.blob" 
+                    result-image="imageForm.cropBlob"
+                    result-image-size="200"
+                    result-image-quality=".8"
+                    result-image-format="image/jpeg")
                 h6 Upload a different photo...
-                input.text-center.center-block.well.well-sm(type='file', accept='image/*' fileread="imageForm.blob")
+                input.text-center.center-block.well.well-sm(
+                  type='file' accept='image/*' 
+                  rmaps-file-read="imageForm.blob" 
+                  rmaps-file-read-on-load="imageForm.clearErrors")
             .form-group
               label.col-md-3.control-label
               .col-md-8
@@ -20,12 +40,6 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                 input.btn.btn-default(value='Cancel', type='reset')
         // edit form column
         .col-md-8.col-sm-6.col-xs-12.personal-info
-          .alert.alert-info.alert-dismissable
-            a.panel-close.close(data-dismiss='alert') ×
-            i.fa.fa-coffee
-            |         This is an 
-            strong .alert
-            | . Use this to show important messages to the user.
           h3 Personal info
           form.form-horizontal(role='form')
             .form-group
