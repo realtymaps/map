@@ -2,15 +2,10 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprincipal, rmapsevents) ->
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsevents, rmapsprincipal) ->
   maxImagePixles = 200
-  rmapsprincipal.getIdentity()
-  .then (identity) ->
-
-    {user, profiles} = identity
-    user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ""
-    user.name = user.full_name or user.username
-
+  rmapsprincipal.getIdentity().then ->
+    user = $rootScope.user
     $http.get(backendRoutes.us_states.root)
     .then (data) ->
       $scope.us_states = data.data
@@ -46,8 +41,6 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsprin
           delete @cropBlob
           delete @blob
 
-      user: user
-      profiles: profiles
 
       submit: ->
       ready: true

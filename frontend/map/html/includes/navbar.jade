@@ -21,5 +21,8 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           a(href="{{frontendRoutes.login}}") Sign In
         li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
           a(href="{{frontendRoutes.logout}}") Sign Out
+        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
+          a(href="{{frontendRoutes.user}}" target="_self") {{user.username}}
         li(ng-show="principal.isStaff()", ng-cloak).navbar-float-right
           a(href="{{adminRoutes.index}}" target="_self") Admin
+        
