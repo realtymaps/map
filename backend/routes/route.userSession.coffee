@@ -11,7 +11,11 @@ config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
-{NotFoundError} =  require '../utils/util.route.helpers'
+{NotFoundError} = require '../utils/util.route.helpers'
+{parseBase64} = require '../utils/util.image'
+sizeOf = require 'image-size'
+
+dimensionLimits = config.IMAGES.dimensions.profile
 
 logger.functions auth
 
@@ -140,18 +144,13 @@ image = (req, res, next) ->
         unless result?.blob?
           return next new ExpressResponse({} , httpStatus.NOT_FOUND)
 
-        blob = new Buffer(result.blob)
-
-        dataString = blob.toString()
-        # logger.debug blob
-        matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/)
-
-        if (matches.length != 3)
-          return next new ExpressResponse({alert: "image is corrupted"} , httpStatus.NOT_FOUND)
-
-        type = matches[1];
-        res.setHeader("Content-Type", type)
-        res.send(new Buffer(matches[2], 'base64'))
+        parsed = parseBase64(result.blob)
+        res.setHeader("Content-Type", parsed.type)
+        buf = new Buffer(parsed.data, 'base64')
+        dim = sizeOf buf
+        if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+          logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"
+        res.send(buf)
 
     PUT: () -> Promise.try ->
       # logger.debug req.body.blob
@@ -160,6 +159,13 @@ image = (req, res, next) ->
 
       if !req.body?
         return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
+
+      parsed = parseBase64(req.body.blob)
+      buf = new Buffer(parsed.data, 'base64')
+      dim = sizeOf buf
+
+      if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+        return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
 
       userSessionService.upsertImage(req.user, req.body.blob)
       .then ()->
