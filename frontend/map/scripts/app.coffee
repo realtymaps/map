@@ -30,6 +30,7 @@ app = window.angular.module appName, [
   'infinite-scroll'
   'restangular'
   'validation'
+  'validation.rule'
   'ngImgCrop'
 ]
 

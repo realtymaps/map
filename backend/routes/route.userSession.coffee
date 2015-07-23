@@ -4,6 +4,7 @@ logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
+userSvc = require('../services/services.user').user
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -171,7 +172,28 @@ image = (req, res, next) ->
       .then ()->
         updateCache(req, res, next)
 
+#main entry point to update root user info
+_safeRootFields = [
+  'first_name','last_name', 'email', 'cell_phone', 'work_phone',
+  'us_state_id', 'address_1', 'address_2', 'zip', 'website_url' ,
+  'account_use_type_id', 'city'
+]
+root = (req, res, next) ->
+  methodExec req,
+    PUT: () ->
+      userSvc.update(req.session.userid, req.body, _safeRootFields)
+      .then ()->
+        updateCache(req, res, next)
+  .then (result) ->
+    res.json result
+  .catch (err) ->
+    logger.error err
+
 module.exports =
+  root:
+    method: 'put'
+    handle: root
+
   login:
     method: 'post'
     handle: login

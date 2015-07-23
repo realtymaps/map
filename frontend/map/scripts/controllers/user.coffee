@@ -2,8 +2,10 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsevents, rmapsprincipal) ->
-  maxImagePixles = 200
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsevents, rmapsprincipal, rmapsMainOptions, $log) ->
+  {profile} = rmapsMainOptions.images.dimensions
+  maxImagePixles = profile.width
+  imageQuality = profile.quality
   rmapsprincipal.getIdentity().then ->
     user = $rootScope.user
     $http.get(backendRoutes.us_states.root)
@@ -18,6 +20,12 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapseven
       $rootScope.$broadcast rmapsevents.alert.spawn, imageAlert
 
     _.extend $scope,
+      user: _.extend _.clone($rootScope.user, true),
+        save: ->
+          $log.debug @
+          #$http.put backendRoutes.userSession.root, @
+      maxImagePixles: maxImagePixles
+      imageQuality: imageQuality
       imageForm:
         cropBlob: ''
         clearErrors: ->

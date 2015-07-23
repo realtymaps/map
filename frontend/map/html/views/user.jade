@@ -13,10 +13,10 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                   ng-src='{{imageForm.toRender()}}' 
                   rmaps-get-natural-width="imageForm" 
                   rmaps-get-client-width="imageForm" 
-                  rmaps-get-natural-max-width="200" 
+                  rmaps-get-natural-max-width="{{maxImagePixles}}" 
                   rmaps-get-natural-height="imageForm"
                   rmaps-get-client-height="imageForm"
-                  rmaps-get-natural-max-height="200"
+                  rmaps-get-natural-max-height="{{maxImagePixles}}"
                   rmaps-msg-replace="Image")
                 .avatar.img-crop-area(
                   ng-if="!!imageForm.blob" 
@@ -24,8 +24,8 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                   img-crop(
                     area-type="square" image="imageForm.blob" 
                     result-image="imageForm.cropBlob"
-                    result-image-size="200"
-                    result-image-quality=".8"
+                    result-image-size="{{maxImagePixles}}"
+                    result-image-quality="{{imageQuality}}"
                     result-image-format="image/jpeg")
                 h6 Upload a different photo...
                 input.text-center.center-block.well.well-sm(
@@ -35,9 +35,9 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-md-3.control-label
               .col-md-8
-                input.btn.btn-primary(value='Save', type='button' ng-click="imageForm.save()")
+                input.btn.btn-primary(value='Save' type='button' ng-click="imageForm.save()")
                 span
-                input.btn.btn-default(value='Cancel', type='reset')
+                input.btn.btn-default(value='Cancel' type='reset')
         // edit form column
         .col-md-8.col-sm-6.col-xs-12.personal-info
           h3 Personal info
@@ -45,27 +45,42 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-lg-3.control-label First name:
               .col-lg-8
-                input.form-control(ng-model="user.first_name", type='text')
+                input.form-control(
+                  ng-model="user.first_name"
+                  type='text'
+                  validator="required,minlength=2")
             .form-group
               label.col-lg-3.control-label Last name:
               .col-lg-8
-                input.form-control(ng-model="user.last_name", type='text')
+                input.form-control(
+                  ng-model="user.last_name"
+                  type='text'
+                  validator="required,minlength=2")
             .form-group
               label.col-lg-3.control-label Address:
               .col-lg-8
-                input.form-control(ng-model="user.address_1" value='', type='text')
+                input.form-control(
+                  ng-model="user.address_1"
+                  type='text'
+                  validator="required,minlength=2")
             .form-group
               label.col-lg-3.control-label
               .col-lg-8
-                input.form-control(ng-model="user.address_2" value='', type='text')
+                input.form-control(
+                  ng-model="user.address_2"
+                  type='text'
+                  validator="minlength=2")
             .form-group
               label.col-lg-3.control-label City:
               .col-lg-8
-                input.form-control(ng-model="user.city" value='', type='text')
+                input.form-control(
+                  ng-model="user.city"
+                  type='text'
+                  validator="required,minlength=2")
             .form-group
               label.col-lg-3.control-label State:
               .col-lg-8
-                select.form-control(ng-model="user.us_state_id")
+                select.form-control(ng-model="user.us_state_id" validator="required")
                   option(
                     ng-repeat="s in us_states"
                     ng-selected="{{s.id == user.us_state_id}}"
@@ -73,11 +88,14 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-lg-3.control-label Zip:
               .col-lg-8
-                input.form-control(ng-model="user.zip" value='', type='text')
+                input.form-control(ng-model="user.zip"
+                  type='text' validator="required,zip")
             .form-group
               label.col-lg-3.control-label Mobile Phone:
               .col-lg-8
-                input.form-control(ng-model="user.cell_phone", type='text')
+                input.form-control(ng-model="user.cell_phone"
+                  type='text'
+                  validator="required,phone")
             .form-group
               label.col-lg-3.control-label Phone:
               .col-lg-8
@@ -85,17 +103,24 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-lg-3.control-label Email:
               .col-lg-8
-                input.form-control(ng-model="user.email", type='text')
+                input.form-control(
+                  ng-model="user.email"
+                  type='text'
+                  validator="email,required")
             .form-group
               label.col-lg-3.control-label Website Url:
               .col-lg-8
-                input.form-control(ng-model="user.website_url", type='text')
+                input.form-control(
+                  ng-model="user.website_url"
+                  type='text'
+                  validator="url")
             .form-group
               label.col-md-3.control-label
               .col-md-8
-                input.btn.btn-primary(value='Save', type='button')
+                input.btn.btn-primary(
+                  value='Save', type='button' ng-click="user.save()" validation-submit="userForm")
                 span
-                input.btn.btn-default(value='Cancel', type='reset')
+                input.btn.btn-default(value='Cancel' type='reset' validation-reset="userForm")
       .row
         // left column
         .col-md-4.col-sm-6.col-xs-12

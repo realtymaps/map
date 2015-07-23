@@ -74,3 +74,32 @@ app.config(($provide) ->
 
     $delegate
 )
+.config((validationProvider, rmapsMainOptions) ->
+  {validation} = rmapsMainOptions
+  $validationProvider.setErrorHTML (msg) ->
+    return  "<label class=\"control-label has-error\">" + msg + "</label>"
+  _.extend validationProvider,
+    # figure out how to do this without jQuery
+    # validCallback: (element) ->
+    #   $(element).parents('.form-group:first').removeClass('has-error')
+    # invalidCallback: (element) ->
+    #   $(element).parents('.form-group:first').addClass('has-error')
+
+  expression =
+    phone: validation.phone
+    address: validation.address
+    zipcode: validation.zipcode.US
+
+  defaultMsg =
+      phone:
+        error: 'Not a valid phone number.'
+        success: 'It\'s a Phone number'
+      addess:
+        error: 'Not a valid phone addess.'
+        success: 'It\'s a Phone addess'
+      zipcode:
+        error: 'Not a valid US zipcode.'
+        success: 'It\'s a zipcode'
+
+  validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
+)
