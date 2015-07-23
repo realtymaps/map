@@ -10,6 +10,7 @@ class JobCrud extends RouteCrud
     @queueCrud = routeCrud(@svc.queues, 'name')
     @taskCrud = routeCrud(@svc.tasks, 'name')
     @subtaskCrud = routeCrud(@svc.subtasks, 'name')
+    @summaryCrud = routeCrud(@svc.summary)
 
     @taskHistory = @taskHistoryCrud.root
 
@@ -21,6 +22,8 @@ class JobCrud extends RouteCrud
 
     @subtasks = @subtaskCrud.root
     @subtasksById = @subtaskCrud.byId
+
+    @summary = @summaryCrud.root
 
     super()
 
@@ -58,6 +61,10 @@ module.exports = mergeHandles new JobCrud(jobs),
     ]
   subtasksById:
     methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  summary:
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]

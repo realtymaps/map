@@ -103,6 +103,9 @@ app.controller 'rmapsJobsCurrentCtrl',
     ], (num) ->
       _.extend num, numericDefaults
 
+  $scope.summaryGrid =
+    enableColumnMenus: false
+
   $scope.loadCurrent = () ->
     $scope.jobsBusy = rmapsJobsService.getCurrent()
     .then (jobs) ->
@@ -111,6 +114,10 @@ app.controller 'rmapsJobsCurrentCtrl',
         job.finished = new Date(job.finished)
         job.status_changed = new Date(job.status_changed)
       $scope.jobsGrid.data = jobs.plain()
+
+    $scope.summaryBusy = rmapsJobsService.getSummary()
+    .then (summary) ->
+      $scope.summaryGrid.data = summary.plain()
 
   $rootScope.registerScopeData () ->
     $scope.loadCurrent()
