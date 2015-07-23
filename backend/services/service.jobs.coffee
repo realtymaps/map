@@ -7,3 +7,4 @@ module.exports =
   queues: crud(jobQueue.queueConfig, 'name')
   tasks: crud(jobQueue.taskConfig, 'name')
   subtasks: crud(jobQueue.subtaskConfig, 'name')
+  summary: crud(jobQueue.jqSummary)
