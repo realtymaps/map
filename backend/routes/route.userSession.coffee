@@ -15,6 +15,8 @@ auth = require '../utils/util.auth.coffee'
 {NotFoundError} = require '../utils/util.route.helpers'
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
+util = require 'util'
+
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -29,11 +31,13 @@ safeUserFields = [
   'username'
   'work_phone'
   'account_image_id'
-  'company_id'
   'address_1'
   'address_2'
   'us_state_id'
   'zip'
+  'city'
+  'website_url'
+  'company_id'
 ]
 
 # handle login authentication, and do all the things needed for a new login session
@@ -173,21 +177,20 @@ image = (req, res, next) ->
         updateCache(req, res, next)
 
 #main entry point to update root user info
-_safeRootFields = [
-  'first_name','last_name', 'email', 'cell_phone', 'work_phone',
-  'us_state_id', 'address_1', 'address_2', 'zip', 'website_url' ,
-  'account_use_type_id', 'city'
-]
+_safeRootFields = safeUserFields.concat([])
+
+['company_id'].forEach ->
+  _safeRootFields.pop()
+
 root = (req, res, next) ->
   methodExec req,
     PUT: () ->
+      result = null
+      # logger.debug req.body
       userSvc.update(req.session.userid, req.body, _safeRootFields)
-      .then ()->
+      .then () ->
         updateCache(req, res, next)
-  .then (result) ->
-    res.json result
-  .catch (err) ->
-    logger.error err
+
 
 module.exports =
   root:

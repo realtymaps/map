@@ -15,7 +15,7 @@ validation =
     (?:\#|x\.?
     |ext\.?|extension)? #Group 5: The Extension number. Optional.
     \s*$///
-  address: /^\d{1,10}\s\w.\s(\b\w*\b\s){1,2}\w*\./
+  address: /\d{1,20}((\b\w*\b\s){1,2}\w*(\.)?(\s)?){1,4}\./
   #  http://stackoverflow.com/questions/578406/what-is-the-ultimate-postal-code-and-zip-regex
   zipcode:
     US: /^\d{5}([\-]?\d{4})?$/

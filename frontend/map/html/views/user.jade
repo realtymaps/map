@@ -41,11 +41,12 @@ section.user.text-wrap(ng-cloak ng-if="ready")
         // edit form column
         .col-md-8.col-sm-6.col-xs-12.personal-info
           h3 Personal info
-          form.form-horizontal(role='form')
+          form.form-horizontal(name="userForm" role='form')
             .form-group
               label.col-lg-3.control-label First name:
               .col-lg-8
                 input.form-control(
+                  name="first_name"
                   ng-model="user.first_name"
                   type='text'
                   validator="required,minlength=2")
@@ -53,6 +54,7 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               label.col-lg-3.control-label Last name:
               .col-lg-8
                 input.form-control(
+                  name="last_name"
                   ng-model="user.last_name"
                   type='text'
                   validator="required,minlength=2")
@@ -60,27 +62,31 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               label.col-lg-3.control-label Address:
               .col-lg-8
                 input.form-control(
+                  name="address_1"
                   ng-model="user.address_1"
                   type='text'
-                  validator="required,minlength=2")
+                  validator="required,address")
             .form-group
               label.col-lg-3.control-label
               .col-lg-8
                 input.form-control(
+                  name="address_2"
                   ng-model="user.address_2"
                   type='text'
-                  validator="minlength=2")
+                  initial-validity="true"
+                  validator="optMinlength=2")
             .form-group
               label.col-lg-3.control-label City:
               .col-lg-8
                 input.form-control(
+                  name="city"
                   ng-model="user.city"
                   type='text'
                   validator="required,minlength=2")
             .form-group
               label.col-lg-3.control-label State:
               .col-lg-8
-                select.form-control(ng-model="user.us_state_id" validator="required")
+                select.form-control(ng-model="user.us_state_id" validator="required" name="us_state_id")
                   option(
                     ng-repeat="s in us_states"
                     ng-selected="{{s.id == user.us_state_id}}"
@@ -89,21 +95,27 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               label.col-lg-3.control-label Zip:
               .col-lg-8
                 input.form-control(ng-model="user.zip"
+                  name="zip"
                   type='text' validator="required,zipcode")
             .form-group
-              label.col-lg-3.control-label Mobile Phone:
+              label.col-lg-3.control-label Phone (Mobile/Home):
               .col-lg-8
                 input.form-control(ng-model="user.cell_phone"
                   type='text'
+                  name="cell_phone"
                   validator="required,phone")
             .form-group
-              label.col-lg-3.control-label Phone:
+              label.col-lg-3.control-label Work Phone:
               .col-lg-8
-                input.form-control(ng-model="user.work_phone", type='text')
+                input.form-control(ng-model="user.work_phone" 
+                type='text' 
+                name="work_phone"
+                validator="optPhone")
             .form-group
               label.col-lg-3.control-label Email:
               .col-lg-8
                 input.form-control(
+                  name="email"
                   ng-model="user.email"
                   type='text'
                   validator="email,required")
@@ -111,14 +123,16 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               label.col-lg-3.control-label Website Url:
               .col-lg-8
                 input.form-control(
+                  name="website_url"
                   ng-model="user.website_url"
                   type='text'
-                  validator="url")
+                  initial-validity="true"
+                  validator="optUrl")
             .form-group
               label.col-md-3.control-label
               .col-md-8
                 input.btn.btn-primary(
-                  value='Save', type='button' ng-click="user.save()" validation-submit="userForm")
+                  value='Save' type='button' ng-click="user.submit()" validation-submit="userForm")
                 span
                 input.btn.btn-default(value='Cancel' type='reset' validation-reset="userForm")
       .row
