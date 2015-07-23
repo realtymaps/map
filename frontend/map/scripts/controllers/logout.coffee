@@ -13,6 +13,7 @@ module.exports = app.controller 'LogoutCtrl'.ns(), () ->
 
 app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOptions, rmapsSpinner) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+      console.log "\n#### $stateChangeStart"
       # if we're not entering the logout state, or if we're already on the logout page, don't do anything
       if toState.url != frontendRoutes.logout || fromState.url == frontendRoutes.logout
         return

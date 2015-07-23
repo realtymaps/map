@@ -37,8 +37,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
 
     restoreState = () ->
       profile = null
+      console.log "\n#### MAP,  restoreState, getting identity..."
       rmapsprincipal.getIdentity()
       .then (identity) ->
+        console.log "#### identity:"
+        console.log identity
         if not identity?.currentProfileId
           return $location.path(frontendRoutes.profiles)
 
