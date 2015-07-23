@@ -1,6 +1,7 @@
 'use strict'
 
 require '../../../common/extensions/strings.coffee'
+require '../../../common/extensions/angular.coffee'
 
 
 #Wierd this does not work well render problems.. bower is fine

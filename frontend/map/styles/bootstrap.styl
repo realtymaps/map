@@ -1,6 +1,8 @@
-// @import "bootstrap"
 /*
 Place for our custom Theming of bootstrap
+
+- If you need to use @extend on bootstrap then use bootstrap.less
+- If you need to use stylus variables and override/ theme bootstrap, then do so here
 */
 .table
   margin-bottom 0px
@@ -218,12 +220,3 @@ set all page h tag overrides
 for num in (1...7)
   h{num}
     color textColor
-
-/*
-for angular-validation
-*/
-// .ng-invalid.ng-dirty
-//   @extends .has-error .form-control
-//
-// label.has-error.control-label
-//   @extends .has-error .control-label

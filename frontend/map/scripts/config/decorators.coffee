@@ -74,16 +74,25 @@ app.config(($provide) ->
 
     $delegate
 )
-.config((validationProvider, rmapsMainOptions) ->
+.config(($validationProvider, rmapsMainOptions) ->
   {validation} = rmapsMainOptions
   $validationProvider.setErrorHTML (msg) ->
     return  "<label class=\"control-label has-error\">" + msg + "</label>"
-  _.extend validationProvider,
+  _.extend $validationProvider,
     # figure out how to do this without jQuery
-    # validCallback: (element) ->
-    #   $(element).parents('.form-group:first').removeClass('has-error')
-    # invalidCallback: (element) ->
-    #   $(element).parents('.form-group:first').addClass('has-error')
+    validCallback: (element) ->
+      #attempt w/o jQuery
+      maybeParent = _.first(element.parentsByClass('form-group', true))
+      if maybeParent?
+        maybeParent.className = maybeParent.className.replace('has-error', '')
+
+      #expected
+      #$(element).parents('.form-group:first').removeClass('has-error')
+    invalidCallback: (element) ->
+      maybeParent = _.first(element.parentsByClass('form-group', true))
+      if maybeParent?
+        maybeParent.className += ' has-error'
+      #parents('.form-group:first').addClass('has-error')
 
   expression =
     phone: validation.phone
@@ -101,5 +110,5 @@ app.config(($provide) ->
         error: 'Not a valid US zipcode.'
         success: 'It\'s a zipcode'
 
-  validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
+  $validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
 )

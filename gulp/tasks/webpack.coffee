@@ -39,6 +39,7 @@ runWebpack = (someConfig, app='rmap') ->
   gulp.src [
     paths[app].assets
     paths[app].styles
+    paths[app].less
     paths[app].stylus
     paths[app].jade
     paths[app].html
