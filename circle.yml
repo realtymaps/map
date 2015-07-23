@@ -1,6 +1,8 @@
 machine:
   node:
     version: v0.12.4
+  npm:
+    version: v2.13.1
 
 deployment:
   prod:
