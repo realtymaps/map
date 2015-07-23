@@ -15,8 +15,6 @@ auth = require '../utils/util.auth.coffee'
 {NotFoundError} = require '../utils/util.route.helpers'
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
-util = require 'util'
-
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -190,7 +188,6 @@ root = (req, res, next) ->
       userSvc.update(req.session.userid, req.body, _safeRootFields)
       .then () ->
         updateCache(req, res, next)
-
 
 module.exports =
   root:
