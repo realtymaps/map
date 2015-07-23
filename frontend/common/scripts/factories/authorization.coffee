@@ -46,6 +46,7 @@ module.exports = ($rootScope, $location, rmapsprincipal) ->
       return doPermsCheck(toState, desiredLocation, false)
     # otherwise, go to temporary view and do check ASAP
     $location.replace()
+    console.log "#### authorize, going to temporary authenticating view: " + routes.authenticating
     $location.url routes.authenticating
     rmapsprincipal.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)
