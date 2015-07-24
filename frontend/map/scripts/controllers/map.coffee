@@ -90,12 +90,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
             .then (data) ->
               map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
-    # $scope.$onRootScope rmapsevents.principal.login.success, () ->
-    #   restoreState()
-
-    # if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
-    #   restoreState()
-
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
