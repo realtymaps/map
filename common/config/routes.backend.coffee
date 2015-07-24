@@ -38,6 +38,7 @@ module.exports =
     currentProfile: "#{apiBaseSession}/currentProfile"
     profiles: "#{apiBaseSession}/profiles"
     image: "#{apiBaseSession}/image"
+    root: apiBaseSession
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
