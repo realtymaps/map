@@ -1,5 +1,5 @@
 app = require '../app.coffee'
-runnerHelpers = require '../../../common/scripts/utils/util.runnerhelpers.coffee'
+runnerHelpers = require '../../../common/scripts/utils/util.runnerHelpers.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
@@ -17,4 +17,3 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsprincipal, rmapsSpinne
     $rootScope.stateData = []
 
     runnerHelpers.setRegisterScopeData($rootScope, $timeout, rmapsprincipal, rmapsevents)
-    
