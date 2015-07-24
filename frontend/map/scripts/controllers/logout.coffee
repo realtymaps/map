@@ -11,9 +11,8 @@ module.exports = app.controller 'LogoutCtrl'.ns(), () ->
 # so it doesn't happen so quickly the user misses it.  We don't want to expose the illusion by having the
 # Spinner go away more quickly
 
-app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOptions, rmapsSpinner) ->
+app.run ($rootScope, $location, $http, $timeout, $window, rmapsprincipal, rmapsMainOptions, rmapsSpinner) ->
     $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
-      console.log "\n#### $stateChangeStart"
       # if we're not entering the logout state, or if we're already on the logout page, don't do anything
       if toState.url != frontendRoutes.logout || fromState.url == frontendRoutes.logout
         return
@@ -22,7 +21,7 @@ app.run ($rootScope, $location, $http, $timeout, rmapsprincipal, rmapsMainOption
         $timeout () ->
           rmapsSpinner.decrementLoadingCount("logout")
           $location.replace()
-          $location.url url
+          $window.location.href = url
         , minTimestamp-(+new Date)
       rmapsSpinner.incrementLoadingCount("logout")
       rmapsprincipal.getIdentity()

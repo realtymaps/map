@@ -9,12 +9,9 @@ defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor'
 
 interceptors =
   rmapsRedirectInterceptor: ($location, $rootScope) ->
-    console.log "\n#### rmapsRedirectInterceptor"
     routes = urlHelpers.getRoutes($location)
 
     'response': (response) ->
-      console.log "#### response:"
-      console.log response
       if response.data?.doLogin and $location.path() != '/'+routes.login
         $rootScope.principal?.unsetIdentity()
         $location.url routes.login+'?'+qs.stringify(next: $location.path()+'?'+qs.stringify($location.search()))
