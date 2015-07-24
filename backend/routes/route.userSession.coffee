@@ -35,6 +35,7 @@ safeUserFields = [
   'zip'
   'city'
   'website_url'
+  'account_use_type_id'
   'company_id'
 ]
 

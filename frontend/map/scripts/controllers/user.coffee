@@ -13,6 +13,10 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
       .then (data) ->
         $scope.us_states = data.data
 
+      $http.get(backendRoutes.account_use_types.root)
+      .then (data) ->
+        $scope.accountUseTypes = data.data
+
       spawnImageAlert = (msg) ->
         imageAlert =
           type:'rm-info'
