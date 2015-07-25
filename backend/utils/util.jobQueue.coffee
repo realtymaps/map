@@ -463,7 +463,7 @@ queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, 
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
     
 queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
-  if total == 0
+  if !(+total) #cast to number
     return
   subtasks = Math.ceil(total/maxPage)
   subtasksQueued = 0
@@ -471,8 +471,10 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
   data = []
   for i in [1..subtasks]
     datum =
-      offset: subtasksQueued
+      offset: countHandled
       count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
+      i: i
+      of: subtasks
     data.push datum
     subtasksQueued++
     countHandled += datum.count

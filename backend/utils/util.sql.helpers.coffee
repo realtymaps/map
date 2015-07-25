@@ -3,6 +3,7 @@ memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 logger = require '../config/logger'
 Promise = require "bluebird"
+util = require 'util'
 
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
@@ -203,10 +204,17 @@ singleRow = (q, doThrow = false) -> Promise.try ->
 expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
-safeJsonArray = (knex, arr) ->
+safeJson = (knex, arr) ->
+  # this whole function is a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
+  # JSON array when serializing to SQL
   if !arr?
     return arr
-  rawJson = JSON.stringify(arr).replace(/'/g, "''")
+  # there is a problem with using knex.raw on strings which include '?', so for now just swap to '#' since there's
+  # nothing we can do...  https://github.com/tgriesser/knex/issues/519
+  try
+    rawJson = JSON.stringify(arr).replace(/'/g, "''").replace(/[?]/g, '#')
+  catch
+    logger.error "Circular JSON: #{util.inspect(arr, depth: 10)}"
   knex.raw("'#{rawJson}'")
   
 module.exports =
@@ -224,4 +232,4 @@ module.exports =
   orWhereNotIn: orWhereNotIn
   whereInBounds: whereInBounds
   getClauseString: getClauseString
-  safeJsonArray: safeJsonArray
+  safeJson: safeJson
