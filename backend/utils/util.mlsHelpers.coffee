@@ -400,11 +400,8 @@ finalizeData = (subtask, id) ->
     delete listing.rm_inserted_time
     delete listing.rm_modified_time
     _.extend(listing, parcel[0])
-    blah = tables.propertyData.combined()
+    tables.propertyData.combined()
     .insert(listing)
-    blah.catch (err) ->
-      logger.debug "\n################################## #{err.stack||err}\n================================== #{blah.toString()}\n---------------------------------- #{util.inspect(listing, depth: 1, showHidden: true)}\n.................................. #{Object.keys(listing)}"
-      Promise.reject(err)
 
 
 activateNewData = (subtask) ->
