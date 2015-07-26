@@ -490,21 +490,28 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
       throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
 
-runWorker = (queueConfig, id) ->
+runWorker = (queueConfig, id, quit=false) ->
   if cluster.worker?
     prefix = "<#{queueConfig.name}-#{cluster.worker.id}-#{id}>"
   else
     prefix = "<#{queueConfig.name}-#{id}>"
-  getQueuedSubtask(queueConfig.name)
+  _runWorkerImpl(queueConfig.name, prefix, quit)
+
+_runWorkerImpl = (queueName, prefix, quit) ->
+  getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
       logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
       executeSubtask(subtask)
+      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
     else
-      logger.debug "#{prefix} No subtask ready for execution, waiting..."
-      Promise.delay(30000) # poll again in 30 seconds
-  .then runWorker.bind(null, queueConfig, id)
-        
+      if quit
+        logger.debug "#{prefix} No subtask ready for execution; quiting."
+        Promise.resolve()
+      else
+        logger.debug "#{prefix} No subtask ready for execution; waiting..."
+        Promise.delay(30000) # poll again in 30 seconds
+        .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
 
 module.exports =

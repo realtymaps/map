@@ -334,6 +334,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       changes = _diff(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
+      updateRow.change_history = sqlHelpers.safeJson(tables.propertyData.mls(), updateRow.change_history)
       tables.propertyData.mls()
       .where
         mls_uuid: updateRow.mls_uuid
@@ -388,18 +389,21 @@ finalizeData = (subtask, id) ->
       # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
       return
     listing = listings.shift()
-    listing.prior_listings = sqlHelpers.safeJson(tables.propertyData.combined(), listings)
-    listing.data_source_type = 'mls'
-    listing.active = false
-    listing.address = sqlHelpers.safeJson(tables.propertyData.combined(), listing.address)
-    listing.hidden_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.hidden_fields)
-    listing.ungrouped_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.ungrouped_fields)
     delete listing.deleted
     delete listing.hide_address
     delete listing.hide_listing
     delete listing.rm_inserted_time
     delete listing.rm_modified_time
     _.extend(listing, parcel[0])
+    listing.prior_listings = sqlHelpers.safeJson(tables.propertyData.combined(), listings)
+    listing.data_source_type = 'mls'
+    listing.active = false
+    listing.address = sqlHelpers.safeJson(tables.propertyData.combined(), listing.address)
+    listing.hidden_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.hidden_fields)
+    listing.ungrouped_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.ungrouped_fields)
+    listing.change_history = sqlHelpers.safeJson(tables.propertyData.combined(), listing.change_history)
+    listing.realtor_groups = sqlHelpers.safeJson(tables.propertyData.combined(), listing.realtor_groups)
+    listing.client_groups = sqlHelpers.safeJson(tables.propertyData.combined(), listing.client_groups)
     tables.propertyData.combined()
     .insert(listing)
 
