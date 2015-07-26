@@ -7,7 +7,6 @@ module.exports = ($rootScope, $location, rmapsprincipal) ->
   routes = urlHelpers.getRoutes($location)
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
-
     if not rmapsprincipal.isAuthenticated()
       # user is not authenticated, but needs to be.
       # set the route they wanted as a query parameter
@@ -31,7 +30,6 @@ module.exports = ($rootScope, $location, rmapsprincipal) ->
 
 
   return authorize: (toState, toParams, fromState, fromParams) ->
-
     if !toState?.permissionsRequired && !toState?.loginRequired
       # anyone can go to this state
       return
