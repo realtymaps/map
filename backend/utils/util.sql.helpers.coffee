@@ -204,18 +204,12 @@ singleRow = (q, doThrow = false) -> Promise.try ->
 expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
-safeJson = (knex, arr) ->
+safeJsonArray = (knex, arr) ->
   # this whole function is a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
   # JSON array when serializing to SQL
   if !arr?
     return arr
-  # there is a problem with using knex.raw on strings which include '?', so for now just swap to '#' since there's
-  # nothing we can do...  https://github.com/tgriesser/knex/issues/519
-  try
-    rawJson = JSON.stringify(arr).replace(/'/g, "''").replace(/[?]/g, '#')
-  catch
-    logger.error "Circular JSON: #{util.inspect(arr, depth: 10)}"
-  knex.raw("'#{rawJson}'")
+  knex.raw("?", JSON.stringify(arr))
   
 module.exports =
   between: between
@@ -232,4 +226,4 @@ module.exports =
   orWhereNotIn: orWhereNotIn
   whereInBounds: whereInBounds
   getClauseString: getClauseString
-  safeJson: safeJson
+  safeJsonArray: safeJsonArray

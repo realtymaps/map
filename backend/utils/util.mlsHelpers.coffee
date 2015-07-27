@@ -298,7 +298,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJson(tables.propertyData.mls(), base.address)
+    address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
     hide_listing: base.hide_listing ? false
     client_groups:
       general: normalizedData.general || []
@@ -334,7 +334,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       changes = _diff(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
-      updateRow.change_history = sqlHelpers.safeJson(tables.propertyData.mls(), updateRow.change_history)
+      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.mls(), updateRow.change_history)
       tables.propertyData.mls()
       .where
         mls_uuid: updateRow.mls_uuid
@@ -389,21 +389,24 @@ finalizeData = (subtask, id) ->
       # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
       return
     listing = listings.shift()
+    listing.data_source_type = 'mls'
+    listing.active = false
+    _.extend(listing, parcel[0])
     delete listing.deleted
     delete listing.hide_address
     delete listing.hide_listing
     delete listing.rm_inserted_time
     delete listing.rm_modified_time
-    _.extend(listing, parcel[0])
-    listing.prior_listings = sqlHelpers.safeJson(tables.propertyData.combined(), listings)
-    listing.data_source_type = 'mls'
-    listing.active = false
-    listing.address = sqlHelpers.safeJson(tables.propertyData.combined(), listing.address)
-    listing.hidden_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.hidden_fields)
-    listing.ungrouped_fields = sqlHelpers.safeJson(tables.propertyData.combined(), listing.ungrouped_fields)
-    listing.change_history = sqlHelpers.safeJson(tables.propertyData.combined(), listing.change_history)
-    listing.realtor_groups = sqlHelpers.safeJson(tables.propertyData.combined(), listing.realtor_groups)
-    listing.client_groups = sqlHelpers.safeJson(tables.propertyData.combined(), listing.client_groups)
+    listing.prior_listings = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
+    listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
+    listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
+    # JWI: I don't think the below should be necessary, but there was a while where they seemed to be.  I've since made
+    # some other changes though, so I'm leaving them commented out in hopes it will work without.  If there are problems
+    # with JSON syntax, they might need to be uncommented.
+    #listing.hidden_fields = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.hidden_fields)
+    #listing.ungrouped_fields = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.ungrouped_fields)
+    #listing.realtor_groups = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.realtor_groups)
+    #listing.client_groups = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.client_groups)
     tables.propertyData.combined()
     .insert(listing)
 
