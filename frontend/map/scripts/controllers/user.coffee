@@ -9,13 +9,19 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
     imageQuality = profile.quality
     rmapsprincipal.getIdentity().then ->
       user = $rootScope.user
-      $http.get(backendRoutes.us_states.root)
-      .then (data) ->
+      $http.get(backendRoutes.us_states.root).then (data) ->
         $scope.us_states = data.data
 
-      $http.get(backendRoutes.account_use_types.root)
-      .then (data) ->
+      $http.get(backendRoutes.account_use_types.root).then (data) ->
         $scope.accountUseTypes = data.data
+
+      if user.company_id?
+        $http.get("#{backendRoutes.company.root}/#{user.company_id}").then (data) ->
+          _.extend $scope.company, _.first data.data
+
+      $http.get(backendRoutes.company.root).then (data) ->
+        _.merge $scope,
+          companies: _.indexBy data.data, 'id'
 
       spawnImageAlert = (msg) ->
         imageAlert =
@@ -24,10 +30,16 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
         imageAlert.msg = msg
         $rootScope.$broadcast rmapsevents.alert.spawn, imageAlert
 
-      _.extend $scope,
+      _.merge $scope,
+        # companies:
+        #   changed: ->
+        #     _.merge $scope.company, $scope.companies[$scope.user.company_id]
         user: _.extend _.clone($rootScope.user, true),
           submit: ->
             $http.put backendRoutes.userSession.root, @
+        company:
+          submit: ->
+            $http.post backendRoutes.userSession.companyRoot, @
         maxImagePixles: maxImagePixles
         imageQuality: imageQuality
         imageForm:
@@ -39,7 +51,7 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             if @cropBlob.length
               return @cropBlob
             if user.account_image_id?
-              return @blob || "/api/session/image"
+              return @blob || backendRoutes.userSession.image
             "/assets/avatar.svg"
           save: ->
             return spawnImageAlert "No Image to Save." unless @blob?
@@ -53,6 +65,27 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             delete @cropBlob
             delete @blob
 
+        companyImageForm:
+          cropBlob: ''
+          clearErrors: ->
+            $scope.$evalAsync ->
+              $scope.companyImageForm.errors = {}
+          toRender: ->
+            if @cropBlob.length
+              return @cropBlob
+            if $scope.company.account_image_id?
+              return @blob || "#{backendRoutes.userSession.image}/#{$scope.company.account_image_id}"
+            "/assets/trademark.svg"
+          save: ->
+            return spawnImageAlert "No Image to Save." unless @blob?
 
+            if _.keys(@errors).length
+              _.each @errors, (e) ->
+                spawnImageAlert e
+              return
+
+            $http.put backendRoutes.userSession.image, blob: @cropBlob
+            delete @cropBlob
+            delete @blob
         submit: ->
         ready: true
