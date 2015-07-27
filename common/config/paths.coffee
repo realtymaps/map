@@ -16,7 +16,7 @@ getAssetCollection = (app) ->
     webpackLibs: app + 'lib/scripts/webpack/**/*.*'
     styles: app + 'styles/*.css'
     stylus: app + 'styles/main.styl'
-    less: app + 'styles/**.less'
+    less: app + 'styles/*.less'
     stylusWatch: app + 'styles/**/*'
     svg: app + 'html/svg/*.svg'
     html: app + 'html/**/*.html'
