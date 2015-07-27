@@ -23,7 +23,7 @@
     "spec": "gulp spec",
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
-    "job-queue": "coffee ./backend/jobQueueWorker.coffee"
+    "job-queue": "./scripts/app/processJobQueue"
   },
   "dependencies": {
     "JSONStream": "^0.10.0",
