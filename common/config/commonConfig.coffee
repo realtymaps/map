@@ -32,6 +32,14 @@ validation =
     BE: /^[1-9]{1}[0-9]{3}$/
     IN: /^\d{6}$/
 
+  password: ///
+    ^.*(?!.*?(.)\1{2,})     #doesn't repeat a char more than twice
+    (?=.{8,})               #min 8 chars
+    (?=.*[$@$!%*#?&])       #one special char
+    (?=.*\d)                #one number
+    (?=.*[a-z])             #one lowercase
+    (?=.*[A-Z]).*$///       #one uppercase
+
 commonConfig =
   SUPPORT_EMAIL: 'support@realtymaps.com'
   UNEXPECTED_MESSAGE: (troubleshooting) ->

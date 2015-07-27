@@ -95,6 +95,7 @@ app.config(($provide) ->
       #parents('.form-group:first').addClass('has-error')
 
   expression =
+    password: validation.password
     phone: validation.phone
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
@@ -118,6 +119,8 @@ app.config(($provide) ->
       value.length <= param;
 
   defaultMsg =
+    password:
+      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice!'
     required:
       error: 'Required!!'
     url:
