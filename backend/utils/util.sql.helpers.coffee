@@ -3,6 +3,7 @@ memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 logger = require '../config/logger'
 Promise = require "bluebird"
+util = require 'util'
 
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
@@ -204,10 +205,11 @@ expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
 safeJsonArray = (knex, arr) ->
+  # this whole function is a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
+  # JSON array when serializing to SQL
   if !arr?
     return arr
-  rawJson = JSON.stringify(arr).replace(/'/g, "''")
-  knex.raw("'#{rawJson}'")
+  knex.raw("?", JSON.stringify(arr))
   
 module.exports =
   between: between

@@ -1,3 +1,4 @@
+config = require './config/config'
 
 # "long stack traces" support
 if config.LOGGING.LONG_STACK_TRACES
@@ -27,11 +28,12 @@ tables.jobQueue.queueConfig()
   if !queue.active
     logger.error "Queue shouldn't be active: #{queueName}"
     process.exit(2)
-    
+  
   cluster queueName, queue.processes_per_dyno, () ->
-    Promise.all for i in [1..queue.subtasks_per_process]
-      jobQueue.runWorker(queue, i)
-      
+    workers = for i in [1..queue.subtasks_per_process]
+      jobQueue.runWorker(queueName, i)
+    Promise.all workers
+
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"
   logger.error "#{err.stack||err}"
