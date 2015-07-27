@@ -12,7 +12,7 @@ if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
 else
   tClient = null
   # make sure we know there wasn't twilio login
-  logger.error "Twilio login not found in environment."
+  logger.warn "Twilio login not found in environment."
 
   
 

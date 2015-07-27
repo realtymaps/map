@@ -22,7 +22,8 @@
     "test": "foreman run gulp spec",
     "spec": "gulp spec",
     "postinstall": "bower update",
-    "clean": "./scripts/app/clean"
+    "clean": "./scripts/app/clean",
+    "job-queue": "coffee ./backend/jobQueueWorker.coffee"
   },
   "dependencies": {
     "JSONStream": "^0.10.0",
