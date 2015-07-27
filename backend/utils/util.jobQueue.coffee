@@ -505,14 +505,13 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
       executeSubtask(subtask)
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
+    else if quit
+      logger.debug "#{prefix} No subtask ready for execution; quiting."
+      Promise.resolve()
     else
-      if quit
-        logger.debug "#{prefix} No subtask ready for execution; quiting."
-        Promise.resolve()
-      else
-        logger.debug "#{prefix} No subtask ready for execution; waiting..."
-        Promise.delay(30000) # poll again in 30 seconds
-        .then _runWorkerImpl.bind(null, queueName, prefix, quit)
+      logger.debug "#{prefix} No subtask ready for execution; waiting..."
+      Promise.delay(30000) # poll again in 30 seconds
+      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
 
 module.exports =
