@@ -19,7 +19,7 @@ currentProfile = (req) ->
 mergeHandles = (handles, config) ->
   for key of config
     _.extend config[key],
-      handle: handles[key]
+      handle: unless config[key].handle? then handles[key] else handles[config[key].handle]
   # console.debug config
   config
 
