@@ -1,6 +1,7 @@
 'use strict'
 
 require '../../../common/extensions/strings.coffee'
+require '../../../common/extensions/angular.coffee'
 
 
 #Wierd this does not work well render problems.. bower is fine
@@ -30,12 +31,14 @@ app = window.angular.module appName, [
   'infinite-scroll'
   'restangular'
   'validation'
+  'validation.rule'
   'ngImgCrop'
 ]
 
 app.controller 'rmapsAppController', ($scope, $rootScope, rmapsprincipal) ->
 
   rmapsprincipal.getIdentity().then (identity) ->
+    return unless identity
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ""
     user.name = user.full_name or user.username

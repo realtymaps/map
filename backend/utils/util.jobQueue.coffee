@@ -463,7 +463,8 @@ queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, 
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
     
 queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
-  if total == 0
+  total = Number(total)
+  if !total
     return
   subtasks = Math.ceil(total/maxPage)
   subtasksQueued = 0
@@ -471,8 +472,10 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
   data = []
   for i in [1..subtasks]
     datum =
-      offset: subtasksQueued
+      offset: countHandled
       count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
+      i: i
+      of: subtasks
     data.push datum
     subtasksQueued++
     countHandled += datum.count
@@ -488,21 +491,27 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
       throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
 
-runWorker = (queueConfig, id) ->
+runWorker = (queueName, id, quit=false) ->
   if cluster.worker?
-    prefix = "<#{queueConfig.name}-#{cluster.worker.id}-#{id}>"
+    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
   else
-    prefix = "<#{queueConfig.name}-#{id}>"
-  getQueuedSubtask(queueConfig.name)
+    prefix = "<#{queueName}-#{id}>"
+  _runWorkerImpl(queueName, prefix, quit)
+
+_runWorkerImpl = (queueName, prefix, quit) ->
+  getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
       logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
       executeSubtask(subtask)
+      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
+    else if quit
+      logger.debug "#{prefix} No subtask ready for execution; quiting."
+      Promise.resolve()
     else
-      logger.debug "#{prefix} No subtask ready for execution, waiting..."
+      logger.debug "#{prefix} No subtask ready for execution; waiting..."
       Promise.delay(30000) # poll again in 30 seconds
-  .then runWorker.bind(null, queueConfig, id)
-        
+      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
 
 module.exports =

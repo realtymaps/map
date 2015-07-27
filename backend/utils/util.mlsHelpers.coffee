@@ -92,54 +92,55 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 # loads all records from a given RETS table that have changed since the last successful run of the task
 loadRetsTableUpdates = (subtask, options) ->
   rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
-  retsClient = new rets.Client
-    loginUrl: subtask.task_data.url
-    username: subtask.task_data.login
-    password: encryptor.decrypt(subtask.task_data.password)
-  retsClient.login()
-  .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(new Error("#{error.replyCode}"), "RETS login failed")
-  .then () ->
+  _getRetsClient(subtask.task_data.url, subtask.task_data.login, subtask.task_data.password)
+  .then (retsClient) ->
     # get info about the fields available in the table
     retsClient.metadata.getTable(options.retsDbName, options.retsTableName)
-  .then (tableInfo) ->
-    fields = _.indexBy(tableInfo.Fields, 'LongName')
-    tables.jobQueue.dataLoadHistory()
-    .insert
-      data_source_id: options.retsId
-      data_source_type: 'mls'
-      batch_id: subtask.batch_id
-      raw_table_name: rawTableName
-    .then () ->
-      taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
-    .then () ->
-      # figure out when we last got updates from this table
-      taskHelpers.getLastStartTime(subtask.task_name)
-    .then (lastSuccess) ->
-      now = new Date()
-      if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-        # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-        logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-        lastSuccess = new Date(0)
-        doDeletes = true
-      else
-        logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-        doDeletes = false
-      step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-      step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-      Promise.join step3Promise, step5Promise, () ->
-        return lastSuccess
-    .then (refreshThreshold) ->
-      _getData(retsClient, options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
-    .then (results) ->
-      _streamArrayToDbTable(results, rawTableName, fields)
+    .then (tableInfo) ->
+      fields = _.indexBy(tableInfo.Fields, 'LongName')
+      tables.jobQueue.dataLoadHistory()
+      .insert
+        data_source_id: options.retsId
+        data_source_type: 'mls'
+        batch_id: subtask.batch_id
+        raw_table_name: rawTableName
+      .then () ->
+        taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
+      .then () ->
+        # figure out when we last got updates from this table
+        taskHelpers.getLastStartTime(subtask.task_name)
+      .then (lastSuccess) ->
+        now = new Date()
+        if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
+          # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+          logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
+          lastSuccess = new Date(0)
+          doDeletes = true
+        else
+          logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
+          doDeletes = false
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        Promise.join step3Promise, step5Promise, () ->
+          return lastSuccess
+      .then (refreshThreshold) ->
+        _getData(retsClient, options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
+      .then (results) ->
+        _streamArrayToDbTable(results, rawTableName, fields)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-    .finally () ->
-      # always log out the RETS client when we're done
-      retsClient.logout()
+
+_getData = (client, database, table, dmqlQueryString, queryOptions) ->
+  client.search.query(database, table, dmqlQueryString, queryOptions)
+  .catch isUnhandled, (error) ->
+    if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
+      # code for 0 results, not really an error (DMQL is a clunky language)
+      return []
+    # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
+    # code for too many results, must manually paginate or something to get all the data
+    throw new PartiallyHandledError(error, "failed to query RETS system")
 
 getDataDump = (mlsInfo, limit=1000) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
@@ -148,15 +149,7 @@ getDataDump = (mlsInfo, limit=1000) ->
       momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
     else
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
-
-    retsClient.search.query(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
-    .catch isUnhandled, (error) ->
-      if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
-        # code for 0 results, not really an error (DMQL is a clunky language)
-        return []
-      # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
-      # code for too many results, must manually paginate or something to get all the data
-      throw new PartiallyHandledError(error, "failed to query RETS system")
+    _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
 
 _getRetsClient = memoize(
   (loginUrl, username, password) ->
@@ -299,8 +292,11 @@ normalizeData = (subtask, options) -> Promise.try () ->
 _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = _getValues(normalizedData.base || [])
-  normalizedData.unshift(name: 'Address', value: base.address)
-  normalizedData.unshift(name: 'Status', value: base.status_display)
+  normalizedData.general.unshift(name: 'Address', value: base.address)
+  normalizedData.general.unshift(name: 'Status', value: base.status_display)
+  ungrouped = _.omit(rawData, usedKeys)
+  if _.isEmpty(ungrouped)
+    ungrouped = null
   data =
     address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
     hide_listing: base.hide_listing ? false
@@ -318,7 +314,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       realtor: normalizedData.realtor || []
       sale: normalizedData.sale || []
     hidden_fields: _getValues(normalizedData.hidden || [])
-    ungrouped_fields: _.omit(rawData, usedKeys)
+    ungrouped_fields: ungrouped
   updateRow = _.extend base, stats, data
   # check for an existing row
   tables.propertyData.mls()
@@ -329,9 +325,8 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
   .then (result) ->
     if !result?.length
       # no existing row, just insert
-      blah = tables.propertyData.mls()
+      tables.propertyData.mls()
       .insert(updateRow)
-      blah
     else
       # found an existing row, so need to update, but include change log
       result = result[0]
@@ -339,6 +334,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       changes = _diff(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
+      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.mls(), updateRow.change_history)
       tables.propertyData.mls()
       .where
         mls_uuid: updateRow.mls_uuid
@@ -350,17 +346,13 @@ recordChangeCounts = (subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
-      # refresh of all data, because this would be overzealous if we're just doing an incremental update; this subquery
+      # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
       # will resolve to a count of affected rows
-      return () ->
-        tables.propertyData.mls(this)
-        .whereNot(batch_id: subtask.batch_id)
-        .whereNull('deleted')
-        .update(deleted: subtask.batch_id)
-    else
-      # return 0 because we use this as the count of deleted rows
-      return 0
-  .then (deletedSubquery) ->
+      tables.propertyData.mls()
+      .whereNot(batch_id: subtask.batch_id)
+      .whereNull('deleted')
+      .update(deleted: subtask.batch_id)
+  .then (deletedCount=0) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
       tables.propertyData.mls(this)
@@ -378,30 +370,43 @@ recordChangeCounts = (subtask) ->
     .update
       inserted_rows: insertedSubquery
       updated_rows: updatedSubquery
-      deleted_rows: deletedSubquery
+      deleted_rows: deletedCount
 
 
 finalizeData = (subtask, id) ->
   listingsPromise = tables.propertyData.mls()
   .select('*')
-  .where(rm_property_id: id)
+  .where(id)
   .whereNull('deleted')
   .where(hide_listing: false)
-  .orderByRaw('close_date NULLS FIRST DESC')
-  parcelPromise = tables.propertyData.parcel()
+  .orderByRaw('close_date DESC NULLS FIRST')
+  parcelsPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-  .where(rm_property_id: id)
-  # we also need to select from the tax table for owner name info
-  Promise.join listingsPromise, parcelsPromise, (listings, parcel=[]) ->
-    if listings?.length == 0
+  .where(id)
+  # TODO: we also need to select from the tax table for owner name info
+  Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
+    if listings.length == 0
       # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
       return
     listing = listings.shift()
-    listing.prior_listings = listings
     listing.data_source_type = 'mls'
     listing.active = false
-    delete listing.deleted
     _.extend(listing, parcel[0])
+    delete listing.deleted
+    delete listing.hide_address
+    delete listing.hide_listing
+    delete listing.rm_inserted_time
+    delete listing.rm_modified_time
+    listing.prior_listings = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
+    listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
+    listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
+    # JWI: I don't think the below should be necessary, but there was a while where they seemed to be.  I've since made
+    # some other changes though, so I'm leaving them commented out in hopes it will work without.  If there are problems
+    # with JSON syntax, they might need to be uncommented.
+    #listing.hidden_fields = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.hidden_fields)
+    #listing.ungrouped_fields = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.ungrouped_fields)
+    #listing.realtor_groups = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.realtor_groups)
+    #listing.client_groups = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.client_groups)
     tables.propertyData.combined()
     .insert(listing)
 

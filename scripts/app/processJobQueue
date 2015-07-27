@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+source $SCRIPT_DIR/app/syncVars
+
+coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"

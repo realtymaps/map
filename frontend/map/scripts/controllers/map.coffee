@@ -35,7 +35,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
 
     rmapssearchbox('mainMap')
 
-    restoreState = () ->
+    $rootScope.registerScopeData () ->
       profile = null
       rmapsprincipal.getIdentity()
       .then (identity) ->
@@ -89,12 +89,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
               profile.map_results.selectedResultId,"all")
             .then (data) ->
               map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
-
-    $scope.$onRootScope rmapsevents.principal.login.success, () ->
-      restoreState()
-
-    if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
-      restoreState()
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

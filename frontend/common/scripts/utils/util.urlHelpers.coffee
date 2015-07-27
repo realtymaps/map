@@ -14,3 +14,4 @@ getRoutes = (loc) ->
 module.exports =
   useUrls: useUrls
   getRoutes: getRoutes
+  

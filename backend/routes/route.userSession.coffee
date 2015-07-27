@@ -4,6 +4,8 @@ logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
+userSvc = require('../services/services.user').user
+companySvc = require('../services/services.user').company
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -14,6 +16,8 @@ auth = require '../utils/util.auth.coffee'
 {NotFoundError} = require '../utils/util.route.helpers'
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
+validation = require '../utils/util.validation'
+{validators} = require '../utils/util.validation'
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -28,11 +32,14 @@ safeUserFields = [
   'username'
   'work_phone'
   'account_image_id'
-  'company_id'
   'address_1'
   'address_2'
   'us_state_id'
   'zip'
+  'city'
+  'website_url'
+  'account_use_type_id'
+  'company_id'
 ]
 
 # handle login authentication, and do all the things needed for a new login session
@@ -136,42 +143,113 @@ profiles = (req, res, next) ->
   .catch (err) ->
     logger.error err
 
+getImage = (req, res, next, entity, typeStr = "user") -> Promise.try ->
+  userSessionService.getImage(entity)
+  .then (result) ->
+    unless result?.blob?
+      return next new ExpressResponse({} , httpStatus.NOT_FOUND)
+
+    parsed = parseBase64(result.blob)
+    res.setHeader("Content-Type", parsed.type)
+    buf = new Buffer(parsed.data, 'base64')
+    dim = sizeOf buf
+    if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+      logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for entity.id: #{entity.id}; type: #{typeStr}"
+    res.send(buf)
+
+updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSessionService.upsertImage) -> Promise.try ->
+  # logger.debug req.body.blob
+  if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
+    return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
+
+  if !req.body?
+    return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
+
+  parsed = parseBase64(req.body.blob)
+  buf = new Buffer(parsed.data, 'base64')
+  dim = sizeOf buf
+
+  if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
+    return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
+
+  upsertImageFn(entity, req.body.blob)
+  .then ()->
+    updateCache(req, res, next)
+
 image = (req, res, next) ->
+    methodExec req,
+      GET: () -> getImage(req, res, next, req.user)
+      PUT: () -> updateImage(req, res, next, req.user)
+
+companyImage = (req, res, next) ->
+
+    methodExec req,
+      GET: () ->
+        transforms =
+          account_image_id:
+            required: true
+
+        validation.validateAndTransform(req.params, transforms)
+        .then (validParams) ->
+          getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
+
+      PUT: () ->
+        updateImage(req, res, next, _.omit(req.body, "blob"), "company", userSessionService.upsertCompanyImage)
+
+
+#main entry point to update root user info
+_safeRootFields = safeUserFields.concat([])
+
+['company_id'].forEach ->
+  _safeRootFields.pop()
+
+root = (req, res, next) ->
   methodExec req,
-    GET: () -> Promise.try ->
-      userSessionService.getImage(req.user)
-      .then (result) ->
-        unless result?.blob?
-          return next new ExpressResponse({} , httpStatus.NOT_FOUND)
-
-        parsed = parseBase64(result.blob)
-        res.setHeader("Content-Type", parsed.type)
-        buf = new Buffer(parsed.data, 'base64')
-        dim = sizeOf buf
-        if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
-          logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"
-        res.send(buf)
-
-    PUT: () -> Promise.try ->
-      # logger.debug req.body.blob
-      if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
-        return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
-
-      if !req.body?
-        return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
-
-      parsed = parseBase64(req.body.blob)
-      buf = new Buffer(parsed.data, 'base64')
-      dim = sizeOf buf
-
-      if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
-        return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
-
-      userSessionService.upsertImage(req.user, req.body.blob)
-      .then ()->
+    PUT: () ->
+      userSvc.update(req.session.userid, req.body, _safeRootFields)
+      .then () ->
         updateCache(req, res, next)
 
+_safeRootCompanyFields = [
+  'address_1'
+  'address_2'
+  'zip'
+  'name'
+  'us_state_id'
+  'phone'
+  'fax'
+  'website_url'
+]
+
+#only way to add a company for a logged in user (otherwise use admin route /company)
+companyRoot = (req, res, next) ->
+  methodExec req,
+    POST: () ->
+      if !req.user.company_id? and !req.body.id?
+        q = companySvc.create(req.body).returning('id')
+      else
+        id = req.user.company_id || req.body.id
+        q = companySvc.update(id, req.body, _safeRootCompanyFields)
+        .then ->
+          id
+      q.then (id) ->
+        unless id?
+          throw 'Error creating new company'
+        logger.debug id
+        req.user.company_id = id
+        userSvc.update(req.user.id, req.user).then ->
+          updateCache(req, res, next)
+
+
 module.exports =
+  root:
+    method: 'put'
+    handle: root
+
+  companyRoot:
+    method: 'post'
+    handle: companyRoot
+
   login:
     method: 'post'
     handle: login
@@ -199,3 +277,8 @@ module.exports =
     methods: ['get', 'put']
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: image
+
+  companyImage:
+    methods: ['get', 'put']
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: companyImage
