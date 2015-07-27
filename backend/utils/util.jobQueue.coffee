@@ -491,12 +491,12 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
       throw new Error("specified subtask not found: #{taskName}/#{subtaskName}")
     return subtasks[0]
 
-runWorker = (queueConfig, id, quit=false) ->
+runWorker = (queueName, id, quit=false) ->
   if cluster.worker?
-    prefix = "<#{queueConfig.name}-#{cluster.worker.id}-#{id}>"
+    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
   else
-    prefix = "<#{queueConfig.name}-#{id}>"
-  _runWorkerImpl(queueConfig.name, prefix, quit)
+    prefix = "<#{queueName}-#{id}>"
+  _runWorkerImpl(queueName, prefix, quit)
 
 _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
