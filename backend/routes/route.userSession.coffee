@@ -244,14 +244,18 @@ updateUserNamePassword = (req, res, next) ->
   transforms =
     username:
       required: true
-    password: [
-      validators.string(regex: config.VALIDATION.password)
-      required: true
-    ]
+    password: validators.string(regex: config.VALIDATION.password)
 
   validation.validateAndTransform(req.body, transforms)
   .then (validBody) ->
     userSessionService.updateUserNamePassword(req.user, validBody.username, validBody.password)
+    .catch validation.DataValidationError, (err) ->
+      next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    .catch (err) ->
+      next new ExpressResponse(alert: {msg: err}, httpStatus.BAD_REQUEST)
+    .then ->
+      res.json(true)
+
 
 module.exports =
   root:

@@ -146,13 +146,13 @@ upsertCompanyImage = (entity, blob) ->
   upsertImage(entity,blob, userData.company)
 
 updateUserNamePassword = (user, newUserName, password) ->
-  singleRow userData.user().where(username: newUserName).count()
+  singleRow userData.user().where(username: newUserName).whereNot(id:user.id).count()
   .then (row) ->
     if row.count > 0
-      throw "Username already exists"
-    password = createPasswordHash(password)
-    userData.user().update(username: newUserName, password:password)
-    .where(id: user.id)
+      return Promise.reject "Username already exists"
+    createPasswordHash(password).then (password) ->
+      userData.user().update(username: newUserName, password:password)
+      .where(id: user.id)
 
 module.exports =
   getUser: getUser
