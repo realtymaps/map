@@ -24,8 +24,8 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                   img-crop(
                     area-type="square" image="imageForm.blob" 
                     result-image="imageForm.cropBlob"
-                    result-image-size="{{maxImagePixles}}"
-                    result-image-quality="{{imageQuality}}"
+                    result-image-size="maxImagePixles"
+                    result-image-quality="imageQuality"
                     result-image-format="image/jpeg")
                 h6 Upload a different photo...
                 input.text-center.center-block.well.well-sm(
@@ -164,14 +164,20 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                 img-crop(
                   area-type="square" image="companyImageForm.blob" 
                   result-image="companyImageForm.cropBlob"
-                  result-image-size="{{maxImagePixles}}"
-                  result-image-quality="{{imageQuality}}"
+                  result-image-size="maxImagePixles"
+                  result-image-quality="imageQuality"
                   result-image-format="image/jpeg")
               h6 Upload a different photo...
               input.text-center.center-block.well.well-sm(
                 type='file' accept='image/*' 
                 rmaps-file-read="companyImageForm.blob" 
                 rmaps-file-read-on-load="companyImageForm.clearErrors")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save' type='button' ng-click="companyImageForm.save()")
+                span
+                input.btn.btn-default(value='Cancel' type='reset')
           //- h3 Existing Companies
           //- select.form-control(ng-model="user.company_id" ng-change="companies.changed()")
           //-   option(

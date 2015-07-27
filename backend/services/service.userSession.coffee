@@ -132,7 +132,7 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
   .then (image) ->
     if image
       #update
-      logger.debug "updating image for account_image_id: #{user.account_image_id}"
+      logger.debug "updating image for account_image_id: #{entity.account_image_id}"
       return accountImagesSvc.update(entity.account_image_id, blob:blob)
     #create
     logger.debug "creating image"

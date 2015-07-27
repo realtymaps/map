@@ -157,7 +157,7 @@ getImage = (req, res, next, entity, typeStr = "user") -> Promise.try ->
       logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for entity.id: #{entity.id}; type: #{typeStr}"
     res.send(buf)
 
-updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSessionService.updateImage) -> Promise.try ->
+updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSessionService.upsertImage) -> Promise.try ->
   # logger.debug req.body.blob
   if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
     return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
@@ -172,7 +172,7 @@ updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSes
   if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
     return next new ExpressResponse({alert: "Dimensions of #{JSON.stringify dim} are outside of limits for user.id: #{req.user.id}"} , httpStatus.BAD_REQUEST)
 
-  upsertImageFn(req.user, req.body.blob)
+  upsertImageFn(entity, req.body.blob)
   .then ()->
     updateCache(req, res, next)
 
@@ -181,18 +181,20 @@ image = (req, res, next) ->
       GET: () -> getImage(req, res, next, req.user)
       PUT: () -> updateImage(req, res, next, req.user)
 
-imageById = (req, res, next) ->
-  transforms =
-    account_image_id:
-      required: true
+companyImage = (req, res, next) ->
 
-  validation.validateAndTransform(req.params, transforms)
-  .then (validParams) ->
     methodExec req,
       GET: () ->
-        getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
+        transforms =
+          account_image_id:
+            required: true
+
+        validation.validateAndTransform(req.params, transforms)
+        .then (validParams) ->
+          getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
+
       PUT: () ->
-        updateImage(req, res, next, {account_image_id: validParams.account_image_id}, "company", userSessionService.upsertCompanyImage)
+        updateImage(req, res, next, _.omit(req.body, "blob"), "company", userSessionService.upsertCompanyImage)
 
 
 #main entry point to update root user info
@@ -276,7 +278,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: image
 
-  imageById:
+  companyImage:
     methods: ['get', 'put']
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: imageById
+    handle: companyImage

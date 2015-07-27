@@ -38,7 +38,7 @@ module.exports =
     currentProfile: "#{apiBaseSession}/currentProfile"
     profiles: "#{apiBaseSession}/profiles"
     image: "#{apiBaseSession}/image"
-    imageById: "#{apiBaseSession}/image/:account_image_id"
+    companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
   user:

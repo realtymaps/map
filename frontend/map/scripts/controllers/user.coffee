@@ -62,8 +62,9 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
               return
 
             $http.put backendRoutes.userSession.image, blob: @cropBlob
-            delete @cropBlob
-            delete @blob
+            .success =>
+              delete @cropBlob
+              delete @blob
 
         companyImageForm:
           cropBlob: ''
@@ -74,7 +75,7 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             if @cropBlob.length
               return @cropBlob
             if $scope.company.account_image_id?
-              return @blob || "#{backendRoutes.userSession.image}/#{$scope.company.account_image_id}"
+              return @blob || backendRoutes.userSession.companyImage.replace(":account_image_id", $scope.company.account_image_id)
             "/assets/trademark.svg"
           save: ->
             return spawnImageAlert "No Image to Save." unless @blob?
@@ -84,8 +85,9 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
                 spawnImageAlert e
               return
 
-            $http.put backendRoutes.userSession.image, blob: @cropBlob
-            delete @cropBlob
-            delete @blob
+            $http.put backendRoutes.userSession.companyImage.replace(":account_image_id",""), _.extend(blob: @cropBlob, $scope.company)
+            .success =>
+              delete @cropBlob
+              delete @blob
         submit: ->
         ready: true
