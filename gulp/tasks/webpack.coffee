@@ -21,11 +21,11 @@ prodConf = configFact output,
     }}
 , '!'
 
-adminConf = configFact outputAdmin,
-  new webpack.optimize.UglifyJsPlugin {
-    compress: {
-      warnings: false
-    }}
+adminConf = configFact outputAdmin#,
+  # new webpack.optimize.UglifyJsPlugin {
+  #   compress: {
+  #     warnings: false
+  #   }}
 
 # modify staging settings that are only needed for staging
 # (we may want to have an organized staging vs. prod config defined
