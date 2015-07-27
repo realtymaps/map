@@ -17,8 +17,19 @@ _getZoom = (position) ->
 _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   returnAs = queryParams.returnType
   # logger.debug "returnAs: #{returnAs}"
+  logger.debug "\n#### _handleReturnType, params:"
+  logger.debug "#### state:"
+  logger.debug state
+  logger.debug "#### queryParams:"
+  logger.debug "----< redacted >----"
+  logger.debug "#### limit:"
+  logger.debug limit
+  logger.debug "#### zoom:"
+  logger.debug zoom
+
 
   _default = ->
+    logger.debug "#### handleReturnType, default"
     query = base.getFilterSummaryAsQuery(state, queryParams, 800)
     return Promise.resolve([]) unless query
     # include saved id's in query so no need to touch db later
@@ -43,6 +54,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
   handles =
     cluster: ->
+      logger.debug "#### handleReturnType, cluster"
       base.getFilterSummary(state, queryParams, limit, clusterQuery(zoom))
       .then (properties) ->
         fillOutDummyClusterIds(properties)
@@ -51,6 +63,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
 
     geojsonPolys: ->
+      logger.debug "#### handleReturnType, geojsonPolys"
       query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
       return Promise.resolve([]) unless query
       # include saved id's in query so no need to touch db later
@@ -73,8 +86,16 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
 module.exports =
   getFilterSummary: (state, rawFilters, limit = 2000) ->
+    logger.debug "\n#### getFilterSummary, params:"
+
     _zoom = null
     Promise.try ->
+      logger.debug "#### getting queryParams with params:"
+      logger.debug "#### state:"
+      logger.debug state
+      logger.debug "#### rawFilters:"
+      logger.debug rawFilters
+
       base.validateAndTransform(state, rawFilters)
     .then (queryParams) ->
       # logger.debug queryParams, true

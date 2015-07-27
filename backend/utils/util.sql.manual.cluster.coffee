@@ -21,9 +21,11 @@ _makeClusterQuery = (roundTo) ->
 
 _clusterQuery = (zoom) ->
   if zoom <= zoomThresh.roundOne and zoom > zoomThresh.roundNone
+    logger.debug "#### _clusterQuery, roundTo=1:"
     # logger.debug 'roundOne'
     _makeClusterQuery(1)
   else #none
+    logger.debug "#### _clusterQuery, roundTo=0:"
     # logger.debug 'roundNone'
     _makeClusterQuery(0)
 

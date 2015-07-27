@@ -55,6 +55,9 @@ transforms = _.extend {}, otherValidations, minMaxes
 _getDefaultQuery = ->
   sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
+_getResultCount = () ->
+  logger.debug "#### _getResultCount"
+
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
   # logger.debug filters, true
     return if !filters or !filters?.status?.length or !query
@@ -118,8 +121,12 @@ module.exports =
       logger.debug 'GTFO'
       return
 
-    # logger.debug 'rawFilters: \n'
-    # logger.debug rawFilters, true
+    # logger.debug "#### validateAndTransform, params:"
+    # logger.debug "#### rawFilters:"
+    # logger.debug rawFilters
+    # logger.debug "#### transforms:"
+    # logger.debug transforms
+
     validation.validateAndTransform(rawFilters, transforms)
 
   getFilterSummaryAsQuery: _getFilterSummaryAsQuery

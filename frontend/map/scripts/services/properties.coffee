@@ -37,6 +37,18 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       $http.get(route, cache: cache)
 
     _getFilterSummary = (hash, mapState, returnType, filters="", cache = true, throttler = _filterThrottler) ->
+      $log.info "#### service getFilterSummary, invoking _getPropertyData with parameters:"
+      $log.info "#### ------------------- hash --------------------------- ####"
+      $log.info hash
+      $log.info "#### ------------------- mapState ----------------------- ####"
+      $log.info mapState
+      $log.info "#### ------------------- returnType --------------------- ####"
+      $log.info returnType
+      $log.info "#### ------------------- filters ------------------------ ####"
+      $log.info filters
+      $log.info "#### ------------------- cache -------------------------- ####"
+      $log.info cache
+
       throttler.invokePromise(
         _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
         , http: {route: backendRoutes.properties.filterSummary })

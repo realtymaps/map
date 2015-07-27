@@ -150,11 +150,15 @@ app.factory 'rmapsMap',
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
+        $log.info "\n\n#### drawFilterSummary"
+        $log.info "#### rmapsZoomLevel.doCluster(@scope)?   " + rmapsZoomLevel.doCluster(@scope)
         promises = []
         if rmapsZoomLevel.doCluster(@scope)
           promises.push(
             rmapsProperties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
             .then (data) =>
+              $log.info "#### getFilterSummaryAsCluster data:"
+              $log.info data
               return if !data? or _.isString data
               #data should be in array format
               @scopeM().markers.filterSummary = {}
@@ -170,6 +174,9 @@ app.factory 'rmapsMap',
           promises.push(
             rmapsProperties.getFilterSummary(@hash, @mapState, @filters, cache)
             .then (data) =>
+              $log.info "#### getFilterSummary data:"
+              $log.info data
+
               return if !data? or _.isString data
               @scopeM().markers.backendPriceCluster = {}
 
@@ -190,6 +197,8 @@ app.factory 'rmapsMap',
             promises.push(
               rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
               .then (data) =>
+                $log.info "#### getFilterSummaryAsGeoJsonPolys data:"
+                $log.info data
                 return if !data? or _.isString data
                 @scopeM().geojson.filterSummaryPoly =
                   data: data
