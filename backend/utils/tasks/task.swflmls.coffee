@@ -1,7 +1,10 @@
+Promise = require "bluebird"
 mlsHelpers = require '../util.mlsHelpers'
 jobQueue = require '../util.jobQueue'
 dbs = require '../../config/dbs'
 tables = require '../../config/tables'
+util = require 'util'
+logger = require '../../config/logger'
 
 
 # NOTE: This file is actually going to go away.  We don't want to have an explicit task file for each of the hundreds
@@ -9,7 +12,7 @@ tables = require '../../config/tables'
 # explicitly providing a file like this (if we find an edge case that doesn't obey the rules).
 
 
-NUM_ROWS_TO_PAGINATE = 100
+NUM_ROWS_TO_PAGINATE = 500
 
 
 loadDataRawMain = (subtask) ->
@@ -33,8 +36,8 @@ finalizeDataPrep = (subtask) ->
   tables.propertyData.mls()
   .select(dbs.properties.knex.raw('count(distinct "rm_property_id")'))
   .where(batch_id: subtask.batch_id)
-  .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+  .then (info) ->
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, info[0].count, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   tables.propertyData.mls()

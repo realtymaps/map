@@ -33,22 +33,38 @@ safe = [
   'project_id'
 ]
 
+toReturn = safe.concat ['id']
+
 get = (id, withProject = true) ->
   return auth_user_profile().where(id: id) unless withProject
 
+create = (auth_user_id) ->
+  auth_user_profile().insert(auth_user_id: auth_user_id).returning(toReturn)
+
 getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
-  auth_user_profile().where(auth_user_id: auth_user_id)
-  .then (profilesNoProject) ->
+  noProjQ = auth_user_profile().where(auth_user_id: auth_user_id)
+  logger.debug noProjQ.toString()
+  noProjQ.then (profilesNoProject) ->
     hasAProject = _.some profilesNoProject, (p) -> !_.isUndefined(p.project_id)
-    if !withProject or !hasAProject
+
+    logger.debug "hasAProject: #{hasAProject}"
+    logger.debug "withProject: #{withProject}"
+
+    if !withProject and !hasAProject
       q =  auth_user_profile().select(cols...).innerJoin(project.tableName,
       project.tableName + ".id", auth_user_profile.tableName + '.project_id')
       .where(auth_user_id: auth_user_id)
       # logger.debug q.toString()
       return q
+
+    unless profilesNoProject?.length
+      logger.debug "no profiles exist for auth_user_id: #{auth_user_id}. Creating"
+      return create(auth_user_id)
+    logger.debug "returning profilesNoProject: #{JSON.stringify profilesNoProject}"
     profilesNoProject
 
   .then (profiles) ->
+    logger.debug profiles
     _.indexBy profiles, 'id'
 
 getFirst = (userId) ->

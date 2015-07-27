@@ -23,6 +23,8 @@ module.exports = (options = {}) ->
     .orderByRaw("similarity(county, '#{county}') DESC")
     .limit(1)
     .then (results) ->
+      if !results?[0]?
+        return Promise.reject new DataValidationError("no matches found", param, value)
       if results[0].similarity < minSimilarity
-        return Promise.reject new DataValidationError("acceptable match not found in #{state}: closest match is #{results[0].county} with similarity #{results[0].similarity}, needed at least #{minSimilarity}", param, value)
+        return Promise.reject new DataValidationError("acceptable county match not found: closest match is #{results[0].county}, #{results[0].state} with similarity #{results[0].similarity}, needed at least #{minSimilarity}", param, value)
       return results[0].code
