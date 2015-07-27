@@ -100,9 +100,6 @@ app.controller 'rmapsJobsHistoryCtrl',
     ], (num) ->
       _.extend num, numericDefaults
 
-  $scope.selectTask = () ->
-    $scope.loadHistory($state.params.task)
-
   $scope.loadHistory = (task) ->
     $scope.jobsBusy = rmapsJobsService.getHistory(task)
     .then (history) ->

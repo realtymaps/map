@@ -40,9 +40,9 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'jobs', sticky: true, loginRequired: true
     buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
     buildState 'jobsHistory', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsQueue', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsTask', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsSubtask', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsQueue', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
+    buildState 'jobsTask', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
+    buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
 
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null

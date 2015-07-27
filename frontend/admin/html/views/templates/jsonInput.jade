@@ -1,0 +1,11 @@
+//- For use with ui-grid editableCellTemplate
+div
+  form(name="inputForm")
+    textarea(
+      ng-class="'colt' + col.uid"
+      class="json-input"
+      ng-model="MODEL_COL_FIELD"
+      ng-input="COL_FIELD"
+      rmaps-json-input
+      rmaps-json-input-commit="uiGridEventEndCellEdit"
+      rmaps-json-input-cancel="uiGridEventCancelCellEdit")

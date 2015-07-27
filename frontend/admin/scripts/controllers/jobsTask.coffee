@@ -1,23 +1,10 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+gridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsTaskCtrl',
-($window, $scope, $rootScope, rmapsJobsService, uiGridConstants, $state) ->
-
-  numericDefaults =
-    type: 'number'
-    width: 125
-    cellClass: 'numberCell'
-
-  dateFilter = 'date:"MM/dd HH:mm"'
-
-  $scope.jobsGrid =
-    enableColumnMenus: false
-    onRegisterApi: (gridApi) ->
-      gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-        $scope.$apply()
-        rowEntity.save()
-    columnDefs:[
+app.controller 'rmapsJobsTaskCtrl', gridController(
+  'Task',
+  'rmapsJobsService',
+  [
       field: 'name'
       displayName: 'Name'
       width: 100
@@ -28,31 +15,29 @@ app.controller 'rmapsJobsTaskCtrl',
     ,
       field: 'data'
       displayName: 'Data'
+      type: 'object'
+      enableCellEdit: true
+      editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
       width: 250
     ,
       field: 'ignore_until'
       displayName: 'Ignore Until'
       type: 'date'
-      width: 100
-      cellFilter: dateFilter
-  ].concat _.map [
+      width: 125
+      cellFilter: 'date:"MM/dd/yy HH:mm"'
+    ,
       field: 'repeat_period_minutes'
       displayName: 'Repeat min'
+      type: 'number'
+      defaultValue: 60
     ,
       field: 'warn_timeout_minutes'
       displayName: 'Warn TO min'
+      type: 'number'
+      defaultValue: 5
     ,
       field: 'kill_timeout_minutes'
       displayName: 'Kill TO min'
-    ], (num) ->
-      _.extend num, numericDefaults
-
-  $scope.loadTasks = () ->
-    $scope.jobsBusy = rmapsJobsService.getTasks()
-    .then (tasks) ->
-      _.each tasks, (task) ->
-        task.ignore_until = new Date(task.ignore_until)
-      $scope.jobsGrid.data = tasks
-
-  $rootScope.registerScopeData () ->
-    $scope.loadTasks()
+      type: 'number'
+      defaultValue: 5
+  ])
