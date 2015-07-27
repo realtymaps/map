@@ -96,7 +96,7 @@ NOTE: IF columns for auth_user_profile need to be deleted Session.state should b
 ###
 _userStateCols = ['map_position', 'map_toggles', 'map_results']
 #TODO: THIS NEEDS TO BE RETHOUGHT this special handling of removing types is very difficult
-# to remeber and causes significant debugging
+# to remember and causes significant debugging
 _filtersToRemove = _userStateCols.concat(['bounds','returnType'])
 
 _commonCaptureState = (req, stateUpdate = {}) ->
