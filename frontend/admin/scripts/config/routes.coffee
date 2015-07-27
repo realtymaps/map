@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
+jobsEditTemplate = require("../../html/views/jobsEdit.jade")
 
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
@@ -14,10 +15,11 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
         name:         name
         parent:       'main'
         url:          adminRoutes[name],
-        template:     require("../../html/views/#{name}.jade")
-        # templatePath: "../../html/views/#{name}.jade"
         controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl"
       _.extend(state, overrides)
+
+      if !state.template
+        state.template = require "../../html/views/#{name}.jade"
 
       # state.template = _getTemplate(state.templatePath)
       # delete state.templatePath
@@ -40,9 +42,9 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'jobs', sticky: true, loginRequired: true
     buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
     buildState 'jobsHistory', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsQueue', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
-    buildState 'jobsTask', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
-    buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: require("../../html/views/jobsEdit.jade"), loginRequired: true
+    buildState 'jobsQueue', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
+    buildState 'jobsTask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
+    buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
 
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null
