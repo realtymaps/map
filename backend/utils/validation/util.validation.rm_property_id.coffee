@@ -28,4 +28,4 @@ module.exports = (options = {}) ->
     if !value.stateCode || !value.county || !value.parcelId
       throw new DataValidationError("state, county, and parcelId are all required", param, value)
     
-    return composite(param, value)
+    return composite(param, [value, value])
