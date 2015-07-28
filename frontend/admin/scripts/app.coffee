@@ -25,6 +25,7 @@ app = window.angular.module appName, [
   'ui.grid'
   'ui.grid.resizeColumns'
   'ui.grid.edit'
+  'ui.grid.autoResize'
 ]
 
 module.exports = app

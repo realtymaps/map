@@ -8,6 +8,7 @@ app.controller 'rmapsJobsSubtaskCtrl', gridController(
       field: 'name'
       displayName: 'Name'
       width: 200
+      enableCellEdit: false
     ,
       field: 'task_name'
       displayName: 'Task'

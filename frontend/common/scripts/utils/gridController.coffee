@@ -1,13 +1,13 @@
 _ = require 'lodash'
 
-module.exports = (gridName, dataServiceName, columnDefs, gridOpts = {}) ->
+module.exports = (gridName, dataServiceName, columnDefs, scopeOpts = {}) ->
   ($scope, $rootScope, $injector, Restangular) ->
 
     $scope.gridName = gridName[0].toUpperCase() + gridName.slice(1)
 
     dataService = $injector.get(dataServiceName)
 
-    $scope.grid = _.assign
+    $scope.grid =
       enableColumnMenus: false
       columnDefs: columnDefs
       onRegisterApi: (gridApi) ->
@@ -15,14 +15,15 @@ module.exports = (gridName, dataServiceName, columnDefs, gridOpts = {}) ->
           if newValue != oldValue
             $scope.$apply()
             rowEntity.save()
-    ,
-      gridOpts
 
     $scope.exists = () ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
       $scope.nameExists = idx != -1
 
     $scope.create = () ->
+      if !$scope.recordName
+        return
+
       record = name: $scope.recordName
       _.each columnDefs, (c) ->
         if (v = c.defaultValue)?
@@ -53,6 +54,8 @@ module.exports = (gridName, dataServiceName, columnDefs, gridOpts = {}) ->
       $scope.jobsBusy = dataService['get' + $scope.gridName]()
       .then (data) ->
         $scope.grid.data = data
+
+    _.assign $scope, scopeOpts
 
     $rootScope.registerScopeData () ->
       $scope.load()
