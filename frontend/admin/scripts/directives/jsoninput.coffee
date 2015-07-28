@@ -4,7 +4,6 @@ _ = require 'lodash'
 app.directive 'rmapsJsonInput', [ () ->
     {
         restrict: 'A'
-        priority: 100
         require: 'ngModel'
         link: (scope, element, attrs, ctrl) ->
 
