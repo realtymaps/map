@@ -104,6 +104,7 @@ base =
 
   MAP: common.map
   IMAGES: common.images
+  VALIDATION: common.validation
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY

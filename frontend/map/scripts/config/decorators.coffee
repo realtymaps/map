@@ -15,7 +15,7 @@ app.config(($provide) ->
     $delegate
 )
 .config(($httpProvider) ->
-    $httpProvider.useApplyAsync(true)
+  $httpProvider.useApplyAsync(true)
 )
 .config(($provide) ->
   # attempting to create a cancelable $http on all its functions
@@ -73,4 +73,82 @@ app.config(($provide) ->
       $delegate[name] = http.root[name]
 
     $delegate
+)
+.config(($validationProvider, rmapsMainOptions) ->
+  {validation} = rmapsMainOptions
+  $validationProvider.setErrorHTML (msg) ->
+    return "<label class=\"control-label has-error\">" + msg + "</label>"
+  _.extend $validationProvider,
+    # figure out how to do this without jQuery
+    validCallback: (element) ->
+      #attempt w/o jQuery
+      maybeParent = _.first(element.parentsByClass('form-group', true))
+      if maybeParent?
+        maybeParent.className = maybeParent.className.replace('has-error', '')
+
+      #expected
+      #$(element).parents('.form-group:first').removeClass('has-error')
+    invalidCallback: (element) ->
+      maybeParent = _.first(element.parentsByClass('form-group', true))
+      if maybeParent?
+        maybeParent.className += ' has-error'
+      #parents('.form-group:first').addClass('has-error')
+
+  expression =
+    password: validation.password
+    phone: validation.phone
+    optPhone: (value, scope, element, attrs, param) ->
+      return true unless value
+      #optional URL
+      !!value.match(validation.phone)?.length
+    address: validation.address
+    zipcode: validation.zipcode.US
+    optUrl: (value, scope, element, attrs, param) ->
+      return true unless value
+      #optional URL
+      !!value.match(validation.url)?.length
+    optNumber: (value, scope, element, attrs, param) ->
+      return true unless value
+      #optional URL
+      !!value.match(validation.number)?.length
+    optMinlength: (value, scope, element, attrs, param) ->
+      return true unless value
+      value.length >= param;
+    optMaxlength: (value, scope, element, attrs, param) ->
+      return true unless value
+      value.length <= param;
+
+  defaultMsg =
+    password:
+      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice!'
+    required:
+      error: 'Required!!'
+    url:
+      error: 'Invlaid Url!'
+    optUrl:
+      error: 'Invlaid Url!'
+    email:
+      error: 'Invlaid Email!'
+    number:
+      error: 'Invlaid Number!'
+    optNumber:
+      error: 'Invlaid Number!'
+    minlength:
+      error: 'This should be longer'
+    optMinlength:
+      error: 'This should be longer'
+    maxlength:
+      error: 'This should be shorter'
+    optMaxlength:
+      error: 'This should be shorter'
+    phone:
+      error: 'Invlaid phone number!'
+    optPhone:
+      error: 'Invlaid phone number!'
+    address:
+      error: 'Invalid addess.'
+    zipcode:
+      error: 'Invalid US zipcode.'
+
+  $validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
 )

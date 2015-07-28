@@ -38,6 +38,10 @@ module.exports =
     currentProfile: "#{apiBaseSession}/currentProfile"
     profiles: "#{apiBaseSession}/profiles"
     image: "#{apiBaseSession}/image"
+    companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
+    root: apiBaseSession
+    companyRoot: "#{apiBaseSession}/company"
+    updateUserNamePassword: "#{apiBaseSession}/usernamePassword"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -75,7 +79,9 @@ module.exports =
   company:
     apiBase: apiBaseCompanies
     root: apiBaseCompanies
+    rootPost: apiBaseCompanies
     byId: "#{apiBaseCompanies}/:id"
+    byIdWPerms: "#{apiBaseCompanies}/:id"
   us_states:
     apiBase: apiBaseUsStates
     root: apiBaseUsStates
