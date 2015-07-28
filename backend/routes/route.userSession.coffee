@@ -240,6 +240,22 @@ companyRoot = (req, res, next) ->
         userSvc.update(req.user.id, req.user).then ->
           updateCache(req, res, next)
 
+updateUserNamePassword = (req, res, next) ->
+  transforms =
+    username:
+      required: true
+    password: validators.string(regex: config.VALIDATION.password)
+
+  validation.validateAndTransform(req.body, transforms)
+  .then (validBody) ->
+    userSessionService.updateUserNamePassword(req.user, validBody.username, validBody.password)
+    .catch validation.DataValidationError, (err) ->
+      next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+    .catch (err) ->
+      next new ExpressResponse(alert: {msg: err}, httpStatus.BAD_REQUEST)
+    .then ->
+      res.json(true)
+
 
 module.exports =
   root:
@@ -282,3 +298,8 @@ module.exports =
     methods: ['get', 'put']
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: companyImage
+
+  updateUserNamePassword:
+    method: 'put'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: updateUserNamePassword

@@ -23,12 +23,12 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
         _.merge $scope,
           companies: _.indexBy data.data, 'id'
 
-      spawnImageAlert = (msg) ->
-        imageAlert =
+      spawnAlert = (msg) ->
+        alert =
           type:'rm-info'
+          msg: msg
 
-        imageAlert.msg = msg
-        $rootScope.$broadcast rmapsevents.alert.spawn, imageAlert
+        $rootScope.$broadcast rmapsevents.alert.spawn, alert
 
       _.merge $scope,
         # companies:
@@ -54,11 +54,11 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
               return @blob || backendRoutes.userSession.image
             "/assets/avatar.svg"
           save: ->
-            return spawnImageAlert "No Image to Save." unless @blob?
+            return spawnAlert "No Image to Save." unless @blob?
 
             if _.keys(@errors).length
               _.each @errors, (e) ->
-                spawnImageAlert e
+                spawnAlert e
               return
 
             $http.put backendRoutes.userSession.image, blob: @cropBlob
@@ -78,16 +78,28 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
               return @blob || backendRoutes.userSession.companyImage.replace(":account_image_id", $scope.company.account_image_id)
             "/assets/trademark.svg"
           save: ->
-            return spawnImageAlert "No Image to Save." unless @blob?
+            return spawnAlert "No Image to Save." unless @blob?
 
             if _.keys(@errors).length
               _.each @errors, (e) ->
-                spawnImageAlert e
+                spawnAlert e
               return
 
             $http.put backendRoutes.userSession.companyImage.replace(":account_image_id",""), _.extend(blob: @cropBlob, $scope.company)
             .success =>
               delete @cropBlob
               delete @blob
-        submit: ->
+        unamePass:
+          username: "" + user.username
+          change: ->
+            if @password != @confirmPassword
+              @errorMsg = "passwords do not match!"
+            else
+              delete @errorMsg
+          submit: ->
+            if @password != @confirmPassword
+              return
+            $http.put backendRoutes.userSession.updateUserNamePassword,
+              username: @username
+              password: @password
         ready: true

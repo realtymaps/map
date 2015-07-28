@@ -145,6 +145,15 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
 upsertCompanyImage = (entity, blob) ->
   upsertImage(entity,blob, userData.company)
 
+updateUserNamePassword = (user, newUserName, password) ->
+  singleRow userData.user().where(username: newUserName).whereNot(id:user.id).count()
+  .then (row) ->
+    if row.count > 0
+      return Promise.reject "Username already exists"
+    createPasswordHash(password).then (password) ->
+      userData.user().update(username: newUserName, password:password)
+      .where(id: user.id)
+
 module.exports =
   getUser: getUser
   updateUser: updateUser
@@ -158,3 +167,4 @@ module.exports =
   getImage: getImage
   upsertImage: upsertImage
   upsertCompanyImage: upsertCompanyImage
+  updateUserNamePassword: updateUserNamePassword
