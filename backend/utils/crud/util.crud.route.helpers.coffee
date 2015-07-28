@@ -2,6 +2,7 @@
 factory = require '../util.factory'
 logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
+ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
 
 class Crud extends BaseObject
@@ -12,27 +13,39 @@ class Crud extends BaseObject
       throw '@paramIdKey must be defined'
     @init()
 
+  onError: (next, error) =>
+    next new ExpressResponse
+      alert:
+        msg: error.message
+      500
+
   #intended available overrides
   init: (@doLogQuery = false, @safe = undefined) =>
     @
 
   rootGET: (req, res, next) =>
     @svc.getAll(req.query, @doLogQuery)
+    .catch _.partial(@onError, next)
 
   rootPOST: (req, res, next) =>
     @svc.create(req.body, undefined, @doLogQuery)
+    .catch _.partial(@onError, next)
 
   byIdGET: (req, res, next) =>
     @svc.getById(req.params[@paramIdKey], @doLogQuery)
+    .catch _.partial(@onError, next)
 
   byIdPOST: (req, res, next) =>
     @svc.create(req.body, req.params[@paramIdKey], undefined, @doLogQuery)
+    .catch _.partial(@onError, next)
 
   byIdDELETE: (req, res, next) =>
     @svc.delete(req.params[@paramIdKey], @doLogQuery)
+    .catch _.partial(@onError, next)
 
   byIdPUT: (req, res, next) =>
     @svc.update(req.params[@paramIdKey], req.body, @safe, @doLogQuery)
+    .catch _.partial(@onError, next)
   #end intended overrides
 
   #sugar interface
