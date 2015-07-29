@@ -118,7 +118,11 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                   name="email"
                   ng-model="user.email"
                   type='text'
-                  validator="email,required")
+                  validator="email,required,checkUniqueEmail")
+            .form-group
+              label.col-md-3.control-label(title="Not for login.") username / alias:
+              .col-md-8
+                input.form-control(name="username" ng-model="unamePass.username", type='text' validator="required,minlength=3")
             .form-group
               label.col-lg-3.control-label Website Url:
               .col-lg-8
@@ -269,28 +273,24 @@ section.user.text-wrap(ng-cloak ng-if="ready")
         // left column
         .col-md-4.col-sm-6.col-xs-12
         .col-md-8.col-sm-6.col-xs-12.personal-info
-          h3 Edit Username / Password
-          form.form-horizontal(name="usernamePasswordForm" role='form')
-            .form-group
-              label.col-md-3.control-label Username:
-              .col-md-8
-                input.form-control(name="username" ng-model="unamePass.username", type='text' validator="required")
+          h3 Edit Password
+          form.form-horizontal(name="passwordForm" role='form')
             .form-group
               label.col-md-3.control-label Password:
               .col-md-8
-                input.form-control(name="password" ng-change="unamePass.change()" ng-model="unamePass.password" type='password' validator="password")
+                input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
             .form-group
               label.col-md-3.control-label Confirm password:
               .col-md-8
-                input.form-control(name="confirmPassword" ng-change="unamePass.change()" ng-model="unamePass.confirmPassword" type='password' validator="password")
+                input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
             .form-group
               label.col-md-3.control-label
               .col-md-8
-                span(ng-if="unamePass.errorMsg")
-                  label.control-label.has-error() {{unamePass.errorMsg}}
+                span(ng-if="pass.errorMsg")
+                  label.control-label.has-error() {{pass.errorMsg}}
             .form-group
               label.col-md-3.control-label
-                input.btn.btn-primary(value='Save' type='button' ng-click="unamePass.submit()" validation-submit="usernamePasswordForm")
+                input.btn.btn-primary(value='Save' type='button' ng-click="pass.submit()" validation-submit="passwordForm")
                 span
-                input.btn.btn-default(value='Cancel' type='reset' validation-reset="usernamePasswordForm")
+                input.btn.btn-default(value='Cancel' type='reset' validation-reset="passwordForm")
             

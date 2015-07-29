@@ -41,7 +41,8 @@ module.exports =
     companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
-    updateUserNamePassword: "#{apiBaseSession}/usernamePassword"
+    updatePassword: "#{apiBaseSession}/password"
+    emailIsUnique: "#{apiBaseSession}/emailIsUnique"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers

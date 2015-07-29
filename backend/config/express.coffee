@@ -101,7 +101,9 @@ swagger.initializeMiddleware swaggerObject, (middleware) ->
   # bootstrap routes
   require("../routes")(app)
 
+# trying to handle common returns for promises here (DRY)
 app.use (data, req, res, next) ->
+  logger.debug data instanceof Promise
   if data instanceof ExpressResponse
     # this response is intentional
     if !status.isWithinOK(data.status)
@@ -112,7 +114,6 @@ app.use (data, req, res, next) ->
       logger.error (JSON.stringify(analysis,null,2))
 
     return data.send(res)
-
 
   # otherwise, it's probably a thrown Error
   analysis = analyzeValue(data)

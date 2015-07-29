@@ -4,6 +4,7 @@ logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
+{userData} = require '../config/tables'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
 userUtils = require '../utils/util.user'
@@ -46,7 +47,7 @@ safeUserFields = [
 login = (req, res, next) -> Promise.try () ->
   if req.user
     # someone is logging in over an existing session...  shouldn't normally happen, but we'll deal
-    logger.debug "attempting to log user out (someone is logging in): #{req.user.username}"
+    logger.debug "attempting to log user out (someone is logging in): #{req.user.email}"
     promise = sessionSecurityService.deleteSecurities(session_id: req.sessionID)
     .then () ->
       req.user = null
@@ -58,17 +59,17 @@ login = (req, res, next) -> Promise.try () ->
 
   promise.then () ->
     if !req.body.password
-      logger.debug "no password specified for login: #{req.body.username}"
+      logger.debug "no password specified for login: #{req.body.email}"
       return false
-    logger.debug "attempting to do login for username: #{req.body.username}"
-    userSessionService.verifyPassword(req.body.username, req.body.password)
+    logger.debug "attempting to do login for email: #{req.body.email}"
+    userSessionService.verifyPassword(req.body.email, req.body.password)
   .catch (err) ->
     logger.debug "failed authentication: #{err}"
     return false
   .then (user) ->
     if not user
       return next new ExpressResponse(alert: {
-        msg: "Username and/or password does not match our records."
+        msg: "Email and/or password does not match our records."
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
@@ -206,9 +207,38 @@ _safeRootFields = safeUserFields.concat([])
 root = (req, res, next) ->
   methodExec req,
     PUT: () ->
-      userSvc.update(req.session.userid, req.body, _safeRootFields)
-      .then () ->
-        updateCache(req, res, next)
+      transforms =
+        first_name: validators.string(minLength: 2)
+        last_name: validators.string(minLength: 2)
+        address_1: validators.string(regex: config.VALIDATION.address)
+        city: validators.string(minLength: 2)
+        us_state_id: required:true
+        zip: required:true
+        cell_phone:
+          transform: [
+            validators.string(regex: config.VALIDATION.phone)
+          ]
+          required: true
+        work_phone: validators.string(regex: config.VALIDATION.phone)
+        username:
+          transform: [
+            validators.string(minLength: 3)
+          ]
+          required: true
+        website_url: validators.string(regex: config.VALIDATION.url)
+        email:
+          transform: [
+            validators.string(regex: config.VALIDATION.email)
+            validators.unique tableFn: userData.user, id: req.user.id, name: "email", clauseGenFn: (value) ->
+              email: value
+          ]
+          required: true
+
+      validation.validateAndTransform(req.body, transforms)
+      .then (validBody) ->
+        userSvc.update(req.session.userid, validBody, _safeRootFields)
+        .then () ->
+          updateCache(req, res, next)
 
 _safeRootCompanyFields = [
   'address_1'
@@ -240,22 +270,29 @@ companyRoot = (req, res, next) ->
         userSvc.update(req.user.id, req.user).then ->
           updateCache(req, res, next)
 
-updateUserNamePassword = (req, res, next) ->
+updatePassword = (req, res, next) ->
   transforms =
-    username:
-      required: true
     password: validators.string(regex: config.VALIDATION.password)
 
   validation.validateAndTransform(req.body, transforms)
   .then (validBody) ->
-    userSessionService.updateUserNamePassword(req.user, validBody.username, validBody.password)
-    .catch validation.DataValidationError, (err) ->
-      next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
-    .catch (err) ->
-      next new ExpressResponse(alert: {msg: err}, httpStatus.BAD_REQUEST)
+    userSessionService.updatePassword(req.user, validBody.password)
     .then ->
       res.json(true)
 
+emailIsUnique = (req, res, next) ->
+  transforms =
+    email:
+      transform: [
+          validators.string(regex: config.VALIDATION.email)
+          validators.unique tableFn: userData.user, id: req.user.id, name: "email", clauseGenFn: (value) ->
+            email: value
+      ]
+      required: true
+
+  validation.validateAndTransform(req.body, transforms)
+  .then (validBody) ->
+    res.json(true)
 
 module.exports =
   root:
@@ -299,7 +336,12 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: companyImage
 
-  updateUserNamePassword:
+  updatePassword:
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: updateUserNamePassword
+    handle: updatePassword
+
+  emailIsUnique:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: emailIsUnique
