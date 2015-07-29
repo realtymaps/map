@@ -55,14 +55,25 @@ transforms = _.extend {}, otherValidations, minMaxes
 _getDefaultQuery = ->
   sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
-_getResultCount = () ->
+_getResultCount = (state, filters) ->
   logger.debug "#### _getResultCount"
+  query = sqlHelpers.selectCount(tables.propertyData.propertyDetails())
+  # logger.debug "#### query (1) query.toString():"
+  # logger.debug query.toString()
+
+  query = _getFilterSummaryAsQuery(state, filters, null, query)
+  
+  # logger.debug "#### query (2) query.toString():"
+  # logger.debug query.toString()  
+  query
+
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
   # logger.debug filters, true
     return if !filters or !filters?.status?.length or !query
     # save out for use with saved properties
-
+    # logger.debug "#### _getFilterSummaryAsQuery(), default query sql (1):"
+    # logger.debug query.toString()
     query.limit(limit) if limit
     sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
 
@@ -109,6 +120,9 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
     #   sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', Point(state.map_position.center))
 
     # logger.sql query.toString()
+    # logger.debug "#### _getFilterSummaryAsQuery(), default query sql (2):"
+    # logger.debug query.toString()
+
     query
 
 module.exports =
@@ -130,6 +144,7 @@ module.exports =
     validation.validateAndTransform(rawFilters, transforms)
 
   getFilterSummaryAsQuery: _getFilterSummaryAsQuery
+  getResultCount: _getResultCount
 
   getFilterSummary: (state, filters, limit, query) ->
     Promise.try () ->

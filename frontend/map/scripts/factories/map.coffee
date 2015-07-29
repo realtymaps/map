@@ -151,66 +151,132 @@ app.factory 'rmapsMap',
 
       drawFilterSummary:(cache) =>
         $log.info "\n\n#### drawFilterSummary"
-        $log.info "#### rmapsZoomLevel.doCluster(@scope)?   " + rmapsZoomLevel.doCluster(@scope)
+
         promises = []
-        if rmapsZoomLevel.doCluster(@scope)
-          promises.push(
-            rmapsProperties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
-            .then (data) =>
-              $log.info "#### getFilterSummaryAsCluster data:"
-              $log.info data
-              return if !data? or _.isString data
-              #data should be in array format
-              @scopeM().markers.filterSummary = {}
-              _.each data, (model,k) =>
-                @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-              @scopeM().markers.backendPriceCluster = data
-          )
-        else
-          #needed for results list, rendering price markers, and address Markers
-          #depending on zoome we want address or price
-          #the data structure is the same (do we clone and hide one?)
-          #or do we have the results list view grab one that exists with items?
-          promises.push(
-            rmapsProperties.getFilterSummary(@hash, @mapState, @filters, cache)
-            .then (data) =>
-              $log.info "#### getFilterSummary data:"
-              $log.info data
 
-              return if !data? or _.isString data
-              @scopeM().markers.backendPriceCluster = {}
+        handleClusterResults = (data) =>
+          #data should be in array format
+          @scopeM().markers.filterSummary = {}
+          _.each data, (model,k) =>
+            @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+          @scopeM().markers.backendPriceCluster = data            
+          $log.info "#### cluster promise resolved!"
 
-              @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+        handleSummaryResults = (data) =>
+          @scopeM().markers.backendPriceCluster = {}
 
-              for key, val of data
-                _wrapGeomPointJson val
+          @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
 
-              @scopeM().markers.filterSummary = data
+          for key, val of data
+            _wrapGeomPointJson val
 
-              $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
-          )
+          @scopeM().markers.filterSummary = data
 
-          if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
-            @scope.map.layers.overlays.filterSummary.visible = false
-            @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
-            promises.push(
-              rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
-              .then (data) =>
-                $log.info "#### getFilterSummaryAsGeoJsonPolys data:"
-                $log.info data
-                return if !data? or _.isString data
-                @scopeM().geojson.filterSummaryPoly =
-                  data: data
-                  style: @layerFormatter.Parcels.getStyle
-            )
+          $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
+          $log.info "#### summary promise resolved!"
+
+
+        # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
+        $log.info "#### map calls getFilterResults..."
+        rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+        .then (data) =>
+          $log.info "#### getFilterResults data:"
+          $log.info data
+          if Object.prototype.toString.call(data) is '[object Array]'
+            $log.info "#### data is an array!  Must be cluster results"
+            return if !data? or _.isString data
+            promises.push $q.when handleClusterResults(data)
+
           else
-            @scope.map.layers.overlays.parcels.visible = false
-            @scope.map.layers.overlays.filterSummary.visible = true
-            @scope.map.layers.overlays.parcelsAddresses.visible = false
+            $log.info "#### data is an object!  Must be summary results"
+            #needed for results list, rendering price markers, and address Markers
+            #depending on zoome we want address or price
+            #the data structure is the same (do we clone and hide one?)
+            #or do we have the results list view grab one that exists with items?
+            return if !data? or _.isString data
+
+            promises.push $q.when handleSummaryResults(data)
+
+            if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
+              @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
+              @scope.map.layers.overlays.filterSummary.visible = false
+              @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
+              promises.push(
+                rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+                .then (data) =>
+                  $log.info "#### getFilterSummaryAsGeoJsonPolys data:"
+                  $log.info data
+                  return if !data? or _.isString data
+                  @scopeM().geojson.filterSummaryPoly =
+                    data: data
+                    style: @layerFormatter.Parcels.getStyle
+                  $log.info "#### GeoJsonPolys promise resolved!"
+              )
+            else
+              @scope.map.layers.overlays.parcels.visible = false
+              @scope.map.layers.overlays.filterSummary.visible = true
+              @scope.map.layers.overlays.parcelsAddresses.visible = false
+
+        # $log.info "#### rmapsZoomLevel.doCluster(@scope)?   " + rmapsZoomLevel.doCluster(@scope)
+        # if rmapsZoomLevel.doCluster(@scope)
+        #   promises.push(
+        #     rmapsProperties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
+        #     .then (data) =>
+        #       $log.info "#### getFilterSummaryAsCluster data:"
+        #       $log.info data
+        #       return if !data? or _.isString data
+        #       #data should be in array format
+        #       @scopeM().markers.filterSummary = {}
+        #       _.each data, (model,k) =>
+        #         @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+        #       @scopeM().markers.backendPriceCluster = data
+        #   )
+        # else
+        #   #needed for results list, rendering price markers, and address Markers
+        #   #depending on zoome we want address or price
+        #   #the data structure is the same (do we clone and hide one?)
+        #   #or do we have the results list view grab one that exists with items?
+        #   promises.push(
+        #     rmapsProperties.getFilterSummary(@hash, @mapState, @filters, cache)
+        #     .then (data) =>
+        #       $log.info "#### getFilterSummary data:"
+        #       $log.info data
+
+        #       return if !data? or _.isString data
+        #       @scopeM().markers.backendPriceCluster = {}
+
+        #       @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+
+        #       for key, val of data
+        #         _wrapGeomPointJson val
+
+        #       @scopeM().markers.filterSummary = data
+
+        #       $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
+        #   )
+
+        #   if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
+        #     @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
+        #     @scope.map.layers.overlays.filterSummary.visible = false
+        #     @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
+        #     promises.push(
+        #       rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+        #       .then (data) =>
+        #         $log.info "#### getFilterSummaryAsGeoJsonPolys data:"
+        #         $log.info data
+        #         return if !data? or _.isString data
+        #         @scopeM().geojson.filterSummaryPoly =
+        #           data: data
+        #           style: @layerFormatter.Parcels.getStyle
+        #     )
+        #   else
+        #     @scope.map.layers.overlays.parcels.visible = false
+        #     @scope.map.layers.overlays.filterSummary.visible = true
+        #     @scope.map.layers.overlays.parcelsAddresses.visible = false
         promises
 
       redraw: (cache = true) =>
+        $log.info "################ redrawing..."
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
