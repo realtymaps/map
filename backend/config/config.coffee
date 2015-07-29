@@ -37,12 +37,16 @@ base =
     pool:
       min: 1
       max: 10
+      # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
+      pingTimeout: 10*60*1000 
   PROPERTY_DB:
     client: 'pg'
     connection: process.env.PROPERTY_DATABASE_URL
     pool:
       min: 2
       max: 10
+      # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
+      pingTimeout: 10*60*1000
   TRUST_PROXY: 1
   SESSION:
     secret: "thisistheREALTYMAPSsecretforthesession"
@@ -100,6 +104,7 @@ base =
 
   MAP: common.map
   IMAGES: common.images
+  VALIDATION: common.validation
   NEW_RELIC:
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY

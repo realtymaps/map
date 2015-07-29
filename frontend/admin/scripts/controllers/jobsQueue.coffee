@@ -1,16 +1,13 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsQueueCtrl',
-($window, $scope, $rootScope, rmapsJobsService, uiGridConstants, $state) ->
+app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
 
-  $scope.jobsGrid =
-    enableColumnMenus: false
-    onRegisterApi: (gridApi) ->
-      gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-        $scope.$apply()
-        rowEntity.save()
-    columnDefs:[
+  $scope.getData = rmapsJobsService.getQueue
+
+  @gridName = 'Queue'
+
+  @columnDefs = [
       field: 'name'
       displayName: 'Name'
       width: 150
@@ -20,31 +17,34 @@ app.controller 'rmapsJobsQueueCtrl',
       displayName: 'Lock ID'
       width: 150
       enableCellEdit: false
+      defaultValue: () -> Math.floor(Math.random() * 1000000000)
     ,
       field: 'processes_per_dyno'
       displayName: 'Processes Per Dyno'
       type: 'number'
       width: 175
+      defaultValue: 1
     ,
       field: 'subtasks_per_process'
       displayName: 'Subtasks Per Process'
       type: 'number'
       width: 175
+      defaultValue: 1
     ,
       field: 'priority_factor'
       displayName: 'Priority Factor'
       type: 'number'
       width: 150
+      defaultValue: 1.0
     ,
       field: 'active'
       displayName: 'Active'
+      type: 'boolean'
       width: 150
-    ]
+      defaultValue: false
+  ]
 
-  $scope.loadQueues = () ->
-    $scope.jobsBusy = rmapsJobsService.getQueues()
-    .then (queues) ->
-      $scope.jobsGrid.data = queues
-
-  $rootScope.registerScopeData () ->
-    $scope.loadQueues()
+  $injector.invoke GridController, this,
+    $scope: $scope
+    $rootScope: $rootScope
+    Restangular: Restangular

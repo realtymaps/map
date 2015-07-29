@@ -1,5 +1,6 @@
 app = require '../app.coffee'
-
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+injector = app.injector
 app.config(($provide) ->
   #recommended way of dealing with clean up of angular communication channels
   #http://stackoverflow.com/questions/11252780/whats-the-correct-way-to-communicate-between-controllers-in-angularjs
@@ -93,8 +94,13 @@ app.config(($provide) ->
       if maybeParent?
         maybeParent.className += ' has-error'
       #parents('.form-group:first').addClass('has-error')
+)
+.run(($validation, rmapsMainOptions, $http) ->
+
+  {validation} = rmapsMainOptions
 
   expression =
+    password: validation.password
     phone: validation.phone
     optPhone: (value, scope, element, attrs, param) ->
       return true unless value
@@ -116,8 +122,12 @@ app.config(($provide) ->
     optMaxlength: (value, scope, element, attrs, param) ->
       return true unless value
       value.length <= param;
+    checkUniqueEmail: (value) ->
+      $http.post(backendRoutes.userSession.emailIsUnique, email: value)
 
   defaultMsg =
+    password:
+      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice!'
     required:
       error: 'Required!!'
     url:
@@ -126,6 +136,8 @@ app.config(($provide) ->
       error: 'Invlaid Url!'
     email:
       error: 'Invlaid Email!'
+    checkUniqueEmail:
+      error: 'Email must be unique!'
     number:
       error: 'Invlaid Number!'
     optNumber:
@@ -147,5 +159,5 @@ app.config(($provide) ->
     zipcode:
       error: 'Invalid US zipcode.'
 
-  $validationProvider.setExpression(expression).setDefaultMsg(defaultMsg);
+  $validation.setExpression(expression).setDefaultMsg(defaultMsg);
 )

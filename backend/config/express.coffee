@@ -1,10 +1,17 @@
+config = require './config'
+if config.NEW_RELIC.RUN
+  newrelic = require 'newrelic'
+else
+  newrelic =
+    getBrowserTimingHeader: () ->
+      '<!-- NEWRELIC NOT LOADED -->'
+
 express = require 'express'
 path = require 'path'
 Promise = require 'bluebird'
 paths = require '../../common/config/paths'
 _ = require 'lodash'
 
-config = require './config'
 commonConfig = require '../../common/config/commonConfig'
 dbs = require './dbs'
 logger = require './logger'
@@ -113,7 +120,6 @@ app.use (data, req, res, next) ->
 
     return data.send(res)
 
-
   # otherwise, it's probably a thrown Error
   analysis = analyzeValue(data)
   logger.error "uncaught error found by express:"
@@ -127,13 +133,6 @@ if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
 
 app.set("trust proxy", config.TRUST_PROXY)
-
-if config.NEW_RELIC.RUN
-  newrelic = require 'newrelic'
-else
-  newrelic =
-    getBrowserTimingHeader: () ->
-      '<!-- NEWRELIC NOT LOADED -->'
 
 _.extend app.locals,
   newrelic: newrelic

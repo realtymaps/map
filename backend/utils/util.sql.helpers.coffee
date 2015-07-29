@@ -233,6 +233,13 @@ singleRow = (q, doThrow = false) -> Promise.try ->
 expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
+isUnique = (tableFn, whereClause, id, name = "Entity") ->
+  singleRow tableFn().where(whereClause).whereNot(id:id).count()
+  .then (row) ->
+    if row.count > 0
+      return Promise.reject "#{name} already exists"
+    true
+
 safeJsonArray = (knex, arr) ->
   # this whole function is a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
   # JSON array when serializing to SQL
@@ -258,3 +265,4 @@ module.exports =
   whereInBounds: whereInBounds
   getClauseString: getClauseString
   safeJsonArray: safeJsonArray
+  isUnique: isUnique

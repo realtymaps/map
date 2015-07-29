@@ -9,25 +9,37 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
     imageQuality = profile.quality
     rmapsprincipal.getIdentity().then ->
       user = $rootScope.user
-      $http.get(backendRoutes.us_states.root)
-      .then (data) ->
+      $http.get(backendRoutes.us_states.root).then (data) ->
         $scope.us_states = data.data
 
-      $http.get(backendRoutes.account_use_types.root)
-      .then (data) ->
+      $http.get(backendRoutes.account_use_types.root).then (data) ->
         $scope.accountUseTypes = data.data
 
-      spawnImageAlert = (msg) ->
-        imageAlert =
+      if user.company_id?
+        $http.get("#{backendRoutes.company.root}/#{user.company_id}").then (data) ->
+          _.extend $scope.company, _.first data.data
+
+      $http.get(backendRoutes.company.root).then (data) ->
+        _.merge $scope,
+          companies: _.indexBy data.data, 'id'
+
+      spawnAlert = (msg) ->
+        alert =
           type:'rm-info'
+          msg: msg
 
-        imageAlert.msg = msg
-        $rootScope.$broadcast rmapsevents.alert.spawn, imageAlert
+        $rootScope.$broadcast rmapsevents.alert.spawn, alert
 
-      _.extend $scope,
+      _.merge $scope,
+        # companies:
+        #   changed: ->
+        #     _.merge $scope.company, $scope.companies[$scope.user.company_id]
         user: _.extend _.clone($rootScope.user, true),
           submit: ->
             $http.put backendRoutes.userSession.root, @
+        company:
+          submit: ->
+            $http.post backendRoutes.userSession.companyRoot, @
         maxImagePixles: maxImagePixles
         imageQuality: imageQuality
         imageForm:
@@ -39,20 +51,53 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             if @cropBlob.length
               return @cropBlob
             if user.account_image_id?
-              return @blob || "/api/session/image"
+              return @blob || backendRoutes.userSession.image
             "/assets/avatar.svg"
           save: ->
-            return spawnImageAlert "No Image to Save." unless @blob?
+            return spawnAlert "No Image to Save." unless @blob?
 
             if _.keys(@errors).length
               _.each @errors, (e) ->
-                spawnImageAlert e
+                spawnAlert e
               return
 
             $http.put backendRoutes.userSession.image, blob: @cropBlob
-            delete @cropBlob
-            delete @blob
+            .success =>
+              delete @cropBlob
+              delete @blob
 
+        companyImageForm:
+          cropBlob: ''
+          clearErrors: ->
+            $scope.$evalAsync ->
+              $scope.companyImageForm.errors = {}
+          toRender: ->
+            if @cropBlob.length
+              return @cropBlob
+            if $scope.company.account_image_id?
+              return @blob || backendRoutes.userSession.companyImage.replace(":account_image_id", $scope.company.account_image_id)
+            "/assets/trademark.svg"
+          save: ->
+            return spawnAlert "No Image to Save." unless @blob?
 
-        submit: ->
+            if _.keys(@errors).length
+              _.each @errors, (e) ->
+                spawnAlert e
+              return
+
+            $http.put backendRoutes.userSession.companyImage.replace(":account_image_id",""), _.extend(blob: @cropBlob, $scope.company)
+            .success =>
+              delete @cropBlob
+              delete @blob
+        pass:
+          username: "" + user.username
+          change: ->
+            if @password != @confirmPassword
+              @errorMsg = "passwords do not match!"
+            else
+              delete @errorMsg
+          submit: ->
+            if @password != @confirmPassword
+              return
+            $http.put backendRoutes.userSession.updatePassword, password: @password
         ready: true
