@@ -1,12 +1,14 @@
 gulp = require 'gulp'
-require './spec'
-require './json'
-require './express'
-require './minify'
-require './gzip'
-require './complexity'
-require './checkdir'
-
+[
+  './spec'
+  './json'
+  './express'
+  './minify'
+  './gzip'
+  './complexity'
+  './checkdir'
+].forEach (dep) ->
+  require dep
 #help = require('gulp-help')(gulp)
 del = require 'del'
 plumber = require 'gulp-plumber'
