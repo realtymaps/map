@@ -157,6 +157,7 @@ module.exports =
     subtasks: "#{apiBaseJobs}/subtasks"
     subtasksById: "#{apiBaseJobs}/subtasks/:name"
     summary: "#{apiBaseJobs}/summary"
-
+    runTask: "#{apiBaseJobs}/tasks/:name/run"
+    cancelTask: "#{apiBaseJobs}/tasks/:name/cancel"
 
   # hirefire secret value set from within backend/config/config.coffee

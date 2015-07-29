@@ -12,6 +12,11 @@ app.service 'rmapsJobsService', (Restangular) ->
       else
         getIdFromElem(elem)
 
+  Restangular.addRequestInterceptor (element, operation, what, url) ->
+    if (operation == 'post' || operation == 'put') && (what == 'tasks' || what == 'subtasks')
+      element.data = JSON.stringify(element.data)
+    element
+
   getCurrent = () ->
     Restangular.all(jobsAPI).all('history').getList( current: true )
 
@@ -30,6 +35,12 @@ app.service 'rmapsJobsService', (Restangular) ->
   getSummary = () ->
     Restangular.all(jobsAPI).all('summary').getList()
 
+  runTask = (task) ->
+    task.post('run')
+
+  cancelTask = (task) ->
+    task.post('cancel')
+
   service =
     getCurrent: getCurrent
     getHistory: getHistory
@@ -37,3 +48,5 @@ app.service 'rmapsJobsService', (Restangular) ->
     getTask: getTask
     getSubtask: getSubtask
     getSummary: getSummary
+    runTask: runTask
+    cancelTask: cancelTask

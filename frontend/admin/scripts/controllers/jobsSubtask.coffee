@@ -1,10 +1,13 @@
 app = require '../app.coffee'
-gridController = require '../../../common/scripts/utils/gridController.coffee'
+GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsSubtaskCtrl', gridController(
-  'Subtask',
-  'rmapsJobsService',
-  [
+app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
+
+  $scope.getData = rmapsJobsService.getSubtask
+
+  @gridName = 'Subtask'
+
+  @columnDefs = [
       field: 'name'
       displayName: 'Name'
       width: 200
@@ -71,4 +74,9 @@ app.controller 'rmapsJobsSubtaskCtrl', gridController(
       type: 'boolean'
       defaultValue: true
       width: 125
-  ])
+  ]
+
+  $injector.invoke GridController, this,
+    $scope: $scope
+    $rootScope: $rootScope
+    Restangular: Restangular
