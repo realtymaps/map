@@ -151,26 +151,26 @@ app.factory 'rmapsMap',
 
       drawFilterSummary:(cache) =>
         $log.info "\n\n#### drawFilterSummary"
-
+        self = @
         promises = []
 
-        handleClusterResults = (data) =>
+        handleClusterResults = (data) ->
           #data should be in array format
-          @scopeM().markers.filterSummary = {}
+          self.scopeM().markers.filterSummary = {}
           _.each data, (model,k) =>
-            @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          @scopeM().markers.backendPriceCluster = data            
+            self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
+          self.scopeM().markers.backendPriceCluster = data            
           $log.info "#### cluster promise resolved!"
 
-        handleSummaryResults = (data) =>
-          @scopeM().markers.backendPriceCluster = {}
+        handleSummaryResults = (data) ->
+          self.scopeM().markers.backendPriceCluster = {}
 
-          @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+          self.layerFormatter.setDataOptions(data, self.layerFormatter.MLS.setMarkerPriceOptions)
 
           for key, val of data
             _wrapGeomPointJson val
 
-          @scopeM().markers.filterSummary = data
+          self.scopeM().markers.filterSummary = data
 
           $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
           $log.info "#### summary promise resolved!"
@@ -276,7 +276,7 @@ app.factory 'rmapsMap',
         promises
 
       redraw: (cache = true) =>
-        $log.info "################ redrawing..."
+        $log.info "################ redraw()"
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
@@ -306,6 +306,7 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
+        $log.info "################ draw()"
         return if !@scope.map.isReady
 
         @scope?.formatters?.results?.reset()
