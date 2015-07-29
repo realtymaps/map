@@ -177,18 +177,19 @@ app.factory 'rmapsMap',
 
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
-        $log.info "#### map calls getFilterResults..."
+        
         rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
         .then (data) =>
-          $log.info "#### getFilterResults data:"
+          $log.info "#### data gotten:"
           $log.info data
+
           if Object.prototype.toString.call(data) is '[object Array]'
-            $log.info "#### data is an array!  Must be cluster results"
+            
             return if !data? or _.isString data
             promises.push $q.when handleClusterResults(data)
 
           else
-            $log.info "#### data is an object!  Must be summary results"
+
             #needed for results list, rendering price markers, and address Markers
             #depending on zoome we want address or price
             #the data structure is the same (do we clone and hide one?)
@@ -204,8 +205,6 @@ app.factory 'rmapsMap',
               promises.push(
                 rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
                 .then (data) =>
-                  $log.info "#### getFilterSummaryAsGeoJsonPolys data:"
-                  $log.info data
                   return if !data? or _.isString data
                   @scopeM().geojson.filterSummaryPoly =
                     data: data
@@ -276,7 +275,7 @@ app.factory 'rmapsMap',
         promises
 
       redraw: (cache = true) =>
-        $log.info "################ redraw()"
+        $log.info "\n#### redraw()"
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
@@ -297,6 +296,7 @@ app.factory 'rmapsMap',
         promises = promises.concat @drawFilterSummary(cache)
 
         $q.all(promises).then =>
+          $log.info "#### $q.all promises resolved..."
           #every thing is setup, only draw once
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
@@ -306,7 +306,7 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
-        $log.info "################ draw()"
+        $log.info "\n#### draw()"
         return if !@scope.map.isReady
 
         @scope?.formatters?.results?.reset()
@@ -354,6 +354,7 @@ app.factory 'rmapsMap',
         stateObj
 
       refreshState: (overrideObj = {}) =>
+        $log.info "#### refreshState"
         @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
         @mapState
 

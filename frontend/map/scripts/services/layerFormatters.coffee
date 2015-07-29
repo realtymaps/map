@@ -97,6 +97,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       markersBSLabel['saved'] = 'saved-property'
 
       setMarkerPriceOptions: (model) ->
+        $log.info "#### setMarkerPriceOptions()"
         return {} unless model
         if not model.price
           formattedPrice = " &nbsp; &nbsp; &nbsp;"
@@ -125,6 +126,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
             html: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
 
       setMarkerManualClusterOptions: (model) ->
+        $log.info "#### setMarkerManualClusterOptions()"
         return {} unless model
         clusterSize = 'small'
         clusterSize = 'medium' if model.count > 10

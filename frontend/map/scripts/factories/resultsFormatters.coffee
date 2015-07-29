@@ -76,6 +76,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
         , 100
 
         @reset = _.debounce =>
+          $log.info "\n\n#### running ResultsFormatter reset()"
           @mapCtrl.scope.resultsLimit = 10
           @mapCtrl.scope.results = {}
           @lastSummaryIndex = 0
@@ -84,6 +85,8 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
 
           #make sure selectedResult is updated if it exists
           summary = @mapCtrl.scope.map?.markers?.filterSummary
+          $log.info "#### @mapCtrl.scope.selectedResult? " + @mapCtrl.scope.selectedResult?
+          $log.info "#### summary[@mapCtrl.scope.selectedResult.rm_property_id]? " + summary[@mapCtrl.scope.selectedResult.rm_property_id]?
           if @mapCtrl.scope.selectedResult? and summary[@mapCtrl.scope.selectedResult.rm_property_id]?
             delete @mapCtrl.scope.selectedResult.savedDetails
             angular.extend(@mapCtrl.scope.selectedResult, summary[@mapCtrl.scope.selectedResult.rm_property_id])
