@@ -48,13 +48,16 @@
     "angular-google-maps": {
       "main": "dist/angular-google-maps-street-view.js"
     },
-    "leaflet": {
-      "main": "dist/leaflet-src.js"
-    },
     "leaflet.zoombox": {
       "main": [
         "L.Control.ZoomBox.css",
         "L.Control.ZoomBox.js"
+      ]
+    },
+    "leaflet.markercluster": {
+      "main": [
+        "dist/leaflet.markercluster.js",
+        "dist/*.css"
       ]
     },
     "angular-ui-grid": {
