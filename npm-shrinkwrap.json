@@ -27413,9 +27413,9 @@
           "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.1.1.tgz"
         },
         "pool2": {
-          "version": "1.1.5",
-          "from": "https://registry.npmjs.org/pool2/-/pool2-1.1.5.tgz",
-          "resolved": "https://registry.npmjs.org/pool2/-/pool2-1.1.5.tgz",
+          "version": "1.1.6",
+          "from": "https://registry.npmjs.org/pool2/-/pool2-1.1.6.tgz",
+          "resolved": "https://registry.npmjs.org/pool2/-/pool2-1.1.6.tgz",
           "dependencies": {
             "double-ended-queue": {
               "version": "2.1.0-0",
