@@ -22,13 +22,14 @@ getAssetCollection = (app) ->
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'
     json: app + 'json/**/*.json'
-    assets: app + 'assets/*'
+    assets: app + 'assets/**/*.*'
   }
 
 module.exports =
   bower: 'bower_components'
   spec: 'spec/**'
   common: 'common/**/*.*'
+  webroot: 'common/webroot/*.*'
 
   rmap: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)

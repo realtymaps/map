@@ -2,4 +2,7 @@ doctype html
 html(lang='en', ng-app='#{ngApp}')
   include header
   body(rmaps-root-event)
+    <!--[if lt IE 8]>
+    p.browserupgrade You are using an #[strong outdated] browser. Please #[a(href="http://browsehappy.com/") upgrade your browser] to improve your experience.
+    <![endif]-->
     block content
