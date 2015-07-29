@@ -55,32 +55,32 @@ createPasswordHash = (password) ->
   .then (hash) -> return "bcrypt$#{hash}"
 
 
-verifyPassword = (username, password) ->
-  #logger.debug "attempting to verify password for username: #{username}"
-  getUser({ username: username })
+verifyPassword = (email, password) ->
+  #logger.debug "attempting to verify password for email: #{email}"
+  getUser(email: email)
   .then (user) ->
     if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
-      # to prevent timing attacks from determining validity of usernames
+      # to prevent timing attacks from determining validity of email
       return createPasswordHash(password).then (hash) -> return false
     hashData = null
     preprocessHash(user.password)
     .catch (err) ->
-      logger.error "error while preprocessing password hash for username #{username}: #{err}"
+      logger.error "error while preprocessing password hash for email #{email}: #{err}"
       Promise.reject(err)
     .then (data) ->
       hashData = data
-      #logger.debug "detected #{hashData.algo} password hash for username: #{username}"
+      #logger.debug "detected #{hashData.algo} password hash for email: #{email}"
       switch hashData.algo
         when "bcrypt"
           return bcrypt.compareAsync(password, hashData.hash)
     .then (match) ->
       if not match
-        return Promise.reject("given password doesn't match hash for username: #{username}")
-      #logger.debug "password verified for username: #{username}"
+        return Promise.reject("given password doesn't match hash for email: #{email}")
+      #logger.debug "password verified for email: #{email}"
       if hashData.needsUpdate
         # in the background, update this user's hash
-        logger.info "updating password hash for username: #{username}"
+        logger.info "updating password hash for email: #{email}"
         createPasswordHash(password)
         .then (hash) -> return updateUser(id: user.id, password: hash)
         .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
@@ -145,14 +145,10 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
 upsertCompanyImage = (entity, blob) ->
   upsertImage(entity,blob, userData.company)
 
-updateUserNamePassword = (user, newUserName, password) ->
-  singleRow userData.user().where(username: newUserName).whereNot(id:user.id).count()
-  .then (row) ->
-    if row.count > 0
-      return Promise.reject "Username already exists"
-    createPasswordHash(password).then (password) ->
-      userData.user().update(username: newUserName, password:password)
-      .where(id: user.id)
+updatePassword = (user, password) ->
+  createPasswordHash(password).then (password) ->
+    userData.user().update(password:password)
+    .where(id: user.id)
 
 module.exports =
   getUser: getUser
@@ -167,4 +163,4 @@ module.exports =
   getImage: getImage
   upsertImage: upsertImage
   upsertCompanyImage: upsertCompanyImage
-  updateUserNamePassword: updateUserNamePassword
+  updatePassword: updatePassword

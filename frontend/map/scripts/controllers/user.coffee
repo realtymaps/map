@@ -89,7 +89,7 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             .success =>
               delete @cropBlob
               delete @blob
-        unamePass:
+        pass:
           username: "" + user.username
           change: ->
             if @password != @confirmPassword
@@ -99,7 +99,5 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
           submit: ->
             if @password != @confirmPassword
               return
-            $http.put backendRoutes.userSession.updateUserNamePassword,
-              username: @username
-              password: @password
+            $http.put backendRoutes.userSession.updatePassword, password: @password
         ready: true

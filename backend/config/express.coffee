@@ -120,7 +120,6 @@ app.use (data, req, res, next) ->
 
     return data.send(res)
 
-
   # otherwise, it's probably a thrown Error
   analysis = analyzeValue(data)
   logger.error "uncaught error found by express:"
