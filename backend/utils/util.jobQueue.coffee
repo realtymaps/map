@@ -308,11 +308,19 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
   .then (updatedSubtask) ->
-    updatedSubtask[0].error = "#{error}"
+    # handle race condition where currentSubtasks table gets cleared between the update and query above
+    # ideally we want to get a fresh copy of the data, but if it's gone, just use what we already had
+    if !updatedSubtask?[0]?
+      errorSubtask = _.clone(subtask)
+      errorSubtask.status = status
+      errorSubtask.finished = knex.raw('NOW()')
+    else
+      errorSubtask = updatedSubtask[0]
+    errorSubtask.error = "#{error}"
     if error.stack
-      updatedSubtask[0].stack = error.stack
+      errorSubtask.stack = error.stack 
     tables.jobQueue.subtaskErrorHistory()
-    .insert updatedSubtask[0]
+    .insert errorSubtask
   .then () ->
     if hard
       Promise.join cancelTask(subtask.task_name, 'hard fail'), sendNotification
