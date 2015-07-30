@@ -70,9 +70,17 @@ queueReadyTasks = (transaction) -> Promise.try () ->
         .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
         .where () ->
           this
-          .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ...
           .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
-          .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
+          .orWhere () ->   
+            this
+            .where(status: 'success')                 # ... or it was successful
+            .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... and it isn't set to repeat ...
+            .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its success repeat delay
+          .orWhere () ->   # ... or it failed and hasn't passed its fail retry delay
+            this
+            .whereIn("status", ['hard fail','canceled','timeout'])           # ... or it failed
+            .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
+            .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
   .then (readyTasks=[]) ->
     Promise.map readyTasks, (task) ->
       queueTask(transaction, batchId, task, '<scheduler>')
