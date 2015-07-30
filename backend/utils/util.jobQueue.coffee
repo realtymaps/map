@@ -70,12 +70,27 @@ queueReadyTasks = (transaction) -> Promise.try () ->
         .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
         .where () ->
           this
-          .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ... 
+          .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... it isn't set to repeat ...
           .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
           .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()")  # ... or it hasn't passed its repeat delay
   .then (readyTasks=[]) ->
     Promise.map readyTasks, (task) ->
       queueTask(transaction, batchId, task, '<scheduler>')
+
+queueManualTask = (name, initiator) ->
+  if !name
+    throw "Task name required!"
+  knex.transaction (transaction) ->
+    tables.jobQueue.taskConfig(transaction)
+    .select()
+    .where(name: name)
+    .then (result) ->
+      if result.length == 0
+        throw "Task not found: #{name}"
+      else if result.length == 1
+        batchId = (Date.now()).toString(36)
+        logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
+        queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
   tables.jobQueue.taskHistory(transaction)
@@ -147,11 +162,11 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
       task?[0]?.data
   .then (taskData) ->
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
-      queueSubtask(transaction, batchId, taskData, subtask)  
+      queueSubtask(transaction, batchId, taskData, subtask)
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
-# convenience function to get another subtask config and then enqueue it based on the current subtask 
+# convenience function to get another subtask config and then enqueue it based on the current subtask
 queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
@@ -316,7 +331,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
 # should this be rewritten to use a transaction and query built by knex?  I decided to implement it as a stored proc
 # in order to enforce the locking semantics, but I'm not sure if that's really a good reason
 getQueuedSubtask = (queue_name) ->
-  knex.select('*').from(knex.raw('jq_get_next_subtask(?)', [queue_name]))   
+  knex.select('*').from(knex.raw('jq_get_next_subtask(?)', [queue_name]))
   .then (results) ->
     if !results?[0]?.id?
       return null
@@ -353,7 +368,7 @@ _killLongTasks = () ->
     Promise.join cancelPromise, notificationPromise
 
 _handleZombies = () ->
-  # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks 
+  # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks
   tables.jobQueue.currentSubtasks()
   .whereNull('finished')
   .whereNotNull('started')
@@ -411,7 +426,7 @@ doMaintenance = () ->
     _handleZombies()
   .then () ->
     _setFinishedTimestamps()
-    
+
 updateTaskCounts = () ->
   knex.select(knex.raw('jq_update_task_counts()'))
 
@@ -423,7 +438,7 @@ getQueueNeeds = () ->
   .where(active: true)
   subtasksPromise = tables.jobQueue.currentSubtasks()
   .select('*')
-  
+
   Promise.join queueConfigPromise , subtasksPromise, (queueConfigs, currentSubtasks) ->
     queueConfigs = _.indexBy(queueConfigs, 'name')
     for name of queueConfigs
@@ -464,12 +479,12 @@ getQueueNeeds = () ->
       result.push(name: name, quantity: needs)
     return result
 
-# convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask 
+# convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
 queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
-    
+
 queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
   total = Number(total)
   if !total
@@ -488,7 +503,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
     subtasksQueued++
     countHandled += datum.count
   queueSubtask(transaction, batchId, taskData, subtask, data)
-  
+
 getSubtaskConfig = (transaction, subtaskName, taskName) ->
   tables.jobQueue.subtaskConfig(transaction)
   .where
@@ -526,6 +541,7 @@ module.exports =
   withSchedulingLock: withSchedulingLock
   queueReadyTasks: queueReadyTasks
   queueTask: queueTask
+  queueManualTask: queueManualTask
   queueSubtasks: queueSubtasks
   queueSubtask: queueSubtask
   queueSubsequentSubtask: queueSubsequentSubtask

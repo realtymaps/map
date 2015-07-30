@@ -1,38 +1,27 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsSubtaskCtrl',
-($window, $scope, $rootScope, rmapsJobsService, uiGridConstants, $state) ->
+app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
 
-  numericDefaults =
-    aggregationType: uiGridConstants.aggregationTypes.sum
-    type: 'number'
-    width: 75
-    cellClass: 'numberCell'
-    footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
+  $scope.getData = rmapsJobsService.getSubtask
 
-  dateFilter = 'date:"MM/dd HH:mm"'
+  @gridName = 'Subtask'
 
-  $scope.jobsGrid =
-    enableColumnMenus: false
-    onRegisterApi: (gridApi) ->
-      gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-        $scope.$apply()
-        rowEntity.save()
-    columnDefs:[
+  @columnDefs = [
       field: 'name'
       displayName: 'Name'
-      width: 100
+      width: 200
+      enableCellEdit: false
     ,
       field: 'task_name'
       displayName: 'Task'
-      width: 75
-      enableCellEdit: false
+      width: 125
+      defaultValue: ''
     ,
       field: 'queue_name'
       displayName: 'Queue'
-      width: 75
-      enableCellEdit: false
+      width: 125
+      defaultValue: ''
     ,
       field: 'step_num'
       displayName: 'Step#'
@@ -41,36 +30,53 @@ app.controller 'rmapsJobsSubtaskCtrl',
     ,
       field: 'data'
       displayName: 'Data'
+      type: 'object'
+      enableCellEdit: true
+      editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
+      width: 125
     ,
       field: 'retry_delay_seconds'
       displayName: 'Retry Delay'
+      width: 125
     ,
       field: 'retry_max_count'
       displayName: 'Max Retries'
+      width: 125
     ,
       field: 'hard_fail_timeouts'
       displayName: 'HF Timeout?'
+      type: 'boolean'
+      defaultValue: true
+      width: 100
     ,
       field: 'hard_fail_after_retries'
       displayName: 'HF Retry?'
+      type: 'boolean'
+      defaultValue: true
+      width: 100
     ,
       field: 'hard_fail_zombies'
       displayName: 'HF Zombie?'
+      type: 'boolean'
+      defaultValue: true
+      width: 100
     ,
       field: 'warn_timeout_seconds'
       displayName: 'Warn TO sec'
+      width: 125
     ,
       field: 'kill_timeout_seconds'
       displayName: 'Kill TO sec'
+      width: 125
     ,
       field: 'auto_enqueue'
-      displayName: 'Auto Enqueue'
+      displayName: 'Auto Enqueue?'
+      type: 'boolean'
+      defaultValue: true
+      width: 125
   ]
 
-  $scope.loadSubtasks = () ->
-    $scope.jobsBusy = rmapsJobsService.getSubtasks()
-    .then (subtasks) ->
-      $scope.jobsGrid.data = subtasks
-
-  $rootScope.registerScopeData () ->
-    $scope.loadSubtasks()
+  $injector.invoke GridController, this,
+    $scope: $scope
+    $rootScope: $rootScope
+    Restangular: Restangular

@@ -7,18 +7,16 @@ app.controller 'rmapsJobsHistoryCtrl',
   numericDefaults =
     type: 'number'
     width: 75
-    headerCellClass: 'numberCell'
+    cellClass: 'numberCell'
 
   dateFilter = 'date:"MM/dd HH:mm"'
 
   $scope.jobsGrid =
     enableColumnMenus: false
-    showColumnFooter: true
     columnDefs:[
       field: 'name'
       displayName: 'Task'
       width: 100
-      footerCellTemplate: '<div>Totals</div>'
     ,
       field: 'status'
       displayName: 'Status'
@@ -99,9 +97,6 @@ app.controller 'rmapsJobsHistoryCtrl',
       visible: false
     ], (num) ->
       _.extend num, numericDefaults
-
-  $scope.selectTask = () ->
-    $scope.loadHistory($state.params.task)
 
   $scope.loadHistory = (task) ->
     $scope.jobsBusy = rmapsJobsService.getHistory(task)

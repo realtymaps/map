@@ -41,7 +41,8 @@ module.exports =
     companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
-    updateUserNamePassword: "#{apiBaseSession}/usernamePassword"
+    updatePassword: "#{apiBaseSession}/password"
+    emailIsUnique: "#{apiBaseSession}/emailIsUnique"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -157,6 +158,7 @@ module.exports =
     subtasks: "#{apiBaseJobs}/subtasks"
     subtasksById: "#{apiBaseJobs}/subtasks/:name"
     summary: "#{apiBaseJobs}/summary"
-
+    runTask: "#{apiBaseJobs}/tasks/:name/run"
+    cancelTask: "#{apiBaseJobs}/tasks/:name/cancel"
 
   # hirefire secret value set from within backend/config/config.coffee

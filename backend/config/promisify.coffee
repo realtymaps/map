@@ -1,6 +1,5 @@
 Promise = require "bluebird"
 
-
 module.exports = {}
 
 
@@ -46,7 +45,6 @@ module.exports.sessionMiddleware = promisifySession
 Promise.nodeifyWrapper = (func, options) ->
   return (args..., callback) ->
     func(args...).nodeify(callback, options)
-
 
 # promisify only the fs methods that use callbacks
 fs = require 'fs'

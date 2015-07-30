@@ -1,26 +1,22 @@
 app = require '../app.coffee'
-_ = require 'lodash'
+GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsTaskCtrl',
-($window, $scope, $rootScope, rmapsJobsService, uiGridConstants, $state) ->
+app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
 
-  numericDefaults =
-    type: 'number'
-    width: 125
-    cellClass: 'numberCell'
+  $scope.getData = rmapsJobsService.getTask
 
-  dateFilter = 'date:"MM/dd HH:mm"'
+  $scope.runTask = rmapsJobsService.runTask
 
-  $scope.jobsGrid =
-    enableColumnMenus: false
-    onRegisterApi: (gridApi) ->
-      gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-        $scope.$apply()
-        rowEntity.save()
-    columnDefs:[
+  $scope.cancelTask = rmapsJobsService.cancelTask
+
+  @gridName = 'Task'
+
+  @columnDefs = [
       field: 'name'
       displayName: 'Name'
+      cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
       width: 100
+      enableCellEdit: false
     ,
       field: 'description'
       displayName: 'Description'
@@ -28,31 +24,54 @@ app.controller 'rmapsJobsTaskCtrl',
     ,
       field: 'data'
       displayName: 'Data'
+      type: 'object'
+      enableCellEdit: true
+      editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
       width: 250
     ,
       field: 'ignore_until'
       displayName: 'Ignore Until'
       type: 'date'
-      width: 100
-      cellFilter: dateFilter
-  ].concat _.map [
+      width: 125
+      cellFilter: 'date:"MM/dd/yy HH:mm"'
+    ,
       field: 'repeat_period_minutes'
       displayName: 'Repeat min'
+      type: 'number'
+      defaultValue: 60
+      width: 125
     ,
       field: 'warn_timeout_minutes'
       displayName: 'Warn TO min'
+      type: 'number'
+      defaultValue: 5
+      width: 125
     ,
       field: 'kill_timeout_minutes'
       displayName: 'Kill TO min'
-    ], (num) ->
-      _.extend num, numericDefaults
+      type: 'number'
+      defaultValue: 5
+      width: 125
+    ,
+      field: 'active'
+      displayName: 'Active?'
+      type: 'boolean'
+      width: 100
+    ,
+      field: '_run'
+      displayName: 'Run'
+      enableCellEdit: false
+      cellTemplate: '<div><a href="#" ng-click="grid.appScope.runTask(row.entity)">RUN</a></div>'
+      width: 100
+    ,
+      field: '_cancel'
+      displayName: 'Cancel'
+      enableCellEdit: false
+      cellTemplate: '<div><a href="#" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</a></div>'
+      width: 100
+  ]
 
-  $scope.loadTasks = () ->
-    $scope.jobsBusy = rmapsJobsService.getTasks()
-    .then (tasks) ->
-      _.each tasks, (task) ->
-        task.ignore_until = new Date(task.ignore_until)
-      $scope.jobsGrid.data = tasks
-
-  $rootScope.registerScopeData () ->
-    $scope.loadTasks()
+  $injector.invoke GridController, this,
+    $scope: $scope
+    $rootScope: $rootScope
+    Restangular: Restangular
