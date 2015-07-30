@@ -47,6 +47,7 @@ app.controller 'rmapsAppController', ($scope, $rootScope, rmapsprincipal) ->
       user: user
       profiles: profiles
 
-
+['1','2'].forEach (num) ->
+  require("./controllers/mayday_controllers#{num}.coffee")(app)
 
 module.exports = app

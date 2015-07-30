@@ -1,6 +1,8 @@
 gulp = require 'gulp'
 require './otherAssets'
 require './webroot'
+require './clean'
+
 gWebpack = require 'webpack-stream'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../../common/config/paths'
@@ -59,3 +61,7 @@ gulp.task 'webpackProd', gulp.series 'otherAssets', 'webroot', ->
 
 gulp.task 'webpackAdmin', gulp.series 'otherAssets', 'webroot', ->
   runWebpack(adminConf, 'admin')
+
+gulp.task 'webpackMap', gulp.series 'webpack'
+
+gulp.task 'webpackApps', gulp.series 'clean', 'webpackMap', 'webpackAdmin'
