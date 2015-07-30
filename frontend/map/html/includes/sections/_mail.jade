@@ -1,0 +1,43 @@
+.inner
+    .container
+        header.row
+            .col-md-8
+                h1.pageTitle Mailings
+                p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fermentum blandit lacus, eget fringilla justo euismod in. In neque lacus, pretium at ligula vel, pharetra cursus massa.
+            div(class="col-md-4 text-right")
+                .tools
+                    input(type="search" id="emailSearch" ng-model="emailSearchQuery" placeholder="Search mailings")
+                    span.divider
+                    button(class="btn btn-primary" ng-click="createNewEmail()") Create
+        .row
+            .col-md-12
+                table(class="table table-hover")
+                    thead
+                        tr
+                            th.select
+                                input(type="checkbox" name="selectAll")
+                            th
+                                span Title
+                            th
+                                span Count
+                            th
+                                span Type
+                            th
+                                span Status
+                            th.col-md-1
+                                span Date
+                    tbody
+                        tr(ng-repeat="email in emailsArray | filter:emailSearchQuery")
+                            td.select
+                                input(type="checkbox" name="selectGroup_{{$index}}")
+                            td
+                                h4 {{email.title}}
+                                a(href="#group_details_{{$index}}" class="details" title="View group details") View group details
+                            td
+                                span {{email.count}}
+                            td
+                                span {{email.type}}
+                            td
+                                span(class="{{email.status}}") {{email.status}}
+                            td.col-md-1
+                                span {{email.date | date:'MM/dd/yyyy'}}

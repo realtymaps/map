@@ -29,7 +29,7 @@ module.exports =
   bower: 'bower_components'
   spec: 'spec/**'
   common: 'common/**/*.*'
-  webroot: 'common/webroot/*.*'
+  webroot: 'common/webroot/**/*.*'
 
   rmap: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)

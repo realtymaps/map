@@ -3,12 +3,12 @@ include ./mixins/spinner.jade
 div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
   .full-width.container
     .navbar-header
-      button(type="button",data-toggle="collapse",data-target=".navbar-collapse").navbar-toggle
+      button.navbar-toggle(type="button",data-toggle="collapse",data-target=".navbar-collapse")
         span.sr-only Toggle navigation
         span.icon-bar
         span.icon-bar
         span.icon-bar
-      a.navbar-hide(href="{{frontendRoutes.index}}", ng-hide="$state.is('main')").navbar-brand
+      a.navbar-hide.navbar-brand(href="{{frontendRoutes.index}}", ng-hide="$state.is('main')")
         img(src="/assets/logo.png")
     .collapse.navbar-collapse
       ul.nav.navbar-nav
@@ -17,12 +17,12 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         li(ng-hide="$state.is('main')")
           +spinner()(ng-if="Spinner.getLoadingCount() > 0")
       ul.nav.navbar-nav.navbar-right
-        li(ng-hide="principal.isAuthenticated()", ng-cloak).navbar-float-right
+        li.navbar-float-right(ng-hide="principal.isAuthenticated()", ng-cloak)
           a(href="{{frontendRoutes.login}}") Sign In
-        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
+        li.navbar-float-right(ng-show="principal.isAuthenticated()", ng-cloak)
           a(href="{{frontendRoutes.logout}}") Sign Out
-        li(ng-show="principal.isAuthenticated()", ng-cloak).navbar-float-right
+        li.navbar-float-right(ng-show="principal.isAuthenticated()", ng-cloak)
           a(href="{{frontendRoutes.user}}" target="_self") {{user.username}}
-        li(ng-show="principal.isStaff()", ng-cloak).navbar-float-right
+        li.navbar-float-right(ng-show="principal.isStaff()", ng-cloak)
           a(href="{{adminRoutes.index}}" target="_self") Admin
         
