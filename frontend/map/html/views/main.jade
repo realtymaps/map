@@ -1,5 +1,3 @@
-include ../includes/navbar.jade
-
 .full-width.container
   include ../views/home.jade
   .page(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", 
