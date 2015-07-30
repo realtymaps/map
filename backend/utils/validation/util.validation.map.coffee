@@ -4,8 +4,9 @@ DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
-    if value in options.map
-      return options.map(value)
+    mapped = options.map[value]
+    if mapped?
+      return mapped
     if !value? || value == ''
       return null
     if options.passUmapped
