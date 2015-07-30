@@ -1,0 +1,38 @@
+span(class="dropdown btn-group settings-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent settings toggle-active" dropdown-toggle)
+        span.icon.icon-settings
+    div(class="dropdown-menu white arrow blueArrow" ng-click="$event.stopPropagation()")
+        h4.title property filter
+        ul
+            li(class="setPrice row")
+                span(class="label col-md-2") Price
+                div.col-md-10
+                    div.form-inline
+                        div(class="form-group")
+                            input(type="text" class="form-control" name="price_min" placeholder="Minimum")
+                        div(class="form-group")
+                            span.label to
+                        div(class="form-group")
+                            input(type="text" class="form-control" name="price_max" placeholder="Maximum")
+
+            li(class="setBeds row" ng-controller="CheckboxCtrl")
+                span(class="label col-md-2") Beds
+                div.col-md-10
+                    div.btn-group
+                        label(class="btn btn-white" ng-model="checkModel.setBeds.one" btn-checkbox) 1
+                        label(class="btn btn-white" ng-model="checkModel.setBeds.two" btn-checkbox) 2
+                        label(class="btn btn-white" ng-model="checkModel.setBeds.three" btn-checkbox) 3
+                        label(class="btn btn-white" ng-model="checkModel.setBeds.four" btn-checkbox) 4
+                        label(class="btn btn-white" ng-model="checkModel.setBeds.five" btn-checkbox) 5+
+            li(class="setBath row" ng-controller="CheckboxCtrl")
+                span(class="label col-md-2") Beds
+                div.col-md-10
+                    div.btn-group
+                        label(class="btn btn-white" ng-model="checkModel.setBath.one" btn-checkbox) 1+
+                        label(class="btn btn-white" ng-model="checkModel.setBath.two" btn-checkbox) 2+
+                        label(class="btn btn-white" ng-model="checkModel.setBath.three" btn-checkbox) 3+
+                        label(class="btn btn-white" ng-model="checkModel.setBath.four" btn-checkbox) 4+
+                        label(class="btn btn-white" ng-model="checkModel.setBath.five" btn-checkbox) 5+
+        div.btn-actions
+            button(class="btn btn-default") More
+                span.caret

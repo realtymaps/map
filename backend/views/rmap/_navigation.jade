@@ -1,0 +1,13 @@
+nav#navigation
+    .nav-toggle
+        span(ng-click="toggleMainNav()") toggle menu
+    ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
+        li(ng-class="{ active: isActive('map') }")
+            a(href="#map")
+                span map
+        li(class="inbox" ng-class="{ active: isActive('mail') }")
+            a(href="#mail")
+                span mail
+        li(ng-class="{ active: isActive('history') }")
+            a(href="#history")
+                span history
