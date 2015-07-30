@@ -29,7 +29,7 @@ describe 'utils/validation.validators.choice()'.ns().ns('Backend'), ->
         (value == undefined).should.be.true
     ]
 
-  promiseIt 'should resolve or reject based on equalsTester when provided, and transform to the matching choice', () ->
+  promiseIt 'should resolve or reject based on equalsTester when provided', () ->
     a = {key:10,value:"a"}
     b = {key:25,value:"b"}
     c = {key:23,value:"c"}
