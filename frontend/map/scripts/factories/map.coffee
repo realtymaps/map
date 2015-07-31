@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 _overlays = require '../utils/util.layers.overlay.coffee'
 
 _encode = require('geohash64').encode
@@ -150,31 +149,21 @@ app.factory 'rmapsMap',
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
-        #$log.info "\n\n#### drawFilterSummary"
         self = @
         promises = []
 
         handleClusterResults = (data) ->
-          #data should be in array format
           self.scopeM().markers.filterSummary = {}
           _.each data, (model,k) =>
             self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
           self.scopeM().markers.backendPriceCluster = data            
-          #$log.info "#### cluster resolved!"
 
         handleSummaryResults = (data) ->
           self.scopeM().markers.backendPriceCluster = {}
-
           self.layerFormatter.setDataOptions(data, self.layerFormatter.MLS.setMarkerPriceOptions)
-
           for key, val of data
             _wrapGeomPointJson val
-
           self.scopeM().markers.filterSummary = data
-
-          $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
-          #$log.info "#### summary resolved!"
-
 
         handleGeoJsonResults = () ->
           rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
@@ -183,32 +172,16 @@ app.factory 'rmapsMap',
             self.scopeM().geojson.filterSummaryPoly =
               data: data
               style: self.layerFormatter.Parcels.getStyle
-            #$log.info "#### GeoJsonPolys promise resolved!"
-
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
-        cache = false
-        # $log.info "#### Calling getFilterResults..."
-        # $log.info "#### @filters:"
-        # $log.info @filters
-        # $log.info "#### @mapState:"
-        # $log.info @mapState
-
-
-        #$log.info "#### pushing getFilterResults promise..."
         promises.push(
           rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
           .then (data) =>
-            $log.info "#### getFilterResults data gotten:"
-            $log.info data
-
-            if Object.prototype.toString.call(data) is '[object Array]'
-              
+            if Object.prototype.toString.call(data) is '[object Array]'              
               return if !data? or _.isString data
               handleClusterResults(data)
 
             else
-
               #needed for results list, rendering price markers, and address Markers
               #depending on zoome we want address or price
               #the data structure is the same (do we clone and hide one?)

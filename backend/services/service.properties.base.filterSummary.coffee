@@ -47,38 +47,21 @@ makeMinMaxes = (result, validators, name) ->
   result["#{name}Max"] = validators
 
 minMaxes = _.transform(minMaxValidations, makeMinMaxes)
-#logger.debug minMaxes, true
 
 transforms = _.extend {}, otherValidations, minMaxes
-
 
 _getDefaultQuery = ->
   sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
 _getResultCount = (state, filters) ->
-  #logger.debug "#### _getResultCount"
+  # obtain a count(*)-style select query 
   query = sqlHelpers.selectCount(tables.propertyData.propertyDetails())
-  # logger.debug "#### query (1) query.toString():"
-  # logger.debug query.toString()
-
+  # apply the state & filters (mostly "where" clause stuff)
   query = _getFilterSummaryAsQuery(state, filters, null, query)
-  
-  # logger.debug "#### query (2) query.toString():"
-  # logger.debug query.toString()  
   query
 
-
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
-  # logger.debug filters, true
-    # logger.debug "#### _getFilterSummaryAsQuery"
-    # logger.debug "#### state: " + state.toString()
-    # logger.debug "#### filters: " + filters.status.toString()
-    # logger.debug "#### query: " + query.toString()
     return if !filters or !filters?.status?.length or !query
-    # logger.debug "#### params are good, continuing..."
-    # save out for use with saved properties
-    # logger.debug "#### _getFilterSummaryAsQuery(), default query sql (1):"
-    # logger.debug query.toString()
     query.limit(limit) if limit
     sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
 
@@ -114,19 +97,11 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
         # since this is after the split, a space here will be an actual part of the search
         result.push chunk.replace(/(['-])/g, "[$1 ]?")
       sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
-    # logger.debug "######## still going..."
+
     if filters.listedDaysMin
       sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
     if filters.listedDaysMax
       sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
-
-    #might not need anymore due to leaflet
-    # if _getZoom(state.map_position) >= zoomThresh.ordering or _.contains(filters.status, filterStatusesEnum.not_for_sale)
-    #   sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', Point(state.map_position.center))
-
-    # logger.sql query.toString()
-    # logger.debug "#### _getFilterSummaryAsQuery(), default query sql (2):"
-    # logger.debug query.toString()
 
     query
 
@@ -140,19 +115,11 @@ module.exports =
       logger.debug 'GTFO'
       return
 
-    logger.debug "#### validateAndTransform, params:"
-    logger.debug "#### rawFilters:"
-    logger.debug rawFilters
-    # logger.debug "#### transforms:"
-    # logger.debug transforms
-
     validation.validateAndTransform(rawFilters, transforms)
 
   getFilterSummaryAsQuery: _getFilterSummaryAsQuery
   getResultCount: _getResultCount
 
   getFilterSummary: (state, filters, limit, query) ->
-    logger.debug "#### filters:"
-    logger.debug filters
     Promise.try () ->
       _getFilterSummaryAsQuery(state, filters, limit, query)

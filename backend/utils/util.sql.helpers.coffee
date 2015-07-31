@@ -109,6 +109,7 @@ whereInBounds = (query, column, bounds) ->
 
     swLat = _getLat(bounds[1])
     swLon = _getLon(bounds[1])
+
     # it's the whole map, so let's put a margin on each side
     minLon = Math.min(neLon, swLon)
     maxLon = Math.max(neLon, swLon)
@@ -182,40 +183,17 @@ allPatternsInAnyColumn = (query, patterns, columns) ->
           bindings: [ pattern ]
 
 select = (knex, which, passedFilters=null, prepend='') ->
-  # logger.debug "#### knex select()"
-  # # logger.debug "#### knex (1):"
-  # # logger.debug knex
-  # logger.debug "#### knex (1) knex.toString():"
-  # logger.debug knex.toString()
-  # logger.debug "#### which:"
-  # logger.debug which
-  # logger.debug "#### passedFilters:"
-  # logger.debug passedFilters
-
   prepend += ' ' if prepend?
   extra = ''
   if passedFilters
     extra = ", #{passedFilters} as \"passedFilters\""
   knex.select(knex.raw(prepend + _columns[which] + extra))
-  # logger.debug "#### knex (2):"
-  # logger.debug knex
-  # logger.debug "#### knex (2) knex.toString():"
-  # logger.debug knex.toString()
   knex
 
-#selectCount = (knex, which, passedFilters, prepend='distinct on (rm_property_id)')
-
-selectCount = (knex, field='rm_property_id') ->
-  # logger.debug "#### knex selectCount()"
-  # # logger.debug "#### knex (1):"
-  # # logger.debug knex
-  # logger.debug "#### knex (1) knex.toString():"
-  # logger.debug knex.toString()
-
-  # knex.count(knex.raw('distinct rm_property_id')).select()
-  knex.select(knex.raw('count(distinct rm_property_id)'))
-  # logger.debug "#### knex (2) knex.toString():"
-  # logger.debug knex.toString()
+selectCount = (knex, distinctField='rm_property_id') ->
+  # some other (possibly preferred) query structure not available,
+  # using tip described via https://github.com/tgriesser/knex/issues/238
+  knex.select(knex.raw("count(distinct #{distinctField})"))
   knex  
 
 singleRow = (q, doThrow = false) -> Promise.try ->
