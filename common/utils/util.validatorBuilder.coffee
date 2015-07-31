@@ -3,7 +3,6 @@ _ = require 'lodash'
 baseRules =
   acres:
     alias: 'Acres'
-    required: true
   address:
     alias: 'Address'
     required: true
@@ -11,10 +10,8 @@ baseRules =
     group: 'general'
   baths_full:
     alias: 'Baths Full'
-    required: true
   bedrooms:
     alias: 'Bedrooms'
-    required: true
   days_on_market:
     alias: 'Days on Market'
     required: true
@@ -22,13 +19,11 @@ baseRules =
   fips_code:
     alias: 'FIPS code'
     required: true
-    input: []
+    input: {}
   hide_address:
     alias: 'Hide Address'
-    required: false
   hide_listing:
     alias: 'Hide Listing'
-    required: false
   parcel_id:
     alias: 'Parcel ID'
     required: true
@@ -38,10 +33,9 @@ baseRules =
   rm_property_id:
     alias: 'Property ID'
     required: true
-    input: []
+    input: {}
   sqft_finished:
     alias: 'Finished Sq Ft'
-    required: true
   status:
     alias: 'Status'
     required: true
@@ -54,10 +48,8 @@ baseRules =
     required: true
   close_date:
     alias: 'Close Date'
-    required: false
   discontinued_date:
     alias: 'Discontinued Date'
-    required: false
   mls_uuid:
     alias: 'MLS Number'
     required: true
@@ -96,12 +88,12 @@ lookupType = (field) ->
 
 _getValidationString = (type, vOptions) ->
   vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
-  "validation.#{type}(#{vOptionsStr})"
+  "validators.#{type}(#{vOptionsStr})"
 
 getTransform = (field) ->
   #   options:
   #
-  #     type: integer | float | string | fips | choice | currency | ...
+  #     type: integer | float | string | fips | map | currency | ...
   #       Maps to a validation handler.
   #       EG if type = "integer", we will expect:
   #       "validation.integer"
@@ -109,9 +101,9 @@ getTransform = (field) ->
   #         we can create a map
   #     vOptions:
   #       validation options to be nested into validation calls
-  #     choices:
-  #       key-value mapping for choice field
-  #       present if type is choices
+  #     map:
+  #       key-value mapping for map field
+  #       present if type is map
   #
 
   if field.config?.advanced
@@ -126,7 +118,7 @@ getTransform = (field) ->
       _getValidationString('address', vOptions)
 
     when 'status', 'substatus', 'status_display'
-      _getValidationString('choice', choices: vOptions.choices ? {})
+      _getValidationString('map', map: vOptions.map ? {}, passUnmapped: true)
 
     when 'parcel_id', 'mls_uuid'
       _getValidationString('string', vOptions)
@@ -166,10 +158,12 @@ validateBase = (field) ->
   # Ensure input is appropriate type before validating
   defaults = baseRules[field.output]
   if defaults
-    if !field.input?
+    if !field.input? || (!_.isPlainObject(field.input) && _.isPlainObject defaults.input)
       field.input = defaults.input || ''
     field.alias = defaults.alias
+    field.required = defaults.required
   input = field.input
+  field.inputString = JSON.stringify(field.input) # for display
   switch field.output
     when 'address'
       field.valid = input.city && input.state && (input.zip || input.zip9) &&
@@ -177,9 +171,9 @@ validateBase = (field) ->
     when 'days_on_market'
       field.valid = input[0] || input[1]
     when 'fips_code'
-      field.valid = input[0] && input[1]
+      field.valid = input.stateCode && input.county
     when 'rm_property_id'
-      field.valid = input[0] && input[1] && input[2]
+      field.valid = input.stateCode && input.county && input.parcelId
     else
       field.valid = !field.required || !!input
   field.valid = !!field.valid
