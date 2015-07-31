@@ -2,7 +2,8 @@ webpack = require 'webpack'
 _ = require 'lodash'
 ngAnnotatePlugin = require 'ng-annotate-webpack-plugin'
 
-Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
+# sourceMap ='?sourceMap'
+Config = (output, additionalPlugs, sourceMap = '') ->
   obj =
 #    watch:true
     stats:
