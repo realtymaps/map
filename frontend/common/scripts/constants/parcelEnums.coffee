@@ -39,6 +39,7 @@ address =
   streetNumSuffix: 'Street Number Suffix'
   streetFull: 'Full Street'
   unitNum: 'Unit Number'
+  showStreetInfo: 'Show Street Info'
 
 module.exports =
   status: status
