@@ -50,8 +50,7 @@ module.exports = (app) ->
       four: false
       five: false
 
-  .controller 'PageCtrl', ($scope) ->
-    #THIS IS REALLY TURNING MOBILE ON
+  .controller 'MobilePageCtrl', ($scope) ->
     $scope.isOn = false
 
     $scope.toggleIsOn = ->

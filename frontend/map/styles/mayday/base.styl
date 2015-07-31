@@ -36,7 +36,7 @@ h1.logo
   -moz-animation pulse 1s ease 1s 3
   animation pulse 1s ease 1s 3
 
-.page
+.mobile-page
   background c_dark_blue_darker
   position absolute
   z-index 1
@@ -49,7 +49,8 @@ h1.logo
   &.on
     left "calc(100% - %s)" % mobileNavOffset
 
-.site-header
+header.site-header
+  display block
   position absolute
   left 0
   top 0
@@ -101,9 +102,7 @@ h1.logo
   &.show-content
     #content
       z-index 1
-  /*
-    #map
-      z-index 3
+
     #mail
       z-index 2
     #history
@@ -126,7 +125,6 @@ h1.logo
         @extends .growUp
         transform translateX(0%)
 
-  */
   #map
   #mail
   #history

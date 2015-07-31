@@ -1,296 +1,294 @@
-extends ./_layout
-block content
-  section.user.text-wrap(ng-cloak ng-if="ready")
-    .container
-        h1.page-header Edit User
-        .row
-          // left column
-          .col-md-4.col-sm-6.col-xs-12
-              form.form-horizontal(role='form')
-                .form-group.text-center
-                  img.avatar.img-thumbnail(
-                    ng-cloak
-                    ng-src='{{imageForm.toRender()}}' 
-                    rmaps-get-natural-width="imageForm" 
-                    rmaps-get-client-width="imageForm" 
-                    rmaps-get-natural-max-width="{{maxImagePixles}}" 
-                    rmaps-get-natural-height="imageForm"
-                    rmaps-get-client-height="imageForm"
-                    rmaps-get-natural-max-height="{{maxImagePixles}}"
-                    rmaps-msg-replace="Image")
-                  .avatar.img-crop-area(
-                    ng-if="!!imageForm.blob" 
-                    ng-style="{'width': '{{imageForm.clientWidth}}' + 'px', 'height': '{{imageForm.clientHeight}}' + 'px'}")
-                    img-crop(
-                      area-type="square" image="imageForm.blob" 
-                      result-image="imageForm.cropBlob"
-                      result-image-size="maxImagePixles"
-                      result-image-quality="imageQuality"
-                      result-image-format="image/jpeg")
-                  h6 Upload a different photo...
-                  input.text-center.center-block.well.well-sm(
-                    type='file' accept='image/*' 
-                    rmaps-file-read="imageForm.blob" 
-                    rmaps-file-read-on-load="imageForm.clearErrors")
-              .form-group
-                label.col-md-3.control-label
-                .col-md-8
-                  input.btn.btn-primary(value='Save' type='button' ng-click="imageForm.save()")
-                  span
-                  input.btn.btn-default(value='Cancel' type='reset')
-          // edit form column
-          .col-md-8.col-sm-6.col-xs-12.personal-info
-            h3 Personal info
-            form.form-horizontal(name="userForm" role='form')
-              .form-group
-                label.col-lg-3.control-label First name:
-                .col-lg-8
-                  input.form-control(
-                    name="first_name"
-                    ng-model="user.first_name"
-                    type='text'
-                    validator="required,minlength=2")
-              .form-group
-                label.col-lg-3.control-label Last name:
-                .col-lg-8
-                  input.form-control(
-                    name="last_name"
-                    ng-model="user.last_name"
-                    type='text'
-                    validator="required,minlength=2")
-              .form-group
-                label.col-lg-3.control-label Address:
-                .col-lg-8
-                  input.form-control(
-                    name="address_1"
-                    ng-model="user.address_1"
-                    type='text'
-                    validator="required,address")
-              .form-group
-                label.col-lg-3.control-label
-                .col-lg-8
-                  input.form-control(
-                    name="address_2"
-                    ng-model="user.address_2"
-                    type='text'
-                    initial-validity="true"
-                    validator="optMinlength=2")
-              .form-group
-                label.col-lg-3.control-label City:
-                .col-lg-8
-                  input.form-control(
-                    name="city"
-                    ng-model="user.city"
-                    type='text'
-                    validator="required,minlength=2")
-              .form-group
-                label.col-lg-3.control-label State:
-                .col-lg-8
-                  select.form-control(ng-model="user.us_state_id" validator="required" name="us_state_id")
-                    option(
-                      ng-repeat="s in us_states" 
-                      ng-selected="{{s.id == user.us_state_id}}" 
-                      value="{{s.id}}") {{s.code}} - {{s.name}}
-              .form-group
-                label.col-lg-3.control-label Zip:
-                .col-lg-8
-                  input.form-control(ng-model="user.zip"
-                    name="zip"
-                    type='text' validator="required,zipcode")
-              .form-group
-                label.col-lg-3.control-label Phone (Mobile/Home):
-                .col-lg-8
-                  input.form-control(ng-model="user.cell_phone"
-                    type='text'
-                    name="cell_phone"
-                    validator="required,phone")
-              .form-group
-                label.col-lg-3.control-label Work Phone:
-                .col-lg-8
-                  input.form-control(ng-model="user.work_phone" 
-                  type='text' 
-                  name="work_phone"
-                  validator="optPhone")
-              .form-group
-                label.col-lg-3.control-label Email:
-                .col-lg-8
-                  input.form-control(
-                    name="email"
-                    ng-model="user.email"
-                    type='text'
-                    validator="email,required,checkUniqueEmail")
-              .form-group
-                label.col-md-3.control-label(title="Not for login.") username / alias:
-                .col-md-8
-                  input.form-control(name="username" ng-model="unamePass.username", type='text' validator="required,minlength=3")
-              .form-group
-                label.col-lg-3.control-label Website Url:
-                .col-lg-8
-                  input.form-control(
-                    name="website_url"
-                    ng-model="user.website_url"
-                    type='text'
-                    initial-validity="true"
-                    validator="optUrl")
-              .form-group
-                label.col-lg-3.control-label Account Usage:
-                .col-lg-8
-                  select.form-control(ng-model="user.account_use_type_id" validator="required" name="account_use_type_id")
-                    option(
-                      ng-repeat="s in accountUseTypes"
-                      ng-selected="{{s.id == user.account_use_type_id}}" 
-                      value="{{s.id}}") {{s.description}}
-              .form-group
-                label.col-md-3.control-label
-                .col-md-8
-                  input.btn.btn-primary(
-                    value='Save' type='button' ng-click="user.submit()" validation-submit="userForm")
-                  span
-                  input.btn.btn-default(value='Cancel' type='reset' validation-reset="userForm")
-        .row
-          // edit form column
-          .col-md-4.col-sm-6.col-xs-12
+section.user.text-wrap(ng-cloak ng-if="ready")
+  .container
+      h1.page-header Edit User
+      .row
+        // left column
+        .col-md-4.col-sm-6.col-xs-12
             form.form-horizontal(role='form')
               .form-group.text-center
                 img.avatar.img-thumbnail(
                   ng-cloak
-                  ng-src='{{companyImageForm.toRender()}}' 
-                  rmaps-get-natural-width="companyImageForm" 
-                  rmaps-get-client-width="companyImageForm" 
-                  rmaps-get-natural-max-width="{{maxImagePixles}}" 
-                  rmaps-get-natural-height="companyImageForm"
-                  rmaps-get-client-height="companyImageForm"
+                  ng-src='{{imageForm.toRender()}}'
+                  rmaps-get-natural-width="imageForm"
+                  rmaps-get-client-width="imageForm"
+                  rmaps-get-natural-max-width="{{maxImagePixles}}"
+                  rmaps-get-natural-height="imageForm"
+                  rmaps-get-client-height="imageForm"
                   rmaps-get-natural-max-height="{{maxImagePixles}}"
                   rmaps-msg-replace="Image")
                 .avatar.img-crop-area(
-                  ng-if="!!companyImageForm.blob" 
-                  ng-style="{'width': '{{companyImageForm.clientWidth}}' + 'px', 'height': '{{companyImageForm.clientHeight}}' + 'px'}")
+                  ng-if="!!imageForm.blob"
+                  ng-style="{'width': '{{imageForm.clientWidth}}' + 'px', 'height': '{{imageForm.clientHeight}}' + 'px'}")
                   img-crop(
-                    area-type="square" image="companyImageForm.blob" 
-                    result-image="companyImageForm.cropBlob"
+                    area-type="square" image="imageForm.blob"
+                    result-image="imageForm.cropBlob"
                     result-image-size="maxImagePixles"
                     result-image-quality="imageQuality"
                     result-image-format="image/jpeg")
                 h6 Upload a different photo...
                 input.text-center.center-block.well.well-sm(
-                  type='file' accept='image/*' 
-                  rmaps-file-read="companyImageForm.blob" 
-                  rmaps-file-read-on-load="companyImageForm.clearErrors")
-              .form-group
-                label.col-md-3.control-label
-                .col-md-8
-                  input.btn.btn-primary(value='Save' type='button' ng-click="companyImageForm.save()")
-                  span
-                  input.btn.btn-default(value='Cancel' type='reset')
-            //- h3 Existing Companies
-            //- select.form-control(ng-model="user.company_id" ng-change="companies.changed()")
-            //-   option(
-            //-     ng-repeat="(key,s) in companies"
-            //-     ng-selected="{{s.id == user.company_id}}" 
-            //-     value="{{s.id}}") {{s.name}}
-            
-          .col-md-8.col-sm-6.col-xs-12.personal-info
-            h3 Company info
-            form.form-horizontal(name="companyForm" role='form')
-              .form-group
-                label.col-lg-3.control-label Name:
-                .col-lg-8
-                  input.form-control(
-                    name="company_name"
-                    ng-model="company.name"
-                    type='text'
-                    validator="required,minlength=2")
-              .form-group
-                label.col-lg-3.control-label Address:
-                .col-lg-8
-                  input.form-control(
-                    name="company_address_1"
-                    ng-model="company.address_1"
-                    type='text'
-                    validator="required,address")
-              .form-group
-                label.col-lg-3.control-label
-                .col-lg-8
-                  input.form-control(
-                    name="company_address_2"
-                    ng-model="company.address_2"
-                    type='text'
-                    initial-validity="true"
-                    validator="optMinlength=2")
-              .form-group
-                label.col-lg-3.control-label City:
-                .col-lg-8
-                  input.form-control(
-                    name="company_city"
-                    ng-model="company.city"
-                    type='text'
-                    validator="required,minlength=2")
-              .form-group
-                label.col-lg-3.control-label State:
-                .col-lg-8
-                  select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
-                    option(
-                      ng-repeat="s in us_states"
-                      ng-selected="{{s.id == company.us_state_id}}" 
-                      value="{{s.id}}") {{s.code}} - {{s.name}}
-              .form-group
-                label.col-lg-3.control-label Zip:
-                .col-lg-8
-                  input.form-control(ng-model="company.zip"
-                    name="company_zip"
-                    type='text' validator="required,zipcode")
-              .form-group
-                label.col-lg-3.control-label Phone:
-                .col-lg-8
-                  input.form-control(ng-model="company.phone"
-                    type='text'
-                    name="company_cell_phone"
-                    validator="required,phone")
-              .form-group
-                label.col-lg-3.control-label Fax:
-                .col-lg-8
-                  input.form-control(ng-model="company.fax" 
-                  type='text' 
-                  name="company_fax"
-                  validator="optPhone")
-              .form-group
-                label.col-lg-3.control-label Website Url:
-                .col-lg-8
-                  input.form-control(
-                    name="company_website_url"
-                    ng-model="company.website_url"
-                    type='text'
-                    initial-validity="true"
-                    validator="optUrl")
-              .form-group
-                label.col-md-3.control-label
-                .col-md-8
-                  input.btn.btn-primary(
-                    value='Save' type='button' ng-click="company.submit()" validation-submit="companyForm")
-                  span
-                  input.btn.btn-default(value='Cancel' type='reset' validation-reset="companyForm")
-        .row
-          // left column
-          .col-md-4.col-sm-6.col-xs-12
-          .col-md-8.col-sm-6.col-xs-12.personal-info
-            h3 Edit Password
-            form.form-horizontal(name="passwordForm" role='form')
-              .form-group
-                label.col-md-3.control-label Password:
-                .col-md-8
-                  input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
-              .form-group
-                label.col-md-3.control-label Confirm password:
-                .col-md-8
-                  input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
-              .form-group
-                label.col-md-3.control-label
-                .col-md-8
-                  span(ng-if="pass.errorMsg")
-                    label.control-label.has-error() {{pass.errorMsg}}
-              .form-group
-                label.col-md-3.control-label
-                  input.btn.btn-primary(value='Save' type='button' ng-click="pass.submit()" validation-submit="passwordForm")
-                  span
-                  input.btn.btn-default(value='Cancel' type='reset' validation-reset="passwordForm")
-              
+                  type='file' accept='image/*'
+                  rmaps-file-read="imageForm.blob"
+                  rmaps-file-read-on-load="imageForm.clearErrors")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save' type='button' ng-click="imageForm.save()")
+                span
+                input.btn.btn-default(value='Cancel' type='reset')
+        // edit form column
+        .col-md-8.col-sm-6.col-xs-12.personal-info
+          h3 Personal info
+          form.form-horizontal(name="userForm" role='form')
+            .form-group
+              label.col-lg-3.control-label First name:
+              .col-lg-8
+                input.form-control(
+                  name="first_name"
+                  ng-model="user.first_name"
+                  type='text'
+                  validator="required,minlength=2")
+            .form-group
+              label.col-lg-3.control-label Last name:
+              .col-lg-8
+                input.form-control(
+                  name="last_name"
+                  ng-model="user.last_name"
+                  type='text'
+                  validator="required,minlength=2")
+            .form-group
+              label.col-lg-3.control-label Address:
+              .col-lg-8
+                input.form-control(
+                  name="address_1"
+                  ng-model="user.address_1"
+                  type='text'
+                  validator="required,address")
+            .form-group
+              label.col-lg-3.control-label
+              .col-lg-8
+                input.form-control(
+                  name="address_2"
+                  ng-model="user.address_2"
+                  type='text'
+                  initial-validity="true"
+                  validator="optMinlength=2")
+            .form-group
+              label.col-lg-3.control-label City:
+              .col-lg-8
+                input.form-control(
+                  name="city"
+                  ng-model="user.city"
+                  type='text'
+                  validator="required,minlength=2")
+            .form-group
+              label.col-lg-3.control-label State:
+              .col-lg-8
+                select.form-control(ng-model="user.us_state_id" validator="required" name="us_state_id")
+                  option(
+                    ng-repeat="s in us_states"
+                    ng-selected="{{s.id == user.us_state_id}}"
+                    value="{{s.id}}") {{s.code}} - {{s.name}}
+            .form-group
+              label.col-lg-3.control-label Zip:
+              .col-lg-8
+                input.form-control(ng-model="user.zip"
+                  name="zip"
+                  type='text' validator="required,zipcode")
+            .form-group
+              label.col-lg-3.control-label Phone (Mobile/Home):
+              .col-lg-8
+                input.form-control(ng-model="user.cell_phone"
+                  type='text'
+                  name="cell_phone"
+                  validator="required,phone")
+            .form-group
+              label.col-lg-3.control-label Work Phone:
+              .col-lg-8
+                input.form-control(ng-model="user.work_phone"
+                type='text'
+                name="work_phone"
+                validator="optPhone")
+            .form-group
+              label.col-lg-3.control-label Email:
+              .col-lg-8
+                input.form-control(
+                  name="email"
+                  ng-model="user.email"
+                  type='text'
+                  validator="email,required,checkUniqueEmail")
+            .form-group
+              label.col-md-3.control-label(title="Not for login.") username / alias:
+              .col-md-8
+                input.form-control(name="username" ng-model="unamePass.username", type='text' validator="required,minlength=3")
+            .form-group
+              label.col-lg-3.control-label Website Url:
+              .col-lg-8
+                input.form-control(
+                  name="website_url"
+                  ng-model="user.website_url"
+                  type='text'
+                  initial-validity="true"
+                  validator="optUrl")
+            .form-group
+              label.col-lg-3.control-label Account Usage:
+              .col-lg-8
+                select.form-control(ng-model="user.account_use_type_id" validator="required" name="account_use_type_id")
+                  option(
+                    ng-repeat="s in accountUseTypes"
+                    ng-selected="{{s.id == user.account_use_type_id}}"
+                    value="{{s.id}}") {{s.description}}
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(
+                  value='Save' type='button' ng-click="user.submit()" validation-submit="userForm")
+                span
+                input.btn.btn-default(value='Cancel' type='reset' validation-reset="userForm")
+      .row
+        // edit form column
+        .col-md-4.col-sm-6.col-xs-12
+          form.form-horizontal(role='form')
+            .form-group.text-center
+              img.avatar.img-thumbnail(
+                ng-cloak
+                ng-src='{{companyImageForm.toRender()}}'
+                rmaps-get-natural-width="companyImageForm"
+                rmaps-get-client-width="companyImageForm"
+                rmaps-get-natural-max-width="{{maxImagePixles}}"
+                rmaps-get-natural-height="companyImageForm"
+                rmaps-get-client-height="companyImageForm"
+                rmaps-get-natural-max-height="{{maxImagePixles}}"
+                rmaps-msg-replace="Image")
+              .avatar.img-crop-area(
+                ng-if="!!companyImageForm.blob"
+                ng-style="{'width': '{{companyImageForm.clientWidth}}' + 'px', 'height': '{{companyImageForm.clientHeight}}' + 'px'}")
+                img-crop(
+                  area-type="square" image="companyImageForm.blob"
+                  result-image="companyImageForm.cropBlob"
+                  result-image-size="maxImagePixles"
+                  result-image-quality="imageQuality"
+                  result-image-format="image/jpeg")
+              h6 Upload a different photo...
+              input.text-center.center-block.well.well-sm(
+                type='file' accept='image/*'
+                rmaps-file-read="companyImageForm.blob"
+                rmaps-file-read-on-load="companyImageForm.clearErrors")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(value='Save' type='button' ng-click="companyImageForm.save()")
+                span
+                input.btn.btn-default(value='Cancel' type='reset')
+          //- h3 Existing Companies
+          //- select.form-control(ng-model="user.company_id" ng-change="companies.changed()")
+          //-   option(
+          //-     ng-repeat="(key,s) in companies"
+          //-     ng-selected="{{s.id == user.company_id}}"
+          //-     value="{{s.id}}") {{s.name}}
+
+        .col-md-8.col-sm-6.col-xs-12.personal-info
+          h3 Company info
+          form.form-horizontal(name="companyForm" role='form')
+            .form-group
+              label.col-lg-3.control-label Name:
+              .col-lg-8
+                input.form-control(
+                  name="company_name"
+                  ng-model="company.name"
+                  type='text'
+                  validator="required,minlength=2")
+            .form-group
+              label.col-lg-3.control-label Address:
+              .col-lg-8
+                input.form-control(
+                  name="company_address_1"
+                  ng-model="company.address_1"
+                  type='text'
+                  validator="required,address")
+            .form-group
+              label.col-lg-3.control-label
+              .col-lg-8
+                input.form-control(
+                  name="company_address_2"
+                  ng-model="company.address_2"
+                  type='text'
+                  initial-validity="true"
+                  validator="optMinlength=2")
+            .form-group
+              label.col-lg-3.control-label City:
+              .col-lg-8
+                input.form-control(
+                  name="company_city"
+                  ng-model="company.city"
+                  type='text'
+                  validator="required,minlength=2")
+            .form-group
+              label.col-lg-3.control-label State:
+              .col-lg-8
+                select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
+                  option(
+                    ng-repeat="s in us_states"
+                    ng-selected="{{s.id == company.us_state_id}}"
+                    value="{{s.id}}") {{s.code}} - {{s.name}}
+            .form-group
+              label.col-lg-3.control-label Zip:
+              .col-lg-8
+                input.form-control(ng-model="company.zip"
+                  name="company_zip"
+                  type='text' validator="required,zipcode")
+            .form-group
+              label.col-lg-3.control-label Phone:
+              .col-lg-8
+                input.form-control(ng-model="company.phone"
+                  type='text'
+                  name="company_cell_phone"
+                  validator="required,phone")
+            .form-group
+              label.col-lg-3.control-label Fax:
+              .col-lg-8
+                input.form-control(ng-model="company.fax"
+                type='text'
+                name="company_fax"
+                validator="optPhone")
+            .form-group
+              label.col-lg-3.control-label Website Url:
+              .col-lg-8
+                input.form-control(
+                  name="company_website_url"
+                  ng-model="company.website_url"
+                  type='text'
+                  initial-validity="true"
+                  validator="optUrl")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                input.btn.btn-primary(
+                  value='Save' type='button' ng-click="company.submit()" validation-submit="companyForm")
+                span
+                input.btn.btn-default(value='Cancel' type='reset' validation-reset="companyForm")
+      .row
+        // left column
+        .col-md-4.col-sm-6.col-xs-12
+        .col-md-8.col-sm-6.col-xs-12.personal-info
+          h3 Edit Password
+          form.form-horizontal(name="passwordForm" role='form')
+            .form-group
+              label.col-md-3.control-label Password:
+              .col-md-8
+                input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
+            .form-group
+              label.col-md-3.control-label Confirm password:
+              .col-md-8
+                input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
+            .form-group
+              label.col-md-3.control-label
+              .col-md-8
+                span(ng-if="pass.errorMsg")
+                  label.control-label.has-error() {{pass.errorMsg}}
+            .form-group
+              label.col-md-3.control-label
+                input.btn.btn-primary(value='Save' type='button' ng-click="pass.submit()" validation-submit="passwordForm")
+                span
+                input.btn.btn-default(value='Cancel' type='reset' validation-reset="passwordForm")
+

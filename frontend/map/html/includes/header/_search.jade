@@ -1,5 +1,5 @@
 div#search-field
-    form(ng-controller="SearchController")
+    form(ng-cloak ng-controller="SearchController")
         button(class="btn btn-icon search-btn" ng-click="openSearchTools = !openSearchTools" )
             span.icon.icon-magnify
         div.search(ng-controller="DropdownCtrl" ng-class="openSearchTools ? 'opened' : ''")

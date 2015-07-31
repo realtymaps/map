@@ -3,31 +3,31 @@
         include ./header/_logo
         ul.nav(ng-click="toggleIsOn()")
             li
-                a(href="#/neighbourhoods" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                a(ng-cloak href="#/neighbourhoods" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                     span neighbourhoods
                     span.new new
                     span.conut {{neighbourArray.length}}
             li
-                a(href="#/properties" class="properties" ng-class="{ active: isActive('properties') }")
+                a(ng-cloak href="#/properties" class="properties" ng-class="{ active: isActive('properties') }")
                     span properties
                     span.new new
                     span.conut {{propertiesArray.length}}
             li
-                a(href="#/notes" class="notes" ng-class="{ active: isActive('notes') }")
+                a(ng-cloak href="#/notes" class="notes" ng-class="{ active: isActive('notes') }")
                     span notes
                     span.conut {{notesArray.length}}
             li
-                a(href="#/favorites" class="favorites" ng-class="{ active: isActive('favorites') }")
+                a(ng-cloak href="#/favorites" class="favorites" ng-class="{ active: isActive('favorites') }")
                     span favorites
                     span.conut {{projectsArray.length}}
             li
-                a(href="#/projects" class="projects" ng-class="{ active: isActive('projects') }")
+                a(ng-cloak href="#/projects" class="projects" ng-class="{ active: isActive('projects') }")
                     span my projects
                     span.conut {{projectsArray.length}}
         .bottom
-            a(href="#realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                span.avatar(ng-if="!!user.account_image_id")
+            a(ng-cloak href="#realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
+                span.avatar(ng-cloak ng-if="!!user.account_image_id")
                     img(ng-src="{{backendRoutes.userSession.image}}" title="{{user.username}}")
-                span.avatar(ng-if="!!!user.account_image_id")
+                span.avatar(ng-cloak ng-if="!!!user.account_image_id")
                     img(ng-src="{{frontendRoutes.avatar}}" title="{{user.username}}")
             a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings

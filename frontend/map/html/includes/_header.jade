@@ -4,7 +4,9 @@ header.site-header
       include ./header/_burger
       include ./header/_logo
       include ./header/_navigation
-      include ./header/_notices
-      include ./header/_userblock
-      include ./header/_search
+      div(ng-if="principal.isAuthenticated()")
+        include ./header/_notices
+        include ./header/_userblock
+        include ./header/_search
+      include ./header/_rightnav
 
