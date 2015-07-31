@@ -235,7 +235,7 @@ _getValidations = (dataSourceId) ->
       validationMap[validationDef.list].push(validationDef)
     return validationMap
 # memoize it to cache js evals, but only for up to 10 minutes at a time
-_getValidations = memoize.promise(_getValidations, maxAge: 600000, async: true)
+_getValidations = memoize.promise(_getValidations, maxAge: 600000)
 
 _getUsedKeys = (validationDefinition) ->
   if validationDefinition.input?

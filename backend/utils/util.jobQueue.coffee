@@ -40,7 +40,7 @@ _getTaskCode = (taskName) ->
       if mlsConfigs?[0]?
         return require("./tasks/task.default.mls")
       throw new Error("can't find code for task with name: #{taskName}")
-_getTaskCode = memoize.promise(_getTaskCode, async: true)
+_getTaskCode = memoize.promise(_getTaskCode)
 
 
 withSchedulingLock = (handler) ->
