@@ -150,7 +150,7 @@ app.factory 'rmapsMap',
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
-        $log.info "\n\n#### drawFilterSummary"
+        #$log.info "\n\n#### drawFilterSummary"
         self = @
         promises = []
 
@@ -160,7 +160,7 @@ app.factory 'rmapsMap',
           _.each data, (model,k) =>
             self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
           self.scopeM().markers.backendPriceCluster = data            
-          $log.info "#### cluster promise resolved!"
+          #$log.info "#### cluster resolved!"
 
         handleSummaryResults = (data) ->
           self.scopeM().markers.backendPriceCluster = {}
@@ -173,49 +173,73 @@ app.factory 'rmapsMap',
           self.scopeM().markers.filterSummary = data
 
           $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
-          $log.info "#### summary promise resolved!"
+          #$log.info "#### summary resolved!"
+
+
+        handleGeoJsonResults = () ->
+          rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
+          .then (data) =>
+            return if !data? or _.isString data
+            self.scopeM().geojson.filterSummaryPoly =
+              data: data
+              style: self.layerFormatter.Parcels.getStyle
+            #$log.info "#### GeoJsonPolys promise resolved!"
 
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
-        
-        rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
-        .then (data) =>
-          $log.info "#### data gotten:"
-          $log.info data
+        cache = false
+        # $log.info "#### Calling getFilterResults..."
+        # $log.info "#### @filters:"
+        # $log.info @filters
+        # $log.info "#### @mapState:"
+        # $log.info @mapState
 
-          if Object.prototype.toString.call(data) is '[object Array]'
-            
-            return if !data? or _.isString data
-            promises.push $q.when handleClusterResults(data)
 
-          else
+        #$log.info "#### pushing getFilterResults promise..."
+        promises.push(
+          rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+          .then (data) =>
+            $log.info "#### getFilterResults data gotten:"
+            $log.info data
 
-            #needed for results list, rendering price markers, and address Markers
-            #depending on zoome we want address or price
-            #the data structure is the same (do we clone and hide one?)
-            #or do we have the results list view grab one that exists with items?
-            return if !data? or _.isString data
+            if Object.prototype.toString.call(data) is '[object Array]'
+              
+              return if !data? or _.isString data
+              handleClusterResults(data)
 
-            promises.push $q.when handleSummaryResults(data)
+            else
 
-            if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-              @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
-              @scope.map.layers.overlays.filterSummary.visible = false
-              @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
-              promises.push(
-                rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+              #needed for results list, rendering price markers, and address Markers
+              #depending on zoome we want address or price
+              #the data structure is the same (do we clone and hide one?)
+              #or do we have the results list view grab one that exists with items?
+              return if !data? or _.isString data
+
+              handleSummaryResults(data)
+
+
+              if rmapsZoomLevel.isParcel(self.scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom)
+                self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
+                self.scope.map.layers.overlays.filterSummary.visible = false
+                self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
+                #$log.info "#### pushing geojson promise..."
+                rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
                 .then (data) =>
                   return if !data? or _.isString data
-                  @scopeM().geojson.filterSummaryPoly =
+                  self.scopeM().geojson.filterSummaryPoly =
                     data: data
-                    style: @layerFormatter.Parcels.getStyle
-                  $log.info "#### GeoJsonPolys promise resolved!"
-              )
-            else
-              @scope.map.layers.overlays.parcels.visible = false
-              @scope.map.layers.overlays.filterSummary.visible = true
-              @scope.map.layers.overlays.parcelsAddresses.visible = false
+                    style: self.layerFormatter.Parcels.getStyle
+                  #$log.info "#### GeoJsonPolys promise resolved!"
 
+
+              else
+                self.scope.map.layers.overlays.parcels.visible = false
+                self.scope.map.layers.overlays.filterSummary.visible = true
+                self.scope.map.layers.overlays.parcelsAddresses.visible = false
+
+
+        )
+        promises
         # $log.info "#### rmapsZoomLevel.doCluster(@scope)?   " + rmapsZoomLevel.doCluster(@scope)
         # if rmapsZoomLevel.doCluster(@scope)
         #   promises.push(
@@ -272,10 +296,10 @@ app.factory 'rmapsMap',
         #     @scope.map.layers.overlays.parcels.visible = false
         #     @scope.map.layers.overlays.filterSummary.visible = true
         #     @scope.map.layers.overlays.parcelsAddresses.visible = false
-        promises
+          
 
       redraw: (cache = true) =>
-        $log.info "\n#### redraw()"
+        #$log.info "\n#### redraw()"
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
@@ -296,7 +320,6 @@ app.factory 'rmapsMap',
         promises = promises.concat @drawFilterSummary(cache)
 
         $q.all(promises).then =>
-          $log.info "#### $q.all promises resolved..."
           #every thing is setup, only draw once
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
@@ -306,9 +329,7 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
-        $log.info "\n#### draw()"
         return if !@scope.map.isReady
-
         @scope?.formatters?.results?.reset()
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
@@ -354,7 +375,6 @@ app.factory 'rmapsMap',
         stateObj
 
       refreshState: (overrideObj = {}) =>
-        $log.info "#### refreshState"
         @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
         @mapState
 

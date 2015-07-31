@@ -127,6 +127,8 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
       setMarkerManualClusterOptions: (model) ->
         $log.info "#### setMarkerManualClusterOptions()"
+        $log.info "#### model:"
+        $log.info model
         return {} unless model
         clusterSize = 'small'
         clusterSize = 'medium' if model.count > 10

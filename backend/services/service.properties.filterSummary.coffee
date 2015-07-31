@@ -15,9 +15,17 @@ _getZoom = (position) ->
   position.center.zoom
 
 _handleReturnType = (state, queryParams, limit, zoom = 13) ->
+  # logger.debug "#### _handleReturnType, queryParams keys:"
+  # logger.debug _.keys queryParams
+  # logger.debug "#### _handleReturnType, queryParams returnAs:"
+  # logger.debug queryParams.returnType
+  # logger.debug "#### _handleReturnType, queryParams status:"
+  # logger.debug queryParams.status
+
+
   returnAs = queryParams.returnType
   # logger.debug "returnAs: #{returnAs}"
-  logger.debug "\n######## _handleReturnType, returnAs: " + returnAs
+  # logger.debug "\n######## _handleReturnType, returnAs: " + returnAs
   # logger.debug "#### state:"
   # logger.debug state
   # logger.debug "#### queryParams:"
@@ -31,7 +39,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
 
   _default = ->
-    logger.debug "#### handleReturnType, default"
+    # logger.debug "#### handleReturnType, default"
     query = base.getFilterSummaryAsQuery(state, queryParams, 800)
     return Promise.resolve([]) unless query
     # include saved id's in query so no need to touch db later
@@ -60,6 +68,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
     .then (properties) ->
       fillOutDummyClusterIds(properties)
     .then (properties) ->
+      #logger.debug "#### properties length: " + properties.length
       properties
 
   _geojsonPolys = ->
@@ -80,13 +89,13 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
           d
 
   _clusterOrDefault = ->
-    logger.debug "################ handleReturnType, _clusterOrDefault ####################"
+    #logger.debug "################ handleReturnType, _clusterOrDefault ####################"
     query = base.getResultCount(state, queryParams)
     # logger.debug "################ sql of query (1):"
     # logger.debug query.toString()
     query.then (data) ->
-      logger.debug "#################### data:"
-      logger.debug data
+      #logger.debug "#################### data:"
+      #logger.debug data
       logger.debug "#################### _clusterOrDefault, data.count = " + data[0].count + ", typeof: " + typeof(data[0].count)
       if data[0].count > 2000
         return _cluster()

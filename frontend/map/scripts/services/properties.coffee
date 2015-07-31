@@ -27,6 +27,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
     # this convention for a combined service call helps elsewhere because we know how to get the path used
     # by this call, which means we can do things with alerts related to it
     _getPropertyData = (pathId, hash, mapState, returnType, filters="", cache = true) ->
+      $log.info "\n#### _setPropertyData, hash=#{hash}"
       return null if !hash?
 
       if returnType? and !_.isString(returnType)
@@ -34,7 +35,13 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
       returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
       route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
+      $log.info "#### _setPropertyData, route:"
+      $log.info route
       $http.get(route, cache: cache)
+      # $http.get(route, cache: cache).then (data) ->
+      #   $log.info "$http data response:"
+      #   $log.info data
+      #   data
 
     _getFilterSummary = (hash, mapState, returnType, filters="", cache = true, throttler = _filterThrottler) ->
       # $log.info "#### service getFilterSummary, invoking _getPropertyData with parameters:"
@@ -49,8 +56,8 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       # $log.info "#### ------------------- cache -------------------------- ####"
       # $log.info cache
       # $log.info "#### ==================================================== ####"
+      $log.info "\n#### _getFilterSummary, returnType = #{returnType}"
       throttler.invokePromise(
-        $log.info "\n#### _getFilterSummary, returnType = #{returnType}"
         _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
         , http: {route: backendRoutes.properties.filterSummary })
 
@@ -59,8 +66,11 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       # will receive results from backend, which will be organzed either as
       #   standard results or cluster results, determined in backend by #of results returned
       getFilterResults: (hash, mapState, filters="", cache = true) ->
-        # $log.info "#### getFilterResults"
-        _getFilterSummary(hash, mapState, "clusterOrDefault", filters, cache)
+        $log.info "#### getFilterResults"
+        _getFilterSummary(hash, mapState, "clusterOrDefault", filters, cache).then (data) ->
+          $log.info "#### getFilterResults data response:"
+          $log.info data
+          data
 
       getFilterSummary: (hash, mapState, filters="", cache = true) ->
         _getFilterSummary(hash, mapState, undefined, filters, cache)

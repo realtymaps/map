@@ -15,11 +15,19 @@ _makeClusterQuery = (roundTo) ->
   .whereNotNull('city')
   .groupByRaw(_roundCoordCol(roundTo))
   .groupByRaw(_roundCoordCol(roundTo,'Y'))
-
-  # logger.sql query.toString()
+  logger.debug "#### cluster query sql:"
+  logger.sql query.toString()
   query
 
 _clusterQuery = (zoom) ->
+  logger.debug "######## _clusterQuery"
+  logger.debug "zoom:"
+  logger.debug zoom
+  logger.debug "zoomThresh.roundOne:"
+  logger.debug zoomThresh.roundOne
+  logger.debug "zoomThresh.roundNone:"
+  logger.debug zoomThresh.roundNone
+
   if zoom <= zoomThresh.roundOne and zoom > zoomThresh.roundNone
     logger.debug "#### _clusterQuery, roundTo=1:"
     # logger.debug 'roundOne'
