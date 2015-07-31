@@ -156,7 +156,7 @@ app.controller 'rmapsNormalizeCtrl',
     removed = field.input[key]
     delete field.input[key]
     delete field.lookups
-    delete field.config.choices
+    delete field.config.map
     updateBase(field, removed)
 
   # Move rules to base field config
@@ -173,13 +173,12 @@ app.controller 'rmapsNormalizeCtrl',
     removed = field.input
     field.input = null
     delete field.lookups
-    delete field.config.choices
+    delete field.config.map
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
     validatorBuilder.getTransform(field)
     validatorBuilder.validateBase(field)
-    field.inputString = JSON.stringify(field.input) # for display
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -228,7 +227,7 @@ app.controller 'rmapsNormalizeCtrl',
     rmapsMlsService.getConfigs()
     .then (configs) ->
       $scope.mlsConfigs = configs
-      if $state.params.id          
+      if $state.params.id
         $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
         loadMls($scope.mlsData.current)
 
