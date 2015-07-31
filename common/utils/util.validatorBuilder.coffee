@@ -1,55 +1,89 @@
 _ = require 'lodash'
 
+ruleDefaults =
+  alias: 'Unnamed'
+  required: false
+  input: ''
+  config: {}
+  valid: () ->
+    !@.required || @.input
+
 baseRules =
   acres:
     alias: 'Acres'
+
   address:
     alias: 'Address'
     required: true
     input: {}
     group: 'general'
+    valid: () ->
+      @.input.city && @.input.state && (@.input.zip || @.input.zip9) &&
+      ((@.input.streetName && @.input.streetNum) || @.input.streetFull)
+
   baths_full:
     alias: 'Baths Full'
+
   bedrooms:
     alias: 'Bedrooms'
+
   days_on_market:
     alias: 'Days on Market'
     required: true
     input: []
+    valid: () ->
+      @.input[0] || @.input[1]
+
   fips_code:
     alias: 'FIPS code'
     required: true
     input: {}
+    valid: () ->
+      @.input.stateCode && @.input.county
+
   hide_address:
     alias: 'Hide Address'
+
   hide_listing:
     alias: 'Hide Listing'
+
   parcel_id:
     alias: 'Parcel ID'
     required: true
+    config:
+      stripFormatting: true
+
   price:
     alias: 'Price'
     required: true
+
   rm_property_id:
     alias: 'Property ID'
     required: true
     input: {}
+
   sqft_finished:
     alias: 'Finished Sq Ft'
+
   status:
     alias: 'Status'
     required: true
+
   status_display:
     alias: 'Status Display'
     required: true
     group: 'general'
+
   substatus:
     alias: 'Sub-Status'
     required: true
+
   close_date:
     alias: 'Close Date'
+
   discontinued_date:
     alias: 'Discontinued Date'
+
   mls_uuid:
     alias: 'MLS Number'
     required: true
@@ -154,29 +188,10 @@ getTransform = (field) ->
       else
         _getValidationString(type?.name, vOptions)
 
-validateBase = (field) ->
-  # Ensure input is appropriate type before validating
-  defaults = baseRules[field.output]
-  if defaults
-    if !field.input? || (!_.isPlainObject(field.input) && _.isPlainObject defaults.input)
-      field.input = defaults.input || ''
-    field.alias = defaults.alias
-    field.required = defaults.required
-  input = field.input
-  field.inputString = JSON.stringify(field.input) # for display
-  switch field.output
-    when 'address'
-      field.valid = input.city && input.state && (input.zip || input.zip9) &&
-       ((input.streetName && input.streetNum) || input.streetFull)
-    when 'days_on_market'
-      field.valid = input[0] || input[1]
-    when 'fips_code'
-      field.valid = input.stateCode && input.county
-    when 'rm_property_id'
-      field.valid = input.stateCode && input.county && input.parcelId
-    else
-      field.valid = !field.required || !!input
-  field.valid = !!field.valid
+validateBase = (rule) ->
+  defaults = _.defaults {}, baseRules[rule.output], ruleDefaults
+  _.defaults rule, defaults
+  _.defaults rule.config, defaults.config
 
 module.exports =
   lookupType: lookupType
