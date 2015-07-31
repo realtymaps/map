@@ -21,7 +21,7 @@ span(class="dropdown btn-group properties-list" dropdown on-toggle="toggled(open
                 li(ng-repeat="property in propertiesArray | orderBy:predicate:reverse" ng-click="selectProperty($index)" )
                     div.property-img
                         span(class="status" ng-class="property.status") {{property.status}}
-                        img(src="/img/{{property.image}}" title="{{property.title}}")
+                        img(ng-src="/img/{{property.image}}" title="{{property.title}}")
                     p(class="price" ng-class="property.status") ${{property.price}}
                     div.property-attr
                         ul.attr

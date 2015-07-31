@@ -1,0 +1,7 @@
+//LOGGED IN LAYOUT FOR MOST PAGES
+.page(ng-class="{' ':!isOn,'on':isOn}" ng-controller="PageCtrl")
+  include ../includes/_header
+  block content
+include ../includes/_mobilenavigation
+
+  include ../../../common/html/includes/alerts

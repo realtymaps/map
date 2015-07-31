@@ -1,11 +1,9 @@
 extends ../_layout
 
-block customHeader
-  title RealtyMaps Admin
+block customHead
+  title customHead Admin
   meta(name='description', content='RealtyMaps Admin')
 
-block customMobileNav
-    
 block content
   .realtymaps-main(ui-view='')
   script(type='application/javascript', src='#{paths.destFull.webpack.admin.filename}')

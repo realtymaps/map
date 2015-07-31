@@ -1,7 +1,9 @@
-section(ng-cloak ng-init="init('page-map')")
-  include ../includes/map.jade
-  include ../includes/details-tray.jade
-  include ../includes/results-tray.jade
-  include ../includes/filters-tray.jade
-  include ../includes/map-toolbar.jade
-  include ../includes/searchbox.jade
+extends ./_layout
+block content
+  section(ng-cloak ng-init="init('page-map')")
+    include ../includes/map.jade
+    include ../includes/details-tray.jade
+    include ../includes/results-tray.jade
+    include ../includes/filters-tray.jade
+    include ../includes/map-toolbar.jade
+    include ../includes/searchbox.jade

@@ -1,0 +1,17 @@
+include ../mixins/spinner.jade
+
+nav.navigation(role="navigation")
+    .nav-toggle
+        span(ng-click="toggleMainNav()") toggle menu
+    ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
+        li(ng-hide="$state.is('main')")
+          +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+        li(ng-hide="principal.isAuthenticated() || $state.is('main')")
+            a(href="{{frontendRoutes.map}}")
+                span map
+        li(ng-hide="principal.isAuthenticated()")
+            a(href="{{frontendRoutes.mail}}")
+                span mail
+        li(ng-hide="principal.isAuthenticated()")
+            a(href="{{frontendRoutes.history}}")
+                span history
