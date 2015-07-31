@@ -16,7 +16,7 @@ outputAdmin = paths.destFull.webpack.admin
 # webpack confs per each environment & app
 conf = configFact output
 
-prodConf = configFact output,
+prodConf = configFact _.omit(output, 'publicPath'),
   new webpack.optimize.UglifyJsPlugin {
     mangle: false,
     compress: {
