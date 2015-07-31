@@ -156,7 +156,7 @@ app.controller 'rmapsNormalizeCtrl',
     removed = field.input[key]
     delete field.input[key]
     delete field.lookups
-    delete field.config.choices
+    delete field.config.map
     updateBase(field, removed)
 
   # Move rules to base field config
@@ -173,7 +173,7 @@ app.controller 'rmapsNormalizeCtrl',
     removed = field.input
     field.input = null
     delete field.lookups
-    delete field.config.choices
+    delete field.config.map
     updateBase(field, removed)
 
   updateBase = (field, removed) ->

@@ -96,12 +96,12 @@ lookupType = (field) ->
 
 _getValidationString = (type, vOptions) ->
   vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
-  "validation.#{type}(#{vOptionsStr})"
+  "validators.#{type}(#{vOptionsStr})"
 
 getTransform = (field) ->
   #   options:
   #
-  #     type: integer | float | string | fips | choice | currency | ...
+  #     type: integer | float | string | fips | map | currency | ...
   #       Maps to a validation handler.
   #       EG if type = "integer", we will expect:
   #       "validation.integer"
@@ -109,9 +109,9 @@ getTransform = (field) ->
   #         we can create a map
   #     vOptions:
   #       validation options to be nested into validation calls
-  #     choices:
-  #       key-value mapping for choice field
-  #       present if type is choices
+  #     map:
+  #       key-value mapping for map field
+  #       present if type is map
   #
 
   if field.config?.advanced
@@ -126,7 +126,7 @@ getTransform = (field) ->
       _getValidationString('address', vOptions)
 
     when 'status', 'substatus', 'status_display'
-      _getValidationString('choice', choices: vOptions.choices ? {})
+      _getValidationString('map', map: vOptions.map ? {}, passUnmapped: true)
 
     when 'parcel_id', 'mls_uuid'
       _getValidationString('string', vOptions)
