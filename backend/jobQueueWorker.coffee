@@ -5,10 +5,10 @@ if config.LOGGING.LONG_STACK_TRACES
   require 'longjohn'
 
 logger = require './config/logger'
-require './config/promisify'
 cluster = require './config/cluster'
 tables = require './config/tables'
 jobQueue = require './utils/util.jobQueue'
+
 
 # catch all uncaught exceptions
 process.on 'uncaughtException', (err) ->
