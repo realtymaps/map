@@ -1,12 +1,12 @@
 _ = require 'lodash'
 
-ruleDefaults =
-  alias: 'Unnamed'
-  required: false
-  input: ''
-  config: {}
-  valid: () ->
-    !@.required || @.input
+baseDefaults =
+    alias: 'Unnamed'
+    required: false
+    config: {},
+    input: ''
+    valid: () ->
+      !@.required || @.input
 
 baseRules =
   acres:
@@ -88,43 +88,52 @@ baseRules =
     alias: 'MLS Number'
     required: true
 
-lookupType = (field) ->
-  types =
-    Int:
+retsDefaults =
+  type:
+    name: 'unknown'
+    label: 'Unkown'
+  config: {}
+  getValidator: () -> @.type.name
+
+retsRules =
+  Int:
+    type:
       name: 'integer'
       label: 'Number'
-    Decimal:
+    config:
+      nullZero: true
+  Decimal:
+    type:
       name: 'float'
       label: 'Number'
-    Long:
+    config:
+      nullZero: true
+  Long:
+    type:
       name: 'float'
       label: 'Number'
-    Character:
+    config:
+      nullZero: true
+  Character:
+    type:
       name: 'string'
-    DateTime:
+    config:
+      nullEmpty: true
+  DateTime:
+    type:
       name: 'datetime'
       label: 'Date and Time'
-    Boolean:
+  Boolean:
+    type:
       name: 'boolean'
       label: 'Yes/No'
-
-  type = types[field.DataType]
-
-  if type?.name == 'string'
-    if field.Interpretation == 'Lookup'
-      type.label = 'Restricted Text (single value)'
-    else if field.Interpretation == 'LookupMulti'
-      type.label = 'Restricted Text (multiple values)'
-    else
-      type.label = 'User-Entered Text'
-
-  type
+    getValidator: () -> 'nullify'
 
 _getValidationString = (type, vOptions) ->
   vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
   "validators.#{type}(#{vOptionsStr})"
 
-getTransform = (field) ->
+updateTransform = (field) ->
   #   options:
   #
   #     type: integer | float | string | fips | map | currency | ...
@@ -182,19 +191,24 @@ getTransform = (field) ->
       _getValidationString('datetime', vOptions)
 
     else
-      type = lookupType(field)
-      if type.name == 'boolean'
-        _getValidationString('nullify', vOptions)
-      else
-        _getValidationString(type?.name, vOptions)
+      _getValidationString(field.getValidator(), vOptions)
 
-validateBase = (rule) ->
-  defaults = _.defaults {}, baseRules[rule.output], ruleDefaults
-  _.defaults rule, defaults
-  _.defaults rule.config, defaults.config
+updateRule = (rule) ->
+  _.defaultsDeep rule, retsRules[rule.DataType], retsDefaults
+  if rule.type?.name == 'string'
+    if rule.Interpretation == 'Lookup'
+      rule.type.label = 'Restricted Text (single value)'
+    else if rule.Interpretation == 'LookupMulti'
+      rule.type.label = 'Restricted Text (multiple values)'
+    else
+      rule.type.label = 'User-Entered Text'
+  updateTransform rule
+
+updateBase = (rule) ->
+  _.defaultsDeep rule, baseRules[rule.output], baseDefaults
+  updateTransform rule
 
 module.exports =
-  lookupType: lookupType
-  getTransform: getTransform
   baseRules: baseRules
-  validateBase: validateBase
+  updateRule: updateRule
+  updateBase: updateBase

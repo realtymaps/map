@@ -100,7 +100,7 @@
                'datatype-date': item.type.name == 'datetime' }"
                ng-show="item.type")
 
-  .row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
+  .row.panel.properties-container(ng-show="showProperties")
 
     .close-icon(ng-click="showProperties=false") X
 
@@ -119,7 +119,7 @@
       .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove zero (0) values?
         .col-md-2
-          input(type="checkbox" ng-model="fieldData.current.config.nullZero" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="checkbox" ng-false-value="null" ng-model="fieldData.current.config.nullZero" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any 0s found in this field will be removed and won't be visible
       .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove specific value(s)
@@ -129,13 +129,13 @@
       .row(ng-if="fieldData.current.type.name == 'float'")
         .col-md-2 Round / truncate decimal
         .col-md-2
-          input(type="checkbox" ng-model="fieldData.current.config.floorDecimal" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="checkbox" ng-false-value="null" ng-model="fieldData.current.config.floorDecimal" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Values with decimals will be replaced with round numbers, for example 2.87 becomes 2
 
       .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Remove empty?
         .col-md-2
-          input(type="checkbox" ng-model="fieldData.current.config.nullEmpty" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="checkbox" ng-false-value="null" ng-model="fieldData.current.config.nullEmpty" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any empty values will be removed so they don't show up
       .row(ng-if="fieldData.current.type.name == 'string'")
         .col-md-2 Remove specific value(s)
@@ -256,7 +256,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help(ng-show="$index == 0") MLS values may be replaced as necessary
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'status'")
@@ -270,7 +270,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help Select a RealtyMaps status
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'substatus'")
@@ -284,7 +284,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help Select a RealtyMaps SubStatus
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'days_on_market'")
@@ -356,12 +356,12 @@
         .row(ng-if="['hide_listing', 'hide_address'].indexOf(fieldData.current.output) != -1")
           .col-md-2 Invert
           .col-md-4
-            input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
+            input(type="checkbox" ng-false-value="null" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
           .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
         .row(ng-if="['parcel_id'].indexOf(fieldData.current.output) != -1")
           .col-md-2 Strip Formatting
           .col-md-4
-            input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
+            input(type="checkbox" ng-false-value="null" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
 
     .col-md-12.scroll

@@ -23,6 +23,7 @@ app.controller 'rmapsNormalizeCtrl',
     'Uppercase': 'forceUpperCase'
     'Lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
+
   $scope.nullifyOptions =
     'True': true
     'False': false
@@ -67,8 +68,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.validateBase rule
-    validatorBuilder.getTransform rule
+    validatorBuilder.updateBase rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -98,7 +98,7 @@ app.controller 'rmapsNormalizeCtrl',
         rule = field
         rule.output = rule.LongName
         addRule rule, 'unassigned'
-      rule.type = validatorBuilder.lookupType(field)
+      validatorBuilder.updateRule rule
       true
 
     _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
@@ -177,8 +177,7 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    validatorBuilder.getTransform(field)
-    validatorBuilder.validateBase(field)
+    validatorBuilder.updateBase field
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -193,7 +192,7 @@ app.controller 'rmapsNormalizeCtrl',
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    validatorBuilder.getTransform field
+    validatorBuilder.updateRule field
     $scope.saveRuleDebounced()
 
   saveRule = (rule) ->
