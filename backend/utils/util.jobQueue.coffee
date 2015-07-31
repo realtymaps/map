@@ -1,3 +1,4 @@
+require '../config/promisify'
 path = require 'path'
 loaders = require './util.loaders'
 dbs = require '../config/dbs'
@@ -9,6 +10,7 @@ _ = require 'lodash'
 {notification} = require './util.notifications.coffee'
 tables = require '../config/tables'
 cluster = require 'cluster'
+memoize = require 'memoizee'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -27,6 +29,18 @@ class SoftFail extends Error
 class HardFail extends Error
   constructor: (@message) ->
     @name = 'HardFail'
+
+_getTaskCode = (taskName) ->
+  try
+    return Promise.resolve(require("./tasks/task.#{taskName}"))
+  catch err
+    tables.config.mls()
+    .where(id: taskName)
+    .then (mlsConfigs) ->
+      if mlsConfigs?[0]?
+        return require("./tasks/task.default.mls")
+      throw new Error("can't find code for task with name: #{taskName}")
+_getTaskCode = memoize.promise(_getTaskCode, async: true)
 
 
 withSchedulingLock = (handler) ->
@@ -119,17 +133,18 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
-    taskImpl = require("./tasks/task.#{task.name}")
-    subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
-    subtaskConfigPromise = tables.jobQueue.subtaskConfig(transaction)
-    .where
-      task_name: task.name
-      auto_enqueue: true
-    .then (subtaskConfig=[]) ->
-      subtaskConfig
-    Promise.props
-      subtaskOverrides: subtaskOverridesPromise
-      subtaskConfig: subtaskConfigPromise
+    _getTaskCode(task.name)
+    .then (taskImpl) ->
+      subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
+      subtaskConfigPromise = tables.jobQueue.subtaskConfig(transaction)
+      .where
+        task_name: task.name
+        auto_enqueue: true
+      .then (subtaskConfig=[]) ->
+        subtaskConfig
+      Promise.props
+        subtaskOverrides: subtaskOverridesPromise
+        subtaskConfig: subtaskConfigPromise
   .then (subtaskInfo) ->
     if typeof(subtaskInfo.subtaskOverrides) == 'number'   # subtasks already enqueued by custom logic, count returned
       return subtaskInfo.subtaskOverrides
@@ -257,38 +272,39 @@ executeSubtask = (subtask) ->
     status: 'running'
     started: knex.raw('NOW()')
   .then () ->
-    taskImpl = require("./tasks/task.#{subtask.task_name}")
-    subtaskPromise = taskImpl.executeSubtask(subtask)
-    .then () ->
-      tables.jobQueue.currentSubtasks()
-      .where(id: subtask.id)
-      .update
-        status: 'success'
-        finished: knex.raw('NOW()')
-    if subtask.kill_timeout_seconds?
+    _getTaskCode(subtask.task_name)
+    .then (taskImpl) ->
+      subtaskPromise = taskImpl.executeSubtask(subtask)
+      .then () ->
+        tables.jobQueue.currentSubtasks()
+        .where(id: subtask.id)
+        .update
+          status: 'success'
+          finished: knex.raw('NOW()')
+      if subtask.kill_timeout_seconds?
+        subtaskPromise = subtaskPromise
+        .timeout(subtask.kill_timeout_seconds*1000)
+        .catch Promise.TimeoutError, _handleSubtaskError.bind(null, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
       subtaskPromise = subtaskPromise
-      .timeout(subtask.kill_timeout_seconds*1000)
-      .catch Promise.TimeoutError, _handleSubtaskError.bind(null, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
-    subtaskPromise = subtaskPromise
-    .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
-    .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
-    .catch _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
-    .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
-      sendNotification
-        subject: 'major db interaction problem'
-        subtask: subtask
-        error: err
-      throw err
-    if subtask.warn_timeout_seconds?
-      warnTimeout = setTimeout () ->
+      .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
+      .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
+      .catch _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
+      .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
         sendNotification
-          subject: 'subtask: long run warning'
+          subject: 'major db interaction problem'
           subtask: subtask
-          error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
-      subtaskPromise = subtaskPromise
-      .finally () ->
-        clearTimeout(warnTimeout)
-    return subtaskPromise
+          error: err
+        throw err
+      if subtask.warn_timeout_seconds?
+        warnTimeout = setTimeout () ->
+          sendNotification
+            subject: 'subtask: long run warning'
+            subtask: subtask
+            error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
+        subtaskPromise = subtaskPromise
+        .finally () ->
+          clearTimeout(warnTimeout)
+      return subtaskPromise
 
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->

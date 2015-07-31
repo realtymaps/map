@@ -61,3 +61,8 @@ module.exports.lob = (Lob) ->
       if typeof(val) != 'function'
         continue
       submodule[key+'Async'] = Promise.promisify(val, submodule)
+
+      
+memoize = require 'memoizee'
+memoize.promise = (promiseFunc, options) ->
+  Promise.promisify memoize(Promise.nodeifyWrapper(promiseFunc), options)
