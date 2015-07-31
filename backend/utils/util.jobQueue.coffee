@@ -30,6 +30,8 @@ class HardFail extends Error
   constructor: (@message) ->
     @name = 'HardFail'
 
+# takes a task name and returns a promise resolving to either the task's module, or if it can't find one and there is
+# an MLS config with the task name as its id, then use the default MLS module 
 _getTaskCode = (taskName) ->
   try
     return Promise.resolve(require("./tasks/task.#{taskName}"))
