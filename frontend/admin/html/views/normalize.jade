@@ -25,6 +25,7 @@
         ng-class="{ invalid: !item.valid, selected: item == fieldData.current && showProperties }"
         ng-click="selectField(item)"
         ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
+          span.datatype(ng-show="!item.input")
 
     .col-md-2.list-container
       h4 MLS
@@ -222,13 +223,13 @@
               span(ng-show="fieldData.current.input.streetNumSuffix") {{fieldData.current.input.streetNumSuffix}}:
               span Number Suffix
               span.remove-icon(ng-show="fieldData.current.input.streetNumSuffix" ng-click="removeBaseInput('streetNumSuffix')") X
-        .row
-          .col-md-2 Optional
-          .col-md-10
             .field(rmaps-droppable="'streetSuffix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetSuffix }")
               span(ng-show="fieldData.current.input.streetSuffix") {{fieldData.current.input.streetSuffix}}:
               span Street Suffix
               span.remove-icon(ng-show="fieldData.current.input.streetSuffix" ng-click="removeBaseInput('streetSuffix')") X
+        .row
+          .col-md-2 Optional
+          .col-md-10
             .field(rmaps-droppable="'streetDirPrefix'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.streetDirPrefix }")
               span(ng-show="fieldData.current.input.streetDirPrefix") {{fieldData.current.input.streetDirPrefix}}:
               span Direction Prefix
@@ -237,6 +238,11 @@
               span(ng-show="fieldData.current.input.streetDirSuffix") {{fieldData.current.input.streetDirSuffix}}:
               span Direction Suffix
               span.remove-icon(ng-show="fieldData.current.input.streetDirSuffix" ng-click="removeBaseInput('streetDirSuffix')") X
+            .field(rmaps-droppable="'showStreetInfo'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.showStreetInfo }")
+              span(ng-show="fieldData.current.input.showStreetInfo") {{fieldData.current.input.showStreetInfo}}:
+              span Show Street Info
+              span.remove-icon(ng-show="fieldData.current.input.showStreetInfo" ng-click="removeBaseInput('showStreetInfo')") X
+
 
       .col-md-12.scroll(ng-if="fieldData.current.output == 'status_display'")
         .row
@@ -309,14 +315,14 @@
         .row
           .col-md-2 County and State
           .col-md-10
-            .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
-              span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['county'] }")
+              span(ng-show="fieldData.current.input['county']") {{fieldData.current.input['county']}}:
               span County
-              span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
-            .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
-              span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+              span.remove-icon(ng-show="fieldData.current.input['county']" ng-click="removeBaseInput('county')") X
+            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['stateCode'] }")
+              span(ng-show="fieldData.current.input['stateCode']") {{fieldData.current.input['stateCode']}}:
               span State
-              span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
+              span.remove-icon(ng-show="fieldData.current.input['stateCode']" ng-click="removeBaseInput('stateCode')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
@@ -325,18 +331,18 @@
         .row
           .col-md-2 County, State and Parcel
           .col-md-10
-            .field(rmaps-droppable="0" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[0] }")
-              span(ng-show="fieldData.current.input[0]") {{fieldData.current.input[0]}}:
+            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['county'] }")
+              span(ng-show="fieldData.current.input['county']") {{fieldData.current.input['county']}}:
               span County
-              span.remove-icon(ng-show="fieldData.current.input[0]" ng-click="removeBaseInput(0)") X
-            .field(rmaps-droppable="1" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[1] }")
-              span(ng-show="fieldData.current.input[1]") {{fieldData.current.input[1]}}:
+              span.remove-icon(ng-show="fieldData.current.input['county']" ng-click="removeBaseInput('county')") X
+            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['stateCode'] }")
+              span(ng-show="fieldData.current.input['stateCode']") {{fieldData.current.input['stateCode']}}:
               span State
-              span.remove-icon(ng-show="fieldData.current.input[1]" ng-click="removeBaseInput(1)") X
-            .field(rmaps-droppable="2" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input[2] }")
-              span(ng-show="fieldData.current.input[2]") {{fieldData.current.input[2]}}:
+              span.remove-icon(ng-show="fieldData.current.input['stateCode']" ng-click="removeBaseInput('stateCode')") X
+            .field(rmaps-droppable="'parcelId'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['parcelId'] }")
+              span(ng-show="fieldData.current.input['parcelId']") {{fieldData.current.input['parcelId']}}:
               span Parcel
-              span.remove-icon(ng-show="fieldData.current.input[2]" ng-click="removeBaseInput(2)") X
+              span.remove-icon(ng-show="fieldData.current.input['parcelId']" ng-click="removeBaseInput('parcelId')") X
 
       //- Generic
       .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market'].indexOf(fieldData.current.output) == -1")
