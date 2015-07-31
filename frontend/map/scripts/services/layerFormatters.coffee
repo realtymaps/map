@@ -126,9 +126,6 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
             html: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
 
       setMarkerManualClusterOptions: (model) ->
-        $log.info "#### setMarkerManualClusterOptions()"
-        $log.info "#### model:"
-        $log.info model
         return {} unless model
         clusterSize = 'small'
         clusterSize = 'medium' if model.count > 10
