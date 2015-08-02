@@ -1,0 +1,33 @@
+#mobile-nav
+    .inner
+        include ./header/_logo
+        ul.nav(ng-click="toggleIsOn()")
+            li
+                a(ng-cloak href="#/neighbourhoods" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                    span neighbourhoods
+                    span.new new
+                    span.conut {{neighbourArray.length}}
+            li
+                a(ng-cloak href="#/properties" class="properties" ng-class="{ active: isActive('properties') }")
+                    span properties
+                    span.new new
+                    span.conut {{propertiesArray.length}}
+            li
+                a(ng-cloak href="#/notes" class="notes" ng-class="{ active: isActive('notes') }")
+                    span notes
+                    span.conut {{notesArray.length}}
+            li
+                a(ng-cloak href="#/favorites" class="favorites" ng-class="{ active: isActive('favorites') }")
+                    span favorites
+                    span.conut {{projectsArray.length}}
+            li
+                a(ng-cloak href="#/projects" class="projects" ng-class="{ active: isActive('projects') }")
+                    span my projects
+                    span.conut {{projectsArray.length}}
+        .bottom
+            a(ng-cloak href="#realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
+                span.avatar(ng-cloak ng-if="!!user.account_image_id")
+                    img(ng-src="{{backendRoutes.userSession.image}}" title="{{user.username}}")
+                span.avatar(ng-cloak ng-if="!!!user.account_image_id")
+                    img(ng-src="{{frontendRoutes.avatar}}" title="{{user.username}}")
+            a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings

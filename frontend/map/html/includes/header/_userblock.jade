@@ -1,0 +1,15 @@
+#userblock(ng-controller="DropdownCtrl")
+  span(class="dropdown" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle avtr" dropdown-toggle) sl
+    ul(class="dropdown-menu right arrow")
+      li(ng-show="principal.isAuthenticated()", ng-cloak)
+        a(href="{{frontendRoutes.logout}}") log out
+      li(ng-show="principal.isAuthenticated()", ng-cloak)
+        a(href="{{frontendRoutes.user}}" target="_self") {{user.username}}
+      li(ng-show="principal.isStaff()", ng-cloak)
+        a(href="{{adminRoutes.index}}" target="_self") Admin
+
+      .block-become-a-member
+        h4 trial period
+        p 30 days left
+        button(class='btn btn-primary') become a member

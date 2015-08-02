@@ -42,7 +42,7 @@ Config = (output, additionalPlugs, sourceMap = '') ->
         { test: /\.(ttf|eot)$/, loader: "file?prefix=font/" }
         { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
         { test: /\.html$/, loader: "html?attrs=img:src" }
-        {test: /\.json$/, loader: "json"}
+        { test: /\.json$/, loader: "json"}
       ]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"

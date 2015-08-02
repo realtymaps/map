@@ -50,49 +50,11 @@ module.exports = (app) ->
       four: false
       five: false
 
-  .controller 'PageCtrl', ($scope, $location) ->
-      $scope.isOn = false
+  .controller 'MobilePageCtrl', ($scope) ->
+    $scope.isOn = false
 
-      $scope.toggleIsOn = ->
-        $scope.isOn = if $scope.isOn == false then true else false
-
-      ###active view###
-
-      $scope.activeView = 'map'
-
-      ###relocate to map view at start###
-
-      $location.path '/map'
-
-      $scope.isActive = (viewLocation) ->
-        `var locationView`
-        locationPath = $location.path().substr(1)
-        if locationPath.lastIndexOf('/') > 0
-          locationView = locationPath.slice(0, locationPath.lastIndexOf('/'))
-        else
-          locationView = $location.path().substr(1)
-        active = viewLocation == locationView
-        if active
-          $scope.activeView = viewLocation
-        active
-
-      $scope.toggleMainOn = false
-
-      $scope.toggleMainNav = ->
-        $scope.toggleMainOn = if $scope.toggleMainOn == false then true else false
-        return
-
-      $scope.addProject = ->
-        $location.path '/add_project'
-        return
-
-      $scope.openEmailModal = ->
-        $location.path '/send_email_modal'
-        return
-
-      $scope.createNewEmail = ->
-        $scope.activeView = 'create-new-email'
-        $location.path '/create_new_email'
+    $scope.toggleIsOn = ->
+      $scope.isOn = if $scope.isOn == false then true else false
 
   .controller 'SearchController', ($scope, $http) ->
       $scope.searchType = 'Properties'
@@ -103,7 +65,7 @@ module.exports = (app) ->
 
       return
 
-  .controller 'EmailController', ($scope, $http) ->
+  .controller 'rmapsMailCtrl', ($scope, $http) ->
       $scope.emailsArray = []
 
       ###emails json###
@@ -114,7 +76,7 @@ module.exports = (app) ->
         alert status
 
 
-  .controller 'HistoryController', ($scope, $http) ->
+  .controller 'rmapsHistoryCtrl', ($scope, $http) ->
       $scope.historyArray = []
 
       ###emails json###
