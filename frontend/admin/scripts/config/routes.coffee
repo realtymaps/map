@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 jobsEditTemplate = require("../../html/views/jobsEdit.jade")
+loginTemplate = require("../../../common/html/login.jade")
 
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
@@ -48,7 +49,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null
-    buildState 'login'
+    buildState 'login', template: loginTemplate
     buildState 'logout'
 
     # this one has to be last, since it is a catch-all
