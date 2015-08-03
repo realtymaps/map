@@ -190,11 +190,11 @@ select = (knex, which, passedFilters=null, prepend='') ->
   knex.select(knex.raw(prepend + _columns[which] + extra))
   knex
 
-selectCount = (knex, distinctField='rm_property_id') ->
+selectCountDistinct = (knex, distinctField='rm_property_id') ->
   # some other (possibly preferred) query structure not available,
   # using tip described via https://github.com/tgriesser/knex/issues/238
   knex.select(knex.raw("count(distinct #{distinctField})"))
-  knex  
+  knex
 
 singleRow = (q, doThrow = false) -> Promise.try ->
   errMsg = 'Expected a Single Result and '
@@ -233,7 +233,7 @@ module.exports =
   orderByDistanceFromPoint: orderByDistanceFromPoint
   allPatternsInAnyColumn: allPatternsInAnyColumn
   select: select
-  selectCount: selectCount
+  selectCountDistinct: selectCountDistinct
   singleRow: singleRow
   expectedSingleRow: expectedSingleRow
   whereIn: whereIn

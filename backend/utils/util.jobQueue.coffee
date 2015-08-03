@@ -86,7 +86,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
         .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
         .where () ->
           this
-          .orWhereIn("status", ['running', 'preparing'])             # ... or it's currently running or preparing to run ...
+          .whereIn("status", ['running', 'preparing'])             # ... it's currently running or preparing to run ...
           .orWhere () ->   
             this
             .where(status: 'success')                 # ... or it was successful

@@ -92,45 +92,50 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 # loads all records from a given RETS table that have changed since the last successful run of the task
 loadRetsTableUpdates = (subtask, options) ->
   rawTableName = taskHelpers.getRawTableName subtask, options.rawTableSuffix
-  _getRetsClient(subtask.task_data.url, subtask.task_data.login, subtask.task_data.password)
-  .then (retsClient) ->
-    # get info about the fields available in the table
-    retsClient.metadata.getTable(options.retsDbName, options.retsTableName)
-    .then (tableInfo) ->
-      fields = _.indexBy(tableInfo.Fields, 'LongName')
-      tables.jobQueue.dataLoadHistory()
-      .insert
-        data_source_id: options.retsId
-        data_source_type: 'mls'
-        batch_id: subtask.batch_id
-        raw_table_name: rawTableName
-      .then () ->
-        taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
+  tables.config.mls()
+  .where(id: subtask.task_name)
+  .then (mlsInfo) ->
+    mlsInfo = mlsInfo?[0]
+    _getRetsClient(mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip)
+    .then (retsClient) ->
+      # get info about the fields available in the table
+      retsClient.metadata.getTable(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+      .then (tableInfo) ->
+        fields = _.indexBy(tableInfo.Fields, 'LongName')
+        tables.jobQueue.dataLoadHistory()
+        .insert
+          data_source_id: options.retsId
+          data_source_type: 'mls'
+          batch_id: subtask.batch_id
+          raw_table_name: rawTableName
+        .then () ->
+          taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
+        .catch isUnhandled, (error) ->
+          throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
+        .then () ->
+          # figure out when we last got updates from this table
+          taskHelpers.getLastStartTime(subtask.task_name)
+        .then (lastSuccess) ->
+          now = new Date()
+          if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
+            # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+            logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
+            lastSuccess = new Date(0)
+            doDeletes = true
+          else
+            logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
+            doDeletes = false
+          step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+          step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+          Promise.join step3Promise, step5Promise, () ->
+            return lastSuccess
+        .then (refreshThreshold) ->
+          dmql = moment.utc(refreshThreshold).format mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field)
+          _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, dmql)
+        .then (results) ->
+          _streamArrayToDbTable(results, rawTableName, fields)
       .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
-      .then () ->
-        # figure out when we last got updates from this table
-        taskHelpers.getLastStartTime(subtask.task_name)
-      .then (lastSuccess) ->
-        now = new Date()
-        if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-          # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-          logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-          lastSuccess = new Date(0)
-          doDeletes = true
-        else
-          logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-          doDeletes = false
-        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-        Promise.join step3Promise, step5Promise, () ->
-          return lastSuccess
-      .then (refreshThreshold) ->
-        _getData(retsClient, options.retsDbName, options.retsTableName, moment.utc(refreshThreshold).format(options.retsQueryTemplate))
-      .then (results) ->
-        _streamArrayToDbTable(results, rawTableName, fields)
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+        throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
 
 _getData = (client, database, table, dmqlQueryString, queryOptions) ->
   client.search.query(database, table, dmqlQueryString, queryOptions)
@@ -143,29 +148,30 @@ _getData = (client, database, table, dmqlQueryString, queryOptions) ->
     throw new PartiallyHandledError(error, "failed to query RETS system")
 
 getDataDump = (mlsInfo, limit=1000) ->
-  _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password
+  _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip
   .then (retsClient) ->
-    if mlsInfo.main_property_data.queryTemplate and mlsInfo.main_property_data.field
-      momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
-    else
+    if !mlsInfo.main_property_data.queryTemplate || !mlsInfo.main_property_data.field
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
+    momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
     _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
 
 _getRetsClient = memoize(
-  (loginUrl, username, password) ->
+  (loginUrl, username, password, static_ip) ->
     Promise.try () ->
       new rets.Client
         loginUrl: loginUrl
         username: username
         password: encryptor.decrypt(password)
+        proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)
     .catch isUnhandled, (error) ->
-      _getRetsClient.delete(loginUrl, username, password)
+      _getRetsClient.delete(loginUrl, username, password, static_ip)
       throw new PartiallyHandledError(error, "RETS client could not be created")
     .then (retsClient) ->
+      logger.debug("######################### proxyUrl: #{if static_ip then process.env.PROXIMO_URL else null}")
       logger.info 'Logging in client ', loginUrl
       retsClient.login()
       .catch isUnhandled, (error) ->
-        _getRetsClient.delete(loginUrl, username, password)
+        _getRetsClient.delete(loginUrl, username, password, static_ip)
         if error.replyCode
           error = new Error("#{error.replyText} (#{error.replyCode})")
         throw new PartiallyHandledError(error, "RETS login failed")
@@ -178,7 +184,7 @@ _getRetsClient = memoize(
 )
 
 getDatabaseList = (serverInfo) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
   .then (retsClient) ->
     retsClient.metadata.getResources()
     .catch (error) ->
@@ -191,7 +197,7 @@ getDatabaseList = (serverInfo) ->
         _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
 
 getTableList = (serverInfo, databaseName) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
   .then (retsClient) ->
     retsClient.metadata.getClass(databaseName)
     .catch isUnhandled, (error) ->
@@ -203,7 +209,7 @@ getTableList = (serverInfo, databaseName) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
   .then (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
     .catch isUnhandled, (error) ->
@@ -213,7 +219,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
   .then (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch isUnhandled, (error) ->
