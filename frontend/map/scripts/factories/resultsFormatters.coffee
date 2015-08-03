@@ -68,7 +68,8 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
         @mapCtrl.scope.isScrolling = false
 
         onScrolling = _.debounce ->
-          @mapCtrl.scope.isScrolling = true
+          if @mapCtrl?.scope?
+            @mapCtrl.scope.isScrolling = true
 
         window.onscroll = onScrolling
         $timeout =>

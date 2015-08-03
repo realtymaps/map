@@ -1,0 +1,28 @@
+[
+    {
+        "id":0,
+        "title":"Project 1",
+        "properties": 34
+    },
+    {
+        "id":1,
+        "title":"Project 2",
+        "properties": 22
+    },
+    {
+        "id":2,
+        "title":"Project 3",
+        "properties": 45
+    },
+    {
+        "id":3,
+        "title":"Project 4",
+        "properties": 76
+    },
+    {
+        "id":4,
+        "title":"Project 5",
+        "properties": 3
+    }
+
+]

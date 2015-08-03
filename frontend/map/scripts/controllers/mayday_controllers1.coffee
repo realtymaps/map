@@ -1,3 +1,6 @@
+frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
+
 #maydya .js
 module.exports = (app) ->
   ###Bootstrap UI controllers###
@@ -61,16 +64,13 @@ module.exports = (app) ->
 
       $scope.setSearchScope = (val) ->
         $scope.searchType = val
-        return
-
-      return
 
   .controller 'rmapsMailCtrl', ($scope, $http) ->
       $scope.emailsArray = []
 
       ###emails json###
 
-      $http.get(dataLocation + 'emails.json').success((response) ->
+      $http.get(frontendRoutes.mocks.email).success((response) ->
         $scope.emailsArray = response
       ).error (data, status, headers, config) ->
         alert status
@@ -81,7 +81,7 @@ module.exports = (app) ->
 
       ###emails json###
 
-      $http.get(dataLocation + 'activity.json').success((response) ->
+      $http.get(frontendRoutes.mocks.history).success((response) ->
         $scope.historyArray = response
       ).error (data, status, headers, config) ->
         alert status

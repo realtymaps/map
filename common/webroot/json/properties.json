@@ -1,0 +1,100 @@
+[
+    {
+        "id":0,
+        "title":"Property 1",
+        "price":999.999,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"pending",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":{
+                "beds": 3,
+                "bath": 7,
+                "square": 1123,
+                "year": 2002
+            },
+        "polygonCoords":{
+            "lat":[40.73102311468068,40.73039709329277,40.73088896773624,40.731486529317024],
+            "lng":[-73.93447995185852,-73.93524169921875,-73.93592834472656,-73.9351612329483]
+        }
+    },
+    {
+        "id":1,
+        "title":"Property 2",
+        "price":444.444,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"for sale",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":
+            {
+                "beds": 5,
+                "bath": 2,
+                "square": 2143,
+                "year": 2003
+            },
+        "polygonCoords":{
+            "lat":[40.73153124459365,40.73081986162902,40.73135644834142,40.732010915670976,40.73174669050531],
+            "lng":[-73.93522560596466,-73.93614828586578,-73.93679201602936,-73.93583714962006,-73.93556892871857]
+        }
+    },
+    {
+        "id":2,
+        "title":"Property 3",
+        "price":111.111,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"sold",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":
+            {
+                "beds": 2,
+                "bath": 9,
+                "square": 1893,
+                "year": 2008
+            },
+        "polygonCoords":{
+            "lat":[40.73207595555083,40.73139709867362,40.73191335573198,40.732535297892234],
+            "lng":[-73.93589615821838,-73.93684566020966,-73.9373391866684,-73.936368227005]
+        }
+    },
+    {
+        "id":3,
+        "title":"Property 4",
+        "price":999.999,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"pending",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":{
+            "beds": 3,
+            "bath": 7,
+            "square": 1123,
+            "year": 2002
+        },
+        "polygonCoords":{
+            "lat":[40.73259627230092,40.7319783957072,40.73248651832504,40.73304748118843],
+            "lng":[-73.93641114234924,-73.9373928308487,-73.93780589103699,-73.93686175346375]
+        }
+    },
+    {
+        "id":4,
+        "title":"Property 5",
+        "price":444.444,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"off market",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":
+        {
+            "beds": 5,
+            "bath": 2,
+            "square": 2143,
+            "year": 2003
+        },
+        "polygonCoords":{
+            "lat":[40.730909293048235,40.73034831215804,40.7298401732116,40.72982797782921,40.730234489371306],
+            "lng":[-73.93432974815369,-73.93347144126892,-73.93399715423584,-73.93442094326019,-73.93505930900574]
+        }
+    }
+]
