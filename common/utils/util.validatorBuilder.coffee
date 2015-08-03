@@ -1,12 +1,12 @@
 _ = require 'lodash'
 
 baseDefaults =
-    alias: 'Unnamed'
-    required: false
-    config: {},
-    input: ''
-    valid: () ->
-      !@.required || @.input
+  alias: 'Unnamed'
+  required: false
+  config: {},
+  input: ''
+  valid: () ->
+    !@.required || @.input
 
 baseRules =
   acres:
@@ -133,7 +133,7 @@ _getValidationString = (type, vOptions) ->
   vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
   "validators.#{type}(#{vOptionsStr})"
 
-updateTransform = (field) ->
+getTransform = (name, vOptions, validator = 'string') ->
   #   options:
   #
   #     type: integer | float | string | fips | map | currency | ...
@@ -149,14 +149,10 @@ updateTransform = (field) ->
   #       present if type is map
   #
 
-  if field.config?.advanced
-    return
-
   reserved = [ 'advanced' ]
-  vOptions = _.pick field.config, (v, k) -> v? && v != '' && !_.contains(reserved, k)
+  vOptions = _.pick vOptions, (v, k) -> v? && v != '' && !_.contains(reserved, k)
 
-  field.transform =
-  switch field.output
+  switch name
     when 'address'
       _getValidationString('address', vOptions)
 
@@ -191,7 +187,12 @@ updateTransform = (field) ->
       _getValidationString('datetime', vOptions)
 
     else
-      _getValidationString(field.getValidator(), vOptions)
+      _getValidationString(validator, vOptions)
+
+updateTransform = (rule) ->
+  if !rule.config?.advanced
+    rule.transform = getTransform rule.output, rule.config, rule.getValidator()
+  rule
 
 updateRule = (rule) ->
   _.defaultsDeep rule, retsRules[rule.DataType], retsDefaults
