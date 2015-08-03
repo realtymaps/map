@@ -43,6 +43,11 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
     service =
 
+      # will receive results from backend, which will be organzed either as
+      #   standard results or cluster results, determined in backend by #of results returned
+      getFilterResults: (hash, mapState, filters="", cache = true) ->
+        _getFilterSummary(hash, mapState, "clusterOrDefault", filters, cache)
+
       getFilterSummary: (hash, mapState, filters="", cache = true) ->
         _getFilterSummary(hash, mapState, undefined, filters, cache)
 

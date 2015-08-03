@@ -41,7 +41,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
       .then (identity) ->
         if not identity?.currentProfileId
           return $location.path(frontendRoutes.profiles)
-
         profile = uiProfile(identity)
 
         $rootScope.selectedFilters = {}

@@ -56,6 +56,10 @@ commonConfig =
         ordering: 12
         roundOne: 12
         roundNone: 9
+
+  backendClustering:
+    resultThreshold: 2000
+
   images:
     dimensions:
       profile:
