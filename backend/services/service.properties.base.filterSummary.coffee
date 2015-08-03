@@ -55,7 +55,7 @@ _getDefaultQuery = ->
 
 _getResultCount = (state, filters) ->
   # obtain a count(*)-style select query 
-  query = sqlHelpers.selectCount(tables.propertyData.propertyDetails())
+  query = sqlHelpers.selectCountDistinct(tables.propertyData.propertyDetails())
   # apply the state & filters (mostly "where" clause stuff)
   query = _getFilterSummaryAsQuery(state, filters, null, query)
   query
