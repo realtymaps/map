@@ -47,19 +47,21 @@ makeMinMaxes = (result, validators, name) ->
   result["#{name}Max"] = validators
 
 minMaxes = _.transform(minMaxValidations, makeMinMaxes)
-#logger.debug minMaxes, true
 
 transforms = _.extend {}, otherValidations, minMaxes
-
 
 _getDefaultQuery = ->
   sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
-_getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
-  # logger.debug filters, true
-    return if !filters or !filters?.status?.length or !query
-    # save out for use with saved properties
+_getResultCount = (state, filters) ->
+  # obtain a count(*)-style select query 
+  query = sqlHelpers.selectCount(tables.propertyData.propertyDetails())
+  # apply the state & filters (mostly "where" clause stuff)
+  query = _getFilterSummaryAsQuery(state, filters, null, query)
+  query
 
+_getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
+    return if !filters or !filters?.status?.length or !query
     query.limit(limit) if limit
     sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
 
@@ -101,11 +103,6 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
     if filters.listedDaysMax
       sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
 
-    #might not need anymore due to leaflet
-    # if _getZoom(state.map_position) >= zoomThresh.ordering or _.contains(filters.status, filterStatusesEnum.not_for_sale)
-    #   sqlHelpers.orderByDistanceFromPoint(query, 'geom_point_raw', Point(state.map_position.center))
-
-    # logger.sql query.toString()
     query
 
 module.exports =
@@ -118,11 +115,10 @@ module.exports =
       logger.debug 'GTFO'
       return
 
-    # logger.debug 'rawFilters: \n'
-    # logger.debug rawFilters, true
     validation.validateAndTransform(rawFilters, transforms)
 
   getFilterSummaryAsQuery: _getFilterSummaryAsQuery
+  getResultCount: _getResultCount
 
   getFilterSummary: (state, filters, limit, query) ->
     Promise.try () ->

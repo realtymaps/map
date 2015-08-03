@@ -179,7 +179,6 @@ app.controller 'rmapsNormalizeCtrl',
   updateBase = (field, removed) ->
     validatorBuilder.getTransform(field)
     validatorBuilder.validateBase(field)
-    field.inputString = JSON.stringify(field.input) # for display
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -228,7 +227,7 @@ app.controller 'rmapsNormalizeCtrl',
     rmapsMlsService.getConfigs()
     .then (configs) ->
       $scope.mlsConfigs = configs
-      if $state.params.id          
+      if $state.params.id
         $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
         loadMls($scope.mlsData.current)
 

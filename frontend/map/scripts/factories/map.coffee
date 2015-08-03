@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-analyzeValue = require '../../../../common/utils/util.analyzeValue.coffee'
 _overlays = require '../utils/util.layers.overlay.coffee'
 
 _encode = require('geohash64').encode
@@ -150,55 +149,63 @@ app.factory 'rmapsMap',
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
+        self = @
         promises = []
-        if rmapsZoomLevel.doCluster(@scope)
-          promises.push(
-            rmapsProperties.getFilterSummaryAsCluster(@hash, @mapState, @filters, cache)
-            .then (data) =>
+
+        handleClusterResults = (data) ->
+          self.scopeM().markers.filterSummary = {}
+          _.each data, (model,k) =>
+            self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
+          self.scopeM().markers.backendPriceCluster = data            
+
+        handleSummaryResults = (data) ->
+          self.scopeM().markers.backendPriceCluster = {}
+          self.layerFormatter.setDataOptions(data, self.layerFormatter.MLS.setMarkerPriceOptions)
+          for key, val of data
+            _wrapGeomPointJson val
+          self.scopeM().markers.filterSummary = data
+
+        handleGeoJsonResults = () ->
+          rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
+          .then (data) =>
+            return if !data? or _.isString data
+            self.scopeM().geojson.filterSummaryPoly =
+              data: data
+              style: self.layerFormatter.Parcels.getStyle
+
+        # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
+        promises.push(
+          rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+          .then (data) =>
+            if Object.prototype.toString.call(data) is '[object Array]'              
               return if !data? or _.isString data
-              #data should be in array format
-              @scopeM().markers.filterSummary = {}
-              _.each data, (model,k) =>
-                @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-              @scopeM().markers.backendPriceCluster = data
-          )
-        else
-          #needed for results list, rendering price markers, and address Markers
-          #depending on zoome we want address or price
-          #the data structure is the same (do we clone and hide one?)
-          #or do we have the results list view grab one that exists with items?
-          promises.push(
-            rmapsProperties.getFilterSummary(@hash, @mapState, @filters, cache)
-            .then (data) =>
+              handleClusterResults(data)
+
+            else
+              #needed for results list, rendering price markers, and address Markers
+              #depending on zoome we want address or price
+              #the data structure is the same (do we clone and hide one?)
+              #or do we have the results list view grab one that exists with items?
               return if !data? or _.isString data
-              @scopeM().markers.backendPriceCluster = {}
+              handleSummaryResults(data)
 
-              @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+              if rmapsZoomLevel.isParcel(self.scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom)
+                self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
+                self.scope.map.layers.overlays.filterSummary.visible = false
+                self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
+                #$log.info "#### pushing geojson promise..."
+                rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
+                .then (data) =>
+                  return if !data? or _.isString data
+                  self.scopeM().geojson.filterSummaryPoly =
+                    data: data
+                    style: self.layerFormatter.Parcels.getStyle
 
-              for key, val of data
-                _wrapGeomPointJson val
-
-              @scopeM().markers.filterSummary = data
-
-              $log.debug "filters (poly price) count to draw: #{_.keys(data).length}"
-          )
-
-          if rmapsZoomLevel.isParcel(@scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom)
-            @scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom) then false else true
-            @scope.map.layers.overlays.filterSummary.visible = false
-            @scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom) then true else false
-            promises.push(
-              rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
-              .then (data) =>
-                return if !data? or _.isString data
-                @scopeM().geojson.filterSummaryPoly =
-                  data: data
-                  style: @layerFormatter.Parcels.getStyle
-            )
-          else
-            @scope.map.layers.overlays.parcels.visible = false
-            @scope.map.layers.overlays.filterSummary.visible = true
-            @scope.map.layers.overlays.parcelsAddresses.visible = false
+              else
+                self.scope.map.layers.overlays.parcels.visible = false
+                self.scope.map.layers.overlays.filterSummary.visible = true
+                self.scope.map.layers.overlays.parcelsAddresses.visible = false
+        )
         promises
 
       redraw: (cache = true) =>
@@ -232,7 +239,6 @@ app.factory 'rmapsMap',
 
       draw: (event, paths) =>
         return if !@scope.map.isReady
-
         @scope?.formatters?.results?.reset()
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])

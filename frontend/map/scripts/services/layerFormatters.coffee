@@ -97,6 +97,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       markersBSLabel['saved'] = 'saved-property'
 
       setMarkerPriceOptions: (model) ->
+        $log.info "#### setMarkerPriceOptions()"
         return {} unless model
         if not model.price
           formattedPrice = " &nbsp; &nbsp; &nbsp;"
