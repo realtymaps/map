@@ -1,51 +1,71 @@
 _ = require 'lodash'
 
-baseDefaults =
+ruleDefaults =
   alias: 'Unnamed'
   required: false
   config: {},
   input: ''
+  type:
+    name: 'string'
+    label: 'Unknown'
   valid: () ->
-    !@.required || @.input
+    !@required || @input
+  getTransform: () ->
+    _getValidationString @type, @config
+  updateTransform: (rule) ->
+    @config = _.omit @config, _.isNull
+    @config = _.omit @config, _.isUndefined
+    @config = _.omit @config, (v) -> v == ''
+    if !@config?.advanced
+      @transform = @getTransform()
 
 baseRules =
   acres:
     alias: 'Acres'
+    type: 'float'
 
   address:
     alias: 'Address'
     required: true
     input: {}
     group: 'general'
+    type: 'address'
     valid: () ->
-      @.input.city && @.input.state && (@.input.zip || @.input.zip9) &&
-      ((@.input.streetName && @.input.streetNum) || @.input.streetFull)
+      @input.city && @input.state && (@input.zip || @input.zip9) &&
+      ((@input.streetName && @input.streetNum) || @input.streetFull)
 
   baths_full:
     alias: 'Baths Full'
+    type: 'integer'
 
   bedrooms:
     alias: 'Bedrooms'
+    type: 'integer'
 
   days_on_market:
     alias: 'Days on Market'
     required: true
     input: []
+    getTransform: () ->
+      'validators.pickFirst({criteria: validators.integer()})'
     valid: () ->
-      @.input[0] || @.input[1]
+      @input[0] || @input[1]
 
   fips_code:
     alias: 'FIPS code'
     required: true
     input: {}
+    type: 'fips'
     valid: () ->
-      @.input.stateCode && @.input.county
+      @input.stateCode && @input.county
 
   hide_address:
     alias: 'Hide Address'
+    type: 'boolean'
 
   hide_listing:
     alias: 'Hide Listing'
+    type: 'boolean'
 
   parcel_id:
     alias: 'Parcel ID'
@@ -55,63 +75,67 @@ baseRules =
 
   price:
     alias: 'Price'
+    type: 'currency'
     required: true
 
   rm_property_id:
     alias: 'Property ID'
     required: true
+    type: 'rm_property_id'
     input: {}
 
   sqft_finished:
     alias: 'Finished Sq Ft'
+    type: 'integer'
 
   status:
     alias: 'Status'
     required: true
+    getTransform: () ->
+      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
 
   status_display:
     alias: 'Status Display'
     required: true
     group: 'general'
+    getTransform: () ->
+      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
 
   substatus:
     alias: 'Sub-Status'
     required: true
+    getTransform: () ->
+      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
 
   close_date:
     alias: 'Close Date'
+    type: 'date'
 
   discontinued_date:
     alias: 'Discontinued Date'
+    type: 'date'
 
   mls_uuid:
     alias: 'MLS Number'
     required: true
 
-retsDefaults =
-  type:
-    name: 'unknown'
-    label: 'Unkown'
-  config: {}
-  getValidator: () -> @.type.name
-
 retsRules =
   Int:
     type:
       name: 'integer'
-      label: 'Number'
+      label: 'Number (integer)'
     config:
       nullZero: true
   Decimal:
     type:
       name: 'float'
-      label: 'Number'
+      label: 'Number (decimal)'
     config:
       nullZero: true
   Long:
     type:
       name: 'float'
-      label: 'Number'
+      label: 'Number (decimal)'
     config:
       nullZero: true
   Character:
@@ -127,75 +151,21 @@ retsRules =
     type:
       name: 'boolean'
       label: 'Yes/No'
-    getValidator: () -> 'nullify'
+    getTransform: () ->
+      _getValidationString 'nullify', @config
 
 _getValidationString = (type, vOptions) ->
+  type = type.name || type
+  vOptions = _.omit vOptions, 'advanced'
   vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
   "validators.#{type}(#{vOptionsStr})"
 
-getTransform = (name, vOptions, validator = 'string') ->
-  #   options:
-  #
-  #     type: integer | float | string | fips | map | currency | ...
-  #       Maps to a validation handler.
-  #       EG if type = "integer", we will expect:
-  #       "validation.integer"
-  #       If in future these seem arcane, like "rm_property_id",
-  #         we can create a map
-  #     vOptions:
-  #       validation options to be nested into validation calls
-  #     map:
-  #       key-value mapping for map field
-  #       present if type is map
-  #
+buildRule = (rule, defaults) ->
+  _.defaultsDeep rule, defaults, ruleDefaults
+  rule.updateTransform()
 
-  reserved = [ 'advanced' ]
-  vOptions = _.pick vOptions, (v, k) -> v? && v != '' && !_.contains(reserved, k)
-
-  switch name
-    when 'address'
-      _getValidationString('address', vOptions)
-
-    when 'status', 'substatus', 'status_display'
-      _getValidationString('map', map: vOptions.map ? {}, passUnmapped: true)
-
-    when 'parcel_id', 'mls_uuid'
-      _getValidationString('string', vOptions)
-
-    when 'days_on_market'
-      'validators.pickFirst({criteria: validators.integer()})'
-
-    when 'baths_full', 'bedrooms', 'sqft_finished'
-      _getValidationString('integer', vOptions)
-
-    when 'price'
-      _getValidationString('currency', vOptions)
-
-    when 'rm_property_id'
-      _getValidationString('rm_property_id', vOptions)
-
-    when 'fips_code'
-      _getValidationString('fips', vOptions)
-
-    when 'acres'
-      _getValidationString('float', vOptions)
-
-    when 'hide_address', 'hide_listing'
-      _getValidationString('boolean', vOptions)
-
-    when 'close_date', 'discontinued_date'
-      _getValidationString('datetime', vOptions)
-
-    else
-      _getValidationString(validator, vOptions)
-
-updateTransform = (rule) ->
-  if !rule.config?.advanced
-    rule.transform = getTransform rule.output, rule.config, rule.getValidator()
-  rule
-
-updateRule = (rule) ->
-  _.defaultsDeep rule, retsRules[rule.DataType], retsDefaults
+buildRetsRule = (rule) ->
+  buildRule rule, retsRules[rule.DataType]
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
@@ -203,13 +173,12 @@ updateRule = (rule) ->
       rule.type.label = 'Restricted Text (multiple values)'
     else
       rule.type.label = 'User-Entered Text'
-  updateTransform rule
+  rule
 
-updateBase = (rule) ->
-  _.defaultsDeep rule, baseRules[rule.output], baseDefaults
-  updateTransform rule
+buildBaseRule = (rule) ->
+  buildRule rule, baseRules[rule.output]
 
 module.exports =
   baseRules: baseRules
-  updateRule: updateRule
-  updateBase: updateBase
+  buildRetsRule: buildRetsRule
+  buildBaseRule: buildBaseRule

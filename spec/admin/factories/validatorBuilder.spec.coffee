@@ -10,38 +10,38 @@ describe 'validatorBuilder', ->
   it 'should transform fields correctly', ->
 
     typedFieldTestMap = [
-       field: @validatorBuilder.updateRule {"DataType": "Int"}
+       field: @validatorBuilder.buildRule {"DataType": "Int"}
        transform: 'validators.integer({"nullZero":true})'
       ,
-       field: @validatorBuilder.updateRule {"DataType": "Decimal"}
+       field: @validatorBuilder.buildRule {"DataType": "Decimal"}
        transform: 'validators.float({"nullZero":true})'
       ,
-       field: @validatorBuilder.updateRule {"DataType": "Long"}
+       field: @validatorBuilder.buildRule {"DataType": "Long"}
        transform: 'validators.float({"nullZero":true})'
       ,
-       field: @validatorBuilder.updateRule {"DataType": "Character"}
+       field: @validatorBuilder.buildRule {"DataType": "Character"}
        transform: 'validators.string({"nullEmpty":true})'
       ,
-       field: @validatorBuilder.updateRule {"DataType": "DateTime"}
+       field: @validatorBuilder.buildRule {"DataType": "DateTime"}
        transform: 'validators.datetime({})'
       ,
-       field: @validatorBuilder.updateRule {"DataType": "Boolean", "config": {"value": false}}
+       field: @validatorBuilder.buildRule {"DataType": "Boolean", "config": {"value": false}}
        transform: 'validators.nullify({"value":false})'
      ]
 
     namedFieldTestMap = [
-       field: @validatorBuilder.updateRule {"output": "address"}
+       field: @validatorBuilder.buildBaseRule {"output": "address"}
        transform: 'validators.address({})'
       ,
-       field: @validatorBuilder.updateRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
       ,
-       field: @validatorBuilder.updateRule {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
       ,
-       field: @validatorBuilder.updateRule {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
     ]
 
-    expect(obj.field.transform).to.equal obj.transform for obj in typedFieldTestMap
-    expect(obj.field.transform).to.equal obj.transform for obj in namedFieldTestMap
+    expect(obj.field.getTransform()).to.equal obj.transform for obj in typedFieldTestMap
+    expect(obj.field.getTransform()).to.equal obj.transform for obj in namedFieldTestMap

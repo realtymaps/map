@@ -68,7 +68,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.updateBase rule
+    validatorBuilder.buildBaseRule rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -98,7 +98,7 @@ app.controller 'rmapsNormalizeCtrl',
         rule = field
         rule.output = rule.LongName
         addRule rule, 'unassigned'
-      validatorBuilder.updateRule rule
+      validatorBuilder.buildRetsRule rule
       true
 
     _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
@@ -177,7 +177,7 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    validatorBuilder.updateBase field
+    field.updateTransform()
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -192,7 +192,7 @@ app.controller 'rmapsNormalizeCtrl',
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    validatorBuilder.updateRule field
+    field.updateTransform()
     $scope.saveRuleDebounced()
 
   saveRule = (rule) ->
