@@ -59,9 +59,8 @@ app.controller 'rmapsNormalizeCtrl',
   # Handles adding rules to categories
   addRule = (rule, list) ->
     category = $scope.categories[list]
-    _.extend rule,
-      ordering: rule.ordering ? category.length
-      config: rule.config || {}
+    _.defaults rule,
+      ordering: category.length
       list: list
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
@@ -97,7 +96,9 @@ app.controller 'rmapsNormalizeCtrl',
       else
         rule = field
         rule.output = rule.LongName
-        addRule rule, 'unassigned'
+
+      # Show all rules in unassigned
+      addRule rule, 'unassigned'
       validatorBuilder.buildRetsRule rule
       true
 
@@ -105,8 +106,8 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Show field options
   $scope.selectField = (field) ->
-    if field.list == 'unassigned'
-      return
+    if field.list != 'unassigned'
+      $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 

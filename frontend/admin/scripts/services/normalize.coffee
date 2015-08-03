@@ -18,13 +18,14 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
 
   moveRule = (mlsId, rule, listFrom, listTo, idx) ->
     Promise.try () ->
-      _.pull listFrom.items, rule
-      if rule.list != 'unassigned' && listFrom.items != listTo.items
-        Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).remove()
+      if rule.list != 'unassigned'
+        _.pull listFrom.items, rule
+        if listFrom.items != listTo.items
+          Restangular.all(mlsConfigAPI).one(mlsId).all('rules').one(rule.list).one(String(rule.ordering)).remove()
     .then () ->
-      listTo.items.splice idx, 0, rule
       rule.list = listTo.list
       if rule.list != 'unassigned'
+        listTo.items.splice idx, 0, rule
         createListRules(mlsId, listTo.list, listTo.items)
     .then () ->
       _.forEach listTo.items, (item, ordering) -> item.ordering = ordering

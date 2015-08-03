@@ -32,10 +32,10 @@
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
+        ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : ['-assigned', 'output']") {{item.output}}
+        ng-repeat="item in categories.unassigned | orderBy : ['-list', '-assigned', 'output']") {{item.output}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
