@@ -105,7 +105,8 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Show field options
   $scope.selectField = (field) ->
-    $scope.showProperties = true
+    if field.list == 'unassigned'
+      return
     $scope.fieldData.current = field
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 

@@ -8,16 +8,25 @@ ruleDefaults =
   type:
     name: 'string'
     label: 'Unknown'
+
   valid: () ->
     !@required || @input
-  getTransform: () ->
-    _getValidationString @type, @config
+
   updateTransform: (rule) ->
     @config = _.omit @config, _.isNull
     @config = _.omit @config, _.isUndefined
     @config = _.omit @config, (v) -> v == ''
     if !@config?.advanced
       @transform = @getTransform()
+
+  getTransform: () ->
+    @getTransformString @type, @config
+
+  getTransformString: (type, vOptions) ->
+    type = type.name || type
+    vOptions = _.omit vOptions, 'advanced'
+    vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
+    "validators.#{type}(#{vOptionsStr})"
 
 baseRules =
   acres:
@@ -92,20 +101,20 @@ baseRules =
     alias: 'Status'
     required: true
     getTransform: () ->
-      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
 
   status_display:
     alias: 'Status Display'
     required: true
     group: 'general'
     getTransform: () ->
-      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
 
   substatus:
     alias: 'Sub-Status'
     required: true
     getTransform: () ->
-      _getValidationString 'map', map: @config.map ? {}, passUnmapped: true
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
 
   close_date:
     alias: 'Close Date'
@@ -152,20 +161,14 @@ retsRules =
       name: 'boolean'
       label: 'Yes/No'
     getTransform: () ->
-      _getValidationString 'nullify', @config
+      @getTransformString 'nullify', @config
 
-_getValidationString = (type, vOptions) ->
-  type = type.name || type
-  vOptions = _.omit vOptions, 'advanced'
-  vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
-  "validators.#{type}(#{vOptionsStr})"
-
-buildRule = (rule, defaults) ->
+_buildRule = (rule, defaults) ->
   _.defaultsDeep rule, defaults, ruleDefaults
   rule.updateTransform()
 
 buildRetsRule = (rule) ->
-  buildRule rule, retsRules[rule.DataType]
+  _buildRule rule, retsRules[rule.DataType]
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
@@ -176,7 +179,8 @@ buildRetsRule = (rule) ->
   rule
 
 buildBaseRule = (rule) ->
-  buildRule rule, baseRules[rule.output]
+  _buildRule rule, baseRules[rule.output]
+  rule
 
 module.exports =
   baseRules: baseRules

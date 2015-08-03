@@ -10,22 +10,22 @@ describe 'validatorBuilder', ->
   it 'should transform fields correctly', ->
 
     typedFieldTestMap = [
-       field: @validatorBuilder.buildRule {"DataType": "Int"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Int"}
        transform: 'validators.integer({"nullZero":true})'
       ,
-       field: @validatorBuilder.buildRule {"DataType": "Decimal"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Decimal"}
        transform: 'validators.float({"nullZero":true})'
       ,
-       field: @validatorBuilder.buildRule {"DataType": "Long"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Long"}
        transform: 'validators.float({"nullZero":true})'
       ,
-       field: @validatorBuilder.buildRule {"DataType": "Character"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Character"}
        transform: 'validators.string({"nullEmpty":true})'
       ,
-       field: @validatorBuilder.buildRule {"DataType": "DateTime"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "DateTime"}
        transform: 'validators.datetime({})'
       ,
-       field: @validatorBuilder.buildRule {"DataType": "Boolean", "config": {"value": false}}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Boolean", "config": {"value": false}}
        transform: 'validators.nullify({"value":false})'
      ]
 

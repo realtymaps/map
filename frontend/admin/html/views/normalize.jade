@@ -22,7 +22,7 @@
       h4 Filters
       .field-container(cg-busy="baseLoading")
         .field.base(
-        ng-class="{ invalid: !item.valid(), selected: item == fieldData.current && showProperties }"
+        ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
         ng-click="selectField(item)"
         ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
           span.datatype(ng-show="item.valid() && !item.input")
@@ -32,7 +32,7 @@
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
         ng-repeat="item in categories.unassigned | orderBy : ['-assigned', 'output']") {{item.output}}
@@ -62,7 +62,7 @@
         class="base unselectable"
         ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
         ng-repeat="item in fieldData.category.items")
@@ -88,7 +88,7 @@
             class="base unselectable"
             ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
             .field(
-            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
@@ -100,9 +100,9 @@
                'datatype-date': item.type.name == 'datetime' }"
                ng-show="item.type")
 
-  .row.panel.properties-container(ng-show="showProperties")
+  .row.panel.properties-container(ng-show="fieldData.current")
 
-    .close-icon(ng-click="showProperties=false") X
+    .close-icon(ng-click="fieldData.current = null") X
 
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       .row
