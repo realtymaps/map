@@ -1,4 +1,5 @@
 dbs = require '../config/dbs'
+logger = require '../config/logger'
 
 _buildQueries = (tables) ->
   queries = {}

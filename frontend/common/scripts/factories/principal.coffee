@@ -4,7 +4,6 @@
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 
-
 module.exports = ($rootScope, $q, $http, rmapsevents) ->
     _identity = null
     _authenticated = false
