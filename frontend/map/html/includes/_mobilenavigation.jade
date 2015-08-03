@@ -1,3 +1,5 @@
+include mixins/_avatar
+
 #mobile-nav
     .inner
         include ./header/_logo
@@ -26,8 +28,5 @@
                     span.conut {{projectsArray.length}}
         .bottom
             a(ng-cloak href="#realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                span.avatar(ng-cloak ng-if="!!user.account_image_id")
-                    img(ng-src="{{backendRoutes.userSession.image}}" title="{{user.username}}")
-                span.avatar(ng-cloak ng-if="!!!user.account_image_id")
-                    img(ng-src="{{frontendRoutes.avatar}}" title="{{user.username}}")
+                +avatar()(class='tiny-avatar')
             a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings

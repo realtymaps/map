@@ -1,0 +1,49 @@
+[
+    {
+        "id":0,
+        "title":"Property 1",
+        "price":999.999,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"pending",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":{
+            "beds": 3,
+            "bath": 7,
+            "square": 1123,
+            "year": 2002
+        }
+    },
+    {
+        "id":1,
+        "title":"Property 1",
+        "price":444.444,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"for sale",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":
+        {
+            "beds": 5,
+            "bath": 2,
+            "square": 2143,
+            "year": 2003
+        }
+    },
+    {
+        "id":2,
+        "title":"Property 1",
+        "price":111.111,
+        "location":"Naples, FL 34110-0911",
+        "image":"test_property.jpg",
+        "status":"sold",
+        "description":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed erat mollis, luctus orci eu, efficitur eros. Curabitur mi eros, venenatis quis pretium ut, posuere in elit. Morbi viverra vulputate felis, vitae pulvinar mi aliquam quis. Praesent odio orci, laoreet id vehicula semper, consectetur consectetur metus. Donec ultrices nisi ligula, ut placerat mi aliquam ut. Donec a magna at lorem dignissim imperdiet at a nisl. Integer vehicula velit et lorem vulputate, ac vehicula lorem consequat. Phasellus at nibh quis lorem pulvinar efficitur et non metus. Suspendisse et est dolor. Cras eu sollicitudin justo. Maecenas tellus nulla, suscipit vel erat id, consequat maximus lacus. Phasellus convallis faucibus leo a molestie. Ut at felis arcu. ",
+        "attr":
+        {
+            "beds": 2,
+            "bath": 9,
+            "square": 1893,
+            "year": 2008
+        }
+    }
+]

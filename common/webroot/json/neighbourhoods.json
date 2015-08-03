@@ -1,0 +1,24 @@
+[
+    {
+        "id": 0,
+        "projectId":0,
+        "title":"Neighborhood 1",
+        "mapImg":"test_map.jpg",
+        "properties": 34
+    },
+    {
+        "id": 1,
+        "projectId":1,
+        "title":"Neighborhood 2",
+        "mapImg":"test_map.jpg",
+        "properties": 22
+    },
+    {
+        "id": 2,
+        "projectId":2,
+        "title":"Neighborhood 3",
+        "mapImg":"test_map.jpg",
+        "properties": 45
+    }
+
+]

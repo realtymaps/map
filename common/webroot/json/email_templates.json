@@ -1,0 +1,74 @@
+[
+  {
+    "id":0,
+    "title": "Template title 1",
+    "type": "Letter",
+    "favorite": 0
+  },
+  {
+    "id":1,
+    "title": "Template title 2",
+    "type": "Postcard",
+    "favorite": 1
+  },
+  {
+    "id":2,
+    "title": "Template title 3",
+    "type": "Letter",
+    "favorite": 0
+  },
+  {
+    "id":3,
+    "title": "Template title 4",
+    "type": "Letter",
+    "favorite": 0
+  },
+  {
+    "id":4,
+    "title": "Template title 5",
+    "type": "Letter",
+    "favorite": 1
+  },
+  {
+    "id":5,
+    "title": "Template title 6",
+    "type": "Postcard",
+    "favorite": 0
+  },
+  {
+    "id":6,
+    "title": "Template title 7",
+    "type": "Letter",
+    "favorite": 0
+  },
+  {
+    "id":7,
+    "title": "Template title 8",
+    "type": "Postcard",
+    "favorite": 1
+  },
+  {
+    "id":8,
+    "title": "Template title 9",
+    "type": "Letter",
+    "favorite": 0
+  },
+  {
+    "id":9,
+    "title": "Template title 10",
+    "type": "Postcard",
+    "favorite": 0
+  },
+  {
+    "id":10,
+    "title": "Template title 11",
+    "type": "Letter",
+    "favorite": 1
+  },{
+    "id":11,
+    "title": "Template title 12",
+    "type": "Postcard",
+    "favorite": 0
+  }
+
+]
