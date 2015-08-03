@@ -21,14 +21,14 @@ loadDataRawMain = (subtask) ->
     retsDbName: 'Property'
     retsTableName: 'RES'
     retsQueryTemplate: "[(LastChangeTimestamp=]YYYY-MM-DD[T]HH:mm:ss[+),(ListingOnInternetYN=1)]"
-    retsId: 'swflmls'
+    retsId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
   mlsHelpers.normalizeData subtask,
     rawTableSuffix: 'main'
-    dataSourceId: 'swflmls'
+    dataSourceId: subtask.task_name
 
 finalizeDataPrep = (subtask) ->
   # slightly hackish raw query needed for count(distinct blah):
@@ -52,14 +52,14 @@ finalizeData = (subtask) ->
       
 
 subtasks =
-  swflmls_loadDataRawMain: loadDataRawMain
-  swflmls_normalizeData: normalizeData
-  swflmls_recordChangeCounts: mlsHelpers.recordChangeCounts
-  swflmls_finalizeDataPrep: finalizeDataPrep
-  swflmls_finalizeData: finalizeData
-  swflmls_activateNewData: mlsHelpers.activateNewData
+  loadDataRawMain: loadDataRawMain
+  normalizeData: normalizeData
+  recordChangeCounts: mlsHelpers.recordChangeCounts
+  finalizeDataPrep: finalizeDataPrep
+  finalizeData: finalizeData
+  activateNewData: mlsHelpers.activateNewData
 
 module.exports =
   executeSubtask: (subtask) ->
     # call the handler for the subtask
-    subtasks[subtask.name](subtask)
+    subtasks[subtask.name.replace(/[^_]+_/g,'')](subtask)
