@@ -1,5 +1,8 @@
 gulp = require 'gulp'
 require './otherAssets'
+require './webroot'
+require './clean'
+
 gWebpack = require 'webpack-stream'
 configFact = require '../../webpack.conf.coffee'
 paths = require '../../common/config/paths'
@@ -13,7 +16,7 @@ outputAdmin = paths.destFull.webpack.admin
 # webpack confs per each environment & app
 conf = configFact output
 
-prodConf = configFact output,
+prodConf = configFact _.omit(output, 'publicPath'),
   new webpack.optimize.UglifyJsPlugin {
     mangle: false,
     compress: {
@@ -50,11 +53,15 @@ runWebpack = (someConfig, app='rmap') ->
   .pipe(gWebpack someConfig)
   .pipe(gulp.dest(paths.dest.root))
 
-gulp.task 'webpack', gulp.series 'otherAssets', ->
+gulp.task 'webpack', gulp.series 'otherAssets', 'webroot', ->
   runWebpack(conf)
 
-gulp.task 'webpackProd', gulp.series 'otherAssets', ->
+gulp.task 'webpackProd', gulp.series 'otherAssets', 'webroot', ->
   runWebpack(prodConf)
 
-gulp.task 'webpackAdmin', gulp.series 'otherAssets', ->
+gulp.task 'webpackAdmin', gulp.series 'otherAssets', 'webroot', ->
   runWebpack(adminConf, 'admin')
+
+gulp.task 'webpackMap', gulp.series 'webpack'
+
+gulp.task 'webpackApps', gulp.series 'clean', 'webpackMap', 'webpackAdmin'

@@ -1,15 +1,28 @@
-form
+@import '../mayday/color_palette.styl'
+
+.login-page
+  .centered
+    top 40%
+  height 100%
+  width 100%
+  background-color c_dark_blue_darker
+
+  form
   label[for=remember_me]
     margin-top: 5px
 
-.login-page
-  height 350px
 
-.copyright
-  margin-top: 50px
-  color: grey
+  .logo
+    height: $logo-height
+    width: @height
+    overflow: hidden
 
-.logo
-  height: $logo-height
-  width: @height
-  overflow: hidden
+  .copyright
+    margin-top: 50px
+    color: grey
+
+
+.logout-page
+  height 100%
+  width 100%
+  background-color c_dark_blue_darker

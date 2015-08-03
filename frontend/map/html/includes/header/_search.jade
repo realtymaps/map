@@ -1,0 +1,21 @@
+div#search-field
+    form(ng-cloak ng-controller="SearchController")
+        button(class="btn btn-icon search-btn" ng-click="openSearchTools = !openSearchTools" )
+            span.icon.icon-magnify
+        div.search(ng-controller="DropdownCtrl" ng-class="openSearchTools ? 'opened' : ''")
+            div.search-content
+                div.search-type
+                    span(class="dropdown" dropdown on-toggle="toggled(open)")
+                        button(href='#search-type' class="dropdown-toggle" dropdown-toggle)
+                            span
+                                span.type
+                                    | {{searchType}}
+                            span.caret
+                        ul(class="dropdown-menu")
+                            li(ng-click="setSearchScope('Properties')")
+                                span.icon.icon-property
+                                | Properties
+                            li(ng-click="setSearchScope('Owners')")
+                                span.icon.icon-project
+                                | Owners
+                input(id="search" type="search" class="form-control" placeholder="Search")

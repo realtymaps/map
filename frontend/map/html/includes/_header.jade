@@ -1,0 +1,12 @@
+header.site-header
+  .inner
+    .container-fluid
+      include ./header/_burger
+      include ./header/_logo
+      include ./header/_navigation
+      div(ng-if="principal.isAuthenticated()")
+        include ./header/_notices
+        include ./header/_userblock
+        include ./header/_search
+      include ./header/_rightnav
+

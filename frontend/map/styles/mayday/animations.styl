@@ -1,0 +1,328 @@
+/*transitions*/
+.global-transition
+  transition all 250ms ease 0ms
+
+tt = 250ms ease 0ms
+
+*
+*:after
+*:before
+  transition width tt, height tt, padding tt, margin tt
+
+/*animations*/
+.grow
+  animation-name grow
+  -webkit-animation-name grow
+
+  animation-duration 500ms
+  -webkit-animation-duration 500ms
+
+  animation-timing-function ease-out
+  -webkit-animation-timing-function ease-out
+
+  visibility visible !important
+
+@keyframes grow
+  0%
+    transform scale(.2)
+
+  50%
+    transform scale(1.8)
+
+  70%
+    transform scale(1.4)
+
+  100%
+    transform scale(1)
+
+@-webkit-keyframes grow
+  0%
+    -webkit-transform scale(.2)
+
+  50%
+    -webkit-transform scale(1.8)
+
+  70%
+    -webkit-transform scale(1.4)
+
+  100%
+    -webkit-transform scale(1)
+
+.slideFromLeft
+  animation-name slideFromLeft
+  -webkit-animation-name slideFromLeft
+
+  animation-duration 250ms
+  -webkit-animation-duration 250ms
+
+  animation-timing-function ease-out
+  -webkit-animation-timing-function ease-out
+
+  visibility visible !important
+
+@keyframes slideFromLeft
+  0%
+    transform translateX(-20px)
+    opacity 0
+
+  50%
+    transform translateX(10px)
+    opacity .5
+
+  100%
+    transform translateX(0)
+    opacity 1
+
+@-webkit-keyframes slideFromLeft
+  0%
+    -webkit-transform translateX(-20px)
+    opacity 0
+
+  50%
+    -webkit-transform translateX(10px)
+    opacity .5
+
+  100%
+    -webkit-transform translateX(0)
+    opacity 1
+
+.fadeIn
+  animation-name fadeIn
+  -webkit-animation-name fadeIn
+
+  animation-duration 250ms
+  -webkit-animation-duration 250ms
+
+  animation-timing-function ease-out
+  -webkit-animation-timing-function ease-out
+
+@keyframes fadeIn
+  0%
+    opacity 0
+
+  50%
+    opacity .3
+
+  100%
+    opacity 1
+
+@-webkit-keyframes fadeIn
+  0%
+    opacity 0
+
+  50%
+    opacity .3
+
+  100%
+    opacity 1
+
+.slideFromTop
+  animation-name slideFromTop
+  -webkit-animation-name slideFromTop
+
+  animation-duration 1000ms
+  -webkit-animation-duration 1000ms
+
+  animation-timing-function ease-out
+  -webkit-animation-timing-function ease-out
+
+  visibility visible !important
+
+  transform-origin 50% 0 0
+  -webkit-transform-origin 50% 0 0
+
+@keyframes slideFromTop
+  0%
+    max-height 0
+
+  100%
+    max-height 800px
+
+@-webkit-keyframes slideFromTop
+  0%
+    max-height 0
+
+  100%
+    max-height 800px
+
+.fallDown
+  animation-name fallDown
+  -webkit-animation-name fallDown
+
+  animation-duration 250ms
+  -webkit-animation-duration 250ms
+
+  animation-timing-function ease-out
+  -webkit-animation-timing-function ease-out
+
+  visibility visible !important
+
+  transform-origin 50% 0 0
+  -webkit-transform-origin 50% 0 0
+
+@keyframes fallDown
+  0%
+    opacity 0
+    transform translateY(-30px)
+
+  75%
+    transform translateY(5px)
+
+  100%
+    opacity 1
+    transform translateY(0px)
+
+@-webkit-keyframes fallDown
+  0%
+    opacity 0
+    -webkit-transform translateY(-30px)
+
+  75%
+    -webkit-transform translateY(5px)
+
+  100%
+    opacity 1
+    -webkit-transform translateY(0px)
+
+.growUp
+  animation-name growUp
+  -webkit-animation-name growUp
+
+  animation-duration 800ms
+  -webkit-animation-duration 800ms
+
+  animation-timing-function ease
+  -webkit-animation-timing-function ease
+
+
+@keyframes growUp
+  0%
+    transform: scale(.5)
+    opacity 0
+
+  100%
+    transform: scale(1)
+    opacity 1
+
+@-webkit-keyframes growUp
+  0%
+    -webkit-transform: scale(.5)
+    opacity 0
+
+  100%
+    -webkit-transform: scale(1)
+    opacity 1
+
+.growDown
+  animation-name growDown
+  -webkit-animation-name growDown
+
+  animation-duration 800ms
+  -webkit-animation-duration 800ms
+
+  animation-timing-function ease
+  -webkit-animation-timing-function ease
+
+@keyframes growDown
+  0%
+    transform: scale(1)
+    opacity 1
+
+  100%
+    transform: scale(.5)
+    opacity 0
+
+@-webkit-keyframes growDown
+  0%
+    -webkit-transform: scale(1)
+    opacity 1
+
+  100%
+    -webkit-transform: scale(.5)
+    opacity 0
+
+.moveToLeft
+  animation-name moveToLeft
+  -webkit-animation-name moveToLeft
+
+  animation-duration 800ms
+  -webkit-animation-duration 800ms
+
+  animation-timing-function ease
+  -webkit-animation-timing-function ease
+
+
+@keyframes moveToLeft
+  0%
+    transform: translateX(0%)
+
+  100%
+    transform: translateX(-100%)
+
+@-webkit-keyframes moveToLeft
+  0%
+    -webkit-transform: translateX(0%)
+
+  100%
+    -webkit-transform: translateX(-100%)
+
+.moveToDown
+  animation-name moveToDown
+  -webkit-animation-name moveToDown
+
+  animation-duration 800ms
+  -webkit-animation-duration 800ms
+
+  animation-timing-function ease
+  -webkit-animation-timing-function ease
+
+
+@keyframes moveToDown
+  0%
+    transform: translateY(0%)
+
+  100%
+    transform: translateY(100%)
+
+@-webkit-keyframes moveToLeft
+  0%
+    -webkit-transform: translateY(0%)
+
+  100%
+    -webkit-transform: translateY(100%)
+
+@-webkit-keyframes pulse
+  40%
+    -webkit-transform scale(20)
+    -moz-transform scale(20)
+    transform scale(20)
+
+  100%
+    -webkit-transform scale(1)
+    -moz-transform scale(1)
+    transform scale(1)
+
+@-moz-keyframes pulse
+  40%
+    -webkit-transform scale(20);
+    -moz-transform scale(20);
+    transform scale(20);
+
+  100%
+    -webkit-transform scale(1)
+    -moz-transform scale(1)
+    transform scale(1)
+
+
+@keyframes pulse
+  40%
+    -webkit-transform scale(20)
+    -moz-transform scale(20)
+    transform scale(20)
+
+
+  100%
+    -webkit-transform scale(1)
+    -moz-transform scale(1)
+    transform scale(1)
+

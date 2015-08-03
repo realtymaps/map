@@ -76,7 +76,7 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
               return @cropBlob
             if $scope.company.account_image_id?
               return @blob || backendRoutes.userSession.companyImage.replace(":account_image_id", $scope.company.account_image_id)
-            "/assets/trademark.svg"
+            frontendRoutes.avatar
           save: ->
             return spawnAlert "No Image to Save." unless @blob?
 

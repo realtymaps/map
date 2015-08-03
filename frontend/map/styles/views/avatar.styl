@@ -1,0 +1,17 @@
+@import '../variables.styl'
+
+.tiny-avatar
+  img, span
+    max-width 100%
+    border-radius 5px
+
+.avatar-image
+  max-width 100%
+  border-radius $avatarRadius
+
+img.avatar
+  @extends .avatar-image
+
+.avatar
+  img, span
+    @extends .avatar-image

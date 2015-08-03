@@ -1,0 +1,41 @@
+$userBlockSize()
+  width 34px
+  height 34px
+
+$makeUserBlock()
+  #userblock
+    float right
+    display block
+    position relative
+    z-index 1
+    @extends .hidden-xs
+    button.avtr
+      span
+        $userBlockSize()
+
+      background c_dark_blue_active
+      border none
+      font-size 14px
+      margin 5px 15px 5px 0
+      $userBlockSize()
+      text-align center
+      color c_white_80
+      text-transform uppercase
+      border-radius 5px
+      cursor pointer
+    .block-become-a-member
+      padding 10px
+      margin-bottom -5px
+      h4,p
+        padding 0 10px
+      h4
+        font-size 12px
+        font-weight normal
+        text-transform capitalize
+        color c_white_40
+        margin 0
+
+    .dropdown
+      &.open
+        ul
+          @extends .fallDown
