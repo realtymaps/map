@@ -78,6 +78,9 @@ app.controller 'rmapsNormalizeCtrl',
         addBaseRule rule
       else
         addRule rule, rule.list
+        # Show all rules in unassigned
+        addRule rule, 'unassigned'
+
     # Create base rules that don't exist yet
     _.forEach $scope.baseRules, (rule, output) ->
       if !allRules[output]
@@ -96,9 +99,8 @@ app.controller 'rmapsNormalizeCtrl',
       else
         rule = field
         rule.output = rule.LongName
+        addRule rule, 'unassigned'
 
-      # Show all rules in unassigned
-      addRule rule, 'unassigned'
       validatorBuilder.buildRetsRule rule
       true
 
@@ -211,6 +213,25 @@ app.controller 'rmapsNormalizeCtrl',
   # Dropdown selection, reloads the view
   $scope.selectMls = () ->
     $state.go($state.current, { id: $scope.mlsData.current.id }, { reload: true })
+
+  # Show rules without metadata first, then unassigned followed by assigned
+  $scope.orderValid = (rule) -> !!rule.DataType
+  $scope.orderList = (rule) -> rule.list != 'unassigned'
+
+  $scope.removeRule = () ->
+    rule = $scope.fieldData.current
+    from = _.find $scope.targetCategories, 'list', rule.list
+    to = _.find $scope.targetCategories, 'list', 'unassigned'
+    from.loading = to.loading = rmapsNormalizeService.moveRule(
+      $scope.mlsData.current.id,
+      rule,
+      from,
+      to,
+      0
+    ).then () ->
+      _.pull to.items, rule
+      $scope.fieldData.current = null
+      $scope.$evalAsync()
 
   # Load saved MLS config and RETS fields
   loadMls = (config) ->

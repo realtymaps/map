@@ -32,10 +32,10 @@
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .field(
-        ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current }"
+        ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : ['-list', '-assigned', 'output']") {{item.output}}
+        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'output']") {{item.output}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
@@ -53,7 +53,7 @@
         ng-click="fieldData.category = category"
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
 
-    .col-md-3.list-container(ng-if="!showGrid")
+    .col-md-3.list-container(ng-if="!showGrid && fieldData.category")
       h4 {{fieldData.category.label}}
       .field-container(
         rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
@@ -62,7 +62,7 @@
         class="base unselectable"
         ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
         ng-repeat="item in fieldData.category.items")
@@ -88,7 +88,7 @@
             class="base unselectable"
             ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
             .field(
-            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current }"
+            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
@@ -108,9 +108,11 @@
       .row
         .col-md-2 RETS Name:
         .col-md-10 {{fieldData.current.output}}
-      .row
+      .row(ng-switch on="fieldData.current.type")
         .col-md-2 Data Type:
-        .col-md-10 {{fieldData.current.type.label}}
+        .col-md-10(ng-if="fieldData.current.type") {{fieldData.current.type.label}}
+        .col-md-10(ng-if="!fieldData.current.type") Metadata missing! MLS may have removed or renamed this field
+         .btn.btn-danger(ng-click="removeRule()") REMOVE RULE
       .row
         .col-md-2 Alias:
         .col-md-2
