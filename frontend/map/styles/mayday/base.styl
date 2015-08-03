@@ -4,8 +4,6 @@
 @import "./header/userblock"
 @import "./mobile-nav"
 
-body
-
 html, body
   position absolute
   min-height: 100% !important
@@ -68,10 +66,10 @@ header.site-header
     float left
     width 100%
 
-    makeNav()
-    makeSearchField()
-    makeNotices()
-    makeUserBlock()
+    $makeNav()
+    $makeSearchField()
+    $makeNotices()
+    $makeUserBlock()
 
 @media screen and (-webkit-min-device-pixel-ratio:0)
   .site-main
@@ -83,6 +81,11 @@ header.site-header
   background-color c_white
   height 100%
   overflow auto
+  color c_black
+
+  label, input, .page-header
+    color c_black
+
   #mail
   #history
 
