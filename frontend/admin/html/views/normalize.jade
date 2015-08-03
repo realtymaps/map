@@ -108,7 +108,7 @@
       .row
         .col-md-2 RETS Name:
         .col-md-10 {{fieldData.current.output}}
-      .row(ng-switch on="fieldData.current.type")
+      .row
         .col-md-2 Data Type:
         .col-md-10(ng-if="fieldData.current.type") {{fieldData.current.type.label}}
         .col-md-10(ng-if="!fieldData.current.type") Metadata missing! MLS may have removed or renamed this field

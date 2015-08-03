@@ -1,5 +1,6 @@
 _ = require 'lodash'
 
+# Defaults for all rules
 ruleDefaults =
   alias: 'Unnamed'
   required: false
@@ -9,9 +10,11 @@ ruleDefaults =
     name: 'string'
     label: 'Unknown'
 
+  # Check valid rule configuration (not data validation)
   valid: () ->
     !@required || @input
 
+  # Cleans up the config and assigns a new transform unless it was edited manually
   updateTransform: (rule) ->
     @config = _.omit @config, _.isNull
     @config = _.omit @config, _.isUndefined
@@ -22,12 +25,13 @@ ruleDefaults =
   getTransform: () ->
     @getTransformString @type, @config
 
-  getTransformString: (type, vOptions) ->
+  getTransformString: (type, vOptions = {}) ->
     type = type.name || type
     vOptions = _.omit vOptions, 'advanced'
-    vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
+    vOptionsStr = JSON.stringify(vOptions)
     "validators.#{type}(#{vOptionsStr})"
 
+# Base/filter rule definitions
 baseRules =
   acres:
     alias: 'Acres'
@@ -128,6 +132,7 @@ baseRules =
     alias: 'MLS Number'
     required: true
 
+# RETS/MLS rule defaults for each data type
 retsRules =
   Int:
     type:

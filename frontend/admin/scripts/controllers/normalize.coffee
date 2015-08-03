@@ -29,10 +29,6 @@ app.controller 'rmapsNormalizeCtrl',
     'False': false
     'Neither': null
 
-  $scope.addressOptions = _.map rmapsParcelEnums.address, (label, key) ->
-    label: label
-    key: key
-
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
@@ -108,7 +104,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Show field options
   $scope.selectField = (field) ->
-    if field.list != 'unassigned'
+    if field.list != 'unassigned' && field.list != 'base'
       $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
