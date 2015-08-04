@@ -28,7 +28,7 @@ app = window.angular.module appName, [
   'ngImgCrop'
 ]
 
-app.controller 'rmapsAppController', ($scope, $rootScope, rmapsprincipal) ->
+app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->
 
   rmapsprincipal.getIdentity().then (identity) ->
     return unless identity
@@ -39,6 +39,17 @@ app.controller 'rmapsAppController', ($scope, $rootScope, rmapsprincipal) ->
     _.extend $rootScope,
       user: user
       profiles: profiles
+      isActive: (viewLocation) ->
+        locationPath = $location.path().substr(1)
+        locationView = if locationPath.lastIndexOf("/") > 0 then locationPath.slice(0, locationPath.lastIndexOf("/")) else $location.path().substr(1)
+
+        active = viewLocation == locationView
+        if active
+          $rootScope.activeView = viewLocation
+
+        active
+
+
 
 ['1','2'].forEach (num) ->
   require("./controllers/mayday_controllers#{num}.coffee")(app)
