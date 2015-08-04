@@ -14,6 +14,7 @@ class JobCrud extends RouteCrud
     @taskCrud = routeCrud(@svc.tasks, 'name')
     @subtaskCrud = routeCrud(@svc.subtasks, 'name')
     @summaryCrud = routeCrud(@svc.summary)
+    @healthCrud = routeCrud(@svc.health)
 
     @taskHistory = @taskHistoryCrud.root
 
@@ -27,6 +28,8 @@ class JobCrud extends RouteCrud
     @subtasksById = @subtaskCrud.byId
 
     @summary = @summaryCrud.root
+
+    @health = @healthCrud.root
 
     self = @
 
@@ -82,6 +85,10 @@ module.exports = mergeHandles new JobCrud(jobs),
       auth.requireLogin(redirectOnFail: true)
     ]
   summary:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  health:
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]

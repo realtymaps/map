@@ -33,6 +33,7 @@ module.exports =
     currentSubtasks: 'users.jq_current_subtasks'
     subtaskErrorHistory: 'users.jq_subtask_error_history'
     jqSummary: 'users.jq_summary'
+    dataHealth: 'properties.data_health'
   userData:
     session: 'users.session'
     sessionSecurity: 'users.session_security'
