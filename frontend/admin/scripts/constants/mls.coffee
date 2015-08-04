@@ -14,9 +14,8 @@ mls =
       username: null
       password: null
       url: null
+    propertySchema:
       main_property_data: {"queryTemplate": _queryTemplate}
-    config:
-      static_id: 1
-
+    otherConfig: {}
 
 app.constant 'mlsConstants', mls

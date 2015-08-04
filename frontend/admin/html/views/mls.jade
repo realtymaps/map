@@ -7,15 +7,16 @@ div
             .row
               .col-md-4
                 select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="updateObjectOptions(mlsData.current)")
-                  option(value="" disabled)
-              .col-md-4
-                button.btn.btn-primary(ng-click="openCreate()") Create MLS
-              .col-md-4
-                button.btn.btn-primary(ng-click="saveMlsConfigData()") Save MLS Config
+                  option(value="" disabled) Select an MLS
+              .col-md-8
+                button.btn.btn-primary.float-right(ng-click="saveMlsConfigData()" ng-disabled="!mlsData.current.id") Save MLS Config
+                button.btn.btn-primary.float-right(ng-click="openCreate()") Create MLS
         .row
           .col-md-12
             accordion(close-others="false")
-              accordion-group(heading="MLS Server Info" is-disabled="!mlsData.current.id")
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Server Info
                 table
                   tr
                     td
@@ -40,7 +41,9 @@ div
 
                 button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
 
-              accordion-group(heading="MLS Management" is-disabled="!mlsData.current.id")
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Management
                 table
                   tr
                     td
@@ -59,7 +62,9 @@ div
                       input(type="checkbox" ng-model="mlsData.current.active" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
 
-              accordion-group(heading="Property Listings Schema" is-disabled="!mlsData.current.id")
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
                 .row
                   .col-md-12
                     table
@@ -68,6 +73,7 @@ div
                           label(ng-class="{ 'half-opacity': formItems[1].disabled }").data-label Database:
                         td
                           select(
+                          id="dbselect"
                           type="text"
                           ng-model="mlsData.current.main_property_data.db"
                           ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
@@ -101,8 +107,13 @@ div
                 .row
                   .col-md-12
                     input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate" ng-minlength="200").max-width
+                .row
+                  .col-md-12
+                    button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data')").btn.btn-success Reset to defaults
 
-              accordion-group(heading="Other Configuration" is-disabled="!mlsData.current.id")
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Other Configuration
                 .row
                   .col-md-12
                     table.max-width
@@ -112,7 +123,7 @@ div
                         td.pad-left
                           input(type="text" ng-model="mlsData.current[field]").form-control.input-lg
                         td.pad-left
-                          button(ng-click="assignConfigDefault(field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
+                          button(ng-click="assignConfigDefault(mlsData.current, field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
 
       .col-md-6(ng-show="mlsData.current.id")
         .progressPills(ng-show="mlsData.current.id")
@@ -180,10 +191,10 @@ div
                 td
                   span.data-entry {{mlsData.current.active}}
 
-              tr(ng-show="hasAllDefaultValues()").config-tr
+              tr(ng-show="hasAllDefaultOtherConfig()").config-tr
                 td(colspan=2) Using default value for all other configuration options.
 
-              tr(ng-hide="hasAllDefaultValues()").config-tr
+              tr(ng-hide="hasAllDefaultOtherConfig()").config-tr
                 td(colspan=2) Non-default configuration options:
 
 

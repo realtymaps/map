@@ -29,6 +29,11 @@ class Crud extends BaseObject
     execQ @dbFn().where(@idObj(id)), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false) ->
+    logger.debug "#### Crud update"
+    logger.debug "#### entity:"
+    logger.debug entity
+    logger.debug "#### safe:"
+    logger.debug safe
     if safe?
       throw "safe must be Array type" unless _.isArray safe
       if safe.length

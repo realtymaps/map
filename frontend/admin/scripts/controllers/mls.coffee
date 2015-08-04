@@ -8,11 +8,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
   ($rootScope, $scope, $location, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
 
     # return new object with base defaults
-    $scope.getDefaultBase = () ->
+    getDefaultBase = () ->
       obj = {}
       for key, value of mlsConstants.defaults.base
         obj[key] = value
       return obj
+
+    nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, mlsConstants.defaults.propertySchema
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -23,9 +25,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     $scope.tableOptions = []
     $scope.columnOptions = []
     $scope.mlsData =
-      current: $scope.getDefaultBase()
-      configDefaults: # provide intuitive access to mlsConstants.defaults.config in template
-        mlsConstants.defaults.config
+      current: getDefaultBase()
+      propertySchemaDefaults: mlsConstants.defaults.propertySchema
+      configDefaults: mlsConstants.defaults.otherConfig
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -56,17 +58,17 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .finally () ->
         $scope.loading = false
 
-    $scope.assignConfigDefault = (field) ->
-      $scope.mlsData.current[field] = mlsConstants.defaults.config[field]
+    $scope.assignConfigDefault = (obj, field) ->
+      obj[field] = nonBaseDefaults[field]
 
     # this assigns any 'undefined' to default value, and empty strings to null
     # null is being considered valid option
-    $scope.cleanConfigValues = () ->
-      for key, value of mlsConstants.defaults.config
-        if (!$scope.mlsData.current[key]? and $scope.mlsData.current[key] isnt value)
-          $scope.assignConfigDefault(key)
+    $scope.cleanConfigValues = (obj) ->
+      for key, value of nonBaseDefaults
+        if (typeof obj[key] is 'undefined') # null can be valid
+          $scope.assignConfigDefault(obj, key)
         else if value is ""
-          $scope.mlsData.current[key] = null
+          obj[key] = null
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
@@ -82,7 +84,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
       .then (results) ->
         # populate undefined fields with the defaults
-        $scope.cleanConfigValues()
+        $scope.cleanConfigValues(obj)
       .catch (err) ->
         msg = "Error in retrieving MLS data: #{err.message}"
         $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
@@ -174,7 +176,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     $scope.saveMlsConfigData = () ->
       $scope.loading = true
-      $scope.cleanConfigValues()
+      $scope.cleanConfigValues($scope.mlsData.current)
       $scope.mlsData.current.save()
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
@@ -215,10 +217,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $state.go($state.get("normalize"), { id: $scope.mlsData.current.id }, { reload: true })
 
     # test for whether all default values being used or not
-    $scope.hasAllDefaultValues = () ->
-      _.every(_.keys(mlsConstants.defaults.config), (k) -> 
+    $scope.hasAllDefaultOtherConfig = () ->
+      _.every(_.keys(mlsConstants.defaults.otherConfig), (k) -> 
         # null is a valid field value
-        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.config[k])
+        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.otherConfig[k])
       )
 
     # modal for Create mlsData
@@ -230,10 +232,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         controller: 'ModalInstanceCtrl'
         resolve:
           mlsModalData: () ->
-            return $scope.getDefaultBase()
+            return getDefaultBase()
       # ok/cancel behavior of modal
       modalInstance.result.then(
         (mlsModalData) ->
+          $scope.cleanConfigValues(mlsModalData)
           rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
           .then (newMls) ->
             $scope.mlsData.current = newMls
