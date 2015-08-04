@@ -162,17 +162,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         $scope.formItems[3].disabled = true
         return $q.when()
 
-    # button behavior for saving mls
-    $scope.saveMlsData = () ->
-      $scope.loading = true
-      rmapsMlsService.postMainPropertyData($scope.mlsData.current.id, $scope.mlsData.current.main_property_data)
-      .then (res) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
-      .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
-      .finally () ->
-        $scope.loading = false
-
     $scope.saveServerData = () ->
       $scope.loading = true
       rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username, password: $scope.mlsData.current.password })
@@ -193,7 +182,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
       .finally () ->
         $scope.loading = false
-
 
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->

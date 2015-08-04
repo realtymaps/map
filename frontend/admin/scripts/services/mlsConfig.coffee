@@ -44,6 +44,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     getConfigs: getConfigs,
     postConfig: postConfig,
     postMainPropertyData: postMainPropertyData,
+    postServerData: postServerData,
     getDatabaseList: getDatabaseList,
     getTableList: getTableList,
     getColumnList: getColumnList,
