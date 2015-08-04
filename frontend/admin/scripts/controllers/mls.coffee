@@ -25,6 +25,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         password: null
         url: null
         main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
+      baseDefaults:
+        mlsConstants.defaults.base
+      configDefaults:
+        mlsConstants.defaults.config
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -67,6 +71,17 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .finally () ->
         $scope.loading = false
 
+    $scope.assignConfigDefault = (field) ->
+      $scope.mlsData.current[field] = mlsConstants.defaults.config[field]
+
+    # this assigns any 'undefined' to default value, and empty strings to null
+    $scope.cleanConfigValues = () ->
+      for key, value of mlsConstants.defaults.config
+        if (!value? and value isnt obj[key])
+          $scope.assignConfigDefault(key)
+        else if value is ""
+          $scope.mlsData.current[field] = null
+
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
       $scope.loading = true
@@ -80,6 +95,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           .then (columnData) ->
 
       .then (results) ->
+        # populate undefined fields with the defaults
+        $scope.cleanConfigValues()
         $scope.proceed(1)
       .catch (err) ->
         msg = "Error in retrieving MLS data: #{err.message}"
@@ -171,6 +188,29 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .finally () ->
         $scope.loading = false
 
+    $scope.saveMlsLoginData = () ->
+      $scope.loading = true
+      ####### will need to put special permission route for account data
+      $scope.mlsData.current.save()
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} account data saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+      .finally () ->
+        $scope.loading = false
+
+    $scope.saveMlsConfigData = () ->
+      $scope.loading = true
+      $scope.cleanConfigValues()
+      $scope.mlsData.current.save()
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} config data saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+      .finally () ->
+        $scope.loading = false
+
+
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->
       $scope.loading = true
@@ -209,30 +249,47 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     $scope.goNormalize = () ->
       $state.go($state.get("normalize"), { id: $scope.mlsData.current.id }, { reload: true })
 
-    # modal for Edit mlsData
-    $scope.animationsEnabled = true
-    $scope.openEdit = () ->
-      modalInstance = $modal.open
-        animation: $scope.animationsEnabled
-        template: modalTemplate
-        controller: 'ModalInstanceCtrl'
-        resolve:
-          mlsModalData: () ->
-            return $scope.mlsData.current
-      # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (mlsModalData) ->
-          $scope.loading = true
-          $scope.mlsData.current.save()
-          .then (res) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
-          .catch (err) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
-          .finally () ->
-            $scope.loading = false
-        , () ->
-          console.log "modal closed"
+    $scope.hasAllDefaultValues = () ->
+      _.every(_.keys(mlsConstants.defaults.config), (k) -> 
+        # console.log "#### k:"
+        # console.log k
+        # console.log "#### $scope.mlsData.current[k]:"
+        # console.log $scope.mlsData.current[k]
+        # console.log "#### mlsConstants.defaults.config[k]:"
+        # console.log mlsConstants.defaults.config[k]
+
+        # null is a valid field value
+        # console.log " typeof $scope.mlsData.current[k] isnt 'undefined' and $scope.mlsData.current[k] is mlsConstants.defaults.config[k] "
+        # console.log (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.config[k])
+        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.config[k])
       )
+
+
+
+    # # modal for Edit mlsData
+    # $scope.animationsEnabled = true
+    # $scope.openEdit = () ->
+    #   modalInstance = $modal.open
+    #     animation: $scope.animationsEnabled
+    #     template: modalTemplate
+    #     controller: 'ModalInstanceCtrl'
+    #     resolve:
+    #       mlsModalData: () ->
+    #         return $scope.mlsData.current
+    #   # ok/cancel behavior of modal
+    #   modalInstance.result.then(
+    #     (mlsModalData) ->
+    #       $scope.loading = true
+    #       $scope.mlsData.current.save()
+    #       .then (res) ->
+    #         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
+    #       .catch (err) ->
+    #         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+    #       .finally () ->
+    #         $scope.loading = false
+    #     , () ->
+    #       console.log "modal closed"
+    #   )
 
     # modal for Create mlsData
     $scope.animationsEnabled = true
