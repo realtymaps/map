@@ -1,0 +1,43 @@
+#confirm(ng-class="activeStep == 'confirm' ? 'active' : ''")
+    header.send-progress
+        button(class="btn btn-default pull-left" ng-click="setActiveStep('edit-template')") Back
+        button(class="btn btn-primary pull-right") Send
+        div.pathway
+            ul
+                li
+                    span Recipient
+                li
+                    span Sender Info
+                li
+                    span Select Template
+                li
+                    span Edit Template
+                li.active
+                    span Confirm
+
+    div.inner
+        div.container
+            form
+                div.row
+                    div.col-md-6.col-md-offset-3
+                        div.overview-template
+                            p here is a template overview
+
+                    div.col-md-3
+                        div.overview-table
+                            table.table
+                                thead
+                                    tr.noborder
+                                        th(colspan="2")
+                                            | Overview
+                                tbody
+                                    tr.noborder
+                                        td
+                                            | Recipients
+                                        td
+                                            | 34 properties
+                                    tr.noborder
+                                        td
+                                            | Estimated Cost
+                                        td
+                                            | $3.00
