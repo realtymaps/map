@@ -24,7 +24,7 @@ CREATE OR REPLACE FUNCTION jq_update_task_counts() RETURNS VOID AS
              COUNT(status = 'running' OR NULL) AS running,
              COUNT(status = 'soft fail' OR NULL) AS soft_failed,
              COUNT(status = 'hard fail' OR NULL) AS hard_failed,
-             COUNT(status = 'infrastructure failed' OR NULL) AS infrastructure_failed,
+             COUNT(status = 'infrastructure fail' OR NULL) AS infrastructure_failed,
              COUNT(status = 'canceled' OR NULL) AS canceled,
              COUNT(status = 'timeout' OR NULL) AS timeout,
              COUNT(status = 'zombie' OR NULL) AS zombie,

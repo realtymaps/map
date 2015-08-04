@@ -45,13 +45,13 @@ _getTaskCode = (taskName) ->
 _getTaskCode = memoize.promise(_getTaskCode)
 
 
-withSchedulingLock = (handler) ->
+_withSchedulingLock = (handler) ->
   knex.transaction (transaction) ->
     transaction.select(knex.raw("pg_advisory_xact_lock(jq_lock_key(), 0)"))
     .then () ->
       return handler(transaction)
 
-queueReadyTasks = (transaction) -> Promise.try () ->
+queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
   overrideRunNames = []
   overrideSkipNames = []
@@ -61,7 +61,7 @@ queueReadyTasks = (transaction) -> Promise.try () ->
   for taskName, taskImpl of taskImpls
     # task might define its own logic for determining if it should run
     if taskImpl.ready?
-      readyPromise = taskImpl.ready(transaction)
+      readyPromise = taskImpl.ready()
       .then (override) ->
         # if the result is true, run this task (as long as it is active and is past any ignore_until)
         if override == true
@@ -73,33 +73,34 @@ queueReadyTasks = (transaction) -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    tables.jobQueue.taskConfig(transaction)
-    .select()
-    .where(active: true)                  # only consider active tasks
-    .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
-    .where () ->
-      sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
-      sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
-      .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
-        tables.jobQueue.taskHistory(this)
-        .select()
-        .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
-        .where () ->
-          this
-          .whereIn("status", ['running', 'preparing'])             # ... it's currently running or preparing to run ...
-          .orWhere () ->   
+    _withSchedulingLock (transaction) ->
+      tables.jobQueue.taskConfig(transaction)
+      .select()
+      .where(active: true)                  # only consider active tasks
+      .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
+      .where () ->
+        sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
+        sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
+        .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
+          tables.jobQueue.taskHistory(this)
+          .select()
+          .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
+          .where () ->
             this
-            .where(status: 'success')                 # ... or it was successful
-            .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... and it isn't set to repeat ...
-            .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its success repeat delay
-          .orWhere () ->   # ... or it failed and hasn't passed its fail retry delay
-            this
-            .whereIn("status", ['hard fail','canceled','timeout'])           # ... or it failed
-            .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
-            .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
-  .then (readyTasks=[]) ->
-    Promise.map readyTasks, (task) ->
-      queueTask(transaction, batchId, task, '<scheduler>')
+            .whereIn("status", ['running', 'preparing'])             # ... it's currently running or preparing to run ...
+            .orWhere () ->   
+              this
+              .where(status: 'success')                 # ... or it was successful
+              .whereNull("#{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes")   # ... and it isn't set to repeat ...
+              .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its success repeat delay
+            .orWhere () ->   # ... or it failed and hasn't passed its fail retry delay
+              this
+              .whereIn("status", ['hard fail','canceled','timeout'])           # ... or it failed
+              .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
+              .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
+      .then (readyTasks=[]) ->
+        Promise.map readyTasks, (task) ->
+          queueTask(transaction, batchId, task, '<scheduler>')
 
 queueManualTask = (name, initiator) ->
   if !name
@@ -564,7 +565,6 @@ _runWorkerImpl = (queueName, prefix, quit) ->
 
 
 module.exports =
-  withSchedulingLock: withSchedulingLock
   queueReadyTasks: queueReadyTasks
   queueTask: queueTask
   queueManualTask: queueManualTask
