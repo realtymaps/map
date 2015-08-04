@@ -1,0 +1,34 @@
+#select-template(ng-class="activeStep == 'select-template' ? 'active' : ''")
+    header.send-progress
+        button(class="btn btn-default pull-left" ng-click="setActiveStep('sender-info')") Back
+        button(class="btn btn-primary pull-right" ng-disabled="waitForTemplate" ng-click="setActiveStep('edit-template')") Next
+        div.pathway
+            ul
+                li
+                    span Recipient
+                li
+                    span Sender Info
+                li.active
+                    span Select Template
+                li
+                    span Edit Template
+                li
+                    span Confirm
+
+    div.inner
+        div.container
+            h1.pageTitle Select A template
+            form
+                div.filters
+                    button(class="btn btn-filter active" ng-click="filterByType()") All Temaplates
+                    button(class="btn btn-filter" ng-click="filterByType('letter')") Letters
+                    button(class="btn btn-filter" ng-click="filterByType('postcard')") Postcards
+                    button(class="btn btn-filter" ng-click="filterByType('favorite')") Favorites
+                div.row
+                    ul.tmpl-list
+                        li(ng-repeat="emailTmpl in templatesArray"  class="col-md-3")
+                            div.tmpl-item
+                                div.tmpl-image
+                                div.tmpl-data
+                                    h3.tmpl-title {{emailTmpl.title}}
+                                    button.btn.btn-default( ng-click="selectTemplate($index)" ) Select

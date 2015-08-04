@@ -1,0 +1,12 @@
+#neighbour.content-section(ng-class="{active:isActive('neighbourhoods')}")
+    header
+        a(class="btn btn-default back" href="#map") Back
+        h1.title Neighbourhoods
+    .inner
+        ul.neighbourhoods
+            li(ng-repeat="enity in JSONData")
+                h3 Project {{enity.projectId}}
+                div.map
+                    img(ng-src="assets/{{enity.mapImg}}")
+                div.data
+                    h4 Neighbourhood {{enity.id}}
