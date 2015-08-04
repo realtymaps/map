@@ -23,6 +23,9 @@ app.service 'rmapsJobsService', (Restangular) ->
   getHistory = (taskName) ->
     Restangular.all(jobsAPI).all('history').getList( name: taskName )
 
+  getHealth = () ->
+    Restangular.all(jobsAPI).all('health').getList()
+
   getQueue = () ->
     Restangular.all(jobsAPI).all('queues').getList()
 
@@ -44,6 +47,7 @@ app.service 'rmapsJobsService', (Restangular) ->
   service =
     getCurrent: getCurrent
     getHistory: getHistory
+    getHealth: getHealth
     getQueue: getQueue
     getTask: getTask
     getSubtask: getSubtask

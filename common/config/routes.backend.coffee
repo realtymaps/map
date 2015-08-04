@@ -158,6 +158,7 @@ module.exports =
     subtasks: "#{apiBaseJobs}/subtasks"
     subtasksById: "#{apiBaseJobs}/subtasks/:name"
     summary: "#{apiBaseJobs}/summary"
+    health: "#{apiBaseJobs}/health"
     runTask: "#{apiBaseJobs}/tasks/:name/run"
     cancelTask: "#{apiBaseJobs}/tasks/:name/cancel"
 

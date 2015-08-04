@@ -22,20 +22,20 @@
       h4 Filters
       .field-container(cg-busy="baseLoading")
         .field.base(
-        ng-class="{ invalid: !item.valid, selected: item == fieldData.current && showProperties }"
+        ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
         ng-click="selectField(item)"
         ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
-          span.datatype(ng-show="!item.input")
+          span.datatype(ng-show="item.valid() && !item.input")
 
     .col-md-2.list-container
       h4 MLS
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+        ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : ['-assigned', 'output']") {{item.output}}
+        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'output']") {{item.output}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
@@ -53,7 +53,7 @@
         ng-click="fieldData.category = category"
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
 
-    .col-md-3.list-container(ng-if="!showGrid")
+    .col-md-3.list-container(ng-if="!showGrid && fieldData.category")
       h4 {{fieldData.category.label}}
       .field-container(
         rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
@@ -62,7 +62,7 @@
         class="base unselectable"
         ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
         .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
         ng-repeat="item in fieldData.category.items")
@@ -88,7 +88,7 @@
             class="base unselectable"
             ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
             .field(
-            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current && showProperties }"
+            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
@@ -100,9 +100,9 @@
                'datatype-date': item.type.name == 'datetime' }"
                ng-show="item.type")
 
-  .row.panel.properties-container(cg-busy="fieldLoading" ng-show="showProperties")
+  .row.panel.properties-container(ng-show="fieldData.current")
 
-    .close-icon(ng-click="showProperties=false") X
+    .close-icon(ng-click="fieldData.current = null") X
 
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       .row
@@ -110,7 +110,9 @@
         .col-md-10 {{fieldData.current.output}}
       .row
         .col-md-2 Data Type:
-        .col-md-10 {{fieldData.current.type.label}}
+        .col-md-10(ng-if="fieldData.current.type") {{fieldData.current.type.label}}
+        .col-md-10(ng-if="!fieldData.current.type") Metadata missing! MLS may have removed or renamed this field
+         .btn.btn-danger(ng-click="removeRule()") REMOVE RULE
       .row
         .col-md-2 Alias:
         .col-md-2
@@ -124,7 +126,7 @@
       .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove specific value(s)
         .col-md-2
-          input(type="text" ng-model="fieldData.current.config.nullNumber" placeholder="1, 2, 3" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="text" ng-model="fieldData.current.config.nullNumber" rmaps-list-input placeholder="1, 2, 3" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
         .col-md-8.help Any of the specified values found in this field will be removed and won't be visible. Multiple values may be entered separated by commas.
       .row(ng-if="fieldData.current.type.name == 'float'")
         .col-md-2 Round / truncate decimal
@@ -256,7 +258,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            input(type="text" placeholder="Display value" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help(ng-show="$index == 0") MLS values may be replaced as necessary
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'status'")
@@ -270,7 +272,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            select(ng-options="option for option in statusOptions" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help Select a RealtyMaps status
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'substatus'")
@@ -284,7 +286,7 @@
         .row(ng-repeat="lookup in fieldData.current.lookups")
           .col-md-2 {{lookup.LongValue}}
           .col-md-4
-            select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-change="updateRule()")
+            select(ng-options="option for option in subStatusOptions" ng-model="fieldData.current.config.map[lookup.LongValue]" ng-change="updateRule()")
           .col-md-6.help Select a RealtyMaps SubStatus
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'days_on_market'")
@@ -377,5 +379,5 @@
       .row.advanced
         .col-md-2
         .col-md-10
-          textarea.transform(ng-model="fieldData.current.inputString" disabled)
+          textarea.transform(ng-bind="JSON.stringify(fieldData.current.input)" disabled)
 

@@ -23,14 +23,11 @@ app.controller 'rmapsNormalizeCtrl',
     'Uppercase': 'forceUpperCase'
     'Lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
+
   $scope.nullifyOptions =
     'True': true
     'False': false
     'Neither': null
-
-  $scope.addressOptions = _.map rmapsParcelEnums.address, (label, key) ->
-    label: label
-    key: key
 
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
@@ -58,17 +55,15 @@ app.controller 'rmapsNormalizeCtrl',
   # Handles adding rules to categories
   addRule = (rule, list) ->
     category = $scope.categories[list]
-    _.extend rule,
-      ordering: rule.ordering ? category.length
-      config: rule.config || {}
+    _.defaults rule,
+      ordering: category.length
       list: list
     idx = _.sortedIndex(category, rule, 'ordering')
     category.splice idx, 0, allRules[rule.output] = rule
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.validateBase rule
-    validatorBuilder.getTransform rule
+    validatorBuilder.buildBaseRule rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -79,6 +74,9 @@ app.controller 'rmapsNormalizeCtrl',
         addBaseRule rule
       else
         addRule rule, rule.list
+        # Show all rules in unassigned
+        addRule rule, 'unassigned'
+
     # Create base rules that don't exist yet
     _.forEach $scope.baseRules, (rule, output) ->
       if !allRules[output]
@@ -98,14 +96,16 @@ app.controller 'rmapsNormalizeCtrl',
         rule = field
         rule.output = rule.LongName
         addRule rule, 'unassigned'
-      rule.type = validatorBuilder.lookupType(field)
+
+      validatorBuilder.buildRetsRule rule
       true
 
     _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
 
   # Show field options
   $scope.selectField = (field) ->
-    $scope.showProperties = true
+    if field.list != 'unassigned' && field.list != 'base'
+      $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 
@@ -177,8 +177,7 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    validatorBuilder.getTransform(field)
-    validatorBuilder.validateBase(field)
+    field.updateTransform()
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -193,7 +192,7 @@ app.controller 'rmapsNormalizeCtrl',
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    validatorBuilder.getTransform field
+    field.updateTransform()
     $scope.saveRuleDebounced()
 
   saveRule = (rule) ->
@@ -210,6 +209,25 @@ app.controller 'rmapsNormalizeCtrl',
   # Dropdown selection, reloads the view
   $scope.selectMls = () ->
     $state.go($state.current, { id: $scope.mlsData.current.id }, { reload: true })
+
+  # Show rules without metadata first, then unassigned followed by assigned
+  $scope.orderValid = (rule) -> !!rule.DataType
+  $scope.orderList = (rule) -> rule.list != 'unassigned'
+
+  $scope.removeRule = () ->
+    rule = $scope.fieldData.current
+    from = _.find $scope.targetCategories, 'list', rule.list
+    to = _.find $scope.targetCategories, 'list', 'unassigned'
+    from.loading = to.loading = rmapsNormalizeService.moveRule(
+      $scope.mlsData.current.id,
+      rule,
+      from,
+      to,
+      0
+    ).then () ->
+      _.pull to.items, rule
+      $scope.fieldData.current = null
+      $scope.$evalAsync()
 
   # Load saved MLS config and RETS fields
   loadMls = (config) ->
