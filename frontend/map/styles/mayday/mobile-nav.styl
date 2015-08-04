@@ -1,0 +1,117 @@
+#mobile-nav
+  position fixed
+  z-index 0
+  left 0
+  top 0
+  padding-right mobileNavOffset
+  width 100%
+  height 100%
+  background c_dark_blue_darker
+  .inner
+    position relative
+
+    h1.logo
+      display block
+      width 100%
+      margin 0 0 0 20px
+
+    ul.nav
+      padding 0 10px
+      float left
+      width 100%
+      li
+        a
+          text-transform capitalize
+          span.conut
+            float right
+          &.projects
+          &.properties
+          &.notes
+          &.neighbourhoods
+          &.favorites
+            position relative
+            &:before
+              content ''
+              position absolute
+              top 0
+              left 0
+              display block
+              width 40px
+              height 40px
+
+          &.projects
+            &:before
+              background url('/assets/base/icons/my_projects_icon_mobile.png') no-repeat center center;
+          &.properties
+            &:before
+              background url('/assets/base/icons/properties_icon_mobile.png') no-repeat center center;
+          &.notes
+            &:before
+              background url('/assets/base/icons/notes_icon_mobile.png') no-repeat center center;
+          &.neighbourhoods
+            &:before
+              background url('/assets/base/icons/neighbourhoods_icon_mobile.png') no-repeat center center;
+          &.favorites
+            &:before
+              background url('/assets/base/icons/favorites_icon_mobile.png') no-repeat center center;
+
+        a
+          color c_white_50
+          padding 10px 10px 10px 40px
+          @extends .global-transition
+
+          &:hover
+          &:focus
+            background c_black_20
+            color c_white
+
+        span.new
+          color c_light_blue
+          text-transform uppercase
+          margin-left 5px
+          font-size 10px
+
+        &.active
+          a
+            color c_white
+
+  .bottom
+    position fixed
+    left 0
+    right 60px
+    bottom 0
+    padding 10px 15px 10px 15px
+    a
+      color c_white_50
+      text-decoration none
+      position relative
+      &:hover
+      &:focus
+        background c_black_20
+        color c_white
+        text-decoration none
+
+    a
+      line-height 40px
+      display block
+      padding 0 10px 0 40px
+      text-transform capitalize
+      &.settings
+        &:before
+          content ''
+          position absolute
+          top 0
+          left 0
+          display block
+          width 40px
+          height 40px
+          background url('/assets/base/icons/settings_icon_mobile.png') no-repeat center center
+      &.realtor
+        padding 0 10px 0 0
+
+        .tiny-avatar
+          float left
+          display block
+          width 30px
+          height 30px
+          margin-right 10px

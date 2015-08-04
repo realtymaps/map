@@ -1,0 +1,25 @@
+span(class="dropdown btn-group pinned-projects-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
+        span.icon.icon-pin
+    ul(class="dropdown-menu whiteblock no-margin")
+        li.count {{pinsArray.length}} Pinned projects
+        li(ng-repeat="pin in pinsArray")
+            a(href="#/favorites/{{pin.id}}")
+                span.enity
+                    span.circle-nr
+                        span {{$index+1}}
+                    span.content
+                        span(class="status" ng-class="pin.status") {{pin.status}}
+                        p(class="price" ng-class="pin.status") ${{pin.price}}
+                        div.property-attr
+                            ul.attr
+                                li {{pin.attr.beds}} beds
+                                li {{pin.attr.bath}} bath
+                                li {{pin.attr.square}} Sq Ft
+                                li {{pin.attr.year}} built
+                        h3.title {{pin.title}}
+                        span.location {{pin.location}}
+                span.actions
+                    span.unpin
+                        span.action Unpin
+                        span.icon.icon-pin

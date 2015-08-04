@@ -1,0 +1,44 @@
+span(class="dropdown btn-group properties-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+        span
+            span.icon.icon-property
+            h4 {{selectedProperty.title}}
+        span.caret
+    div(class="dropdown-menu whiteblock no-margin")
+        .filters
+            span Sort By
+            ul(ng-click="$event.stopPropagation()")
+                li(ng-click="order('attr.beds')") Beds
+                    span(class="caret {{reverse ? 'desc' : 'asc'}}")
+                li(ng-click="order('attr.square')") Sq Ft
+                    span(class="caret {{reverse ? 'desc' : 'asc'}}")
+                li(ng-click="order('attr.year')") Year
+                    span(class="caret {{reverse ? 'desc' : 'asc'}}")
+                li(ng-click="order('price')") Price
+                    span(class="caret {{reverse ? 'desc' : 'asc'}}")
+        .inner
+            ul.list
+                li(ng-repeat="property in propertiesArray | orderBy:predicate:reverse" ng-click="selectProperty($index)" )
+                    div.property-img
+                        span(class="status" ng-class="property.status") {{property.status}}
+                        img(ng-src="/img/{{property.image}}" title="{{property.title}}")
+                    p(class="price" ng-class="property.status") ${{property.price}}
+                    div.property-attr
+                        ul.attr
+                            li {{property.attr.beds}} beds
+                            li {{property.attr.bath}} bath
+                            li {{property.attr.square}} Sq Ft
+                            li {{property.attr.year}} built
+                    h4.title
+                        a(href="#/properties/{{property.id}}" ng-click="selectProperty(property.id)") {{property.title}}
+                    p.location {{property.location}}
+                    div.btn-actions
+                        button.details
+                            span.icon.icon-arrow
+                            span See details
+                        button.pinto
+                            span.icon.icon-pin
+                            span Pin to
+                        button.send(ng-controller="EmailController" ng-click="openEmailModal()")
+                            span.icon.icon-send_email
+                            span Mail

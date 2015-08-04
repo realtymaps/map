@@ -1,0 +1,18 @@
+# humanstxt.org/
+# The humans responsible & technology colophon
+
+# TEAM
+    Joe Ibershoff -- @zacronos
+    Nick McCready -- Senior Developer -- @nmccready
+    Justin Stewart
+    Jesse Taylor
+    Sean Kennedy -- Developer -- @seriouslysean
+
+# THANKS
+    RealtyMaps LLC.
+    Mayday.is
+
+# TECHNOLOGY COLOPHON
+
+    CSS3, HTML5
+    Bootstrap, Angular, Angualr-Leaflet-Directive, Angular-UI, Modernizr, Normalize.css

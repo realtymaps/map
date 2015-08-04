@@ -22,13 +22,14 @@ getAssetCollection = (app) ->
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'
     json: app + 'json/**/*.json'
-    assets: app + 'assets/*'
+    assets: app + 'assets/**/*.*'
   }
 
 module.exports =
   bower: 'bower_components'
   spec: 'spec/**'
   common: 'common/**/*.*'
+  webroot: 'common/webroot/**/*.*'
 
   rmap: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)
@@ -50,8 +51,10 @@ module.exports =
     admin: dest.root + 'admin.html'
     webpack:
       map:
+        # publicPath: 'http://0.0.0.0:4000/'#for dev only, https://github.com/webpack/style-loader/issues/55, https://github.com/webpack/css-loader/issues/29
         filename: dest.scripts + "/main.wp.js"
         chunkFilename: dest.scripts + "/main.wp.js"
       admin:
+        # publicPath: 'http://0.0.0.0:4000/'#for dev only
         filename: dest.scripts + "/admin.wp.js"
         chunkFilename: dest.scripts + "/adminChunk.wp.js"

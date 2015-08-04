@@ -1,5 +1,3 @@
-include ../includes/navbar.jade
-
 section.user.text-wrap(ng-cloak ng-if="ready")
   .container
       h1.page-header Edit User
@@ -10,27 +8,27 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               .form-group.text-center
                 img.avatar.img-thumbnail(
                   ng-cloak
-                  ng-src='{{imageForm.toRender()}}' 
-                  rmaps-get-natural-width="imageForm" 
-                  rmaps-get-client-width="imageForm" 
-                  rmaps-get-natural-max-width="{{maxImagePixles}}" 
+                  ng-src='{{imageForm.toRender()}}'
+                  rmaps-get-natural-width="imageForm"
+                  rmaps-get-client-width="imageForm"
+                  rmaps-get-natural-max-width="{{maxImagePixles}}"
                   rmaps-get-natural-height="imageForm"
                   rmaps-get-client-height="imageForm"
                   rmaps-get-natural-max-height="{{maxImagePixles}}"
                   rmaps-msg-replace="Image")
                 .avatar.img-crop-area(
-                  ng-if="!!imageForm.blob" 
+                  ng-if="!!imageForm.blob"
                   ng-style="{'width': '{{imageForm.clientWidth}}' + 'px', 'height': '{{imageForm.clientHeight}}' + 'px'}")
                   img-crop(
-                    area-type="square" image="imageForm.blob" 
+                    area-type="square" image="imageForm.blob"
                     result-image="imageForm.cropBlob"
                     result-image-size="maxImagePixles"
                     result-image-quality="imageQuality"
                     result-image-format="image/jpeg")
                 h6 Upload a different photo...
                 input.text-center.center-block.well.well-sm(
-                  type='file' accept='image/*' 
-                  rmaps-file-read="imageForm.blob" 
+                  type='file' accept='image/*'
+                  rmaps-file-read="imageForm.blob"
                   rmaps-file-read-on-load="imageForm.clearErrors")
             .form-group
               label.col-md-3.control-label
@@ -88,8 +86,8 @@ section.user.text-wrap(ng-cloak ng-if="ready")
               .col-lg-8
                 select.form-control(ng-model="user.us_state_id" validator="required" name="us_state_id")
                   option(
-                    ng-repeat="s in us_states" 
-                    ng-selected="{{s.id == user.us_state_id}}" 
+                    ng-repeat="s in us_states"
+                    ng-selected="{{s.id == user.us_state_id}}"
                     value="{{s.id}}") {{s.code}} - {{s.name}}
             .form-group
               label.col-lg-3.control-label Zip:
@@ -107,8 +105,8 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-lg-3.control-label Work Phone:
               .col-lg-8
-                input.form-control(ng-model="user.work_phone" 
-                type='text' 
+                input.form-control(ng-model="user.work_phone"
+                type='text'
                 name="work_phone"
                 validator="optPhone")
             .form-group
@@ -138,7 +136,7 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                 select.form-control(ng-model="user.account_use_type_id" validator="required" name="account_use_type_id")
                   option(
                     ng-repeat="s in accountUseTypes"
-                    ng-selected="{{s.id == user.account_use_type_id}}" 
+                    ng-selected="{{s.id == user.account_use_type_id}}"
                     value="{{s.id}}") {{s.description}}
             .form-group
               label.col-md-3.control-label
@@ -154,27 +152,27 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group.text-center
               img.avatar.img-thumbnail(
                 ng-cloak
-                ng-src='{{companyImageForm.toRender()}}' 
-                rmaps-get-natural-width="companyImageForm" 
-                rmaps-get-client-width="companyImageForm" 
-                rmaps-get-natural-max-width="{{maxImagePixles}}" 
+                ng-src='{{companyImageForm.toRender()}}'
+                rmaps-get-natural-width="companyImageForm"
+                rmaps-get-client-width="companyImageForm"
+                rmaps-get-natural-max-width="{{maxImagePixles}}"
                 rmaps-get-natural-height="companyImageForm"
                 rmaps-get-client-height="companyImageForm"
                 rmaps-get-natural-max-height="{{maxImagePixles}}"
                 rmaps-msg-replace="Image")
               .avatar.img-crop-area(
-                ng-if="!!companyImageForm.blob" 
+                ng-if="!!companyImageForm.blob"
                 ng-style="{'width': '{{companyImageForm.clientWidth}}' + 'px', 'height': '{{companyImageForm.clientHeight}}' + 'px'}")
                 img-crop(
-                  area-type="square" image="companyImageForm.blob" 
+                  area-type="square" image="companyImageForm.blob"
                   result-image="companyImageForm.cropBlob"
                   result-image-size="maxImagePixles"
                   result-image-quality="imageQuality"
                   result-image-format="image/jpeg")
               h6 Upload a different photo...
               input.text-center.center-block.well.well-sm(
-                type='file' accept='image/*' 
-                rmaps-file-read="companyImageForm.blob" 
+                type='file' accept='image/*'
+                rmaps-file-read="companyImageForm.blob"
                 rmaps-file-read-on-load="companyImageForm.clearErrors")
             .form-group
               label.col-md-3.control-label
@@ -186,9 +184,9 @@ section.user.text-wrap(ng-cloak ng-if="ready")
           //- select.form-control(ng-model="user.company_id" ng-change="companies.changed()")
           //-   option(
           //-     ng-repeat="(key,s) in companies"
-          //-     ng-selected="{{s.id == user.company_id}}" 
+          //-     ng-selected="{{s.id == user.company_id}}"
           //-     value="{{s.id}}") {{s.name}}
-          
+
         .col-md-8.col-sm-6.col-xs-12.personal-info
           h3 Company info
           form.form-horizontal(name="companyForm" role='form')
@@ -231,7 +229,7 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                 select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
                   option(
                     ng-repeat="s in us_states"
-                    ng-selected="{{s.id == company.us_state_id}}" 
+                    ng-selected="{{s.id == company.us_state_id}}"
                     value="{{s.id}}") {{s.code}} - {{s.name}}
             .form-group
               label.col-lg-3.control-label Zip:
@@ -249,8 +247,8 @@ section.user.text-wrap(ng-cloak ng-if="ready")
             .form-group
               label.col-lg-3.control-label Fax:
               .col-lg-8
-                input.form-control(ng-model="company.fax" 
-                type='text' 
+                input.form-control(ng-model="company.fax"
+                type='text'
                 name="company_fax"
                 validator="optPhone")
             .form-group
@@ -293,4 +291,3 @@ section.user.text-wrap(ng-cloak ng-if="ready")
                 input.btn.btn-primary(value='Save' type='button' ng-click="pass.submit()" validation-submit="passwordForm")
                 span
                 input.btn.btn-default(value='Cancel' type='reset' validation-reset="passwordForm")
-            

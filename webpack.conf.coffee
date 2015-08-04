@@ -2,7 +2,8 @@ webpack = require 'webpack'
 _ = require 'lodash'
 ngAnnotatePlugin = require 'ng-annotate-webpack-plugin'
 
-Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
+# sourceMap ='?sourceMap'
+Config = (output, additionalPlugs, sourceMap = '') ->
   obj =
 #    watch:true
     stats:
@@ -41,7 +42,7 @@ Config = (output, additionalPlugs, sourceMap = '?sourceMap') ->
         { test: /\.(ttf|eot)$/, loader: "file?prefix=font/" }
         { test: /\.jade$/, loader: "html?attrs=img:src!jade-html" }
         { test: /\.html$/, loader: "html?attrs=img:src" }
-        {test: /\.json$/, loader: "json"}
+        { test: /\.json$/, loader: "json"}
       ]
   if output
     # console.info "APPLYING OUTPUT!!! #{_.values(output)}"

@@ -19,7 +19,7 @@ shift
 
 if [[ "$1" == "--clean" ]]
 then
-    # means we don't want to rebuild views after this i.e. this might be an initial cloning 
+    # means we need to drop existing objects before restoring them 
     CLEAN="--clean"
     shift
 fi

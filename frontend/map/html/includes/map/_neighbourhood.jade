@@ -1,0 +1,20 @@
+span(class="dropdown btn-group neighbourhood-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
+        span.icon.icon-neighbourhood
+    ul(class="dropdown-menu whiteblock no-margin")
+        li.count {{neighbourArray.length}} Neighbourhoods
+        li(ng-repeat="neighbourhood in neighbourArray")
+            div
+                span.enity
+                    span.count {{$index+1}}.
+
+                    span.map
+                        img(src="/assets/test_map.jpg" title="Map preview")
+
+                    span.content
+                        a(href="#/neighbourhoods/{{neighbourhood.id}}")
+                            h3.title {{neighbourhood.title}}
+                        p.properties {{neighbourhood.properties}} Properties
+
+                span.actions
+                    span.icon.icon-remove

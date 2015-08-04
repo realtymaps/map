@@ -1,0 +1,13 @@
+span(class="dropdown btn-group add-project-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent add-button toggle-active" dropdown-toggle)
+        span.icon.icon-add
+    ul(class="dropdown-menu btnblock" ng-controller="PopoverCtrl")
+        li
+            button(class="btn btn-transparent add-project" popover-placement="right" popover-trigger="mouseenter" popover="Add Project" ng-click="addProject()")
+                span.icon.icon-add_project
+        li
+            button(class="btn btn-transparent add-note" popover-placement="right" popover-trigger="mouseenter" popover="Add Note")
+                span.icon.icon-add_note
+        li
+            button(class="btn btn-transparent add-neighbour" popover-placement="right" popover-trigger="mouseenter" popover="Add Neighbour")
+                span.icon.icon-add_neighbourhood

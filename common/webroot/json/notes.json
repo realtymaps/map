@@ -1,0 +1,20 @@
+[
+    {
+        "id":0,
+        "title":"Note 1",
+        "properties": 34,
+        "text":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas interdum hendrerit elit a elementum. Donec quis malesuada augue, vel commodo nibh."
+    },
+    {
+        "id":1,
+        "title":"Note 2",
+        "properties": 22,
+        "text":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas interdum hendrerit elit a elementum. Donec quis malesuada augue, vel commodo nibh."
+    },
+    {
+        "id":2,
+        "title":"Note 3",
+        "properties": 45,
+        "text":"Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas interdum hendrerit elit a elementum. Donec quis malesuada augue, vel commodo nibh."
+    }
+]

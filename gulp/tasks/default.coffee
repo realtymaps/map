@@ -1,20 +1,18 @@
 gulp = require 'gulp'
-require './spec'
-require './json'
-require './express'
-require './minify'
-require './gzip'
-require './complexity'
-require './checkdir'
-
+[
+  './spec'
+  './json'
+  './express'
+  './minify'
+  './gzip'
+  './complexity'
+  './checkdir'
+  './clean'
+].forEach (dep) ->
+  require dep
 #help = require('gulp-help')(gulp)
-del = require 'del'
 plumber = require 'gulp-plumber'
 util = require 'gulp-util'
-
-gulp.task 'clean', (done) ->
-  # done is absolutely needed to let gulp known when this async task is done!!!!!!!
-  del ['_public', '*.log'], done
 
 #gulp dependency hell
 gulp.task 'express_watch', gulp.series 'express', 'watch'
