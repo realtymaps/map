@@ -9,6 +9,7 @@ module.exports =
   jobs: 'jobs'
   jobsCurrent: '/current'
   jobsHistory: '/history?task'
+  jobsHealth: '/health'
   jobsQueue: '/queue'
   jobsTask: '/task'
   jobsSubtask: '/subtask'
