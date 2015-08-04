@@ -11,6 +11,7 @@ mainDb = tables.config.mls
 
 class MlsConfigCrud extends ThenableCrud
   update: (id, entity) ->
+    # as config options are added to the mls_config table, they need to be added here as well
     super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
 
   updatePropertyData: (id, propertyData) ->

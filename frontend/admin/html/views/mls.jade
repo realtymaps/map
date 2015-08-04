@@ -15,18 +15,13 @@ div
         .row
           .col-md-12
             accordion(close-others="false")
-              accordion-group(heading="MLS Login Info" is-disabled="!mlsData.current.id")
+              accordion-group(heading="MLS Server Info" is-disabled="!mlsData.current.id")
                 table
                   tr
                     td
                       label.data-label ID:
                     td
                       input(type="text" ng-model="mlsData.current.id" ng-disabled="true").form-control.input-lg
-                  tr
-                    td
-                      label.data-label Name:
-                    td
-                      input(type="text" ng-model="mlsData.current.name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
                   tr
                     td
                       label.data-label URL:
@@ -42,6 +37,16 @@ div
                       label.data-label Password:
                     td
                       input(type="password" ng-model="mlsData.current.password" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+
+                button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
+
+              accordion-group(heading="MLS Management" is-disabled="!mlsData.current.id")
+                table
+                  tr
+                    td
+                      label.data-label Name:
+                    td
+                      input(type="text" ng-model="mlsData.current.name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
                   tr
                     td
                       label.data-label Notes:
@@ -53,8 +58,6 @@ div
                     td
                       input(type="checkbox" ng-model="mlsData.current.active" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
-
-                button(ng-click="saveMlsLoginData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
 
               accordion-group(heading="Property Listings Schema" is-disabled="!mlsData.current.id")
                 .row
@@ -68,7 +71,7 @@ div
                           type="text"
                           ng-model="mlsData.current.main_property_data.db"
                           ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
-                          ng-change="processAndProceed(2)"
+                          ng-change="processAndProceed(1)"
                           ng-disabled="formItems[1].disabled")
                             option(value="" disabled)
                       tr
@@ -79,7 +82,7 @@ div
                           type="text"
                           ng-model="mlsData.current.main_property_data.table"
                           ng-options="value.ClassName as value.VisibleName for value in tableOptions"
-                          ng-change="processAndProceed(3)"
+                          ng-change="processAndProceed(2)"
                           ng-disabled="formItems[2].disabled")
                             option(value="" disabled)
                       tr
