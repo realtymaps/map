@@ -77,10 +77,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     # this assigns any 'undefined' to default value, and empty strings to null
     $scope.cleanConfigValues = () ->
       for key, value of mlsConstants.defaults.config
-        if (!value? and value isnt obj[key])
+        if (!$scope.mlsData.current[key]? and $scope.mlsData.current[key] isnt value)
           $scope.assignConfigDefault(key)
         else if value is ""
-          $scope.mlsData.current[field] = null
+          $scope.mlsData.current[key] = null
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
@@ -263,33 +263,6 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         # console.log (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.config[k])
         return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.config[k])
       )
-
-
-
-    # # modal for Edit mlsData
-    # $scope.animationsEnabled = true
-    # $scope.openEdit = () ->
-    #   modalInstance = $modal.open
-    #     animation: $scope.animationsEnabled
-    #     template: modalTemplate
-    #     controller: 'ModalInstanceCtrl'
-    #     resolve:
-    #       mlsModalData: () ->
-    #         return $scope.mlsData.current
-    #   # ok/cancel behavior of modal
-    #   modalInstance.result.then(
-    #     (mlsModalData) ->
-    #       $scope.loading = true
-    #       $scope.mlsData.current.save()
-    #       .then (res) ->
-    #         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
-    #       .catch (err) ->
-    #         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
-    #       .finally () ->
-    #         $scope.loading = false
-    #     , () ->
-    #       console.log "modal closed"
-    #   )
 
     # modal for Create mlsData
     $scope.animationsEnabled = true

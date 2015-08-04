@@ -109,9 +109,7 @@ div
                         td.pad-left
                           input(type="text" ng-model="mlsData.current[field]").form-control.input-lg
                         td.pad-left
-                          button(ng-click="assignConfigDefault(field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{default || "Empty"}}
-                          button(ng-click="assignConfigNull(field)" ng-disabled="mlsData.current[field] === null").btn.btn-success Make empty.
-
+                          button(ng-click="assignConfigDefault(field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
 
       .col-md-6(ng-show="mlsData.current.id")
         .progressPills(ng-show="mlsData.current.id")
