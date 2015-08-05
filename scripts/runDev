@@ -17,18 +17,21 @@ do
         --bare-server)
             export BARE_EXPRESS_SERVER=true
             ;;
+        --mayday)
+            export MAYDAY_OPTS="-e .env-mayday"
+            ;;
     esac
 done
 
 
 if [[ "$DO_CLEAN" == "true" ]]
 then
-  foreman run npm run clean
+  foreman run $MAYDAY_OPTS npm run clean
 fi
 
 if [[ "$DO_INSTALL" == "true" ]]
 then
-  foreman run npm install
+  foreman run $MAYDAY_OPTS npm install
 fi
 
-foreman start web
+foreman start $MAYDAY_OPTS web
