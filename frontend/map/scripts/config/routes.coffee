@@ -33,15 +33,24 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
   buildState 'main', parent: null, url: frontendRoutes.index, sticky: true
   buildState 'map', sticky:true, loginRequired:true
-  buildState 'login', template: loginTemplate
-  buildState 'logout'
-  buildState 'accessDenied', controller: null
-  buildState 'authenticating', controller: null
-  buildState 'snail', sticky: true
+  buildState 'snail', sticky: true, loginRequired:true
   buildState 'user', sticky:true, loginRequired:true
   buildState 'profiles', sticky:true, loginRequired:true
   buildState 'history', sticky:true, loginRequired:true
   buildState 'mail', sticky:true, loginRequired:true
+  buildState 'properties', sticky:true, loginRequired:true
+  buildState 'projects', sticky:true, loginRequired:true
+  buildState 'neighbourhoods', sticky:true, loginRequired:true
+  buildState 'notes', sticky:true, loginRequired:true
+  buildState 'favorites', sticky:true, loginRequired:true
+  buildState 'addProjects', sticky:true, loginRequired:true
+  buildState 'sendEmailModal', sticky:true, loginRequired:true
+  buildState 'newEmail', sticky:true, loginRequired:true
+
+  buildState 'login', template: loginTemplate
+  buildState 'logout'
+  buildState 'accessDenied', controller: null
+  buildState 'authenticating', controller: null
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null
 
