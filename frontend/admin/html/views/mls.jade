@@ -1,208 +1,207 @@
 div
-  form(name="mlsForm")
-    .row
-      .col-md-6
-        .row
-          .col-md-12
-            .row
-              .col-md-4
-                select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="updateObjectOptions(mlsData.current)")
-                  option(value="" disabled) Select an MLS
-              .col-md-8
-                button.btn.btn-primary.float-right(ng-click="saveMlsConfigData()" ng-disabled="!mlsData.current.id") Save MLS Config
-                button.btn.btn-primary.float-right(ng-click="openCreate()") Create MLS
-        .row
-          .col-md-12
-            div(ng-hide="mlsData.current.id").config-panel
-              div.select-pill Select an MLS...
-            div(ng-class="{ 'fourth-opacity': !mlsData.current.id }").main-config-panel
-              accordion(close-others="false")
-                accordion-group(is-disabled="!mlsData.current.id")
-                  accordion-heading
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Server Info
-                  table
-                    tr
-                      td
-                        label.data-label ID:
-                      td(colSpan=2)
-                        input(type="text" ng-model="mlsData.current.id" ng-disabled="true").form-control.input-lg
-                    tr
-                      td
-                        label.data-label URL:
-                      td(colSpan=2)
-                        input(type="text" ng-model="mlsData.current.url" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
-                    tr
-                      td
-                        label.data-label Username:
-                      td(colSpan=2)
-                        input(type="text" ng-model="mlsData.current.username" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
-                    tr
-                      td(colSpan=3)
-                        button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
-                        button(ng-click="passwordModal()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-primary Change Password
+  .row
+    .col-md-6
+      .row
+        .col-md-12
+          .row
+            .col-md-4
+              select(type="text" ng-model="mlsData.current" ng-options="value as value.id for value in idOptions" ng-change="updateObjectOptions(mlsData.current)")
+                option(value="" disabled) Select an MLS
+            .col-md-8
+              button.btn.btn-primary.float-right(ng-click="saveMlsConfigData()" ng-disabled="!mlsData.current.id") Save MLS Config
+              button.btn.btn-primary.float-right(ng-click="openCreate()") Create MLS
+      .row
+        .col-md-12
+          div(ng-hide="mlsData.current.id").config-panel
+            div.select-pill Select an MLS...
+          div(ng-class="{ 'fourth-opacity': !mlsData.current.id }").main-config-panel
+            accordion(close-others="false")
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Server Info
+                table
+                  tr
+                    td
+                      label.data-label ID:
+                    td(colSpan=2)
+                      input(type="text" ng-model="mlsData.current.id" ng-disabled="true").form-control.input-lg
+                  tr
+                    td
+                      label.data-label URL:
+                    td(colSpan=2)
+                      input(type="text" ng-model="mlsData.current.url" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label Username:
+                    td(colSpan=2)
+                      input(type="text" ng-model="mlsData.current.username" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td(colSpan=3)
+                      button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
+                      button(ng-click="passwordModal()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-primary Change Password
 
-                accordion-group(is-disabled="!mlsData.current.id")
-                  accordion-heading
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Management
-                  table
-                    tr
-                      td
-                        label.data-label Name:
-                      td
-                        input(type="text" ng-model="mlsData.current.name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
-                    tr
-                      td
-                        label.data-label Notes:
-                      td
-                        textarea(ng-model="mlsData.current.notes" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
-                    tr
-                      td
-                        label.data-label Active:
-                      td
-                        input(type="checkbox" ng-model="mlsData.current.active" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") MLS Management
+                table
+                  tr
+                    td
+                      label.data-label Name:
+                    td
+                      input(type="text" ng-model="mlsData.current.name" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label Notes:
+                    td
+                      textarea(ng-model="mlsData.current.notes" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                  tr
+                    td
+                      label.data-label Active:
+                    td
+                      input(type="checkbox" ng-model="mlsData.current.active" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
 
-                accordion-group(is-disabled="!mlsData.current.id")
-                  accordion-heading
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
-                  .row
-                    .col-md-12
-                      table
-                        tr
-                          td
-                            label(ng-class="{ 'half-opacity': formItems[1].disabled }").data-label Database:
-                          td
-                            select(
-                            id="dbselect"
-                            type="text"
-                            ng-model="mlsData.current.main_property_data.db"
-                            ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
-                            ng-change="processAndProceed(1)"
-                            ng-disabled="formItems[1].disabled")
-                              option(value="" disabled)
-                        tr
-                          td
-                            label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
-                          td
-                            select(
-                            type="text"
-                            ng-model="mlsData.current.main_property_data.table"
-                            ng-options="value.ClassName as value.VisibleName for value in tableOptions"
-                            ng-change="processAndProceed(2)"
-                            ng-disabled="formItems[2].disabled")
-                              option(value="" disabled)
-                        tr
-                          td
-                            label(ng-class="{ 'half-opacity': formItems[3].disabled }").data-label Update Timestamp Column:
-                          td
-                            select(
-                            type="text"
-                            ng-model="mlsData.current.main_property_data.field"
-                            ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions"
-                            ng-disabled="formItems[3].disabled")
-                              option(value="" disabled)
-                  .row
-                    .col-md-12
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
+                .row
+                  .col-md-12
+                    table
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems[1].disabled }").data-label Database:
+                        td
+                          select(
+                          id="dbselect"
+                          type="text"
+                          ng-model="mlsData.current.main_property_data.db"
+                          ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
+                          ng-change="processAndProceed(1)"
+                          ng-disabled="formItems[1].disabled")
+                            option(value="" disabled)
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
+                        td
+                          select(
+                          type="text"
+                          ng-model="mlsData.current.main_property_data.table"
+                          ng-options="value.ClassName as value.VisibleName for value in tableOptions"
+                          ng-change="processAndProceed(2)"
+                          ng-disabled="formItems[2].disabled")
+                            option(value="" disabled)
+                      tr
+                        td
+                          label(ng-class="{ 'half-opacity': formItems[3].disabled }").data-label Update Timestamp Column:
+                        td
+                          select(
+                          type="text"
+                          ng-model="mlsData.current.main_property_data.field"
+                          ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions"
+                          ng-disabled="formItems[3].disabled")
+                            option(value="" disabled)
+                .row
+                  .col-md-12
+                    label.data-label Formatting:
+                .row
+                  .col-md-12
+                    input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate" ng-minlength="200").max-width
+                .row
+                  .col-md-12
+                    button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
+
+              accordion-group(is-disabled="!mlsData.current.id")
+                accordion-heading
+                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Other Configuration
+                .row
+                  .col-md-12
+                    table.max-width
+                      tr(ng-repeat="(field, default) in mlsData.configDefaults")
+                        td
+                          label.data-label {{field}}
+                        td.pad-left
+                          input(type="text" ng-model="mlsData.current[field]").form-control.input-lg
+                        td.pad-left
+                          button(ng-click="assignConfigDefault(mlsData.current, field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
+
+
+
+    .col-md-6(ng-show="mlsData.current.id")
+      .progressPills(ng-show="mlsData.current.id")
+        tabset(type="pills")
+          tab(heading="MLS Data")
+      .panel.panel-default
+        .panel-body
+          table.table.table-striped
+            tr
+              td(colSpan="2")
+                button(ng-click="goNormalize()").btn.btn-success Configure MLS Fields
+            tr
+              td
+                label.data-label ID:
+              td
+                span.data-entry {{mlsData.current.id}}
+            tr
+              td
+                label.data-label Name:
+              td
+                span.data-entry {{mlsData.current.name}}
+            tr
+              td
+                label.data-label Username:
+              td
+                span.data-entry {{mlsData.current.username}}
+            tr
+              td
+                label.data-label URL:
+              td
+                span.data-entry {{mlsData.current.url}}
+            tr
+              td
+                label.data-label Property Listings Schema
+              td
+                table.table
+                  tr
+                    td
+                      label.data-label Database:
+                    td
+                      span.data-entry {{fieldNameMap.dbNames[mlsData.current.main_property_data.db]}}
+                  tr
+                    td
+                      label.data-label Table:
+                    td
+                      span.data-entry {{fieldNameMap.tableNames[mlsData.current.main_property_data.table]}}
+                  tr
+                    td
+                      label.data-label Update Timestamp Column:
+                    td
+                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.main_property_data.field]}}
+                  tr
+                    td
                       label.data-label Formatting:
-                  .row
-                    .col-md-12
-                      input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate" ng-minlength="200").max-width
-                  .row
-                    .col-md-12
-                      button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
+                    td
+                      span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
+            tr
+              td
+                label.data-label Notes:
+              td
+                span.data-entry {{mlsData.current.notes}}
+            tr
+              td
+                label.data-label Active:
+              td
+                span.data-entry {{mlsData.current.active}}
 
-                accordion-group(is-disabled="!mlsData.current.id")
-                  accordion-heading
-                    span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Other Configuration
-                  .row
-                    .col-md-12
-                      table.max-width
-                        tr(ng-repeat="(field, default) in mlsData.configDefaults")
-                          td
-                            label.data-label {{field}}
-                          td.pad-left
-                            input(type="text" ng-model="mlsData.current[field]").form-control.input-lg
-                          td.pad-left
-                            button(ng-click="assignConfigDefault(mlsData.current, field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
+            tr(ng-show="hasAllDefaultOtherConfig()").config-tr
+              td(colspan=2) Using default value for all other configuration options.
+
+            tr(ng-hide="hasAllDefaultOtherConfig()").config-tr
+              td(colspan=2) Non-default configuration options:
 
 
-
-      .col-md-6(ng-show="mlsData.current.id")
-        .progressPills(ng-show="mlsData.current.id")
-          tabset(type="pills")
-            tab(heading="MLS Data")
-        .panel.panel-default
-          .panel-body
-            table.table.table-striped
-              tr
-                td(colSpan="2")
-                  button(ng-click="goNormalize()").btn.btn-success Configure MLS Fields
-              tr
-                td
-                  label.data-label ID:
-                td
-                  span.data-entry {{mlsData.current.id}}
-              tr
-                td
-                  label.data-label Name:
-                td
-                  span.data-entry {{mlsData.current.name}}
-              tr
-                td
-                  label.data-label Username:
-                td
-                  span.data-entry {{mlsData.current.username}}
-              tr
-                td
-                  label.data-label URL:
-                td
-                  span.data-entry {{mlsData.current.url}}
-              tr
-                td
-                  label.data-label Property Listings Schema
-                td
-                  table.table
-                    tr
-                      td
-                        label.data-label Database:
-                      td
-                        span.data-entry {{fieldNameMap.dbNames[mlsData.current.main_property_data.db]}}
-                    tr
-                      td
-                        label.data-label Table:
-                      td
-                        span.data-entry {{fieldNameMap.tableNames[mlsData.current.main_property_data.table]}}
-                    tr
-                      td
-                        label.data-label Update Timestamp Column:
-                      td
-                        span.data-entry {{fieldNameMap.columnNames[mlsData.current.main_property_data.field]}}
-                    tr
-                      td
-                        label.data-label Formatting:
-                      td
-                        span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
-              tr
-                td
-                  label.data-label Notes:
-                td
-                  span.data-entry {{mlsData.current.notes}}
-              tr
-                td
-                  label.data-label Active:
-                td
-                  span.data-entry {{mlsData.current.active}}
-
-              tr(ng-show="hasAllDefaultOtherConfig()").config-tr
-                td(colspan=2) Using default value for all other configuration options.
-
-              tr(ng-hide="hasAllDefaultOtherConfig()").config-tr
-                td(colspan=2) Non-default configuration options:
-
-
-              tr(ng-repeat="(field, default) in mlsData.configDefaults" ng-show="mlsData.current[field] != default").config-tr
-                td
-                  label.data-label {{field}}
-                td
-                  span.data-entry {{mlsData.current[field] | emptyValueOutput }}
+            tr(ng-repeat="(field, default) in mlsData.configDefaults" ng-show="mlsData.current[field] != default").config-tr
+              td
+                label.data-label {{field}}
+              td
+                span.data-entry {{mlsData.current[field] | emptyValueOutput }}
 
