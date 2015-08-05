@@ -24,6 +24,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     $scope.dbOptions = []
     $scope.tableOptions = []
     $scope.columnOptions = []
+    $scope.allowPasswordReset = false
     $scope.mlsData =
       current: getDefaultBase()
       propertySchemaDefaults: mlsConstants.defaults.propertySchema
@@ -57,6 +58,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
       .finally () ->
         $scope.loading = false
+
+    $scope.activatePasswordButton = () ->
+      $scope.allowPasswordReset = true
+      $scope.mlsData.current.password = ""
 
     $scope.assignConfigDefault = (obj, field) ->
       obj[field] = nonBaseDefaults[field]
@@ -166,12 +171,23 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     $scope.saveServerData = () ->
       $scope.loading = true
-      rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username, password: $scope.mlsData.current.password })
+      rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username })
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server data saved.", type: 'rm-success' }
       .catch (err) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
       .finally () ->
+        $scope.loading = false
+
+    $scope.saveServerPassword = () ->
+      $scope.loading = true
+      rmapsMlsService.postServerPassword($scope.mlsData.current.id, { password: $scope.mlsData.current.password })
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server password saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+      .finally () ->
+        $scope.allowPasswordReset = false
         $scope.loading = false
 
     $scope.saveMlsConfigData = () ->

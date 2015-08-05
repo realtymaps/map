@@ -21,23 +21,26 @@ div
                   tr
                     td
                       label.data-label ID:
-                    td
+                    td(colSpan=2)
                       input(type="text" ng-model="mlsData.current.id" ng-disabled="true").form-control.input-lg
                   tr
                     td
                       label.data-label URL:
-                    td
+                    td(colSpan=2)
                       input(type="text" ng-model="mlsData.current.url" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
                   tr
                     td
                       label.data-label Username:
-                    td
+                    td(colSpan=2)
                       input(type="text" ng-model="mlsData.current.username" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
                   tr
                     td
                       label.data-label Password:
                     td
-                      input(type="password" ng-model="mlsData.current.password" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                      input(type="password" ng-model="mlsData.current.password" ng-disabled="!principal.hasPermission('change_mlsconfig') || !allowPasswordReset").form-control.input-lg
+                    td
+                      button(ng-click="activatePasswordButton()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-primary Change Password
+                      button(ng-click="saveServerPassword()" ng-disabled="!principal.hasPermission('change_mlsconfig') || !allowPasswordReset").btn.btn-success Save Password
 
                 button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
 
@@ -109,7 +112,7 @@ div
                     input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate" ng-minlength="200").max-width
                 .row
                   .col-md-12
-                    button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data')").btn.btn-success Reset to defaults
+                    button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
 
               accordion-group(is-disabled="!mlsData.current.id")
                 accordion-heading
