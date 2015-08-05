@@ -3,6 +3,7 @@ app = require '../app.coffee'
 mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
+changePasswordTemplate = require '../../html/views/templates/changePassword.jade'
 
 app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
   ($rootScope, $scope, $location, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
@@ -14,7 +15,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         obj[key] = value
       return obj
 
-    nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, mlsConstants.defaults.propertySchema
+    nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, _.clone mlsConstants.defaults.propertySchema
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -64,7 +65,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.mlsData.current.password = ""
 
     $scope.assignConfigDefault = (obj, field) ->
-      obj[field] = nonBaseDefaults[field]
+      if typeof nonBaseDefaults[field] is 'object'
+        obj[field] = _.clone nonBaseDefaults[field]
+      else
+        obj[field] = nonBaseDefaults[field]
 
     # this assigns any 'undefined' to default value, and empty strings to null
     # null is being considered valid option
@@ -175,7 +179,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server data saved.", type: 'rm-success' }
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving server data.' }
       .finally () ->
         $scope.loading = false
 
@@ -185,7 +189,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server password saved.", type: 'rm-success' }
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving server password.' }
       .finally () ->
         $scope.allowPasswordReset = false
         $scope.loading = false
@@ -197,7 +201,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving mls config.' }
       .finally () ->
         $scope.loading = false
 
@@ -263,8 +267,22 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         , () ->
           console.log "modal closed"
       )
-]
 
+    $scope.passwordModal = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: changePasswordTemplate
+        controller: 'ModalPasswordCtrl'
+
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (password) ->
+          $scope.mlsData.current.password = password
+          $scope.saveServerPassword()
+        , () ->
+          console.log "password modal closed"
+      )
+]
 
 app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'mlsConstants',
   ($scope, $modalInstance, mlsModalData, mlsConstants) ->
@@ -274,6 +292,18 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
 
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)
+
+    $scope.cancel = () ->
+      $modalInstance.dismiss('cancel')
+
+]
+
+app.controller 'ModalPasswordCtrl', ['$scope', '$modalInstance'
+  ($scope, $modalInstance) ->
+    $scope.newpassword = ""
+
+    $scope.ok = () ->
+      $modalInstance.close($scope.newpassword)
 
     $scope.cancel = () ->
       $modalInstance.dismiss('cancel')

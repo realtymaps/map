@@ -39,32 +39,31 @@ $wizardPaneHeight = 250px
   table
     width: 100%
 
-.animate-container {
+.config-container
   position: relative
-  height: $wizardPaneHeight
-  width: 100%
-}
-
-.animate-show, .loading-show
+  
+.config-panel
   position: absolute
-  overflow: hidden
-  height: $wizardPaneHeight
   width: 100%
-  left: 0
+  text-align: center
+  top: 0px
+  z-index: 999
 
-.animate-show.ng-hide-add.ng-hide-add-active,
-.animate-show.ng-hide-remove.ng-hide-remove-active {
-  top: 0
-  left: 0
-  -webkit-transition: all ease 0.5s
-  transition: all ease 0.5s
-}
+.select-pill
+  opacity: 1
+  position: relative
+  top: 72px
+  background-color: black
+  width: 300px
+  color: white
+  font-size: 20px
+  border-radius: 10px
+  padding: 10px
+  margin: auto
+  z-index: 999
 
-.animate-show.ng-hide {
-  top: 0
-  left: $wizardPaneWidth
-  width: 0%
-}
+.main-config-panel
+  z-index: 1
 
 .progressPills ul
   margin: auto
@@ -90,12 +89,12 @@ $wizardPaneHeight = 250px
 
 .loadingfade
   opacity: 0.1
-// .waiting
-//   top: 0
-//   left: 0
 
 .half-opacity
   opacity: 0.5
+
+.fourth-opacity
+  opacity: 0.25
 
 button
   margin-right: 1em
