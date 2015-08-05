@@ -89,7 +89,7 @@
     "gulp-stylus": "2.x.x",
     "gulp-uglify": "1.x.x",
     "gulp-util": "3.0.x",
-    "gulp-watch": "4.3.x",
+    "gulp-watch": "4.x",
     "gulp-wrap": "0.11.x",
     "helmet": "0.4.x",
     "heroku-client": "^2.0.0",
