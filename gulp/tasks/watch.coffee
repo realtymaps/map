@@ -24,7 +24,7 @@ gulp.task 'watch_vendor', ->
 gulp.task 'watch_front', ->
   gulp.watch rmapPaths, gulp.series 'webpack'
 
-gulp.task 'watch_rest', gulp.parallel 'watch_front', 'watch_vendor', ->
+gulp.task 'watch_rest', gulp.series 'watch_front', 'watch_vendor', ->
   gulp.watch adminPaths, gulp.series 'webpackAdmin'
 
 gulp.task 'build_watch_front', gulp.series "webpack", "watch_front"
