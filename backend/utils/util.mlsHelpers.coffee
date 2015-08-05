@@ -98,42 +98,45 @@ loadRetsTableUpdates = (subtask, options) ->
     mlsInfo = mlsInfo?[0]
     _getRetsClient(mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip)
     .then (retsClient) ->
-      # get info about the fields available in the table
-      retsClient.metadata.getTable(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-      .then (tableInfo) ->
-        fields = _.indexBy(tableInfo.Fields, 'LongName')
-        tables.jobQueue.dataLoadHistory()
-        .insert
-          data_source_id: options.retsId
-          data_source_type: 'mls'
-          batch_id: subtask.batch_id
-          raw_table_name: rawTableName
-        .then () ->
+      tables.jobQueue.dataLoadHistory()
+      .insert
+        data_source_id: options.retsId
+        data_source_type: 'mls'
+        batch_id: subtask.batch_id
+        raw_table_name: rawTableName
+      .then () ->
+        # figure out when we last got updates from this table
+        taskHelpers.getLastStartTime(subtask.task_name)
+      .then (lastSuccess) ->
+        now = new Date()
+        if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
+          # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+          logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
+          lastSuccess = new Date(0)
+          doDeletes = true
+        else
+          logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
+          doDeletes = false
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        Promise.join step3Promise, step5Promise, () ->
+          return lastSuccess
+      .then (refreshThreshold) ->
+        dmql = moment.utc(refreshThreshold).format mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field)
+        _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, dmql)
+      .then (results) ->
+        if !results?.length
+          # nothing to do, GTFO
+          return
+        # get info about the fields available in the table
+        retsClient.metadata.getTable(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+        .then (tableInfo) ->
+          fields = _.indexBy(tableInfo.Fields, 'LongName')
           taskHelpers.createRawTempTable(rawTableName, Object.keys(fields))
-        .catch isUnhandled, (error) ->
-          throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
-        .then () ->
-          # figure out when we last got updates from this table
-          taskHelpers.getLastStartTime(subtask.task_name)
-        .then (lastSuccess) ->
-          now = new Date()
-          if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-            # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-            logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-            lastSuccess = new Date(0)
-            doDeletes = true
-          else
-            logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-            doDeletes = false
-          step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-          step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-          Promise.join step3Promise, step5Promise, () ->
-            return lastSuccess
-        .then (refreshThreshold) ->
-          dmql = moment.utc(refreshThreshold).format mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field)
-          _getData(retsClient, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, dmql)
-        .then (results) ->
-          _streamArrayToDbTable(results, rawTableName, fields)
+          .catch isUnhandled, (error) ->
+            throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
+          .then () ->
+            _streamArrayToDbTable(results, rawTableName, fields)
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
 
@@ -167,7 +170,6 @@ _getRetsClient = memoize(
       _getRetsClient.delete(loginUrl, username, password, static_ip)
       throw new PartiallyHandledError(error, "RETS client could not be created")
     .then (retsClient) ->
-      logger.debug("######################### proxyUrl: #{if static_ip then process.env.PROXIMO_URL else null}")
       logger.info 'Logging in client ', loginUrl
       retsClient.login()
       .catch isUnhandled, (error) ->
