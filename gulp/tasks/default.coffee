@@ -8,7 +8,9 @@ gulp = require 'gulp'
   './complexity'
   './checkdir'
   './clean'
+  './angular'
 ].forEach (dep) ->
+  console.log 'requiring', dep
   require dep
 #help = require('gulp-help')(gulp)
 plumber = require 'gulp-plumber'

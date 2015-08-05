@@ -9,14 +9,22 @@ dest =
   assets: 'assets'
   root: '_public/'
 
+tmp =
+  scripts: '.tmp/scripts'
+  styles: '.tmp/styles'
+  fonts: '.tmp/fonts'
+  assets: '.tmp/assets'
+  serve: '.tmp/serve'
+
 getAssetCollection = (app) ->
   return {
+    root: app
     scripts: app + 'scripts/**/*'
     vendorLibs: app + 'lib/scripts/vendor/**/*.*'
     webpackLibs: app + 'lib/scripts/webpack/**/*.*'
-    styles: app + 'styles/*.css'
+    css: app + 'styles/**/*.css'
     stylus: app + 'styles/main.styl'
-    less: app + 'styles/*.less'
+    less: app + 'styles/**/*.less'
     stylusWatch: app + 'styles/**/*'
     svg: app + 'html/svg/*.svg'
     html: app + 'html/**/*.html'
@@ -42,6 +50,7 @@ module.exports =
     back: 'backend/lib'
 
   dest: dest
+  tmp: tmp
   destFull:
     assets: dest.root + dest.assets
     scripts: dest.root + dest.scripts
