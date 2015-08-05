@@ -47,9 +47,15 @@ _getTaskCode = memoize.promise(_getTaskCode)
 
 _withSchedulingLock = (handler) ->
   knex.transaction (transaction) ->
-    transaction.select(knex.raw("pg_advisory_xact_lock(jq_lock_key(), 0)"))
+    transaction.select(knex.raw("pg_advisory_lock(jq_lock_key(), 0)"))
     .then () ->
       return handler(transaction)
+    .finally () ->
+      # Bluebird says not to use finally() for resource management:
+      #     https://github.com/petkaantonov/bluebird/blob/master/API.md#resource-management
+      # However, an understanding of the type of leak-bug mentioned in the Bluebird docs and careful inspection of the
+      # code can allow you to use finally() sometimes, instead of the more complicated using()
+      transaction.select(knex.raw("pg_advisory_unlock(jq_lock_key(), 0)"))
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
