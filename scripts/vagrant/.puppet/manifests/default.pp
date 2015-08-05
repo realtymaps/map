@@ -12,7 +12,12 @@ include git
 include stdlib
 include '::gnupg'
 include nginx
-#include nodejs
+
+class { 'nvm_nodejs':
+  user    => 'vagrant',
+  version => '0.12.6',
+  npm_version => '2.12.1'
+}
 
 class { '::rvm':}#same as include, but allows overrides
 #gnupg_key_id => false#, version => stable}
