@@ -16,6 +16,6 @@ gulp.task 'markup', ->
     quotes: true
     conditionals: true
   .pipe $.angularTemplatecache 'templateCacheHtml.js',
-    module: 'map'
+    module: 'rmapsapp'
     root: '.'
   .pipe gulp.dest paths.destFull.scripts

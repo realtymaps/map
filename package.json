@@ -64,6 +64,7 @@
     "ftp": "^0.3.10",
     "geohash64": "^1.0.4",
     "gulp": "git://github.com/gulpjs/gulp.git#4.0",
+    "gulp-add-src": "^0.2.0",
     "gulp-angular-filesort": "^1.1.1",
     "gulp-angular-templatecache": "^1.7.0",
     "gulp-changed": "^1.0.0",

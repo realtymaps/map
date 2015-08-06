@@ -34,3 +34,5 @@ gulp.task 'default', gulp.series 'develop'
 gulp.task "server", gulp.series 'default'
 
 gulp.task 's', gulp.series 'server'
+
+gulp.task 'build', gulp.parallel 'otherAssets', 'webroot', 'angular'
