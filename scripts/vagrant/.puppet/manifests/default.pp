@@ -7,8 +7,6 @@ group { "puppet":
 }
 
 include update
-include curl
-include git
 include stdlib
 include '::gnupg'
 include nginx
