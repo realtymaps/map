@@ -1,0 +1,22 @@
+#properties-view
+    header
+        a(class="btn btn-default back" href="#map") Back
+        h1.title Properties
+    .inner
+        .container
+            .row
+                .col-md-3
+                    ul
+                        li
+                            a(href="#") Property Detail
+                        li
+                            a(href="#") Tax Detail
+
+                .col-md-9
+                    div.property-img
+                        span(class="status" ng-class="singleProperty.status") {{singleProperty.status}}
+                        img(ng-src="assets/{{singleProperty.image}}" title="{{singleProperty.title}}")
+                    p(class="price" ng-class="singleProperty.status") ${{singleProperty.price}}
+                    h3.title {{singleProperty.title}}
+                    p.location {{singleProperty.location}}
+                    div.description {{singleProperty.description}}

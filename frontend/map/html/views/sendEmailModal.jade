@@ -1,0 +1,114 @@
+script(type="text/ng-template" id="modalSendEmail.html")
+    form#modalSendEmailHtml
+        div#select-recipients(ng-class="showActive == 'select-recipients' ? 'active' : ''")
+            div.modal-header
+                h3.modal-title Send Mail
+                span.icon.icon-close(ng-click="cancel()")
+            div.modal-body
+                div.radio.underline
+                    label
+                        input(type="radio" name="send_email_option" value="option1" checked)
+                        div Mail directly to address
+                div.form-inline.underline
+                    div.radio-inline
+                        label
+                            input(type="radio" name="send_email_option" value="option2")
+                            div Add to mailing list
+                        div.select
+                            select.form-control
+                                option Group 1
+                                option Group 2
+                                option Group 3
+            div.modal-footer
+                button(class="btn btn-default" ng-click="cancel()") Cancel
+                button(class="btn btn-primary" ng-click="next('select-template')") Next
+        div#select-template(ng-class="showActive == 'select-template' ? 'active' : ''")
+            div.modal-header
+                h3.modal-title Direct Mail
+                span.icon.icon-close(ng-click="cancel()")
+            div.modal-body
+                div.pathway
+                    ul.text-center
+                        li.active
+                            span Select Template
+                        li
+                            span Edit
+                        li
+                            span Confirm
+                ul.templates-list
+                    li
+                        span.template-img
+                        span.template-title template title
+                    li
+                        span.template-img
+                        span.template-title template title
+                    li
+                        span.template-img
+                        span.template-title template title
+                    li
+                        span.template-img
+                        span.template-title template title
+                    li
+                        span.template-img
+                        span.template-title template title
+                    li
+                        span.template-img
+                        span.template-title template title
+            div.modal-footer
+                button(class="btn btn-primary" ng-click="next('letter-edit')") Next
+        div#letter-edit(ng-class="showActive == 'letter-edit' ? 'active' : ''")
+            div.modal-header
+                h3.modal-title Direct Mail
+                span.icon.icon-close(ng-click="cancel()")
+            div.modal-body
+                div.pathway
+                    ul.text-center
+                        li
+                            span Select Template
+                        li.active
+                            span Edit
+                        li
+                            span Confirm
+                div.form-group
+                    label(for="text_area_edit_letter") Edit Letter Body
+                    textarea(class="form-control" rows="6")
+            div.modal-footer
+                button(class="btn btn-default" ng-click="back('select-template')") Back
+                button(class="btn btn-primary" ng-click="next('letter-confirm')") Next
+        div#letter-confirm(ng-class="showActive == 'letter-confirm' ? 'active' : ''")
+            div.modal-header
+                h3.modal-title Direct Mail
+                span.icon.icon-close(ng-click="cancel()")
+            div.modal-body
+                div.pathway
+                    ul.text-center
+                        li
+                            span Select Template
+                        li
+                            span Edit
+                        li.active
+                            span Confirm
+                div.confirm-box
+                    div.confirm-template-img
+                    div.confirm-details
+                       h4 Mail to
+                       p.address
+                        | 99175 Somerset Drive
+                        br
+                        | Florence, sc 29501
+            div.modal-footer
+                button(class="btn btn-default" ng-click="back('letter-edit')") Back
+                button(class="btn btn-primary" ng-click="next('mail-sent')") Next
+
+        div#mail-sent(ng-class="showActive == 'mail-sent' ? 'active' : ''")
+            div.modal-header
+                h3.modal-title Direct Mail
+                span.icon.icon-close(ng-click="cancel()")
+            div.modal-body
+                div.mail-sent
+                    div.mail-sent-img
+                    div.mail-sent-msg
+                        h4 Mail Sent!
+                        p Allow 3-5 business days for delivery.
+                    div.continue
+                        button(class="btn btn-primary" ng-click="close()") Continue to Mail

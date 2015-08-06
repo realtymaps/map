@@ -8,7 +8,7 @@ info = (req, res, next) -> Promise.try () ->
   .then () ->
     jobQueue.updateTaskCounts()
   .then () ->
-    jobQueue.withSchedulingLock(jobQueue.queueReadyTasks)
+    jobQueue.queueReadyTasks()
   .then () ->
     jobQueue.getQueueNeeds()
   .then (needs) ->

@@ -43,6 +43,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'jobs', sticky: true, loginRequired: true
     buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
     buildState 'jobsHistory', sticky: true, parent: 'jobs', loginRequired: true
+    buildState 'jobsHealth', sticky: true, parent: 'jobs', loginRequired: true
     buildState 'jobsQueue', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
     buildState 'jobsTask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
     buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true

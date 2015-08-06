@@ -2,38 +2,38 @@
  This maps to partial controllers in the mayday project
 ###
 module.exports = (app) ->
-  app.controller 'PropertiesCtrl', ($scope, $http, $routeParams) ->
+  app.controller 'rmapsPropertiesCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
     $http.get('data/properties.json').success (data) ->
       $scope.JSONData = data
       $scope.singleProperty = $scope.JSONData[$routeParams.id]
 
-  .controller 'ProjectsCtrl', ($scope, $http, $routeParams) ->
+  .controller 'rmapsProjectsCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
     $http.get('data/projects.json').success (data) ->
       $scope.JSONData = data
       $scope.singleProject = $scope.JSONData[$routeParams.id]
 
-  .controller 'NeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
+  .controller 'rmapsNeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
     $http.get('data/neighbourhoods.json').success (data) ->
       $scope.JSONData = data
       $scope.singleNeighbourhoods = $scope.JSONData[$routeParams.id]
 
-  .controller 'NotesCtrl', ($scope, $http, $routeParams) ->
+  .controller 'rmapsNotesCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
     $http.get('data/notes.json').success (data) ->
       $scope.JSONData = data
       $scope.singleNote = $scope.JSONData[$routeParams.id]
 
-  .controller 'FavoritesCtrl',
+  .controller 'rmapsFavoritesCtrl',
     ($scope, $http, $routeParams) ->
       $scope.JSONData = []
       $http.get('data/favorites.json').success (data) ->
         $scope.JSONData = data
         $scope.singleFavorite = $scope.JSONData[$routeParams.id]
 
-  .controller 'AddProjectCtrl',
+  .controller 'rmapsAddProjectCtrl',
     ($scope, $http, $routeParams, $modal, $location, $log) ->
       $scope.items = [
         'item1'
@@ -54,26 +54,22 @@ module.exports = (app) ->
         $log.info 'Modal dismissed at: ' + new Date
         $location.path '/map'
 
-  .controller 'ModalAddProjectCtrl', ($scope, $modalInstance, items, $location) ->
+  .controller 'rmapsModalAddProjectCtrl', ($scope, $modalInstance, items, $location) ->
     #$scope.showAddClientInfo = false;
 
     $scope.addClientInfo = ->
       #$scope.showAddClientInfo = true;
-      return
 
     $scope.save = ->
       alert 'saved'
       $location.path '/map'
       $modalInstance.close $scope.selected.item
-      return
 
     $scope.cancel = ->
       $modalInstance.dismiss 'cancel'
       $location.path '/map'
-      return
 
-    return
-  .controller 'SendEmailModalCtrl',
+  .controller 'rmapsSendEmailModalCtrl',
     ($scope, $http, $routeParams, $modal, $location, $log) ->
       $scope.items = [
         'item1'
@@ -90,70 +86,54 @@ module.exports = (app) ->
       )
       modalInstance.result.then ((selectedItem) ->
         $scope.selected = selectedItem
-        return
       ), ->
         $log.info 'Modal dismissed at: ' + new Date
         $location.path '/map'
-        return
-      return
 
-  .controller 'ModalSendEmailCtrl', ($scope, $modalInstance, items, $location) ->
+  .controller 'rmapsModalSendEmailCtrl', ($scope, $modalInstance, items, $location) ->
     $scope.showActive = 'select-recipients'
 
     $scope.next = (section_id) ->
       $scope.showActive = section_id
-      return
 
     $scope.back = (section_id) ->
       $scope.showActive = section_id
-      return
 
     $scope.save = ->
       alert 'saved'
       $location.path '/map'
       $modalInstance.close $scope.selected.item
-      return
 
     $scope.cancel = ->
       $modalInstance.dismiss 'cancel'
       $location.path '/map'
-      return
 
-    return
-
-  .controller 'NewEmailCtrl',
+  .controller 'rmapsNewEmailCtrl',
     ($scope, $http, $routeParams) ->
       $scope.JSONData = []
       $http.get('data/emails.json').success (data) ->
         $scope.JSONData = data
         $scope.singleEmail = $scope.JSONData[$routeParams.id]
-        return
+
       $scope.projectsArray = []
       $http.get('data/projects.json').success((data) ->
         $scope.projectsArray = data
-        return
       ).error (data, status, headers, config) ->
         alert status
-        return
       $scope.propertiesArray = []
       $http.get('data/properties.json').success((data) ->
         $scope.propertiesArray = data
-        return
       ).error (data, status, headers, config) ->
         alert status
-        return
       $scope.templatesArray = []
       $http.get('data/email_templates.json').success((data) ->
         $scope.templatesArray = data
-        return
       ).error (data, status, headers, config) ->
         alert status
-        return
       $scope.waitForTemplate = true
 
       $scope.selectTemplate = (id) ->
         $scope.waitForTemplate = false
-        return
 
       $scope.radioFontFamilyModel = 'helvetica'
       $scope.radioFontSizeModel = '13'

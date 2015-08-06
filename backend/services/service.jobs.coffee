@@ -8,3 +8,4 @@ module.exports =
   tasks: crud(jobQueue.taskConfig, 'name')
   subtasks: crud(jobQueue.subtaskConfig, 'name')
   summary: crud(jobQueue.jqSummary)
+  health: crud(jobQueue.dataHealth)

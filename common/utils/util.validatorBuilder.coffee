@@ -1,185 +1,193 @@
 _ = require 'lodash'
 
+# Defaults for all rules
+ruleDefaults =
+  alias: 'Unnamed'
+  required: false
+  config: {},
+  input: ''
+  type:
+    name: 'string'
+    label: 'Unknown'
+
+  # Check valid rule configuration (not data validation)
+  valid: () ->
+    !@required || @input
+
+  # Cleans up the config and assigns a new transform unless it was edited manually
+  updateTransform: (rule) ->
+    @config = _.omit @config, _.isNull
+    @config = _.omit @config, _.isUndefined
+    @config = _.omit @config, (v) -> v == ''
+    if !@config?.advanced
+      @transform = @getTransform()
+
+  getTransform: () ->
+    @getTransformString @type, @config
+
+  getTransformString: (type, vOptions = {}) ->
+    type = type.name || type
+    vOptions = _.omit vOptions, 'advanced'
+    vOptionsStr = JSON.stringify(vOptions)
+    "validators.#{type}(#{vOptionsStr})"
+
+# Base/filter rule definitions
 baseRules =
   acres:
     alias: 'Acres'
+    type: 'float'
+
   address:
     alias: 'Address'
     required: true
     input: {}
     group: 'general'
+    type: 'address'
+    valid: () ->
+      @input.city && @input.state && (@input.zip || @input.zip9) &&
+      ((@input.streetName && @input.streetNum) || @input.streetFull)
+
   baths_full:
     alias: 'Baths Full'
+    type: 'integer'
+
   bedrooms:
     alias: 'Bedrooms'
+    type: 'integer'
+
   days_on_market:
     alias: 'Days on Market'
     required: true
     input: []
+    getTransform: () ->
+      'validators.pickFirst({criteria: validators.integer()})'
+    valid: () ->
+      @input[0] || @input[1]
+
   fips_code:
     alias: 'FIPS code'
     required: true
     input: {}
+    type: 'fips'
+    valid: () ->
+      @input.stateCode && @input.county
+
   hide_address:
     alias: 'Hide Address'
+    type: 'boolean'
+
   hide_listing:
     alias: 'Hide Listing'
+    type: 'boolean'
+
   parcel_id:
     alias: 'Parcel ID'
     required: true
+    config:
+      stripFormatting: true
+
   price:
     alias: 'Price'
+    type: 'currency'
     required: true
+
   rm_property_id:
     alias: 'Property ID'
     required: true
+    type: 'rm_property_id'
     input: {}
+
   sqft_finished:
     alias: 'Finished Sq Ft'
+    type: 'integer'
+
   status:
     alias: 'Status'
     required: true
+    getTransform: () ->
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+
   status_display:
     alias: 'Status Display'
     required: true
     group: 'general'
+    getTransform: () ->
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+
   substatus:
     alias: 'Sub-Status'
     required: true
+    getTransform: () ->
+      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+
   close_date:
     alias: 'Close Date'
+    type: 'date'
+
   discontinued_date:
     alias: 'Discontinued Date'
+    type: 'date'
+
   mls_uuid:
     alias: 'MLS Number'
     required: true
 
-lookupType = (field) ->
-  types =
-    Int:
+# RETS/MLS rule defaults for each data type
+retsRules =
+  Int:
+    type:
       name: 'integer'
-      label: 'Number'
-    Decimal:
+      label: 'Number (integer)'
+    config:
+      nullZero: true
+  Decimal:
+    type:
       name: 'float'
-      label: 'Number'
-    Long:
+      label: 'Number (decimal)'
+    config:
+      nullZero: true
+  Long:
+    type:
       name: 'float'
-      label: 'Number'
-    Character:
+      label: 'Number (decimal)'
+    config:
+      nullZero: true
+  Character:
+    type:
       name: 'string'
-    DateTime:
+    config:
+      nullEmpty: true
+  DateTime:
+    type:
       name: 'datetime'
       label: 'Date and Time'
-    Boolean:
+  Boolean:
+    type:
       name: 'boolean'
       label: 'Yes/No'
+    getTransform: () ->
+      @getTransformString 'nullify', @config
 
-  type = types[field.DataType]
+_buildRule = (rule, defaults) ->
+  _.defaultsDeep rule, defaults, ruleDefaults
+  rule.updateTransform()
 
-  if type?.name == 'string'
-    if field.Interpretation == 'Lookup'
-      type.label = 'Restricted Text (single value)'
-    else if field.Interpretation == 'LookupMulti'
-      type.label = 'Restricted Text (multiple values)'
+buildRetsRule = (rule) ->
+  _buildRule rule, retsRules[rule.DataType]
+  if rule.type?.name == 'string'
+    if rule.Interpretation == 'Lookup'
+      rule.type.label = 'Restricted Text (single value)'
+    else if rule.Interpretation == 'LookupMulti'
+      rule.type.label = 'Restricted Text (multiple values)'
     else
-      type.label = 'User-Entered Text'
+      rule.type.label = 'User-Entered Text'
+  rule
 
-  type
-
-_getValidationString = (type, vOptions) ->
-  vOptionsStr = if vOptions then JSON.stringify(vOptions) else ''
-  "validators.#{type}(#{vOptionsStr})"
-
-getTransform = (field) ->
-  #   options:
-  #
-  #     type: integer | float | string | fips | map | currency | ...
-  #       Maps to a validation handler.
-  #       EG if type = "integer", we will expect:
-  #       "validation.integer"
-  #       If in future these seem arcane, like "rm_property_id",
-  #         we can create a map
-  #     vOptions:
-  #       validation options to be nested into validation calls
-  #     map:
-  #       key-value mapping for map field
-  #       present if type is map
-  #
-
-  if field.config?.advanced
-    return
-
-  reserved = [ 'advanced' ]
-  vOptions = _.pick field.config, (v, k) -> v? && v != '' && !_.contains(reserved, k)
-
-  field.transform =
-  switch field.output
-    when 'address'
-      _getValidationString('address', vOptions)
-
-    when 'status', 'substatus', 'status_display'
-      _getValidationString('map', map: vOptions.map ? {}, passUnmapped: true)
-
-    when 'parcel_id', 'mls_uuid'
-      _getValidationString('string', vOptions)
-
-    when 'days_on_market'
-      'validators.pickFirst({criteria: validators.integer()})'
-
-    when 'baths_full', 'bedrooms', 'sqft_finished'
-      _getValidationString('integer', vOptions)
-
-    when 'price'
-      _getValidationString('currency', vOptions)
-
-    when 'rm_property_id'
-      _getValidationString('rm_property_id', vOptions)
-
-    when 'fips_code'
-      _getValidationString('fips', vOptions)
-
-    when 'acres'
-      _getValidationString('float', vOptions)
-
-    when 'hide_address', 'hide_listing'
-      _getValidationString('boolean', vOptions)
-
-    when 'close_date', 'discontinued_date'
-      _getValidationString('datetime', vOptions)
-
-    else
-      type = lookupType(field)
-      if type.name == 'boolean'
-        _getValidationString('nullify', vOptions)
-      else
-        _getValidationString(type?.name, vOptions)
-
-validateBase = (field) ->
-  # Ensure input is appropriate type before validating
-  defaults = baseRules[field.output]
-  if defaults
-    if !field.input? || (!_.isPlainObject(field.input) && _.isPlainObject defaults.input)
-      field.input = defaults.input || ''
-    field.alias = defaults.alias
-    field.required = defaults.required
-  input = field.input
-  field.inputString = JSON.stringify(field.input) # for display
-  switch field.output
-    when 'address'
-      field.valid = input.city && input.state && (input.zip || input.zip9) &&
-       ((input.streetName && input.streetNum) || input.streetFull)
-    when 'days_on_market'
-      field.valid = input[0] || input[1]
-    when 'fips_code'
-      field.valid = input.stateCode && input.county
-    when 'rm_property_id'
-      field.valid = input.stateCode && input.county && input.parcelId
-    else
-      field.valid = !field.required || !!input
-  field.valid = !!field.valid
+buildBaseRule = (rule) ->
+  _buildRule rule, baseRules[rule.output]
+  rule
 
 module.exports =
-  lookupType: lookupType
-  getTransform: getTransform
   baseRules: baseRules
-  validateBase: validateBase
+  buildRetsRule: buildRetsRule
+  buildBaseRule: buildBaseRule

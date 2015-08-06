@@ -9,39 +9,54 @@ describe 'validatorBuilder', ->
 
   it 'should transform fields correctly', ->
 
-    typedFieldTestMap = [
-       field: {"DataType": "Int"}
-       transform: 'validators.integer({})'
+    rules = [
+      # RETS rules
+       field: @validatorBuilder.buildRetsRule {"DataType": "Int"}
+       transform: 'validators.integer({"nullZero":true})'
       ,
-       field: {"DataType": "Decimal"}
-       transform: 'validators.float({})'
+       field: @validatorBuilder.buildRetsRule {"DataType": "Decimal"}
+       transform: 'validators.float({"nullZero":true})'
       ,
-       field: {"DataType": "Long"}
-       transform: 'validators.float({})'
+       field: @validatorBuilder.buildRetsRule {"DataType": "Long"}
+       transform: 'validators.float({"nullZero":true})'
       ,
-       field: {"DataType": "Character"}
-       transform: 'validators.string({})'
+       field: @validatorBuilder.buildRetsRule {"DataType": "Character"}
+       transform: 'validators.string({"nullEmpty":true})'
       ,
-       field: {"DataType": "DateTime"}
+       field: @validatorBuilder.buildRetsRule {"DataType": "DateTime"}
        transform: 'validators.datetime({})'
       ,
-       field: {"DataType": "Boolean", "config": {"value": false}}
+       field: @validatorBuilder.buildRetsRule {"DataType": "Boolean", "config": {"value": false}}
        transform: 'validators.nullify({"value":false})'
-     ]
 
-    namedFieldTestMap = [
-       field: {"output": "address"}
+       # Base rules
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "rm_property_id"}
+       transform: 'validators.rm_property_id({})'
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "days_on_market"}
+       transform: 'validators.pickFirst({criteria: validators.integer()})'
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "address"}
        transform: 'validators.address({})'
       ,
-       field: {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "discontinued_date"}
+       transform: 'validators.date({})'
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
       ,
-       field: {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "substatus", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
       ,
-       field: {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
+       field: @validatorBuilder.buildBaseRule {"output": "status_display", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "acres"}
+       transform: 'validators.float({})'
+      ,
+       field: @validatorBuilder.buildBaseRule {"output": "parcel_id"}
+       transform: 'validators.string({"stripFormatting":true})'
     ]
 
-    expect(@validatorBuilder.getTransform(obj.field)).to.equal obj.transform for obj in typedFieldTestMap
-    expect(@validatorBuilder.getTransform(obj.field)).to.equal obj.transform for obj in namedFieldTestMap
+    expect(obj.field.getTransform()).to.equal obj.transform for obj in rules
