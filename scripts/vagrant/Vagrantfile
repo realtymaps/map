@@ -37,7 +37,9 @@ Vagrant::configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.synced_folder "../../", "/vagrant", owner: 'www-data', group: 'www-data', mount_options: ["dmode=777", "fmode=777"]
 
   #http://blog.doismellburning.co.uk/2013/01/19/upgrading-puppet-in-vagrant-boxes/
-  config.vm.provision :shell, :path => "update-puppet.sh"
+  ["puppet-ubuntu-bugs.sh", "update-puppet.sh"].each do |file_name|
+    config.vm.provision :shell, :path => file_name
+  end
 
   # Enable the Puppet provisioner
   config.vm.provision :puppet do |puppet|
@@ -45,7 +47,4 @@ Vagrant::configure(VAGRANTFILE_API_VERSION) do |config|
     puppet.module_path      = ".puppet/modules"
     puppet.options          = ['--verbose', '--debug']
   end
-
-  config.vm.provision :shell, :path => "run-app.sh"
-
 end

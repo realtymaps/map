@@ -72,7 +72,7 @@ class nvm_nodejs (
     require => Exec['nvm-install-node']
   }
 
-  file_line { 'load_node':
+  file_line { 'load-node':
    path => "${home}/.bashrc",
    line => "nvm use ${version}",
    require => Exec['nodejs-check']
@@ -81,7 +81,8 @@ class nvm_nodejs (
   exec { 'npm-update':
     command     => "${NPM_EXEC} install -g npm@${npm_version}",
     user        => $user,
-    require => Exec['nodejs-check']
+    require => Exec['nodejs-check'],
+    path => [$NODE_PATH]
   }
 
 
