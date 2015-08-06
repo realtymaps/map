@@ -31,19 +31,17 @@ class JobCrud extends RouteCrud
 
     @health = @healthCrud.root
 
-    self = @
-
-    @runTask = (req, res, next) ->
+    @runTask = (req, res, next) =>
       jobQueue.queueManualTask(req.params.name, req.user.username)
       .then () ->
         next new ExpressResponse alert: msg: "Started #{req.params.name}"
-      .catch _.partial(self.onError, next)
+      .catch _.partial(@onError, next)
 
-    @cancelTask = (req, res, next) ->
+    @cancelTask = (req, res, next) =>
       jobQueue.cancelTask(req.params.name, 'canceled')
       .then () ->
         next new ExpressResponse alert: msg: "Canceled #{req.params.name}"
-      .catch _.partial(self.onError, next)
+      .catch _.partial(@onError, next)
 
     super()
 
