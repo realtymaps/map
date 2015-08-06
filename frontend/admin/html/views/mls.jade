@@ -61,9 +61,7 @@ div
                       input(type="checkbox" ng-model="mlsData.current.active" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
 
 
-              accordion-group(is-disabled="!mlsData.current.id")
-                accordion-heading
-                  span(ng-class="{ 'not-allowed': !mlsData.current.id, 'half-opacity': !mlsData.current.id }") Property Listings Schema
+              div
                 .row
                   .col-md-12
                     table
@@ -84,6 +82,7 @@ div
                           label(ng-class="{ 'half-opacity': formItems[2].disabled }").data-label Table:
                         td
                           select(
+                          id="tableselect"
                           type="text"
                           ng-model="mlsData.current.main_property_data.table"
                           ng-options="value.ClassName as value.VisibleName for value in tableOptions"

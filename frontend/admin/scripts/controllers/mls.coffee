@@ -5,8 +5,8 @@ adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
 changePasswordTemplate = require '../../html/views/templates/changePassword.jade'
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
-  ($rootScope, $scope, $location, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
@@ -14,6 +14,20 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       for key, value of mlsConstants.defaults.base
         obj[key] = value
       return obj
+
+    restoreInitDbValueHack = () ->
+      e = angular.element(document.querySelector('#dbselect'))
+      dropdown = e[0] # get the actual select dropdown element
+      options = dropdown.options # list of options
+
+      # part of the bug here is that options.selectedIndex returns -1 even though an element has the selected property
+      # note: the options here are all constructed involving typical ngmodel binding and ngoptions
+      i = 0
+      while options.item(i).getAttribute('label') isnt $scope.mlsData.current.main_property_data.db
+        i += 1 # go through items to see which has correct label
+      if i > 1
+        dbIndex = i - 1 # identifier corresponds to index of selected item, minus 1 to accout for blank element
+        dropdown.value = dbIndex # forceably assign the value (for some reason this is what is not occuring upon refresh)
 
     nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, _.clone mlsConstants.defaults.propertySchema
 
@@ -54,6 +68,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.loading = true
       rmapsMlsService.getConfigs()
       .then (configs) ->
+        console.log "#### configs:"
+        console.log configs
         $scope.idOptions = configs
       .catch (err) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
@@ -81,6 +97,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
+      console.log "#### updateObjectOptions"
+      console.log "#### mlsData:"
+      console.log $scope.mlsData.current
       $scope.loading = true
       deferred = $q.defer()
       promises = []
@@ -105,12 +124,20 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     getDbOptions = () ->
       if $scope.mlsData.current.id
         rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## database service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({ObjectVersion: x.ObjectVersion, ResourceID: x.ResourceID, StandardName: x.StandardName, VisibleName: x.VisibleName} for x in rawData)
+          console.log "#### filtered database data:"
+          console.log data
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
           $scope.fieldNameMap.dbNames = {}
           for datum in data
             $scope.fieldNameMap.dbNames[datum.ResourceID] = datum.VisibleName
+          $timeout () ->
+            restoreInitDbValueHack()
           data
         .catch (err) ->
           $scope.dbOptions = []
@@ -132,7 +159,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     getTableOptions = () ->
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
         rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## table service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({ClassName: x.ClassName, StandardName: x.StandardName, VisibleName: x.VisibleName} for x in rawData)
+          console.log "#### filtered table data:"
+          console.log data
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
           $scope.fieldNameMap.tableNames = {}
@@ -157,7 +190,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       # when going BACK to this step, only re-query if we have a table to use
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## column service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
+          console.log "#### filtered column data:"
+          console.log data
           r = mlsConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
