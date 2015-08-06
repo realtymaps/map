@@ -14,31 +14,27 @@ include stdlib
 include '::gnupg'
 include nginx
 
-#NODE
-class { 'nvm_nodejs':
-  user    => 'vagrant',
-  version => '0.12.6',
-  npm_version => '2.12.1'
-}
-
 #RVM
-class { '::rvm':}#same as include, but allows overrides
-#gnupg_key_id => false#, version => stable}
-rvm::system_user { www-data: ; vagrant: ;}
+class { '::rvm':}
+rvm::system_user { www-data: ; vagrant: ;}#FOR SOME CRAZY reason I canot set the order(->||~>) of this as it fucks it up
 rvm_system_ruby {
   $ruby_version:
     ensure      => 'present',
     default_use => true;
-}
-
+}->
 rvm_gem {
   'foreman':
     name         => 'foreman',
     ruby_version => $ruby_version,
     ensure       => latest,
     require      => Rvm_system_ruby[$ruby_version];
-}
-
+}->
+#NODE
+class { 'nvm_nodejs':
+  user    => 'vagrant',
+  version => '0.12.6',
+  npm_version => '2.12.1'
+}->
 #RUN REALTYMAPS APP
 class { 'app':
   user    => 'vagrant',

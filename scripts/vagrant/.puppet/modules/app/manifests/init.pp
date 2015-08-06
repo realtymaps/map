@@ -5,6 +5,8 @@ class app (
   $home = "/home/${user}",
 
 ) {
+  require rvm
+  require nvm_nodejs
 
   Exec {
     path => [
@@ -22,18 +24,22 @@ class app (
     logoutput => on_failure,
   }
 
-  exec { 'kill-app':
-    command     => 'pidof ruby; echo 0',
-    user        => $user
+  # exec { 'kill-app':
+  #   command     => 'kill pidof ruby; echo 0',
+  #   user        => $user
+  # }
+
+  exec { 'rm-output':
+    command     => 'rm -f vagrant_app.log',
   }
 
   exec { 'run-app':
-    command     => 'rm -f vagrant_app.log; foreman run scripts/runDev --mayday --bare-server --install >> vagrant_app.log &',
+    command     => 'foreman run scripts/runDev --mayday --bare-server --install >> vagrant_app.log &',
     cwd         => '/vagrant',
     user        => $user,
     environment => [ "HOME=${home}" ],
     logoutput   => true,
-    require     => Exec['kill-app']
+    require     => Exec['rm-output']
   }
 
 }
