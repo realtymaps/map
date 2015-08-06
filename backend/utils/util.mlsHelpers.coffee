@@ -189,7 +189,7 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
   .then (retsClient) ->
     handler(retsClient)
   .finally () ->
-    _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)
+    setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
 
 getDatabaseList = (serverInfo) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
