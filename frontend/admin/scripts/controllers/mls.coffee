@@ -3,9 +3,33 @@ app = require '../app.coffee'
 mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
+changePasswordTemplate = require '../../html/views/templates/changePassword.jade'
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
-  ($rootScope, $scope, $location, $state, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
+
+    # return new object with base defaults
+    getDefaultBase = () ->
+      obj = {}
+      for key, value of mlsConstants.defaults.base
+        obj[key] = value
+      return obj
+
+    restoreInitDbValueHack = () ->
+      e = angular.element(document.querySelector('#dbselect'))
+      dropdown = e[0] # get the actual select dropdown element
+      options = dropdown.options # list of options
+
+      # part of the bug here is that options.selectedIndex returns -1 even though an element has the selected property
+      # note: the options here are all constructed involving typical ngmodel binding and ngoptions
+      i = 0
+      while options.item(i).getAttribute('label') isnt $scope.mlsData.current.main_property_data.db
+        i += 1 # go through items to see which has correct label
+      if i > 1
+        dbIndex = i - 1 # identifier corresponds to index of selected item, minus 1 to accout for blank element
+        dropdown.value = dbIndex # forceably assign the value (for some reason this is what is not occuring upon refresh)
+
+    nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, _.clone mlsConstants.defaults.propertySchema
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -15,16 +39,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     $scope.dbOptions = []
     $scope.tableOptions = []
     $scope.columnOptions = []
+    $scope.allowPasswordReset = false
     $scope.mlsData =
-      current:
-        id: null
-        name: null
-        notes: ""
-        active: false
-        username: null
-        password: null
-        url: null
-        main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
+      current: getDefaultBase()
+      propertySchemaDefaults: mlsConstants.defaults.propertySchema
+      configDefaults: mlsConstants.defaults.otherConfig
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -32,27 +51,15 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       tableNames: {}
       columnNames: {}
 
-    # tracking steps, active/disabled etc
+    # simple tracking for main_property_data dropdowns
     $scope.formItems = [
-      step: 0
-      heading: "Select MLS"
       disabled: false
-      active: true
     ,
-      step: 1
-      heading: "Choose Database"
       disabled: true
-      active: false
     ,
-      step: 2
-      heading: "Choose Table"
       disabled: true
-      active: false
     ,
-      step: 3
-      heading: "Choose Field"
       disabled: true
-      active: false
     ]
 
     # extract existing configs, populate idOptions
@@ -61,14 +68,38 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.loading = true
       rmapsMlsService.getConfigs()
       .then (configs) ->
+        console.log "#### configs:"
+        console.log configs
         $scope.idOptions = configs
       .catch (err) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
       .finally () ->
         $scope.loading = false
 
+    $scope.activatePasswordButton = () ->
+      $scope.allowPasswordReset = true
+      $scope.mlsData.current.password = ""
+
+    $scope.assignConfigDefault = (obj, field) ->
+      if typeof nonBaseDefaults[field] is 'object'
+        obj[field] = _.clone nonBaseDefaults[field]
+      else
+        obj[field] = nonBaseDefaults[field]
+
+    # this assigns any 'undefined' to default value, and empty strings to null
+    # null is being considered valid option
+    $scope.cleanConfigValues = (obj) ->
+      for key, value of nonBaseDefaults
+        if (typeof obj[key] is 'undefined') # null can be valid
+          $scope.assignConfigDefault(obj, key)
+        else if value is ""
+          obj[key] = null
+
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
+      console.log "#### updateObjectOptions"
+      console.log "#### mlsData:"
+      console.log $scope.mlsData.current
       $scope.loading = true
       deferred = $q.defer()
       promises = []
@@ -80,7 +111,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           .then (columnData) ->
 
       .then (results) ->
-        $scope.proceed(1)
+        # populate undefined fields with the defaults
+        $scope.cleanConfigValues(obj)
       .catch (err) ->
         msg = "Error in retrieving MLS data: #{err.message}"
         $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
@@ -92,12 +124,20 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     getDbOptions = () ->
       if $scope.mlsData.current.id
         rmapsMlsService.getDatabaseList($scope.mlsData.current.id)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## database service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({ObjectVersion: x.ObjectVersion, ResourceID: x.ResourceID, StandardName: x.StandardName, VisibleName: x.VisibleName} for x in rawData)
+          console.log "#### filtered database data:"
+          console.log data
           $scope.dbOptions = data
           $scope.formItems[1].disabled = false
           $scope.fieldNameMap.dbNames = {}
           for datum in data
             $scope.fieldNameMap.dbNames[datum.ResourceID] = datum.VisibleName
+          $timeout () ->
+            restoreInitDbValueHack()
           data
         .catch (err) ->
           $scope.dbOptions = []
@@ -119,7 +159,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     getTableOptions = () ->
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
         rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## table service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({ClassName: x.ClassName, StandardName: x.StandardName, VisibleName: x.VisibleName} for x in rawData)
+          console.log "#### filtered table data:"
+          console.log data
           $scope.tableOptions = data
           $scope.formItems[2].disabled = false
           $scope.fieldNameMap.tableNames = {}
@@ -144,7 +190,13 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       # when going BACK to this step, only re-query if we have a table to use
       if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
-        .then (data) ->
+        .then (rawData) ->
+          console.log "\n######## column service response"
+          console.log "#### rawData"
+          console.log rawData
+          data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
+          console.log "#### filtered column data:"
+          console.log data
           r = mlsConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
@@ -160,21 +212,42 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         $scope.formItems[3].disabled = true
         return $q.when()
 
-    # button behavior for saving mls
-    $scope.saveMlsData = () ->
+    $scope.saveServerData = () ->
       $scope.loading = true
-      rmapsMlsService.postMainPropertyData($scope.mlsData.current.id, $scope.mlsData.current.main_property_data)
+      rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username })
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server data saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving server data.' }
+      .finally () ->
+        $scope.loading = false
+
+    $scope.saveServerPassword = () ->
+      $scope.loading = true
+      rmapsMlsService.postServerPassword($scope.mlsData.current.id, { password: $scope.mlsData.current.password })
+      .then (res) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} server password saved.", type: 'rm-success' }
+      .catch (err) ->
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving server password.' }
+      .finally () ->
+        $scope.allowPasswordReset = false
+        $scope.loading = false
+
+    $scope.saveMlsConfigData = () ->
+      $scope.loading = true
+      $scope.cleanConfigValues($scope.mlsData.current)
+      $scope.mlsData.current.save()
       .then (res) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving mls config.' }
       .finally () ->
         $scope.loading = false
 
     # call processAndProceed when on-change in dropdowns
     $scope.processAndProceed = (toStep) ->
       $scope.loading = true
-      if $scope.step == 1 # db option just changed, reset table and fields
+      if toStep == 1 # db option just changed, reset table and fields
         $scope.tableOptions = []
         $scope.columnOptions = []
         $scope.mlsData.current.main_property_data.table = ""
@@ -183,7 +256,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         $scope.formItems[3].disabled = true
         promise = getTableOptions()
 
-      else if $scope.step == 2 # table option just changed, reset table and fields
+      else if toStep == 2 # table option just changed, reset table and fields
         $scope.columnOptions = []
         $scope.mlsData.current.main_property_data.field = ""
         $scope.formItems[3].disabled = true
@@ -192,46 +265,21 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       else
         promise = $q.when()
 
-      promise.then () ->
-        $scope.proceed(toStep)
+      promise.then()
       .catch (err) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in processing #{$scope.mlsData.current.id}.' }
       .finally () ->
         $scope.loading = false
 
-    # switching basic step flags
-    $scope.proceed = (toStep) ->
-      $scope.formItems[$scope.step].active = false
-      $scope.formItems[toStep].active = true
-      $scope.step = toStep
-
     # goes to the 'normalize' state with selected mlsData
     $scope.goNormalize = () ->
       $state.go($state.get("normalize"), { id: $scope.mlsData.current.id }, { reload: true })
 
-    # modal for Edit mlsData
-    $scope.animationsEnabled = true
-    $scope.openEdit = () ->
-      modalInstance = $modal.open
-        animation: $scope.animationsEnabled
-        template: modalTemplate
-        controller: 'ModalInstanceCtrl'
-        resolve:
-          mlsModalData: () ->
-            return $scope.mlsData.current
-      # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (mlsModalData) ->
-          $scope.loading = true
-          $scope.mlsData.current.save()
-          .then (res) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: "#{$scope.mlsData.current.id} saved.", type: 'rm-success' }
-          .catch (err) ->
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in saving configs.' }
-          .finally () ->
-            $scope.loading = false
-        , () ->
-          console.log "modal closed"
+    # test for whether all default values being used or not
+    $scope.hasAllDefaultOtherConfig = () ->
+      _.every(_.keys(mlsConstants.defaults.otherConfig), (k) -> 
+        # null is a valid field value
+        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.otherConfig[k])
       )
 
     # modal for Create mlsData
@@ -243,19 +291,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         controller: 'ModalInstanceCtrl'
         resolve:
           mlsModalData: () ->
-            return {
-              id: null
-              name: null
-              notes: ""
-              active: false
-              username: null
-              password: null
-              url: null
-              main_property_data: {"queryTemplate": mlsConstants.queryTemplate}
-            }
+            return getDefaultBase()
       # ok/cancel behavior of modal
       modalInstance.result.then(
         (mlsModalData) ->
+          $scope.cleanConfigValues(mlsModalData)
           rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
           .then (newMls) ->
             $scope.mlsData.current = newMls
@@ -267,10 +307,21 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           console.log "modal closed"
       )
 
-    #$rootScope.registerScopeState restoreState
+    $scope.passwordModal = () ->
+      modalInstance = $modal.open
+        animation: $scope.animationsEnabled
+        template: changePasswordTemplate
+        controller: 'ModalPasswordCtrl'
 
+      # ok/cancel behavior of modal
+      modalInstance.result.then(
+        (password) ->
+          $scope.mlsData.current.password = password
+          $scope.saveServerPassword()
+        , () ->
+          console.log "password modal closed"
+      )
 ]
-
 
 app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'mlsConstants',
   ($scope, $modalInstance, mlsModalData, mlsConstants) ->
@@ -280,6 +331,18 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
 
     $scope.ok = () ->
       $modalInstance.close($scope.mlsModalData)
+
+    $scope.cancel = () ->
+      $modalInstance.dismiss('cancel')
+
+]
+
+app.controller 'ModalPasswordCtrl', ['$scope', '$modalInstance'
+  ($scope, $modalInstance) ->
+    $scope.newpassword = ""
+
+    $scope.ok = () ->
+      $modalInstance.close($scope.newpassword)
 
     $scope.cancel = () ->
       $modalInstance.dismiss('cancel')
