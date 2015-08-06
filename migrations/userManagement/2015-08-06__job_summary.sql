@@ -3,11 +3,11 @@ CREATE EXTENSION IF NOT EXISTS tablefunc;
 DROP VIEW IF EXISTS jq_summary;
 
 CREATE VIEW jq_summary AS
-SELECT *
-FROM crosstab(
-$$
+  SELECT *
+  FROM crosstab(
+           $$
 SELECT
-  timeframe, status, SUM(
+  timeframe, status, SUM(num) OVER (PARTITION BY status ORDER BY ord ASC) AS num
 FROM
 (
   SELECT
@@ -44,20 +44,20 @@ FROM
   GROUP BY status, timeframe
   ) jq
   ON s.status = jq.status AND t.timeframe = jq.timeframe
-)
+) excl
 ORDER BY ord, status
 $$,
-$$
+           $$
 SELECT unnest(ARRAY['running', 'success', 'hard fail', 'timeout', 'canceled'])
 $$)
-AS
-t(
-  "timeframe" text,
-  "running" int,
-  "success" int,
-  "hard fail" int,
-  "timeout" int,
-  "canceled" int
-);
+    AS
+       t(
+       "timeframe" text,
+       "running" int,
+       "success" int,
+       "hard fail" int,
+       "timeout" int,
+       "canceled" int
+       );
 
 select * from jq_summary;
