@@ -14,12 +14,14 @@ include stdlib
 include '::gnupg'
 include nginx
 
+#NODE
 class { 'nvm_nodejs':
   user    => 'vagrant',
-  version => $node_version,
+  version => '0.12.6',
   npm_version => '2.12.1'
 }
 
+#RVM
 class { '::rvm':}#same as include, but allows overrides
 #gnupg_key_id => false#, version => stable}
 rvm::system_user { www-data: ; vagrant: ;}
@@ -37,6 +39,7 @@ rvm_gem {
     require      => Rvm_system_ruby[$ruby_version];
 }
 
+#RUN REALTYMAPS APP
 class { 'app':
   user    => 'vagrant',
   node_version => $node_version,

@@ -22,12 +22,18 @@ class app (
     logoutput => on_failure,
   }
 
+  exec { 'kill-app':
+    command     => 'pidof ruby; echo 0',
+    user        => $user
+  }
+
   exec { 'run-app':
-    command     => 'foreman run scripts/runDev --mayday --bare-server --install &',
+    command     => 'rm -f vagrant_app.log; foreman run scripts/runDev --mayday --bare-server --install >> vagrant_app.log &',
     cwd         => '/vagrant',
     user        => $user,
     environment => [ "HOME=${home}" ],
-    logoutput => true,
+    logoutput   => true,
+    require     => Exec['kill-app']
   }
 
 }
