@@ -19,7 +19,7 @@ class { 'nvm_nodejs':
   npm_version => '2.12.1'
 }
 
-include rvm
+class { '::rvm':}#same as include, but allows overrides
 #gnupg_key_id => false#, version => stable}
 rvm::system_user { www-data: ; vagrant: ;}
 rvm_system_ruby {

@@ -15,10 +15,13 @@ class nginx {
       notify => Service[nginx]
   }
 
-  service {
-    'nginx':
-      ensure => running,
-      enable => true;
+  service { 'nginx':
+  	ensure => running,
+    enable     => true,
+    # hasstatus  => true,
+    require    => File['/etc/nginx/nginx.conf'],
+    restart    => '/etc/init.d/nginx reload',
+    hasrestart => true
   }
 
   Package[nginx] ->
