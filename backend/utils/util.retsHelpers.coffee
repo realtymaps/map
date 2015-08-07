@@ -2,62 +2,51 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 rets = require 'rets-client'
-Encryptor = require './util.encryptor'
+encryptor = '../config/encryptor'
 moment = require('moment')
-copyStream = require 'pg-copy-streams'
-from = require 'from'
-utilStreams = require './util.streams'
-dbs = require '../config/dbs'
-config = require '../config/config'
-taskHelpers = require './tasks/util.taskHelpers'
 logger = require '../config/logger'
-jobQueue = require './util.jobQueue'
-validation = require './util.validation'
 require '../config/promisify'
 memoize = require 'memoizee'
-vm = require 'vm'
-tables = require '../config/tables'
-validatorBuilder = require '../../common/utils/util.validatorBuilder'
-sqlHelpers = require './util.sql.helpers'
-util = require 'util'
 
 
-encryptor = new Encryptor(cipherKey: config.ENCRYPTION_AT_REST)
-
-
-_getRetsClient = memoize(
-  (loginUrl, username, password, static_ip) ->
-    Promise.try () ->
-      new rets.Client
-        loginUrl: loginUrl
-        username: username
-        password: encryptor.decrypt(password)
-        proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)
-    .catch isUnhandled, (error) ->
-      _getRetsClient.delete(loginUrl, username, password, static_ip)
-      throw new PartiallyHandledError(error, "RETS client could not be created")
-    .then (retsClient) ->
-      logger.info 'Logging in client ', loginUrl
-      retsClient.login()
-      .catch isUnhandled, (error) ->
-        _getRetsClient.delete(loginUrl, username, password, static_ip)
-        if error.replyCode
-          error = new Error("#{error.replyText} (#{error.replyCode})")
-        throw new PartiallyHandledError(error, "RETS login failed")
-  ,
-    maxAge: 60000
-    dispose: (promise) ->
-      promise.then (retsClient) ->
-        logger.info 'Logging out client', retsClient?.urls?.Logout
-        retsClient.logout()
-)
-
-getDataDump = (mlsInfo, limit=1000) ->
-  _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip
+_getRetsClientInternal = (loginUrl, username, password, static_ip) ->
+  Promise.try () ->
+    new rets.Client
+      loginUrl: loginUrl
+      username: username
+      password: encryptor.decrypt(password)
+      proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)
+  .catch isUnhandled, (error) ->
+    _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
+    throw new PartiallyHandledError(error, "RETS client could not be created")
   .then (retsClient) ->
+    logger.info 'Logging in client ', loginUrl
+    retsClient.login()
+  .catch isUnhandled, (error) ->
+    _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
+    if error.replyCode
+      error = new Error("#{error.replyText} (#{error.replyCode})")
+    throw new PartiallyHandledError(error, "RETS login failed")
+# reference counting memoize
+_getRetsClientInternal = memoize _getRetsClientInternal,
+  refCounter: true
+  dispose: (promise) ->
+    promise.then (retsClient) ->
+      logger.info 'Logging out client', retsClient?.urls?.Logout
+      retsClient.logout()
+
+_getRetsClient = (loginUrl, username, password, static_ip, handler) ->
+  _getRetsClientInternal(loginUrl, username, password, static_ip)
+  .then (retsClient) ->
+    handler(retsClient)
+  .finally () ->
+    setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
+
+getDataDump = (mlsInfo, limit=1000, minDate=0) ->
+  _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClient) ->
     if !mlsInfo.main_property_data.queryTemplate || !mlsInfo.main_property_data.field
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
-    momentThreshold = moment.utc(new Date(0)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
+    momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.main_property_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.main_property_data.field))
     retsClient.search.query(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
   .catch isUnhandled, (error) ->
     if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
@@ -68,8 +57,7 @@ getDataDump = (mlsInfo, limit=1000) ->
     throw new PartiallyHandledError(error, "failed to query RETS system")
 
 getDatabaseList = (serverInfo) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
-  .then (retsClient) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getResources()
     .catch (error) ->
       logger.error error.stack
@@ -81,8 +69,7 @@ getDatabaseList = (serverInfo) ->
         _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
 
 getTableList = (serverInfo, databaseName) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
-  .then (retsClient) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getClass(databaseName)
     .catch isUnhandled, (error) ->
       if error.replyCode
@@ -93,8 +80,7 @@ getTableList = (serverInfo, databaseName) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
 
 getColumnList = (serverInfo, databaseName, tableName) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
-  .then (retsClient) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
@@ -103,8 +89,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
-  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip
-  .then (retsClient) ->
+  _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS types")

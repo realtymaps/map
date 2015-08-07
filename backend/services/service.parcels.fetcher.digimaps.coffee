@@ -3,7 +3,7 @@ logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
 _createFtp = require '../utils/util.ftpPromisified'
-taskHelpers = require '../utils/tasks/util.taskHelpers'
+jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 
 
@@ -51,7 +51,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                     name: l.name
                     moment: moment(_numbersInString(l.name), 'YYYYMMDD').utc()
 
-                taskHelpers.getLastStartTime(subtask.task_name)
+                jobQueue.getLastTaskStartTime(subtask.task_name)
                 .then (lastStartDate) ->
                     lastStartDate = moment(lastStartDate).utc()
                     folderObjs = _.filter folderObjs, (o) ->

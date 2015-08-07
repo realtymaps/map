@@ -5,6 +5,8 @@ _ = require 'lodash'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
+dataLoadHelpers = require './util.dataLoadHelpers'
+coreLogicHelpers = require './util.coreLogicHelpers'
 
 
 _getCreds: (subtask) ->
@@ -18,14 +20,14 @@ NUM_ROWS_TO_PAGINATE = 500
 
 
 loadDataRawMain = (subtask) ->
-  mlsHelpers.loadRetsTableUpdates subtask,
+  coreLogicHelpers.loadUpdates subtask,
     rawTableSuffix: 'main'
     retsId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
-  mlsHelpers.normalizeData subtask,
+  coreLogicHelpers.normalizeData subtask,
     rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
 
@@ -45,16 +47,16 @@ finalizeData = (subtask) ->
   .offset(subtask.data.offset)
   .limit(subtask.data.count)
   .then (ids) ->
-    Promise.map ids, mlsHelpers.finalizeData.bind(null, subtask)
+    Promise.map ids, coreLogicHelpers.finalizeData.bind(null, subtask)
 
 
 _subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  recordChangeCounts: mlsHelpers.recordChangeCounts
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, ['main'], tables.propertyData.tax)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
-  activateNewData: mlsHelpers.activateNewData
+  activateNewData: dataLoadHelpers.activateNewData
       
 module.exports =
   executeSubtask: (subtask) ->

@@ -573,6 +573,19 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       Promise.delay(30000) # poll again in 30 seconds
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
+# determines the start of the last time a task ran, or defaults to the Epoch (Jan 1, 1970) if
+# there are no runs found.  By default only considers successful runs.
+getLastTaskStartTime = (taskName, successOnly = true) ->
+  criteria =
+    name: taskName
+    current: false
+  if successOnly
+    criteria.status = 'success'
+  tables.jobQueue.taskHistory()
+  .max('started AS last_start_time')
+  .where(criteria)
+  .then (result) ->
+    result?[0]?.last_start_time || new Date(0)
 
 module.exports =
   queueReadyTasks: queueReadyTasks
@@ -594,4 +607,5 @@ module.exports =
   runWorker: runWorker
   SoftFail: SoftFail
   HardFail: HardFail
+  getLastTaskStartTime: getLastTaskStartTime
   knex: knex
