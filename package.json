@@ -114,7 +114,7 @@
     "karma-mocha": "0.x",
     "karma-phantomjs-launcher": "0.x",
     "karma-webpack": "1.x",
-    "knex": "^0.8.6",
+    "knex": "git://github.com/tgriesser/knex.git#441675d4db9976e1d4888d8eb22de245db1b1ae6",
     "leaflet": "^0.7.3",
     "leaflet-plugins": "^1.3.2",
     "less": "^2.5.1",

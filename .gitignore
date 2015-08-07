@@ -28,3 +28,4 @@ tags
 TAGS
 .TAGS
 .vagrant/
+vagrant_app.log
