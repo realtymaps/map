@@ -34,18 +34,17 @@ Vagrant::configure(VAGRANTFILE_API_VERSION) do |config|
   #config.vm.provision :shell, :inline => "echo \"America/New_York\" | sudo tee /etc/timezone && dpkg-reconfigure --frontend noninteractive tzdata"
 
   # Shared folder
-  config.vm.synced_folder "../../_public", "/vagrant", owner: 'www-data', group: 'www-data', mount_options: ["dmode=777", "fmode=777"]
+  config.vm.synced_folder "../../", "/vagrant", owner: 'www-data', group: 'www-data', mount_options: ["dmode=777", "fmode=777"]
 
   #http://blog.doismellburning.co.uk/2013/01/19/upgrading-puppet-in-vagrant-boxes/
-  config.vm.provision :shell, :path => "update-puppet.sh"
+  ["puppet-ubuntu-bugs.sh", "update-puppet.sh"].each do |file_name|
+    config.vm.provision :shell, :path => file_name
+  end
 
   # Enable the Puppet provisioner
   config.vm.provision :puppet do |puppet|
     puppet.manifests_path   = ".puppet/manifests"
     puppet.module_path      = ".puppet/modules"
-    puppet.options          = ['--verbose']
+    puppet.options          = []#'--verbose', '--debug']
   end
-
-
-
 end
