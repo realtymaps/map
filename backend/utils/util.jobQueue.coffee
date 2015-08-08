@@ -87,7 +87,7 @@ queueReadyTasks = () -> Promise.try () ->
   .then () ->
     _withDbLock JQ_SCHEDULING_LOCK_ID, false, () ->
       tables.jobQueue.taskConfig()
-      .select(knex.raw('DISTINCT ON (name) *'))
+      .select()
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
       .where () ->
