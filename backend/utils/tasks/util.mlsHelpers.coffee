@@ -19,7 +19,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-  # first.  Eventually, we can rewrite the rets-promise client to use hyperquest and a streaming xml parser
+  # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
   # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
   pgConnect = Promise.promisify(pgClient.connect, pgClient)

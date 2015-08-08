@@ -1,10 +1,10 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
-mlsHelpers = require './util.mlsHelpers'
 jobQueue = require '../util.jobQueue'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
+mlsHelpers = require './util.mlsHelpers'
 
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -47,7 +47,7 @@ finalizeData = (subtask) ->
 subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, ['main'], tables.propertyData.mls)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData

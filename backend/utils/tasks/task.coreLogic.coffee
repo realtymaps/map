@@ -1,33 +1,24 @@
-Promise = require 'bluebird'
-encryptor = require '../../config/encryptor'
+Promise = require "bluebird"
+dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
-_ = require 'lodash'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
-dataLoadHelpers = require './util.dataLoadHelpers'
 coreLogicHelpers = require './util.coreLogicHelpers'
-
-
-_getCreds: (subtask) ->
-  taskData = JSON.parse subtask.task_data
-  for k, val of taskData.DIGIMAPS
-    taskData.DIGIMAPS[k] = encryptor.decrypt(val)
-  taskData.DIGIMAPS
 
 
 NUM_ROWS_TO_PAGINATE = 500
 
 
 loadDataRawMain = (subtask) ->
-  coreLogicHelpers.loadUpdates subtask,
+  mlsHelpers.loadUpdates subtask,
     rawTableSuffix: 'main'
-    retsId: subtask.task_name
+    dataSourceId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
-  coreLogicHelpers.normalizeData subtask,
+  mlsHelpers.normalizeData subtask,
     rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
 
@@ -47,17 +38,18 @@ finalizeData = (subtask) ->
   .offset(subtask.data.offset)
   .limit(subtask.data.count)
   .then (ids) ->
-    Promise.map ids, coreLogicHelpers.finalizeData.bind(null, subtask)
+    Promise.map ids, mlsHelpers.finalizeData.bind(null, subtask)
 
 
-_subtasks =
+subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, ['main'], tables.propertyData.tax)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
-      
+
 module.exports =
   executeSubtask: (subtask) ->
-    _subtasks[subtask.name](subtask)
+    # call the handler for the subtask
+    subtasks[subtask.name.replace(/[^_]+_/g,'')](subtask)

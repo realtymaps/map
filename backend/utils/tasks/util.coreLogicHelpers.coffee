@@ -18,9 +18,9 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 
 
 _streamArrayToDbTable = (objects, tableName, fields) ->
-# stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-# first.  Eventually, we can rewrite the rets-promise client to use hyperquest and a streaming xml parser
-# like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
+  # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
+  # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
+  # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
@@ -34,7 +34,7 @@ _streamArrayToDbTable = (objects, tableName, fields) ->
     .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
     .pipe(rawDataStream)
   .finally () ->
-# always disconnect the db client when we're done
+    # always disconnect the db client when we're done
     pgClient.end()
   .then () ->
     return objects.length
@@ -84,21 +84,16 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
-# figure out when we last got updates from this table
+  # figure out when we last got updates from this table
   jobQueue.getLastTaskStartTime(subtask.task_name)
   .then (lastSuccess) ->
     now = new Date()
     if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-# if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
+      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
       logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-      lastSuccess = new Date(0)
-      doDeletes = true
+      return new Date(0)
     else
       logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-      doDeletes = false
-    step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-    step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-    Promise.join step3Promise, step5Promise, () ->
       return lastSuccess
   .then (refreshThreshold) ->
     tables.config.mls()
@@ -116,12 +111,18 @@ loadUpdates = (subtask, options) ->
         retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
       .then (results) ->
         if !results?.length
-# nothing to do, GTFO
+          # nothing to do, GTFO
+          logger.debug("No updates for #{subtask.task_name}.")
           return
-        # get info about the fields available in the table
-        retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        .then (tableInfo) ->
-          fields = _.indexBy(tableInfo.Fields, 'LongName')
+        # now that we know we have data, queue up a couple more subtasks with a flag depending
+        # on whether this is a dump or an update
+        doDeletes = refreshThreshold.getTime() == 0
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        # simultaneously get info about the fields available in the table
+        fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+        Promise.join fieldInfoPromise, step3Promise, step5Promise, (fieldInfo, dummy1, dummy2) ->
+          fields = _.indexBy(fieldInfo, 'LongName')
           dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
@@ -146,8 +147,8 @@ _getValidations = (dataSourceId) ->
       validationDef.transform = vm.runInContext(validationDef.transform, context)
       validationMap[validationDef.list].push(validationDef)
     return validationMap
-# memoize it to cache js evals, but only for up to 10 minutes at a time
-_getValidations = memoize.promise(_getValidations, maxAge: 600000)
+# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
+_getValidations = memoize.promise(_getValidations, maxAge: 850000)
 
 _getUsedKeys = (validationDefinition) ->
   if validationDefinition.input?
@@ -169,17 +170,17 @@ normalizeData = (subtask, options) -> Promise.try () ->
   # get start time for "last updated" stamp
   startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
   Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationMap, startTime) ->
-# calculate the keys that are grouped for later
+    # calculate the keys that are grouped for later
     usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
     diffExcludeKeys = []
     for groupName, validationList of validationMap
       for validationDefinition in validationList
-# generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
-# fields for those don't have to be explicitly reused
+        # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
+        # fields for those don't have to be explicitly reused
         if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
           usedKeys = usedKeys.concat(_getUsedKeys(validationDefinition))
         else if validationDefinition.output == 'days_on_market'
-# explicitly exclude these keys from diff, because they are derived values based on date
+          # explicitly exclude these keys from diff, because they are derived values based on date
           diffExcludeKeys = _getUsedKeys(validationDefinition)
     promises = for row in rows
       do (row) ->
@@ -202,7 +203,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 
 _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
-# build the row's new values
+  # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
   normalizedData.general.unshift(name: 'Status', value: base.status_display)
@@ -236,11 +237,11 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       data_source_id: updateRow.data_source_id
   .then (result) ->
     if !result?.length
-# no existing row, just insert
+      # no existing row, just insert
       tables.propertyData.mls()
       .insert(updateRow)
     else
-# found an existing row, so need to update, but include change log
+      # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
       changes = _diff(updateRow, result, diffExcludeKeys)
@@ -267,7 +268,7 @@ finalizeData = (subtask, id) ->
   # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
-# might happen if a listing is deleted during the day -- we'll catch it during the next full sync
+      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
       return
     listing = listings.shift()
     listing.data_source_type = 'mls'
