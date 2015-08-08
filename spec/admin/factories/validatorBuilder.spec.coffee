@@ -41,7 +41,7 @@ describe 'validatorBuilder', ->
        transform: 'validators.address({})'
       ,
        field: @validatorBuilder.buildBaseRule {"output": "discontinued_date"}
-       transform: 'validators.date({})'
+       transform: 'validators.datetime({})'
       ,
        field: @validatorBuilder.buildBaseRule {"output": "status", "config": {"map": {"Active": "for sale", "Pending": "pending"}}}
        transform: 'validators.map({"map":{"Active":"for sale","Pending":"pending"},"passUnmapped":true})'
