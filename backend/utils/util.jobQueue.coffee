@@ -46,7 +46,7 @@ _getTaskCode = (taskName) ->
       throw new Error("can't find code for task with name: #{taskName}")
 _getTaskCode = memoize.promise(_getTaskCode)
 
-_withLock = (lockId, shared, handler) ->
+_withDbLock = (lockId, shared, handler) ->
   if shared
     maybeShared = "_shared"
   else
@@ -85,7 +85,7 @@ queueReadyTasks = () -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    _withLock JQ_SCHEDULING_LOCK_ID, false, () ->
+    _withDbLock JQ_SCHEDULING_LOCK_ID, false, () ->
       tables.jobQueue.taskConfig()
       .select(knex.raw('DISTINCT ON (name) *'))
       .where(active: true)                  # only consider active tasks
@@ -387,7 +387,7 @@ _getQueueLockId = memoize.promise(_getQueueLockId)
 getQueuedSubtask = (queueName) ->
   _getQueueLockId(queueName)
   .then (queueLockId) ->
-    _withLock queueLockId, false, () ->
+    _withDbLock queueLockId, false, () ->
       knex
       .select('*')
       .from(knex.raw('jq_get_next_subtask(?)', [queueName]))
