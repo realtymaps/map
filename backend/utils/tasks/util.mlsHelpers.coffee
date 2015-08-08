@@ -1,18 +1,18 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
-utilStreams = require './util.streams'
-dbs = require '../config/dbs'
-config = require '../config/config'
-logger = require '../config/logger'
-jobQueue = require './util.jobQueue'
-validation = require './util.validation'
+utilStreams = require '../util.streams'
+dbs = require '../../config/dbs'
+config = require '../../config/config'
+logger = require '../../config/logger'
+jobQueue = require '../util.jobQueue'
+validation = require '../util.validation'
 memoize = require 'memoizee'
 vm = require 'vm'
-tables = require '../config/tables'
-sqlHelpers = require './util.sql.helpers'
+tables = require '../../config/tables'
+sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
@@ -91,14 +91,9 @@ loadUpdates = (subtask, options) ->
     if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
       # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
       logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-      lastSuccess = new Date(0)
-      doDeletes = true
+      return new Date(0)
     else
       logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-      doDeletes = false
-    step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-    step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-    Promise.join step3Promise, step5Promise, () ->
       return lastSuccess
   .then (refreshThreshold) ->
     tables.config.mls()
@@ -117,11 +112,17 @@ loadUpdates = (subtask, options) ->
       .then (results) ->
         if !results?.length
           # nothing to do, GTFO
+          logger.debug("No updates for #{subtask.task_name}.")
           return
-        # get info about the fields available in the table
-        retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        .then (tableInfo) ->
-          fields = _.indexBy(tableInfo.Fields, 'LongName')
+        # now that we know we have data, queue up a couple more subtasks with a flag depending
+        # on whether this is a dump or an update
+        doDeletes = refreshThreshold.getTime() == 0
+        step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        # simultaneously get info about the fields available in the table
+        fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+        Promise.join fieldInfoPromise, step3Promise, step5Promise, (fieldInfo, dummy1, dummy2) ->
+          fields = _.indexBy(fieldInfo, 'LongName')
           dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
@@ -146,8 +147,8 @@ _getValidations = (dataSourceId) ->
       validationDef.transform = vm.runInContext(validationDef.transform, context)
       validationMap[validationDef.list].push(validationDef)
     return validationMap
-# memoize it to cache js evals, but only for up to 10 minutes at a time
-_getValidations = memoize.promise(_getValidations, maxAge: 600000)
+# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
+_getValidations = memoize.promise(_getValidations, maxAge: 850000)
 
 _getUsedKeys = (validationDefinition) ->
   if validationDefinition.input?

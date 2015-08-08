@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-encryptor = '../../config/encryptor'
+encryptor = require '../../config/encryptor'
 jobQueue = require '../util.jobQueue'
 _ = require 'lodash'
 tables = require '../../config/tables'

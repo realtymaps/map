@@ -122,11 +122,11 @@ baseRules =
 
   close_date:
     alias: 'Close Date'
-    type: 'date'
+    type: 'datetime'
 
   discontinued_date:
     alias: 'Discontinued Date'
-    type: 'date'
+    type: 'datetime'
 
   mls_uuid:
     alias: 'MLS Number'

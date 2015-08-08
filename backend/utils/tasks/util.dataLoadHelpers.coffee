@@ -1,5 +1,5 @@
-dbs = require '../config/dbs'
-tables = require '../config/tables'
+dbs = require '../../config/dbs'
+tables = require '../../config/tables'
 Promise = require 'bluebird'
 
 
@@ -18,16 +18,20 @@ createRawTempTable = (tableName, fields) ->
 
 
 _countInvalidRows = (knex, tableName, assignedFalse) ->
-  query = knex
-  .count('* AS invalid')
-  .from(tableName)
-  if assignedFalse
-    query.where(rm_valid: false)
-  else
-    query.whereNull('rm_valid')
-  
-      
-recordChangeCounts = (rawDataSuffixes, destDataTable, subtask) ->
+  asPrefix = if assignedFalse then "invalids" else "unvalids"
+  knex
+  .sum('invalid')
+  .from () ->
+    query = this
+    .count('* AS invalid')
+    .from(tableName)
+    if assignedFalse
+      query = query.where(rm_valid: false)
+    else
+      query = query.whereNull('rm_valid')
+    query.as(asPrefix)
+        
+recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
       # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
@@ -39,30 +43,18 @@ recordChangeCounts = (rawDataSuffixes, destDataTable, subtask) ->
       .update(deleted: subtask.batch_id)
   .then (deletedCount=0) ->
     # get a count of raw rows from all raw tables from this batch with rm_valid == false
-    invalidSubquery = () ->
-      this
-      .sum('invalid')
-      .from () ->
-        query = _countInvalidRows(this, getRawTableName(subtask, rawDataSuffixes[0]), true)
-        for index in [1...rawDataSuffixes.length]
-          query = query.unionAll _countInvalidRows.bind(this, getRawTableName(subtask, rawDataSuffixes[index]), true)
+    invalidSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, rawDataSuffix), true)
     # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
-    unvalidatedSubquery = () ->
-      this
-      .sum('invalid')
-      .from () ->
-        query = _countInvalidRows(this, getRawTableName(subtask, rawDataSuffixes[0]), false)
-        for index in [1...rawDataSuffixes.length]
-          query = query.unionAll _countInvalidRows.bind(this, getRawTableName(subtask, rawDataSuffixes[index]), true)
+    unvalidatedSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, rawDataSuffix), false)
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
-      dataTable(this)
+      destDataTable(this)
       .where(batch_id: subtask.batch_id)
       .whereNull('change_history')
       .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = () ->
-      dataTable(this)
+      destDataTable(this)
       .where(batch_id: subtask.batch_id)
       .whereNotNull('change_history')
       .count('*')

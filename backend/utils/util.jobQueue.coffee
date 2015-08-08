@@ -17,6 +17,8 @@ memoize = require 'memoizee'
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
 
+JQ_LOCK_KEY = 0x1693F8A6
+JQ_SCHEDULING_LOCK_ID = 0
 SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 
 sendNotification = notification("jobQueue")
@@ -44,18 +46,22 @@ _getTaskCode = (taskName) ->
       throw new Error("can't find code for task with name: #{taskName}")
 _getTaskCode = memoize.promise(_getTaskCode)
 
-
-_withSchedulingLock = (handler) ->
-  knex.transaction (transaction) ->
-    transaction.select(knex.raw("pg_advisory_lock(jq_lock_key(), 0)"))
-    .then () ->
-      return handler(transaction)
-    .finally () ->
-      # Bluebird says not to use finally() for resource management:
-      #     https://github.com/petkaantonov/bluebird/blob/master/API.md#resource-management
-      # However, an understanding of the type of leak-bug mentioned in the Bluebird docs and careful inspection of the
-      # code can allow you to use finally() sometimes, instead of the more complicated using()
-      transaction.select(knex.raw("pg_advisory_unlock(jq_lock_key(), 0)"))
+_withLock = (lockId, shared, handler) ->
+  if shared
+    maybeShared = "_shared"
+  else
+    maybeShared = ""
+  knex
+  .select(knex.raw("pg_advisory_lock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
+  .then () ->
+    return handler()
+  .tap () ->
+    # Bluebird says not to use finally() for resource management:
+    #     https://github.com/petkaantonov/bluebird/blob/master/API.md#resource-management
+    # However, an understanding of the type of leak-bug mentioned in the Bluebird docs and careful inspection of the
+    # code can allow you to use finally() sometimes, instead of the more complicated using()
+    knex
+    .select(knex.raw("pg_advisory_unlock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -79,9 +85,9 @@ queueReadyTasks = () -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    _withSchedulingLock (transaction) ->
-      tables.jobQueue.taskConfig(transaction)
-      .select()
+    _withLock JQ_SCHEDULING_LOCK_ID, false, () ->
+      tables.jobQueue.taskConfig()
+      .select(knex.raw('DISTINCT ON (name) *'))
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
       .where () ->
@@ -90,11 +96,12 @@ queueReadyTasks = () -> Promise.try () ->
         .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
           tables.jobQueue.taskHistory(this)
           .select()
+          .where(current: true)
           .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
           .where () ->
             this
             .whereIn("status", ['running', 'preparing'])             # ... it's currently running or preparing to run ...
-            .orWhere () ->   
+            .orWhere () ->
               this
               .where(status: 'success')                 # ... or it was successful
               .where () ->
@@ -109,9 +116,10 @@ queueReadyTasks = () -> Promise.try () ->
                 .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
                 .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
       .then (readyTasks=[]) ->
-        Promise.map readyTasks, (task) ->
-          queueTask(transaction, batchId, task, '<scheduler>')
-
+        knex.transaction (transaction) ->
+          Promise.map readyTasks, (task) ->
+            queueTask(transaction, batchId, task, '<scheduler>')
+      
 queueManualTask = (name, initiator) ->
   if !name
     throw "Task name required!"
@@ -141,8 +149,9 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
   .then () -> # clear out any subtasks for prior runs of this task
-    tables.jobQueue.currentSubtasks()
+    tables.jobQueue.currentSubtasks(transaction)
     .where(task_name: task.name)
+    .whereNot(batch_id: batchId)
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
@@ -365,15 +374,28 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         subtask: subtask
         error: "subtask: #{error}"
 
-# should this be rewritten to use a transaction and query built by knex?  I decided to implement it as a stored proc
+_getQueueLockId = (queueName) ->
+  tables.jobQueue.queueConfig()
+  .select('lock_id')
+  .where(name: queueName)
+  .then (queueLockId) ->
+    queueLockId[0].lock_id
+_getQueueLockId = memoize.promise(_getQueueLockId)
+
+# should this be rewritten to use a query built by knex?  I decided to implement it as a stored proc
 # in order to enforce the locking semantics, but I'm not sure if that's really a good reason
-getQueuedSubtask = (queue_name) ->
-  knex.select('*').from(knex.raw('jq_get_next_subtask(?)', [queue_name]))
-  .then (results) ->
-    if !results?[0]?.id?
-      return null
-    else
-      return results[0]
+getQueuedSubtask = (queueName) ->
+  _getQueueLockId(queueName)
+  .then (queueLockId) ->
+    _withLock queueLockId, false, () ->
+      knex
+      .select('*')
+      .from(knex.raw('jq_get_next_subtask(?)', [queueName]))
+      .then (results) ->
+        if !results?[0]?.id?
+          return null
+        else
+          return results[0]
 
 _sendLongTaskWarnings = () ->
   # warn about long-running tasks
@@ -397,6 +419,7 @@ _killLongTasks = () ->
   .whereRaw("started + kill_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
     cancelPromise = Promise.map tasks, (task) ->
+      logger.warn("Task has timed out: #{task.name}")
       cancelTask(task.name, 'timeout')
     notificationPromise = sendNotification
       subject: 'task: long run killed'

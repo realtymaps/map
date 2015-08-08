@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 rets = require 'rets-client'
-encryptor = '../config/encryptor'
+encryptor = require '../config/encryptor'
 moment = require('moment')
 logger = require '../config/logger'
 require '../config/promisify'
@@ -42,7 +42,7 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
 
-getDataDump = (mlsInfo, limit=1000, minDate=0) ->
+getDataDump = (mlsInfo, limit, minDate=0) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClient) ->
     if !mlsInfo.main_property_data.queryTemplate || !mlsInfo.main_property_data.field
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
