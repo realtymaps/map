@@ -5315,7 +5315,7 @@
     },
     "ftp": {
       "version": "0.3.10",
-      "from": "https://registry.npmjs.org/ftp/-/ftp-0.3.10.tgz",
+      "from": "ftp@*",
       "resolved": "https://registry.npmjs.org/ftp/-/ftp-0.3.10.tgz",
       "dependencies": {
         "xregexp": {
