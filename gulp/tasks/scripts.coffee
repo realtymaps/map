@@ -4,15 +4,20 @@ gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 
-gulp.task 'scripts', ->
+browserify = require('browserify')
+source = require('vinyl-source-stream')
+
+gulp.task 'browserify', ->
+  browserify paths.rmap.root + '/scripts/app.coffee'
+  .bundle()
+  .pipe source 'main.wp.js'
+  .pipe gulp.dest paths.destFull.scripts
+
+gulp.task 'coffee', ->
   gulp.src [
     paths.rmap.scripts
   ]
   .pipe coffeeFilter = $.filter '**/*.coffee', restore: true
-  .pipe $.wrapCommonjs
-    autoRequire: false
-    pathModifier: (path) ->
-      path.replace /.*?(frontend\/.*)/, '$1'
   .pipe $.sourcemaps.init()
   .pipe $.coffeelint null, require './coffeelint.coffee'
   .pipe $.coffeelint.reporter()
@@ -20,6 +25,10 @@ gulp.task 'scripts', ->
   .on   'error', conf.errorHandler '[CoffeeScript]'
   .pipe $.ngAnnotate()
   .pipe $.angularFilesort()
+  .pipe $.wrapCommonjs
+    autoRequire: false
+    pathModifier: (path) ->
+      path.replace /.*?(frontend\/.*)/, '$1'
   .pipe $.sourcemaps.write()
   .pipe coffeeFilter.restore
   .pipe $.addSrc.append paths.destFull.scripts + '/templateCacheHtml.js'
@@ -29,3 +38,5 @@ gulp.task 'scripts', ->
   .pipe $.size
     title: paths.dest.root
     showFiles: true
+
+gulp.task 'scripts', gulp.series 'browserify', ->

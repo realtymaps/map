@@ -49,9 +49,9 @@ app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprinci
 
         active
 
-
-
-['1','2'].forEach (num) ->
-  require("./controllers/mayday_controllers#{num}.coffee")(app)
-
 module.exports = app
+
+
+require './require.coffee'
+require("./controllers/mayday_controllers1.coffee")(app)
+require("./controllers/mayday_controllers2.coffee")(app)

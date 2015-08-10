@@ -14,11 +14,12 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
       parent:       'main'
       url:          frontendRoutes[name],
       controller:   "rmaps#{name.toInitCaps()}Ctrl"
-      # template:     require "../../html/views/#{name}.jade"
     _.extend(state, overrides)
 
     if !state.template
-        state.template = require "../../html/views/#{name}.jade"
+        state.templateProvider = ($templateCache) ->
+          console.debug 'loading template:', name
+          $templateCache.get "./views/#{name}.jade"
 
     if state.parent
       state.views = {}

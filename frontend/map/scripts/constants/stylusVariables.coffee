@@ -1,7 +1,8 @@
 app = require '../app.coffee'
 
-colorPalate = require '!!../../../../backend/utils/util.stylusVariableLoader.coffee!../../styles/color_palate.styl'
-colorScheme = require '!!../../../../backend/utils/util.stylusVariableLoader.coffee!../../styles/color_scheme.styl'
+loader = require '../../../../backend/utils/util.stylusVariableLoader.coffee'
+colorPalate = loader require '../../styles/color_palate.styl'
+colorScheme = loader require '../../styles/color_scheme.styl'
 
 variables = {}
 for key,value of colorScheme
