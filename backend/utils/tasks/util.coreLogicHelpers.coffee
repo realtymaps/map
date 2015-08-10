@@ -112,16 +112,17 @@ loadUpdates = (subtask, options) ->
       .then (results) ->
         if !results?.length
           # nothing to do, GTFO
-          logger.debug("No updates for #{subtask.task_name}.")
+          logger.info("No data updates for #{subtask.task_name}.")
           return
-        # now that we know we have data, queue up a couple more subtasks with a flag depending
-        # on whether this is a dump or an update
+        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
+        # on whether this is a dump or an update)
         doDeletes = refreshThreshold.getTime() == 0
         step3Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        step4Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         step5Promise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-        # simultaneously get info about the fields available in the table
+        # simultaneously create a temp table and stream the data to it
         fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        Promise.join fieldInfoPromise, step3Promise, step5Promise, (fieldInfo, dummy1, dummy2) ->
+        .then (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
           dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
           .catch isUnhandled, (error) ->
@@ -130,6 +131,7 @@ loadUpdates = (subtask, options) ->
             _streamArrayToDbTable(results, rawTableName, fields)
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+        Promise.join fieldInfoPromise, step3Promise, step4Promise, step5Promise, () ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
