@@ -213,7 +213,8 @@
     "transform": [
       "coffeeify",
       "jadeify",
-      "stylusify"
+      "stylusify",
+      "brfs"
     ]
   }
 }
