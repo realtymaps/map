@@ -1,5 +1,5 @@
 _ = require 'lodash'
-retsHelper = require '../utils/util.mlsHelpers'
+retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require '../config/logger'
 mlsConfigService = require '../services/service.mls_config'
@@ -19,7 +19,7 @@ module.exports =
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
-          retsHelper.getDatabaseList mlsConfig
+          retsHelpers.getDatabaseList mlsConfig
           .then (list) ->
             next new ExpressResponse(list)
           .catch (error) ->
@@ -40,7 +40,7 @@ module.exports =
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
-          retsHelper.getTableList mlsConfig, req.params.databaseId
+          retsHelpers.getTableList mlsConfig, req.params.databaseId
           .then (list) ->
             next new ExpressResponse(list)
           .catch (error) ->
@@ -61,7 +61,7 @@ module.exports =
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
-          retsHelper.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
+          retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
           .then (list) ->
             next new ExpressResponse(list)
           .catch (error) ->
@@ -88,11 +88,11 @@ module.exports =
           validation.validateAndTransform(req.query, validations)
           .then (result) ->
             limit = result.limit
-            retsHelper.getDataDump mlsConfig, limit
+            retsHelpers.getDataDump mlsConfig, limit
             .then (rawList) ->
               # incoming column names can be arcane and technical, let's humanize them
               humanList = []
-              retsHelper.getColumnList mlsConfig, mlsConfig.main_property_data.db, mlsConfig.main_property_data.table
+              retsHelpers.getColumnList mlsConfig, mlsConfig.main_property_data.db, mlsConfig.main_property_data.table
               .then (fields) ->
                 # map the arcane (system) field names to human readable (longname) names
                 readableMap = {}
@@ -123,7 +123,7 @@ module.exports =
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
-          retsHelper.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
+          retsHelpers.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
           .then (list) ->
             next new ExpressResponse(list)
           .catch (error) ->

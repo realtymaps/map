@@ -12,14 +12,23 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   postConfig = (configObj, collection) ->
     newMls = Restangular.one(mlsConfigAPI)
     _.merge newMls, configObj
-    newMls.post().then (res) ->
+    newMls.save().then (res) ->
       # add to our collection (by reference, for adding to existing dropdowns, etc)
       if collection
         collection.push(newMls)
+      # for some reason even though we used save(), each subsequent .save() will keep trying posts, which inserts.
+      # this hack flags it to start using 'put' when saving from now on.
+      newMls.fromServer = true 
       newMls
 
   postMainPropertyData = (configId, mainPropertyData) ->
     Restangular.all(mlsConfigAPI).one(configId).all('propertyData').customPUT(mainPropertyData)
+
+  postServerData = (configId, serverData) ->
+    Restangular.all(mlsConfigAPI).one(configId).all('serverInfo').customPUT(serverData)
+
+  postServerPassword = (configId, password) ->
+    Restangular.all(mlsConfigAPI).one(configId).all('serverInfo').customPUT(password)
 
   getDatabaseList = (configId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').getList()
@@ -41,6 +50,8 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     getConfigs: getConfigs,
     postConfig: postConfig,
     postMainPropertyData: postMainPropertyData,
+    postServerData: postServerData,
+    postServerPassword: postServerPassword,
     getDatabaseList: getDatabaseList,
     getTableList: getTableList,
     getColumnList: getColumnList,

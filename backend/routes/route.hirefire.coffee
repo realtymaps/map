@@ -14,7 +14,7 @@ info = (req, res, next) -> Promise.try () ->
   .then (needs) ->
     next new ExpressResponse(needs)
   .catch (err) ->
-    logger.error "unexpected error during hirefire info check: #{err}"
+    logger.error "unexpected error during hirefire info check: #{err.stack||err}"
     next(err)
 
 module.exports =

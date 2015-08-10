@@ -1,25 +1,22 @@
 Promise = require "bluebird"
-mlsHelpers = require '../util.mlsHelpers'
+dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
-dbs = require '../../config/dbs'
 tables = require '../../config/tables'
-util = require 'util'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
+mlsHelpers = require './util.mlsHelpers'
 
 
-# NOTE: This file is actually going to go away.  We don't want to have an explicit task file for each of the hundreds
-# of MLSs.  So this code will turn into default subtask handlers for mls update tasks, which can be overridden by
-# explicitly providing a file like this (if we find an edge case that doesn't obey the rules).
+# NOTE: This file a default task definition used for MLSs that have no special cases
 
 
 NUM_ROWS_TO_PAGINATE = 500
 
 
 loadDataRawMain = (subtask) ->
-  mlsHelpers.loadRetsTableUpdates subtask,
+  mlsHelpers.loadUpdates subtask,
     rawTableSuffix: 'main'
-    retsId: subtask.task_name
+    dataSourceId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
@@ -29,8 +26,6 @@ normalizeData = (subtask) ->
     dataSourceId: subtask.task_name
 
 finalizeDataPrep = (subtask) ->
-  # slightly hackish raw query needed for count(distinct blah):
-  # https://github.com/tgriesser/knex/issues/238
   query = tables.propertyData.mls()
   sqlHelpers.selectCountDistinct(query, 'rm_property_id')
   .where(batch_id: subtask.batch_id)
@@ -52,10 +47,10 @@ finalizeData = (subtask) ->
 subtasks =
   loadDataRawMain: loadDataRawMain
   normalizeData: normalizeData
-  recordChangeCounts: mlsHelpers.recordChangeCounts
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
-  activateNewData: mlsHelpers.activateNewData
+  activateNewData: dataLoadHelpers.activateNewData
 
 module.exports =
   executeSubtask: (subtask) ->

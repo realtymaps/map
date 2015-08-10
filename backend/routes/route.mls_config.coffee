@@ -72,7 +72,7 @@ module.exports =
     methods: ['patch', 'put']
     middleware: [
       auth.requireLogin(redirectOnFail: true) # privileged
-      auth.requirePermissions({all:['change_mlsconfig']}, logoutOnFail:false)
+      auth.requirePermissions({all:['change_mlsconfig_serverdata']}, logoutOnFail:false)
     ]
     handle: (req, res, next) ->
       mlsConfigService.updateServerInfo req.params.id, req.body

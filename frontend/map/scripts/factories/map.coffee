@@ -174,38 +174,39 @@ app.factory 'rmapsMap',
               style: self.layerFormatter.Parcels.getStyle
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
-        promises.push(
-          rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
-          .then (data) =>
-            if Object.prototype.toString.call(data) is '[object Array]'              
-              return if !data? or _.isString data
-              handleClusterResults(data)
-
-            else
-              #needed for results list, rendering price markers, and address Markers
-              #depending on zoome we want address or price
-              #the data structure is the same (do we clone and hide one?)
-              #or do we have the results list view grab one that exists with items?
-              return if !data? or _.isString data
-              handleSummaryResults(data)
-
-              if rmapsZoomLevel.isParcel(self.scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom)
-                self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
-                self.scope.map.layers.overlays.filterSummary.visible = false
-                self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
-                #$log.info "#### pushing geojson promise..."
-                rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
-                .then (data) =>
-                  return if !data? or _.isString data
-                  self.scopeM().geojson.filterSummaryPoly =
-                    data: data
-                    style: self.layerFormatter.Parcels.getStyle
+        if /status/.test(@filters) # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
+          promises.push(
+            rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+            .then (data) =>
+              if Object.prototype.toString.call(data) is '[object Array]'              
+                return if !data? or _.isString data
+                handleClusterResults(data)
 
               else
-                self.scope.map.layers.overlays.parcels.visible = false
-                self.scope.map.layers.overlays.filterSummary.visible = true
-                self.scope.map.layers.overlays.parcelsAddresses.visible = false
-        )
+                #needed for results list, rendering price markers, and address Markers
+                #depending on zoome we want address or price
+                #the data structure is the same (do we clone and hide one?)
+                #or do we have the results list view grab one that exists with items?
+                return if !data? or _.isString data
+                handleSummaryResults(data)
+
+                if rmapsZoomLevel.isParcel(self.scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom)
+                  self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
+                  self.scope.map.layers.overlays.filterSummary.visible = false
+                  self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
+                  #$log.info "#### pushing geojson promise..."
+                  rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
+                  .then (data) =>
+                    return if !data? or _.isString data
+                    self.scopeM().geojson.filterSummaryPoly =
+                      data: data
+                      style: self.layerFormatter.Parcels.getStyle
+
+                else
+                  self.scope.map.layers.overlays.parcels.visible = false
+                  self.scope.map.layers.overlays.filterSummary.visible = true
+                  self.scope.map.layers.overlays.parcelsAddresses.visible = false
+          )
         promises
 
       redraw: (cache = true) =>

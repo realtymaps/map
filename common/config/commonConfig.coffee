@@ -52,10 +52,9 @@ commonConfig =
       zoomThresh:
         addressParcel: 18
         price: 15
-        clustering: 12
         ordering: 12
-        roundOne: 12
-        roundNone: 9
+        roundDigit: 10 # threshold for when to round first decimal
+        maxGrid: 6 # zoom level when grid will be largest (nearest integer lat/lng)
 
   backendClustering:
     resultThreshold: 2000
