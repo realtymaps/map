@@ -13,7 +13,7 @@ _makeClusterQuery = (roundTo, scale) ->
     db.knex.raw('count(*)'),
     db.knex.raw("count(case when rm_status='not for sale' then 1 end) as notforsale"),
     db.knex.raw("count(case when rm_status='pending' then 1 end) as pending"),
-    db.knex.raw("count(case when rm_status='recentlysold' then 1 end) as recentlysold"),
+    db.knex.raw("count(case when rm_status='recently sold' then 1 end) as recentlysold"),
     db.knex.raw("count(case when rm_status='for sale' then 1 end) as forsale"),
     db.knex.raw("#{_roundCoordCol(roundTo,scale)} as lng"),
     db.knex.raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
