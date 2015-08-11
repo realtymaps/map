@@ -54,7 +54,7 @@ _getDefaultQuery = ->
   sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
 
 _getResultCount = (state, filters) ->
-  # obtain a count(*)-style select query 
+  # obtain a count(*)-style select query
   query = sqlHelpers.selectCountDistinct(tables.propertyData.propertyDetails())
   # apply the state & filters (mostly "where" clause stuff)
   query = _getFilterSummaryAsQuery(state, filters, null, query)

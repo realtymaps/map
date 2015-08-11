@@ -10,7 +10,7 @@ Place for our custom Theming of bootstrap
 .table-hover > tbody > tr:hover > td,
 .table-hover > tbody > tr:hover > th
   background-color: rgb(50,118,177,.90)
-  color: rm-results-hover
+  color: $rm-results-hover
 .panel
   background: #FFF
   margin 0
@@ -19,7 +19,7 @@ Place for our custom Theming of bootstrap
   font-family "Helvetica Neue", Helvetica, Arial, sans-serif
 
 .panel > .panel-heading
-  background-color rm-medium-blue
+  background-color $rm-medium-blue
   border none
   font-size 14px
   border-radius 0
@@ -62,7 +62,7 @@ Place for our custom Theming of bootstrap
 
 
 .navbar
-  background: rm-main-dark-blue
+  background: $rmMainDarkBlue
   border: none
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
   font-weight: 100
@@ -75,7 +75,7 @@ Place for our custom Theming of bootstrap
   font-weight: 100
 
 .navbar .navbar-nav > li > a
-  color: textColor
+  color: $textColor
   height:50px
 
 /* Small devices (tablets, 768px and up) */
@@ -89,7 +89,7 @@ Place for our custom Theming of bootstrap
 
 .navbar .navbar-nav > li > a:hover,
 .navbar .navbar-nav > li > a:focus
-  color: textColor
+  color: $textColor
   background-color: #0062A0
   -webkit-transition:background-color 0.25s
   -moz-transition:background-color 0.25s
@@ -98,7 +98,7 @@ Place for our custom Theming of bootstrap
 .navbar .navbar-nav > .active > a,
 .navbar .navbar-nav > .active > a:hover,
 .navbar.navbar-nav > .active > a:focus
-  color: textColor
+  color: $textColor
   background-color: #45a0d9
   -webkit-transition:background-color 0.25s
   -moz-transition:background-color 0.25s
@@ -108,7 +108,7 @@ Place for our custom Theming of bootstrap
 .navbar-brand
   font-size: 25px
   line-height: 20px
-  color: textColor !important
+  color: $textColor !important
   padding: 3px 5px 0 3px
   letter-spacing: 4px
   font-weight: 100
@@ -119,7 +119,7 @@ Place for our custom Theming of bootstrap
   padding: 0px 8px
 
 .navbar-brand .logo-c1
-  color: textColor
+  color: $textColor
 
 .navbar-brand .logo-c2
   color: #45a0d9
@@ -133,7 +133,7 @@ Place for our custom Theming of bootstrap
   border-radius: 0
 
 .navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
-  background-color: rm-medium-blue-dark
+  background-color: $rm-medium-blue-dark
 
 .navbar-toggle
   float: left
@@ -148,72 +148,72 @@ Place for our custom Theming of bootstrap
 
   &.label-saved-property
   /.label-saved-property
-    background-color rm-property-save-yello
-    color rm-property-save-bright-foreground
+    background-color $rm-property-save-yello
+    color $rm-property-save-bright-foreground
     &:after
-      border-top-color rm-property-save-yello !important
+      border-top-color $rm-property-save-yello !important
     &.label-hovered
-      background-color rm-saved-hover
+      background-color $rm-saved-hover
       &:after
-        color rm-saved-hover
-        border-top-color rm-saved-hover !important
+        color $rm-saved-hover
+        border-top-color $rm-saved-hover !important
 
   &.label-sale-property
   /.label-sale-property
-    background-color rm-property-sale-green
-    color rm-property-save-bright-foreground
+    background-color $rm-property-sale-green
+    color $rm-property-save-bright-foreground
     &:after
-      border-top-color rm-property-sale-green !important
+      border-top-color $rm-property-sale-green !important
     &.label-hovered
-      background-color rm-sale-hover
+      background-color $rm-sale-hover
       &:after
-        color rm-sale-hover
-        border-top-color rm-sale-hover !important
+        color $rm-sale-hover
+        border-top-color $rm-sale-hover !important
 
   &.label-sold-property
   /.label-sold-property
-    background-color rm-property-sold-red
+    background-color $rm-property-sold-red
     color #FFF !important
     &:after
-      border-top-color rm-property-sold-red !important
+      border-top-color $rm-property-sold-red !important
     &.label-hovered
-      background-color rm-sold-hover
+      background-color $rm-sold-hover
       &:after
-        color rm-sold-hover
-        border-top-color rm-sold-hover !important
+        color $rm-sold-hover
+        border-top-color $rm-sold-hover !important
 
   &.label-pending-property
   /.label-pending-property
-    background-color rm-highlight-purple
+    background-color $rm-highlight-purple
     color #FFF !important
     &:after
-      border-top-color rm-highlight-purple !important
+      border-top-color $rm-highlight-purple !important
     &.label-hovered
-      background-color rm-pending-hover
+      background-color $rm-pending-hover
       &:after
-        color rm-pending-hover
-        border-top-color rm-pending-hover !important
+        color $rm-pending-hover
+        border-top-color $rm-pending-hover !important
 
   &.label-notsale-property
   /.label-notsale-property
-    background-color rm-highlight-blue
+    background-color $rm-highlight-blue
     color #FFF !important
     &:after
-      border-top-color rm-highlight-blue !important
+      border-top-color $rm-highlight-blue !important
     &.label-hovered
-      background-color rm-notsale-hover
+      background-color $rm-notsale-hover
       &:after
-        color rm-notsale-hover
-        border-top-color rm-notsale-hover !important
+        color $rm-notsale-hover
+        border-top-color $rm-notsale-hover !important
 
 .page-header
-  color textColor
+  color $textColor
 
 input.btn.btn-primary
-  color textColor
+  color $textColor
 /*
 set all page h tag overrides
 */
 for num in (1...7)
   h{num}
-    color textColor
+    color $textColor
