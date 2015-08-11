@@ -20,13 +20,16 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       _.extend(state, overrides)
 
       if !state.template
-        state.template = require "../../html/views/#{name}.jade"
+        state.templateProvider = ($templateCache) ->
+          console.debug 'loading template:', name
+          $templateCache.get "./views/#{name}.jade"
 
       # state.template = _getTemplate(state.templatePath)
       # delete state.templatePath
       if state.parent
         state.views = {}
         state.views["#{name}@#{state.parent}"] =
+          templateProvider: state.templateProvider
           template: state.template
           controller: state.controller
         delete state.template

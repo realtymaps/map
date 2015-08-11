@@ -17,9 +17,9 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     _.extend(state, overrides)
 
     if !state.template
-        state.templateProvider = ($templateCache) ->
-          console.debug 'loading template:', name
-          $templateCache.get "./views/#{name}.jade"
+      state.templateProvider = ($templateCache) ->
+        console.debug 'loading template:', name
+        $templateCache.get "./views/#{name}.jade"
 
     if state.parent
       state.views = {}
