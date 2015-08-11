@@ -15,8 +15,11 @@ app.controller 'rmapsJobsHealthCtrl',
       sort:
         direction: uiGridConstants.ASC
     ].concat _.map [
+      field: 'combined_count'
+      displayName: 'Total Rows'
+    ,
       field: 'load_count'
-      displayName: 'Loaded'
+      displayName: 'Loads'
     ,
       field: 'inserted'
       displayName: 'Inserted'
@@ -29,6 +32,9 @@ app.controller 'rmapsJobsHealthCtrl',
     ,
       field: 'invalid'
       displayName: 'Invalid'
+    ,
+      field: 'unvalidated'
+      displayName: 'Unvalidated'
     ,
       field: 'null_geometry'
       displayName: 'No Geom'
