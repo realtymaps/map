@@ -131,7 +131,7 @@ loadUpdates = (subtask, options) ->
             _streamArrayToDbTable(results, rawTableName, fields)
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join fieldInfoPromise, recordCountsPromise, finalizePrepPromise, activatePromise  # don't need to do anything
+        Promise.join fieldInfoPromise, queueStepsPromise, () ->  # don't need to do anything, but use an empty handler
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
