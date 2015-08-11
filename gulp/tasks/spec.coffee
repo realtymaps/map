@@ -5,8 +5,7 @@ require './mocha'
 require './watch'
 
 gulp.task 'spec',
-  gulp.parallel gulp.parallel('commonSpec', 'backendSpec', 'gulpSpec'),
-    gulp.series gulp.parallel('angular', 'angularAdmin'), 'frontendSpec'
+  gulp.series 'commonSpec', 'backendSpec', 'gulpSpec', gulp.parallel('angular', 'angularAdmin'), 'frontendSpec'
 
 #front end coverage
 gulp.task 'coverage', gulp.series "spec", ->
