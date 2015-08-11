@@ -10,15 +10,18 @@ coreLogicHelpers = require './util.coreLogicHelpers'
 NUM_ROWS_TO_PAGINATE = 500
 
 
-loadDataRawMain = (subtask) ->
-  mlsHelpers.loadUpdates subtask,
+checkFtpDrop = (subtask) ->
+  
+
+loadRawData = (subtask) ->
+  coreLogicHelpers.loadUpdates subtask,
     rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
-  mlsHelpers.normalizeData subtask,
+  coreLogicHelpers.normalizeData subtask,
     rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
 
@@ -38,16 +41,17 @@ finalizeData = (subtask) ->
   .offset(subtask.data.offset)
   .limit(subtask.data.count)
   .then (ids) ->
-    Promise.map ids, mlsHelpers.finalizeData.bind(null, subtask)
+    Promise.map ids, coreLogicHelpers.finalizeData.bind(null, subtask)
 
 
 subtasks =
-  loadDataRawMain: loadDataRawMain
+  loadRawData: loadRawData
   normalizeData: normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
+  checkFtpDrop: checkFtpDrop
 
 module.exports =
   executeSubtask: (subtask) ->
