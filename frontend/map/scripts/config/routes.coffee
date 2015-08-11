@@ -24,6 +24,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     if state.parent
       state.views = {}
       state.views["#{name}@#{state.parent}"] =
+        templateProvider: state.templateProvider
         template: state.template
         controller: state.controller
       delete state.template

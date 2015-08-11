@@ -3,8 +3,6 @@
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 
-require '../styles/leaflet.styl'
-
 appName = 'rmapsapp'
 
 app = window.angular.module appName, [
