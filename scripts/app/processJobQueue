@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 set -e
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
@@ -6,4 +6,5 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 source $SCRIPT_DIR/app/syncVars
 
+export JQ_QUEUE_NAME="$@"
 coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
