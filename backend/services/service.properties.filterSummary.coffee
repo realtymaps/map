@@ -3,7 +3,7 @@ base = require './service.properties.base.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Point = require('../../common/utils/util.geometries').Point
-{clusterQuery, fillOutDummyClusterIds} = require '../utils/util.sql.manual.cluster'
+sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require "bluebird"
 logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
@@ -42,9 +42,9 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       props
 
   _cluster = ->
-    base.getFilterSummary(state, queryParams, limit, clusterQuery(zoom))
+    base.getFilterSummary(state, queryParams, limit, sqlCluster.clusterQuery(zoom))
     .then (properties) ->
-      fillOutDummyClusterIds(properties)
+      sqlCluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
 

@@ -9,7 +9,12 @@ _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
   "round(ST_#{xy}(geom_point_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
-  query = tables.propertyData.propertyDetails().select(db.knex.raw('count(*)'),
+  query = tables.propertyData.propertyDetails().select(
+    db.knex.raw('count(*)'),
+    db.knex.raw("count(case when rm_status='not for sale' then 1 end) as notforsale"),
+    db.knex.raw("count(case when rm_status='pending' then 1 end) as pending"),
+    db.knex.raw("count(case when rm_status='recently sold' then 1 end) as recentlysold"),
+    db.knex.raw("count(case when rm_status='for sale' then 1 end) as forsale"),
     db.knex.raw("#{_roundCoordCol(roundTo,scale)} as lng"),
     db.knex.raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
   .whereNotNull('city')
@@ -42,7 +47,6 @@ _fillOutDummyClusterIds = (properties) ->
     obj.lng = Number obj.lng
     counter += 1
     obj
-
 
 module.exports =
   clusterQuery: _clusterQuery
