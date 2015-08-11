@@ -3,7 +3,7 @@ fs = require 'fs'
 loader = require '../../../../backend/utils/util.stylusVariableLoader.coffee'
 
 colorPalate = loader fs.readFileSync __dirname + '/../../styles/color_palate.styl', 'utf8'
-colorSchemeS = loader fs.readFileSync __dirname + '/../../styles/color_scheme.styl', 'utf8'
+colorScheme = loader fs.readFileSync __dirname + '/../../styles/color_scheme.styl', 'utf8'
 
 variables = {}
 for key,value of colorScheme
