@@ -50,6 +50,9 @@ module.exports =
     fonts: dest.root + dest.fonts
     index: dest.root + 'rmap.html'
     admin: dest.root + 'admin.html'
+    bundle:
+      map: dest.scripts + '/map.bundle.js'
+      admin: dest.scripts + '/admin.bundle.js'
     webpack:
       map:
         # publicPath: 'http://0.0.0.0:4000/'#for dev only, https://github.com/webpack/style-loader/issues/55, https://github.com/webpack/css-loader/issues/29

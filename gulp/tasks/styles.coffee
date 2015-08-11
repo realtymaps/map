@@ -4,7 +4,6 @@ gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 
-
 gulp.task 'styles', ->
   gulp.src [
     paths.rmap.styles
@@ -22,6 +21,29 @@ gulp.task 'styles', ->
   .pipe stylusFilter.restore
   .pipe $.sourcemaps.write()
   .pipe $.concat 'main.wp.css'
+  # .pipe $.minifyCss()
+  .pipe gulp.dest paths.destFull.styles
+  .pipe $.size
+    title: paths.dest.root
+    showFiles: true
+
+gulp.task 'stylesAdmin', ->
+  gulp.src [
+    paths.admin.styles
+    paths.admin.stylus
+    paths.admin.less
+  ]
+  .pipe $.sourcemaps.init()
+  .pipe lessFilter = $.filter '**/*.less', restore: true
+  .pipe $.less()
+  .on   'error', conf.errorHandler '[Less]'
+  .pipe lessFilter.restore
+  .pipe stylusFilter = $.filter '**/*.styl', restore: true
+  .pipe $.stylus()
+  .on   'error', conf.errorHandler '[Snappity]'
+  .pipe stylusFilter.restore
+  .pipe $.sourcemaps.write()
+  .pipe $.concat 'admin.wp.css'
   # .pipe $.minifyCss()
   .pipe gulp.dest paths.destFull.styles
   .pipe $.size

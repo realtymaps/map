@@ -9,7 +9,7 @@ size = require 'gulp-size'
 concat = require 'gulp-concat'
 log = require('gulp-util').log
 
-gulp.task 'ugly', gulp.series 'webpack', ->
+gulp.task 'ugly', gulp.series 'scripts', ->
   gulp.src("#{path.destFull.scripts}/*.js")
   .pipe plumber()
   .pipe(uglify())
