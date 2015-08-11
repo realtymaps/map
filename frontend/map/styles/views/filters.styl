@@ -69,43 +69,43 @@
         display: inline;
         position: relative;
         background-color: none
-        border: 1px solid rm-translucent-white
+        border: 1px solid $rm-translucent-white
 
         /*label styling*/
         padding: 8px
         font-size: 16px
         font-weight: 200
         line-height: 14px
-        color: rm-translucent-white
+        color: $rm-translucent-white
         vertical-align: baseline
         white-space: nowrap
 
 
 
     input[type="checkbox"].checkbox.forSale:checked + label
-        background-color: rm-highlight-green
+        background-color: $rm-highlight-green
         color: #FFF
-        border-color: rm-highlight-green
+        border-color: $rm-highlight-green
 
     input[type="checkbox"].checkbox.sold:checked + label
-        background-color: rm-property-sold-red
+        background-color: $rm-property-sold-red
         color: #FFF
-        border-color: rm-property-sold-red
+        border-color: $rm-property-sold-red
 
     input[type="checkbox"].checkbox.pending:checked + label
-        background-color: rm-highlight-purple
+        background-color: $rm-highlight-purple
         color: #FFF
-        border-color: rm-highlight-purple
+        border-color: $rm-highlight-purple
 
     input[type="checkbox"].checkbox.notForSale:checked + label
-        background-color: rm-highlight-blue
+        background-color: $rm-highlight-blue
         color: #FFF
-        border-color: rm-highlight-blue
+        border-color: $rm-highlight-blue
 
     input[type="checkbox"].checkbox.saved:checked + label
-      background-color: rm-highlight-yellow
+      background-color: $rm-highlight-yellow
       color: #b6b6b6
-      border-color: rm-highlight-yellow
+      border-color: $rm-highlight-yellow
 
     input[type="checkbox"].checkbox:disabled + label
         opacity: 0.5
@@ -158,7 +158,7 @@ End Results Container
 
 
 .filter-container .btn-default:hover, .btn-default:focus, .btn-default:active, .btn-default.active, .open .dropdown-toggle.btn-default
-    background-color: rm-medium-blue-darker
+    background-color: $rm-medium-blue-darker
     border-color: #adadad
     color:#FFF
 
@@ -172,7 +172,7 @@ End Results Container
     cursor: pointer
 
 #filter-footer
-  $footer()
+  $fnFooter()
 
 #filter-footer .close
-  $footerClose()
+  $fnFooterClose()

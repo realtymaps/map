@@ -1,8 +1,8 @@
-$userBlockSize()
+$fnUserBlockSize()
   width 34px
   height 34px
 
-$makeUserBlock()
+$fnMakeUserBlock()
   #userblock
     float right
     display block
@@ -11,13 +11,13 @@ $makeUserBlock()
     @extends .hidden-xs
     button.avtr
       span
-        $userBlockSize()
+        $fnUserBlockSize()
 
       background c_dark_blue_active
       border none
       font-size 14px
       margin 5px 15px 5px 0
-      $userBlockSize()
+      $fnUserBlockSize()
       text-align center
       color c_white_80
       text-transform uppercase
