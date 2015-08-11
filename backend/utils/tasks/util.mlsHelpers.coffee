@@ -106,7 +106,6 @@ loadUpdates = (subtask, options) ->
         data_source_id: options.dataSourceId
         data_source_type: 'mls'
         batch_id: subtask.batch_id
-        raw_table_name: rawTableName
       .then () ->
         retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
       .then (results) ->
@@ -120,9 +119,16 @@ loadUpdates = (subtask, options) ->
         recordCountsPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        
         # simultaneously create a temp table and stream the data to it
         fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        .then (fieldInfo) ->
+        updateTableNamePromise = tables.jobQueue.dataLoadHistory()
+        .where
+          data_source_id: options.dataSourceId
+          batch_id: subtask.batch_id
+        .update
+          raw_table_name: rawTableName
+        handleDataPromise = Promise.join fieldInfoPromise, updateTableNamePromise, (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
           dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
           .catch isUnhandled, (error) ->
@@ -131,7 +137,15 @@ loadUpdates = (subtask, options) ->
             _streamArrayToDbTable(results, rawTableName, fields)
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join fieldInfoPromise, recordCountsPromise, finalizePrepPromise, activatePromise, () ->  # don't need to do anything
+        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (rawRows) ->
+          tables.jobQueue.dataLoadHistory()
+          .where
+            data_source_id: options.dataSourceId
+            batch_id: subtask.batch_id
+          .update
+            raw_rows: rawRows
+          .then () ->
+            return rawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
