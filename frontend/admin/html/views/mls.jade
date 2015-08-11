@@ -29,16 +29,15 @@ div
                     td
                       label.data-label URL:
                     td(colSpan=2)
-                      input(type="text" ng-model="mlsData.current.url" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                      input(type="text" ng-model="mlsData.current.url" ng-disabled="!principal.hasPermission('change_mlsconfig_serverdata')").form-control.input-lg
                   tr
                     td
                       label.data-label Username:
                     td(colSpan=2)
-                      input(type="text" ng-model="mlsData.current.username" ng-disabled="!principal.hasPermission('change_mlsconfig')").form-control.input-lg
+                      input(type="text" ng-model="mlsData.current.username" ng-disabled="!principal.hasPermission('change_mlsconfig_serverdata')").form-control.input-lg
                   tr
-                    td(colSpan=3)
-                      button(ng-click="saveServerData()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-success Save
-                      button(ng-click="passwordModal()" ng-disabled="!principal.hasPermission('change_mlsconfig')").btn.btn-primary Change Password
+                    td(colSpan=2)
+                      button(ng-click="passwordModal()" ng-disabled="!principal.hasPermission('change_mlsconfig_serverdata')").btn.btn-primary Change Password
 
               accordion-group(is-disabled="!mlsData.current.id")
                 accordion-heading
