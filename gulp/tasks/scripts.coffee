@@ -24,11 +24,6 @@ gulp.task 'coffee', ->
   .pipe $.coffee()
   .on   'error', conf.errorHandler '[CoffeeScript]'
   .pipe $.ngAnnotate()
-  .pipe $.angularFilesort()
-  .pipe $.wrapCommonjs
-    autoRequire: false
-    pathModifier: (path) ->
-      path.replace /.*?(frontend\/.*)/, '$1'
   .pipe $.sourcemaps.write()
   .pipe coffeeFilter.restore
   .pipe $.addSrc.append paths.destFull.scripts + '/templateCacheHtml.js'
