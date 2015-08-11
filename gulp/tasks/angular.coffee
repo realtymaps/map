@@ -25,5 +25,5 @@ gulp.task 'angular', gulp.parallel 'styles', 'bundle'
 
 gulp.task 'angularAdmin', gulp.parallel 'stylesAdmin', 'bundleAdmin'
 
-gulp.task 'angularProd', gulp.series 'angular'  ->
+gulp.task 'angularProd', gulp.series 'angular', ->
   # uglify here

@@ -28,7 +28,7 @@ gulp.task 'watch_front', ->
   gulp.watch rmapPaths, gulp.series 'angular'
   done()
 
-gulp.task 'watch_rest', gulp.series 'watch_front', 'watch_vendor', ->
+gulp.task 'watch_admin', ->
   gulp.watch adminPaths, gulp.series 'angularAdmin'
   done()
 
