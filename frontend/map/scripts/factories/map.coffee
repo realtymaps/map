@@ -194,7 +194,7 @@ app.factory 'rmapsMap',
                   self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
                   self.scope.map.layers.overlays.filterSummary.visible = false
                   self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
-                  #$log.info "#### pushing geojson promise..."
+
                   rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
                   .then (data) =>
                     return if !data? or _.isString data

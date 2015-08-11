@@ -2,6 +2,7 @@ app = require '../app.coffee'
 sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
+pieUtil = require '../utils/util.piechart.coffee'
 
 app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
 
@@ -97,7 +98,6 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       markersBSLabel['saved'] = 'saved-property'
 
       setMarkerPriceOptions: (model) ->
-        $log.info "#### setMarkerPriceOptions()"
         return {} unless model
         if not model.price
           formattedPrice = " &nbsp; &nbsp; &nbsp;"
@@ -127,24 +127,12 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
       setMarkerManualClusterOptions: (model) ->
         return {} unless model
-        clusterSize = 'small'
-        clusterSize = 'medium' if model.count > 10
-        clusterSize = 'large' if model.count > 50
-
         #important for the clusterer css a div must have child span
         _.extend model,
           markerType: "cluster"
           icon:
             type: 'div'
-            iconSize: [60, 30]
-            html: """
-              <div class='leaflet-marker-icon marker-cluster marker-cluster-#{clusterSize} leaflet-zoom-animated'
-                style='margin-left: -20px; margin-top: -20px; width: 40px; height: 40px;'>
-                  <div>
-                    <span>#{model.count}</span>
-                  </div>
-              </div>"""
-
+            html: pieUtil.pieCreateFunctionBackend(model)
 
         visible: true
 
