@@ -1,7 +1,7 @@
 /* Set some basic rules */
 html
   overflow:auto !important
-  font: mainFont
+  font: $mainFont
 
 .inline
   display: inline-block
@@ -22,7 +22,7 @@ html
 
 .center-on-page
   position absolute
-  top -(navbar-height)
+  top -($navbarHeight)
   bottom 0
   left 0
   right 0
@@ -31,12 +31,12 @@ html
 body
     height: 100%
     width: 100%
-    background: rm-main-dark-blue
+    background: $rmMainDarkBlue
     overflow: hidden
 
 /* Move down content because we have a fixed navbar */
 body
-    padding-top: navbar-height
+    padding-top: $navbarHeight
 
 .starter-template
     padding: 40px 15px
@@ -53,7 +53,7 @@ body
 .page
     bottom:0
     position:absolute
-    top:navbar-height
+    top:$navbarHeight
     width:100%
 
 
@@ -153,22 +153,6 @@ body
     to { transform: translateX(0); }
 }
 
-
-
-$border-radius()
-  -webkit-border-radius arguments
-  -moz-border-radius arguments
-  border-radius arguments
-
-$scale()
-  transform: scale(arguments)
-  -webkit-transform: scale(arguments)
-  -ms-transform: scale(arguments)
-  -moz-transform: scale(arguments)
-  -o-transform: scale(arguments)
-
-$logo-height = 150px
-
 checkbox(size)
   input[type=checkbox]
     opacity: 0
@@ -185,7 +169,7 @@ checkbox(size)
       background: url(/assets/sprites.png) no-repeat 0 -24px
 
 .light-message
-  color: rm-light-gray
+  color: $rm-light-gray
 
 .margin-10
  margin 10px
@@ -231,19 +215,7 @@ form.comfy
 .spacer
   margin-top: 25px
 
-/*
-Holy crap stylus.. you need to be careful to not name functions anything close to real property names in css
-I recommend pre-pending all functions with fn
-JWI: I had been using the convention of starting with $ for functions and variables (see $border-radius(), $scale(),
-     and $logo-height earlier in this file) -- it stands out visually much better.  We have a lot of variables now that
-     don't follow this convention, so that would be some effort at this point, but as I noted elsewhere we need to
-     change up our variable names anyway because they should have either scheme-descriptive names (like $rm-bright-yellow)
-     or semantic names (like $rm-saved-hover-text), not both (like $rm-saved-property-yellow).  Cleaning all that up
-     at the same time would be a good idea, and ideally setting things up in a 2-tiered approach so that we define a
-     color palate first ($rm-bright-yellow, $rm-dark-yellow, etc) then use that palate with semantic aliases or functions
-     ($rm-saved-status() which would set appropriate text color, bgcolor, color when combined with a .hover class, etc).
-*/
-$text-overflow(dimension)
+$fnTextOverflow(dimension)
   white-space: nowrap
   overflow-{dimension}:hidden !important
   text-overflow: ellipsis
@@ -254,10 +226,10 @@ $text-overflow(dimension)
   display: inline-block
 
 .text-overflow-x
-  $text-overflow(x)
+  $fnTextOverflow(x)
 
 .text-overflow-y
-  $text-overflow(y)
+  $fnTextOverflow(y)
 
 
 .text-wrap, .text-overflow-x:hover, .text-overflow-y:hover
@@ -269,7 +241,7 @@ $text-overflow(dimension)
   position: relative
 
 /*http://stackoverflow.com/questions/211383/which-method-of-clearfix-is-best*/
-$clearFix()
+$fnClearFix()
   content:"";
   display:table;
   clear:both;
@@ -279,14 +251,14 @@ for num in 5 10 15 20 25 30 35 40 45 50
     .{where}-margin-{num}
       margin-{where} unit(num,'px')
 
-$footer()
+$fnFooter()
   width: 100%
-  background: rm-medium-blue-darker
+  background: $rm-medium-blue-darker
   height: $footerHeight
   position: absolute
   bottom: 0px
 
-$footerClose()
+$fnFooterClose()
   float: right
   font-size: 45px
   font-weight: 100
@@ -299,11 +271,11 @@ $footerClose()
 .slide-out-container
   margin: 0 0 0 0px
   position: absolute
-  height $slideout-height
+  height $slideoutHeight
   width: 100%
   z-index: 1000
   top: 0px
-  background-color: rm-medium-blue-darker
+  background-color: $rm-medium-blue-darker
 
 $fnMobileToolbarPadding()
   padding 25px 25px $footerHeight $toolBarMobileLeftPadding

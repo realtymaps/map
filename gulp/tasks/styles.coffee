@@ -7,7 +7,7 @@ $ = require('gulp-load-plugins')()
 gulp.task 'styles', ->
   gulp.src [
     paths.rmap.styles
-    paths.rmap.stylus
+    paths.rmap.rootStylus
     paths.rmap.less
   ]
   .pipe $.sourcemaps.init()
@@ -30,7 +30,7 @@ gulp.task 'styles', ->
 gulp.task 'stylesAdmin', ->
   gulp.src [
     paths.admin.styles
-    paths.admin.stylus
+    paths.admin.rootStylus
     paths.admin.less
   ]
   .pipe $.sourcemaps.init()

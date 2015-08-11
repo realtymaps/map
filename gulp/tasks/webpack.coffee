@@ -43,7 +43,7 @@ runWebpack = (someConfig, app='rmap') ->
     paths[app].assets
     paths[app].styles
     paths[app].less
-    paths[app].stylus
+    paths[app].rootStylus
     paths[app].jade
     paths[app].html
     paths[app].webpackLibs

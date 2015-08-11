@@ -1,7 +1,7 @@
 /* Results Container
 ============================================================================= */
-listNormalWidth = 500px
-listMediaWidth = 350px
+$listNormalWidth = 500px
+$listMediaWidth = 350px
 
 savedButton()
   .fa.fa-square.fa-lg.btn.btn-default.btn-xs
@@ -9,22 +9,22 @@ savedButton()
 
 propertyStatus()
   .property-status
-    color rm-main-dark-blue
+    color $rmMainDarkBlue
 
   .sold
-    color: rm-property-sold-red
+    color: $rm-property-sold-red
 
   .forsale
-    color rm-highlight-green
+    color $rm-highlight-green
 
   .pending
-    color: rm-property-pending-purple
+    color: $rm-property-pending-purple
 
   .saved
-    color: rm-property-save-yello
+    color: $rm-property-save-yello
 
   .notsale
-    color: rm-property-notsale-blue
+    color: $rm-property-notsale-blue
 
 
 basicTitle()
@@ -36,7 +36,7 @@ data()
     font-size: .7em
 
 $fnOverrideSliderBackgroundColor()
-  background-color: rm-translucent-white
+  background-color: $rm-translucent-white
 
 #results-slide
   transition: 0.15s all ease-in-out
@@ -68,8 +68,8 @@ $fnOverrideSliderBackgroundColor()
      &:hover
      &:focus
      &:active
-       background-color: rm-btn-save-yellow
-       color: rm-property-save-bright-foreground
+       background-color: $rm-btn-save-yellow
+       color: $rm-property-save-bright-foreground
 
 .property-status
    $border-radius(3px)
@@ -118,7 +118,7 @@ $fnOverrideSliderBackgroundColor()
   padding: 8px
 
 #results-footer
-  $footer()
+  $fnFooter()
 
 #results-close
   float: left
@@ -129,7 +129,7 @@ $fnOverrideSliderBackgroundColor()
   left: -35px
 
 #results-footer .close
-  $footerClose()
+  $fnFooterClose()
 
 /* Extra small devices (phones, up to 480px) */
 /* No media query since this is the default in Bootstrap */
@@ -165,7 +165,7 @@ $fnOverrideSliderBackgroundColor()
   /*.results-list-inner*/
   /*button*/
   .active-sort
-    background-color rm-medium-blue
+    background-color $rm-medium-blue
     color white
 
   #results-list-inner
@@ -186,7 +186,7 @@ $fnOverrideSliderBackgroundColor()
     overflow hidden
 
   .result-property-hovered
-    background rm-results-hover
+    background $rm-results-hover
 
   .result-property:hover
     @extend .results-container .result-property-hovered
@@ -228,7 +228,7 @@ $fnOverrideSliderBackgroundColor()
   .address
     @extend .text-overflow-x
     font-size 16px
-    color rm-medium-blue-darker
+    color $rm-medium-blue-darker
     width: 100%
 
   .address:hover
@@ -240,7 +240,7 @@ $fnOverrideSliderBackgroundColor()
     right 50px
     display inline-block
     font-size 16px
-    color rm-medium-blue-darker
+    color $rm-medium-blue-darker
     span.price-label
       font-size 8px
 
@@ -278,7 +278,7 @@ $fnOverrideSliderBackgroundColor()
 /* Small devices (tablets, 768px and up) */
 @media (min-width: 768px)
   .results-container
-    width: listMediaWidth
+    width: $listMediaWidth
     $fnRevertToolbarPadding()
     .price
       right 5px
@@ -309,7 +309,7 @@ $fnOverrideSliderBackgroundColor()
 /* Medium devices (desktops, 992px and up) */
 @media (min-width: 992px)
   .results-container
-    width: listNormalWidth
+    width: $listNormalWidth
     .sort-by
       display inline
 
@@ -373,12 +373,12 @@ Detail Container
 
 #detail-footer
   width: 100%
-  background: rm-medium-blue-darker
+  background: $rm-medium-blue-darker
   height: 50px
   position: absolute
   bottom: 0px
   .close
-    $footerClose()
+    $fnFooterClose()
 
 detailData()
   font-size 18px
@@ -430,7 +430,7 @@ detailTitle()
     top 17%
     left 50%
   .sk-spinner-double-bounce .sk-double-bounce1, .sk-spinner-double-bounce .sk-double-bounce2
-    background-color rm-medium-blue-darker
+    background-color $rm-medium-blue-darker
 
   .angular-google-map-street-view-panorama
     height 300px
@@ -450,12 +450,12 @@ detailTitle()
 
   .price
     font-size 20px
-    color rm-medium-blue-darker
+    color $rm-medium-blue-darker
     text-align left
 
   .address
     font-size 20px
-    color rm-medium-blue-darker
+    color $rm-medium-blue-darker
     @extend .text-wrap
 
   .city-state-zip
@@ -508,7 +508,7 @@ detailTitle()
 @media (min-width: 768px)
 
   .detail-container
-    width: listMediaWidth
+    width: $listMediaWidth
     .photo
       height: 300px
     .close
@@ -528,7 +528,7 @@ detailTitle()
 @media (min-width: 992px)
 
   .detail-container
-    width: listNormalWidth
+    width: $listNormalWidth
     $fnRevertToolbarPadding()
 
   #detail-close

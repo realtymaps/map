@@ -19,6 +19,14 @@ formatPieData = (data) ->
     v.length
   .entries data, d3.map
 
+formatPieDataBackend = (cluster) ->
+  return [
+    {key: "pending", values: {"length": cluster.pending}}, # feign 'length' attribute of array
+    {key: "for sale", values: {"length": cluster.forsale}},
+    {key: "recently sold", values: {"length": cluster.recentlysold}},
+    {key: "not for sale", values: {"length": cluster.notforsale}}
+  ]
+
 makeSvg = (data, total) ->
   # stage items for processing and creating pie data
   donut = d3.layout.pie()
@@ -72,6 +80,11 @@ pieCreateFunction = (cluster) ->
   return new L.DivIcon
     html: html
 
+pieCreateFunctionBackend = (cluster) ->
+  data = formatPieDataBackend(cluster)
+  return serializeXmlNode(makeSvg(data, cluster.count))
+
 
 module.exports = 
   pieCreateFunction: pieCreateFunction
+  pieCreateFunctionBackend: pieCreateFunctionBackend

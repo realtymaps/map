@@ -12,7 +12,7 @@ html, body
 
 html
   cursor default
-  background c_dark_blue_darker
+  background $c_dark_blue_darker
   // @extends .font-regular
 
 h1.logo
@@ -40,7 +40,7 @@ h1.logo
   animation pulse 1s ease 1s 3
 
 .mobile-page
-  background c_dark_blue_darker
+  background $c_dark_blue_darker
   position absolute
   z-index 1
   left 0
@@ -66,10 +66,10 @@ header.site-header
     float left
     width 100%
 
-    $makeNav()
-    $makeSearchField()
-    $makeNotices()
-    $makeUserBlock()
+    $fnMakeNav()
+    $fnMakeSearchField()
+    $fnMakeNotices()
+    $fnMakeUserBlock()
 
 @media screen and (-webkit-min-device-pixel-ratio:0)
   .site-main
