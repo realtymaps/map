@@ -5,13 +5,23 @@ tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 coreLogicHelpers = require './util.coreLogicHelpers'
+encryptor = require '../../config/encryptor'
+PromiseFtp = require '../util.promiseFtp'
 
 
 NUM_ROWS_TO_PAGINATE = 500
 
 
 checkFtpDrop = (subtask) ->
-  
+  ftp = new PromiseFtp()
+  ftp.connect
+    host: subtask.task_data.host
+    user: subtask.task_data.user
+    password: encryptor.decrypt(subtask.task_data.password)
+  .then (msg) ->
+    logger.debug("FTP message: #{msg}")
+    ftp.list('/')
+  .then ()
 
 loadRawData = (subtask) ->
   coreLogicHelpers.loadUpdates subtask,
