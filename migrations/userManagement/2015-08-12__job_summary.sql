@@ -25,19 +25,7 @@ FROM
   LEFT JOIN
   (
     SELECT CASE 
-      WHEN status = 'running' THEN
-        (CASE
-          WHEN DATE_PART('day', now() - started) * 24 +
-               DATE_PART('hour', now() - started) > 1
-            THEN 'Last Hour'
-          WHEN DATE_PART('day', now() - started) * 24 +
-               DATE_PART('hour', now() - started) > 24
-            THEN 'Last Day'
-          WHEN DATE_PART('day', now() - started) > 7
-            THEN 'Last 7 Days'
-          WHEN DATE_PART('day', now() - started) > 30
-            THEN 'Last 30 Days'
-        END) 
+      WHEN status = 'running' THEN 'Last Hour'
       ELSE
         (CASE
           WHEN DATE_PART('day', now() - finished) * 24 +
