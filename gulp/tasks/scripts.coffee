@@ -22,23 +22,19 @@ gulp.task 'browserifyAdmin', ->
 gulp.task 'coffee', ->
   gulp.src [
     paths.rmap.scripts
-    path.admin.scripts
+    paths.admin.scripts
   ]
   .pipe coffeeFilter = $.filter '**/*.coffee', restore: true
   .pipe $.sourcemaps.init()
-  .pipe $.coffeelint null, require './coffeelint.coffee'
+  .pipe $.coffeelint()
   .pipe $.coffeelint.reporter()
   .pipe $.coffee()
   .on   'error', conf.errorHandler '[CoffeeScript]'
   .pipe $.ngAnnotate()
   .pipe $.sourcemaps.write()
   .pipe coffeeFilter.restore
-  .pipe $.addSrc.append paths.destFull.scripts + '/templateCacheHtml.js'
-  .pipe $.concat 'main.bundle.js'
-  .pipe $.uglify()
-  .pipe gulp.dest paths.destFull.scripts
   .pipe $.size
-    title: paths.dest.root
+    title: 'All CoffeeScript'
     showFiles: true
 
 gulp.task 'scripts', gulp.series 'browserify'
