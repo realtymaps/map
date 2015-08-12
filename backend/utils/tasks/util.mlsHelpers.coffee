@@ -80,10 +80,6 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 
   # then get fields missing from row1
   _.extend result, _.omit(fields2, Object.keys(fields1))
-  
-  if !_.isEmpty result
-    util = require 'util'
-  result
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
