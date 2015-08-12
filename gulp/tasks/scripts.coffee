@@ -29,7 +29,7 @@ gulp.task 'coffee', ->
   .pipe $.coffeelint()
   .pipe $.coffeelint.reporter()
   .pipe $.coffee()
-  .on   'error', conf.errorHandler '[CoffeeScript]'
+  .on   'error', conf.errorHandler 'CoffeeScript'
   .pipe $.ngAnnotate()
   .pipe $.sourcemaps.write()
   .pipe coffeeFilter.restore

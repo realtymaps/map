@@ -9,7 +9,7 @@ gulp.task 'markup', ->
   .pipe $.consolidate 'jade',
     doctype: 'html'
     pretty: '  '
-  .on   'error', conf.errorHandler '[Jade]'
+  .on   'error', conf.errorHandler 'Jade'
   .pipe $.minifyHtml
     empty: true
     spare: true
@@ -25,7 +25,7 @@ gulp.task 'markupAdmin', ->
   .pipe $.consolidate 'jade',
     doctype: 'html'
     pretty: '  '
-  .on   'error', conf.errorHandler '[Jade]'
+  .on   'error', conf.errorHandler 'Jade'
   .pipe $.minifyHtml
     empty: true
     spare: true

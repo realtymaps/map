@@ -13,14 +13,14 @@ gulp.task 'styles', ->
   .pipe $.sourcemaps.init()
   .pipe lessFilter = $.filter '**/*.less', restore: true
   .pipe $.less()
-  .on   'error', conf.errorHandler '[Less]'
+  .on   'error', conf.errorHandler 'Less'
   .pipe lessFilter.restore
   .pipe stylusFilter = $.filter '**/*.styl', restore: true
   .pipe $.stylus()
-  .on   'error', conf.errorHandler '[Stylus]'
+  .on   'error', conf.errorHandler 'Stylus'
   .pipe stylusFilter.restore
   .pipe $.sourcemaps.write()
-  .pipe $.concat 'main.wp.css'
+  .pipe $.concat 'map.css'
   # .pipe $.minifyCss()
   .pipe gulp.dest paths.destFull.styles
   .pipe $.size
@@ -36,14 +36,14 @@ gulp.task 'stylesAdmin', ->
   .pipe $.sourcemaps.init()
   .pipe lessFilter = $.filter '**/*.less', restore: true
   .pipe $.less()
-  .on   'error', conf.errorHandler '[Less]'
+  .on   'error', conf.errorHandler 'Less'
   .pipe lessFilter.restore
   .pipe stylusFilter = $.filter '**/*.styl', restore: true
   .pipe $.stylus()
-  .on   'error', conf.errorHandler '[Snappity]'
+  .on   'error', conf.errorHandler 'Stylus'
   .pipe stylusFilter.restore
   .pipe $.sourcemaps.write()
-  .pipe $.concat 'admin.wp.css'
+  .pipe $.concat 'admin.css'
   # .pipe $.minifyCss()
   .pipe gulp.dest paths.destFull.styles
   .pipe $.size
