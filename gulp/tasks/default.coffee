@@ -27,7 +27,7 @@ gulp.task 'develop_no_spec', gulp.series 'clean', 'angular', 'angularAdmin', 'ex
 
 gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
-gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'angular', 'minify', 'gzip'
+gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'angular', 'angularAdmin', 'minify', 'gzip'
 
 gulp.task 'default', gulp.series 'develop'
 
