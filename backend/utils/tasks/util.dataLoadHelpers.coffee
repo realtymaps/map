@@ -49,14 +49,17 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
       destDataTable(this)
-      .where(batch_id: subtask.batch_id)
-      .whereNull('change_history')
+      .where(inserted: subtask.batch_id)
       .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = () ->
       destDataTable(this)
+      .where(updated: subtask.batch_id)
+      .count('*')
+    touchedSubquery = () ->
+      destDataTable(this)
       .where(batch_id: subtask.batch_id)
-      .whereNotNull('change_history')
+      .orWhere(deleted: subtask.batch_id)
       .count('*')
     tables.jobQueue.dataLoadHistory()
     .where(batch_id: subtask.batch_id)
@@ -66,6 +69,7 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
       inserted_rows: insertedSubquery
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
+      touched_rows: touchedSubquery
 
 
 activateNewData = (subtask) ->

@@ -76,10 +76,14 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
     if fieldName in diffExcludeKeys
       continue
     if !_.isEqual value1, fields2[fieldName]
-      result[fieldName] = if fieldName in fields2 then fields2[fieldName] else null
+      result[fieldName] = (fields2[fieldName] ? null)
 
   # then get fields missing from row1
   _.extend result, _.omit(fields2, Object.keys(fields1))
+  
+  if !_.isEmpty result
+    util = require 'util'
+  result
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -244,6 +248,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       sale: normalizedData.sale || []
     hidden_fields: _getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
+    deleted: null
   updateRow = _.extend base, stats, data
   # check for an existing row
   tables.propertyData.mls()
@@ -254,6 +259,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
   .then (result) ->
     if !result?.length
       # no existing row, just insert
+      updateRow.inserted = stats.batch_id
       tables.propertyData.mls()
       .insert(updateRow)
     else
@@ -263,6 +269,7 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       changes = _diff(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
+        updateRow.updated = stats.batch_id
       updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.mls(), updateRow.change_history)
       tables.propertyData.mls()
       .where
