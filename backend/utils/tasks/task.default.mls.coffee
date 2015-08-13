@@ -5,6 +5,7 @@ tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 mlsHelpers = require './util.mlsHelpers'
+_ = require 'lodash'
 
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
@@ -26,22 +27,15 @@ normalizeData = (subtask) ->
     dataSourceId: subtask.task_name
 
 finalizeDataPrep = (subtask) ->
-  query = tables.propertyData.mls()
-  sqlHelpers.selectCountDistinct(query, 'rm_property_id')
-  .where(batch_id: subtask.batch_id)
-  .then (info) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, info[0].count, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
-
-finalizeData = (subtask) ->
   tables.propertyData.mls()
   .distinct('rm_property_id')
   .select()
   .where(batch_id: subtask.batch_id)
-  .orderBy('rm_property_id')
-  .offset(subtask.data.offset)
-  .limit(subtask.data.count)
   .then (ids) ->
-    Promise.map ids, mlsHelpers.finalizeData.bind(null, subtask)
+    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+
+finalizeData = (subtask) ->
+  Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
       
 
 subtasks =

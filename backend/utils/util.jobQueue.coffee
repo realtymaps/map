@@ -47,15 +47,16 @@ _getTaskCode = (taskName) ->
 _getTaskCode = memoize.promise(_getTaskCode)
 
 _withDbLock = (lockId, handler) ->
+  id = cluster.worker?.id ? 'X'
   knex.transaction (transaction) ->
-    logger.error "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Getting lock: #{lockId}"
+    logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
     .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.error "========================<#{cluster.worker.id}> Acquired lock: #{lockId}"
+      logger.error "==================<#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
     .then (result) ->
-      logger.error "------------------------<#{cluster.worker.id}> Releasing lock: #{lockId}"
+      logger.error "------------------<#{id}> Releasing lock: #{lockId}"
       result
 
 queueReadyTasks = () -> Promise.try () ->
@@ -213,15 +214,7 @@ queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualD
     queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
 
 queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
-  logger.info "Queuing subtask: #{subtask.name}"
   Promise.try () ->
-    if _taskData != undefined
-      return _taskData
-    tables.jobQueue.taskHistory(transaction)
-    .where(current: true, name: subtask.task_name)
-    .then (task) ->
-      task?[0]?.data
-  .then (taskData) ->
     if manualData?
       if replace
         subtaskData = manualData
@@ -238,29 +231,39 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           subtaskData = _.extend(subtask.data||{}, manualData)
     else
       subtaskData = subtask.data
-    if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
-      Promise.map subtaskData, (data) ->
+    suffix = if subtaskData?.length then "(#{subtaskData.length})" else ''
+    logger.info "Queuing subtask: #{subtask.name}#{suffix}"
+    Promise.try () ->
+      if _taskData != undefined
+        return _taskData
+      tables.jobQueue.taskHistory(transaction)
+      .where(current: true, name: subtask.task_name)
+      .then (task) ->
+        task?[0]?.data
+    .then (taskData) ->
+      if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
+        Promise.map subtaskData, (data) ->
+          singleSubtask = _.clone(subtask)
+          singleSubtask.data = data
+          if mergeData?
+            _.extend(singleSubtask.data, mergeData)
+          singleSubtask.task_data = taskData
+          singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+          singleSubtask.batch_id = batchId
+          tables.jobQueue.currentSubtasks(transaction)
+          .insert singleSubtask
+        .then () ->
+          return subtaskData.length
+      else
         singleSubtask = _.clone(subtask)
-        singleSubtask.data = data
-        if mergeData?
-          _.extend(singleSubtask.data, mergeData)
+        singleSubtask.data = subtaskData
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction)
         .insert singleSubtask
-      .then () ->
-        return subtaskData.length
-    else
-      singleSubtask = _.clone(subtask)
-      singleSubtask.data = subtaskData
-      singleSubtask.task_data = taskData
-      singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
-      singleSubtask.batch_id = batchId
-      tables.jobQueue.currentSubtasks(transaction)
-      .insert singleSubtask
-      .then () ->
-        return 1
+        .then () ->
+          return 1
 
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
@@ -327,7 +330,7 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Error executing subtask #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>: #{error.stack||error}")
+      logger.error("Error executing subtask #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
     else
       if subtask.retry_max_count? && subtask.retry_max_count >= subtask.retry_num
         if subtask.hard_fail_after_retries
@@ -540,7 +543,13 @@ queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, 
   .then (laterSubtask) ->
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
 
-queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
+queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask) -> Promise.try () ->
+  if _.isArray(totalOrList)
+    list = totalOrList
+    total = totalOrList.length
+  else
+    list = null
+    total = totalOrList
   total = Number(total)
   if !total
     return
@@ -554,6 +563,8 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
       count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
       i: i
       of: subtasks
+    if list
+      datum.values = list.slice(datum.offset, datum.offset+datum.count)
     data.push datum
     subtasksQueued++
     countHandled += datum.count
@@ -580,7 +591,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
-      logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
+      logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       executeSubtask(subtask)
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
     else if quit
