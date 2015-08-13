@@ -6,6 +6,8 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 $SCRIPT_DIR/app/stopServe
 
+source $SCRIPT_DIR/app/syncVars
+
 $SCRIPT_DIR/database/syncAll --breaking
 
 $SCRIPT_DIR/app/serve
