@@ -2,17 +2,17 @@
   .col-md-2.menu
     ul.nav.nav-pills.nav-stacked
       li
-        a(ui-sref="jobsCurrent") Current
+        a(ui-sref="jobsCurrent" ui-sref-opts="{reload: true}") Current
       li
-        a(ui-sref="jobsHistory") History
+        a(ui-sref="jobsHistory" ui-sref-opts="{reload: true}") History
       li
-        a(ui-sref="jobsHealth") Health
+        a(ui-sref="jobsHealth" ui-sref-opts="{reload: true}") Health
       li
-        a(ui-sref="jobsQueue") Queues
+        a(ui-sref="jobsQueue" ui-sref-opts="{reload: true}") Queues
       li
-        a(ui-sref="jobsTask") Tasks
+        a(ui-sref="jobsTask" ui-sref-opts="{reload: true}") Tasks
       li
-        a(ui-sref="jobsSubtask") Subtasks
+        a(ui-sref="jobsSubtask" ui-sref-opts="{reload: true}") Subtasks
   .col-md-10
     div(ng-repeat="state in $state.get() | filter:{parent: 'jobs'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
 
