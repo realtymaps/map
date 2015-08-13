@@ -46,22 +46,17 @@ _getTaskCode = (taskName) ->
       throw new Error("can't find code for task with name: #{taskName}")
 _getTaskCode = memoize.promise(_getTaskCode)
 
-_withDbLock = (lockId, shared, handler) ->
-  if shared
-    maybeShared = "_shared"
-  else
-    maybeShared = ""
-  knex
-  .select(knex.raw("pg_advisory_lock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
-  .then () ->
-    return handler()
-  .tap () ->
-    # Bluebird says not to use finally() for resource management:
-    #     https://github.com/petkaantonov/bluebird/blob/master/API.md#resource-management
-    # However, an understanding of the type of leak-bug mentioned in the Bluebird docs and careful inspection of the
-    # code can allow you to use finally() sometimes, instead of the more complicated using()
-    knex
-    .select(knex.raw("pg_advisory_unlock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
+_withDbLock = (lockId, handler) ->
+  knex.transaction (transaction) ->
+    logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Getting lock: #{lockId}"
+    transaction
+    .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
+    .then () ->
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Acquired lock: #{lockId}"
+      handler(transaction)
+    .then (result) ->
+      logger.debug "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Releasing lock: #{lockId}"
+      result
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -85,8 +80,8 @@ queueReadyTasks = () -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    _withDbLock JQ_SCHEDULING_LOCK_ID, false, () ->
-      tables.jobQueue.taskConfig()
+    _withDbLock JQ_SCHEDULING_LOCK_ID, (transaction) ->
+      tables.jobQueue.taskConfig(transaction)
       .select()
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
@@ -116,9 +111,8 @@ queueReadyTasks = () -> Promise.try () ->
                 .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
                 .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
       .then (readyTasks=[]) ->
-        knex.transaction (transaction) ->
-          Promise.map readyTasks, (task) ->
-            queueTask(transaction, batchId, task, '<scheduler>')
+        Promise.map readyTasks, (task) ->
+          queueTask(transaction, batchId, task, '<scheduler>')
       
 queueManualTask = (name, initiator) ->
   if !name
@@ -249,7 +243,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         if mergeData?
           _.extend(singleSubtask.data, mergeData)
         singleSubtask.task_data = taskData
-        singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
+        singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction)
         .insert singleSubtask
@@ -259,7 +253,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       singleSubtask = _.clone(subtask)
       singleSubtask.data = subtaskData
       singleSubtask.task_data = taskData
-      singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
+      singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
       singleSubtask.batch_id = batchId
       tables.jobQueue.currentSubtasks(transaction)
       .insert singleSubtask
@@ -382,15 +376,14 @@ _getQueueLockId = (queueName) ->
     queueLockId[0].lock_id
 _getQueueLockId = memoize.promise(_getQueueLockId)
 
-# should this be rewritten to use a query built by knex?  I decided to implement it as a stored proc
-# in order to enforce the locking semantics, but I'm not sure if that's really a good reason
+# TODO: should this be rewritten to use a query built by knex instead of a stored proc?
 getQueuedSubtask = (queueName) ->
   _getQueueLockId(queueName)
   .then (queueLockId) ->
-    _withDbLock queueLockId, false, () ->
-      knex
+    _withDbLock queueLockId, (transaction) ->
+      transaction
       .select('*')
-      .from(knex.raw('jq_get_next_subtask(?)', [queueName]))
+      .from(transaction.raw('jq_get_next_subtask(?)', [queueName]))
       .then (results) ->
         if !results?[0]?.id?
           return null
