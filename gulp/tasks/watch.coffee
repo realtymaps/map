@@ -24,11 +24,11 @@ gulp.task 'watch_vendor', (done) ->
   gulp.watch paths.bower, gulp.series 'vendor'
   done()
 
-gulp.task 'watch_front', ->
+gulp.task 'watch_front', (done) ->
   gulp.watch rmapPaths, gulp.series 'angular'
   done()
 
-gulp.task 'watch_admin', ->
+gulp.task 'watch_admin', (done) ->
   gulp.watch adminPaths, gulp.series 'angularAdmin'
   done()
 

@@ -19356,6 +19356,30 @@
         }
       }
     },
+    "gulp-order": {
+      "version": "1.1.1",
+      "from": "gulp-order@*",
+      "resolved": "https://registry.npmjs.org/gulp-order/-/gulp-order-1.1.1.tgz",
+      "dependencies": {
+        "minimatch": {
+          "version": "0.2.14",
+          "from": "minimatch@>=0.2.14 <0.3.0",
+          "resolved": "https://registry.npmjs.org/minimatch/-/minimatch-0.2.14.tgz",
+          "dependencies": {
+            "lru-cache": {
+              "version": "2.6.5",
+              "from": "lru-cache@>=2.0.0 <3.0.0",
+              "resolved": "https://registry.npmjs.org/lru-cache/-/lru-cache-2.6.5.tgz"
+            },
+            "sigmund": {
+              "version": "1.0.1",
+              "from": "sigmund@>=1.0.0 <1.1.0",
+              "resolved": "https://registry.npmjs.org/sigmund/-/sigmund-1.0.1.tgz"
+            }
+          }
+        }
+      }
+    },
     "gulp-plumber": {
       "version": "1.0.1",
       "from": "gulp-plumber@>=1.0.0 <1.1.0",
