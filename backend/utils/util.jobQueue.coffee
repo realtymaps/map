@@ -130,6 +130,7 @@ queueManualTask = (name, initiator) ->
         queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
+  logger.info "Queuing task: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -212,6 +213,7 @@ queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualD
     queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
 
 queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
+  logger.info "Queuing subtask: #{subtask.name}"
   Promise.try () ->
     if _taskData != undefined
       return _taskData
