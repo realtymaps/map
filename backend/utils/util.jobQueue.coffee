@@ -48,14 +48,14 @@ _getTaskCode = memoize.promise(_getTaskCode)
 
 _withDbLock = (lockId, handler) ->
   knex.transaction (transaction) ->
-    logger.error "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Getting lock: #{lockId}"
+    logger.error "@@@@@@@@@@@@@@@@@@<#{cluster.worker?.id}> Getting lock: #{lockId}"
     transaction
     .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.error "========================<#{cluster.worker.id}> Acquired lock: #{lockId}"
+      logger.error "==================<#{cluster.worker?.id}> Acquired lock: #{lockId}"
       handler(transaction)
     .then (result) ->
-      logger.error "------------------------<#{cluster.worker.id}> Releasing lock: #{lockId}"
+      logger.error "------------------<#{cluster.worker?.id}> Releasing lock: #{lockId}"
       result
 
 queueReadyTasks = () -> Promise.try () ->
