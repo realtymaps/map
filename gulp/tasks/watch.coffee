@@ -25,16 +25,17 @@ gulp.task 'watch_vendor', (done) ->
   done()
 
 gulp.task 'watch_front', (done) ->
-  gulp.watch rmapPaths, gulp.series 'webpack'
+  gulp.watch rmapPaths, gulp.series 'angular'
   done()
 
 gulp.task 'watch_admin', (done) ->
-  gulp.watch adminPaths, gulp.series 'webpackAdmin'
+  gulp.watch adminPaths, gulp.series 'angularAdmin'
   done()
 
 gulp.task 'watch_all_front', gulp.series 'watch_front', 'watch_vendor', 'watch_admin'
 
-gulp.task 'build_watch_front', gulp.series "webpack", "webpackAdmin", "watch_all_front"
+gulp.task 'build_watch_front', gulp.series "angular", "angularAdmin", "watch_all_front"
+
 gulp.task 'bwatch_front', gulp.series 'build_watch_front'
 
 specCommon = "spec/common/**/*.coffee"

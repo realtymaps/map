@@ -1,201 +1,3 @@
-body
-  overflow auto
-
-.normalize-container
-  width 100%
-
-.mls-select
-  select
-    margin 1em
-
-.page
-  position relative
-  top 0
-
-.panel
-  border-radius 0
-
-  .panel-body
-    background-color white
-    color black
-    padding 5px
-    font-size 12px
-    border-radius 0
-    border 0
-
-.field, .category
-  border 2px solid transparent
-  margin 3px
-  display inline-block
-  padding 6px 12px
-  text-align center
-  cursor pointer
-  -webkit-user-select none
-  -moz-user-select none
-  -ms-user-select none
-  user-select none
-  border-radius 4px
-
-  .datatype
-    margin-left 1em
-    color black
-    background-color white
-    padding 3px
-    border-radius 5px
-    font-size 75%
-    opacity 0.8
-
-    &:before
-      content: "?"
-      padding 0.25em
-    &.datatype-string:before
-      content: "abc"
-    &.datatype-number:before
-      content "123"
-    &.datatype-yn:before
-      content "yes/no"
-    &.datatype-date:before
-      content "date"
-
-selectable(text, background, border, invert=true)
-  color text
-  background-color background
-  border-color border
-  &.selected
-    font-weight bold
-    if invert
-      background-color text
-      color background
-
-.field
-  display block
-  text-align left
-
-  selectable #fff, #5bc0de, #46b8da
-
-  &.assigned
-    selectable #fff, #aaa, #999
-  &.categorized
-    selectable #fff, #6ec878, #3eb848
-  &.base
-    text-transform capitalize
-    selectable #fff, #6ec878, #3eb848
-  &.base:before
-    content 'RM'
-    color #fff
-    background-color #313145
-    margin-right 1em
-    padding 3px
-    border-radius 5px
-    font-size 75%
-    opacity 0.8
-  &.invalid
-    selectable #fff, #de7f79, #be5f59
-  &.category-item
-    selectable #000, #ddd, #aaa, false
-
-.category
-  display inline-block
-  vertical-align top
-  width 32%
-  min-height 4em
-
-  color black
-  background-color #ddd
-  border-color #aaa
-
-  &.collapse .field-list
-    max-height 200px
-    overflow-y scroll
-
-.list-container
-  padding 2px
-  h4
-    text-align center
-
-.field-container
-  overflow-y scroll
-  height 475px
-  padding-left 10px
-
-.properties-container
-  height 325px
-  padding 10px
-  overflow-y scroll
-  position fixed !important
-  bottom 0
-  width 80%
-  color black
-  .scroll
-    overflow-y scroll
-    .row
-      height 3em
-      > div
-        top 50%
-        transform translateY(-50%)
-    .row:nth-child(even)
-      background-color #eee
-    .row.advanced > :first-child
-        text-align center
-
-  input, textarea
-    width 90%
-    border 1px solid #ddd
-    padding 5px
-    &[disabled]
-      color #888
-      background-color #eee
-      cursor not-allowed
-
-  .btn
-    padding 5px
-    margin 5px
-
-  -webkit-transition  0.5s all linear
-  transition all linear 0.5s
-  opacity 1
-
-  .field
-    display inline-block
-    span
-      margin-right 0.5em
-  .field.empty
-    background-color transparent
-    color #888
-    border 2px dashed #46b8da
-    &:before
-      content "Drag here:"
-      padding-right 0.5em
-
-  .help
-    color #555
-    font-size 90%
-
-  .sep
-    margin 12px
-    font-weight bold
-
-  textarea
-    margin-top 20px
-    font-family courier, fixed
-
-.properties-container.ng-hide
-  opacity 0
-
-h4
-  color black
-  text-transform capitalize
-
-.category.rmaps-drop-target
-  border 2px dashed #46b8da
-
-.category.rmaps-drag-over, .field.rmaps-drag-over
-  -webkit-filter invert(20%)
-  filter invert(20%)
-
-.transform
-  width 100%
-
 .clickable-icon
   color black
   background-color lightgray
@@ -207,37 +9,231 @@ h4
   -ms-user-select none
   user-select none
 
-.close-icon
-  @extend .clickable-icon
-  z-index 1
-  position absolute
-  right 15px
-  top 15px
+.normalize-container
+  width 100%
 
-.remove-icon
-  @extend .clickable-icon
-  float right
+  .mls-select
+    select
+      margin 1em
 
-.download-csv-button
-  margin-top 10px
-  font-size 12px
-  padding 2px
-  height 22px
+  .page
+    position relative
+    top 0
 
-.download-csv-input
-  margin-top 10px
-  font-size 12px
-  height 22px
+  .panel
+    border-radius 0
 
-.expand-icon
-  @extend .clickable-icon
-  position absolute
-  font-wieght auto
-  right 3px
-  top 3px
-  &:before
-    content "-"
+    .panel-body
+      background-color white
+      color black
+      padding 5px
+      font-size 12px
+      border-radius 0
+      border 0
 
-.collapse .expand-icon:before
-    content "+"
+  .field, .category
+    border 2px solid transparent
+    margin 3px
+    display inline-block
+    padding 6px 12px
+    text-align center
+    cursor pointer
+    -webkit-user-select none
+    -moz-user-select none
+    -ms-user-select none
+    user-select none
+    border-radius 4px
 
+    .datatype
+      margin-left 1em
+      color black
+      background-color white
+      padding 3px
+      border-radius 5px
+      font-size 75%
+      opacity 0.8
+
+      &:before
+        content: "?"
+        padding 0.25em
+      &.datatype-string:before
+        content: "abc"
+      &.datatype-number:before
+        content "123"
+      &.datatype-yn:before
+        content "yes/no"
+      &.datatype-date:before
+        content "date"
+
+  selectable(text, background, border, invert=true)
+    color text
+    background-color background
+    border-color border
+    &.selected
+      font-weight bold
+      if invert
+        background-color text
+        color background
+
+  .field
+    display block
+    text-align left
+
+    selectable #fff, #5bc0de, #46b8da
+
+    &.assigned
+      selectable #fff, #aaa, #999
+    &.categorized
+      selectable #fff, #6ec878, #3eb848
+    &.base
+      text-transform capitalize
+      selectable #fff, #6ec878, #3eb848
+    &.base:before
+      content 'RM'
+      color #fff
+      background-color #313145
+      margin-right 1em
+      padding 3px
+      border-radius 5px
+      font-size 75%
+      opacity 0.8
+    &.invalid
+      selectable #fff, #de7f79, #be5f59
+    &.category-item
+      selectable #000, #ddd, #aaa, false
+
+  .category
+    display inline-block
+    vertical-align top
+    width 32%
+    min-height 4em
+
+    color black
+    background-color #ddd
+    border-color #aaa
+
+    &.collapse .field-list
+      max-height 200px
+      overflow-y scroll
+
+  .list-container
+    padding 2px
+    h4
+      text-align center
+
+  .field-container
+    overflow-y scroll
+    height 475px
+    padding-left 10px
+
+  .properties-container
+    height 325px
+    padding 10px
+    overflow-y scroll
+    position fixed !important
+    bottom 0
+    width 80%
+    color black
+    .scroll
+      overflow-y scroll
+      .row
+        height 3em
+        > div
+          top 50%
+          transform translateY(-50%)
+      .row:nth-child(even)
+        background-color #eee
+      .row.advanced > :first-child
+          text-align center
+
+    input, textarea
+      width 90%
+      border 1px solid #ddd
+      padding 5px
+      &[disabled]
+        color #888
+        background-color #eee
+        cursor not-allowed
+
+    .btn
+      padding 5px
+      margin 5px
+
+    -webkit-transition  0.5s all linear
+    transition all linear 0.5s
+    opacity 1
+
+    .field
+      display inline-block
+      span
+        margin-right 0.5em
+    .field.empty
+      background-color transparent
+      color #888
+      border 2px dashed #46b8da
+      &:before
+        content "Drag here:"
+        padding-right 0.5em
+
+    .help
+      color #555
+      font-size 90%
+
+    .sep
+      margin 12px
+      font-weight bold
+
+    textarea
+      margin-top 20px
+      font-family courier, fixed
+
+  .properties-container.ng-hide
+    opacity 0
+
+  h4
+    color black
+    text-transform capitalize
+
+  .category.rmaps-drop-target
+    border 2px dashed #46b8da
+
+  .category.rmaps-drag-over, .field.rmaps-drag-over
+    -webkit-filter invert(20%)
+    filter invert(20%)
+
+  .transform
+    width 100%
+
+  .close-icon
+    @extend .clickable-icon
+    z-index 1
+    position absolute
+    right 15px
+    top 15px
+
+  .remove-icon
+    @extend .clickable-icon
+    float right
+
+  .download-csv-button
+    margin-top 10px
+    font-size 12px
+    padding 2px
+    height 22px
+
+  .download-csv-input
+    margin-top 10px
+    font-size 12px
+    height 22px
+
+  .expand-icon
+    @extend .clickable-icon
+    position absolute
+    font-wieght auto
+    right 3px
+    top 3px
+    &:before
+      content "-"
+
+  .collapse .expand-icon:before
+      content "+"

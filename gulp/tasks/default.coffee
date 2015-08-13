@@ -8,7 +8,9 @@ gulp = require 'gulp'
   './complexity'
   './checkdir'
   './clean'
+  './angular'
 ].forEach (dep) ->
+  console.log 'requiring', dep
   require dep
 #help = require('gulp-help')(gulp)
 plumber = require 'gulp-plumber'
@@ -21,11 +23,11 @@ gulp.task 'develop', gulp.series 'clean', 'spec', 'express_watch'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'develop_no_spec', gulp.series 'clean', 'webpack', 'webpackAdmin', 'express', 'watch'
+gulp.task 'develop_no_spec', gulp.series 'clean', 'angular', 'angularAdmin', 'express', 'watch'
 
 gulp.task 'no_spec', gulp.series 'develop_no_spec'
 
-gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'webpackProd', 'webpackAdmin', 'minify', 'gzip'
+gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'angular', 'angularAdmin', 'minify', 'gzip'
 
 gulp.task 'default', gulp.series 'develop'
 

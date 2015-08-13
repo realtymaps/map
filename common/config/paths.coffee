@@ -1,5 +1,5 @@
-appMap = 'frontend/map/'
-appAdmin = 'frontend/admin/'
+appMap = 'map'
+appAdmin = 'admin'
 libFront = appMap + 'lib'
 
 dest =
@@ -9,15 +9,19 @@ dest =
   assets: 'assets'
   root: '_public/'
 
-getAssetCollection = (app) ->
+getAssetCollection = (name) ->
+  app = "frontend/#{name}/"
   return {
+    name: name
+    root: app
     scripts: app + 'scripts/**/*'
     vendorLibs: app + 'lib/scripts/vendor/**/*.*'
     webpackLibs: app + 'lib/scripts/webpack/**/*.*'
-    styles: app + 'styles/*.css'
+    styles: app + 'styles/**/*.css'
     rootStylus: app + 'styles/main.styl'
-    less: app + 'styles/*.less'
     stylus: app + 'styles/**/*.styl'
+    less: app + 'styles/**/*.less'
+    stylusWatch: app + 'styles/**/*'
     svg: app + 'html/svg/*.svg'
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'
@@ -49,6 +53,9 @@ module.exports =
     fonts: dest.root + dest.fonts
     index: dest.root + 'rmap.html'
     admin: dest.root + 'admin.html'
+    bundle:
+      map: dest.scripts + '/map.bundle.js'
+      admin: dest.scripts + '/admin.bundle.js'
     webpack:
       map:
         # publicPath: 'http://0.0.0.0:4000/'#for dev only, https://github.com/webpack/style-loader/issues/55, https://github.com/webpack/css-loader/issues/29
