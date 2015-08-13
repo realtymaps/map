@@ -1,5 +1,5 @@
-appMap = 'frontend/map/'
-appAdmin = 'frontend/admin/'
+appMap = 'map'
+appAdmin = 'admin'
 libFront = appMap + 'lib'
 
 dest =
@@ -9,8 +9,10 @@ dest =
   assets: 'assets'
   root: '_public/'
 
-getAssetCollection = (app) ->
+getAssetCollection = (name) ->
+  app = "frontend/#{name}/"
   return {
+    name: name
     root: app
     scripts: app + 'scripts/**/*'
     vendorLibs: app + 'lib/scripts/vendor/**/*.*'

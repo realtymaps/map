@@ -1,103 +1,105 @@
 $wizardPaneWidth = 775px
 $wizardPaneHeight = 250px
 
-*, h1, h2, h3, h4, h5, h6
-  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
-  color: #000
+.mls-container
 
-.nav *, .panel-heading
-  letter-spacing: 0.2em
+  *, h1, h2, h3, h4, h5, h6
+    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif
+    color: #000
 
-.nav-pills li a
-  border-radius: 0
+  .nav *, .panel-heading
+    letter-spacing: 0.2em
 
-.nav-pills li.active
-  a, a:hover, a:focus
-    color: black
-    background-color: white !important
+  .nav-pills li a
+    border-radius: 0
 
-.data-entry
-  font-family: "Courier New", fixed
-  padding-left: 1em
+  .nav-pills li.active
+    a, a:hover, a:focus
+      color: black
+      background-color: white !important
 
-.pad-left
-  padding-left: 1em
+  .data-entry
+    font-family: "Courier New", fixed
+    padding-left: 1em
 
-.data-label
-  font-size: 16px
-  font-weight: bold
-  text-align: left;
+  .pad-left
+    padding-left: 1em
 
-.panel > .panel-heading
-  background-color: #337ab7
-  padding: 1em
+  .data-label
+    font-size: 16px
+    font-weight: bold
+    text-align: left;
 
-.panel > .panel-body
-  border: 0
-  padding: 1em
-  overflow: scroll
-  table
+  .panel > .panel-heading
+    background-color: #337ab7
+    padding: 1em
+
+  .panel > .panel-body
+    border: 0
+    padding: 1em
+    overflow: scroll
+    table
+      width: 100%
+
+  .config-container
+    position: relative
+
+  .config-panel
+    position: absolute
     width: 100%
+    text-align: center
+    top: 0px
+    z-index: 999
 
-.config-container
-  position: relative
-  
-.config-panel
-  position: absolute
-  width: 100%
-  text-align: center
-  top: 0px
-  z-index: 999
+  .select-pill
+    opacity: 1
+    position: relative
+    top: 72px
+    background-color: black
+    width: 300px
+    color: white
+    font-size: 20px
+    border-radius: 10px
+    padding: 10px
+    margin: auto
+    z-index: 999
 
-.select-pill
-  opacity: 1
-  position: relative
-  top: 72px
-  background-color: black
-  width: 300px
-  color: white
-  font-size: 20px
-  border-radius: 10px
-  padding: 10px
-  margin: auto
-  z-index: 999
+  .main-config-panel
+    z-index: 1
 
-.main-config-panel
-  z-index: 1
+  .progressPills ul
+    margin: auto
 
-.progressPills ul
-  margin: auto
+  .wizardContent
+    position: absolute
 
-.wizardContent
-  position: absolute
-  
-.loading-show
-  background: rgba(0, 0, 0, 0.3)
-    
-.loading-panel
-  text-align: center
-  font-size: 20px;
-  font-weight: bold;
+  .loading-show
+    background: rgba(0, 0, 0, 0.3)
 
-.loading-image
-  margin-top: 50px
-  width: 50px
-  height: 50px
+  .loading-panel
+    text-align: center
+    font-size: 20px;
+    font-weight: bold;
 
-.loading-bg
-  z-index: 10
+  .loading-image
+    margin-top: 50px
+    width: 50px
+    height: 50px
 
-.loadingfade
-  opacity: 0.1
+  .loading-bg
+    z-index: 10
 
-.half-opacity
-  opacity: 0.5
+  .loadingfade
+    opacity: 0.1
 
-.fourth-opacity
-  opacity: 0.25
+  .half-opacity
+    opacity: 0.5
 
-button
-  margin-right: 1em
-  
-.config-tr td
-  background-color: #FFFF44
+  .fourth-opacity
+    opacity: 0.25
+
+  button
+    margin-right: 1em
+
+  .config-tr td
+    background-color: #FFFF44
