@@ -49,15 +49,14 @@ _getTaskCode = memoize.promise(_getTaskCode)
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   knex.transaction (transaction) ->
-    logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
+    #logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
     .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.error "==================<#{id}>  Acquired lock: #{lockId}"
+      #logger.error "==================<#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
-    .then (result) ->
-      logger.error "------------------<#{id}> Releasing lock: #{lockId}"
-      result
+    .finally () ->
+      #logger.error "------------------<#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -131,7 +130,7 @@ queueManualTask = (name, initiator) ->
         queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  logger.info "Queuing task: #{task.name}"
+  logger.debug "Queuing task: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -232,7 +231,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
     else
       subtaskData = subtask.data
     suffix = if subtaskData?.length then "(#{subtaskData.length})" else ''
-    logger.info "Queuing subtask: #{subtask.name}#{suffix}"
+    logger.debug "Queuing subtask: #{subtask.name}#{suffix}"
     Promise.try () ->
       if _taskData != undefined
         return _taskData
@@ -598,7 +597,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       logger.debug "#{prefix} No subtask ready for execution; quiting."
       Promise.resolve()
     else
-      logger.info "#{prefix} No subtask ready for execution; waiting..."
+      logger.debug "#{prefix} No subtask ready for execution; waiting..."
       Promise.delay(30000) # poll again in 30 seconds
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
