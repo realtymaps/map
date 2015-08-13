@@ -52,10 +52,10 @@ _withDbLock = (lockId, handler) ->
     transaction
     .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.error "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Acquired lock: #{lockId}"
+      logger.error "========================<#{cluster.worker.id}> Acquired lock: #{lockId}"
       handler(transaction)
     .then (result) ->
-      logger.error "@@@@@@@@@@@@@@@@@@@@@@@@<#{cluster.worker.id}> Releasing lock: #{lockId}"
+      logger.error "------------------------<#{cluster.worker.id}> Releasing lock: #{lockId}"
       result
 
 queueReadyTasks = () -> Promise.try () ->
@@ -585,7 +585,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       logger.debug "#{prefix} No subtask ready for execution; quiting."
       Promise.resolve()
     else
-      logger.debug "#{prefix} No subtask ready for execution; waiting..."
+      logger.info "#{prefix} No subtask ready for execution; waiting..."
       Promise.delay(30000) # poll again in 30 seconds
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
