@@ -133,7 +133,7 @@ queueManualTask = (name, initiator) ->
         queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  logger.debug "Queuing task: #{task.name}"
+  logger.debug "Queueing task: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -233,8 +233,8 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           subtaskData = _.extend(subtask.data||{}, manualData)
     else
       subtaskData = subtask.data
-    suffix = if subtaskData?.length then "(#{subtaskData.length})" else ''
-    logger.debug "Queuing subtask: #{subtask.name}#{suffix}"
+    suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
+    logger.debug "Queueing subtask: #{subtask.name}#{suffix}"
     Promise.try () ->
       if _taskData != undefined
         return _taskData
@@ -351,11 +351,10 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     .update
       status: status
       finished: knex.raw('NOW()')
-  .then () ->
-    tables.jobQueue.currentSubtasks()
-    .where(id: subtask.id)
+    .returning('*')
   .then (updatedSubtask) ->
-    # handle race condition where currentSubtasks table gets cleared between the update and query above
+    # handle condition where currentSubtasks table gets cleared before the update -- it shouldn't happen under normal
+    # conditions, but then again we're in an error handler so who knows what could be going on by the time we get here.
     # ideally we want to get a fresh copy of the data, but if it's gone, just use what we already had
     if !updatedSubtask?[0]?
       errorSubtask = _.clone(subtask)
