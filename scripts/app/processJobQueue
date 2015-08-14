@@ -10,10 +10,13 @@ export JQ_QUEUE_NAME="$@"
 if [[ "$IS_HEROKU" != "" ]]
 then
     export PGBOUNCER_URLS="PROPERTY_DATABASE_URL USER_DATABASE_URL"
-    export PGBOUNCER_MAX_CLIENT_CONN=200
+    export PGBOUNCER_MAX_CLIENT_CONN=300
     export PGBOUNCER_DEFAULT_POOL_SIZE=15
     export PGBOUNCER_MIN_POOL_SIZE=2
     export PGBOUNCER_RESERVE_POOL_SIZE=0
+    export PGBOUNCER_LOG_CONNECTIONS="no"
+    export PGBOUNCER_LOG_DISCONNECTIONS="no"
+    export PGBOUNCER_LOG_POOLER_ERRORS="yes"
 
     bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
 else
