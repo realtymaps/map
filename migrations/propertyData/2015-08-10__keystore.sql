@@ -3,7 +3,8 @@
 -- The value is a JSON field so it can contain data of any time, including complex types.
 
 DROP TABLE IF EXISTS keystore;
-CREATE TABLE keystore (
+DROP TABLE IF EXISTS keystore_property;
+CREATE TABLE keystore_property (
   rm_inserted_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
   rm_modified_time TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT now_utc(),
 
@@ -12,12 +13,9 @@ CREATE TABLE keystore (
   value JSON
 );
 
-CREATE UNIQUE INDEX ON keystore (namespace, key);
+CREATE UNIQUE INDEX ON keystore_property (namespace, key);
 
-DROP TRIGGER IF EXISTS update_modified_time_keystore ON keystore;
+DROP TRIGGER IF EXISTS update_modified_time_keystore ON keystore_property;
 CREATE TRIGGER update_modified_time_keystore
-  BEFORE UPDATE ON keystore
+  BEFORE UPDATE ON keystore_property
   FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column();
-
-INSERT INTO keystore (namespace, key, value) VALUES (NULL, 'last corelogic tax drop', '"19700101"');
-INSERT INTO keystore (namespace, key, value) VALUES (NULL, 'last corelogic deed drop', '"19700101"');
