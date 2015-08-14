@@ -6,7 +6,7 @@ keystore = require '../services/service.keystore'
 
 
 RUN_WINDOW = 120000
-SKIP_WINDOW = 10000
+DELAY_VARIATION = 10000
 HIREFIRE_RUN_TIMESTAMP = 'hirefire run timestamp'
 
 
@@ -20,7 +20,7 @@ _checkIfRun = () ->
     return undefined
 
 # stagger initial checks to avoid simultaneous checks from startup
-initial_delay = RUN_WINDOW + Math.floor(Math.random()*RUN_WINDOW)
+initial_delay = RUN_WINDOW + Math.floor(Math.random()*DELAY_VARIATION)
 _timeout = setTimeout(_checkIfRun, initial_delay)
 _priorTimestamp = null
 
