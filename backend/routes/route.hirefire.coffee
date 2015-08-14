@@ -28,7 +28,7 @@ _priorTimestamp = null
 info = (req, res, next) -> Promise.try () ->
   clearTimeout(_timeout)
   # continue to slightly stagger checks, just in case the initial stagger was unlucky
-  _timeout = setTimeout(_checkIfRun, RUN_WINDOW + Math.floor(Math.random()*SKIP_WINDOW))
+  _timeout = setTimeout(_checkIfRun, RUN_WINDOW + Math.floor(Math.random()*DELAY_VARIATION))
   
   now = Date.now()
   keystore.setUserDbValue(HIREFIRE_RUN_TIMESTAMP, now)
