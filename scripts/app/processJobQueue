@@ -5,6 +5,17 @@ SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 
 
 source $SCRIPT_DIR/app/syncVars
-
 export JQ_QUEUE_NAME="$@"
-coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
+
+if [[ "$IS_HEROKU" != "" ]]
+then
+    export PGBOUNCER_URLS="PROPERTY_DATABASE_URL USER_DATABASE_URL"
+    export PGBOUNCER_MAX_CLIENT_CONN=200
+    export PGBOUNCER_DEFAULT_POOL_SIZE=15
+    export PGBOUNCER_MIN_POOL_SIZE=2
+    export PGBOUNCER_RESERVE_POOL_SIZE=0
+
+    bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
+else
+    coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
+fi
