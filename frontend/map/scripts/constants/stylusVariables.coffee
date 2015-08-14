@@ -1,7 +1,9 @@
 app = require '../app.coffee'
+fs = require 'fs'
+loader = require '../../../../backend/utils/util.stylusVariableLoader.coffee'
 
-colorPalate = require '!!../../../../backend/utils/util.stylusVariableLoader.coffee!../../styles/color_palatte.styl'
-colorScheme = require '!!../../../../backend/utils/util.stylusVariableLoader.coffee!../../styles/color_scheme.styl'
+colorPalate = loader fs.readFileSync __dirname + '/../../styles/color_palatte.styl', 'utf8'
+colorScheme = loader fs.readFileSync __dirname + '/../../styles/color_scheme.styl', 'utf8'
 
 variables = {}
 for key,value of colorScheme

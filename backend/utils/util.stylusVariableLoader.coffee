@@ -5,7 +5,7 @@
 module.exports = (content) ->
   @cacheable?()
   @value = {}
-  
+
   # remove single-line comments
   content = content.replace(/\/\/.*/g, '')
   # remove block comments
@@ -17,5 +17,5 @@ module.exports = (content) ->
     if parts.length != 2
       continue
     @value[parts[0].trim()] = parts[1].trim()
-      
-  return "module.exports = "+JSON.stringify(@value)
+
+  return @value

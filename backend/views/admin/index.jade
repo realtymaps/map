@@ -1,9 +1,10 @@
 extends ../_layout
 
 block customHead
-  title customHead Admin
+  link(rel='stylesheet', href='styles/admin.css')
+  title Admin
   meta(name='description', content='RealtyMaps Admin')
 
 block content
   .realtymaps-main(ui-view='')
-  script(type='application/javascript', src='#{paths.destFull.webpack.admin.filename}')
+  script(type='application/javascript', src='#{paths.destFull.bundle.admin}')

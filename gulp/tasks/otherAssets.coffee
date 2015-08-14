@@ -1,10 +1,11 @@
 gulp = require('gulp');
+require './webroot'
 require './vendor'
 paths = require '../../common/config/paths'
 
-gulp.task 'otherAssets', gulp.series 'vendor', ->
-  # this is partially redundant with webpack, but we go ahead and do it anyway
-  # so we don't have to think about it
-
-  gulp.src paths.rmap.assets
+gulp.task 'otherAssets', gulp.series 'webroot', 'vendor', ->
+  gulp.src [
+    paths.rmap.assets
+    paths.admin.assets
+  ]
   .pipe gulp.dest paths.destFull.assets
