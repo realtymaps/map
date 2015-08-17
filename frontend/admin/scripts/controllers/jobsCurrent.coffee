@@ -122,27 +122,16 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'canceled'
     ]
 
-  cumSumDef = 
-    colGrp: "timeframe" # kindof like a group-by, but cumulative order is based on this column
-    colGrpOrder: ['Last Hour', 'Last Day', 'Last 7 Days', 'Last 30 Days'] # define what order of colGrp data should be
-    columnForSum: ['preparing', 'running', 'success', 'hard fail', 'timeout', 'canceled'] # define which other cols to sum on
-
-  # generalized cumulative sum
-  cumSumCalc = () ->
-    return null
-
-
-
-  # builds multidimensional object representation, initialized with a default aggregate value
-  # "dimensions" contains lists of possible values per dimension (a list of lists)
+  # makes a map (object) of keys from list "grouping", values initialized to 'init'
   emptyDatum = (grouping, init=0) ->
     return _.zipObject(g for g in grouping, _.clone(init,true) for g in grouping)
 
+  # builds multidimensional object representation, initialized with a default aggregate value
+  # "dimensions" contains lists of possible values per dimension (a list of lists)
   initDataObj = (dimensions, init=0) ->
     while dimensions.length
-      dimension = dimensions.pop()
-      init = emptyDatum(dimension, init)
-
+      dimensionValues = dimensions.pop()
+      init = emptyDatum(dimensionValues, init)
     return init
 
   $scope.loadCurrent = () ->
@@ -157,7 +146,6 @@ app.controller 'rmapsJobsCurrentCtrl',
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
       data = summary.plain()
-
       dimensions = [
         [ 'Current',
           'Last Hour',
@@ -179,6 +167,17 @@ app.controller 'rmapsJobsCurrentCtrl',
       for d in data
         summaryObj[d[dimension1]][d[dimension2]] = d.count
 
+      # Not a terribly efficient cummulative sum implementation, but dataset isn't going to be large here.
+      # At least order in dataObj shouldn't matter, and will simply return if no need to build sum
+      cSum = (dataObj, timeframe, status) ->
+        thisCount = parseInt(dataObj[timeframe][status])
+        timeframeOrder = ['Last Hour', 'Last Day', 'Last 7 Days', 'Last 30 Days']
+        thisTimeframeIndex = timeframeOrder.indexOf(timeframe)
+        while thisTimeframeIndex > 0
+          thisTimeframeIndex -= 1
+          thisCount += parseInt(dataObj[timeframeOrder[thisTimeframeIndex]][status])
+        thisCount
+
       # obj to table conversion
       initialDimension = "timeframe"
       summaryTable = []
@@ -187,7 +186,8 @@ app.controller 'rmapsJobsCurrentCtrl',
         datum = _.clone empty
         for status, count of statuses
           datum[initialDimension] = timeframe
-          datum[status] = count
+          datum[status] = cSum(summaryObj, timeframe, status)
+          
         summaryTable.push(datum)
 
       $scope.summaryGrid.data = summaryTable
