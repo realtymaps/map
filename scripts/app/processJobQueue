@@ -14,9 +14,9 @@ then
     export PGBOUNCER_DEFAULT_POOL_SIZE=15
     export PGBOUNCER_MIN_POOL_SIZE=2
     export PGBOUNCER_RESERVE_POOL_SIZE=0
-    export PGBOUNCER_LOG_CONNECTIONS="no"
-    export PGBOUNCER_LOG_DISCONNECTIONS="no"
-    export PGBOUNCER_LOG_POOLER_ERRORS="yes"
+    export PGBOUNCER_LOG_CONNECTIONS=0  # no
+    export PGBOUNCER_LOG_DISCONNECTIONS=0  # no
+    export PGBOUNCER_LOG_POOLER_ERRORS=1  # yes
 
     bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
 else
