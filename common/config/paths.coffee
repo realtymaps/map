@@ -13,7 +13,7 @@ getAssetCollection = (name) ->
   app = "frontend/#{name}/"
   return {
     name: name
-    appName: "rmaps#{name}app"
+    appName: "rmaps#{name.toInitCaps()}App"
     root: app
     scripts: app + 'scripts/**/*'
     vendorLibs: app + 'lib/scripts/vendor/**/*.*'

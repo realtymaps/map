@@ -2,7 +2,7 @@ _ = require 'lodash'
 
 describe 'validatorBuilder', ->
   beforeEach ->
-    angular.mock.module 'rmapsadminapp'
+    angular.mock.module 'rmapsAdminApp'
 
     inject (validatorBuilder) =>
       @validatorBuilder = validatorBuilder
