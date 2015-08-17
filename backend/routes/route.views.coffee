@@ -1,8 +1,8 @@
 
 module.exports =
   rmap: (req, res, next) ->
-    res.render 'rmap',
-      ngApp:'rmapsapp'
+    res.render 'map',
+      ngApp:'rmapsmapapp'
 
   admin: (req, res, next) ->
     res.render 'admin',

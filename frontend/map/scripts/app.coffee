@@ -3,7 +3,7 @@
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 
-appName = 'rmapsapp'
+appName = 'rmapsmapapp'
 
 app = window.angular.module appName, [
   'logglyLogger.logger'
