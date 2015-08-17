@@ -121,6 +121,7 @@ app.controller 'rmapsJobsCurrentCtrl',
     ,
       field: 'canceled'
     ]
+    rowTemplate: '<div ng-class="{\'summary-current\': row.entity.timeframe==\'Current\'}" ng-click="grid.appScope.fnOne(row)" ng-repeat="col in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>'
 
   # makes a map (object) of keys from list "grouping", values initialized to 'init'
   emptyDatum = (grouping, init=0) ->
