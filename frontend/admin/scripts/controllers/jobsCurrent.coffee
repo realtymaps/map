@@ -131,9 +131,19 @@ app.controller 'rmapsJobsCurrentCtrl',
   cumSumCalc = () ->
     return null
 
-  makeEmptyDatum = (cols, init=0) ->
-    return _.zipObject(col.field for col in cols, init for col in cols)
 
+
+  # builds multidimensional object representation, initialized with a default aggregate value
+  # "dimensions" contains lists of possible values per dimension (a list of lists)
+  emptyDatum = (grouping, init=0) ->
+    return _.zipObject(g for g in grouping, _.clone(init,true) for g in grouping)
+
+  initDataObj = (dimensions, init=0) ->
+    while dimensions.length
+      dimension = dimensions.pop()
+      init = emptyDatum(dimension, init)
+
+    return init
 
   $scope.loadCurrent = () ->
     $scope.jobsBusy = rmapsJobsService.getCurrent()
@@ -146,31 +156,41 @@ app.controller 'rmapsJobsCurrentCtrl',
 
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
-      console.log "#### incoming summary data:"
-      console.log summary.plain()
       data = summary.plain()
 
-      groupCol = "timeframe"
-      expandCol = "status"
-      unflattened = {}
+      dimensions = [
+        [ 'Current',
+          'Last Hour',
+          'Last Day',
+          'Last 7 Days',
+          'Last 30 Days' ],
+        [ 'preparing',
+          'running',
+          'success',
+          'hard fail',
+          'timeout',
+          'canceled' ]
+      ]
+      summaryObj = initDataObj(dimensions)
+
+      # populate summaryObj with flat dataset
+      dimension1 = "timeframe"
+      dimension2 = "status"
       for d in data
-        if not (d[groupCol] of unflattened)
-          unflattened[d[groupCol]] = {}
-        if not (d[expandCol] of unflattened[d[groupCol]])
-          unflattened[d[groupCol]][d[expandCol]] = d.count
+        summaryObj[d[dimension1]][d[dimension2]] = d.count
 
-
-      unflattenedTable = []
-      empty = makeEmptyDatum($scope.summaryGrid.columnDefs)
-      for timeframe, statuses of unflattened
+      # obj to table conversion
+      initialDimension = "timeframe"
+      summaryTable = []
+      empty = emptyDatum(col.field for col in $scope.summaryGrid.columnDefs)
+      for timeframe, statuses of summaryObj
         datum = _.clone empty
         for status, count of statuses
-          datum[groupCol] = timeframe
+          datum[initialDimension] = timeframe
           datum[status] = count
-        unflattenedTable.push(datum)
+        summaryTable.push(datum)
 
-
-      $scope.summaryGrid.data = unflattenedTable
+      $scope.summaryGrid.data = summaryTable
 
   $rootScope.registerScopeData () ->
     $scope.loadCurrent()
