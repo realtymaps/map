@@ -103,8 +103,37 @@ app.controller 'rmapsJobsCurrentCtrl',
     ], (num) ->
       _.extend num, numericDefaults
 
+
   $scope.summaryGrid =
     enableColumnMenus: false
+    columnDefs: [
+      field: 'timeframe'
+    ,
+      field: 'preparing'
+    ,
+      field: 'running'
+    ,
+      field: 'success'
+    ,
+      field: 'hard fail'
+    ,
+      field: 'timeout'
+    ,
+      field: 'canceled'
+    ]
+
+  cumSumDef = 
+    colGrp: "timeframe" # kindof like a group-by, but cumulative order is based on this column
+    colGrpOrder: ['Last Hour', 'Last Day', 'Last 7 Days', 'Last 30 Days'] # define what order of colGrp data should be
+    columnForSum: ['preparing', 'running', 'success', 'hard fail', 'timeout', 'canceled'] # define which other cols to sum on
+
+  # generalized cumulative sum
+  cumSumCalc = () ->
+    return null
+
+  makeEmptyDatum = (cols, init=0) ->
+    return _.zipObject(col.field for col in cols, init for col in cols)
+
 
   $scope.loadCurrent = () ->
     $scope.jobsBusy = rmapsJobsService.getCurrent()
@@ -117,7 +146,31 @@ app.controller 'rmapsJobsCurrentCtrl',
 
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
-      $scope.summaryGrid.data = summary.plain()
+      console.log "#### incoming summary data:"
+      console.log summary.plain()
+      data = summary.plain()
+
+      groupCol = "timeframe"
+      expandCol = "status"
+      unflattened = {}
+      for d in data
+        if not (d[groupCol] of unflattened)
+          unflattened[d[groupCol]] = {}
+        if not (d[expandCol] of unflattened[d[groupCol]])
+          unflattened[d[groupCol]][d[expandCol]] = d.count
+
+
+      unflattenedTable = []
+      empty = makeEmptyDatum($scope.summaryGrid.columnDefs)
+      for timeframe, statuses of unflattened
+        datum = _.clone empty
+        for status, count of statuses
+          datum[groupCol] = timeframe
+          datum[status] = count
+        unflattenedTable.push(datum)
+
+
+      $scope.summaryGrid.data = unflattenedTable
 
   $rootScope.registerScopeData () ->
     $scope.loadCurrent()
