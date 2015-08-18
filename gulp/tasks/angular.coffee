@@ -1,26 +1,12 @@
-paths = require '../../common/config/paths'
-path = require 'path'
 gulp = require 'gulp'
-conf = require './conf'
-paths = require '../../common/config/paths'
-vinylPaths = require 'vinyl-paths'
-del = require 'del'
-$ = require('gulp-load-plugins')()
-require './markup'
 require './scripts'
 require './styles'
 require './otherAssets'
 
-bundle = (app) ->
-  gulp.src paths.destFull.scripts + "/#{app}.*.js"
-  .pipe vinylPaths del
-  .pipe $.concat "#{app}.bundle.js"
-  .pipe gulp.dest paths.destFull.scripts
+gulp.task 'angular', gulp.parallel 'styles', 'markup', 'browserify'
 
-gulp.task 'bundle', gulp.series 'markup', 'scripts', -> bundle 'map'
+gulp.task 'angularWatch', gulp.parallel 'stylesWatch', 'markupWatch', 'browserifyWatch'
 
-gulp.task 'bundleAdmin', gulp.series 'markupAdmin', 'scriptsAdmin', -> bundle 'admin'
+gulp.task 'angularAdmin', gulp.parallel 'stylesAdmin', 'markupAdmin', 'browserifyAdmin'
 
-gulp.task 'angular', gulp.parallel 'styles', 'otherAssets', 'bundle'
-
-gulp.task 'angularAdmin', gulp.parallel 'stylesAdmin', 'otherAssets', 'bundleAdmin'
+gulp.task 'angularWatchAdmin', gulp.parallel 'stylesWatchAdmin', 'markupWatchAdmin', 'browserifyWatchAdmin'

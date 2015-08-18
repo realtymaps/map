@@ -13,6 +13,7 @@ getAssetCollection = (name) ->
   app = "frontend/#{name}/"
   return {
     name: name
+    appName: "rmaps#{name.toInitCaps()}App"
     root: app
     scripts: app + 'scripts/**/*'
     vendorLibs: app + 'lib/scripts/vendor/**/*.*'
@@ -35,7 +36,7 @@ module.exports =
   common: 'common/**/*.*'
   webroot: 'common/webroot/**/*.*'
 
-  rmap: getAssetCollection(appMap)
+  map: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)
 
   lib:
@@ -56,6 +57,9 @@ module.exports =
     bundle:
       map: dest.scripts + '/map.bundle.js'
       admin: dest.scripts + '/admin.bundle.js'
+    templates:
+      map: dest.scripts + '/map.templates.js'
+      admin: dest.scripts + '/admin.templates.js'
     webpack:
       map:
         # publicPath: 'http://0.0.0.0:4000/'#for dev only, https://github.com/webpack/style-loader/issues/55, https://github.com/webpack/css-loader/issues/29

@@ -42,9 +42,8 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'finished'
       displayName: 'Finished'
       type: 'date'
-      width: 75,
+      width: 100,
       cellFilter: dateFilter
-      visible: false
     ,
       field: 'status_changed'
       displayName: 'Changed'
