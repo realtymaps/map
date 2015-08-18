@@ -1,6 +1,6 @@
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 
-module.exports = 
+module.exports =
   keysToValues
     map:
       drawPolys:

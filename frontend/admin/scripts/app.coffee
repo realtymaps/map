@@ -2,7 +2,7 @@
 
 require '../../../common/extensions/strings.coffee'
 
-appName = 'rmapsadminapp'
+appName = 'rmapsAdminApp'
 
 
 app = window.angular.module appName, [
