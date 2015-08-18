@@ -23,9 +23,11 @@ class Crud extends BaseObject
     obj
 
   getAll: (query = {}, doLogQuery = false) ->
+    console.log "#### getAll, jobcrud"
     execQ @dbFn().where(query), doLogQuery
 
   getById: (id, doLogQuery = false) ->
+    console.log "#### getById, jobcrud"
     execQ @dbFn().where(@idObj(id)), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false) ->
