@@ -1,30 +1,34 @@
 _ = require 'lodash'
-{jobQueue} = require '../config/tables'
+Promise = require 'bluebird'
+tables = require '../config/tables'
 crudService = require '../utils/crud/util.crud.service.helpers'
+jobQueue = require '../utils/util.jobQueue'
 
-_summary = crudService.crud(jobQueue.jqSummary)
-
-
-_health = crudService.crud(jobQueue.dataHealth)
-
+# makes sure task maintenance and counts are updated whenever we query for task data
+maintaining = null
 class JobService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
-    console.log "extended getAll, JobCrud"
-    super(query, doLogQuery)
+    # restrict unnecessary triggers to do maintenance if it's already going
+    if !maintaining?
+      maintaining = jobQueue.doMaintenance()
+      .then () ->
+        jobQueue.updateTaskCounts()
 
-_summary2 = JobService(jobQueue.jqSummary)
+    # proceed with evaluating query when maintenance/counting has resolved
+    Promise.resolve(maintaining)
+    .then (result) =>
+      return super(query, doLogQuery)
+    .finally () ->
+      maintaining = null
 
-console.log "#### _summary:"
-console.log _summary
-console.log "#### _summary2:"
-console.log _summary2
+_summary = new JobService(tables.jobQueue.jqSummary)
+_taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
+
 
 module.exports =
-  taskHistory: crudService.crud(jobQueue.taskHistory, 'name')
-  queues: crudService.crud(jobQueue.queueConfig, 'name')
-  tasks: crudService.crud(jobQueue.taskConfig, 'name')
-  subtasks: crudService.crud(jobQueue.subtaskConfig, 'name')
-  # summary: JobService(jobQueue.jqSummary)
-  # health: JobService(jobQueue.dataHealth)
+  taskHistory: _taskHistory
+  queues: crudService.crud(tables.jobQueue.queueConfig, 'name')
+  tasks: crudService.crud(tables.jobQueue.taskConfig, 'name')
+  subtasks: crudService.crud(tables.jobQueue.subtaskConfig, 'name')
   summary: _summary
-  health: _health
+  health: crudService.crud(tables.jobQueue.dataHealth)
