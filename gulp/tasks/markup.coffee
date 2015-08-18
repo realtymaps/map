@@ -4,8 +4,8 @@ gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 
-gulp.task 'markup', ->
-  gulp.src paths.rmap.jade
+markup = (app) ->
+  gulp.src paths[app].jade
   .pipe $.consolidate 'jade',
     doctype: 'html'
     pretty: '  '
@@ -15,23 +15,22 @@ gulp.task 'markup', ->
     spare: true
     quotes: true
     conditionals: true
-  .pipe $.angularTemplatecache 'map.templates.js',
-    module: 'rmapsapp'
+  .pipe $.angularTemplatecache "#{app}.templates.js",
+    module: paths[app].appName
     root: '.'
   .pipe gulp.dest paths.destFull.scripts
+  .pipe $.size
+    title: paths.dest.root
+    showFiles: true
 
-gulp.task 'markupAdmin', ->
-  gulp.src paths.admin.jade
-  .pipe $.consolidate 'jade',
-    doctype: 'html'
-    pretty: '  '
-  .on   'error', conf.errorHandler 'Jade'
-  .pipe $.minifyHtml
-    empty: true
-    spare: true
-    quotes: true
-    conditionals: true
-  .pipe $.angularTemplatecache 'admin.templates.js',
-    module: 'rmapsadminapp'
-    root: '.'
-  .pipe gulp.dest paths.destFull.scripts
+gulp.task 'markup', -> markup 'map'
+
+gulp.task 'markupWatch', gulp.series 'markup', (done) ->
+  gulp.watch paths.map.jade, gulp.series 'markup'
+  done()
+
+gulp.task 'markupAdmin', -> markup 'admin'
+
+gulp.task 'markupWatchAdmin', gulp.series 'markupAdmin', (done) ->
+  gulp.watch paths.admin.jade, gulp.series 'markupAdmin'
+  done()
