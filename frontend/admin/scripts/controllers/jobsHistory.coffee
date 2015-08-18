@@ -37,9 +37,9 @@ app.controller 'rmapsJobsHistoryCtrl',
       field: 'finished'
       displayName: 'Finished'
       type: 'date'
-      width: 75,
+      width: 100,
       cellFilter: dateFilter
-      visible: false
+      visible: true
     ,
       field: 'status_changed'
       displayName: 'Changed'
