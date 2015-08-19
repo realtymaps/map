@@ -46,7 +46,7 @@ app.service 'rmapssearchbox', (leafletData) ->
 
         # thing vomits when no imagePath defined
         L.Icon.Default.imagePath = 'assets/'
-        map.addControl new L.Control.Search searchParams
+        # map.addControl new L.Control.Search searchParams
 
       , (err) ->
         console.log "Error loading search bar:"
