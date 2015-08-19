@@ -11,6 +11,9 @@ gulp.task 'minify-css', ->
       keepBreaks: false
   .on   'error', conf.errorHandler 'Minify CSS'
   .pipe gulp.dest paths.destFull.styles
+  .pipe $.size
+    title: paths.dest.root
+    showFiles: true
 
 gulp.task 'minify-js', ->
   gulp.src paths.destFull.scripts + '/*.js'
@@ -18,5 +21,8 @@ gulp.task 'minify-js', ->
       mangle: false
   .on   'error', conf.errorHandler 'Uglify JS'
   .pipe gulp.dest paths.destFull.scripts
+  .pipe $.size
+    title: paths.dest.root
+    showFiles: true
 
 gulp.task 'minify', gulp.parallel 'minify-js', 'minify-css'

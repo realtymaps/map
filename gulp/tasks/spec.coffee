@@ -3,10 +3,9 @@ require './angular'
 require './otherAssets'
 require './karma'
 require './mocha'
-require './watch'
 
 gulp.task 'spec',
-  gulp.series 'commonSpec', 'backendSpec', 'gulpSpec', gulp.parallel('angular', 'angularAdmin'), 'frontendSpec'
+  gulp.series 'commonSpec', 'backendSpec', 'gulpSpec', 'otherAssets', 'angular', 'angularAdmin', 'frontendSpec'
 
 #front end coverage
 gulp.task 'coverage', gulp.series "spec", ->

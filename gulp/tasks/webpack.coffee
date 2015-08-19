@@ -38,7 +38,7 @@ stagingConfs = [conf, adminConf]
 _.merge(c, {'devtool': '#eval'}) for c in stagingConfs
 
 # webpack task mgmt
-runWebpack = (someConfig, app='rmap') ->
+runWebpack = (someConfig, app='map') ->
   gulp.src [
     paths[app].assets
     paths[app].styles
