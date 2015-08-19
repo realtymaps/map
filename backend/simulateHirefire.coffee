@@ -1,4 +1,5 @@
 hirefire = require('./routes/route.hirefire')
+jobQueue = require('./utils/util.jobQueue')
 _ = require('lodash')
 
 
@@ -26,3 +27,4 @@ module.exports =
   runHirefire: runHirefire
   repeatHirefire: repeatHirefire
   cancelHirefire: cancelHirefire
+  jobQueue: jobQueue
