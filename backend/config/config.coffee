@@ -110,7 +110,17 @@ base =
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
+    BACKUP:
+      DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
+      RUN_WINDOW: 120000  # 2 minutes
+      DELAY_VARIATION: 10000  # 10 seconds
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
+  JOB_QUEUE:
+    LOCK_KEY: 0x1693F8A6  # random number
+    SCHEDULING_LOCK_ID: 0
+    SUBTASK_ZOMBIE_SLACK: "INTERVAL '1 minute'"
+    LOCK_DEBUG: process.env.LOCK_DEBUG
+
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

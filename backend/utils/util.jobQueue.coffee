@@ -11,15 +11,12 @@ _ = require 'lodash'
 tables = require '../config/tables'
 cluster = require 'cluster'
 memoize = require 'memoizee'
+config = require '../config/config'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-
-JQ_LOCK_KEY = 0x1693F8A6
-JQ_SCHEDULING_LOCK_ID = 0
-SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 
 sendNotification = notification("jobQueue")
 knex = dbs.users.knex
@@ -49,16 +46,16 @@ _getTaskCode = memoize.promise(_getTaskCode)
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   knex.transaction (transaction) ->
-    if process.env.LOCK_DEBUG
+    if config.JOB_QUEUE.LOCK_DEBUG
       logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
-    .select(knex.raw("pg_advisory_xact_lock(#{JQ_LOCK_KEY}, #{lockId})"))
+    .select(knex.raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
     .then () ->
-      if process.env.LOCK_DEBUG
+      if config.JOB_QUEUE.LOCK_DEBUG
         logger.error "==================<#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
     .finally () ->
-      if process.env.LOCK_DEBUG
+      if config.JOB_QUEUE.LOCK_DEBUG
         logger.error "------------------<#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = () -> Promise.try () ->
@@ -83,7 +80,7 @@ queueReadyTasks = () -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    _withDbLock JQ_SCHEDULING_LOCK_ID, (transaction) ->
+    _withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
       tables.jobQueue.taskConfig(transaction)
       .select()
       .where(active: true)                  # only consider active tasks
@@ -133,7 +130,7 @@ queueManualTask = (name, initiator) ->
         queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  logger.debug "Queueing task: #{task.name}"
+  logger.debug "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -169,7 +166,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     if typeof(subtaskInfo.subtaskOverrides) == 'number'   # subtasks already enqueued by custom logic, count returned
       return subtaskInfo.subtaskOverrides
     else if subtaskInfo.subtaskOverrides == false  # use config-based values for all subtasks and data
-      return queueSubtasks(transaction, batchId, task.data, subtaskInfo.subtaskConfig)
+      return queueSubtasks(transaction, batchId, subtaskInfo.subtaskConfig)
     else  # handle on a case-by-case basis
       subtasks = []
       subtaskCount = 0
@@ -182,7 +179,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
         else  # this subtask's data was overridden by task logic
           subtaskHash[name].data = data
           subtasks.push(subtaskHash[name])
-      return queueSubtasks(transaction, batchId, task.data, subtasks)
+      return queueSubtasks(transaction, batchId, subtasks)
       .then (count) ->
         return subtaskCount+count  # add up the counts from overridden and config-based subtasks
   .then (count) ->
@@ -195,15 +192,30 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       status: 'running'
       status_changed: knex.raw('NOW()')
 
-queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
-  Promise.try () ->
-    if _taskData != undefined || !subtasks?.length
-      return _taskData
-    tables.jobQueue.taskHistory(transaction)
-    .where(current: true, name: subtasks[0].task_name)
-    .then (task) ->
-      task?[0]?.data
+_checkTask = (transaction, batchId, taskName) ->
+  # need to get taskData such that we fail if the task is not still preparing or running i.e. has errored in some way
+  tables.jobQueue.taskHistory(transaction)
+  .where
+    current: true
+    name: taskName
+    batch_id: batchId
+  .whereIn('status', ['preparing', 'running'])
+  .then (task) ->
+    if !task?.length
+      # use undefined since the task_data could legitimately be null
+      return undefined
+    task?[0]?.data
+
+queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
+  if !subtasks?.length
+    return 0
+  _checkTask(transaction, batchId, subtasks[0].task_name)
   .then (taskData) ->
+    # need to make sure we don't continue to queue subtasks if the task has errored in some way
+    if taskData == undefined
+      # return an array indicating we queued 0 subtasks
+      logger.debug "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
+      return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
       queueSubtask(transaction, batchId, taskData, subtask)
   .then (counts) ->
@@ -213,7 +225,7 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
 queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
+    queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
 
 queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
@@ -233,16 +245,20 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           subtaskData = _.extend(subtask.data||{}, manualData)
     else
       subtaskData = subtask.data
-    suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
-    logger.debug "Queueing subtask: #{subtask.name}#{suffix}"
-    Promise.try () ->
-      if _taskData != undefined
-        return _taskData
-      tables.jobQueue.taskHistory(transaction)
-      .where(current: true, name: subtask.task_name)
-      .then (task) ->
-        task?[0]?.data
+    # maybe we've already gotten the data and checked to be sure the task is still running
+    if _taskData != undefined
+      taskDataPromise = Promise.resolve(_taskData)
+    else
+      taskDataPromise = _checkTask(transaction, batchId, subtask.task_name)
+    taskDataPromise
     .then (taskData) ->
+      # need to make sure we don't queue the subtask if the task has errored in some way
+      if taskData == undefined
+        # return 0 to indicate we queued 0 subtasks
+        logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
+        return 0
+      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
+      logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
           singleSubtask = _.clone(subtask)
@@ -332,7 +348,7 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Error executing subtask #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+      logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
     else
       if subtask.retry_max_count? && subtask.retry_max_count >= subtask.retry_num
         if subtask.hard_fail_after_retries
@@ -418,7 +434,7 @@ _killLongTasks = () ->
   .whereRaw("started + kill_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
     cancelPromise = Promise.map tasks, (task) ->
-      logger.warn("Task has timed out: #{task.name}")
+      logger.warn("Task for batchId #{task.batch_id} has timed out: #{task.name}")
       cancelTask(task.name, 'timeout')
     notificationPromise = sendNotification
       subject: 'task: long run killed'
@@ -432,7 +448,7 @@ _handleZombies = () ->
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
-  .whereRaw("started + #{SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
+  .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
       _handleSubtaskError(subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
@@ -542,7 +558,7 @@ getQueueNeeds = () ->
 queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask)
 
 queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask) -> Promise.try () ->
   if _.isArray(totalOrList)
@@ -592,7 +608,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
-      logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
+      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       executeSubtask(subtask)
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
     else if quit
