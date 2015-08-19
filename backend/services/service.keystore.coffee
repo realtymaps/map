@@ -18,7 +18,7 @@ _getValue = (table, key, options={}) ->
   else
     query = query.where(namespace: options.namespace)
   query.then (result) ->
-    if !result?
+    if !result?.length
       options.defaultValue
     else
       result[0].value

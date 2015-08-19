@@ -3,32 +3,33 @@ logger = require '../config/logger'
 jobQueue = require '../utils/util.jobQueue'
 ExpressResponse = require '../utils/util.expressResponse'
 keystore = require '../services/service.keystore'
+config = require '../config/config'
 
 
-RUN_WINDOW = 120000
-DELAY_VARIATION = 10000
 HIREFIRE_RUN_TIMESTAMP = 'hirefire run timestamp'
 
 
 _checkIfRun = () ->
   keystore.getUserDbValue(HIREFIRE_RUN_TIMESTAMP, defaultValue: 0)
   .then (timestamp) ->
-    if Date.now() - timestamp >= RUN_WINDOW
+    if Date.now() - timestamp >= config.HIREFIRE.BACKUP.RUN_WINDOW
       logger.warn "Hirefire hasn't run since #{new Date(timestamp)}, manually executing"
       _priorTimestamp = timestamp
       module.exports.info()
     return undefined
 
-# stagger initial checks to avoid simultaneous checks from startup
-initial_delay = RUN_WINDOW + Math.floor(Math.random()*DELAY_VARIATION)
-_timeout = setTimeout(_checkIfRun, initial_delay)
 _priorTimestamp = null
+if config.HIREFIRE.BACKUP.DO_BACKUP
+  # stagger initial checks to avoid simultaneous checks from startup
+  initial_delay = config.HIREFIRE.BACKUP.RUN_WINDOW + Math.floor(Math.random()*config.HIREFIRE.BACKUP.DELAY_VARIATION)
+  _timeout = setTimeout(_checkIfRun, initial_delay)
 
 
 info = (req, res, next) -> Promise.try () ->
-  clearTimeout(_timeout)
-  # continue to slightly stagger checks, just in case the initial stagger was unlucky
-  _timeout = setTimeout(_checkIfRun, RUN_WINDOW + Math.floor(Math.random()*DELAY_VARIATION))
+  if config.HIREFIRE.BACKUP.DO_BACKUP
+    clearTimeout(_timeout)
+    # continue to slightly stagger checks, just in case the initial stagger was unlucky
+    _timeout = setTimeout(_checkIfRun, config.HIREFIRE.BACKUP.RUN_WINDOW + Math.floor(Math.random()*config.HIREFIRE.BACKUP.DELAY_VARIATION))
   
   now = Date.now()
   keystore.setUserDbValue(HIREFIRE_RUN_TIMESTAMP, now)
