@@ -146,25 +146,27 @@ app.controller 'rmapsJobsCurrentCtrl',
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
       data = summary.plain()
-      dimensions = [
-        [ 'Current',
-          'Last Hour',
-          'Last Day',
-          'Last 7 Days',
-          'Last 30 Days' ],
-        [ 'preparing',
-          'running',
-          'success',
-          'hard fail',
-          'timeout',
-          'canceled' ]
+      showTimeframes = [  
+        'Current',
+        'Last Hour',
+        'Last Day',
+        'Last 7 Days',
+        'Last 30 Days'
       ]
-      summaryObj = initDataObj(dimensions)
+      showStatus = [
+        'preparing',
+        'running',
+        'success',
+        'hard fail',
+        'timeout',
+        'canceled'
+      ]
+      summaryObj = initDataObj([showTimeframes, showStatus])
 
       # populate summaryObj with flat dataset
       dimension1 = "timeframe"
       dimension2 = "status"
-      for d in data
+      for d in data when d[dimension1] in showTimeframes and d[dimension2] in showStatus
         summaryObj[d[dimension1]][d[dimension2]] = d.count
 
       # Not a terribly efficient cummulative sum implementation, but dataset isn't going to be large here.

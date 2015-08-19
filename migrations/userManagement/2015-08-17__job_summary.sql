@@ -15,7 +15,9 @@ SELECT
           THEN 'Last Day'
         WHEN DATE_PART('day', now() - finished) < 7
           THEN 'Last 7 Days'
-        ELSE 'Last 30 Days'
+        WHEN DATE_PART('day', now() - finished) < 30
+          THEN 'Last 30 Days'
+        ELSE 'After 30 Days'
       END) 
   END AS timeframe,
   status,
