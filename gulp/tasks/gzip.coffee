@@ -1,12 +1,13 @@
-_ = require 'lodash'
 gulp = require 'gulp'
 paths = require '../../common/config/paths'
-plumber = require 'gulp-plumber'
-gzip = require 'gulp-gzip'
+$ = require('gulp-load-plugins')()
 
 gulp.task 'gzip', ->
   gulp.src(paths.dest.root + "**/*")
-  .pipe gzip
+  .pipe $.gzip
     gzipOptions: level: 9
     threshold: 1024
   .pipe(gulp.dest(paths.dest.root))
+  .pipe $.size
+    title: paths.dest.root
+    showFiles: true

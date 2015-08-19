@@ -277,13 +277,16 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
 finalizeData = (subtask, id) ->
   listingsPromise = tables.propertyData.mls()
   .select('*')
-  .where(id)
+  .where(rm_property_id: id)
   .whereNull('deleted')
   .where(hide_listing: false)
+  .orderBy('rm_property_id')
+  .orderBy('deleted')
+  .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
   parcelsPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-  .where(id)
+  .where(rm_property_id: id)
   # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0

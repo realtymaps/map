@@ -36,7 +36,7 @@ base =
     connection: process.env.USER_DATABASE_URL
     pool:
       min: 1
-      max: if process.env.JQ_QUEUE_NAME then 2 else 10
+      max: if process.env.JQ_QUEUE_NAME then 8 else 10
       # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
       pingTimeout: 10*60*1000 
   PROPERTY_DB:
@@ -44,7 +44,7 @@ base =
     connection: process.env.PROPERTY_DATABASE_URL
     pool:
       min: 2
-      max: if process.env.JQ_QUEUE_NAME then 2 else 10
+      max: if process.env.JQ_QUEUE_NAME then 8 else 10
       # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
       pingTimeout: 10*60*1000
   TRUST_PROXY: 1
@@ -110,7 +110,17 @@ base =
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
     API_KEY: process.env.HIREFIRE_TOKEN
+    BACKUP:
+      DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
+      RUN_WINDOW: 120000  # 2 minutes
+      DELAY_VARIATION: 10000  # 10 seconds
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
+  JOB_QUEUE:
+    LOCK_KEY: 0x1693F8A6  # random number
+    SCHEDULING_LOCK_ID: 0
+    SUBTASK_ZOMBIE_SLACK: "INTERVAL '1 minute'"
+    LOCK_DEBUG: process.env.LOCK_DEBUG
+
 
 # this one's separated out so we can re-use the USER_DB.connection value
 base.SESSION_STORE =

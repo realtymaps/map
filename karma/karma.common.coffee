@@ -1,30 +1,33 @@
 module.exports = (config, webpackConf) ->
-  webpackConf.disableSha1 = true
-  webpackConf.disableLogging = true
+  # webpackConf.disableSha1 = true
+  # webpackConf.disableLogging = true
   # console.info "webpackConf: %j", webpackConf
-  webpack: webpackConf
-  webpackServer:
-    stats:
-      colors: true
+  # webpack: webpackConf
+  # webpackServer:
+  #   stats:
+  #     colors: true
 #webpackPort: 4444
 # base path that will be used to resolve all patterns (eg. files, exclude)
   basePath: ''
 
 # frameworks to use
 # available frameworks: https://npmjs.org/browse/keyword/karma-adapter
-  frameworks: ['mocha','fixture','chai', 'expect']
+  frameworks: ['mocha','fixture','chai', 'expect', 'browserify']
 
 # preprocess matching files before serving them to the browser
 # available preprocessors: https://npmjs.org/browse/keyword/karma-preprocessor
   preprocessors: {
-    '../spec/admin/**/*spec.coffee': ['webpack']
-    '../spec/common/**/*spec.coffee': ['webpack']
-    '../spec/app/**/*spec.coffee': ['webpack']
+    '../spec/admin/**/*spec.coffee': ['browserify']
+    '../spec/common/**/*spec.coffee': ['browserify']
+    '../spec/app/**/*spec.coffee': ['browserify']
     '../spec/fixtures/*.html': ['html2js']
     '../spec/fixtures/*.json': ['html2js']
     '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
   #'_public/*.js': ['coverage']
   }
+
+  browserify:
+    debug: true
 
   coverageReporter:
     reporters:[
@@ -37,8 +40,10 @@ module.exports = (config, webpackConf) ->
     '../node_modules/phantomjs-polyfill/bind-polyfill.js'
     '../_public/scripts/vendor.js'
     '../_public/styles/vendor.css'
-    '../_public/scripts/main.wp.js'
-    '../_public/scripts/admin.wp.js'
+    '../_public/scripts/map.bundle.js'
+    '../_public/scripts/map.templates.js'
+    '../_public/scripts/admin.bundle.js'
+    '../_public/scripts/admin.templates.js'
     '../bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
     '../spec/fixtures/*.html'
     '../spec/fixtures/*.json'
@@ -107,7 +112,7 @@ module.exports = (config, webpackConf) ->
     'karma-chrome-launcher'
     'karma-phantomjs-launcher'
     'karma-coffee-preprocessor'
-    require('karma-webpack')
+    'karma-browserify'
   ]
 
   # urlRoot: "base/dist/karma_html/chrome/index.html"

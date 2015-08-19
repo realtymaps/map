@@ -2,7 +2,7 @@
 
 require '../../../common/extensions/strings.coffee'
 
-appName = 'rmapsadminapp'
+appName = 'rmapsAdminApp'
 
 
 app = window.angular.module appName, [
@@ -29,3 +29,5 @@ app = window.angular.module appName, [
 ]
 
 module.exports = app
+
+require './require.coffee'

@@ -82,7 +82,7 @@ notification = (type) ->
 
       # send email
       if emailList.length > 0
-        emailOptions = getEmailOptions(emailList, options.subject, message)
+        emailOptions = getEmailOptions(emailList, "NOTIFICATION: #{options.subject}", message)
         mailer.sendMail emailOptions, (error, info) ->
           if error
             error = JSON.stringify error

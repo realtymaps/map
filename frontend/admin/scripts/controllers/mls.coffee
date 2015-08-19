@@ -2,8 +2,8 @@ _ = require 'lodash'
 app = require '../app.coffee'
 mlsConfigService = require '../services/mlsConfig.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
-modalTemplate = require '../../html/views/templates/newMlsConfig.jade'
-changePasswordTemplate = require '../../html/views/templates/changePassword.jade'
+modalTemplate = require('../../html/views/templates/newMlsConfig.jade')()
+changePasswordTemplate = require('../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
   ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
@@ -221,7 +221,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.cleanConfigValues($scope.mlsData.current)
 
       promises.push $scope.mlsData.current.save()
-      
+
       if rmapsprincipal.hasPermission('change_mlsconfig_serverdata')
         promises.push rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username })
 
@@ -266,7 +266,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     # test for whether all default values being used or not
     $scope.hasAllDefaultOtherConfig = () ->
-      _.every(_.keys(mlsConstants.defaults.otherConfig), (k) -> 
+      _.every(_.keys(mlsConstants.defaults.otherConfig), (k) ->
         # null is a valid field value
         return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.otherConfig[k])
       )

@@ -2,7 +2,7 @@ testScope = 'FormattersService'
 
 describe testScope, ->
   beforeEach ->
-    angular.mock.module 'app'.ns()
+    angular.mock.module 'rmapsMapApp'
     angular.mock.module 'uiGmapgoogle-maps.mocks'
     angular.mock.module 'uiGmapgoogle-maps'
 

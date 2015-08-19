@@ -11,15 +11,12 @@ _ = require 'lodash'
 tables = require '../config/tables'
 cluster = require 'cluster'
 memoize = require 'memoizee'
+config = require '../config/config'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-
-JQ_LOCK_KEY = 0x1693F8A6
-JQ_SCHEDULING_LOCK_ID = 0
-SUBTASK_ZOMBIE_SLACK = "INTERVAL '1 minute'"
 
 sendNotification = notification("jobQueue")
 knex = dbs.users.knex
@@ -46,22 +43,20 @@ _getTaskCode = (taskName) ->
       throw new Error("can't find code for task with name: #{taskName}")
 _getTaskCode = memoize.promise(_getTaskCode)
 
-_withDbLock = (lockId, shared, handler) ->
-  if shared
-    maybeShared = "_shared"
-  else
-    maybeShared = ""
-  knex
-  .select(knex.raw("pg_advisory_lock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
-  .then () ->
-    return handler()
-  .tap () ->
-    # Bluebird says not to use finally() for resource management:
-    #     https://github.com/petkaantonov/bluebird/blob/master/API.md#resource-management
-    # However, an understanding of the type of leak-bug mentioned in the Bluebird docs and careful inspection of the
-    # code can allow you to use finally() sometimes, instead of the more complicated using()
-    knex
-    .select(knex.raw("pg_advisory_unlock#{maybeShared}(#{JQ_LOCK_KEY}, #{lockId})"))
+_withDbLock = (lockId, handler) ->
+  id = cluster.worker?.id ? 'X'
+  knex.transaction (transaction) ->
+    if config.JOB_QUEUE.LOCK_DEBUG
+      logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
+    transaction
+    .select(knex.raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
+    .then () ->
+      if config.JOB_QUEUE.LOCK_DEBUG
+        logger.error "==================<#{id}>  Acquired lock: #{lockId}"
+      handler(transaction)
+    .finally () ->
+      if config.JOB_QUEUE.LOCK_DEBUG
+        logger.error "------------------<#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -85,8 +80,8 @@ queueReadyTasks = () -> Promise.try () ->
       readyPromises.push(readyPromise)
   Promise.all(readyPromises)
   .then () ->
-    _withDbLock JQ_SCHEDULING_LOCK_ID, false, () ->
-      tables.jobQueue.taskConfig()
+    _withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
+      tables.jobQueue.taskConfig(transaction)
       .select()
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
@@ -116,9 +111,8 @@ queueReadyTasks = () -> Promise.try () ->
                 .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
                 .orWhereRaw("finished + #{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its fail retry delay
       .then (readyTasks=[]) ->
-        knex.transaction (transaction) ->
-          Promise.map readyTasks, (task) ->
-            queueTask(transaction, batchId, task, '<scheduler>')
+        Promise.map readyTasks, (task) ->
+          queueTask(transaction, batchId, task, '<scheduler>')
       
 queueManualTask = (name, initiator) ->
   if !name
@@ -136,6 +130,7 @@ queueManualTask = (name, initiator) ->
         queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
+  logger.debug "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -171,7 +166,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
     if typeof(subtaskInfo.subtaskOverrides) == 'number'   # subtasks already enqueued by custom logic, count returned
       return subtaskInfo.subtaskOverrides
     else if subtaskInfo.subtaskOverrides == false  # use config-based values for all subtasks and data
-      return queueSubtasks(transaction, batchId, task.data, subtaskInfo.subtaskConfig)
+      return queueSubtasks(transaction, batchId, subtaskInfo.subtaskConfig)
     else  # handle on a case-by-case basis
       subtasks = []
       subtaskCount = 0
@@ -184,7 +179,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
         else  # this subtask's data was overridden by task logic
           subtaskHash[name].data = data
           subtasks.push(subtaskHash[name])
-      return queueSubtasks(transaction, batchId, task.data, subtasks)
+      return queueSubtasks(transaction, batchId, subtasks)
       .then (count) ->
         return subtaskCount+count  # add up the counts from overridden and config-based subtasks
   .then (count) ->
@@ -197,15 +192,30 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       status: 'running'
       status_changed: knex.raw('NOW()')
 
-queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
-  Promise.try () ->
-    if _taskData != undefined || !subtasks?.length
-      return _taskData
-    tables.jobQueue.taskHistory(transaction)
-    .where(current: true, name: subtasks[0].task_name)
-    .then (task) ->
-      task?[0]?.data
+_checkTask = (transaction, batchId, taskName) ->
+  # need to get taskData such that we fail if the task is not still preparing or running i.e. has errored in some way
+  tables.jobQueue.taskHistory(transaction)
+  .where
+    current: true
+    name: taskName
+    batch_id: batchId
+  .whereIn('status', ['preparing', 'running'])
+  .then (task) ->
+    if !task?.length
+      # use undefined since the task_data could legitimately be null
+      return undefined
+    task?[0]?.data
+
+queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
+  if !subtasks?.length
+    return 0
+  _checkTask(transaction, batchId, subtasks[0].task_name)
   .then (taskData) ->
+    # need to make sure we don't continue to queue subtasks if the task has errored in some way
+    if taskData == undefined
+      # return an array indicating we queued 0 subtasks
+      logger.debug "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
+      return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
       queueSubtask(transaction, batchId, taskData, subtask)
   .then (counts) ->
@@ -215,17 +225,10 @@ queueSubtasks = (transaction, batchId, _taskData, subtasks) ->
 queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queueSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, laterSubtask, manualData, replace)
+    queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
 
 queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
-    if _taskData != undefined
-      return _taskData
-    tables.jobQueue.taskHistory(transaction)
-    .where(current: true, name: subtask.task_name)
-    .then (task) ->
-      task?[0]?.data
-  .then (taskData) ->
     if manualData?
       if replace
         subtaskData = manualData
@@ -242,29 +245,43 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           subtaskData = _.extend(subtask.data||{}, manualData)
     else
       subtaskData = subtask.data
-    if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
-      Promise.map subtaskData, (data) ->
+    # maybe we've already gotten the data and checked to be sure the task is still running
+    if _taskData != undefined
+      taskDataPromise = Promise.resolve(_taskData)
+    else
+      taskDataPromise = _checkTask(transaction, batchId, subtask.task_name)
+    taskDataPromise
+    .then (taskData) ->
+      # need to make sure we don't queue the subtask if the task has errored in some way
+      if taskData == undefined
+        # return 0 to indicate we queued 0 subtasks
+        logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
+        return 0
+      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
+      logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
+      if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
+        Promise.map subtaskData, (data) ->
+          singleSubtask = _.clone(subtask)
+          singleSubtask.data = data
+          if mergeData?
+            _.extend(singleSubtask.data, mergeData)
+          singleSubtask.task_data = taskData
+          singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+          singleSubtask.batch_id = batchId
+          tables.jobQueue.currentSubtasks(transaction)
+          .insert singleSubtask
+        .then () ->
+          return subtaskData.length
+      else
         singleSubtask = _.clone(subtask)
-        singleSubtask.data = data
-        if mergeData?
-          _.extend(singleSubtask.data, mergeData)
+        singleSubtask.data = subtaskData
         singleSubtask.task_data = taskData
-        singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
+        singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction)
         .insert singleSubtask
-      .then () ->
-        return subtaskData.length
-    else
-      singleSubtask = _.clone(subtask)
-      singleSubtask.data = subtaskData
-      singleSubtask.task_data = taskData
-      singleSubtask.task_step = "#{subtask.task_name}_#{subtask.step_num||'FINAL'}"  # this is needed by a stored proc
-      singleSubtask.batch_id = batchId
-      tables.jobQueue.currentSubtasks(transaction)
-      .insert singleSubtask
-      .then () ->
-        return 1
+        .then () ->
+          return 1
 
 cancelTask = (taskName, status) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
@@ -331,7 +348,7 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Error executing subtask #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>: #{error.stack||error}")
+      logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
     else
       if subtask.retry_max_count? && subtask.retry_max_count >= subtask.retry_num
         if subtask.hard_fail_after_retries
@@ -350,11 +367,10 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     .update
       status: status
       finished: knex.raw('NOW()')
-  .then () ->
-    tables.jobQueue.currentSubtasks()
-    .where(id: subtask.id)
+    .returning('*')
   .then (updatedSubtask) ->
-    # handle race condition where currentSubtasks table gets cleared between the update and query above
+    # handle condition where currentSubtasks table gets cleared before the update -- it shouldn't happen under normal
+    # conditions, but then again we're in an error handler so who knows what could be going on by the time we get here.
     # ideally we want to get a fresh copy of the data, but if it's gone, just use what we already had
     if !updatedSubtask?[0]?
       errorSubtask = _.clone(subtask)
@@ -382,15 +398,14 @@ _getQueueLockId = (queueName) ->
     queueLockId[0].lock_id
 _getQueueLockId = memoize.promise(_getQueueLockId)
 
-# should this be rewritten to use a query built by knex?  I decided to implement it as a stored proc
-# in order to enforce the locking semantics, but I'm not sure if that's really a good reason
+# TODO: should this be rewritten to use a query built by knex instead of a stored proc?
 getQueuedSubtask = (queueName) ->
   _getQueueLockId(queueName)
   .then (queueLockId) ->
-    _withDbLock queueLockId, false, () ->
-      knex
+    _withDbLock queueLockId, (transaction) ->
+      transaction
       .select('*')
-      .from(knex.raw('jq_get_next_subtask(?)', [queueName]))
+      .from(transaction.raw('jq_get_next_subtask(?)', [queueName]))
       .then (results) ->
         if !results?[0]?.id?
           return null
@@ -419,7 +434,7 @@ _killLongTasks = () ->
   .whereRaw("started + kill_timeout_minutes * INTERVAL '1 minute' < NOW()")
   .then (tasks=[]) ->
     cancelPromise = Promise.map tasks, (task) ->
-      logger.warn("Task has timed out: #{task.name}")
+      logger.warn("Task for batchId #{task.batch_id} has timed out: #{task.name}")
       cancelTask(task.name, 'timeout')
     notificationPromise = sendNotification
       subject: 'task: long run killed'
@@ -433,7 +448,7 @@ _handleZombies = () ->
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
-  .whereRaw("started + #{SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
+  .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
       _handleSubtaskError(subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
@@ -543,9 +558,15 @@ getQueueNeeds = () ->
 queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queuePaginatedSubtask(transaction, currentSubtask.batch_id, currentSubtask.task_data, total, maxPage, laterSubtask)
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask)
 
-queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask) -> Promise.try () ->
+queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask) -> Promise.try () ->
+  if _.isArray(totalOrList)
+    list = totalOrList
+    total = totalOrList.length
+  else
+    list = null
+    total = totalOrList
   total = Number(total)
   if !total
     return
@@ -559,6 +580,8 @@ queuePaginatedSubtask = (transaction, batchId, taskData, total, maxPage, subtask
       count: Math.ceil((total-countHandled)/(subtasks-subtasksQueued))
       i: i
       of: subtasks
+    if list
+      datum.values = list.slice(datum.offset, datum.offset+datum.count)
     data.push datum
     subtasksQueued++
     countHandled += datum.count
@@ -585,7 +608,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
-      logger.info "#{prefix} Executing subtask: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(subtask.data)}>"
+      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       executeSubtask(subtask)
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
     else if quit
