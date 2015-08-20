@@ -5,21 +5,11 @@ crudService = require '../utils/crud/util.crud.service.helpers'
 jobQueue = require '../utils/util.jobQueue'
 
 # makes sure task maintenance and counts are updated whenever we query for task data
-maintaining = null
 class JobService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
-    # restrict unnecessary triggers to do maintenance if it's already going
-    if !maintaining?
-      maintaining = jobQueue.doMaintenance()
-      .then () ->
-        jobQueue.updateTaskCounts()
-
-    # proceed with evaluating query when maintenance/counting has resolved
-    Promise.resolve(maintaining)
-    .then (result) =>
+    jobQueue.doMaintenance()
+    .then () =>
       return super(query, doLogQuery)
-    .finally () ->
-      maintaining = null
 
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')

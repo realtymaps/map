@@ -17,7 +17,7 @@ config = require '../config/config'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-
+MAINTENANCE_TIMESTAMP = "job queue maintenance timestamp"
 sendNotification = notification("jobQueue")
 knex = dbs.users.knex
 
@@ -412,9 +412,9 @@ getQueuedSubtask = (queueName) ->
         else
           return results[0]
 
-_sendLongTaskWarnings = () ->
+_sendLongTaskWarnings = (transaction=null) ->
   # warn about long-running tasks
-  tables.jobQueue.taskHistory()
+  tables.jobQueue.taskHistory(transaction)
   .whereNull('finished')
   .whereNotNull('warn_timeout_minutes')
   .where(current: true)
@@ -425,9 +425,9 @@ _sendLongTaskWarnings = () ->
       tasks: tasks
       error: "tasks have been running for longer than expected"
 
-_killLongTasks = () ->
+_killLongTasks = (transaction=null) ->
   # kill long-running tasks
-  tables.jobQueue.taskHistory()
+  tables.jobQueue.taskHistory(transaction)
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
   .where(current: true)
@@ -442,9 +442,9 @@ _killLongTasks = () ->
       error: "tasks have been running for longer than expected"
     Promise.join cancelPromise, notificationPromise
 
-_handleZombies = () ->
+_handleZombies = (transaction=null) ->
   # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks
-  tables.jobQueue.currentSubtasks()
+  tables.jobQueue.currentSubtasks(transaction)
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
@@ -453,9 +453,9 @@ _handleZombies = () ->
     Promise.map subtasks, (subtask) ->
       _handleSubtaskError(subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
 
-_handleSuccessfulTasks = () ->
+_handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
-  tables.jobQueue.taskHistory()
+  tables.jobQueue.taskHistory(transaction)
   .where(status: 'running')
   .whereNotExists () ->
     tables.jobQueue.currentSubtasks(this)
@@ -474,9 +474,9 @@ _handleSuccessfulTasks = () ->
     status: 'success'
     status_changed: knex.raw('NOW()')
 
-_setFinishedTimestamps = () ->
+_setFinishedTimestamps = (transaction=null) ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
-  tables.jobQueue.currentSubtasks()
+  tables.jobQueue.currentSubtasks(transaction)
   .select('task_name', knex.raw('MAX(finished) AS finished'))
   .groupBy('task_name')
   .then (tasks=[]) ->
@@ -488,22 +488,30 @@ _setFinishedTimestamps = () ->
       .whereNotIn('status', ['preparing', 'running'])
       .update(finished: task.finished)
 
-doMaintenance = () ->
-  Promise.try () ->
-    _handleSuccessfulTasks()
-  .then () ->
-    _setFinishedTimestamps()
-  .then () ->
-    _sendLongTaskWarnings()
-  .then () ->
-    _killLongTasks()
-  .then () ->
-    _handleZombies()
-  .then () ->
-    _setFinishedTimestamps()
+_updateTaskCounts = (transaction=knex) ->
+  transaction.select(knex.raw('jq_update_task_counts()'))
 
-updateTaskCounts = () ->
-  knex.select(knex.raw('jq_update_task_counts()'))
+doMaintenance = () ->
+  _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+    keystore.getUserDbValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
+    .then (timestamp) ->
+      if Date.now() - timestamp >= config.JOB_QUEUE.MAINTENANCE_WINDOW
+        Promise.try () ->
+          _handleSuccessfulTasks(transaction)
+        .then () ->
+          _setFinishedTimestamps(transaction)
+        .then () ->
+          _sendLongTaskWarnings(transaction)
+        .then () ->
+          _killLongTasks(transaction)
+        .then () ->
+          _handleZombies(transaction)
+        .then () ->
+          _setFinishedTimestamps(transaction)
+        .then () ->
+          _updateTaskCounts(transaction)
+        .then () ->
+          keystore.setUserDbValue(MAINTENANCE_TIMESTAMP, Date.now())
 
 getQueueNeeds = () ->
   queueNeeds = {}
@@ -645,7 +653,6 @@ module.exports =
   getQueuedSubtask: getQueuedSubtask
   doMaintenance: doMaintenance
   sendNotification: sendNotification
-  updateTaskCounts: updateTaskCounts
   getQueueNeeds: getQueueNeeds
   queuePaginatedSubtask: queuePaginatedSubtask
   queueSubsequentPaginatedSubtask: queueSubsequentPaginatedSubtask

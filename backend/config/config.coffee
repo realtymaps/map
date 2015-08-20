@@ -118,6 +118,8 @@ base =
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number
     SCHEDULING_LOCK_ID: 0
+    MAINTENANCE_LOCK_ID: 1
+    MAINTENANCE_WINDOW: 300000  # 5 minutes
     SUBTASK_ZOMBIE_SLACK: "INTERVAL '1 minute'"
     LOCK_DEBUG: process.env.LOCK_DEBUG
 
