@@ -40,8 +40,6 @@ info = (req, res, next) -> Promise.try () ->
       return
     jobQueue.doMaintenance()
     .then () ->
-      jobQueue.updateTaskCounts()
-    .then () ->
       jobQueue.queueReadyTasks()
     .then () ->
       jobQueue.getQueueNeeds()
