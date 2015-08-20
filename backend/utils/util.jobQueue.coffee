@@ -495,23 +495,24 @@ doMaintenance = () ->
   _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     keystore.getUserDbValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
-      if Date.now() - timestamp >= config.JOB_QUEUE.MAINTENANCE_WINDOW
-        Promise.try () ->
-          _handleSuccessfulTasks(transaction)
-        .then () ->
-          _setFinishedTimestamps(transaction)
-        .then () ->
-          _sendLongTaskWarnings(transaction)
-        .then () ->
-          _killLongTasks(transaction)
-        .then () ->
-          _handleZombies(transaction)
-        .then () ->
-          _setFinishedTimestamps(transaction)
-        .then () ->
-          _updateTaskCounts(transaction)
-        .then () ->
-          keystore.setUserDbValue(MAINTENANCE_TIMESTAMP, Date.now())
+      if Date.now() - timestamp < config.JOB_QUEUE.MAINTENANCE_WINDOW
+        return
+      Promise.try () ->
+        _handleSuccessfulTasks(transaction)
+      .then () ->
+        _setFinishedTimestamps(transaction)
+      .then () ->
+        _sendLongTaskWarnings(transaction)
+      .then () ->
+        _killLongTasks(transaction)
+      .then () ->
+        _handleZombies(transaction)
+      .then () ->
+        _setFinishedTimestamps(transaction)
+      .then () ->
+        _updateTaskCounts(transaction)
+      .then () ->
+        keystore.setUserDbValue(MAINTENANCE_TIMESTAMP, Date.now())
 
 getQueueNeeds = () ->
   queueNeeds = {}
