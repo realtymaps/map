@@ -12,6 +12,7 @@ tables = require '../config/tables'
 cluster = require 'cluster'
 memoize = require 'memoizee'
 config = require '../config/config'
+keystore = require '../services/service.keystore'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
