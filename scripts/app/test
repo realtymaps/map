@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ `which foreman` != "" ]]
+if [[ `which foreman` == "" ]]
 then
     gem install foreman
 fi
