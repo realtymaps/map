@@ -1,0 +1,8 @@
+#!/bin/bash
+
+if [[ `which foreman` != "" ]]
+then
+    gem install foreman
+fi
+
+foreman run gulp spec
