@@ -25,7 +25,7 @@ include ./mixins/spinner.jade
         div(ng-if="!Toggles.isFetchingLocation")
           include ../svg/location.svg
         .toolbar-label Find Me
-        
+
     .toolbar-location-icon.icon(ng-click="Toggles.togglePreviousLocation()" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="Go to Previous Location" ng-if="Toggles.hasPreviousLocation")
         include ../svg/location.svg
         .toolbar-label Previous
@@ -53,3 +53,7 @@ include ./mixins/spinner.jade
     .toolbar-zoomout-icon.icon(ng-click="print()" tool-tip placement="right" title="Print Map")
         include ../svg/print.svg
         .toolbar-label Print
+
+    .toolbar-filters-icon.icon(ng-click="$rootScope.newControls = !$rootScope.newControls" tool-tip placement="right" title="Show New Controls (WIP)")
+        include ../svg/criteria.svg
+        .toolbar-label New Controls

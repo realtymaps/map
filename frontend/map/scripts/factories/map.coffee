@@ -23,8 +23,7 @@ _wrapGeomPointJson = (obj) ->
 app.factory 'rmapsMap',
   ($log, $timeout, $q, $rootScope, $http, rmapsBaseMap,
     rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData) ->
-
+    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData, rmapsControls) ->
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
@@ -118,6 +117,12 @@ app.factory 'rmapsMap',
             streetNumMarkers: {}
             priceMarkers: {}
             streetView: {}
+            custom: [
+              rmapsControls.NavigationControl scope: @scope
+              rmapsControls.PropertiesControl scope: @scope
+              rmapsControls.LayerControl scope: @scope
+              rmapsControls.LocationControl scope: @scope
+            ]
 
           drawUtil:
             draw: undefined
@@ -156,7 +161,7 @@ app.factory 'rmapsMap',
           self.scopeM().markers.filterSummary = {}
           _.each data, (model,k) =>
             self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          self.scopeM().markers.backendPriceCluster = data            
+          self.scopeM().markers.backendPriceCluster = data
 
         handleSummaryResults = (data) ->
           self.scopeM().markers.backendPriceCluster = {}
@@ -178,7 +183,7 @@ app.factory 'rmapsMap',
           promises.push(
             rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
             .then (data) =>
-              if Object.prototype.toString.call(data) is '[object Array]'              
+              if Object.prototype.toString.call(data) is '[object Array]'
                 return if !data? or _.isString data
                 handleClusterResults(data)
 
