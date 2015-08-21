@@ -1,6 +1,8 @@
-.location-tools(ng-class="{'new-controls': $rootScope.newControls}")
+.location-tools(ng-class="{'old-controls': oldControls}")
   button.btn.btn-transparent
     span.icon.icon-location
+
+.zoom-tools(ng-class="{'old-controls': oldControls}")
   button.btn.btn-transparent.zoom-in
     span.icon.icon-plus
   button.btn.btn-transparent.zoom-out

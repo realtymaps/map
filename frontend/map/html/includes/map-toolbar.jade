@@ -54,6 +54,6 @@ include ./mixins/spinner.jade
         include ../svg/print.svg
         .toolbar-label Print
 
-    .toolbar-filters-icon.icon(ng-click="$rootScope.newControls = !$rootScope.newControls" tool-tip placement="right" title="Show New Controls (WIP)")
+    .toolbar-filters-icon.icon(ng-click="toggleControls()" tool-tip placement="right" title="Show New Controls (WIP)")
         include ../svg/criteria.svg
         .toolbar-label New Controls

@@ -1,4 +1,4 @@
-.layers-tools(ng-controller="PopoverCtrl" ng-class="{'new-controls': $rootScope.newControls}")
+.layers-tools(ng-controller="PopoverCtrl" ng-class="{'old-controls': oldControls}")
   button.toggle-active.btn.btn-transparent(ng-click='active = !active', ng-class="active ? 'active' : '' ", popover-template='layersPopover.templateUrl', popover-placement='right')
     span.icon.icon-layers
       script(type="text/ng-template" id="LayersPopover.html")
