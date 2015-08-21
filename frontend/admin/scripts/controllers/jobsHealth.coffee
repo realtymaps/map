@@ -66,8 +66,6 @@ app.controller 'rmapsJobsHealthCtrl',
   $scope.loadHealth = () ->
     $scope.jobsBusy = rmapsJobsService.getHealth()
     .then (health) ->
-      console.log "#### health data:"
-      console.log health.plain()
       $scope.jobsGrid.data = health.plain()
 
   $rootScope.registerScopeData () ->
