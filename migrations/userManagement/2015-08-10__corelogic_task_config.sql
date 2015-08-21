@@ -1,4 +1,5 @@
 
+DELETE FROM jq_queue_config WHERE name = 'misc';
 INSERT INTO jq_queue_config (
   name,
   lock_id,
@@ -15,6 +16,7 @@ INSERT INTO jq_queue_config (
   TRUE
 );
 
+DELETE FROM jq_queue_config WHERE name = 'corelogic';
 INSERT INTO jq_queue_config (
   name,
   lock_id,
@@ -27,10 +29,11 @@ INSERT INTO jq_queue_config (
   x'744ec762'::INTEGER,
   '10',
   '1',
-  '0.5',
+  '1.0',
   TRUE
 );
 
+DELETE FROM jq_task_config WHERE name = 'corelogic';
 INSERT INTO jq_task_config (
   name,
   description,
@@ -50,6 +53,9 @@ INSERT INTO jq_task_config (
   '25',
   FALSE
 );
+
+
+DELETE FROM jq_subtask_config WHERE task_name = 'corelogic';
 
 -- this will check the FTP drop for files that need to be processed
 INSERT INTO jq_subtask_config (

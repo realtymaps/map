@@ -56,7 +56,7 @@ module.exports =
     account_use_types:'users.account_use_types'
   keystore:
     userDb: 'users.keystore_user'
-    #TODO: propertyDb: 'properties.keystore_property'
+    propertyDb: 'properties.keystore_property'
 
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports

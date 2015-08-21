@@ -76,7 +76,7 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
     if fieldName in diffExcludeKeys
       continue
     if !_.isEqual value1, fields2[fieldName]
-      result[fieldName] = if fieldName in fields2 then fields2[fieldName] else null
+      result[fieldName] = (fields2[fieldName] ? null)
 
   # then get fields missing from row1
   _.extend result, _.omit(fields2, Object.keys(fields1))
@@ -103,10 +103,9 @@ loadUpdates = (subtask, options) ->
       rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
       tables.jobQueue.dataLoadHistory()
       .insert
-          data_source_id: options.dataSourceId
-          data_source_type: 'mls'
-          batch_id: subtask.batch_id
-          raw_table_name: rawTableName
+        data_source_id: options.dataSourceId
+        data_source_type: 'mls'
+        batch_id: subtask.batch_id
       .then () ->
         retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
       .then (results) ->
@@ -120,7 +119,7 @@ loadUpdates = (subtask, options) ->
         recordCountsPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-
+        
         # simultaneously create a temp table and stream the data to it
         fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
         updateTableNamePromise = tables.jobQueue.dataLoadHistory()
@@ -245,16 +244,18 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       sale: normalizedData.sale || []
     hidden_fields: _getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
+    deleted: null
   updateRow = _.extend base, stats, data
   # check for an existing row
   tables.propertyData.mls()
   .select('*')
   .where
-      mls_uuid: updateRow.mls_uuid
-      data_source_id: updateRow.data_source_id
+    mls_uuid: updateRow.mls_uuid
+    data_source_id: updateRow.data_source_id
   .then (result) ->
     if !result?.length
       # no existing row, just insert
+      updateRow.inserted = stats.batch_id
       tables.propertyData.mls()
       .insert(updateRow)
     else
@@ -264,24 +265,28 @@ _updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> P
       changes = _diff(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
+        updateRow.updated = stats.batch_id
       updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.mls(), updateRow.change_history)
       tables.propertyData.mls()
       .where
-          mls_uuid: updateRow.mls_uuid
-          data_source_id: updateRow.data_source_id
+        mls_uuid: updateRow.mls_uuid
+        data_source_id: updateRow.data_source_id
       .update(updateRow)
 
 
 finalizeData = (subtask, id) ->
   listingsPromise = tables.propertyData.mls()
   .select('*')
-  .where(id)
+  .where(rm_property_id: id)
   .whereNull('deleted')
   .where(hide_listing: false)
+  .orderBy('rm_property_id')
+  .orderBy('deleted')
+  .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
   parcelsPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-  .where(id)
+  .where(rm_property_id: id)
   # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0

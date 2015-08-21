@@ -36,7 +36,7 @@ finalizeDataPrep = (subtask) ->
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
-      
+
 
 subtasks =
   loadDataRawMain: loadDataRawMain

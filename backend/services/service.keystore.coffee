@@ -1,16 +1,27 @@
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
+_ = require 'lodash'
 
 
-_getValues = (table, namespace) ->
-  table()
+_getValuesMap = (table, namespace, options={}) ->
+  _getValues(table, namespace, options)
+  .then (result) ->
+    map = {}
+    for kv in result
+      map[kv.key] = kv.value
+    if options.defaultValues?
+      _.extend(map, options.defaultValues)
+    map
+
+_getValues = (table, namespace, options={}) ->
+  table(options.transaction)
   .select('key', 'value')
   .where(namespace: namespace)
   .then (result=[]) ->
     result
 
 _getValue = (table, key, options={}) ->
-  query = table()
+  query = table(options.transaction)
   .select('value')
   .where(key: key)
   if !options.namespace?
@@ -23,24 +34,24 @@ _getValue = (table, key, options={}) ->
     else
       result[0].value
 
-_setValue = (table, key, value, namespace=null) ->
-  query = table()
+_setValue = (table, key, value, options={}) ->
+  query = table(options.transaction)
   .where(key: key)
-  if !namespace?
+  if !options.namespace?
     query = query.whereNull('namespace')
   else
-    query = query.where(namespace: namespace)
+    query = query.where(namespace: options.namespace)
   query
   .update(value: sqlHelpers.safeJsonArray(table(), value))
   .returning('*')
   .then (result) ->
     if !result?.length
       # couldn't find it to update, need to insert
-      table()
+      table(options.transaction)
       .insert
         key: key
-        value: sqlHelpers.safeJsonArray(table(), value)
-        namespace: namespace
+        value: sqlHelpers.safeJsonArray(table(options.transaction), value)
+        namespace: options.namespace
       .then () ->
         undefined
     else
@@ -48,9 +59,13 @@ _setValue = (table, key, value, namespace=null) ->
 
   
 module.exports =
-  getUserDbValues: _getValues.bind(null, tables.keystore.userDb)
-  getUserDbValue: _getValue.bind(null, tables.keystore.userDb)
-  setUserDbValue: _setValue.bind(null, tables.keystore.userDb)
-  #TODO: getPropertyDbValues: _getValues.bind(null, tables.keystore.propertyDb)
-  #TODO: getPropertyDbValue: _getValue.bind(null, tables.keystore.propertyDb)
-  #TODO: setPropertyDbValue: _setValue.bind(null, tables.keystore.propertyDb)
+  userDb:
+    getValues: _getValues.bind(null, tables.keystore.userDb)
+    getValuesMap: _getValuesMap.bind(null, tables.keystore.userDb)
+    getValue: _getValue.bind(null, tables.keystore.userDb)
+    setValue: _setValue.bind(null, tables.keystore.userDb)
+  propertyDb:
+    getValues: _getValues.bind(null, tables.keystore.propertyDb)
+    getValuesMap: _getValuesMap.bind(null, tables.keystore.propertyDb)
+    getValue: _getValue.bind(null, tables.keystore.propertyDb)
+    setValue: _setValue.bind(null, tables.keystore.propertyDb)

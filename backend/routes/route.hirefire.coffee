@@ -10,7 +10,7 @@ HIREFIRE_RUN_TIMESTAMP = 'hirefire run timestamp'
 
 
 _checkIfRun = () ->
-  keystore.getUserDbValue(HIREFIRE_RUN_TIMESTAMP, defaultValue: 0)
+  keystore.userDb.getValue(HIREFIRE_RUN_TIMESTAMP, defaultValue: 0)
   .then (timestamp) ->
     if Date.now() - timestamp >= config.HIREFIRE.BACKUP.RUN_WINDOW
       logger.warn "Hirefire hasn't run since #{new Date(timestamp)}, manually executing"
@@ -32,7 +32,7 @@ info = (req, res, next) -> Promise.try () ->
     _timeout = setTimeout(_checkIfRun, config.HIREFIRE.BACKUP.RUN_WINDOW + Math.floor(Math.random()*config.HIREFIRE.BACKUP.DELAY_VARIATION))
   
   now = Date.now()
-  keystore.setUserDbValue(HIREFIRE_RUN_TIMESTAMP, now)
+  keystore.userDb.setValue(HIREFIRE_RUN_TIMESTAMP, now)
   .then (currentTimestamp=now) ->
     # if it turns out something else has started running since we determined we should run (race condition),
     # don't bother running if this isn't a real hirefire hit (let the other one handle it) 
