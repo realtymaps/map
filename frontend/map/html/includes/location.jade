@@ -1,9 +1,9 @@
 .location-tools(ng-class="{'old-controls': oldControls}")
-  button.btn.btn-transparent
+  button.btn.btn-transparent(ng-click="Toggles.toggleLocation()" findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
     span.icon.icon-location
 
 .zoom-tools(ng-class="{'old-controls': oldControls}")
-  button.btn.btn-transparent.zoom-in
+  button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1)" tool-tip placement="right" title="Zoom In")
     span.icon.icon-plus
-  button.btn.btn-transparent.zoom-out
+  button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1)" tool-tip placement="right" title="Zoom Out")
     span.icon.icon-minus
