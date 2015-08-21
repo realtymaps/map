@@ -19,7 +19,7 @@
     "test-frontend": "gulp frontendSpec",
     "test-backend": "gulp backendSpec",
     "test-gulp": "gulp gulpSpec",
-    "test": "if [[ `which foreman` == '' ]]; then gem install foreman; fi; foreman run gulp spec",
+    "test": "if [ `which foreman` ]; then gem install foreman; fi; foreman run gulp spec",
     "spec": "gulp spec",
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
