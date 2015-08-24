@@ -39,7 +39,7 @@ CREATE OR REPLACE FUNCTION jq_update_task_counts() RETURNS VOID AS
     WHERE
       jq_task_history.name = counts.task_name AND
       jq_task_history.batch_id = counts.batch_id AND
-      jq_task_history.started >= (NOW() - '1 day'::INTERVAL;
+      jq_task_history.started >= (NOW() - '1 day'::INTERVAL);
   END;
   $$
 LANGUAGE plpgsql;
