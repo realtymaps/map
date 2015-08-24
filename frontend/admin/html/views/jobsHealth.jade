@@ -1,1 +1,9 @@
+.row
+  .col-md-2
+    select(type="text" ng-model="healthTimerange" ng-change="loadHealth()").form-control
+      option(value="1 hour") 1 Hour
+      option(value="1 day") 1 Day
+      option(value="7 days") 7 Days
+      option(value="30 days") 30 Days
+  .col-md-10
 .jobs-grid(cg-busy="jobsBusy" ui-grid="jobsGrid" ui-grid-resize-columns)
