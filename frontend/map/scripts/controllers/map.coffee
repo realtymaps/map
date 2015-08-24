@@ -24,6 +24,17 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
+    $scope.oldControls = true
+    $scope.toggleControls = () ->
+      $scope.oldControls = !$scope.oldControls
+      if map?.map
+        if !$scope.oldControls
+          map.map.removeControl map.map.zoomControl
+          map.map.removeControl map.zoomBox
+        else
+          map.map.addControl map.map.zoomControl
+          map.map.addControl map.zoomBox
+
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
     $scope.resultsInit = (resultsListId) ->
