@@ -17,27 +17,37 @@ retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 
-_streamArrayToDbTable = (objects, tableName, fields) ->
+_streamArrayToDbTable = (objects, tableName, fields, startSql, createSql, finishSql) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
   # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
   # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
+  pgQuery = Promise.promisify(pgClient.query, pgClient)
   pgConnect()
-  .then () -> new Promise (resolve, reject) ->
-    copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
-    rawDataStream = pgClient.query(copyStream.from(copyStart))
-    rawDataStream.on('finish', resolve)
-    rawDataStream.on('error', reject)
-    # stream from array to object serializer stream to COPY FROM
-    from(objects)
-    .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
-    .pipe(rawDataStream)
+  .then () ->
+    pgQuery = Promise.promisify(pgClient.query, pgClient)
+    pgQuery('BEGIN')
+    .then () ->
+      pgQuery(startSql)
+    .then () ->
+      pgQuery(createSql)
+    .then () -> new Promise (resolve, reject) ->
+      copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+      rawDataStream = pgClient.query(copyStream.from(copyStart))
+      rawDataStream.on('finish', resolve)
+      rawDataStream.on('error', reject)
+      # stream from array to object serializer stream to COPY FROM
+      from(objects)
+      .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
+      .pipe(rawDataStream)
+    .then () ->
+      pgQuery(finishSql)
+    .then () ->
+      pgQuery('COMMIT')
   .finally () ->
     # always disconnect the db client when we're done
     pgClient.end()
-  .then () ->
-    return objects.length
 
 
 _getValues = (list, target) ->
@@ -119,33 +129,33 @@ loadUpdates = (subtask, options) ->
         recordCountsPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-        
-        # simultaneously create a temp table and stream the data to it
-        fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        updateTableNamePromise = tables.jobQueue.dataLoadHistory()
-        .where
-          data_source_id: options.dataSourceId
-          batch_id: subtask.batch_id
-        .update
-          raw_table_name: rawTableName
-        handleDataPromise = Promise.join fieldInfoPromise, updateTableNamePromise, (fieldInfo) ->
+
+        handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+        .then (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
-          dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
-          .then () ->
-            _streamArrayToDbTable(results, rawTableName, fields)
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (rawRows) ->
-          tables.jobQueue.dataLoadHistory()
+          startSql = tables.jobQueue.dataLoadHistory()
           .where
             data_source_id: options.dataSourceId
             batch_id: subtask.batch_id
           .update
-            raw_rows: rawRows
+            raw_table_name: rawTableName
+          .toString()
+          createSql = dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields)).toString()
+          finishSql = tables.jobQueue.dataLoadHistory()
+          .where
+            data_source_id: options.dataSourceId
+            batch_id: subtask.batch_id
+          .update
+            raw_rows: results.length
+          .toString()
+
+          _streamArrayToDbTable(results, rawTableName, fields, startSql, createSql, finishSql)
           .then () ->
-            return rawRows
+            return results.length
+          .catch isUnhandled, (error) ->
+            throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
+          return numRawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
