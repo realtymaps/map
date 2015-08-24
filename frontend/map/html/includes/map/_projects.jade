@@ -1,19 +1,21 @@
 span(class="dropdown btn-group projects-list" dropdown on-toggle="toggled(open)")
-    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
-        span
-            span.icon.icon-project
-            h4 {{selectedProject.title}}
-        span.caret
-    ul(class="dropdown-menu whiteblock no-margin")
-        li.count {{projectsArray.length}} projects
-        li(ng-repeat="project in projectsArray" ng-click="selectProject($index)" )
-            a(href="#/projects/{{project.id}}")
-                span.enity
-                    span.icon.icon-project
-                    span.title
-                        h3 {{project.title}}
-                        span.count {{project.properties}} Properties
-                span.actions
-                    span.icon.icon-save_on_disk
-                    span.icon.icon-checked
-                    span.icon.icon-remove
+  button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+    span
+      span.icon.icon-project
+      h4 {{selectedProject.title}}
+    span.caret
+  ul(class="dropdown-menu whiteblock no-margin")
+    li.count {{profilesTotal}}
+      span(ng-show="profilesTotal == 1")  profile
+      span(ng-show="profilesTotal != 1")  profiles
+    li(ng-repeat="profile in profiles" ng-click="selectProfile(profile)" )
+      a
+        span.enity
+          span.icon.icon-project
+          span.title
+            h3 {{profile.name}}
+            span.count {{profile.totalPropertiesSelected}} Properties
+        span.actions
+          span.icon.icon-save_on_disk
+          span.icon.icon-checked
+          span.icon.icon-remove

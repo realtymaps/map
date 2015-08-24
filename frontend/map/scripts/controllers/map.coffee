@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 require '../factories/map.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 {uiProfile} = require('../../../../common/utils/util.profile.coffee')
 
@@ -20,7 +21,7 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
@@ -35,6 +36,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
           map.map.addControl map.map.zoomControl
           map.map.addControl map.zoomBox
 
+    $scope.selectProfile = (profile) ->
+      $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+      .then () ->
+        loadProfile(profile)
+
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
     $scope.resultsInit = (resultsListId) ->
@@ -47,58 +53,64 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, rmapsMa
     rmapssearchbox('mainMap')
 
     $rootScope.registerScopeData () ->
-      profile = null
       rmapsprincipal.getIdentity()
       .then (identity) ->
+        $scope.profiles = identity.profiles
+        $scope.profilesTotal = (_.keys $scope.profiles).length
+        _.each $scope.profiles, (profile) ->
+          profile.totalPropertiesSelected = (_.keys profile.propertiesSelected).length
+
         if not identity?.currentProfileId
           return $location.path(frontendRoutes.profiles)
-        profile = uiProfile(identity)
 
-        $rootScope.selectedFilters = {}
+        loadProfile uiProfile(identity)
 
-        map_position = profile.map_position
-        #fix messed center
-        if !map_position?.center?.lng or !map_position?.center?.lat
-          map_position =
-            center:
-              lat: 26.129241
-              lng: -81.782227
-              zoom: 15
+    loadProfile = (profile) ->
+      $rootScope.selectedFilters = {}
 
+      map_position = profile.map_position
+      #fix messed center
+      if !map_position?.center?.lng or !map_position?.center?.lat
         map_position =
-          center: NgLeafletCenter map_position.center
+          center:
+            lat: 26.129241
+            lng: -81.782227
+            zoom: 15
 
-        if profile.filters
-          statusList = profile.filters.status || []
-          delete profile.filters.status
-          for key,status of rmapsParcelEnums.status
-            profile.filters[key] = (statusList.indexOf(status) > -1)
-          _.extend($rootScope.selectedFilters, profile.filters)
-        if map
-          if map_position?.center?
-            $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
-          if map_position?.zoom?
-            $scope.map.center.zoom = Number map_position.zoom
-          $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
-        else
-          if map_position?
-            if map_position.center? and
-            map_position.center.latitude? and
-            map_position.center.latitude != "NaN" and
-            map_position.center.longitude? and
-            map_position.center.longitude != "NaN"
-              rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
-            if map_position.zoom?
-              rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
-          rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
-          map = new rmapsMap($scope, rmapsMainOptions.map)
+      map_position =
+        center: NgLeafletCenter map_position.center
 
-          if profile.map_results?.selectedResultId? and map?
-            $log.debug "attempting to reinstate selectedResult"
-            rmapsProperties.getPropertyDetail(null,
-              profile.map_results.selectedResultId,"all")
-            .then (data) ->
-              map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
+      if profile.filters
+        statusList = profile.filters.status || []
+        delete profile.filters.status
+        for key,status of rmapsParcelEnums.status
+          profile.filters[key] = (statusList.indexOf(status) > -1)
+        _.extend($rootScope.selectedFilters, profile.filters)
+      if map
+        if map_position?.center?
+          $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
+        if map_position?.zoom?
+          $scope.map.center.zoom = Number map_position.zoom
+        $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
+      else
+        if map_position?
+          if map_position.center? and
+          map_position.center.latitude? and
+          map_position.center.latitude != "NaN" and
+          map_position.center.longitude? and
+          map_position.center.longitude != "NaN"
+            rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
+          if map_position.zoom?
+            rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
+        rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
+        map = new rmapsMap($scope, rmapsMainOptions.map)
+
+        if profile.map_results?.selectedResultId? and map?
+          $log.debug "attempting to reinstate selectedResult"
+          rmapsProperties.getPropertyDetail(null,
+            profile.map_results.selectedResultId,"all")
+          .then (data) ->
+            map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

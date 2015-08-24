@@ -190,11 +190,6 @@ button
       color c_white
       border-color c_blue
 
-  &.btn-inactive
-    background c_white
-    border 1px solid c_gray_ligther
-    color c_gray
-
   &.btn-forsale
     background c_white
     border 1px solid c_green
@@ -203,16 +198,21 @@ button
   &.btn-pending
     background c_white
     border 1px solid c_yellow
-    color c_gray
+    color c_yellow
 
   &.btn-sold
     background c_white
     border 1px solid c_red
-    color c_gray
+    color c_red
 
   &.btn-offmarket
     background c_white
     border 1px solid c_light_blue
+    color c_light_blue
+
+  &.btn-inactive
+    background c_white
+    border 1px solid c_gray_ligther
     color c_gray
 
     &:before
@@ -267,7 +267,7 @@ button
       box-shadow 0px 0px 0px c_black_0
       color c_black
       font-weight bold
-  
+
   &.btn-text
     min-width 1px
     &.active
@@ -413,13 +413,13 @@ ul.nav-tabs
 form
   .btn
     min-width 120px
-  
+
   .form-section
     overflow hidden
     margin-bottom 20px
     border-top 1px solid c_gray_ligther
     padding 10px
-    
+
 p.required
 .required:after
     content "*"
