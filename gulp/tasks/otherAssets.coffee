@@ -5,7 +5,7 @@ paths = require '../../common/config/paths'
 
 gulp.task 'otherAssets', gulp.series 'webroot', 'vendor', ->
   gulp.src [
-    paths.rmap.assets
+    paths.map.assets
     paths.admin.assets
   ]
   .pipe gulp.dest paths.destFull.assets
