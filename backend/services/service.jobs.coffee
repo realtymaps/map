@@ -34,7 +34,7 @@ healthDbFn = () ->
 
     # segregate query parameters for each of the subqueries, if applicable
     _query1 = query # _.pluck query, [<foo-items>]
-    _query2 = query # _.pluck query, [<bar-items>]
+    _query2 = {} # _.pluck query, [<bar-items>]
 
     # query
     db.knex.select('*').from(
