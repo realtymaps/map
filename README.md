@@ -20,7 +20,8 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
         - **ruby**:
             - `rvm install ruby-2.1.3`
             - *Note if there are problems here it is usually with OSX command line tools being out of sync and missing gcc deps (resolved with brew) and osx commandline tools updates*
-
+        - **foreman**:
+            - `gem install foreman`
     - **Node (nvm / node / npm)**:
         - **nvm**:
             - `brew install nvm` or if not osx use google / probabaly `apt-get install nvm`
