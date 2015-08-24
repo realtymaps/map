@@ -51,7 +51,7 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
                 - `foreman run scripts/runDev --mayday --bare-server`
 
         - **Run the server (HEROKU ONLY)**
-                - `foreman start`
+            - `foreman start`
 
 ### Db change management
 - handled via Flyway
