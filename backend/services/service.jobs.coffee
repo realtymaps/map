@@ -1,6 +1,5 @@
 _ = require 'lodash'
 BaseObject = require '../../common/utils/util.baseObject'
-choiceValidation = require '../utils/validation/util.validation.choice'
 db = require('../config/dbs').properties
 logger = require '../config/logger'
 Promise = require 'bluebird'
