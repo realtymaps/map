@@ -1,3 +1,6 @@
+###
+This file should be abandoned as gulp should take care of this via a splat/glob.
+###
 require './config/decorators.coffee'
 require './config/location.coffee'
 require './config/logger.coffee'
