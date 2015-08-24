@@ -41,15 +41,15 @@ Internal fork from [mean.coffee](https://github.com/realtymaps/mean.coffee)
         - `npm install` (will bower install as well)
         - You made bower changes and feel like updating that only.. well then run `bower install`
 
-- **Run gulp (for dev)**
-    Requires Postgress Database Locally:
-        - `foreman run gulp` or
-        - `foreman run scripts/runDev`
-    Mayday or Remote Heroku Database
-    - `foreman run scripts/runDev --mayday --bare-server`
-
-- **Run the server (HEROKU ONLY)**
-    - foreman start
+        - **Run gulp (for dev)**
+            Requires Postgress Database Locally:
+                - `foreman run gulp` or
+                - `foreman run scripts/runDev`
+            Mayday or Remote Heroku Database
+            - `foreman run scripts/runDev --mayday --bare-server`
+        
+        - **Run the server (HEROKU ONLY)**
+            - foreman start
 
 ### Db change management
 - handled via Flyway
