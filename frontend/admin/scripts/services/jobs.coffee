@@ -23,8 +23,8 @@ app.service 'rmapsJobsService', (Restangular) ->
   getHistory = (taskName) ->
     Restangular.all(jobsAPI).all('history').getList( name: taskName )
 
-  getHealth = () ->
-    Restangular.all(jobsAPI).all('health').getList()
+  getHealth = (timerange) ->
+    Restangular.all(jobsAPI).all('health').getList(timerange: timerange)
 
   getQueue = () ->
     Restangular.all(jobsAPI).all('queues').getList()

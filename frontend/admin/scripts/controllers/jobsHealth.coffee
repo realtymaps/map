@@ -4,6 +4,8 @@ _ = require 'lodash'
 app.controller 'rmapsJobsHealthCtrl',
 ($window, $scope, $rootScope, rmapsJobsService, uiGridConstants) ->
 
+  $scope.healthTimerange = "1 hour"
+
   $scope.jobsGrid =
     enableColumnMenus: false
     showColumnFooter: true
@@ -64,9 +66,9 @@ app.controller 'rmapsJobsHealthCtrl',
         footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
 
   $scope.loadHealth = () ->
-    $scope.jobsBusy = rmapsJobsService.getHealth()
+    $scope.jobsBusy = rmapsJobsService.getHealth($scope.healthTimerange)
     .then (health) ->
       $scope.jobsGrid.data = health.plain()
 
   $rootScope.registerScopeData () ->
-    $scope.loadHealth()
+    $scope.loadHealth($scope.healthTimerange)
