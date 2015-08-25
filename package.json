@@ -37,6 +37,7 @@
     "bower": "1.x.x",
     "brfs": "^1.4.0",
     "browserify": "^11.0.1",
+    "browserify-ngannotate": "^1.0.1",
     "cartodb-api": "0.0.4",
     "case": "1.1.2",
     "chai": "3.x.x",
@@ -181,6 +182,7 @@
     "winston": "0.8.x"
   },
   "devDependencies": {
+    "browserify-coffeelint": "^1.1.0",
     "gulp-wrap-commonjs": "^0.1.13",
     "karma-browserify": "^4.3.0",
     "karma-chai": "^0.1.0",
@@ -191,7 +193,14 @@
   },
   "browserify": {
     "transform": [
+      "browserify-coffeelint",
       "coffeeify",
+      [
+        "browserify-ngannotate",
+        {
+          "ext": ".coffee"
+        }
+      ],
       "jadeify",
       "stylusify",
       "brfs"
