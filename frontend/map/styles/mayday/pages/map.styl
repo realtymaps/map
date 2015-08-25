@@ -540,13 +540,13 @@
                 border none
 
     .settings-list
-      min-width 320px
+      min-width 350px
       .blueArrow
         &:before
           left 15px
           right auto
       ul
-        padding 0 20px
+        padding 10px 20px 0px
         list-style none
         li
           border none
@@ -555,15 +555,25 @@
             color c_black
             font-size 14px
           &.setPrice
+          &.setSqft
+          &.setAcres
+            select
             input
-              max-width 95px
-      .setBeds
-      .setBath
+              max-width 40%
+          &.setListed
+          &.setClosePrice
+            select
+            input
+              max-width 35%
+          &.setOwner
+            input
+              width 100%
+
+      .setBeds.row
+      .setBath.row
         .btn-group
-          display: block;
-          margin-right: -4px;
-          .btn
-            min-width 20%
+          display block
+          margin-right -4px
       .btn-actions
         overflow hidden
         text-align center

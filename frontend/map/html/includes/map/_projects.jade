@@ -5,16 +5,16 @@ span(class="dropdown btn-group projects-list" dropdown on-toggle="toggled(open)"
       h4 {{selectedProject.title}}
     span.caret
   ul(class="dropdown-menu whiteblock no-margin")
-    li.count {{profilesTotal}}
-      span(ng-show="profilesTotal == 1")  profile
-      span(ng-show="profilesTotal != 1")  profiles
-    li(ng-repeat="profile in profiles" ng-click="selectProfile(profile)" )
+    li.count {{projectsTotal}}
+      span(ng-show="projectsTotal == 1")  project
+      span(ng-show="projectsTotal != 1")  projects
+    li(ng-repeat="project in projects" ng-click="selectProject(project)" )
       a
         span.enity
           span.icon.icon-project
           span.title
-            h3 {{profile.name}}
-            span.count {{profile.totalPropertiesSelected}} Properties
+            h3 {{project.name}}
+            span.count {{project.totalPropertiesSelected}} Properties
         span.actions
           span.icon.icon-save_on_disk
           span.icon.icon-checked

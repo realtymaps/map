@@ -22,14 +22,6 @@ module.exports = (app) ->
   .controller 'PopoverCtrl', ($scope) ->
     $scope.staticPopover = title: 'Title'
 
-  .controller 'CheckboxCtrl', ($scope) ->
-    $scope.checkModel = setBeds:
-      one: false
-      two: false
-      three: false
-      four: false
-      five: false
-
   .controller 'MobilePageCtrl', ($scope) ->
     $scope.isOn = false
 

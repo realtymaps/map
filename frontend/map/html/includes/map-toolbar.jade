@@ -1,6 +1,11 @@
 include ./mixins/spinner.jade
 
 .toolbar
+
+    .toolbar-filters-icon.icon(ng-click="toggleControls()" tool-tip placement="right" title="Show New Controls (WIP)")
+        include ../svg/criteria.svg
+        .toolbar-label New
+
     .layer-panel(ng-show="Toggles.showLayerPanel" id="layers-slide" ng-cloak)
         include ./layers-tray.jade
 
@@ -53,7 +58,3 @@ include ./mixins/spinner.jade
     .toolbar-zoomout-icon.icon(ng-click="print()" tool-tip placement="right" title="Print Map")
         include ../svg/print.svg
         .toolbar-label Print
-
-    .toolbar-filters-icon.icon(ng-click="toggleControls()" tool-tip placement="right" title="Show New Controls (WIP)")
-        include ../svg/criteria.svg
-        .toolbar-label New Controls

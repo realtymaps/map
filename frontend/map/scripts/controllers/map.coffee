@@ -55,10 +55,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     $rootScope.registerScopeData () ->
       rmapsprincipal.getIdentity()
       .then (identity) ->
-        $scope.profiles = identity.profiles
-        $scope.profilesTotal = (_.keys $scope.profiles).length
-        _.each $scope.profiles, (profile) ->
-          profile.totalPropertiesSelected = (_.keys profile.propertiesSelected).length
+        $scope.projects = identity.profiles
+        $scope.projectsTotal = (_.keys $scope.projects).length
+        _.each $scope.projects, (project) ->
+          project.totalPropertiesSelected = (_.keys project.propertiesSelected).length
 
         if not identity?.currentProfileId
           return $location.path(frontendRoutes.profiles)
