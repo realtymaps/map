@@ -18,22 +18,26 @@ require './markup'
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  bundledStream = through()
+  inputGlob = paths[app].root + 'scripts/**/*.coffee'
   outputName = app + '.bundle.js'
   startTime = ''
 
-  bundledStream
-  .on 'error', conf.errorHandler 'Bundler'
-  .pipe source outputName
-  .pipe buffer()
-  .pipe $.sourcemaps.init loadMaps: true
-  .pipe $.sourcemaps.write()
-  .pipe gulp.dest paths.destFull.scripts
-  .on 'end', ->
-    timestamp = prettyHrtime process.hrtime startTime
-    gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+  pipeline = (stream) ->
+    stream
+    .on 'error', conf.errorHandler 'Bundler'
+    .pipe source outputName
+    .pipe buffer()
+    .pipe $.sourcemaps.init loadMaps: true
+    .pipe $.sourcemaps.write()
+    .pipe gulp.dest paths.destFull.scripts
+    .on 'end', ->
+      timestamp = prettyHrtime process.hrtime startTime
+      gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+    stream
 
-  globby [paths[app].root + 'scripts/**/*.coffee'], (err, entries) ->
+  bundledStream = pipeline through()
+
+  globby [inputGlob], (err, entries) ->
     # gutil.log "entries: #{entries}"
     if (err)
       bundledStream.emit('error', err)
@@ -50,15 +54,15 @@ browserifyTask = (app, watch = false) ->
 
     b = browserify config
 
-    bundle = () ->
+    bundle = (stream) ->
       startTime = process.hrtime()
       gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
-      b.bundle().pipe(bundledStream)
-
+      b.bundle().pipe(stream)
 
     if watch
       b = watchify b
-      b.on 'update', bundle
+      b.on 'update', () ->
+        bundle pipeline through()
       gutil.log 'Watching files required by', gutil.colors.yellow(config.entries)
     else
       if config.require
@@ -66,7 +70,8 @@ browserifyTask = (app, watch = false) ->
       if config.external
         b.external config.external
 
-    bundle()
+    bundle bundledStream
+
   bundledStream
 
 gulp.task 'browserify', -> browserifyTask 'map'

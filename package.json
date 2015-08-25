@@ -37,6 +37,7 @@
     "bower": "1.x.x",
     "brfs": "^1.4.0",
     "browserify": "^11.0.1",
+    "browserify-ngannotate": "^1.0.1",
     "cartodb-api": "0.0.4",
     "case": "1.1.2",
     "chai": "3.x.x",
@@ -178,7 +179,8 @@
     "vinyl-paths": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
     "watchify": "^3.3.1",
-    "winston": "0.8.x"
+    "winston": "0.8.x",
+    "browserify-coffeelint": "^1.1.0"
   },
   "devDependencies": {
     "gulp-wrap-commonjs": "^0.1.13",
@@ -191,7 +193,14 @@
   },
   "browserify": {
     "transform": [
+      "browserify-coffeelint",
       "coffeeify",
+      [
+        "browserify-ngannotate",
+        {
+          "ext": ".coffee"
+        }
+      ],
       "jadeify",
       "stylusify",
       "brfs"
