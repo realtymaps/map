@@ -263,7 +263,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
         @mapCtrl.scope.resultsLimit += amountToLoad
 
       showModel: (model) =>
-        @click(@mapCtrl.scopeM().markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
+        @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
 
       click: (result, event, context) =>
         maybeFetchCb = (showDetails) =>

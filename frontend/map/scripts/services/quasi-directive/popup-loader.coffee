@@ -23,7 +23,7 @@ app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVari
         else new L.Point offsets.left, offsets.bottom
 
 
-    load: _.debounce ($scope, map, model, opts = _defaultOptions, templateUrl = 'map-smallDetails.tpl.html') ->
+    load: _.debounce ($scope, map, model, opts = _defaultOptions, templateUrl = './views/templates/map-smallDetails.tpl.jade') ->
       _map = map
 
       return if model?.markerType == 'cluster'
@@ -31,6 +31,10 @@ app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVari
       # redundant but forces out window to not have a close buttons since we always hide on mouseoff
       $http.get(templateUrl, { cache: $templateCache })
       .then (content) ->
+        ###
+        AS a side note/ WARNING if the templateUrl is incorrect it will resolve the root page
+        And on compile will re-initiate all controllers and cause strange behaviors
+        ###
         angular.extend opts,
           closeButton: false
 

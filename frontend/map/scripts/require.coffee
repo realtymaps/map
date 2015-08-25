@@ -1,3 +1,6 @@
+###
+This file should be abandoned as gulp should take care of this via a splat/glob.
+###
 require './config/decorators.coffee'
 require './config/location.coffee'
 require './config/logger.coffee'
@@ -49,6 +52,7 @@ require './services/leafletObjectFetcher.coffee'
 require './services/properties.coffee'
 require './services/quasi-directive/popup-loader.coffee'
 require './services/quasi-directive/searchbox.coffee'
+require './services/quasi-directive/controls.coffee'
 require './services/renderPdfBlob.coffee'
 require './services/spinner.coffee'
 require './services/zoomLevel.coffee'

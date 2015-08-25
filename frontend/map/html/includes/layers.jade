@@ -1,0 +1,26 @@
+.layers-tools(ng-controller="PopoverCtrl" ng-class="{'old-controls': oldControls}")
+  button.toggle-active.btn.btn-transparent(ng-click='active = !active', ng-class="active ? 'active' : '' ", popover-template='layersPopover.templateUrl', popover-placement='right')
+    span.icon.icon-layers
+      script(type="text/ng-template" id="LayersPopover.html")
+        .filter-row
+          span.label Show
+          ul
+            li
+              button.btn.btn-selected Address
+            li
+              button.btn.btn-primary Price
+            li
+              button.btn.btn-inactive Notes
+            li
+              button.btn.btn-inactive Sent Mail
+        .filter-row
+          span.label Status
+          ul
+            li
+              button.btn.btn-forsale For Sale
+            li
+              button.btn.btn-pending Pending
+            li
+              button.btn.btn-sold Sold
+            li
+              button.btn.btn-offmarket Off Market

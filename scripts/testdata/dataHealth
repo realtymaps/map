@@ -1,0 +1,52 @@
+#!/bin/bash
+
+# misc environment setup
+mkdir -p tmp/ # is (and should be) listed in .gitignore
+TESTSQL="tmp/property__dataHealth_test.sql"
+TEMPLATE="scripts/testdata/dataHealth.tmpl.sql"
+DATA_LOAD_HISTORY="tmp/property__data_load_history.$(date +'%Y%m%d-%H%M%S').sql"
+COMBINED_DATA="tmp/property__combined_data.$(date +'%Y%m%d-%H%M%S').sql"
+
+# set password to reduce repetitive prompts
+DELETEPGPASSWORD=0
+if [ -z "$PGPASSWORD" ]; then
+	DELETEPGPASSWORD=1
+	echo "#### Enter postgresql DEV password (hidden):"
+	read -s PW
+	export PGPASSWORD=$PW
+fi  
+
+# backup
+pg_dump --data-only -O -f $DATA_LOAD_HISTORY -d realtymaps_property_dev -t data_load_history -U dev
+echo "Table data_load_history backed up in $DATA_LOAD_HISTORY"
+pg_dump --data-only -O -f $COMBINED_DATA -d realtymaps_property_dev -t combined_data -U dev
+echo "Table combined_data backed up in $COMBINED_DATA"
+
+# truncate
+psql -q -d realtymaps_property_dev -U dev -c "TRUNCATE data_load_history; TRUNCATE combined_data;"
+
+# process test sql data, leave raw query file for manual review
+NOW=`date +"%Y-%m-%d %H:%M:%S"`
+ONEHOUR=`date -v-1H +"%Y-%m-%d %H:%M:%S"`
+ONEDAY=`date -v-1d +"%Y-%m-%d %H:%M:%S"`
+SEVENDAYS=`date -v-7d +"%Y-%m-%d %H:%M:%S"`
+THIRTYDAYS=`date -v-30d +"%Y-%m-%d %H:%M:%S"`
+sed -e "s/__NOW__/$NOW/g" \
+    -e "s/__ONE_HOUR__/$ONEHOUR/g" \
+    -e "s/__ONE_DAY__/$ONEDAY/g" \
+    -e "s/__SEVEN_DAYS__/$SEVENDAYS/g" \
+    -e "s/__THIRTY_DAYS__/$THIRTYDAYS/g" $TEMPLATE > $TESTSQL
+echo "Created $TESTSQL."
+
+# import via sql
+psql -q -d realtymaps_property_dev -U dev -f $TESTSQL
+
+# for housekeeping, delete it even though it should go away upon shell exit anyways
+if [ $DELETEPGPASSWORD -eq 1 ]; then
+	unset PGPASSWORD
+fi
+
+#
+echo -e "Complete.  Run the following to restore prior data:\n"
+echo -e "psql -q -d realtymaps_property_dev -U dev -f $DATA_LOAD_HISTORY"
+echo -e "psql -q -d realtymaps_property_dev -U dev -f $COMBINED_DATA\n"
