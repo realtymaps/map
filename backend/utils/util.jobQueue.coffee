@@ -482,7 +482,7 @@ _setFinishedTimestamps = (transaction=null) ->
   .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
-      tables.jobQueue.taskHistory()
+      tables.jobQueue.taskHistory(transaction)
       .where
         current: true
         name: task.task_name

@@ -1,6 +1,7 @@
 dbs = require '../../config/dbs'
 tables = require '../../config/tables'
 Promise = require 'bluebird'
+jobQueue = require '../util.jobQueue'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -34,13 +35,24 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
 recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
-      # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
-      # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
-      # will resolve to a count of affected rows
+      # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
+      # first such row rather than return all or count them all
       destDataTable()
-      .whereNot(batch_id: subtask.batch_id)
+      .select('rm_raw_id')
+      .where(batch_id: subtask.batch_id)
       .whereNull('deleted')
-      .update(deleted: subtask.batch_id)
+      .limit(1)
+      .then (row) ->
+        if !row?[0]?
+          throw new jobQueue.HardFail("operation would delete all active rows from #{subtask.task_name}")
+      .then () ->
+        # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
+        # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
+        # will resolve to a count of affected rows
+        destDataTable()
+        .whereNot(batch_id: subtask.batch_id)
+        .whereNull('deleted')
+        .update(deleted: subtask.batch_id)
   .then (deletedCount=0) ->
     # get a count of raw rows from all raw tables from this batch with rm_valid == false
     invalidSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, rawDataSuffix), true)

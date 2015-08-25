@@ -37,8 +37,7 @@ app.factory 'rmapsMap',
 
     class Map extends rmapsBaseMap
       baseIsLoaded = false
-      scopeM: ->
-        @scope.map
+
       constructor: ($scope, limits) ->
 
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
@@ -71,7 +70,7 @@ app.factory 'rmapsMap',
 
         @filters = ''
         @filterDrawPromise = false
-        $rootScope.$watch('selectedFilters', @filter, true)
+        $rootScope.$watchCollection 'selectedFilters', @filter#, true
         @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
         @layerFormatter = rmapsLayerFormatters(@)
 
@@ -140,17 +139,17 @@ app.factory 'rmapsMap',
         @scope.$watch 'zoom', (newVal, oldVal) =>
           #if there is a change close the listing view
           #it keeps the map running better on zooming as the infobox doesn't seem to scale well
-          if @scopeM().listingDetail?
-            @scopeM().listingDetail.show = false if newVal isnt oldVal
+          if @scope.map.listingDetail?
+            @scope.map.listingDetail.show = false if newVal isnt oldVal
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
         @subscribe()
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not rmapsZoomLevel.isParcel(@scopeM().center.zoom)
-          @scopeM().markers.addresses = {}
-          _.each @scopeM().geojson, (val) ->
+        if @map? and not rmapsZoomLevel.isParcel(@scope.map.center.zoom)
+          @scope.map.markers.addresses = {}
+          _.each @scope.map.geojson, (val) ->
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
@@ -158,23 +157,23 @@ app.factory 'rmapsMap',
         promises = []
 
         handleClusterResults = (data) ->
-          self.scopeM().markers.filterSummary = {}
+          self.scope.map.markers.filterSummary = {}
           _.each data, (model,k) =>
             self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          self.scopeM().markers.backendPriceCluster = data
+          self.scope.map.markers.backendPriceCluster = data
 
         handleSummaryResults = (data) ->
-          self.scopeM().markers.backendPriceCluster = {}
+          self.scope.map.markers.backendPriceCluster = {}
           self.layerFormatter.setDataOptions(data, self.layerFormatter.MLS.setMarkerPriceOptions)
           for key, val of data
             _wrapGeomPointJson val
-          self.scopeM().markers.filterSummary = data
+          self.scope.map.markers.filterSummary = data
 
         handleGeoJsonResults = () ->
           rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
           .then (data) =>
             return if !data? or _.isString data
-            self.scopeM().geojson.filterSummaryPoly =
+            self.scope.map.geojson.filterSummaryPoly =
               data: data
               style: self.layerFormatter.Parcels.getStyle
 
@@ -195,15 +194,15 @@ app.factory 'rmapsMap',
                 return if !data? or _.isString data
                 handleSummaryResults(data)
 
-                if rmapsZoomLevel.isParcel(self.scopeM().center.zoom) or rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom)
-                  self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scopeM().center.zoom) then false else true
+                if rmapsZoomLevel.isParcel(self.scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(self.scope.map.center.zoom)
+                  self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scope.map.center.zoom) then false else true
                   self.scope.map.layers.overlays.filterSummary.visible = false
-                  self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scopeM().center.zoom) then true else false
+                  self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scope.map.center.zoom) then true else false
 
                   rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
                   .then (data) =>
                     return if !data? or _.isString data
-                    self.scopeM().geojson.filterSummaryPoly =
+                    self.scope.map.geojson.filterSummaryPoly =
                       data: data
                       style: self.layerFormatter.Parcels.getStyle
 
@@ -217,12 +216,12 @@ app.factory 'rmapsMap',
       redraw: (cache = true) =>
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        if (rmapsZoomLevel.isAddressParcel(@scopeM().center.zoom, @scope) or
-             rmapsZoomLevel.isParcel(@scopeM().center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scopeM().center.zoom)
+        if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
+             rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
 
           promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
-            @scopeM().geojson.parcelBase =
+            @scope.map.geojson.parcelBase =
               data: data
               style: @layerFormatter.Parcels.style
 
@@ -267,12 +266,12 @@ app.factory 'rmapsMap',
       getMapStateObj: =>
         centerToSave = undefined
 
-        if @scopeM().center?.latitude? and @scopeM().center?.longitude?
-          centerToSave = @scopeM().center
-        else if @scopeM().center?.lat? and @scopeM().center?.lng?
+        if @scope.map.center?.latitude? and @scope.map.center?.longitude?
+          centerToSave = @scope.map.center
+        else if @scope.map.center?.lat? and @scope.map.center?.lng?
           centerToSave =
-            latitude: @scopeM().center.lat()
-            longitude: @scopeM().center.lng()
+            latitude: @scope.map.center.lat()
+            longitude: @scope.map.center.lng()
         else
           #fallback to saftey and save a good center
           centerToSave = rmapsMainOptions.json.center
@@ -294,7 +293,7 @@ app.factory 'rmapsMap',
         @mapState
 
       filter: (newFilters, oldFilters) =>
-        return if not newFilters and not oldFilters
+        return if (not newFilters and not oldFilters) or newFilters == oldFilters
         if @filterDrawPromise
           $timeout.cancel(@filterDrawPromise)
 

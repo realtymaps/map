@@ -20,7 +20,7 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @destroy = =>
     @lObject = null
     @model = null
-    @layerName =null
+    @layerName = null
     @type = null
 
   @lObject = lObject
