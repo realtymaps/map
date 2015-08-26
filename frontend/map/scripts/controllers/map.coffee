@@ -11,6 +11,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 ###
 map = undefined
 
+
 module.exports = app
 
 #WE WILL STILL NEED THIS IN PRODUCTION FOR A GOOGLE APIKEY
@@ -31,10 +32,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       if map?.map
         if !$scope.oldControls
           map.map.removeControl map.map.zoomControl
-          map.map.removeControl map.zoomBox
         else
           map.map.addControl map.map.zoomControl
-          map.map.addControl map.zoomBox
 
     $scope.selectProfile = (profile) ->
       $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
