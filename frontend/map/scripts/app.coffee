@@ -50,6 +50,6 @@ app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprinci
 module.exports = app
 
 
-require './require.coffee'
+# require './require.coffee'
 require("./controllers/mayday_controllers1.coffee")(app)
 require("./controllers/mayday_controllers2.coffee")(app)

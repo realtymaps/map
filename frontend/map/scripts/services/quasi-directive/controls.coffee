@@ -62,6 +62,10 @@ app.service 'rmapsControls', ($compile) ->
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
           templateFn = $compile wrapper
           templateFn @options.scope
+          L.DomEvent
+          .on wrapper, 'click', L.DomEvent.stopPropagation
+          .on wrapper, 'mousedown', L.DomEvent.stopPropagation
+          .on wrapper, 'dblclick', L.DomEvent.stopPropagation
           wrapper
 
       svc[control.dName] = (options) -> new control.class(options)

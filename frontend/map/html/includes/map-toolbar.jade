@@ -1,6 +1,11 @@
 include ./mixins/spinner.jade
 
 .toolbar
+
+    .toolbar-filters-icon.icon(ng-click="toggleControls()" tool-tip placement="right" title="Show New Controls (WIP)")
+        include ../svg/criteria.svg
+        .toolbar-label New
+
     .layer-panel(ng-show="Toggles.showLayerPanel" id="layers-slide" ng-cloak)
         include ./layers-tray.jade
 
@@ -42,18 +47,14 @@ include ./mixins/spinner.jade
         include ../svg/zoom_area.svg
         .toolbar-label Zoom Area
 
-    .toolbar-zoomout-icon.icon(ng-click="save()" tool-tip placement="right" title="Save Map")
-        include ../svg/save.svg
-        .toolbar-label Save
+    //- .toolbar-zoomout-icon.icon(ng-click="save()" tool-tip placement="right" title="Save Map")
+    //-     include ../svg/save.svg
+    //-     .toolbar-label Save
 
-    .toolbar-zoomout-icon.icon(ng-click="email()" data-toggle="modal" data-target="#emailMap" tool-tip placement="right" title="Email Map")
-        include ../svg/email.svg
-        .toolbar-label Email
+    //- .toolbar-zoomout-icon.icon(ng-click="email()" data-toggle="modal" data-target="#emailMap" tool-tip placement="right" title="Email Map")
+    //-     include ../svg/email.svg
+    //-     .toolbar-label Email
 
-    .toolbar-zoomout-icon.icon(ng-click="print()" tool-tip placement="right" title="Print Map")
-        include ../svg/print.svg
-        .toolbar-label Print
-
-    .toolbar-filters-icon.icon(ng-click="toggleControls()" tool-tip placement="right" title="Show New Controls (WIP)")
-        include ../svg/criteria.svg
-        .toolbar-label New Controls
+    //- .toolbar-zoomout-icon.icon(ng-click="print()" tool-tip placement="right" title="Print Map")
+    //-     include ../svg/print.svg
+    //-     .toolbar-label Print

@@ -1,26 +1,26 @@
-.layers-tools(ng-controller="PopoverCtrl" ng-class="{'old-controls': oldControls}")
-  button.toggle-active.btn.btn-transparent(ng-click='active = !active', ng-class="active ? 'active' : '' ", popover-template='layersPopover.templateUrl', popover-placement='right')
+.layers-tools(ng-class="{'old-controls': oldControls}")
+  button.toggle-active.btn.btn-transparent(ng-click='active = !active', ng-class="active ? 'active' : '' ", popover-template="'LayersPopover'", popover-placement='right')
     span.icon.icon-layers
-      script(type="text/ng-template" id="LayersPopover.html")
+      script(type="text/ng-template" id="LayersPopover")
         .filter-row
           span.label Show
           ul
             li
-              button.btn.btn-selected Address
+              button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
             li
-              button.btn.btn-primary Price
+              button.btn(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
             li
-              button.btn.btn-inactive Notes
+              button.btn(ng-click="Toggles.toggleNotes()" ng-class="{'btn-inactive' : !Toggles.showNotes }") Notes
             li
-              button.btn.btn-inactive Sent Mail
+              button.btn(ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
         .filter-row
           span.label Status
           ul
             li
-              button.btn.btn-forsale For Sale
+              button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
             li
-              button.btn.btn-pending Pending
+              button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
             li
-              button.btn.btn-sold Sold
+              button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
             li
-              button.btn.btn-offmarket Off Market
+              button.btn.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market

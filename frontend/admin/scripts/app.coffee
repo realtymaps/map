@@ -29,5 +29,3 @@ app = window.angular.module appName, [
 ]
 
 module.exports = app
-
-require './require.coffee'

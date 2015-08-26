@@ -7,7 +7,7 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getAll()
+      mlsConfigService.getAll req.query
       .then (result) ->
         next new ExpressResponse(result)
       .catch (error) ->
