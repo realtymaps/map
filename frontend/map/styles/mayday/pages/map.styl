@@ -701,6 +701,25 @@
       height 40px
       font-size 18px
 
+  .leaflet-zoom-box-control
+    border-radius 3px
+    box-shadow 0px 1px 2px rgba(0,0,0,0.4)
+    margin-bottom 0
+
+    a
+      width 40px
+      height 40px
+      line-height 40px
+      background-color rgba(255,255,255,0.6)
+      text-decoration none
+      &:hover
+        color c_light_blue
+        background-color c_white
+
+    &.active
+      a
+        background-color c_light_blue
+        color c_white
 
 @-moz-document url-prefix()
   .pinned-projects-list
