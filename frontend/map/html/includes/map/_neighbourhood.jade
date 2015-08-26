@@ -2,7 +2,8 @@ span(class="dropdown btn-group neighbourhood-list" dropdown on-toggle="toggled(o
     button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
         span.icon.icon-neighbourhood
     ul(class="dropdown-menu whiteblock no-margin")
-        li.count {{neighbourArray.length}} Neighbourhoods
+        li.count
+            a(href="{{frontendRoutes.neighbourhoods}}") {{neighbourArray.length}} Neighbourhoods
         li(ng-repeat="neighbourhood in neighbourArray")
             div
                 span.enity
