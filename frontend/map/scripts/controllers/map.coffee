@@ -26,15 +26,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
-    $scope.oldControls = true
-    $scope.toggleControls = () ->
-      $scope.oldControls = !$scope.oldControls
-      if map?.map
-        if !$scope.oldControls
-          map.map.removeControl map.map.zoomControl
-        else
-          map.map.addControl map.map.zoomControl
-
     $scope.selectProfile = (profile) ->
       $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
       .then () ->
