@@ -21,37 +21,6 @@ module.exports = (app) ->
 
   .controller 'PopoverCtrl', ($scope) ->
     $scope.staticPopover = title: 'Title'
-    $scope.dynamicPopover =
-      content: 'Hello, World!'
-      templateUrl: 'PopoverTemplate.html'
-      title: 'Title'
-    $scope.layersPopover =
-      content: 'Hello, World!'
-      templateUrl: 'LayersPopover.html'
-      title: 'Title'
-
-    $scope.close = ->
-      sav = @tt_isOpen
-      #so first reset all popovers element trigger status
-      popovers = document.querySelectorAll('[popover]')
-      _.forEach popovers, (popover) ->
-        `var popovers`
-        angular.element(popover).scope().tt_isOpen = false
-        return
-      #put back the status of the clicked element
-      @tt_isOpen = sav
-      #then remove all popover divs
-      popovers = document.querySelectorAll('.popover')
-      _.forEach popovers, (popover) ->
-        angular.element(popover).remove()
-
-  .controller 'CheckboxCtrl', ($scope) ->
-    $scope.checkModel = setBeds:
-      one: false
-      two: false
-      three: false
-      four: false
-      five: false
 
   .controller 'MobilePageCtrl', ($scope) ->
     $scope.isOn = false

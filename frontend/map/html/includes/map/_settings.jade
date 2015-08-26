@@ -1,38 +1,81 @@
-span(class="dropdown btn-group settings-list" dropdown on-toggle="toggled(open)")
-    button(class="dropdown-toggle btn btn-transparent settings toggle-active" dropdown-toggle)
-        span.icon.icon-settings
-    div(class="dropdown-menu white arrow blueArrow" ng-click="$event.stopPropagation()")
-        h4.title property filter
-        ul
-            li(class="setPrice row")
-                span(class="label col-md-2") Price
-                div.col-md-10
-                    div.form-inline
-                        div(class="form-group")
-                            input(type="text" class="form-control" name="price_min" placeholder="Minimum")
-                        div(class="form-group")
-                            span.label to
-                        div(class="form-group")
-                            input(type="text" class="form-control" name="price_max" placeholder="Maximum")
+span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
+  button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(dropdown-toggle)
+    span.icon.icon-settings
+  .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
+    h4.title Property Filters
+    ul
+      li.setPrice.row
+        span.label.col-md-2 Price
+        .col-md-10
+          .form-inline
+            input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="Minimum")
+            span.label to
+            input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="Maximum")
 
-            li(class="setBeds row" ng-controller="CheckboxCtrl")
-                span(class="label col-md-2") Beds
-                div.col-md-10
-                    div.btn-group
-                        label(class="btn btn-white" ng-model="checkModel.setBeds.one" btn-checkbox) 1
-                        label(class="btn btn-white" ng-model="checkModel.setBeds.two" btn-checkbox) 2
-                        label(class="btn btn-white" ng-model="checkModel.setBeds.three" btn-checkbox) 3
-                        label(class="btn btn-white" ng-model="checkModel.setBeds.four" btn-checkbox) 4
-                        label(class="btn btn-white" ng-model="checkModel.setBeds.five" btn-checkbox) 5+
-            li(class="setBath row" ng-controller="CheckboxCtrl")
-                span(class="label col-md-2") Beds
-                div.col-md-10
-                    div.btn-group
-                        label(class="btn btn-white" ng-model="checkModel.setBath.one" btn-checkbox) 1+
-                        label(class="btn btn-white" ng-model="checkModel.setBath.two" btn-checkbox) 2+
-                        label(class="btn btn-white" ng-model="checkModel.setBath.three" btn-checkbox) 3+
-                        label(class="btn btn-white" ng-model="checkModel.setBath.four" btn-checkbox) 4+
-                        label(class="btn btn-white" ng-model="checkModel.setBath.five" btn-checkbox) 5+
-        div.btn-actions
-            button(class="btn btn-default") More
-                span.caret
+      li.setBeds.row
+        span.label.col-md-2 Beds
+        .col-md-10
+          .btn-group
+            label.btn.btn-white.btn-radio(
+              ng-repeat="c in filterValues.beds | filter: { value: '' }"
+              ng-model="selectedFilters.bedsMin"
+              btn-radio="{{c.value}}"
+              uncheckable) {{c.name}}
+
+      li.setBath.row
+        span.label.col-md-2 Beds
+        .col-md-10
+          .btn-group
+            label.btn.btn-white.btn-radio(
+              ng-repeat="c in filterValues.baths | filter: { value: '' }"
+              ng-model="selectedFilters.bathsMin"
+              btn-radio="{{c.value}}"
+              uncheckable) {{c.name}}
+
+      li.setSqft.row
+        span.label.col-md-2 Sqft
+        .col-md-10
+          .form-inline
+            input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="Minimum")
+            span.label to
+            input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="Maximum")
+
+      li.setAcres.row
+        span.label.col-md-2 Acres
+        .col-md-10
+          .form-inline
+            select(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
+            span.label to
+            select(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
+
+    div.btn-actions
+      label.btn.btn-default(ng-click="showAdvanced = !showAdvanced") Advanced
+
+    ul(ng-show="showAdvanced")
+      li.setOwner.row
+        span.label.col-md-4 Owner Name
+        .col-md-8
+          .form-inline
+            input.form-control(type="text" ng-model="selectedFilters.ownerName")
+
+      li.setListed.row
+        span.label.col-md-4 Listed Days
+        .col-md-8
+          .form-inline
+            select(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
+            span.label to
+            select(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
+
+      li.setClosePrice.row
+        span.label.col-md-4 Close Price
+        .col-md-8
+          .form-inline
+            input.form-control(ng-model="selectedFilters.closePriceMin" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
+            span.label to
+            input.form-control(ng-model="selectedFilters.closePriceMax" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
+
+      li.setHasOwner.row(ng-if="principal.isDebugEnvironment()")
+        span.label.col-md-4 Has Owner
+        .col-md-8
+          .form-inline
+            select(ng-model="$root.selectedFilters.hasOwner" ng-options='c.value as c.name for c in filterValues.hasOwner')
