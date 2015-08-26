@@ -53,7 +53,7 @@ app.use compress()
 
 # setting the favicon and static folder
 
-app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicon.ico"
+app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicons/favicon.ico"
 app.use serveStatic config.FRONTEND_ASSETS_PATH
 
 # cookie parser - above session
