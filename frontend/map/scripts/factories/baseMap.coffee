@@ -93,7 +93,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
           @map.whenReady  =>
             @scope[mapPath].isReady = true
 
-          @zoomBox = L.control.zoomBox()
+          @zoomBox = L.control.zoomBox position: 'bottomleft'
           map.addControl(@zoomBox)
           document.onkeydown = (e) =>
             e = e || window.event;
