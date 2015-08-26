@@ -20,11 +20,13 @@ class MlsConfigCrud extends crudService.ThenableCrud
         transaction = @dbFn()
         tableName = @dbFn.tableName
         @dbFn = () =>
+          # for "schemaReady" to be true, the main_property_data json fields 
+          # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
           ret = transaction
-          .whereRaw("cast(main_property_data->>\'db\' as text) <> ?", [""])
-          .whereRaw("cast(main_property_data->>\'table\' as text) <> ?", [""])
-          .whereRaw("cast(main_property_data->>\'field\' as text) <> ?", [""])
-          .whereRaw("cast(main_property_data->>\'queryTemplate\' as text) <> ?", [""])
+          .whereRaw("char_length(cast(main_property_data->>\'db\' as text)) > ?", [0])
+          .whereRaw("char_length(cast(main_property_data->>\'table\' as text)) <> ?", [0])
+          .whereRaw("char_length(cast(main_property_data->>\'field\' as text)) <> ?", [0])
+          .whereRaw("char_length(cast(main_property_data->>\'queryTemplate\' as text)) <> ?", [0])
           ret.raw = transaction.raw
 
           # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
