@@ -239,14 +239,16 @@ app.controller 'rmapsNormalizeCtrl',
       .then (fields) ->
         parseFields(fields)
 
-  # Load MLS list
-  # Register the logic that acquires data so it can be evaluated after auth
-  $rootScope.registerScopeData () ->
-    rmapsMlsService.getConfigs()
+  $scope.loadReadyMls = () ->
+    rmapsMlsService.getConfigs({schemaReady: true})
     .then (configs) ->
       $scope.mlsConfigs = configs
       if $state.params.id
         $scope.mlsData.current = _.find $scope.mlsConfigs, { id: $state.params.id }
         loadMls($scope.mlsData.current)
 
+  # Load MLS list
+  # Register the logic that acquires data so it can be evaluated after auth
+  $rootScope.registerScopeData () ->
+    $scope.loadReadyMls()
 ]
