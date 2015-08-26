@@ -120,6 +120,7 @@ app.factory 'rmapsMap',
               rmapsControls.NavigationControl scope: @scope
               rmapsControls.PropertiesControl scope: @scope
               rmapsControls.LayerControl scope: @scope
+              @zoomBox
               rmapsControls.LocationControl scope: @scope
             ]
 

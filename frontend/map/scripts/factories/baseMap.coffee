@@ -56,6 +56,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
 
         @hasRun = false
         @zoomChangedTimeMilli = new Date().getTime()
+        @zoomBox = L.control.zoomBox position: 'bottomleft'
         @activeMarker = undefined
         self = @
         _last = new Date()
@@ -93,8 +94,6 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
           @map.whenReady  =>
             @scope[mapPath].isReady = true
 
-          @zoomBox = L.control.zoomBox position: 'bottomleft'
-          map.addControl(@zoomBox)
           document.onkeydown = (e) =>
             e = e || window.event;
             if e.keyCode == 27 #esc
