@@ -2,10 +2,13 @@ paths = require '../../common/config/paths'
 path = require 'path'
 gulp = require 'gulp'
 conf = require './conf'
+plumber = require 'gulp-plumber'
+
 $ = require('gulp-load-plugins')()
 
 markup = (app) ->
   gulp.src paths[app].jade
+  .pipe plumber()
   .pipe $.consolidate 'jade',
     doctype: 'html'
     pretty: '  '
