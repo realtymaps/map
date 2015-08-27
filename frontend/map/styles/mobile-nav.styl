@@ -6,7 +6,7 @@
   padding-right mobileNavOffset
   width 100%
   height 100%
-  background $c_dark_blue_darker
+  background $$dark_blue_darker
   .inner
     position relative
 
@@ -56,24 +56,24 @@
               background url('/assets/base/icons/favorites_icon_mobile.png') no-repeat center center;
 
         a
-          color c_white_50
+          color $white_50
           padding 10px 10px 10px 40px
           @extends .global-transition
 
           &:hover
           &:focus
-            background c_black_20
-            color c_white
+            background $black_20
+            color $white
 
         span.new
-          color c_light_blue
+          color $light_blue
           text-transform uppercase
           margin-left 5px
           font-size 10px
 
         &.active
           a
-            color c_white
+            color $white
 
   .bottom
     position fixed
@@ -82,13 +82,13 @@
     bottom 0
     padding 10px 15px 10px 15px
     a
-      color c_white_50
+      color $white_50
       text-decoration none
       position relative
       &:hover
       &:focus
-        background c_black_20
-        color c_white
+        background $black_20
+        color $white
         text-decoration none
 
     a
