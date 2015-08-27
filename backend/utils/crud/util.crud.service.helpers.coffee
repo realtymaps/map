@@ -1,5 +1,4 @@
 logger = require '../../config/logger'
-Promise = require 'Bluebird'
 {PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
