@@ -1,8 +1,8 @@
 /* Hero Container
 ============================================================================= */
-.heroContainer
+.hero-container
     width 95%
-    height 350px
+    height 100%
     a
         padding: 50px
         display: block
@@ -11,19 +11,19 @@
         &:hover
             text-decoration: none
             background-color: rgba(220,220,255,.1)
-            .heroText
+            .hero-text
                 color: #FFF
 
-.heroImage
+.hero-container
     width 100%
     display block
     margin 0 auto
 
 
-.heroImage img
+.hero-container img
     width 100%
 
-.heroText
+.hero-text
     font-weight 100
     font-size 15px
     text-align center
@@ -32,15 +32,14 @@
     color rgba(255, 255, 255, 0.51)
 
 @media (min-width: 768px)
-    .heroContainer
-        width 80%;
-
-    .heroText
+    .hero-container
+        width 80%
+    .hero-text
         font-size 20px
 
 @media (min-width: 1200px)
-    .heroContainer
-        width 55%
+    .hero-container
+        width 80%
 
-    .heroText
+    .hero-text
         font-size 22px
