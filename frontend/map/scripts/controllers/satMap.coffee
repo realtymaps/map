@@ -1,11 +1,12 @@
 app = require '../app.coffee'
 qs = require 'qs'
-_overlays = require '../utils/util.layers.overlay.coffee'
 
 _eventReg = require '../utils/util.events.coffee'
 
 app.controller 'rmapsSatMapCtrl', ($log, $timeout, $rootScope, $http,
   rmapsBaseMap, leafletData, $scope) ->
+
+    _overlays = require '../utils/util.layers.overlay.coffee'
 
     limits = $scope.satMap.limits
     _mapId ='detailSatMap'
