@@ -28,6 +28,9 @@ module.exports = (app) ->
     $scope.toggleIsOn = ->
       $scope.isOn = if $scope.isOn == false then true else false
 
+  .controller 'CollapseCtrl', ($scope) ->
+    $scope.isCollapsed = true
+
   .controller 'SearchController', ($scope, $http) ->
       $scope.searchType = 'Properties'
 

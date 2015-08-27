@@ -2,5 +2,5 @@ extends ./_layout
 block content
   .full-width.container
     include ../views/home.jade
-    .site-main.page(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", 
+    main.site-main.page(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}",
       class="{{pageClass}}", ng-show="$state.includes(state.name)", ng-cloak)

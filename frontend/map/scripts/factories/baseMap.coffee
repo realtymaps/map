@@ -27,6 +27,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
             defaults:
               maxZoom: options.maxZoom
               minZoom: options.minZoom
+              zoomControl: false
 
             markersWatchOptions: _.cloneDeep disableWatchObj
             geojsonWatchOptions: _.cloneDeep disableWatchObj

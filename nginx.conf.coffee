@@ -62,8 +62,11 @@ http {
       try_files $uri @node;
     }
 
-    # we handle all root resources (non /assets/ resource files here and route to node root)
-    location ~* ^.+\.(woff|ttf|svg|htc|png){
+    location ~ ^/(assets|json|fonts|scripts|styles)/ {
+      break;
+    }
+    # we handle all root resources
+    location ~* ^.+\..+`{
 
       gzip_static on; # to serve pre-gzipped version
       expires           max;
@@ -72,7 +75,7 @@ http {
       add_header        Last-Modified "";
 
       try_files $uri /$uri;
-
+      break;
     }
 
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error

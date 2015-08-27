@@ -4,32 +4,32 @@
 module.exports = (app) ->
   app.controller 'rmapsPropertiesCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
-    $http.get('data/properties.json').success (data) ->
+    $http.get('json/properties.json').success (data) ->
       $scope.JSONData = data
       $scope.singleProperty = $scope.JSONData[$routeParams.id]
 
   .controller 'rmapsProjectsCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
-    $http.get('data/projects.json').success (data) ->
+    $http.get('json/projects.json').success (data) ->
       $scope.JSONData = data
       $scope.singleProject = $scope.JSONData[$routeParams.id]
 
   .controller 'rmapsNeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
-    $http.get('data/neighbourhoods.json').success (data) ->
+    $http.get('json/neighbourhoods.json').success (data) ->
       $scope.JSONData = data
       $scope.singleNeighbourhoods = $scope.JSONData[$routeParams.id]
 
   .controller 'rmapsNotesCtrl', ($scope, $http, $routeParams) ->
     $scope.JSONData = []
-    $http.get('data/notes.json').success (data) ->
+    $http.get('json/notes.json').success (data) ->
       $scope.JSONData = data
       $scope.singleNote = $scope.JSONData[$routeParams.id]
 
   .controller 'rmapsFavoritesCtrl',
     ($scope, $http, $routeParams) ->
       $scope.JSONData = []
-      $http.get('data/favorites.json').success (data) ->
+      $http.get('json/favorites.json').success (data) ->
         $scope.JSONData = data
         $scope.singleFavorite = $scope.JSONData[$routeParams.id]
 
@@ -111,22 +111,22 @@ module.exports = (app) ->
   .controller 'rmapsNewEmailCtrl',
     ($scope, $http, $routeParams) ->
       $scope.JSONData = []
-      $http.get('data/emails.json').success (data) ->
+      $http.get('json/emails.json').success (data) ->
         $scope.JSONData = data
         $scope.singleEmail = $scope.JSONData[$routeParams.id]
 
       $scope.projectsArray = []
-      $http.get('data/projects.json').success((data) ->
+      $http.get('json/projects.json').success((data) ->
         $scope.projectsArray = data
       ).error (data, status, headers, config) ->
         alert status
       $scope.propertiesArray = []
-      $http.get('data/properties.json').success((data) ->
+      $http.get('json/properties.json').success((data) ->
         $scope.propertiesArray = data
       ).error (data, status, headers, config) ->
         alert status
       $scope.templatesArray = []
-      $http.get('data/email_templates.json').success((data) ->
+      $http.get('json/email_templates.json').success((data) ->
         $scope.templatesArray = data
       ).error (data, status, headers, config) ->
         alert status

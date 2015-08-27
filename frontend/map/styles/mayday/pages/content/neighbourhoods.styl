@@ -1,0 +1,70 @@
+#neighbour
+  .inner
+    ul.neighbourhoods
+      list-style none
+      padding 0
+      margin 0
+      li
+        list-style none
+        margin-bottom 10px
+        h3
+          padding 10px
+          font-size 16px
+          margin 0
+        .map
+          width 100%
+          border 1px solid c_gray
+          overflow hidden
+          height 120px
+          border-radius (6px)
+          position relative
+          display inline-block
+
+          span
+            color c_white
+            background rgba(c_light_blue,0.8)
+            padding 0px
+            border-radius 6px
+            position absolute
+            opacity 0
+            top 50%
+            height 36px
+            line-height 36px
+            margin-top -18px
+            left 50%
+            width 180px
+            text-align center
+            margin-left -90px
+            z-index 3
+            transform scale(.5)
+            @extends .global-transition
+
+          img
+            display inline-block
+            max-width 100%
+            transform scale(1)
+            @extends .global-transition
+
+          &:hover
+            border 1px solid c_light_blue
+
+            span
+              opacity 1
+              transform scale(1)
+
+            img
+              transform scale(1.1)
+
+        .data
+          h3
+            padding 10px 0 0 0
+
+          button.btn-link
+            @extends .global-transition
+            padding 0
+            opacity 0
+
+        &:hover,
+        &:active
+          button.btn-link
+            opacity 1
