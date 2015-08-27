@@ -1,7 +1,7 @@
 include ../includes/navbar.jade
 
-div(roll="main").adminWorkspace
+.admin-workspace(roll="main")
   include ../views/home.jade
-  div(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak).adminPage
+  .admin-page(ng-repeat="state in $state.get() | filter:{parent: 'main'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
 
 include ../../../common/html/includes/alerts.jade
