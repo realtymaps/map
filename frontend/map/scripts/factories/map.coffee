@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-_overlays = require '../utils/util.layers.overlay.coffee'
 
 _encode = require('geohash64').encode
 
@@ -39,7 +38,7 @@ app.factory 'rmapsMap',
       baseIsLoaded = false
 
       constructor: ($scope, limits) ->
-
+        _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
         _initToggles $scope, limits.toggles
 
