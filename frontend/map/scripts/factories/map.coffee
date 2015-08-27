@@ -154,64 +154,63 @@ app.factory 'rmapsMap',
             val.data = _emptyGeoJsonData
 
       drawFilterSummary:(cache) =>
-        self = @
         promises = []
 
-        handleClusterResults = (data) ->
-          self.scope.map.markers.filterSummary = {}
+        handleClusterResults = (data) =>
+          @scope.map.markers.filterSummary = {}
           _.each data, (model,k) =>
-            self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          self.scope.map.markers.backendPriceCluster = data
+            @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+          @scope.map.markers.backendPriceCluster = data
 
-        handleSummaryResults = (data) ->
-          self.scope.map.markers.backendPriceCluster = {}
-          self.layerFormatter.setDataOptions(data, self.layerFormatter.MLS.setMarkerPriceOptions)
+        handleSummaryResults = (data) =>
+          @scope.map.markers.backendPriceCluster = {}
+          @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
           for key, val of data
             _wrapGeomPointJson val
-          self.scope.map.markers.filterSummary = data
+          @scope.map.markers.filterSummary = data
 
-        handleGeoJsonResults = () ->
-          rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
+        handleGeoJsonResults = () =>
+          rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
           .then (data) =>
             return if !data? or _.isString data
-            self.scope.map.geojson.filterSummaryPoly =
+            @scope.map.geojson.filterSummaryPoly =
               data: data
-              style: self.layerFormatter.Parcels.getStyle
+              style: @layerFormatter.Parcels.getStyle
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         if /status/.test(@filters) # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
-          promises.push(
-            rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
-            .then (data) =>
-              if Object.prototype.toString.call(data) is '[object Array]'
-                return if !data? or _.isString data
-                handleClusterResults(data)
+          promise = rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+          .then (data) =>
+            if Object.prototype.toString.call(data) is '[object Array]'
+              return if !data? or _.isString data
+              handleClusterResults(data)
+
+            else
+              #needed for results list, rendering price markers, and address Markers
+              #depending on zoome we want address or price
+              #the data structure is the same (do we clone and hide one?)
+              #or do we have the results list view grab one that exists with items?
+              return if !data? or _.isString data
+              handleSummaryResults(data)
+              overlays = @scope.map.layers.overlays
+              if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
+                overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
+                overlays.filterSummary.visible = false
+                overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+
+                rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+                .then (data) =>
+                  return if !data? or _.isString data
+                  @scope.map.geojson.filterSummaryPoly =
+                    data: data
+                    style: _this.layerFormatter.Parcels.getStyle
 
               else
-                #needed for results list, rendering price markers, and address Markers
-                #depending on zoome we want address or price
-                #the data structure is the same (do we clone and hide one?)
-                #or do we have the results list view grab one that exists with items?
-                return if !data? or _.isString data
-                handleSummaryResults(data)
+                overlays.parcels.visible = false
+                overlays.filterSummary.visible = true
+                overlays.parcelsAddresses.visible = false
+          promises.push promise
 
-                if rmapsZoomLevel.isParcel(self.scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(self.scope.map.center.zoom)
-                  self.scope.map.layers.overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(self.scope.map.center.zoom) then false else true
-                  self.scope.map.layers.overlays.filterSummary.visible = false
-                  self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scope.map.center.zoom) then true else false
-
-                  rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
-                  .then (data) =>
-                    return if !data? or _.isString data
-                    self.scope.map.geojson.filterSummaryPoly =
-                      data: data
-                      style: self.layerFormatter.Parcels.getStyle
-
-                else
-                  self.scope.map.layers.overlays.parcels.visible = false
-                  self.scope.map.layers.overlays.filterSummary.visible = true
-                  self.scope.map.layers.overlays.parcelsAddresses.visible = false
-          )
         promises
 
       redraw: (cache = true) =>

@@ -12,6 +12,11 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
     _deferred = null
     _defferedCurrentProfile = null
 
+    _checkProfileInIdentity = (currentProfileId) ->
+      if (_identity?.currentProfileId or currentProfileId?) and _defferedCurrentProfile?
+        _identity.currentProfileId = currentProfileId if currentProfileId?
+        _defferedCurrentProfile.resolve(_identity.currentProfileId)
+
     setIdentity = (identity) ->
       _identity = identity
       _authenticated = !!identity
@@ -73,10 +78,9 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
     getIdentity: getIdentity
     getCurrentProfile: (currentProfileId) =>
       if _defferedCurrentProfile
-        if _identity? and currentProfileId?
-          _identity.currentProfileId = currentProfileId
-          _defferedCurrentProfile.resolve(_identity.currentProfileId)
+        _checkProfileInIdentity(currentProfileId)
         return _defferedCurrentProfile.promise
 
       _defferedCurrentProfile = $q.defer()
+      _checkProfileInIdentity()
       return _defferedCurrentProfile.promise
