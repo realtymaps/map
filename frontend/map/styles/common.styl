@@ -129,11 +129,16 @@ header.site-header
 
 .center-on-page
   position absolute
-  top -($navbarHeight)
+  top 25%
   bottom 0
   left 0
   right 0
   margin auto
+
+.centered-horizontal
+  @extends .centered
+  top:0px;
+  transform:translate(-0%,-0%)
 
 body
     height: 100%
