@@ -8,21 +8,21 @@ _ = require 'lodash'
     val2: 'val2'
 
   This function automates that!
-  
+
   It can even handle nested objects.  Any key with an object value is recursively traversed,
   and the leaf/endpoint string value is the joined value of the parent keys (default join
   string is '.').
-  
+
   If you want to automate most of the values but need to override some, you can -- this function
   will ignore any keys that already have a string value.
 ###
 keysToValues = (obj, joinStr='.', stack=[]) ->
-  
-  _.mapValues obj, (value, key) ->  
+
+  _.mapValues obj, (value, key) ->
     if typeof(value) == 'string'
       # value is a manual override
       return value
-    
+
     substack = _.clone(stack)
     substack.push(key)
     if typeof(value) == 'object'

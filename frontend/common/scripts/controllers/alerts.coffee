@@ -46,113 +46,114 @@
 ###
 
 module.exports = ($scope, $timeout, $sce, rmapsevents, $log, rmapsMainOptions) ->
-    $scope.alerts = []
-    alertsMap = {}
-    anonymousAlertCounter = 1
+  $scope.alerts = []
+  alertsMap = {}
+  anonymousAlertCounter = 1
 
-    # when we hide an alert, we don't want to completely get rid of it -- we want to keep it around so we know not to
-    # show similar alerts for a while.
-    hideAlert = (alertId) ->
-      alert = alertsMap[alertId]
-      # if it has already been removed or closed, don't do anything
-      if !alert? || alert.closed
-        return
-      # mark it as closed
-      alert.closed = true
-      # remove it from the display array
+  # when we hide an alert, we don't want to completely get rid of it -- we want to keep it around so we know not to
+  # show similar alerts for a while.
+  hideAlert = (alertId) ->
+    alert = alertsMap[alertId]
+    # if it has already been removed or closed, don't do anything
+    if !alert? || alert.closed
+      return
+    # mark it as closed
+    alert.closed = true
+    # remove it from the display array
+    index = $scope.alerts.indexOf(alert)
+    $scope.alerts.splice(index, 1)
+    # cancel any existing expiration timeout, and set a new one based on the quiet period
+    if alert.expiration?
+      $timeout.cancel(alert.expiration)
+    alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
+
+  # use this to preemtpively hide an alert that (maybe) hasn't been triggered yet
+  preventAlert = (alertInfo) ->
+    alert = alertsMap[alertInfo.id]
+    # if it exists already, just hide it as normal except use the new quiet time value
+    if alert?
+      alert.quietMillis = alertInfo.quietMillis
+      hideAlert(alertInfo.id)
+      return
+
+    alert = _.clone(alertInfo)
+    # mark it as closed
+    alert.closed = true
+    # set an expiration timeout
+    alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
+    # put it in the mapping
+    alertsMap[alertInfo.id] = alert
+
+  # this is what we call to remove a still-visible alert after a timeout, or to reset a closed alert so we can start
+  # showing it again
+  removeAlert = (alertId) ->
+    alert = alertsMap[alertId]
+    # if it has already been removed, don't do anything
+    if !alert?
+      return
+    # if it hasn't been closed, we also need to remove it from the display array
+    if !alert.closed
       index = $scope.alerts.indexOf(alert)
-      $scope.alerts.splice(index, 1);
-      # cancel any existing expiration timeout, and set a new one based on the quiet period
-      if alert.expiration?
-        $timeout.cancel(alert.expiration)
-      alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
+      $scope.alerts.splice(index, 1)
+    # this makes us forget it ever happened
+    delete alertsMap[alertId]
 
-    # use this to preemtpively hide an alert that (maybe) hasn't been triggered yet
-    preventAlert = (alertInfo) ->
-      alert = alertsMap[alertInfo.id]
-      # if it exists already, just hide it as normal except use the new quiet time value
-      if alert?
-        alert.quietMillis = alertInfo.quietMillis
-        hideAlert(alertInfo.id)
-        return
-
-      alert = _.clone(alertInfo)
-      # mark it as closed
-      alert.closed = true
-      # set an expiration timeout
-      alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.quietMillis)
-      # put it in the mapping
-      alertsMap[alertInfo.id] = alert
-
-    # this is what we call to remove a still-visible alert after a timeout, or to reset a closed alert so we can start
-    # showing it again
-    removeAlert = (alertId) ->
-      alert = alertsMap[alertId]
-      # if it has already been removed, don't do anything
-      if !alert?
-        return
-      # if it hasn't been closed, we also need to remove it from the display array
-      if !alert.closed
-        index = $scope.alerts.indexOf(alert)
-        $scope.alerts.splice(index, 1);
-      # this makes us forget it ever happened
-      delete alertsMap[alertId]
-
-    # this handles an incoming alert that is intended to override an existing one
-    handleDupeAlert = (alert) ->
-      # copy over all values, just in case something has escalated or changed
-      _.extend(alertsMap[alert.id], alert)
-      alert = alertsMap[alert.id]
-      if !alert.closed
-        newDelay = alert.ttlMillis
-        # increment the repetition counter
-        alert.reps++
-        # move this alert to the end of the list
-        index = $scope.alerts.indexOf(alert)
-        $scope.alerts.splice(index, 1);
-        $scope.alerts.push(alert)
-      else
-        newDelay = alert.quietMillis
-      # cancel any existing expiration timeout, and set a new one based on either the ttl or the quiet period
-      if alert.expiration?
-        $timeout.cancel(alert.expiration)
-      if newDelay > 0 || alert.closed   # quiet period is allowed to be 0, but TTL of 0 means unlimited
-        alert.expiration = $timeout(removeAlert.bind(null, alert.id), newDelay)
-
-    # this handles a new (or expired/forgotten) alert
-    handleNewAlert = (alert) ->
-      # give a unique id to alerts that don't have one (i.e. alerts that can't be dupes)
-      if !alert.id?
-        alert.id = "__alert_#{anonymousAlertCounter++}__"
-      # set some default values
-      alert.reps = 0
-      if !alert.type?
-        alert.type = "rm-danger"
-      if !alert.ttlMillis?
-        alert.ttlMillis = rmapsMainOptions.alert.ttlMillis
-      if !alert.quietMillis?
-        alert.quietMillis = rmapsMainOptions.alert.quietMillis
-      # set a timeout to remove the alert
-      if alert.ttlMillis > 0
-        alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.ttlMillis)
-      # put it in the display list and map
+  # this handles an incoming alert that is intended to override an existing one
+  handleDupeAlert = (alert) ->
+    # copy over all values, just in case something has escalated or changed
+    _.extend(alertsMap[alert.id], alert)
+    alert = alertsMap[alert.id]
+    if !alert.closed
+      newDelay = alert.ttlMillis
+      # increment the repetition counter
+      alert.reps += 1
+      # move this alert to the end of the list
+      index = $scope.alerts.indexOf(alert)
+      $scope.alerts.splice(index, 1)
       $scope.alerts.push(alert)
-      alertsMap[alert.id] = alert
+    else
+      newDelay = alert.quietMillis
+    # cancel any existing expiration timeout, and set a new one based on either the ttl or the quiet period
+    if alert.expiration?
+      $timeout.cancel(alert.expiration)
+    if newDelay > 0 || alert.closed   # quiet period is allowed to be 0, but TTL of 0 means unlimited
+      alert.expiration = $timeout(removeAlert.bind(null, alert.id), newDelay)
 
-    # this does some common alert handling and then branches based on whether the alert is a dupe
-    handleAlertSpawnEvent = (event, alert) ->
-      if !alert.msg
-        $log.warn "alert received with no message: #{JSON.stringify(alert,null,2)}\n from event: #{JSON.stringify(event,null,2)}"
-        return
-      alert.trustedMsg = $sce.trustAsHtml(alert.msg)
-      if !alert.id? || !alertsMap[alert.id]
-        handleNewAlert(alert)
-      else
-        handleDupeAlert(alert)
+  # this handles a new (or expired/forgotten) alert
+  handleNewAlert = (alert) ->
+    # give a unique id to alerts that don't have one (i.e. alerts that can't be dupes)
+    if !alert.id?
+      alert.id = "__alert_#{anonymousAlertCounter}__"
+      anonymousAlertCounter += 1
+    # set some default values
+    alert.reps = 0
+    if !alert.type?
+      alert.type = "rm-danger"
+    if !alert.ttlMillis?
+      alert.ttlMillis = rmapsMainOptions.alert.ttlMillis
+    if !alert.quietMillis?
+      alert.quietMillis = rmapsMainOptions.alert.quietMillis
+    # set a timeout to remove the alert
+    if alert.ttlMillis > 0
+      alert.expiration = $timeout(removeAlert.bind(null, alert.id), alert.ttlMillis)
+    # put it in the display list and map
+    $scope.alerts.push(alert)
+    alertsMap[alert.id] = alert
 
-    # expose some functions via scope and event
-    $scope.hideAlert = hideAlert # this is used by the alert close button
-    $scope.$onRootScope rmapsevents.alert.spawn, handleAlertSpawnEvent
-    $scope.$onRootScope rmapsevents.alert.hide, (event, alertId) -> hideAlert(alertId)
-    $scope.$onRootScope rmapsevents.alert.dismiss, (event, alertId) -> removeAlert(alertId)
-    $scope.$onRootScope rmapsevents.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)
+  # this does some common alert handling and then branches based on whether the alert is a dupe
+  handleAlertSpawnEvent = (event, alert) ->
+    if !alert.msg
+      $log.warn "alert received with no message: #{JSON.stringify(alert,null,2)}\n from event: #{JSON.stringify(event,null,2)}"
+      return
+    alert.trustedMsg = $sce.trustAsHtml(alert.msg)
+    if !alert.id? || !alertsMap[alert.id]
+      handleNewAlert(alert)
+    else
+      handleDupeAlert(alert)
+
+  # expose some functions via scope and event
+  $scope.hideAlert = hideAlert # this is used by the alert close button
+  $scope.$onRootScope rmapsevents.alert.spawn, handleAlertSpawnEvent
+  $scope.$onRootScope rmapsevents.alert.hide, (event, alertId) -> hideAlert(alertId)
+  $scope.$onRootScope rmapsevents.alert.dismiss, (event, alertId) -> removeAlert(alertId)
+  $scope.$onRootScope rmapsevents.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)

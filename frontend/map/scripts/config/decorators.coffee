@@ -159,5 +159,5 @@ app.config(($provide) ->
     zipcode:
       error: 'Invalid US zipcode.'
 
-  $validation.setExpression(expression).setDefaultMsg(defaultMsg);
+  $validation.setExpression(expression).setDefaultMsg(defaultMsg)
 )

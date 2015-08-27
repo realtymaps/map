@@ -20,7 +20,7 @@ pathClassFunc = (d) ->
 pathTitleFunc = (d) ->
   d.data.key.replace(/\ /g,'-')
 
-module.exports = 
+module.exports =
   radius: radius
   innerRadius: innerRadius
   strokewidth: strokewidth

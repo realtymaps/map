@@ -3,7 +3,7 @@ Filters service to get current and set filters
 ###
 app = require '../app.coffee'
 
-app.factory 'rmapsFilters', () =>
+app.factory 'rmapsFilters', () ->
 
   # query filters
   values:

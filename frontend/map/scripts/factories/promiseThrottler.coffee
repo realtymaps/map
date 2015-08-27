@@ -3,66 +3,66 @@ app = require '../app.coffee'
 
 app.factory 'rmapsPromiseThrottler', ($log, $timeout, $q) ->
 
-    defaultName = 'PromiseThrottler'
-    defaultNameIndex = 0
+  defaultName = 'PromiseThrottler'
+  defaultNameIndex = 0
+  ###
+    Simple Class to Keep Track of its own promises to debounce
+  ###
+  (name) ->
+    self = this
+    unless name
+      name = "#{defaultName}-#{defaultNameIndex}"
+      defaultNameIndex += 1
+    this.name = name
+
+    promiseHash = {}
+    promisesIndex = 0
+
+    cancelAll = ->
+      if _.keys(promiseHash).length
+        _.each promiseHash, (cancelHandler) ->
+          cancelHandler()
     ###
-      Simple Class to Keep Track of its own promises to debounce
+      A promise has ben executed;
+      cache it, if it is still there later.. cancel it.
+
+      If it finishes gracefully or is forced (canceled)
+      it will remove itself from the cache.
     ###
-    (name) ->
-      self = this
-      unless name
-        name = "#{defaultName}-#{defaultNameIndex}"
-        defaultNameIndex += 1
-      this.name = name
+    @invokePromise = (cancelablePromise, options) =>
+      deferred = $q.defer()
+      nonCancelpromise = deferred.promise
 
-      promiseHash = {}
-      promisesIndex = 0
+      cancelAll()
 
-      cancelAll = ->
-        if _.keys(promiseHash).length
-          _.each promiseHash, (cancelHandler) ->
-            cancelHandler()
-      ###
-        A promise has ben executed;
-        cache it, if it is still there later.. cancel it.
+      return unless options
+      myId = promisesIndex += 1
 
-        If it finishes gracefully or is forced (canceled)
-        it will remove itself from the cache.
-      ###
-      @invokePromise = (cancelablePromise, options) =>
-        deferred = $q.defer()
-        nonCancelpromise = deferred.promise
+      if !cancelablePromise?
+        deferred.resolve()
+        return nonCancelpromise
 
-        cancelAll()
+      cancelablePromise.then (data) ->
+        deferred.resolve(data.data) if data?
+      .finally =>
+        promiseHash.remove(@name + myId)
 
-        return unless options
-        myId = promisesIndex += 1
+      promiseHash[@name + myId] = ->
+        ### these alerts won't be sent in the first place, now
+        # prevent alerts from the canceled $http call
+        if options.http?
+          opts =
+            id: "0-#{options.http.route or name}"
+            quietMillis: MainOptions.alert.cancelQuietMillis
 
-        if !cancelablePromise?
-          deferred.resolve()
-          return nonCancelpromise
+          $rootScope.$emit Events.alert.prevent, opts
+        ###
 
-        cancelablePromise.then (data) ->
-          deferred.resolve(data.data) if data?
-        .finally =>
-          promiseHash.remove(@name + myId)
+        # do the cancel
+        cancelablePromise.cancel()
 
-        promiseHash[@name + myId] = ->
-          ### these alerts won't be sent in the first place, now
-          # prevent alerts from the canceled $http call
-          if options.http?
-            opts =
-              id: "0-#{options.http.route or name}"
-              quietMillis: MainOptions.alert.cancelQuietMillis
+      deferred.promise #return a regular promise
 
-            $rootScope.$emit Events.alert.prevent, opts
-          ###
+    @reset = cancelAll
 
-          # do the cancel
-          cancelablePromise.cancel()
-
-        deferred.promise #return a regular promise
-
-      @reset = cancelAll
-
-      @
+    @

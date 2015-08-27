@@ -259,7 +259,7 @@ app.factory 'rmapsMap',
               paths.push [b.lat, b.lng]
 
         if !paths? or paths.length < 2
-            return
+          return
 
         @hash = _encode paths
 

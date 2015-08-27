@@ -11,7 +11,7 @@ _isMarker = (type) ->
 
 _getArgs = (args, cb) ->
   unless cb
-    throw "#{_thisName}._getArgs: cb is undefined"
+    throw new Error("#{_thisName}._getArgs: cb is undefined")
   {leafletEvent, leafletObject, model, modelName, layerName} = args
   return unless model
   cb(leafletEvent, leafletObject, model, modelName, layerName)
@@ -52,7 +52,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       lObject.setStyle(opts)
 
     #seems to be a google bug where mouse out is not always called
-  _handleMouseout = (model, maybeCaller) =>
+  _handleMouseout = (model, maybeCaller) ->
     if !model
       return
     model.isMousedOver = false
@@ -89,14 +89,14 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
   _hookGeojson = (handler) ->
     _geojsonEvents.forEach (name) ->
-        eventName = 'leafletDirectiveGeoJson.' + name;
-        $scope.$onRootScope eventName, (event, args) ->
-          _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
-            {feature} = leafletObject
-            return unless feature
-            feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
-            if handler[name]?
-              handler[name](leafletEvent, leafletObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
+      eventName = 'leafletDirectiveGeoJson.' + name
+      $scope.$onRootScope eventName, (event, args) ->
+        _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
+          {feature} = leafletObject
+          return unless feature
+          feature.coordinates = feature.geom_point_json.coordinates #makes resultsFormatter happy TODO: getCoords func ?
+          if handler[name]?
+            handler[name](leafletEvent, leafletObject, feature, feature.rm_property_id, layerName, 'geojson', thisOriginator)
 
   _eventHandler =
     ###TODO:
@@ -107,10 +107,10 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
     ###
     mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
-        (model.markerType == 'streetnum' or model.markerType == 'cluster') or
-        _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
-        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
-          return
+          (model.markerType == 'streetnum' or model.markerType == 'cluster') or
+          _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
+          (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+        return
       _lastEvents.mouseover = model
       _lastEvents.mouseout = null
 
@@ -136,10 +136,10 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
     mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       if _isMarker(type) and model?.markerType? and
-        (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
-        # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
-        (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
-          return
+          (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
+          # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
+          (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+        return
 
       _lastEvents.mouseout = model
       _lastEvents.mouseover = null
@@ -167,7 +167,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
 
       mapCtrl.saveProperty model, lObject
-      $timeout =>
+      $timeout ->
         #cleanup
         lastEvents.last = undefined
       , limits.clickDelayMilliSeconds + 100

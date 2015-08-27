@@ -21,7 +21,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
         .then ->
           rmapsprincipal.getCurrentProfile(profile.id)
         .then ->
-            $location.path(frontendRoutes.map)
+          $location.path(frontendRoutes.map)
 
       change:(profile) ->
         profile.needsUpdate = true

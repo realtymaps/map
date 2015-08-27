@@ -141,6 +141,6 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
     MLS: _mls
     isVisible: _isVisible
     setDataOptions: (data, optionsFormatter) ->
-      _.each data, (model,k) =>
+      _.each data, (model,k) ->
         optionsFormatter(model)
       data
