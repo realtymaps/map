@@ -26,11 +26,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
-    $scope.selectProfile = (profile) ->
-      $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
-      .then () ->
-        loadProfile(profile)
-
     #ng-inits or inits
     #must be defined pronto as they will be skipped if you try to hook them to factories
     $scope.resultsInit = (resultsListId) ->
@@ -50,10 +45,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         _.each $scope.projects, (project) ->
           project.totalPropertiesSelected = (_.keys project.propertiesSelected).length
 
-        if not identity?.currentProfileId
-          return $location.path(frontendRoutes.profiles)
+        rmapsprincipal.getCurrentProfile()
+        .then ->
+          rmapsprincipal.getIdentity()
+        .then (identity) ->
+          loadProfile uiProfile(identity)
 
-        loadProfile uiProfile(identity)
+        if not identity?.currentProfileId
+          $location.path(frontendRoutes.profiles)
 
     loadProfile = (profile) ->
       $rootScope.selectedFilters = {}

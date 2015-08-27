@@ -10,6 +10,7 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
     _resolved = false
     _isStaff = null
     _deferred = null
+    _defferedCurrentProfile = null
 
     setIdentity = (identity) ->
       _identity = identity
@@ -29,24 +30,11 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
       if _deferred
         _deferred.resolve(null)
         _deferred = null
+      if _defferedCurrentProfile
+        _defferedCurrentProfile.resolve(null)
+        _defferedCurrentProfile = null
 
-    isIdentityResolved: () ->
-      return _resolved
-    isAuthenticated: () ->
-      return _authenticated
-    hasPermission: (required) ->
-      return _authenticated && permissionsUtil.checkAllowed(required,_identity.permissions)
-    isInGroup: (group) ->
-      return _authenticated && _identity.groups[group]
-    isDebugEnvironment: () ->
-      return _authenticated && _identity.environment == 'development'
-    isStaff: () ->
-      if !_isStaff? && _identity?
-        _isStaff = permissionsUtil.checkAllowed("access_staff",_identity.permissions)
-      return _authenticated && _isStaff
-    setIdentity: setIdentity
-    unsetIdentity: unsetIdentity
-    getIdentity: () ->
+    getIdentity = () ->
       if _deferred
         return _deferred.promise
 
@@ -65,3 +53,30 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
         unsetIdentity()
 
       return _deferred.promise
+
+    isIdentityResolved: () ->
+      return _resolved
+    isAuthenticated: () ->
+      return _authenticated
+    hasPermission: (required) ->
+      return _authenticated && permissionsUtil.checkAllowed(required,_identity.permissions)
+    isInGroup: (group) ->
+      return _authenticated && _identity.groups[group]
+    isDebugEnvironment: () ->
+      return _authenticated && _identity.environment == 'development'
+    isStaff: () ->
+      if !_isStaff? && _identity?
+        _isStaff = permissionsUtil.checkAllowed("access_staff",_identity.permissions)
+      return _authenticated && _isStaff
+    setIdentity: setIdentity
+    unsetIdentity: unsetIdentity
+    getIdentity: getIdentity
+    getCurrentProfile: (currentProfileId) =>
+      if _defferedCurrentProfile
+        if _identity? and currentProfileId?
+          _identity.currentProfileId = currentProfileId
+          _defferedCurrentProfile.resolve(_identity.currentProfileId)
+        return _defferedCurrentProfile.promise
+
+      _defferedCurrentProfile = $q.defer()
+      return _defferedCurrentProfile.promise
