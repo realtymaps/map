@@ -1,4 +1,5 @@
 logger = require '../../config/logger'
+Promise = require 'Bluebird'
 {PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
@@ -35,10 +36,15 @@ class Crud extends BaseObject
         entity = _.pick(entity, safe)
     execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
 
-  create: (entity, id, doLogQuery = false) ->
-    obj = {}
-    obj = @idObj id if id?
-    execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+  create: (entity, id, doLogQuery = true) ->
+    # support entity or array of entities
+    if _.isArray entity
+      throw "All entities must already include unique identifiers" unless _.every entity, @idKey
+      execQ @dbFn().insert(entity), doLogQuery
+    else
+      obj = {}
+      obj = @idObj id if id?
+      execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
 
   delete: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)).delete(), doLogQuery

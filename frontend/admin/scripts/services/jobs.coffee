@@ -29,8 +29,14 @@ app.service 'rmapsJobsService', (Restangular) ->
   getQueue = () ->
     Restangular.all(jobsAPI).all('queues').getList()
 
-  getTask = () ->
+  getTasks = () ->
     Restangular.all(jobsAPI).all('tasks').getList()
+
+  getTask = (name) ->
+    Restangular.all(jobsAPI).all('tasks').one(name).get()
+
+  updateTask = (name, task) ->
+    Restangular.all(jobsAPI).all('tasks').one(name).customPUT(task)
 
   getSubtask = () ->
     Restangular.all(jobsAPI).all('subtasks').getList()
@@ -49,7 +55,9 @@ app.service 'rmapsJobsService', (Restangular) ->
     getHistory: getHistory
     getHealth: getHealth
     getQueue: getQueue
+    getTasks: getTasks
     getTask: getTask
+    updateTask: updateTask
     getSubtask: getSubtask
     getSummary: getSummary
     runTask: runTask
