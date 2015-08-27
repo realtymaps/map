@@ -2,6 +2,7 @@ app = require '../app.coffee'
 qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _overlays = require '../utils/util.layers.overlay.coffee'
+{Point, NgLeafletCenter} = require '../../../../common/utils/util.geometries.coffee'
 
 _encode = require('geohash64').encode
 
@@ -27,9 +28,13 @@ app.factory 'rmapsMap',
 
     _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
-        unless position
+        if position
+          position = position.coords
+        else
           position = $scope.previousCenter
-        $scope.map.center = position
+
+        position.zoom = rmapsZoomLevel.getZoom($scope) ? 14
+        $scope.map.center = NgLeafletCenter position
         $scope.$evalAsync()
 
       toggles.setLocationCb(_handleMoveToMyLocation)
