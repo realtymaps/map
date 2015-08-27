@@ -155,6 +155,7 @@ app.factory 'rmapsMap',
 
       drawFilterSummary:(cache) =>
         promises = []
+        overlays = @scope.map.layers.overlays
 
         handleClusterResults = (data) =>
           @scope.map.markers.filterSummary = {}
@@ -192,11 +193,14 @@ app.factory 'rmapsMap',
               #or do we have the results list view grab one that exists with items?
               return if !data? or _.isString data
               handleSummaryResults(data)
-              overlays = @scope.map.layers.overlays
+
               if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
-                overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
+                if overlays?.parcels?
+                  overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
+                if overlays?.parcelsAddresses?
+                  overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+
                 overlays.filterSummary.visible = false
-                overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
 
                 rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
                 .then (data) =>
