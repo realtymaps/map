@@ -4,7 +4,7 @@ module.exports = ($log, options) ->
     x: -100 # last x position af the event that passed.
     y: -100 # last y position af the event that passed.
 
-  _doThrottle = (event, distance, time) =>
+  _doThrottle = (event, distance, time) ->
     if event.type == 'mousewheel'
       return time < options.throttle.eventPeriods.mousewheel
     distance * time < options.throttle.space * options.throttle.eventPeriods.mousemove

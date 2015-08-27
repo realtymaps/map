@@ -159,7 +159,7 @@ app.factory 'rmapsMap',
 
         handleClusterResults = (data) ->
           self.scope.map.markers.filterSummary = {}
-          _.each data, (model,k) =>
+          _.each data, (model,k) ->
             self.layerFormatter.MLS.setMarkerManualClusterOptions(model)
           self.scope.map.markers.backendPriceCluster = data
 
@@ -172,7 +172,7 @@ app.factory 'rmapsMap',
 
         handleGeoJsonResults = () ->
           rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
-          .then (data) =>
+          .then (data) ->
             return if !data? or _.isString data
             self.scope.map.geojson.filterSummaryPoly =
               data: data
@@ -182,7 +182,7 @@ app.factory 'rmapsMap',
         if /status/.test(@filters) # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
           promises.push(
             rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
-            .then (data) =>
+            .then (data) ->
               if Object.prototype.toString.call(data) is '[object Array]'
                 return if !data? or _.isString data
                 handleClusterResults(data)
@@ -201,7 +201,7 @@ app.factory 'rmapsMap',
                   self.scope.map.layers.overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(self.scope.map.center.zoom) then true else false
 
                   rmapsProperties.getFilterSummaryAsGeoJsonPolys(self.hash, self.mapState, self.filters, cache)
-                  .then (data) =>
+                  .then (data) ->
                     return if !data? or _.isString data
                     self.scope.map.geojson.filterSummaryPoly =
                       data: data
@@ -257,7 +257,7 @@ app.factory 'rmapsMap',
               paths.push [b.lat, b.lng]
 
         if !paths? or paths.length < 2
-            return
+          return
 
         @hash = _encode paths
 

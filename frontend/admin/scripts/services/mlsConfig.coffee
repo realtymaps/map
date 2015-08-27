@@ -18,7 +18,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
         collection.push(newMls)
       # for some reason even though we used save(), each subsequent .save() will keep trying posts, which inserts.
       # this hack flags it to start using 'put' when saving from now on.
-      newMls.fromServer = true 
+      newMls.fromServer = true
       newMls
 
   postMainPropertyData = (configId, mainPropertyData) ->

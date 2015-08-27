@@ -5,6 +5,7 @@ gutil = require 'gulp-util'
 globby = require 'globby'
 $ = require('gulp-load-plugins')()
 browserify = require 'browserify'
+browserify_coffeelint = require 'browserify-coffeelint'
 watchify = require 'watchify'
 source = require 'vinyl-source-stream'
 buffer = require 'vinyl-buffer'
@@ -14,6 +15,7 @@ prettyHrtime = require 'pretty-hrtime'
 through = require 'through2'
 conf = require './conf'
 require './markup'
+ignore = require 'ignore'
 
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
@@ -52,7 +54,15 @@ browserifyTask = (app, watch = false) ->
     if watch
       _.extend config, watchify.args
 
+    # This file acts like a .gitignore for excluding files from linter
+    lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
+
     b = browserify config
+      .transform (file, overrideOptions = {}) ->
+        if (lintIgnore.filter [file]).length == 0
+          # console.log 'Ignoring', file
+          file += '.ignore'
+        browserify_coffeelint file, overrideOptions
 
     bundle = (stream) ->
       startTime = process.hrtime()
@@ -63,7 +73,7 @@ browserifyTask = (app, watch = false) ->
       b = watchify b
       b.on 'update', () ->
         bundle pipeline through()
-      gutil.log 'Watching files required by', gutil.colors.yellow(config.entries)
+      gutil.log 'Watching #{entries.length} files matching', gutil.colors.yellow(inputGlob)
     else
       if config.require
         b.require config.require

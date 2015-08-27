@@ -193,7 +193,6 @@
   },
   "browserify": {
     "transform": [
-      "browserify-coffeelint",
       "coffeeify",
       [
         "browserify-ngannotate",
