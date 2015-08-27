@@ -7,7 +7,7 @@
       list-style none
       padding 0
       &:before
-        border-left 2px solid c_gray_ligther
+        border-left 2px solid $gray_ligther
         content ""
         height 100%
         left 40px
@@ -19,7 +19,7 @@
         list-style none
         h3
           .label-default
-            background c_dark_blue
+            background $dark_blue
             font-weight normal
           span
             display inline-block
@@ -34,13 +34,13 @@
           list-style none
           li
             list-style none
-            border-bottom 1px solid c_gray_ligther
+            border-bottom 1px solid $gray_ligther
             padding 30px 0
             position relative
             @extends .notice-dot-blue
 
             &:before
-              border-color c_white
+              border-color $white
               left -64px
               top 48px
 
@@ -50,7 +50,7 @@
               display table-cell
               .label
                 padding 10px
-                background c_light_blue
+                background $light_blue
 
             .data
               width 100%;
@@ -60,9 +60,9 @@
               h4
                 margin 0 0 20px 0
               p
-                color c_text_gray
+                color $text_gray
               span.date
-                color c_gray_ligther
+                color $gray_ligther
                 font-size 12px
                 font-weight bold
 

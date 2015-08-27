@@ -73,7 +73,7 @@ browserifyTask = (app, watch = false) ->
       b = watchify b
       b.on 'update', () ->
         bundle pipeline through()
-      gutil.log 'Watching #{entries.length} files matching', gutil.colors.yellow(inputGlob)
+      gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
     else
       if config.require
         b.require config.require

@@ -1,4 +1,3 @@
-_cartodb = require './util.cartodb.coffee'
 pieUtil = require './util.piechart.coffee'
 
 _overlays =
@@ -19,6 +18,7 @@ _overlays =
     visible: true
 
 module.exports = ($log) ->
+  _cartodb = do require './util.cartodb.coffee'
   #only call function post login
   if _cartodb?.MAPS?
     _cartodb.MAPS.forEach (map) ->
