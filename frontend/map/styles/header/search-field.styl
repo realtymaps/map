@@ -3,7 +3,7 @@ $fnMakeSearchField()
     float right
     margin 0 20px 0 0
     button.search-btn
-      color c_white
+      color $white
       font-size 26px
       line-height 0px
       padding 8px
@@ -11,7 +11,7 @@ $fnMakeSearchField()
       float left
     .search
       float left
-      border-bottom 1px solid c_gray
+      border-bottom 1px solid $gray
       padding 4px 0
       margin 8px 0
       width 0px
@@ -25,14 +25,14 @@ $fnMakeSearchField()
         position absolute
         top 0
         height 30px
-        background c_dark_blue
+        background $dark_blue
         width 300px
         pointer-events none
         z-index 0
 
       &.opened
         width 280px
-        border-bottom 1px solid c_light_blue
+        border-bottom 1px solid $light_blue
 
       .search-content
         display block
@@ -48,21 +48,21 @@ $fnMakeSearchField()
             border-radius 0
             padding 0
             top 14px
-            box-shadow 0px 1px 3px c_black_30
+            box-shadow 0px 1px 3px $black_30
             li
               padding 10px
               cursor pointer
-              background c_white
-              border-bottom 1px solid c_gray_ligther
-              color c_black
+              background $white
+              border-bottom 1px solid $gray_ligther
+              color $black
               @extends .global-transition
               span.icon
                 font-size 16px
                 margin-right 5px
               &:hover
               &:focus
-                background c_light_blue
-                color c_white
+                background $light_blue
+                color $white
 
           button
             margin-right 3px
@@ -72,11 +72,11 @@ $fnMakeSearchField()
             border 0 none
             padding 0px 16px 0 0
             background transparent
-            color c_white
+            color $white
 
             &:hover
             &:focus
-              color c_light_blue
+              color $light_blue
 
             span
               display inline-block
@@ -97,8 +97,8 @@ $fnMakeSearchField()
         height 21px
         line-height 12px
         padding 0
-        color c_white
+        color $white
         &:hover
         &:focus
         &:active
-          box-shadow 0 0 0 c_black_0
+          box-shadow 0 0 0 $black_0

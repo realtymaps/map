@@ -24,7 +24,7 @@
           position absolute
           top 50%
           width 3px
-          background c_light_blue
+          background $light_blue
         > span
           .icon-project
             text-align left
@@ -38,7 +38,7 @@
             line-height 30px
             text-align left
             display block
-            color c_black
+            color $black
 
     .projects-tools
       >.btn-group
@@ -66,17 +66,17 @@
     ul.dropdown-menu
       width 100%
       li.count
-        color c_dark_blue
+        color $dark_blue
         font-size 12px
         font-weight bold
         padding 15px
-        background c_black_10
+        background $black_10
         a
           padding 0
           font-weight bold
           &:hover
           &:active
-            color c_light_blue
+            color $light_blue
       li
         a
           span.enity
@@ -89,7 +89,7 @@
               @extends .global-transition
             span.count
               font-size 10px
-              color c_gray
+              color $gray
               float left
             span.icon
               float left
@@ -108,19 +108,19 @@
 
               &:hover
               &:focus
-                color c_light_blue
+                color $light_blue
 
         &:hover
         &:focus
           span.title
-            color c_light_blue
+            color $light_blue
           span.actions
             opacity 1
             transform scale(1)
 
     .properties-list
       .inner
-        background-color c_white
+        background-color $white
         background-image none
       >button
         height 50px
@@ -136,7 +136,7 @@
           position absolute
           top 50%
           width 3px
-          background c_light_blue
+          background $light_blue
         > span
           .icon-property
             text-align left
@@ -150,7 +150,7 @@
             line-height 30px
             text-align left
             display block
-            color c_black
+            color $black
     .pinned-projects-list
       .enity
         display table
@@ -158,9 +158,9 @@
           display table-cell
           padding 5px
           span
-            background-color c_black
+            background-color $black
             border-radius 500px
-            color c_white
+            color $white
             display block
             font-size 10px
             font-weight bold
@@ -172,28 +172,28 @@
           display table-cell
           padding 5px
           .status
-            background c_green
-            color c_white
+            background $green
+            color $white
             text-transform uppercase
             display inline-block
             padding 5px 10px
             font-size 11px
             margin-bottom 5px
             &.pending
-              background c_yellow
+              background $yellow
 
             &.sold
-              background c_red
+              background $red
 
           .price
             margin 0
             font-size 18px
             font-weight bold
-            color c_green
+            color $green
             &.pending
-              color c_yellow
+              color $yellow
             &.sold
-              color c_red
+              color $red
 
           .property-attr
             list-style none
@@ -204,7 +204,7 @@
               li
                 list-style none
                 display inline-block
-                border-right 1px solid c_black
+                border-right 1px solid $black
                 border-bottom none
                 padding 0 4px
                 font-size 12px
@@ -218,9 +218,9 @@
               text-decoration none
               &:hover
               &:focus
-                color c_light_blue
+                color $light_blue
           .location
-            color c_gray
+            color $gray
             font-size 12px
             font-weight bold
       .actions
@@ -252,7 +252,7 @@
             &:hover
             &.active
             &.focus
-              background-color c_light_blue_select
+              background-color $light_blue_select
 
       .enity
         display table
@@ -263,9 +263,9 @@
           display table-cell
           padding 5px
           span
-            background-color c_black
+            background-color $black
             border-radius 500px
-            color c_white
+            color $white
             display block
             font-size 10px
             font-weight bold
@@ -282,7 +282,7 @@
 
           p.text
             font-size 12px
-            color c_text_gray
+            color $text_gray
             margin 0 0 10px 0
 
           .comment
@@ -296,10 +296,10 @@
               &:hover
               &:focus
               &:active
-                color c_light_blue
+                color $light_blue
           .sketch
-            background-color c_pastel_blue
-            border 1px solid c_light_blue
+            background-color $pastel_blue
+            border 1px solid $light_blue
             padding 5px
             border-radius 5px
             float left
@@ -311,7 +311,7 @@
               float left
               line-height 20px
             .icon
-              color c_light_blue
+              color $light_blue
               font-size 20px
               float left
               margin 0 10px 0 0
@@ -345,7 +345,7 @@
         .count
           float left
           margin 0 10px 0 0
-          color c_black !important
+          color $black !important
           font-weight bold
           font-size 12px
           line-height 20px
@@ -353,7 +353,7 @@
         .map
           width 38px
           height 38px
-          border 1px solid c_gray
+          border 1px solid $gray
           border-radius 2px
           float left
           margin 0 10px 0 0
@@ -372,13 +372,13 @@
             &:focus
             &:active
               text-decoration none
-              color c_light_blue
+              color $light_blue
             h3.title
               font-size 16px
               margin 0
           p.properties
             font-size 12px
-            color c_text_gray_lighter
+            color $text_gray_lighter
             margin 0
             line-height 20px
       span.actions
@@ -409,9 +409,9 @@
 
     .filters
       display block
-      background c_dark_white
-      border-bottom 1px solid c_darker_white
-      border-top 1px solid c_darker_white
+      background $dark_white
+      border-bottom 1px solid $darker_white
+      border-top 1px solid $darker_white
       padding 10px
       span
         display inline-block
@@ -433,7 +433,7 @@
           position relative
           &:hover
           &:focus
-            color c_light_blue
+            color $light_blue
 
             span.caret
               display block
@@ -460,7 +460,7 @@
         list-style none
         > li
           list-style none
-          box-shadow 0px 1px 3px c_black_30
+          box-shadow 0px 1px 3px $black_30
           margin-bottom 10px
           .property-img
             width 100%
@@ -468,8 +468,8 @@
             position relative
 
             .status
-              background c_green
-              color c_white
+              background $green
+              color $white
               text-transform uppercase
               bottom 0
               left 0
@@ -479,10 +479,10 @@
               position absolute
 
               &.pending
-                background c_yellow
+                background $yellow
 
               &.sold
-                background c_red
+                background $red
 
             img
               max-width 100%
@@ -494,11 +494,11 @@
             font-size 18px
             font-weight bold
             padding 0 10px
-            color c_green
+            color $green
             &.pending
-              color c_yellow
+              color $yellow
             &.sold
-              color c_red
+              color $red
 
           .property-attr
             padding 0 10px
@@ -510,7 +510,7 @@
               li
                 list-style none
                 display inline-block
-                border-right 1px solid c_black
+                border-right 1px solid $black
                 border-bottom none
                 padding 0 4px
                 font-size 12px
@@ -524,20 +524,20 @@
               text-decoration none
               &:hover
               &:focus
-                color c_light_blue
+                color $light_blue
           .location
             padding 0 10px
-            color c_gray
+            color $gray
             font-size 12px
             font-weight bold
           .btn-actions
             overflow hidden
-            border-top 1px solid c_darker_white
+            border-top 1px solid $darker_white
             button
               font-size 11px
               border none
-              border-right 1px solid c_darker_white
-              background c_white
+              border-right 1px solid $darker_white
+              background $white
               padding 0
               width 33.3333%
               float left
@@ -558,7 +558,7 @@
           border none
           margin-bottom 10px
           span.label
-            color c_black
+            color $black
             font-size 14px
           &.setPrice
           &.setSqft
@@ -595,9 +595,9 @@
     ul.dropdown-menu
       width 100%
       li.count
-        background c_dark_white
-        border-bottom 1px solid c_darker_white
-        border-top 1px solid c_darker_white
+        background $dark_white
+        border-bottom 1px solid $darker_white
+        border-top 1px solid $darker_white
       li
         a
           overflow hidden
@@ -618,7 +618,7 @@
                 color black
               span.count
                 font-size 10px
-                color c_gray
+                color $gray
                 float left
     button
       height 50px
@@ -639,7 +639,7 @@
         width 50px
         background-position left top
         background-repeat no-repeat
-        color c_black
+        color $black
         font-size 28px
 
     .btn-group
@@ -667,7 +667,7 @@
       margin-bottom 6px
       span.label
         display table-cell
-        color c_black
+        color $black
         font-size 12px
         width 100px
       &:last-child
@@ -697,7 +697,7 @@
       font-size 18px
       &.zoom-in
         border-radius 3px 3px 0 0
-        border-bottom 1px solid c_black_10
+        border-bottom 1px solid $black_10
       &.zoom-out
         border-radius 0 0 3px 3px
       &.zoom-previous
@@ -716,13 +716,13 @@
       background-color rgba(255,255,255,0.6)
       text-decoration none
       &:hover
-        color c_light_blue
-        background-color c_white
+        color $light_blue
+        background-color $white
 
     &.active
       a
-        background-color c_light_blue
-        color c_white
+        background-color $light_blue
+        color $white
 
 @-moz-document url-prefix()
   .pinned-projects-list

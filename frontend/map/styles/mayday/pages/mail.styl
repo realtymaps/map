@@ -6,7 +6,7 @@
     header
       margin-bottom 30px
       p
-        color c_text_gray_lighter
+        color $text_gray_lighter
 
       .tools
         margin 20px 0
@@ -18,7 +18,7 @@
           border none
           line-height 30px
       span.divider
-        background c_gray
+        background $gray
         margin-left 10px
         margin-right 10px
         width 1px
@@ -30,8 +30,8 @@
       &.sent
       &.draft
       &.pending
-        background c_white
-        border 1px solid c_gray_ligther
+        background $white
+        border 1px solid $gray_ligther
         padding 5px 10px
         border-radius 3px
         font-size 12px
@@ -39,28 +39,28 @@
         @extends .global-transition
 
       &.sent
-        border-color c_success
+        border-color $success
         &:hover
-          background c_success
-          color c_white
+          background $success
+          color $white
 
       &.pending
-        border-color c_warning
+        border-color $warning
         &:hover
-          background c_warning
-          color c_white
+          background $warning
+          color $white
 
       &.draft
-        border-color c_gray_ligther
+        border-color $gray_ligther
         &:hover
-          background c_gray_ligther
-          color c_white
+          background $gray_ligther
+          color $white
     table.table
-      border-top 1px solid c_gray_ligther
+      border-top 1px solid $gray_ligther
       thead
         tr
           th
-            border-bottom 1px solid c_gray_ligther
+            border-bottom 1px solid $gray_ligther
             &.select
               text-align center
               width 40px
@@ -72,7 +72,7 @@
           td
             vertical-align middle
             padding 20px 8px
-            color c_text_gray_lighter
+            color $text_gray_lighter
             cursor pointer
 
             &.select
@@ -90,7 +90,7 @@
             position absolute
             margin-top 0
           &:hover
-            background-color c_light_blue_select
+            background-color $light_blue_select
 
             h4
               margin -10px 0 0 0
