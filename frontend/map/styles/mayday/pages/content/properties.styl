@@ -9,8 +9,8 @@
     position relative
 
     .status
-      background c_green
-      color c_white
+      background $green
+      color $white
       text-transform uppercase
       bottom 0
       left 0
@@ -20,10 +20,10 @@
       position absolute
 
       &.pending
-        background c_yellow
+        background $yellow
 
       &.sold
-        background c_red
+        background $red
 
     img
       max-width 100%
@@ -34,11 +34,11 @@
     font-size 18px
     font-weight bold
     padding 0 10px
-    color c_green
+    color $green
     &.pending
-      color c_yellow
+      color $yellow
     &.sold
-      color c_red
+      color $red
 
   .property-attr
     padding 0 10px
@@ -50,7 +50,7 @@
       li
         list-style none
         display inline-block
-        border-right 1px solid c_black
+        border-right 1px solid $black
         border-bottom none
         padding 0 4px
         font-size 12px
@@ -64,20 +64,20 @@
       text-decoration none
       &:hover
       &:focus
-        color c_light_blue
+        color $light_blue
   .location
     padding 0 10px
-    color c_gray
+    color $gray
     font-size 12px
     font-weight bold
   .btn-actions
     overflow hidden
-    border-top 1px solid c_darker_white
+    border-top 1px solid $darker_white
     button
       font-size 12px
       border none
-      border-right 1px solid c_darker_white
-      background c_white
+      border-right 1px solid $darker_white
+      background $white
       padding 0
       width 50%
       float left
