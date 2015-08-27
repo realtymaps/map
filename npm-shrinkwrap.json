@@ -20866,6 +20866,11 @@
         }
       }
     },
+    "ignore": {
+      "version": "2.2.16",
+      "from": "ignore@*",
+      "resolved": "https://registry.npmjs.org/ignore/-/ignore-2.2.16.tgz"
+    },
     "image-size": {
       "version": "0.3.5",
       "from": "image-size@>=0.3.5 <0.4.0",
