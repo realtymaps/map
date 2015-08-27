@@ -14,6 +14,12 @@ class JobService extends crudService.Crud
     .then () =>
       return super(query, doLogQuery)
 
+class TaskService extends crudService.Crud
+  create: (entity, id, doLogQuery = false) ->
+    if _.isArray entity
+      throw "All objects must already include unique identifiers" unless _.every entity, @idKey
+    super(entity, id, doLogQuery)
+
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
 

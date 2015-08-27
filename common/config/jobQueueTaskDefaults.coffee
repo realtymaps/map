@@ -96,6 +96,6 @@ module.exports =
     hard_fail_timeouts: true
     hard_fail_after_retries: true
     hard_fail_zombies: true
-    warn_timeout_seconds: 90
-    kill_timeout_seconds: 120
+    warn_timeout_seconds: 240
+    kill_timeout_seconds: 300
     auto_enqueue: false

@@ -98,10 +98,9 @@ class MlsConfigCrud extends crudService.ThenableCrud
           name: "#{entity.id}_activateNewData"
       ]
 
-      # create stuff
-      Promise.all([jobService.tasks.create(taskObj), jobService.subtasks.create(subtaskObjs)])
+      Promise.join(jobService.tasks.create(taskObj), jobService.subtasks.create(subtaskObjs))
       .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
+        throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
 
 
 instance = new MlsConfigCrud(mainDb)

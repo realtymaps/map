@@ -35,10 +35,9 @@ class Crud extends BaseObject
         entity = _.pick(entity, safe)
     execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
 
-  create: (entity, id, doLogQuery = true) ->
+  create: (entity, id, doLogQuery = false) ->
     # support entity or array of entities
     if _.isArray entity
-      throw "All entities must already include unique identifiers" unless _.every entity, @idKey
       execQ @dbFn().insert(entity), doLogQuery
     else
       obj = {}
