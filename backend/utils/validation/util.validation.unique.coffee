@@ -9,7 +9,7 @@ module.exports = (options = {}) ->
     if !value?
       return null
     if !_.isString(value)
-      return Promise.reject new DataValidationError("invalid data type given for unique field", param, value)
+      return Promise.reject new DataValidationError('invalid data type given for unique field', param, value)
 
     transformedValue = value
 

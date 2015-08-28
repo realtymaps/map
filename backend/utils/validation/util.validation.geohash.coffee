@@ -10,4 +10,4 @@ module.exports = (param, boundsStr) -> Promise.try () ->
   logger.debug String(hash)
   hash
 .catch (err) ->
-  Promise.reject new DataValidationError("error decoding geohash string", param, boundsStr)
+  Promise.reject new DataValidationError('error decoding geohash string', param, boundsStr)

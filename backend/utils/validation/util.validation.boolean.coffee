@@ -8,7 +8,7 @@ module.exports = (options = {}) ->
   if !_.isArray(options.falsy) && options.falsy != undefined
     falsy = [options.falsy]
   truthyReturnValue = if options.invert? then !options.invert else !!options.invert
-    
+
   (param, value) -> Promise.try () ->
     if !value?
       return null
@@ -26,5 +26,5 @@ module.exports = (options = {}) ->
         return !truthyReturnValue
     else if value in falsy
       return !truthyReturnValue
-      
-    return Promise.reject new DataValidationError("invalid data type given for boolean field", param, value)
+
+    return Promise.reject new DataValidationError('invalid data type given for boolean field', param, value)

@@ -21,5 +21,8 @@
   },
   "no_unnecessary_double_quotes":{
     "level": "error"
+  },
+  "no_interpolation_in_single_quotes":{
+    "level": "error"
   }
 }
