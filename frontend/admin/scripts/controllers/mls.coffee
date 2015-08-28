@@ -117,7 +117,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         # populate undefined fields with the defaults
         $scope.cleanConfigValues(obj)
       .catch (err) ->
-        msg = 'Error in retrieving MLS data: #{err.message}'
+        msg = "Error in retrieving MLS data: #{err.message}"
         $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
         $q.reject(new Error(msg))
       .finally () ->
@@ -263,7 +263,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
       promise.then()
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in processing #{$scope.mlsData.current.id}.' }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in processing #{$scope.mlsData.current.id}." }
       .finally () ->
         $scope.loading = false
 
