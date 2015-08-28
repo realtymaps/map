@@ -31,7 +31,7 @@ class HardFail extends Error
     @name = 'HardFail'
 
 # takes a task name and returns a promise resolving to either the task's module, or if it can't find one and there is
-# an MLS config with the task name as its id, then use the default MLS module 
+# an MLS config with the task name as its id, then use the default MLS module
 _getTaskCode = (taskName) ->
   try
     return Promise.resolve(require("./tasks/task.#{taskName}"))
@@ -114,17 +114,17 @@ queueReadyTasks = () -> Promise.try () ->
       .then (readyTasks=[]) ->
         Promise.map readyTasks, (task) ->
           queueTask(transaction, batchId, task, '<scheduler>')
-      
+
 queueManualTask = (name, initiator) ->
   if !name
-    throw "Task name required!"
+    throw new Error("Task name required!")
   knex.transaction (transaction) ->
     tables.jobQueue.taskConfig(transaction)
     .select()
     .where(name: name)
     .then (result) ->
       if result.length == 0
-        throw "Task not found: #{name}"
+        throw new Error("Task not found: #{name}")
       else if result.length == 1
         batchId = (Date.now()).toString(36)
         logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
@@ -358,7 +358,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
           error = "max retries exceeded: #{error}"
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started')
-        retrySubtask.retry_num++
+        retrySubtask.retry_num += 1
         retrySubtask.ignore_until = knex.raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
         tables.jobQueue.currentSubtasks()
         .insert retrySubtask
@@ -381,7 +381,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
       errorSubtask = updatedSubtask[0]
     errorSubtask.error = "#{error}"
     if error.stack
-      errorSubtask.stack = error.stack 
+      errorSubtask.stack = error.stack
     tables.jobQueue.subtaskErrorHistory()
     .insert errorSubtask
   .then () ->
@@ -546,9 +546,9 @@ getQueueNeeds = () ->
           if (subtask.status not in ['soft fail', 'canceled', 'success']) && (subtask.status != 'timeout' || subtask.hard_fail_timeouts) && (subtask.status != 'zombie' || subtask.hard_fail_zombies)
             acceptablyDone = false
           if subtask.status in ['queued', 'preparing', 'running'] && (!subtask.ignore_until? || subtask.ignore_until < Date.now())
-            queueNeeds[subtask.queue_name]++
+            queueNeeds[subtask.queue_name] += 1
           if subtask.status == 'zombie'
-            queueZombies[subtask.queue_name]++
+            queueZombies[subtask.queue_name] += 1
         if !acceptablyDone
           continue
     result = []
@@ -593,7 +593,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, s
     if list
       datum.values = list.slice(datum.offset, datum.offset+datum.count)
     data.push datum
-    subtasksQueued++
+    subtasksQueued += 1
     countHandled += datum.count
   queueSubtask(transaction, batchId, taskData, subtask, data)
 

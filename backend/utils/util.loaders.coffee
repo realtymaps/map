@@ -56,7 +56,7 @@ module.exports =
       for routeId, options of routeOptions
         unless options.methods?
           create()
-          continue;
+          continue
 
         for key, method of options.methods
           #clone route options to have a new instance of a method

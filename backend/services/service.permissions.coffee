@@ -10,11 +10,11 @@ Group = require "../models/model.group"
 
 
 hashifyPermissions = (hash, permission) ->
-  hash[permission.codename] = true;
+  hash[permission.codename] = true
   return hash
 
 hashifyGroups = (hash, group) ->
-  hash[group.name] = true;
+  hash[group.name] = true
   return hash
 
 
@@ -52,7 +52,7 @@ getPermissionsForUserId = (id) ->
       groupPermissions = user.related('groups')
       .mapThen((group) -> return group.id)
       .map(getPermissionsForGroupId)
-      .then (groupPermissionsArray) -> 
+      .then (groupPermissionsArray) ->
         #logger.debug "group permissions loaded for userid #{id}"
         return groupPermissionsArray
       # merge them all together

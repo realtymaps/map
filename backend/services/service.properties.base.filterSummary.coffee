@@ -61,49 +61,49 @@ _getResultCount = (state, filters) ->
   query
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
-    return if !filters or !filters?.status?.length or !query
-    query.limit(limit) if limit
-    sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
+  return if !filters or !filters?.status?.length or !query
+  query.limit(limit) if limit
+  sqlHelpers.whereInBounds(query, 'geom_polys_raw', filters.bounds)
 
-    if filters.status.length < statuses.length
-      sqlHelpers.whereIn(query, 'rm_status', filters.status)
+  if filters.status.length < statuses.length
+    sqlHelpers.whereIn(query, 'rm_status', filters.status)
 
-    sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
-    sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
-    sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
+  sqlHelpers.between(query, 'price', filters.priceMin, filters.priceMax)
+  sqlHelpers.between(query, 'finished_sqft', filters.sqftMin, filters.sqftMax)
+  sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 
-    if filters.bedsMin
-      query.where("bedrooms", '>=', filters.bedsMin)
+  if filters.bedsMin
+    query.where("bedrooms", '>=', filters.bedsMin)
 
-    if filters.bathsMin
-      query.where("baths_full", '>=', filters.bathsMin)
+  if filters.bathsMin
+    query.where("baths_full", '>=', filters.bathsMin)
 
-    if filters.hasOwner?
-      # only checking owner_name here and now owner_name2 because we do normalization in the property summary
-      # table that ensures we never have owner_name2 if we don't have owner_name -- therefore checking
-      # only owner_name does the same thing and creates a more efficient query
-      if filters.hasOwner
-        query.whereNotNull('owner_name')
-      else
-        query.whereNull('owner_name')
+  if filters.hasOwner?
+    # only checking owner_name here and now owner_name2 because we do normalization in the property summary
+    # table that ensures we never have owner_name2 if we don't have owner_name -- therefore checking
+    # only owner_name does the same thing and creates a more efficient query
+    if filters.hasOwner
+      query.whereNotNull('owner_name')
+    else
+      query.whereNull('owner_name')
 
-    if filters.ownerName
-      # need to avoid any characters that have special meanings in regexes
-      # then split on whitespace and commas to get chunks to search for
-      patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
-        if !chunk
-          return
-        # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
-        # since this is after the split, a space here will be an actual part of the search
-        result.push chunk.replace(/(['-])/g, "[$1 ]?")
-      sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
+  if filters.ownerName
+    # need to avoid any characters that have special meanings in regexes
+    # then split on whitespace and commas to get chunks to search for
+    patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
+      if !chunk
+        return
+      # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
+      # since this is after the split, a space here will be an actual part of the search
+      result.push chunk.replace(/(['-])/g, "[$1 ]?")
+    sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
-    if filters.listedDaysMin
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
-    if filters.listedDaysMax
-      sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
+  if filters.listedDaysMin
+    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
+  if filters.listedDaysMax
+    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
 
-    query
+  query
 
 module.exports =
   getDefaultQuery: _getDefaultQuery

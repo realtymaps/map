@@ -8,12 +8,12 @@ _ = require 'lodash'
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id') ->
     unless @svc?
-      throw '@svc must be defined'
+      throw new Error('@svc must be defined')
     unless @paramIdKey?
-      throw '@paramIdKey must be defined'
+      throw new Error('@paramIdKey must be defined')
     @init()
 
-  onError: (next, error) =>
+  onError: (next, error) ->
     next new ExpressResponse
       alert:
         msg: error.message
@@ -79,7 +79,7 @@ class HasManyCrud extends Crud
   constructor: (svc, paramIdKey, @rootGETKey) ->
     super(svc, paramIdKey)
     unless @rootGETKey?
-      throw '@rootGETKey must be defined'
+      throw new Error('@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
     @svc.getAll(_.set({}, @rootGETKey, req.params.id), @doLogQuery)
