@@ -63,8 +63,10 @@ browserifyTask = (app, watch = false) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors:true)
-        
+        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
+        .on 'error', ->
+          process.exit(1)
+
     bundle = (stream) ->
       startTime = process.hrtime()
       gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
