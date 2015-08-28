@@ -1,5 +1,5 @@
 
-process.stdout.write ''"
+process.stdout.write """
 daemon off;
 worker_processes #{process.env['NGINX_WORKERS'] || 4};
 pid /app/nginx.pid;
@@ -86,4 +86,4 @@ http {
     }
   }
 }
-''"
+"""
