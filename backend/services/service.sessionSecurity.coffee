@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
 

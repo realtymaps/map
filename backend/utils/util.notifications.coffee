@@ -56,7 +56,7 @@ notification = (type) ->
       # if notification lists grow large, we may need to refine this loop
       for datum in data
         do (datum) ->
-          if datum.email and datum.method == "email"
+          if datum.email and datum.method == 'email'
             emailList.push datum.email
 
           # sms currently required to send one by one; If we implement 

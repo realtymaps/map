@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 dbs = require '../../config/dbs'
 sqlHelpers = require '../util.sql.helpers'

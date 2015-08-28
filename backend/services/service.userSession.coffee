@@ -1,10 +1,10 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
 User = require "../models/model.user"
-{userData} = require "../config/tables"
+{userData} = require '../config/tables'
 environmentSettingsService = require "../services/service.environmentSettings"
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'

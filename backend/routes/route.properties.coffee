@@ -1,5 +1,5 @@
 logger = require '../config/logger'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 detailService = require '../services/service.properties.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 parcelService = require '../services/service.properties.parcels'

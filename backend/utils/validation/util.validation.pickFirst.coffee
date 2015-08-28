@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 arrayValidation = require './util.validation.array'
 doValidationSteps = require './util.impl.doValidationSteps'

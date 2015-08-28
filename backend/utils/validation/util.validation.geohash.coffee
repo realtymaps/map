@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 geohash64 = require 'geohash64'
 DataValidationError = require './util.error.dataValidation'
 logger = require '../../config/logger'

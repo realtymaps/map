@@ -1,6 +1,6 @@
 db = require('../config/dbs').properties
 parcelSvc = require './service.properties.parcels'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
@@ -14,7 +14,7 @@ through = require 'through'
 tables = require '../config/tables'
 
 _parcelsTblName = 'parcels'
-_toReplace = "REPLACE_ME"
+_toReplace = 'REPLACE_ME'
 
 
 _formatParcel = (feature) ->
@@ -24,9 +24,9 @@ _formatParcel = (feature) ->
   obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
   obj.geometry = feature.geometry
   obj.geometry.crs =
-    type: "name"
+    type: 'name'
     properties:
-      name: "EPSG:26910"
+      name: 'EPSG:26910'
   obj
 
 _getParcelJSON = (fullPath, digimapsSetings) ->

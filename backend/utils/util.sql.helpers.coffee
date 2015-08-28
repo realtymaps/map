@@ -2,7 +2,7 @@ _ = require 'lodash'
 memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 logger = require '../config/logger'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 util = require 'util'
 
 

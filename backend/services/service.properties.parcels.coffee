@@ -1,5 +1,5 @@
 db = require('../config/dbs').properties
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'

@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 config = require '../config/config'
 validation = require '../utils/util.validation'

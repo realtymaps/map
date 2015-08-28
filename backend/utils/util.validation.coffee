@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 DataValidationError = require './validation/util.error.dataValidation'
 loaders = require './util.loaders'

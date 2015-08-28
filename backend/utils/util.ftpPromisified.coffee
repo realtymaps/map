@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 ftp = require 'ftp'
 

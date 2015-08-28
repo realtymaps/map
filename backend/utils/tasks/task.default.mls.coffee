@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
 tables = require '../../config/tables'
