@@ -1,4 +1,4 @@
-module.exports = 
+module.exports =
   task:
     # name: "" # required
     description: "Refresh mls data"

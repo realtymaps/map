@@ -17,7 +17,7 @@ conf = require './conf'
 require './markup'
 ignore = require 'ignore'
 
-browserifyTask = (app, cb, watch = false) ->
+browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
   inputGlob = paths[app].root + 'scripts/**/*.coffee'
@@ -27,8 +27,6 @@ browserifyTask = (app, cb, watch = false) ->
   pipeline = (stream) ->
     stream
     .on 'error', (err) ->
-#      process.exit(1)
-      cb(err)
       conf.errorHandler 'Bundler'
     .pipe source outputName
     .pipe buffer()
@@ -38,7 +36,6 @@ browserifyTask = (app, cb, watch = false) ->
     .on 'end', ->
       timestamp = prettyHrtime process.hrtime startTime
       gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
-      cb()
     stream
 
   bundledStream = pipeline through()
@@ -66,7 +63,9 @@ browserifyTask = (app, cb, watch = false) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        browserify_coffeelint file, overrideOptions
+        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
+        .on 'error', ->
+          process.exit(1)
 
     bundle = (stream) ->
       startTime = process.hrtime()
@@ -88,10 +87,10 @@ browserifyTask = (app, cb, watch = false) ->
 
   bundledStream
 
-gulp.task 'browserify', (cb) -> browserifyTask 'map', cb
+gulp.task 'browserify', -> browserifyTask 'map'
 
-gulp.task 'browserifyWatch', (cb) -> browserifyTask 'map', cb, true
+gulp.task 'browserifyWatch', -> browserifyTask 'map', true
 
-gulp.task 'browserifyAdmin', (cb) -> browserifyTask 'admin', cb
+gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
 
-gulp.task 'browserifyWatchAdmin', (cb) -> browserifyTask 'admin', cb, true
+gulp.task 'browserifyWatchAdmin', -> browserifyTask 'admin', true
