@@ -9,13 +9,9 @@ coffeelint = require 'gulp-coffeelint'
 options =
   script: "backend/server.coffee"
   ext: 'js coffee cson'
-  ignore: [
-    'node_modules/**'
-    'bower_componets/**'
-    'frontend/**'
-    '_public/**'
-    'mean.coffee.log'
-    'gulp/**'
+  watch: [
+    'backend'
+    'common'
   ]
   delay: 1
   execMap:
