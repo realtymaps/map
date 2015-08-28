@@ -8,12 +8,18 @@
     "limitComments": false
   },
   "camel_case_classes": {
-    "level": "warn"
+    "level": "error"
   },
   "no_plusplus": {
     "level": "error"
   },
   "no_throwing_strings": {
     "level": "warn"
+  },
+  "no_unnecessary_fat_arrows":{
+    "level": "error"
+  },
+  "no_unnecessary_double_quotes":{
+    "level": "ignore"
   }
 }
