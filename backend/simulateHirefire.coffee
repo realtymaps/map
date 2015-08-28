@@ -6,7 +6,7 @@ _ = require('lodash')
 _intervalHandler = null
 
 
-runHirefire = () -> 
+runHirefire = () ->
   hirefire.info null, null, (response) ->
     console.log()
     console.log(new Date())
@@ -21,8 +21,8 @@ repeatHirefire = (period=60000) ->
 
 cancelHirefire = () ->
   clearInterval(_intervalHandler)
-  
-  
+
+
 module.exports =
   runHirefire: runHirefire
   repeatHirefire: repeatHirefire

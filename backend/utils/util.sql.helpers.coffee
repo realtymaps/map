@@ -88,13 +88,13 @@ _columns.all = "#{_columns.filter}, #{_columns.detail}"
 
 
 _getPartialPoint = (objOrArray, arrayDex, param) ->
-    if _.isArray(objOrArray) then objOrArray[arrayDex] else objOrArray[param]
+  if _.isArray(objOrArray) then objOrArray[arrayDex] else objOrArray[param]
 
 _getLat = (objOrArray) ->
-    _getPartialPoint(objOrArray, 0, 'lat')
+  _getPartialPoint(objOrArray, 0, 'lat')
 
 _getLon = (objOrArray) ->
-    _getPartialPoint(objOrArray, 1, 'lon')
+  _getPartialPoint(objOrArray, 1, 'lon')
 
 whereInBounds = (query, column, bounds) ->
   results = {}
