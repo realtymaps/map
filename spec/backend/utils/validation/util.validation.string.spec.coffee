@@ -16,7 +16,7 @@ describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
         value.should.equal('asdf')
     ]
 
-  promiseIt 'should nullify empty values except ''', () ->
+  promiseIt "should nullify empty values except ''", () ->
     [
       expectResolve(validators.string()(param, '')).then (value) ->
         value.should.equal('')
@@ -49,7 +49,7 @@ describe 'utils/validation.validators.string()'.ns().ns('Backend'), ->
       expectResolve(validators.string(regex: /^aBc/i)(param, 'abcd'))
       expectResolve(validators.string(regex: '^abc')(param, 'abcd'))
     ]
-  
+
   promiseIt 'should transform the string via find/replace when configured', () ->
     [
       expectResolve(validators.string(replace: ["[a]", ''])(param, "[a]bc-[A]BC-[a]bc")).then (value) ->
