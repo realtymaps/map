@@ -27,6 +27,7 @@ run_express = (done, nodeArgs) ->
 
 gulp.task 'lint', () ->
   gulp.src [
+    'gulp/**/*.coffee'
     'backend/**/*.coffee'
     'common/**/*.coffee'
     # 'spec/**/*.coffee'
