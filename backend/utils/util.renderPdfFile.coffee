@@ -14,7 +14,7 @@ module.exports =
       return Promise.reject("Bad templateId specified: #{templateId}")
     filename = "#{options.location||config.TEMP_DIR}/LOB_"
     if options.partialId
-      filename += options.partialId+"_"
+      filename += options.partialId+'_'
     filename += moment().format('YYYYMMDD-HHmmss')
     filename += '_'+Math.floor(0xFFFFFFFF*Math.random()).toString(36)+'.pdf'
     stream = fs.createWriteStream(filename, flags: 'wx')

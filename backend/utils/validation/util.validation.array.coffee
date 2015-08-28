@@ -14,7 +14,7 @@ module.exports = (options = {}) ->
         arrayValues = values
 
       if !_.isArray arrayValues
-        return Promise.reject new DataValidationError("array of values expected", param, values)
+        return Promise.reject new DataValidationError('array of values expected', param, values)
       if options.minLength? and arrayValues.length < options.minLength
         return Promise.reject new DataValidationError("array smaller than minimum: #{options.minLength}", param, values)
       if options.maxLength? and arrayValues.length > options.maxLength

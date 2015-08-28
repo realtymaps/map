@@ -3,9 +3,9 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-User = require "../models/model.user"
+User = require '../models/model.user'
 {userData} = require '../config/tables'
-environmentSettingsService = require "../services/service.environmentSettings"
+environmentSettingsService = require '../services/service.environmentSettings'
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'
 accountImagesSvc = require('./services.user').account_images
@@ -34,22 +34,22 @@ updateUser = (attributes) ->
 preprocessHash = (password) ->
   Promise.try () ->
     hashData = {}
-    if password?.indexOf("bcrypt$") == 0
+    if password?.indexOf('bcrypt$') == 0
       hashData.algo = 'bcrypt'
-      hashData.hash = password.slice("bcrypt$".length)
+      hashData.hash = password.slice('bcrypt$'.length)
       return environmentSettingsService.getSettings()
       .then (settings) ->
-        hashData.needsUpdate = bcrypt.getRounds(hashData.hash) isnt settings["password hashing cost factor"]
+        hashData.needsUpdate = bcrypt.getRounds(hashData.hash) isnt settings['password hashing cost factor']
         return hashData
     # ... else check for other valid formats and do preprocessing for them
     # ...
     # if nothing worked, indicate failure
-    return Promise.reject("failed to determine password hash algorithm")
+    return Promise.reject('failed to determine password hash algorithm')
 
 createPasswordHash = (password) ->
   environmentSettingsService.getSettings()
   .then (settings) ->
-    cost = settings["password hashing cost factor"]
+    cost = settings['password hashing cost factor']
     #logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
     return bcrypt.hashAsync(password, cost)
   .then (hash) -> return "bcrypt$#{hash}"
@@ -72,7 +72,7 @@ verifyPassword = (email, password) ->
       hashData = data
       #logger.debug "detected #{hashData.algo} password hash for email: #{email}"
       switch hashData.algo
-        when "bcrypt"
+        when 'bcrypt'
           return bcrypt.compareAsync(password, hashData.hash)
     .then (match) ->
       if not match
@@ -135,8 +135,8 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
       logger.debug "updating image for account_image_id: #{entity.account_image_id}"
       return accountImagesSvc.update(entity.account_image_id, blob:blob)
     #create
-    logger.debug "creating image"
-    singleRow accountImagesSvc.create(blob:blob).returning("id")
+    logger.debug 'creating image'
+    singleRow accountImagesSvc.create(blob:blob).returning('id')
     .then (id) ->
       logger.debug "saving account_image_id: #{id}"
       tableFn().update(account_image_id: id)

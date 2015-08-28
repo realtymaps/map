@@ -3,8 +3,8 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-SessionSecurity = require("../models/model.sessionSecurity")
-environmentSettingsService = require("../services/service.environmentSettings")
+SessionSecurity = require '../models/model.sessionSecurity'
+environmentSettingsService = require '../services/service.environmentSettings'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 dbs = require '../config/dbs'
@@ -36,7 +36,7 @@ createNewSeries = (req, res, rememberMe) ->
   token = uuid.genToken()
   environmentSettingsService.getSettings()
   .then (settings) ->
-    bcrypt.genSaltAsync(settings["token hashing cost factor"])
+    bcrypt.genSaltAsync(settings['token hashing cost factor'])
   .then (salt) ->
     hashToken(token, salt)
     .then (tokenHash) ->
@@ -63,7 +63,7 @@ ensureSessionCount = (req) -> Promise.try () ->
   if not req.user
     #logger.debug "ensureSessionCount: anonymous users don't get session-counted"
     return Promise.resolve()
-  if req.session.permissions["unlimited_logins"]
+  if req.session.permissions['unlimited_logins']
     #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
   maxLoginsPromise = environmentSettingsService.getSettings()
@@ -87,7 +87,7 @@ ensureSessionCount = (req) -> Promise.try () ->
     #logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
-      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, "updated_at").slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
+      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'updated_at').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
       SessionSecurity.knex().whereIn('session_id', sessionIdsToDelete).where(app: config.SESSION_SECURITY.app).del()
 
 

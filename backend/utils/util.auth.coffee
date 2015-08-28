@@ -15,10 +15,10 @@ ExpressResponse = require './util.expressResponse'
 
 
 class SessionSecurityError extends Error
-  constructor: (@invalidate="nothing", @message, loglevel="error") ->
-    @name = "SessionSecurityError"
+  constructor: (@invalidate='nothing', @message, loglevel='error') ->
+    @name = 'SessionSecurityError'
     if @message && loglevel
-      if @invalidate is "nothing"
+      if @invalidate is 'nothing'
         logger[loglevel] "SessionSecurityCheck: #{@message}"
       else
         logger[loglevel] "SessionSecurityCheck: invalidation triggered at #{@invalidate} level: #{@message}"
@@ -62,7 +62,7 @@ module.exports = {
       if req.user
         return userUtils.cacheUserValues(req)
     .catch (err) ->
-      logger.error "error while setting session data on request"
+      logger.error 'error while setting session data on request'
       Promise.reject(err)
 
   # app-wide middleware to implement remember_me functionality
@@ -73,19 +73,19 @@ module.exports = {
       cookie = req.signedCookies[config.SESSION_SECURITY.name]
       if not cookie
         if req.user
-          return Promise.reject(new SessionSecurityError("user", "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", "warn"))
-        return Promise.reject(new SessionSecurityError("nothing", "no session security cookie found for anonymous user", false))
+          return Promise.reject(new SessionSecurityError('user', "no session security cookie found for user #{req.user.username} on session: #{req.sessionID}", 'warn'))
+        return Promise.reject(new SessionSecurityError('nothing', 'no session security cookie found for anonymous user', false))
       values = cookie.split('.')
       if values.length != 3
         if req.user
-          return Promise.reject(new SessionSecurityError("user", "invalid session security cookie found for user #{req.user.username} on session: #{req.sessionID} / #{cookie}"))
+          return Promise.reject(new SessionSecurityError('user', "invalid session security cookie found for user #{req.user.username} on session: #{req.sessionID} / #{cookie}"))
         else
           return Promise.reject(new SessionSecurityError())
       context.cookieValues = {userId: parseInt(values[0]), sessionId: values[1], token: values[2]}
 
       if (req.user)
         if req.user.id != context.cookieValues.userId
-          return Promise.reject(new SessionSecurityError("user", "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}"))
+          return Promise.reject(new SessionSecurityError('user', "cookie vs session userId mismatch for user #{req.user.username} on session: #{req.sessionID}"))
         context.sessionId = req.sessionID
       else
         context.sessionId = context.cookieValues.sessionId
@@ -97,28 +97,28 @@ module.exports = {
         # this is the happy path
         return securities[0]
       if securities.length > 1
-        return Promise.reject(new SessionSecurityError("user", "multiple session security objects found for user #{req.user?.username} on session: #{context.sessionId}"))
+        return Promise.reject(new SessionSecurityError('user', "multiple session security objects found for user #{req.user?.username} on session: #{context.sessionId}"))
       if req.user
-        return Promise.reject(new SessionSecurityError("session", "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", "warn"))
+        return Promise.reject(new SessionSecurityError('session', "no session security objects found for user #{req.user.username} on session: #{context.sessionId}", 'warn'))
       else
-        return Promise.reject(new SessionSecurityError("nothing", "anonymous user with no session security", false))
+        return Promise.reject(new SessionSecurityError('nothing', 'anonymous user with no session security', false))
     .then (security) ->
       if context.cookieValues.userId != security.user_id
-        return Promise.reject(new SessionSecurityError("session", "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}"))
+        return Promise.reject(new SessionSecurityError('session', "cookie vs security userId mismatch for user #{req.user?.username} on session: #{context.sessionId}"))
       sessionSecurityService.hashToken(context.cookieValues.token, security.series_salt)
       .then (tokenHash) ->
         if req.user
           # this is a logged-in user, so validate
           if tokenHash != security.token
-            return Promise.reject(new SessionSecurityError("session", "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", "warn"))
+            return Promise.reject(new SessionSecurityError('session', "cookie vs security token mismatch for user #{req.user.username} on active session: #{context.sessionId}", 'warn'))
           return
         else
           # this isn't a logged-in user, so validate only if remember_me was set; if
           # we do validate, then we need to do some login work
           if not security.remember_me
-            return Promise.reject(new SessionSecurityError("security", "anonymous user with non-remember_me session security", "debug"))
+            return Promise.reject(new SessionSecurityError('security', 'anonymous user with non-remember_me session security', 'debug'))
           if tokenHash != security.token
-            return Promise.reject(new SessionSecurityError("user", "cookie vs security token mismatch for user #{cookieValues.user_id} on remember_me session: #{context.sessionId}", "warn"))
+            return Promise.reject(new SessionSecurityError('user', "cookie vs security token mismatch for user #{cookieValues.user_id} on remember_me session: #{context.sessionId}", 'warn'))
           req.session.userid = context.cookieValues.userId
           getSessionUser(req)
           .then (user) ->
@@ -133,9 +133,9 @@ module.exports = {
     .catch SessionSecurityError, (err) ->
       # figure out what we need to invalidate and do it
       switch (err.invalidate)
-        when "security" then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
-        when "session" then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
-        when "user" then invalidatePromise = sessionSecurityService.deleteSecurities(user_id: req.user.id)
+        when 'security' then return sessionSecurityService.deleteSecurities(session_id: context.sessionId)
+        when 'session' then invalidatePromise = sessionSecurityService.deleteSecurities(session_id: context.sessionId)
+        when 'user' then invalidatePromise = sessionSecurityService.deleteSecurities(user_id: req.user.id)
         else return Promise.resolve() # "nothing" is a valid possibility
       return invalidatePromise.then () ->
         req.session.destroyAsync()
@@ -183,9 +183,9 @@ module.exports = {
       if permissions.all and permissions.any
         throw new Error("Both 'all' and 'any' permission semantics may not be used on the same route.")
       if not permissions.all and not permissions.any
-        throw new Error("No permissions specified.")
+        throw new Error('No permissions specified.')
     else if typeof(permissions) != 'string'
-      throw new Error("Bad permissions object")
+      throw new Error('Bad permissions object')
     return (req, res, next) -> Promise.try () ->
       if not permissionsUtil.checkAllowed(permissions, req.session.permissions, logger.debug)
         logger.warn "access denied to username #{req.user.username} for URI: #{req.originalUrl}"

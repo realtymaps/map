@@ -11,7 +11,7 @@ _MARGIN = .25
 
 _flattenLonLatImpl = (all, next) ->
   all.bindings.push(next.lon, next.lat)
-  all.markers += ", ?, ?"
+  all.markers += ', ?, ?'
   return all
 
 _flattenLonLat = (bounds) ->
@@ -211,7 +211,7 @@ singleRow = (q, doThrow = false) -> Promise.try ->
 expectedSingleRow = (q) -> Promise.try ->
   singleRow(q, true)
 
-isUnique = (tableFn, whereClause, id, name = "Entity") ->
+isUnique = (tableFn, whereClause, id, name = 'Entity') ->
   singleRow tableFn().where(whereClause).whereNot(id:id).count()
   .then (row) ->
     if row.count > 0
@@ -223,7 +223,7 @@ safeJsonArray = (knex, arr) ->
   # JSON array when serializing to SQL
   if !arr?
     return arr
-  knex.raw("?", JSON.stringify(arr))
+  knex.raw('?', JSON.stringify(arr))
 
 
 module.exports =

@@ -27,7 +27,7 @@ _getMissingProperties = (state, properties) ->
 
 
 _savedPropertiesQuery = (limit, filters, missingProperties) ->
-  query = sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", false)
+  query = sqlHelpers.select(tables.propertyData.propertyDetails(), 'filter', false)
 
   if limit
     #logger.sql("PropertyDetails is being limited to: #{limit}")

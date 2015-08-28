@@ -1,8 +1,8 @@
 module.exports =
   task:
     # name: '' # required
-    description: "Refresh mls data"
-    data: "{}"
+    description: 'Refresh mls data'
+    data: '{}'
     ignore_until: null
     repeat_period_minutes: 15
     warn_timeout_minutes: 12
@@ -14,7 +14,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_loadDataRawMain"
     step_num: 1
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: 10
     retry_max_count: 10
@@ -29,7 +29,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_normalizeData"
     step_num: 2
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
@@ -44,7 +44,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_recordChangeCounts"
     step_num: 3
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
@@ -59,7 +59,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_finalizeDataPrep"
     step_num: 4
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
@@ -74,7 +74,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_finalizeData"
     step_num: 5
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: null
     retry_max_count: 0
@@ -89,7 +89,7 @@ module.exports =
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_activateNewData"
     step_num: 6
-    queue_name: "mls"
+    queue_name: 'mls'
     data: null
     retry_delay_seconds: null
     retry_max_count: 0

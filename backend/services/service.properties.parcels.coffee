@@ -39,7 +39,7 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
     query
 
 _get = (rm_property_id, tblName = _tableName) ->
-  throw new Error("rm_property_id must be of type String") unless _.isString rm_property_id
+  throw new Error('rm_property_id must be of type String') unless _.isString rm_property_id
   #nmccready - note this might not be unique enough, I think parcels has dupes
   db.knex.select().from(tblName)
   .where rm_property_id: rm_property_id
@@ -59,6 +59,6 @@ module.exports =
   getBaseParcelData: (state, filters) ->
     _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
     .then (data) ->
-      type: "FeatureCollection"
+      type: 'FeatureCollection'
       features: data
   upsert: _upsert

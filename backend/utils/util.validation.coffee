@@ -27,7 +27,7 @@ validateAndTransformSingleOutput = (params, output, definition) -> Promise.try (
   .then (transformed) ->
     # check for required value
     if required && !transformed?
-      return Promise.reject new DataValidationError("required", output, undefined)
+      return Promise.reject new DataValidationError('required', output, undefined)
     else
       return transformed
 
