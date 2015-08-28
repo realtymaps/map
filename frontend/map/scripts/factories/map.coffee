@@ -25,7 +25,7 @@ app.factory 'rmapsMap',
     rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
     rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData, rmapsControls) ->
 
-    _initToggles = ($scope, toggles) =>
+    _initToggles = ($scope, toggles) ->
       _handleMoveToMyLocation = (position) ->
         if position
           position = position.coords
