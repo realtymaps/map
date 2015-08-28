@@ -10,7 +10,7 @@ app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums) ->
       if !v && v != false
         delete filters[k]
 
-  manage: (cb) =>
+  manage: (cb) ->
     filter = null
     if $rootScope.selectedFilters
       selectedFilters = _.clone($rootScope.selectedFilters)

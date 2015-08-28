@@ -18,7 +18,10 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
         #https://github.com/angular/angular.js/pull/10288
         return if profile.showProfileNameInput#needed for spaces in input name
         $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
-        $location.path(frontendRoutes.map)
+        .then ->
+          rmapsprincipal.getCurrentProfile(profile.id)
+        .then ->
+          $location.path(frontendRoutes.map)
 
       change:(profile) ->
         profile.needsUpdate = true

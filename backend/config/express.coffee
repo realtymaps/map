@@ -53,7 +53,7 @@ app.use compress()
 
 # setting the favicon and static folder
 
-app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicon.ico"
+app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicons/favicon.ico"
 app.use serveStatic config.FRONTEND_ASSETS_PATH
 
 # cookie parser - above session
@@ -139,6 +139,6 @@ _.extend app.locals,
   paths: paths
 
 app.set('views', __dirname.replace('/config','/views'))
-app.set('view engine', 'jade');
+app.set('view engine', 'jade')
 
 module.exports = app

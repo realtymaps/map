@@ -48,6 +48,9 @@ gulp.task 'stylesAdmin', -> styles paths.admin
 
 gulp.task 'stylesWatchAdmin', gulp.series 'stylesAdmin', (done) ->
   gulp.watch [
+    paths.map.less
+    paths.map.styles
+    paths.map.stylus
     paths.admin.less
     paths.admin.styles
     paths.admin.stylus

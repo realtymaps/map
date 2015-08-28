@@ -1,6 +1,21 @@
-#notes.content-section(ng-class="{active:isActive('notes')}")
+#notes.content-section-container(ng-class="{active:isActive('notes')}")
     header
-        a(class="btn btn-default back" href="#map") Back
-        h1.title Notes
+        a(class="btn btn-default back" href="#map")
+            span.icon.icon-remove
     .inner
-        p notes
+        .container
+            .col-md-3.navbar
+                include ../includes/_sidebar
+            .col-md-9.content
+                h2.title Notes ({{JSONData.length}})
+                .row
+                    ul.neighbourhoods
+                        li(ng-repeat="enity in JSONData" class="col-md-6")
+                            a(class="map" href="#/neighbourhoods/{{enity.id}}")
+                                span View Neighbourhood
+                                img(src="static/img/{{enity.mapImg}}")
+                            div.data
+                                h3 Neighbourhood {{enity.id}}
+                                button(class="btn btn-link") Delete
+
+                hr

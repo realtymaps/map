@@ -21,11 +21,11 @@ String.orDash = (val) ->
   val or '-'
 
 String::replaceLast = (find, replace) ->
-  index = @lastIndexOf(find);
+  index = @lastIndexOf(find)
   if index >= 0
-      return @substring(0, index) + replace + @substring(index + find.length);
+    return @substring(0, index) + replace + @substring(index + find.length)
 
-  return @toString();
+  return @toString()
 
 String::toInitCaps = () ->
   @replace(/[^-'#\d\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())

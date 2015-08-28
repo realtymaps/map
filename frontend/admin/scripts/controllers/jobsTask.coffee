@@ -3,7 +3,7 @@ GridController = require '../../../common/scripts/utils/gridController.coffee'
 
 app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
 
-  $scope.getData = rmapsJobsService.getTask
+  $scope.getData = rmapsJobsService.getTasks
 
   $scope.runTask = rmapsJobsService.runTask
 

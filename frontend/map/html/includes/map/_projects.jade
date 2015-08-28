@@ -5,9 +5,10 @@ span(class="dropdown btn-group projects-list" dropdown on-toggle="toggled(open)"
       h4 {{selectedProject.title}}
     span.caret
   ul(class="dropdown-menu whiteblock no-margin")
-    li.count {{projectsTotal}}
-      span(ng-show="projectsTotal == 1")  project
-      span(ng-show="projectsTotal != 1")  projects
+    li.count
+      //TODO: use frontend routes!
+      a(ng-show="projectsTotal == 1" href="{{frontendRoutes.projects}}") {{projectsArray.length}} Project
+      a(ng-show="projectsTotal != 1" href="{{frontendRoutes.projects}}") {{projectsArray.length}} Projects
     li(ng-repeat="project in projects" ng-click="selectProject(project)" )
       a
         span.enity

@@ -7,5 +7,5 @@ require '../factories/filters.coffee'
 
 module.exports = app.controller 'rmapsFiltersCtrl', ($scope, rmapsFilters) ->
 
-    #initialize values for filter options in the select tags
-    $scope.filterValues = rmapsFilters.values
+  #initialize values for filter options in the select tags
+  $scope.filterValues = rmapsFilters.values

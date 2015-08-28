@@ -2,12 +2,46 @@
     {
         "id":0,
         "title":"Project 1",
-        "properties": 34
+        "properties": 34,
+        "clients":[
+            {
+                "name": "Piotr Makowski",
+                "address": "1234 Main St. New York, NY 21122",
+                "phonecell": "(+48) 665-39-38-17",
+                "phonework": "(+48) 71 123 45 67",
+                "email": "email@here.com"
+            },
+            {
+                "name": "Piotr Makowski",
+                "address": "1234 Main St. New York, NY 21122",
+                "phonecell": "(+48) 665-39-38-17",
+                "phonework": "(+48) 71 123 45 67",
+                "email": "email@here.com"
+            }
+
+        ]
     },
     {
         "id":1,
         "title":"Project 2",
-        "properties": 22
+        "properties": 22,
+        "clients":[
+            {
+                "name": "Piotr Makowski",
+                "address": "1234 Main St. New York, NY 21122",
+                "phonecell": "(+48) 665-39-38-17",
+                "phonework": "(+48) 71 123 45 67",
+                "email": "email@here.com"
+            },
+            {
+                "name": "Piotr Makowski",
+                "address": "1234 Main St. New York, NY 21122",
+                "phonecell": "(+48) 665-39-38-17",
+                "phonework": "(+48) 71 123 45 67",
+                "email": "email@here.com"
+            }
+
+        ]
     },
     {
         "id":2,

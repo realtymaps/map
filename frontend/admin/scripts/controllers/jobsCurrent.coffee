@@ -146,7 +146,7 @@ app.controller 'rmapsJobsCurrentCtrl',
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
       data = summary.plain()
-      showTimeframes = [  
+      showTimeframes = [
         'Current',
         'Last Hour',
         'Last Day',
@@ -189,7 +189,7 @@ app.controller 'rmapsJobsCurrentCtrl',
         for status, count of statuses
           datum[initialDimension] = timeframe
           datum[status] = cSum(summaryObj, timeframe, status)
-          
+
         summaryTable.push(datum)
 
       $scope.summaryGrid.data = summaryTable

@@ -12,9 +12,13 @@ html, body
   height 100%
   width 100%
 
+body
+  padding-top: $navbarHeight
+  background $dark_blue_darker
+
 html
   cursor default
-  background $c_dark_blue_darker
+  background $dark_blue_darker
   overflow:auto !important
   font: $mainFont
   // @extends .font-regular
@@ -26,8 +30,8 @@ h1.logo
     margin 0 20px 0 0
   a.logo
     font-size 0px
-    background url('/assets/base/logo_130x15.png') no-repeat center center transparent
-    width 130px
+    background url('/assets/logo_white_sm.png') no-repeat center center transparent
+    width 180px
     height 44px
     display block
 
@@ -44,7 +48,7 @@ h1.logo
   animation pulse 1s ease 1s 3
 
 .mobile-page
-  background $c_dark_blue_darker
+  background $dark_blue_darker
   position absolute
   z-index 1
   left 0
@@ -58,13 +62,14 @@ h1.logo
 header.site-header
   display block
   position absolute
+  z-index 2000
   left 0
   top 0
   right 0
   z-index 4
   height 50px
-  background c_dark_blue
-  box-shadow inset 0px -3px 0px c_gray_ligther
+  background $dark_blue
+  box-shadow inset 0px -3px 0px $gray_ligther
 
   .inner
     float left
@@ -82,19 +87,19 @@ header.site-header
 
 .site-main
   position absolute
-  background-color c_white
+  background-color $white
   height 100%
   overflow auto
-  color c_black
+  color $black
 
   label, input, .page-header
-    color c_black
+    color $black
 
   /*when properties details*/
   &.show-properties
     #content
       //@extends .growUp
-      background-color c_white
+      background-color $white
 
   #content
     padding-top 47px
@@ -105,10 +110,8 @@ header.site-header
     position absolute
     left 0
     top 0
-    background-color c_white
+    background-color $white
     //@extends .moveToDown
-
-
 
 .inline
   display: inline-block
@@ -129,21 +132,16 @@ header.site-header
 
 .center-on-page
   position absolute
-  top -($navbarHeight)
+  top 25%
   bottom 0
   left 0
   right 0
   margin auto
 
-body
-    height: 100%
-    width: 100%
-    background: $rmMainDarkBlue
-    overflow: hidden
-
-/* Move down content because we have a fixed navbar */
-body
-    padding-top: $navbarHeight
+.centered-horizontal
+  @extends .centered
+  top:0px;
+  transform:translate(-0%,-0%)
 
 .starter-template
     padding: 40px 15px
@@ -360,7 +358,7 @@ for num in 5 10 15 20 25 30 35 40 45 50
 
 $fnFooter()
   width: 100%
-  background: $rm-medium-blue-darker
+  background: $dark_blue
   height: $footerHeight
   position: absolute
   bottom: 0px
@@ -382,7 +380,7 @@ $fnFooterClose()
   width: 100%
   z-index: 1000
   top: 0px
-  background-color: $rm-medium-blue-darker
+  background-color: $dark_blue
 
 $fnMobileToolbarPadding()
   padding 25px 25px $footerHeight $toolBarMobileLeftPadding

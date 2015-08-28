@@ -14,6 +14,12 @@ class JobService extends crudService.Crud
     .then () =>
       return super(query, doLogQuery)
 
+class TaskService extends crudService.Crud
+  create: (entity, id, doLogQuery = false) ->
+    if _.isArray entity
+      throw new Error "All objects must already include unique identifiers" unless _.every entity, @idKey
+    super(entity, id, doLogQuery)
+
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
 
@@ -51,23 +57,24 @@ healthDbFn = () ->
         .groupByRaw("load_id")
         .whereRaw(whereInterval) # account for time range in this subquery
         .where(_query1)
-      ).leftJoin(
-          tables.propertyData.combined().select(
-            db.knex.raw("data_source_id as combined_id"),
-            db.knex.raw("SUM(CASE WHEN active = true THEN 1 ELSE 0 END) AS active_count"),
-            db.knex.raw("SUM(CASE WHEN active = false THEN 1 ELSE 0 END) AS inactive_count"),
-            db.knex.raw("SUM(CASE WHEN now() - up_to_date > interval '2 days' THEN 1 ELSE 0 END) AS out_of_date"),
-            db.knex.raw("SUM(CASE WHEN geometry IS NULL THEN 1 ELSE 0 END) AS null_geometry"),
-            db.knex.raw("SUM(CASE WHEN ungrouped_fields IS NOT NULL THEN 1 ELSE 0 END) AS ungrouped_fields"))
-          .groupByRaw("combined_id")
-          .where(_query2)
-          .as("s2"),
-          's1.load_id', '=', 's2.combined_id'
-        )
+    )
+    .leftJoin(
+      tables.propertyData.combined().select(
+        db.knex.raw("data_source_id as combined_id"),
+        db.knex.raw("SUM(CASE WHEN active = true THEN 1 ELSE 0 END) AS active_count"),
+        db.knex.raw("SUM(CASE WHEN active = false THEN 1 ELSE 0 END) AS inactive_count"),
+        db.knex.raw("SUM(CASE WHEN now() - up_to_date > interval '2 days' THEN 1 ELSE 0 END) AS out_of_date"),
+        db.knex.raw("SUM(CASE WHEN geometry IS NULL THEN 1 ELSE 0 END) AS null_geometry"),
+        db.knex.raw("SUM(CASE WHEN ungrouped_fields IS NOT NULL THEN 1 ELSE 0 END) AS ungrouped_fields"))
+      .groupByRaw("combined_id")
+      .where(_query2)
+      .as("s2"),
+      's1.load_id', '=', 's2.combined_id'
+    )
 
   # "where" adaptor call for the above
   _queryFn.where = (query = {}) ->
-    return _queryFn(query) 
+    return _queryFn(query)
 
   return _queryFn
 

@@ -585,7 +585,6 @@ definitions:
     type: 'object'
     required:
       - name
-      - active
       - username
       - password
       - url

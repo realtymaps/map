@@ -16,7 +16,7 @@ class Crud extends BaseObject
   constructor: (@dbFn, @idKey = "id") ->
     super()
     unless _.isFunction @dbFn
-      throw 'dbFn must be a knex function'
+      throw new Error('dbFn must be a knex function')
   idObj: (val) ->
     obj = {}
     obj[@idKey] = val
@@ -30,15 +30,19 @@ class Crud extends BaseObject
 
   update: (id, entity, safe, doLogQuery = false) ->
     if safe?
-      throw "safe must be Array type" unless _.isArray safe
+      throw new Error("safe must be Array type") unless _.isArray safe
       if safe.length
         entity = _.pick(entity, safe)
     execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
-    obj = {}
-    obj = @idObj id if id?
-    execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+    # support entity or array of entities
+    if _.isArray entity
+      execQ @dbFn().insert(entity), doLogQuery
+    else
+      obj = {}
+      obj = @idObj id if id?
+      execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
 
   delete: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)).delete(), doLogQuery
@@ -50,7 +54,7 @@ class HasManyCrud extends Crud
   constructor: (dbFn, @rootCols, @joinCrud, joinIdStr, rootIdStr, idKey) ->
     super(dbFn, idKey)
     unless @joinCrud instanceof Crud
-      throw "@joinCrud must be Instance of Crud"
+      throw new Error("@joinCrud must be Instance of Crud")
     @setIdStrs rootIdStr, joinIdStr
 
   joinQuery: () ->
@@ -64,7 +68,7 @@ class HasManyCrud extends Crud
 
   getAll: (entity, doLogQuery = false) ->
     if !_.isObject(entity) or !entity?
-      throw "entity must be defined or an Object."
+      throw new Error("entity must be defined or an Object.")
     execQ @joinQuery().where(entity), doLogQuery
 
   getById: (id, doLogQuery = false) ->

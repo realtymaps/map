@@ -28,31 +28,34 @@ module.exports = (app) ->
     $scope.toggleIsOn = ->
       $scope.isOn = if $scope.isOn == false then true else false
 
-  .controller 'SearchController', ($scope, $http) ->
-      $scope.searchType = 'Properties'
+  .controller 'CollapseCtrl', ($scope) ->
+    $scope.isCollapsed = true
 
-      $scope.setSearchScope = (val) ->
-        $scope.searchType = val
+  .controller 'SearchController', ($scope, $http) ->
+    $scope.searchType = 'Properties'
+
+    $scope.setSearchScope = (val) ->
+      $scope.searchType = val
 
   .controller 'rmapsMailCtrl', ($scope, $http) ->
-      $scope.emailsArray = []
+    $scope.emailsArray = []
 
-      ###emails json###
+    ###emails json###
 
-      $http.get(frontendRoutes.mocks.email).success((response) ->
-        $scope.emailsArray = response
-      ).error (data, status, headers, config) ->
-        alert status
+    $http.get(frontendRoutes.mocks.email).success((response) ->
+      $scope.emailsArray = response
+    ).error (data, status, headers, config) ->
+      alert status
 
 
   .controller 'rmapsHistoryCtrl', ($scope, $http) ->
-      $scope.historyArray = []
+    $scope.historyArray = []
 
-      ###emails json###
+    ###emails json###
 
-      $http.get(frontendRoutes.mocks.history).success((response) ->
-        $scope.historyArray = response
-      ).error (data, status, headers, config) ->
-        alert status
+    $http.get(frontendRoutes.mocks.history).success((response) ->
+      $scope.historyArray = response
+    ).error (data, status, headers, config) ->
+      alert status
 
   .controller 'ContentController', ($scope) ->

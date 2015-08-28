@@ -85,6 +85,6 @@ pieCreateFunctionBackend = (cluster) ->
   return serializeXmlNode(makeSvg(data, cluster.count))
 
 
-module.exports = 
+module.exports =
   pieCreateFunction: pieCreateFunction
   pieCreateFunctionBackend: pieCreateFunctionBackend

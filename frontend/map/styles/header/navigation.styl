@@ -21,7 +21,7 @@ $fnMakeNav()
         float left
         @extends .global-transition
         a
-          color c_white_50
+          color $white_50
           text-transform capitalize
           line-height 47px
           padding 0 10px
@@ -29,7 +29,7 @@ $fnMakeNav()
           &:hover
           &:active
           &:focus
-            background c_black_0
+            background $black_0
           span
             display: inline-block;
             padding: 0 10px;
@@ -37,11 +37,11 @@ $fnMakeNav()
 
         &.active
           a
-            color c_white
+            color $white
             &:after
               content ''
               height 3px
-              background c_light_blue
+              background $light_blue
               width 100%
               position absolute
               left 0
@@ -55,7 +55,7 @@ $fnMakeNav()
       &.on
         @extends .visible-xs
         @extends .slideFromTop
-        background $c_dark_blue_darker
+        background $dark_blue_darker
         float: none;
         left: 0;
         position: absolute;

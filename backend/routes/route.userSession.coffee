@@ -178,24 +178,23 @@ updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSes
     updateCache(req, res, next)
 
 image = (req, res, next) ->
-    methodExec req,
-      GET: () -> getImage(req, res, next, req.user)
-      PUT: () -> updateImage(req, res, next, req.user)
+  methodExec req,
+    GET: () -> getImage(req, res, next, req.user)
+    PUT: () -> updateImage(req, res, next, req.user)
 
 companyImage = (req, res, next) ->
+  methodExec req,
+    GET: () ->
+      transforms =
+        account_image_id:
+          required: true
 
-    methodExec req,
-      GET: () ->
-        transforms =
-          account_image_id:
-            required: true
+      validation.validateAndTransform(req.params, transforms)
+      .then (validParams) ->
+        getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
 
-        validation.validateAndTransform(req.params, transforms)
-        .then (validParams) ->
-          getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
-
-      PUT: () ->
-        updateImage(req, res, next, _.omit(req.body, "blob"), "company", userSessionService.upsertCompanyImage)
+    PUT: () ->
+      updateImage(req, res, next, _.omit(req.body, "blob"), "company", userSessionService.upsertCompanyImage)
 
 
 #main entry point to update root user info
@@ -264,7 +263,7 @@ companyRoot = (req, res, next) ->
           id
       q.then (id) ->
         unless id?
-          throw 'Error creating new company'
+          throw new Error('Error creating new company')
         logger.debug id
         req.user.company_id = id
         userSvc.update(req.user.id, req.user).then ->

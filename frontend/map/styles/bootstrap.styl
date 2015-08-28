@@ -1,3 +1,8 @@
+.navbar-brand
+  padding 5px 10px;
+  img
+    height 100%
+
 /*global*/
 .container-fluid
   @media (max-width: xs-1)
@@ -25,10 +30,10 @@
       perspective 500px
 
 .dropdown-menu
-  background-color c_dark_blue
-  background c_dark_blue
-  box-shadow 0 0 0 c_black_0
-  color c_white
+  background-color $dark_blue
+  background $dark_blue
+  box-shadow 0 0 0 $black_0
+  color $white
   border none
   margin-top 15px
   width 100%
@@ -47,7 +52,7 @@
       height 0
       border-style solid
       border-width 0 10px 10px 10px
-      border-color transparent transparent c_dark_blue transparent
+      border-color transparent transparent $dark_blue transparent
       position absolute
       top -9px
       right 22px
@@ -58,51 +63,51 @@
       &:before
         border-style solid
         border-width 0 10px 10px 10px
-        border-color transparent transparent c_light_blue transparent
+        border-color transparent transparent $light_blue transparent
       h4.title
-        background c_light_blue
-        color c_white
+        background $light_blue
+        color $white
         font-size 14px
         padding 10px
         margin-top 0
 
   li
-    border-bottom 1px solid c_dark_blue_active
+    border-bottom 1px solid $dark_blue_active
     &:last-child
       border none
     a
       padding 5px 20px
-      color c_white_60
+      color $white_60
       text-transform capitalize
       @extends .global-transition
       &:hover
       &:focus
-        background c_dark_blue_active
-        color c_white
+        background $dark_blue_active
+        color $white
   &.no-margin
     margin 0
   &.whiteblock
-    background-color c_white
-    background c_white
-    color c_black
+    background-color $white
+    background $white
+    color $black
     padding 0
     border-radius 0px 0px 3px 3px
-    box-shadow 0 2px 2px c_black_30
+    box-shadow 0 2px 2px $black_30
     li
-      border-bottom 1px solid c_gray_ligther
+      border-bottom 1px solid $gray_ligther
       &:last-child
         border 0
       a
-        color c_dark_blue
+        color $dark_blue
         &:hover
         &:focus
-          background c_light_blue_select
+          background $light_blue_select
 
   &.white
-    background-color c_white
-    background c_white
-    box-shadow 0px 1px 2px c_black_20
-    color c_black
+    background-color $white
+    background $white
+    box-shadow 0px 1px 2px $black_20
+    color $black
 
   &.btnblock
     background transparent
@@ -114,7 +119,7 @@
 button
   &:hover
     .caret
-      border-top-color c_light_blue
+      border-top-color $light_blue
   &:hover
   &:active
   &:focus
@@ -137,7 +142,7 @@ button
   @extends .global-transition
 
   &:hover
-    border-top-color c_light_blue
+    border-top-color $light_blue
 
 .btn
   border none
@@ -146,79 +151,79 @@ button
   &:focus
     border none
   &.btn-primary
-    background-color c_light_blue
-    border 1px solid c_blue
+    background-color $light_blue
+    border 1px solid $blue
 
     &:hover
     &:focus
-      background-color c_blue
+      background-color $blue
 
   &.btn-default
-    background-color c_def_btn_gray
-    border 1px solid c_def_btn_gray_border
+    background-color $def_btn_gray
+    border 1px solid $def_btn_gray_border
 
   &.btn-white
-    background c_white
-    border 1px solid c_black_20
+    background $white
+    border 1px solid $black_20
     &.active
     &:hover
     &:active
-      box-shadow 0 0 0 c_black_0
-      background c_light_blue
-      color c_white
-      border-color c_blue
+      box-shadow 0 0 0 $black_0
+      background $light_blue
+      color $white
+      border-color $blue
 
   &.btn-transparent
-    background-color c_white_70
+    background-color $white_70
     border-radius 3px;
-    box-shadow 0px 1px 2px c_black_40
+    box-shadow 0px 1px 2px $black_40
 
     &:hover
     &:active
-      background c_white
+      background $white
       z-index 0
 
   &.btn-selected
-    background c_white
-    border 1px solid c_light_blue
-    color c_light_blue
+    background $white
+    border 1px solid $light_blue
+    color $light_blue
     &.active
     &:hover
     &:active
-      box-shadow 0 0 0 c_black_0
-      background c_light_blue
-      color c_white
-      border-color c_blue
+      box-shadow 0 0 0 $black_0
+      background $light_blue
+      color $white
+      border-color $blue
 
   &.btn-forsale
-    background c_green
-    border 1px solid c_green
-    color c_white
+    background $rm_forsale
+    border 1px solid $rm_forsale
+    color $white
 
   &.btn-pending
-    background c_yellow
-    border 1px solid c_yellow
-    color c_white
+    background $rm_pending
+    border 1px solid $rm_pending
+    color $white
 
   &.btn-sold
-    background c_red
-    border 1px solid c_red
-    color c_white
+    background $rm_sold
+    border 1px solid $rm_sold
+    color $white
 
   &.btn-offmarket
-    background c_light_blue
-    border 1px solid c_light_blue
-    color c_white
+    background $rm_notforsale
+    border 1px solid $rm_notforsale
+    color $white
 
   &.btn-inactive
-    background c_white
-    border 1px solid c_gray_ligther
-    color c_gray
+    background $white
+    border 1px solid $gray_ligther
+    color $gray
 
     &:before
       background-color transparent
       border-radius 2px
-      color c_white
+      color $white
       content ""
       bottom 5px
       left 5px
@@ -231,57 +236,57 @@ button
 
     &[aria-expanded="true"]
     &.active
-      color c_white!important
+      color $white!important
       position relative
 
       span
         position relative
       &:before
-        background-color c_light_blue
+        background-color $light_blue
         transform scale(1)
 
   &.btn-stamp
     width 100%
     line-height 600%
-    border 1px dashed c_gray_ligther
-    background-color c_dark_white
-    color c_gray
+    border 1px dashed $gray_ligther
+    background-color $dark_white
+    color $gray
     border-radius 3px
     &:hover
     &:focus
-      color c_light_blue
+      color $light_blue
 
   &.btn-filter
     background none
-    color c_gray
+    color $gray
     min-width auto
     margin 5px 10px
     padding 3px 0
     border-radius 0px
-    border-bottom 2px solid c_white_0
+    border-bottom 2px solid $white_0
     &:hover
     &:focus
-      color c_light_blue
+      color $light_blue
     &.active
-      border-bottom 2px solid c_light_blue
-      box-shadow 0px 0px 0px c_black_0
-      color c_black
+      border-bottom 2px solid $light_blue
+      box-shadow 0px 0px 0px $black_0
+      color $black
       font-weight bold
 
   &.btn-text
     min-width 1px
     &.active
-      background-color c_light_blue
-      color c_white
-      box-shadow 0 0 0 c_white_0
-      border 1px solid c_blue
+      background-color $light_blue
+      color $white
+      box-shadow 0 0 0 $white_0
+      border 1px solid $blue
 
   &.btn-icon
     background 0 none
     border-radius 0
 
   &.btn-circle
-    background-color c_black_10
+    background-color $black_10
     border-radius 10000px
     font-size 0
     min-width 0
@@ -290,14 +295,14 @@ button
     padding 5px
     float left
     display block
-    box-shadow 0px 0px 1px c_black
+    box-shadow 0px 0px 1px $black
     margin-right 10px
 
     &.active
-      border 4px solid c_light_blue
+      border 4px solid $light_blue
 
     &.color-black
-      background-color c_black
+      background-color $black
     &.color-blue
       background-color blue
     &.color-green
@@ -307,13 +312,13 @@ button
     &.color-yellow
       background-color yellow
     &.color-white
-      background-color c_white
+      background-color $white
 
 
 .btn
   &:hover
     .icon
-      color c_light_blue
+      color $light_blue
 
   &.toggle-active
     position relative
@@ -325,7 +330,7 @@ button
     &:before
       content ''
       position absolute
-      background-color c_light_blue
+      background-color $light_blue
       left 3px
       top 3px
       right 3px
@@ -337,7 +342,7 @@ button
 
     &[aria-expanded="true"]
       .icon
-        color c_white !important
+        color $white !important
 
       &:before
         opacity 1
@@ -363,23 +368,23 @@ ul.nav-tabs
     a
       border none
       margin 0
-      border-bottom 4px solid c_white_0
-      color c_gray
+      border-bottom 4px solid $white_0
+      color $gray
       font-size 16px
       &:hover
       &:focus
         border none
-        border-bottom 4px solid c_light_blue
+        border-bottom 4px solid $light_blue
         background none
 
     &.active
       a
         border none
-        border-bottom 4px solid c_light_blue
+        border-bottom 4px solid $light_blue
         &:hover
         &:focus
           border none
-          border-bottom 4px solid c_light_blue
+          border-bottom 4px solid $light_blue
           background none
 
   &.nav-justified
@@ -388,26 +393,26 @@ ul.nav-tabs
       a
         border none
         margin 0
-        border-bottom 4px solid c_white_0
+        border-bottom 4px solid $white_0
         border-radius 0px
         &:hover
         &:focus
           border none
-          border-bottom 4px solid c_light_blue
+          border-bottom 4px solid $light_blue
           background none
 
       &.active
         a
           border none
-          border-bottom 4px solid c_light_blue
+          border-bottom 4px solid $light_blue
           &:hover
           &:focus
             border none
-            border-bottom 4px solid c_light_blue
+            border-bottom 4px solid $light_blue
             background none
     &:after
       content ''
-      border-bottom 1px solid c_gray_ligther
+      border-bottom 1px solid $gray_ligther
       width 100%
       margin 0 -15px
 form
@@ -417,7 +422,7 @@ form
   .form-section
     overflow hidden
     margin-bottom 20px
-    border-top 1px solid c_gray_ligther
+    border-top 1px solid $gray_ligther
     padding 10px
 
 p.required
@@ -430,7 +435,7 @@ p.required
 .btn-group
   .btn
     &.btn-transparent
-      border-right 1px solid c_black_10
+      border-right 1px solid $black_10
       &:last-child
         border 0 none
     .caret
@@ -438,29 +443,29 @@ p.required
 
   &.open
     .dropdown-toggle
-      background c_white
-      box-shadow 0px 1px 2px c_black_40
+      background $white
+      box-shadow 0px 1px 2px $black_40
 
       .caret
         transform rotate(180deg)
 
 .pageTitle
-  color c_light_blue
+  color $light_blue
   font-weight normal
   margin-bottom 10px
 
 .popover
-  color c_black
+  color $black
   font-size 11px
   max-width none
   border-radius 2px
   border 0 none
-  box-shadow 0 1px 3px c_black_30
+  box-shadow 0 1px 3px $black_30
 
   &.top
     margin-top -20px
     > .arrow
-      border-top-color c_black_10
+      border-top-color $black_10
 
       &:after
         margin-left -9px
@@ -469,7 +474,7 @@ p.required
   &.right
     margin-left 20px
     > .arrow
-      border-right-color c_black_10
+      border-right-color $black_10
 
       &:after
         margin-left 1px
@@ -478,7 +483,7 @@ p.required
   &.left
     margin-right  20px
     > .arrow
-      border-left-color c_black_10
+      border-left-color $black_10
 
       &:after
         right 2px
@@ -487,14 +492,14 @@ p.required
   &.bottom
     margin-bottom 20px
     > .arrow
-      border-bottom-color c_black_10
+      border-bottom-color $black_10
 
       &:after
         margin-left -9px
         top 2px
 
 .modal-backdrop
-  background-color c_black_50
+  background-color $black_50
 
 label
   font-weight 300
@@ -504,7 +509,7 @@ label
   &:before
     content ''
     width 4px
-    background-color c_text_gray
+    background-color $text_gray
     height 1px
     display block
     position absolute
@@ -522,10 +527,10 @@ label
 .modal
   .modal-dialog
     .modal-content
-      box-shadow 0px 2px 6px c_black_10
+      box-shadow 0px 2px 6px $black_10
       border-radius 0px
       border 0 none
-      border-top 3px solid c_light_blue
+      border-top 3px solid $light_blue
       padding 0 20px 20px
       .modal-header
         padding 10px 0
@@ -558,7 +563,7 @@ select:-moz-focusring
 div.select
   position relative
   &:before
-    background-color c_white
+    background-color $white
     border-radius 3px
     content ""
     height 32px
@@ -580,13 +585,13 @@ div.select
     pointer-events none
     border-left 4px solid transparent
     border-right 4px solid transparent
-    border-top 4px solid c_black
+    border-top 4px solid $black
     margin 16px
     @extends .global-transition
 
   &:hover
     &:after
-      border-top 4px solid c_light_blue
+      border-top 4px solid $light_blue
 
 table.table
    .noborder
@@ -647,94 +652,6 @@ Place for our custom Theming of bootstrap
     .fa
       color inherit
 
-
-
-/* BEGIN Nav Bar */
-@media (min-width: 768px)
-  .navbar > .container .navbar-brand, .navbar > .container-fluid .navbar-brand
-    margin-left: 0px
-
-
-.navbar
-  background: $rmMainDarkBlue
-  border: none
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif
-  font-weight: 100
-  font-size:23px
-  letter-spacing: .35em
-
-
-.navbar .navbar-text
-  color: #777777
-  font-weight: 100
-
-.navbar .navbar-nav > li > a
-  color: $textColor
-  height:50px
-
-/* Small devices (tablets, 768px and up) */
-@media (min-width: 768px)
-  .navbar .navbar-nav .navbar-right
-    position:absolute;
-    right:0;
-
-.navbar .navbar-nav .navbar-float-right
-  float: right
-
-.navbar .navbar-nav > li > a:hover,
-.navbar .navbar-nav > li > a:focus
-  color: $textColor
-  background-color: #0062A0
-  -webkit-transition:background-color 0.25s
-  -moz-transition:background-color 0.25s
-  transition:background-color 0.25s
-
-.navbar .navbar-nav > .active > a,
-.navbar .navbar-nav > .active > a:hover,
-.navbar.navbar-nav > .active > a:focus
-  color: $textColor
-  background-color: #45a0d9
-  -webkit-transition:background-color 0.25s
-  -moz-transition:background-color 0.25s
-  transition:background-color 0.25s
-
-
-.navbar-brand
-  font-size: 25px
-  line-height: 20px
-  color: $textColor !important
-  padding: 3px 5px 0 3px
-  letter-spacing: 4px
-  font-weight: 100
-  margin-right: 20px
-
-.navbar-brand img
-  height:45px
-  padding: 0px 8px
-
-.navbar-brand .logo-c1
-  color: $textColor
-
-.navbar-brand .logo-c2
-  color: #45a0d9
-
-.navbar-toggle
-  background-color: #255992
-  border-color:transparent
-  height:50px
-  margin-top:0
-  margin-bottom: 0
-  border-radius: 0
-
-.navbar .navbar-toggle:hover, .navbar-default .navbar-toggle:focus
-  background-color: $rm-medium-blue-dark
-
-.navbar-toggle
-  float: left
-  margin-left: 15px
-
-.navbar-toggle .icon-bar
-  height:4px
 
 /* END Nav Bar */
 
