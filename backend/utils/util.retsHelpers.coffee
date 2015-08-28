@@ -20,7 +20,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
     throw new PartiallyHandledError(error, "RETS client could not be created")
   .then (retsClient) ->
-    logger.info 'Logging in client ', loginUrl
+    logger.debug 'Logging in client ', loginUrl
     retsClient.login()
   .catch isUnhandled, (error) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
@@ -32,7 +32,7 @@ _getRetsClientInternal = memoize _getRetsClientInternal,
   refCounter: true
   dispose: (promise) ->
     promise.then (retsClient) ->
-      logger.info 'Logging out client', retsClient?.urls?.Logout
+      logger.debug 'Logging out client', retsClient?.urls?.Logout
       retsClient.logout()
 
 _getRetsClient = (loginUrl, username, password, static_ip, handler) ->

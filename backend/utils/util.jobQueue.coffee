@@ -130,7 +130,7 @@ queueManualTask = (name, initiator) ->
         logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
         queueTask(transaction, batchId, result[0], initiator)
 
-queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
+queueTask = (transaction=knex, batchId, task, initiator) -> Promise.try () ->
   logger.debug "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
@@ -193,7 +193,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       status: 'running'
       status_changed: knex.raw('NOW()')
 
-_checkTask = (transaction, batchId, taskName) ->
+_checkTask = (transaction=knex, batchId, taskName) ->
   # need to get taskData such that we fail if the task is not still preparing or running i.e. has errored in some way
   tables.jobQueue.taskHistory(transaction)
   .where
@@ -207,7 +207,7 @@ _checkTask = (transaction, batchId, taskName) ->
       return undefined
     task?[0]?.data
 
-queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
+queueSubtasks = (transaction=knex, batchId, subtasks) -> Promise.try () ->
   if !subtasks?.length
     return 0
   _checkTask(transaction, batchId, subtasks[0].task_name)
@@ -223,12 +223,12 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
     return _.reduce counts, (sum, count) -> sum+count
 
 # convenience function to get another subtask config and then enqueue it based on the current subtask
-queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
+queueSubsequentSubtask = (transaction=knex, currentSubtask, laterSubtaskName, manualData, replace) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
     queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
 
-queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
+queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
     if manualData?
       if replace
@@ -565,12 +565,12 @@ getQueueNeeds = () ->
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName) ->
+queueSubsequentPaginatedSubtask = (transaction=knex, currentSubtask, total, maxPage, laterSubtaskName) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask)
 
-queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask) -> Promise.try () ->
+queuePaginatedSubtask = (transaction=knex, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
   if _.isArray(totalOrList)
     list = totalOrList
     total = totalOrList.length
@@ -592,12 +592,14 @@ queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, s
       of: subtasks
     if list
       datum.values = list.slice(datum.offset, datum.offset+datum.count)
+    if mergeData
+      _.extend(datum, mergeData)
     data.push datum
     subtasksQueued++
     countHandled += datum.count
   queueSubtask(transaction, batchId, taskData, subtask, data)
 
-getSubtaskConfig = (transaction, subtaskName, taskName) ->
+getSubtaskConfig = (transaction=knex, subtaskName, taskName) ->
   tables.jobQueue.subtaskConfig(transaction)
   .where
     name: subtaskName
@@ -663,4 +665,3 @@ module.exports =
   SoftFail: SoftFail
   HardFail: HardFail
   getLastTaskStartTime: getLastTaskStartTime
-  knex: knex

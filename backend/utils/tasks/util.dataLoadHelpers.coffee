@@ -2,6 +2,9 @@ dbs = require '../../config/dbs'
 tables = require '../../config/tables'
 Promise = require 'bluebird'
 jobQueue = require '../util.jobQueue'
+validation = require '../util.validation'
+memoize = require 'memoizee'
+vm = require 'vm'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -85,46 +88,75 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
 
 
 activateNewData = (subtask) ->
-  # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
-  if subtask.data.deleteUntouchedRows
-    # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
-    # full data sync, and if we didn't touch it that means it should be deleted
-    tables.propertyData.combined()
-    .where(data_source_id: subtask.task_name)
-    .update(active: dbs.properties.knex.raw('NOT "active"'))
-    .then () ->
-      tables.propertyData.combined()
+  # wrapping this in a transaction improves performance, since we're editing some rows twice
+  tables.propertyData.combined.transaction (transaction) ->
+    # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
+    if subtask.data.deleteUntouchedRows
+      # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
+      # full data sync, and if we didn't touch it that means it should be deleted
+      tables.propertyData.combined(transaction)
+      .where(data_source_id: subtask.task_name)
+      .update(active: tables.propertyData.combined.raw('NOT "active"'))
+      .then () ->
+        tables.propertyData.combined(transaction)
+        .where
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
+    else
+      # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
+      # the rm_property_id that has been updated in this batch
+      checkSubquery = () ->
+        tables.propertyData.combined(this)
+        .select('rm_property_id')
+        .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+          active: false
+      tables.propertyData.combined(transaction)
       .where
         data_source_id: subtask.task_name
-        active: false
-      .delete()
-  else
-    # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
-    # the rm_property_id that has been updated in this batch
-    checkSubquery = () ->
-      tables.propertyData.combined(this)
-      .select('rm_property_id')
-      .where
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
-        active: false
-    tables.propertyData.combined()
-    .where
-      data_source_id: subtask.task_name
-      batch_id: subtask.batch_id
-    .whereIn 'rm_property_id', checkSubquery
-    .update(active: dbs.properties.knex.raw('NOT "active"'))
-    .then () ->
-      tables.propertyData.combined()
-      .where
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
-        active: false
-      .delete()
+      .whereIn 'rm_property_id', checkSubquery
+      .update(active: dbs.properties.knex.raw('NOT "active"'))
+      .then () ->
+        tables.propertyData.combined(transaction)
+        .where
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
 
-      
+
+getValidationsInfo = (dataSourceType, dataSourceId, dataType) ->
+  tables.config.dataNormalization()
+  .where(data_source_id: dataSourceId)
+  .orderBy('list')
+  .orderBy('ordering')
+  .then (validations=[]) ->
+    validationMap = {}
+    context = vm.createContext(validators: validation.validators)
+    for validationDef in validations
+      validationMap[validationDef.list] ?= []
+      validationDef.transform = vm.runInContext(validationDef.transform, context)
+      validationMap[validationDef.list].push(validationDef)
+    return validationMap
+# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
+getValidations = memoize.promise(getValidations, maxAge: 850000)
+
+
+_getUsedInputFields = (validationDefinition) ->
+  if validationDefinition.input?
+    if _.isObject validationDefinition.input
+      return _.values(validationDefinition.input)
+    else
+      return validationDefinition.input
+  else
+    return [validationDefinition.output]
+
+
 module.exports =
   getRawTableName: getRawTableName
   createRawTempTable: createRawTempTable
   recordChangeCounts: recordChangeCounts
   activateNewData: activateNewData
+  getValidations: getValidations
+  

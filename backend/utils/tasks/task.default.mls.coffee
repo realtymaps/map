@@ -19,7 +19,7 @@ loadDataRawMain = (subtask) ->
     rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
 
 normalizeData = (subtask) ->
   mlsHelpers.normalizeData subtask,
@@ -31,8 +31,10 @@ finalizeDataPrep = (subtask) ->
   .distinct('rm_property_id')
   .select()
   .where(batch_id: subtask.batch_id)
+  .whereNull('deleted')
+  .where(hide_listing: false)
   .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(jobQueue.knex, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)

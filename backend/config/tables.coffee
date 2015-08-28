@@ -3,15 +3,15 @@ logger = require '../config/logger'
 
 _buildQueries = (tables) ->
   queries = {}
-  for id, tableSpecifier of tables
-    do (id, tableSpecifier) ->
-      [dbName, tableName] = tableSpecifier.split('.')
-      query = (transaction=dbs[dbName].knex) ->
-        ret = transaction.from(tableName)
-        ret.raw = transaction.raw
-        ret
-      query.tableName = tableName
-      queries[id] = query
+  for id, tableSpecifier of tables then do (id, tableSpecifier) ->
+    [dbName, tableName] = tableSpecifier.split('.')
+    query = (transaction=dbs[dbName].knex) ->
+      ret = transaction.from(tableName)
+      ret.raw = transaction.raw
+      ret
+    query.tableName = tableName
+    query.transaction = dbs[dbName].knex.transaction.bind(dbs[dbName].knex)
+    queries[id] = query
   queries
 
 

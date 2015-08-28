@@ -9,35 +9,79 @@ config = require '../../config/config'
 logger = require '../../config/logger'
 jobQueue = require '../util.jobQueue'
 validation = require '../util.validation'
-memoize = require 'memoizee'
-vm = require 'vm'
 tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
+PromiseFtp = require '../util.promiseFtp'
+encryptor = require '../../config/encryptor'
+unzip = require 'unzip'
+split = require 'split'
+combinedStream = require('combined-stream2')
 
 
-_streamArrayToDbTable = (objects, tableName, fields) ->
-  # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-  # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
-  # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
+_streamZipToDbTable = (zipFileStream, tableName, dataLoadHistory) ->
+  # stream the contents of the file into a COPY FROM query
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
+  pgQuery = Promise.promisify(pgClient.query, pgClient)
   pgConnect()
-  .then () -> new Promise (resolve, reject) ->
-    copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
-    rawDataStream = pgClient.query(copyStream.from(copyStart))
-    rawDataStream.on('finish', resolve)
-    rawDataStream.on('error', reject)
-    # stream from array to object serializer stream to COPY FROM
-    from(objects)
-    .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
-    .pipe(rawDataStream)
-  .finally () ->
-    # always disconnect the db client when we're done
-    pgClient.end()
   .then () ->
-    return objects.length
+    pgQuery('BEGIN')
+  .then () ->
+    startSql = tables.jobQueue.dataLoadHistory()
+    .insert(dataLoadHistory)
+    .toString()
+    pgQuery(startSql)
+  .then () -> new Promise (resolve, reject) ->
+    gotFile = false
+    zipFileStream
+    .pipe(unzip.Parse())
+    .on 'entry', (entry) ->
+      if entry.type == 'Directory'
+        logger.warn "Found an unexpected directory inside zip: #{entry.path}"
+        entry.autodrain()
+        return
+      if gotFile
+        logger.warn "found an unexpected additional file inside zip: #{entry.path}"
+        entry.autodrain()
+        return
+      gotFile = true
+      splitter = split()
+      lineSplits = entry
+      .pipe(splitter)
+      lineSplits.once 'data', (headerLine) ->
+        # immediately unpipe, so the line splitter doesn't pull more data
+        entry.unpipe(splitter)
+        # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
+        fields = headerLine.toLowerCase().replace(/[^a-z0-9\t]+/g, '_').split('\t')
+        pgQuery dataLoadHelpers.createRawTempTable(tableName, fields).toString()
+        .then () ->
+          copyStart = "COPY #{tableName} (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
+          rawDataStream = pgClient.query(copyStream.from(copyStart))
+          rawDataStream.on('finish', resolve)
+          rawDataStream.on('error', reject)
+          # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
+          copyInto = combinedStream.create()
+          copyInto.append(entry)
+          copyInto.append(new Buffer('\\.\n'))
+          copyInto.pipe(rawDataStream)
+  .then () ->
+    finishSql = tables.jobQueue.dataLoadHistory()
+    .where
+      raw_table_name: tableName
+    .update
+      raw_rows: objects.length
+    .toString()
+    pgQuery(finishSql)
+  .then () ->
+    pgQuery('COMMIT')
+  .finally () ->
+    # always try to disconnect the db client when we're done, but don't crash if we disconnected prematurely
+    try
+      pgClient.end()
+    catch err
+      logger.warn "Error disconnecting raw db connection: #{err}"
 
 
 _getValues = (list, target) ->
@@ -82,98 +126,34 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
   _.extend result, _.omit(fields2, Object.keys(fields1))
 
 
-# loads all records from a given (conceptual) table that have changed since the last successful run of the task
-loadUpdates = (subtask, options) ->
-  # figure out when we last got updates from this table
-  jobQueue.getLastTaskStartTime(subtask.task_name)
-  .then (lastSuccess) ->
-    now = new Date()
-    if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-      return new Date(0)
-    else
-      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-      return lastSuccess
-  .then (refreshThreshold) ->
-    tables.config.mls()
-    .where(id: subtask.task_name)
-    .then (mlsInfo) ->
-      mlsInfo = mlsInfo?[0]
-      rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
-      tables.jobQueue.dataLoadHistory()
-      .insert
-        data_source_id: options.dataSourceId
-        data_source_type: 'mls'
-        batch_id: subtask.batch_id
-      .then () ->
-        retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
-      .then (results) ->
-        if !results?.length
-          # nothing to do, GTFO
-          logger.info("No data updates for #{subtask.task_name}.")
-          return
-        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-        # on whether this is a dump or an update)
-        doDeletes = refreshThreshold.getTime() == 0
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-        finalizePrepPromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(jobQueue.knex, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
-        
-        # simultaneously create a temp table and stream the data to it
-        fieldInfoPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
-        updateTableNamePromise = tables.jobQueue.dataLoadHistory()
-        .where
-          data_source_id: options.dataSourceId
-          batch_id: subtask.batch_id
-        .update
-          raw_table_name: rawTableName
-        handleDataPromise = Promise.join fieldInfoPromise, updateTableNamePromise, (fieldInfo) ->
-          fields = _.indexBy(fieldInfo, 'LongName')
-          dataLoadHelpers.createRawTempTable(rawTableName, Object.keys(fields))
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to create temp table: #{rawTableName}")
-          .then () ->
-            _streamArrayToDbTable(results, rawTableName, fields)
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (rawRows) ->
-          tables.jobQueue.dataLoadHistory()
-          .where
-            data_source_id: options.dataSourceId
-            batch_id: subtask.batch_id
-          .update
-            raw_rows: rawRows
-          .then () ->
-            return rawRows
+# loads all records from a ftp-dropped zip file
+loadRawData = (subtask, options) ->
+  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
+  ftp = new PromiseFtp()
+  ftp.connect
+    host: subtask.task_data.host
+    user: subtask.task_data.user
+    password: encryptor.decrypt(subtask.task_data.password)
+  .then () ->
+    ftp.get(subtask.data.path)
+  .then (zipFileStream) ->
+    dataLoadHistory =
+      data_source_id: options.dataSourceId
+      data_source_type: 'county'
+      data_type: subtask.data.type
+      batch_id: subtask.batch_id
+      raw_table_name: rawTableName
+
+    _streamZipToDbTable(zipFileStream, rawTableName, dataLoadHistory)
+    .then (rowsInserted) ->
+      return rowsInserted
+    .catch isUnhandled, (error) ->
+      throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+  Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
+    return numRawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
-
-_getValidations = (dataSourceId) ->
-  tables.config.dataNormalization()
-  .where(data_source_id: dataSourceId)
-  .orderBy('list')
-  .orderBy('ordering')
-  .then (validations=[]) ->
-    validationMap = {}
-    context = vm.createContext(validators: validation.validators)
-    for validationDef in validations
-      validationMap[validationDef.list] ?= []
-      validationDef.transform = vm.runInContext(validationDef.transform, context)
-      validationMap[validationDef.list].push(validationDef)
-    return validationMap
-# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
-_getValidations = memoize.promise(_getValidations, maxAge: 850000)
-
-_getUsedKeys = (validationDefinition) ->
-  if validationDefinition.input?
-    if _.isObject validationDefinition.input
-      return _.values(validationDefinition.input)
-    else
-      return validationDefinition.input
-  else
-    return [validationDefinition.output]
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
@@ -182,7 +162,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   rowsPromise = dbs.properties.knex(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   # get validations
-  validationPromise = _getValidations(options.dataSourceId)
+  validationPromise = dataLoadHelpers.getValidations(options.dataSourceId)
   # get start time for "last updated" stamp
   startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
   Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationMap, startTime) ->
@@ -194,10 +174,10 @@ normalizeData = (subtask, options) -> Promise.try () ->
         # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
         # fields for those don't have to be explicitly reused
         if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
-          usedKeys = usedKeys.concat(_getUsedKeys(validationDefinition))
+          usedKeys = usedKeys.concat(dataLoadHelpers.getUsedInputFields(validationDefinition))
         else if validationDefinition.output == 'days_on_market'
           # explicitly exclude these keys from diff, because they are derived values based on date
-          diffExcludeKeys = _getUsedKeys(validationDefinition)
+          diffExcludeKeys = dataLoadHelpers.getUsedInputFields(validationDefinition)
     promises = for row in rows
       do (row) ->
         stats =
