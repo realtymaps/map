@@ -186,7 +186,7 @@ select = (knex, which, passedFilters=null, prepend='') ->
   prepend += ' ' if prepend?
   extra = ''
   if passedFilters
-    extra = ", #{passedFilters} as \"passedFilters\''
+    extra = ", #{passedFilters} as \"passedFilters\'"
   knex.select(knex.raw(prepend + _columns[which] + extra))
   knex
 

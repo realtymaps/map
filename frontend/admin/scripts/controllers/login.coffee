@@ -29,7 +29,7 @@ app.run ($rootScope, $location, rmapsprincipal) ->
       $location.replace()
       $location.url(nextLocation || adminRoutes.urls.mls)
 
-  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
 
     # if we're entering the login state...
     if toState?.url != adminRoutes.login #toState.url is really just the state name here in admin

@@ -72,10 +72,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       rmapsMlsService.getConfigs()
       .then (configs) ->
         for config in configs
-          config.ready = if $scope.isReady(config) then "ready" else "incomplete"
+          config.ready = if $scope.isReady(config) then 'ready' else 'incomplete'
         $scope.idOptions = configs
       .catch (err) ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
+        $rootScope.$emit rmapsevents.alert.spawn, { msg: 'Error in retrieving existing configs.' }
       .finally () ->
         $scope.loading = false
 
@@ -117,7 +117,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         # populate undefined fields with the defaults
         $scope.cleanConfigValues(obj)
       .catch (err) ->
-        msg = "Error in retrieving MLS data: #{err.message}"
+        msg = 'Error in retrieving MLS data: #{err.message}'
         $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
         $q.reject(new Error(msg))
       .finally () ->
@@ -143,7 +143,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           $scope.columnOptions = []
           $scope.formItems[2].disabled = true
           $scope.formItems[3].disabled = true
-          $q.reject(new Error("Error retrieving databases from MLS."))
+          $q.reject(new Error('Error retrieving databases from MLS.'))
       else
         $scope.dbOptions = []
         $scope.tableOptions = []
@@ -170,7 +170,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           $scope.columnOptions = []
           $scope.formItems[2].disabled = true
           $scope.formItems[3].disabled = true
-          $q.reject(new Error("Error retrieving tables from MLS."))
+          $q.reject(new Error('Error retrieving tables from MLS.'))
       else
         $scope.tableOptions = []
         $scope.columnOptions = []
@@ -186,7 +186,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         .then (rawData) ->
           data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
           r = mlsConstants.dtColumnRegex
-          $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == "string" && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == "string" && r.test(v.toLowerCase())))], true)
+          $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == 'string' && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == 'string' && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
           $scope.fieldNameMap.columnNames = {}
           for datum in data
@@ -194,7 +194,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           data
         .catch (err) ->
           $scope.columnOptions = []
-          $q.reject(new Error("Error retrieving columns from MLS."))
+          $q.reject(new Error('Error retrieving columns from MLS.'))
       else
         $scope.columnOptions = []
         $scope.formItems[3].disabled = true
@@ -269,7 +269,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     # goes to the 'normalize' state with selected mlsData
     $scope.goNormalize = () ->
-      $state.go($state.get("normalize"), { id: $scope.mlsData.current.id }, { reload: true })
+      $state.go($state.get('normalize'), { id: $scope.mlsData.current.id }, { reload: true })
 
     # test for whether all default values being used or not
     $scope.hasAllDefaultOtherConfig = () ->
@@ -302,10 +302,10 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
             $scope.mlsData.current = newMls
             $scope.updateObjectOptions($scope.mlsData.current)
           .catch (err) ->
-            msg = "Error saving MLS."
+            msg = 'Error saving MLS.'
             $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
         , () ->
-          console.log "modal closed"
+          console.log 'modal closed'
       )
 
     $scope.passwordModal = () ->
@@ -320,7 +320,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           $scope.mlsData.current.password = password
           $scope.saveServerPassword()
         , () ->
-          console.log "password modal closed"
+          console.log 'password modal closed'
       )
 ]
 
