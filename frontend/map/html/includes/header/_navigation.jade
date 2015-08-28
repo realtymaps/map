@@ -4,13 +4,13 @@ nav.navigation.pull-left(role="navigation")
   .nav-toggle
     span(ng-click="toggleMainNav()") toggle menu
   ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
-    li(ng-cloak ng-show="principal.isAuthenticated()")
+    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('map') }")
       a(href="{{frontendRoutes.map}}")
         span map
-    li(ng-cloak ng-show="principal.isAuthenticated()")
+    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('mail') }")
       a(href="{{frontendRoutes.mail}}")
         span mail
-    li(ng-cloak ng-show="principal.isAuthenticated()")
+    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
       a(href="{{frontendRoutes.history}}")
         span history
     li(ng-cloak ng-hide="$state.is('main')")
