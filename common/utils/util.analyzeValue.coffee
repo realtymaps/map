@@ -6,7 +6,7 @@ getFunctionName = (funcString) ->
   if not funcString then return null
   funcNameRegex = /function (.{1,})\(/
   results = (funcNameRegex).exec(funcString.toString())
-  if results && results.length > 1 then results[1] else ""
+  if results && results.length > 1 then results[1] else ''
 
 analyzeValue = (value, fullJson=false) ->
   result = {}

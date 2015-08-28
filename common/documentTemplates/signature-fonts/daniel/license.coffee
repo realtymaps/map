@@ -1,4 +1,4 @@
-module.exports = """
+module.exports = ''"
 Thanks for downloading the Daniel font!
 
 It’s free for you to use for any purpose, commercial or not.
@@ -20,4 +20,4 @@ Here’s where you can
 Be sure to let me know if you use one of my fonts in an interesting, creative, or beautiful way. I may feature your work on the blog.
 
 This font may not be appropriate for your purposes. It comes with no guarantees of any kind. While I’ve tested this font, and it seems to work well, I accept no responsibility for any unintended consequences of its use.
-"""
+''"

@@ -9,7 +9,7 @@ mls =
     base:
       id: null
       name: null
-      notes: ""
+      notes: ''
       username: null
       password: null
       url: null

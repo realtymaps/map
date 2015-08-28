@@ -34,7 +34,7 @@ app.directive 'rmapsFileRead', () ->
         prop = heightType + name.toInitCaps()
         obj = scope.$eval(attrs[directiveName])
         max = parseInt attrs["rmapsGetMax#{heightType.toInitCaps()}#{name.toInitCaps()}"]
-        eleType = attrs["rmapsMsgReplace"]
+        eleType = attrs['rmapsMsgReplace']
         msg = "element #{prop} is > #{max} pixles. element must be smaller."
         if eleType
           msg.replace(/element/g, eleType)

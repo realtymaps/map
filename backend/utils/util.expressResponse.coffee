@@ -25,7 +25,7 @@ class ExpressResponse
         logger.error "Error while sending csv attachment:"
         logger.error err
     else
-      content = if @payload? then @payload else ""
+      content = if @payload? then @payload else ''
       res.status(@status).send content
 
 module.exports = ExpressResponse

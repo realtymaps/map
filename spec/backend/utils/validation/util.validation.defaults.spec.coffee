@@ -8,7 +8,7 @@ basePath = require '../../basePath'
 describe 'utils/validation.validators.defaults()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  promiseIt 'should replace undefined, null, and "" values with the defaultValue, resolving any other value as-is', () ->
+  promiseIt 'should replace undefined, null, and '' values with the defaultValue, resolving any other value as-is', () ->
     options = defaultValue: 42
     [
       expectResolve(validators.defaults(options)(param, '123')).then (value) ->
@@ -23,7 +23,7 @@ describe 'utils/validation.validators.defaults()'.ns().ns('Backend'), ->
         value.should.equal(42)
       expectResolve(validators.defaults(options)(param, null)).then (value) ->
         value.should.equal(42)
-      expectResolve(validators.defaults(options)(param, "")).then (value) ->
+      expectResolve(validators.defaults(options)(param, '')).then (value) ->
         value.should.equal(42)
     ]
 

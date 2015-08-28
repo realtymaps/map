@@ -20,6 +20,6 @@
     "level": "error"
   },
   "no_unnecessary_double_quotes":{
-    "level": "ignore"
+    "level": "error"
   }
 }

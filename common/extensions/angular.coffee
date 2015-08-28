@@ -7,7 +7,7 @@ if window?.angular?
     condition = ->
       if isFirst && pars.length
         doBail = true
-      curParent? && curParent?.tagName != "HTML" && !doBail
+      curParent? && curParent?.tagName != 'HTML' && !doBail
 
     while condition()
       if curParent[propToSearch].contains(searchStr)

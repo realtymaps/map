@@ -12,14 +12,14 @@ app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVari
 
     # ascertain near which container corner the marker is in
     quadrant = ''
-    quadrant += (if (point.y > center.y) then "b" else "t")
-    quadrant += (if (point.x < center.x) then "l" else "r")
+    quadrant += (if (point.y > center.y) then 'b' else 't')
+    quadrant += (if (point.x < center.x) then 'l' else 'r')
 
     # create offset point per quadrant
     return switch
-      when quadrant is "tr" then new L.Point offsets.right, offsets.top
-      when quadrant is "tl" then new L.Point offsets.left, offsets.top
-      when quadrant is "br" then new L.Point offsets.right, offsets.bottom
+      when quadrant is 'tr' then new L.Point offsets.right, offsets.top
+      when quadrant is 'tl' then new L.Point offsets.left, offsets.top
+      when quadrant is 'br' then new L.Point offsets.right, offsets.bottom
       else new L.Point offsets.left, offsets.bottom
 
 

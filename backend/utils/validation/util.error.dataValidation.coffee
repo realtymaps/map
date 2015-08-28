@@ -5,6 +5,6 @@ class DataValidationError extends Error
     @name = "DataValidationError"
     Error.captureStackTrace(this, DataValidationError)
     analysis = analyzeValue(@paramValue)
-    @message = "error validating param <#{@paramName}> with value <#{analysis.type}"+(if analysis.details then ": #{analysis.details}" else "")+"> (#{@message})"
+    @message = "error validating param <#{@paramName}> with value <#{analysis.type}"+(if analysis.details then ": #{analysis.details}" else '')+"> (#{@message})"
 
 module.exports = DataValidationError

@@ -35,7 +35,7 @@ address =
   zip9: 'Postal Code + 4'
   streetDirPrefix: 'Street Dir Prefix'
   streetDirSuffix: 'Street Dir Suffix'
-  streetSuffix: "Street Suffix",
+  streetSuffix: 'Street Suffix',
   streetNumSuffix: 'Street Number Suffix'
   streetFull: 'Full Street'
   unitNum: 'Unit Number'

@@ -1,5 +1,5 @@
 
-process.stdout.write """
+process.stdout.write ''"
 daemon off;
 worker_processes #{process.env['NGINX_WORKERS'] || 4};
 pid /app/nginx.pid;
@@ -72,7 +72,7 @@ http {
       expires           max;
 
       add_header        Cache-Control "public";
-      add_header        Last-Modified "";
+      add_header        Last-Modified '';
 
       try_files $uri /$uri;
       break;
@@ -86,4 +86,4 @@ http {
     }
   }
 }
-"""
+''"

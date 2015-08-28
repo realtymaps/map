@@ -1,6 +1,6 @@
 module.exports = 
   task:
-    # name: "" # required
+    # name: '' # required
     description: "Refresh mls data"
     data: "{}"
     ignore_until: null
@@ -11,8 +11,8 @@ module.exports =
     active: false
 
   subtask_loadDataRawMain:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_loadDataRawMain"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_loadDataRawMain"
     step_num: 1
     queue_name: "mls"
     data: null
@@ -26,8 +26,8 @@ module.exports =
     auto_enqueue: true
 
   subtask_normalizeData:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_normalizeData"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_normalizeData"
     step_num: 2
     queue_name: "mls"
     data: null
@@ -41,8 +41,8 @@ module.exports =
     auto_enqueue: false
 
   subtask_recordChangeCounts:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_recordChangeCounts"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_recordChangeCounts"
     step_num: 3
     queue_name: "mls"
     data: null
@@ -56,8 +56,8 @@ module.exports =
     auto_enqueue: false
 
   subtask_finalizeDataPrep:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_finalizeDataPrep"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_finalizeDataPrep"
     step_num: 4
     queue_name: "mls"
     data: null
@@ -71,8 +71,8 @@ module.exports =
     auto_enqueue: false
 
   subtask_finalizeData:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_finalizeData"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_finalizeData"
     step_num: 5
     queue_name: "mls"
     data: null
@@ -86,8 +86,8 @@ module.exports =
     auto_enqueue: false
 
   subtask_activateNewData:
-    # task_name: "" # required
-    # name: "" # should be set to task-centric "#{task_name}_activateNewData"
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_activateNewData"
     step_num: 6
     queue_name: "mls"
     data: null

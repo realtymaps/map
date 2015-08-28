@@ -28,9 +28,9 @@ directiveControls = [
   directive:
     template: require('../../../html/includes/layers.jade')()
     compile: (tElement, tAttrs, transclude) ->
-      console.debug "LayerControl compile"
+      console.debug 'LayerControl compile'
       (scope, iElement, iAttrs, controller, transcludeFn) ->
-        console.debug "LayerControl link"
+        console.debug 'LayerControl link'
 ,
   name: 'location'
   options:

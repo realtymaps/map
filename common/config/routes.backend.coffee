@@ -3,7 +3,7 @@ Object list of the defined routes. It's purpose is to keep the
 frontend and backend in sync
 ###
 
-apiBase = "/api"
+apiBase = '/api'
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
 apiBaseUsers = "#{apiBase}/users"
@@ -22,12 +22,12 @@ apiBaseAccountImages = "#{apiBase}/accountImages"
 
 module.exports =
   views:
-    rmap: "/rmap.html"
-    admin: "/admin.html"
-    mocksResults: "/mocks/results.html"
+    rmap: '/rmap.html'
+    admin: '/admin.html'
+    mocksResults: '/mocks/results.html'
   wildcard:
-    admin: "/admin*"
-    frontend: "/*"
+    admin: '/admin*'
+    frontend: '/*'
     backend: "#{apiBase}/*"
   userSession:
     apiBase: apiBaseSession

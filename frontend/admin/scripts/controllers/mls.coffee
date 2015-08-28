@@ -19,7 +19,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       dropdown = angular.element(document.querySelector('#dbselect'))[0] # get the actual dropdown element
       options = dropdown.options # options list
 
-      # only proceed with hack if 'selected' hasn't been registered (i.e. value="" and index=-1)
+      # only proceed with hack if 'selected' hasn't been registered (i.e. value='' and index=-1)
       if options.selectedIndex < 0
         # part of the bug here is that options.selectedIndex returns -1 even though an element has the selected property
         # note: the options here are all constructed involving typical ngmodel binding and ngoptions
@@ -81,7 +81,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     $scope.activatePasswordButton = () ->
       $scope.allowPasswordReset = true
-      $scope.mlsData.current.password = ""
+      $scope.mlsData.current.password = ''
 
     $scope.assignConfigDefault = (obj, field) ->
       if typeof nonBaseDefaults[field] is 'object'
@@ -95,7 +95,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       for key, value of nonBaseDefaults
         if (typeof obj[key] is 'undefined') # null can be valid
           $scope.assignConfigDefault(obj, key)
-        else if value is ""
+        else if value is ''
           obj[key] = null
 
     # when getting new mlsData, update the dropdowns as needed
@@ -246,15 +246,15 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       if toStep == 1 # db option just changed, reset table and fields
         $scope.tableOptions = []
         $scope.columnOptions = []
-        $scope.mlsData.current.main_property_data.table = ""
-        $scope.mlsData.current.main_property_data.field = ""
+        $scope.mlsData.current.main_property_data.table = ''
+        $scope.mlsData.current.main_property_data.field = ''
         $scope.formItems[2].disabled = true
         $scope.formItems[3].disabled = true
         promise = getTableOptions()
 
       else if toStep == 2 # table option just changed, reset table and fields
         $scope.columnOptions = []
-        $scope.mlsData.current.main_property_data.field = ""
+        $scope.mlsData.current.main_property_data.field = ''
         $scope.formItems[3].disabled = true
         promise = getColumnOptions()
 
@@ -281,7 +281,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     # test for whether MLS is ready and eligible for task activation and normalization
     $scope.isReady = (mlsObj) ->
       _.every ['queryTemplate', 'db', 'table', 'field'], (k) ->
-        return mlsObj.main_property_data? and k of mlsObj.main_property_data and mlsObj.main_property_data[k] != ""
+        return mlsObj.main_property_data? and k of mlsObj.main_property_data and mlsObj.main_property_data[k] != ''
 
     # modal for Create mlsData
     $scope.animationsEnabled = true
@@ -340,7 +340,7 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
 
 app.controller 'ModalPasswordCtrl', ['$scope', '$modalInstance'
   ($scope, $modalInstance) ->
-    $scope.newpassword = ""
+    $scope.newpassword = ''
 
     $scope.ok = () ->
       $modalInstance.close($scope.newpassword)

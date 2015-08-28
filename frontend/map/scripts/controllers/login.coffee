@@ -29,7 +29,7 @@ app.run ($rootScope, $location, rmapsprincipal) ->
       $location.replace()
       $location.url(nextLocation || frontendRoutes.map)
 
-  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
 
     # if we're entering the login state...
     if toState?.url != frontendRoutes.login

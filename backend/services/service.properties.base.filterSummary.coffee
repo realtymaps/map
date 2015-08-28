@@ -14,16 +14,16 @@ statuses = filterStatuses.keys
 filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
-  price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
+  price: [validators.string(replace: [/[$,]/g, '']), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
   acres: validators.float()
-  sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+  sqft: [ validators.string(replace: [/,/g, '']), validators.integer() ]
 
 otherValidations =
   returnType: validators.string()
-  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
+  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: '')]
   hasOwner: validators.boolean(truthy: 'true', falsy: 'false')
   bounds:
     transform: [

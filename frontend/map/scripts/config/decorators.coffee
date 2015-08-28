@@ -78,7 +78,7 @@ app.config(($provide) ->
 .config(($validationProvider, rmapsMainOptions) ->
   {validation} = rmapsMainOptions
   $validationProvider.setErrorHTML (msg) ->
-    return "<label class=\"control-label has-error\">" + msg + "</label>"
+    return "<label class=\"control-label has-error\">#{msg}</label>"
   _.extend $validationProvider,
     # figure out how to do this without jQuery
     validCallback: (element) ->
