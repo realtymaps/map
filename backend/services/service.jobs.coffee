@@ -17,7 +17,7 @@ class JobService extends crudService.Crud
 class TaskService extends crudService.Crud
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
-      throw "All objects must already include unique identifiers" unless _.every entity, @idKey
+      throw new Error "All objects must already include unique identifiers" unless _.every entity, @idKey
     super(entity, id, doLogQuery)
 
 _summary = new JobService(tables.jobQueue.jqSummary)

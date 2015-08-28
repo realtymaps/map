@@ -22,7 +22,7 @@ class MlsConfigCrud extends crudService.ThenableCrud
         transaction = @dbFn()
         tableName = @dbFn.tableName
         @dbFn = () =>
-          # for "schemaReady" to be true, the main_property_data json fields 
+          # for "schemaReady" to be true, the main_property_data json fields
           # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
           ret = transaction
           .whereRaw("char_length(cast(main_property_data->>\'db\' as text)) > ?", [0])
@@ -65,13 +65,13 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
-    super(entity,id) 
+    super(entity,id)
     .then () ->
       # prepare a queue task for this new MLS
       taskObj = _.merge _.clone(jobQueueTaskDefaults.task),
         name: entity.id
 
-      # prepare subtasks for this new MLS  
+      # prepare subtasks for this new MLS
       subtaskObjs = [
         _.merge _.clone(jobQueueTaskDefaults.subtask_loadDataRawMain),
           task_name: entity.id
