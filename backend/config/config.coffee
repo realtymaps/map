@@ -12,8 +12,8 @@ _getAllConfigs = (rootName, props, spacer = '_', config) ->
     if _.isString maybePropName
       name = maybePropName
     else if _.isString maybePropName?.name
-        name = maybePropName.name
-    throw "config property is an unsupported type or malformed object." unless name
+      name = maybePropName.name
+    throw new Error("config property is an unsupported type or malformed object.") unless name
     ret[name] = _getConfig(rootName, name, spacer, config)
     if maybePropName?.isJson?
       ret[name] = JSON.parse ret[name]
@@ -38,7 +38,7 @@ base =
       min: 1
       max: if process.env.JQ_QUEUE_NAME then 8 else 10
       # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-      pingTimeout: 10*60*1000 
+      pingTimeout: 10*60*1000
   PROPERTY_DB:
     client: 'pg'
     connection: process.env.PROPERTY_DATABASE_URL

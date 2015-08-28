@@ -5,6 +5,6 @@ _.required = (obj, props, doThrow = false) ->
   for key, value in props
     if !value?
       ret = false
-      throw "#{key} is not defined and is required!" if doThrow
-      break;
+      throw new Error("#{key} is not defined and is required!") if doThrow
+      break
   ret
