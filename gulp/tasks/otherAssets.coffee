@@ -1,4 +1,4 @@
-gulp = require('gulp');
+gulp = require('gulp')
 require './webroot'
 require './vendor'
 paths = require '../../common/config/paths'

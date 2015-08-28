@@ -63,10 +63,9 @@ browserifyTask = (app, watch = false) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        stream = browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors:true)
-        stream.on 'error', ->
+        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
+        .on 'error', ->
           process.exit(1)
-        stream
 
     bundle = (stream) ->
       startTime = process.hrtime()

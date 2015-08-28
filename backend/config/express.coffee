@@ -139,6 +139,6 @@ _.extend app.locals,
   paths: paths
 
 app.set('views', __dirname.replace('/config','/views'))
-app.set('view engine', 'jade');
+app.set('view engine', 'jade')
 
 module.exports = app

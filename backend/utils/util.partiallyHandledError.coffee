@@ -9,9 +9,9 @@ class PartiallyHandledError extends VError
     super(args...)
     @name = 'PartiallyHandledError'
     if @.jse_cause
-        ref = uuid.v1() # timestamp-based uuid
-        logger.error "Error reference: #{ref} Stack: #{args[0].stack}"
-        @message = @message + " (Error reference #{ref})"
+      ref = uuid.v1() # timestamp-based uuid
+      logger.error "Error reference: #{ref} Stack: #{args[0].stack}"
+      @message = @message + " (Error reference #{ref})"
 
 module.exports =
   PartiallyHandledError: PartiallyHandledError

@@ -16,10 +16,10 @@ _sql =
         SELECT rm_property_id, the_geom, created_at, updated_at, (not is_active::boolean)::int, 1, fips_code, street_address_num
         FROM $frmTable
         WHERE NOT EXISTS (
-        		SELECT * FROM #{_destTable}
-        		WHERE
-        		rm_property_id = $frmTable.rm_property_id
-        	);
+                SELECT * FROM #{_destTable}
+                WHERE
+                rm_property_id = $frmTable.rm_property_id
+            );
         """
     'delete':"""
         DELETE FROM #{_destTable}
@@ -34,13 +34,13 @@ _sql =
     drop:"DROP TABLE $frmTable;"
 
 _format = (sql, fipsCode) ->
-    sql
-    .replace('$frmTable', 'table_' + String(fipsCode))
-    .replace('$fipsCode', String(fipsCode))
+  sql
+  .replace('$frmTable', 'table_' + String(fipsCode))
+  .replace('$fipsCode', String(fipsCode))
 
 obj = {}
 ['update', 'insert', 'delete', 'drop'].forEach  (method) ->
-    obj[method] = (fipCode) ->
-        _format(_sql[method], fipsCode)
+  obj[method] = (fipCode) ->
+    _format(_sql[method], fipsCode)
 
 module.exports = obj

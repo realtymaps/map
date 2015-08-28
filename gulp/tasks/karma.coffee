@@ -11,10 +11,9 @@ karmaRunner = (done) ->
   try
     server = new Karma
       configFile: karmaConf
-      singleRun: true
-        , (code) =>
-          log "Karma Callback Code: #{code}"
-          done(code)
+      singleRun: true, (code) ->
+        log "Karma Callback Code: #{code}"
+        done(code)
     server.start()
   catch e
     log "KARMA ERROR: #{e}"

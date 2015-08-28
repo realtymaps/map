@@ -9,4 +9,4 @@ module.exports =
       request.on 'error', reject
       request.on 'response', resolve
       CARTODB.WAKE_URLS.forEach (url) ->
-          request.post(url)
+        request.post(url)
