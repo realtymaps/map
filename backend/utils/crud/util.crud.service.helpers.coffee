@@ -36,9 +36,13 @@ class Crud extends BaseObject
     execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
-    obj = {}
-    obj = @idObj id if id?
-    execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+    # support entity or array of entities
+    if _.isArray entity
+      execQ @dbFn().insert(entity), doLogQuery
+    else
+      obj = {}
+      obj = @idObj id if id?
+      execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
 
   delete: (id, doLogQuery = false) ->
     execQ @dbFn().where(@idObj(id)).delete(), doLogQuery

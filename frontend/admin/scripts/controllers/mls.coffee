@@ -5,8 +5,8 @@ adminRoutes = require '../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../html/views/templates/changePassword.jade')()
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal',
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal', 'rmapsJobsService'
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal, rmapsJobsService) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
@@ -46,6 +46,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       current: getDefaultBase()
       propertySchemaDefaults: mlsConstants.defaults.propertySchema
       configDefaults: mlsConstants.defaults.otherConfig
+      task: mlsConstants.defaults.task
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -70,6 +71,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       $scope.loading = true
       rmapsMlsService.getConfigs()
       .then (configs) ->
+        for config in configs
+          config.ready = if $scope.isReady(config) then "ready" else "incomplete"
         $scope.idOptions = configs
       .catch (err) ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Error in retrieving existing configs." }
@@ -106,6 +109,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         .then (tableData) ->
           getColumnOptions()
           .then (columnData) ->
+            rmapsJobsService.getTask($scope.mlsData.current.id)
+            .then (task) ->
+              $scope.mlsData.task.active = if task.length > 0 and task[0].active? then task[0].active else false
 
       .then (results) ->
         # populate undefined fields with the defaults
@@ -220,6 +226,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       promises = []
       $scope.cleanConfigValues($scope.mlsData.current)
 
+      promises.push rmapsJobsService.updateTask($scope.mlsData.current.id, {active: $scope.mlsData.task.active})
       promises.push $scope.mlsData.current.save()
 
       if rmapsprincipal.hasPermission('change_mlsconfig_serverdata')
@@ -270,6 +277,11 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         # null is a valid field value
         return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.otherConfig[k])
       )
+
+    # test for whether MLS is ready and eligible for task activation and normalization
+    $scope.isReady = (mlsObj) ->
+      _.every ['queryTemplate', 'db', 'table', 'field'], (k) ->
+        return mlsObj.main_property_data? and k of mlsObj.main_property_data and mlsObj.main_property_data[k] != ""
 
     # modal for Create mlsData
     $scope.animationsEnabled = true

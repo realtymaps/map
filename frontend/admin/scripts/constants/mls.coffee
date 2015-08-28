@@ -10,12 +10,13 @@ mls =
       id: null
       name: null
       notes: ""
-      active: false
       username: null
       password: null
       url: null
     propertySchema:
       main_property_data: {"queryTemplate": _queryTemplate}
     otherConfig: {}
+    task:
+      active: false
 
 app.constant 'mlsConstants', mls
