@@ -128,7 +128,7 @@ module.exports = ($scope, $timeout, $sce, rmapsevents, $log, rmapsMainOptions) -
     # set some default values
     alert.reps = 0
     if !alert.type?
-      alert.type = "rm-danger"
+      alert.type = 'rm-danger'
     if !alert.ttlMillis?
       alert.ttlMillis = rmapsMainOptions.alert.ttlMillis
     if !alert.quietMillis?

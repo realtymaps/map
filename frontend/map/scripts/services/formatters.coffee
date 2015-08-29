@@ -41,12 +41,12 @@ app.service 'rmapsFormattersService', ($log) ->
     #   {years: 1, months: 0, days: 2} --> "about 1 year"
     humanizeDays: (sourceDays) ->
       if sourceDays <= 0
-        return "less than 1 day"
+        return 'less than 1 day'
 
-      duration = moment.duration(sourceDays, "days")
-      years = duration.get("years")
-      months = duration.get("months")
-      days = duration.get("days")
+      duration = moment.duration(sourceDays, 'days')
+      years = duration.get('years')
+      months = duration.get('months')
+      days = duration.get('days')
 
       if years > 0 and days >= 15
         months += 1

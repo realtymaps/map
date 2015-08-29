@@ -6,7 +6,7 @@ serializeXmlNode = (xmlNode) ->
     return (new window.XMLSerializer()).serializeToString(xmlNode)
   if xmlNode.xml?
     return xmlNode.xml
-  return ""
+  return ''
 
 # massage data for better usage in pie arcs
 # there's an opportunity to simplify(reduce) the returned dataset to facilitate
@@ -21,10 +21,10 @@ formatPieData = (data) ->
 
 formatPieDataBackend = (cluster) ->
   return [
-    {key: "pending", values: {"length": cluster.pending}}, # feign 'length' attribute of array
-    {key: "for sale", values: {"length": cluster.forsale}},
-    {key: "recently sold", values: {"length": cluster.recentlysold}},
-    {key: "not for sale", values: {"length": cluster.notforsale}}
+    {key: 'pending', values: {'length': cluster.pending}}, # feign 'length' attribute of array
+    {key: 'for sale', values: {'length': cluster.forsale}},
+    {key: 'recently sold', values: {'length': cluster.recentlysold}},
+    {key: 'not for sale', values: {'length': cluster.notforsale}}
   ]
 
 makeSvg = (data, total) ->

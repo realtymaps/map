@@ -4,4 +4,4 @@ dbs = require '../config/dbs'
 # and probably replace with some static config
 
 module.exports = dbs.users.Model.extend
-  tableName: "management_environmentsetting"
+  tableName: 'management_environmentsetting'

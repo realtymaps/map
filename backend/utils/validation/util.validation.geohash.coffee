@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 geohash64 = require 'geohash64'
 DataValidationError = require './util.error.dataValidation'
 logger = require '../../config/logger'
@@ -10,4 +10,4 @@ module.exports = (param, boundsStr) -> Promise.try () ->
   logger.debug String(hash)
   hash
 .catch (err) ->
-  Promise.reject new DataValidationError("error decoding geohash string", param, boundsStr)
+  Promise.reject new DataValidationError('error decoding geohash string', param, boundsStr)

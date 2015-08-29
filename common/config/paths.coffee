@@ -63,9 +63,9 @@ module.exports =
     webpack:
       map:
         # publicPath: 'http://0.0.0.0:4000/'#for dev only, https://github.com/webpack/style-loader/issues/55, https://github.com/webpack/css-loader/issues/29
-        filename: dest.scripts + "/main.wp.js"
-        chunkFilename: dest.scripts + "/main.wp.js"
+        filename: dest.scripts + '/main.wp.js'
+        chunkFilename: dest.scripts + '/main.wp.js'
       admin:
         # publicPath: 'http://0.0.0.0:4000/'#for dev only
-        filename: dest.scripts + "/admin.wp.js"
-        chunkFilename: dest.scripts + "/adminChunk.wp.js"
+        filename: dest.scripts + '/admin.wp.js'
+        chunkFilename: dest.scripts + '/adminChunk.wp.js'

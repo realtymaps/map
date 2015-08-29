@@ -12,18 +12,18 @@ module.exports = app.controller 'LogoutCtrl'.ns(), () ->
 # Spinner go away more quickly
 
 app.run ($rootScope, $location, $http, $timeout, $window, rmapsprincipal, rmapsMainOptions, rmapsSpinner) ->
-  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     # if we're not entering the logout state, or if we're already on the logout page, don't do anything
     if toState.url != adminRoutes.logout || fromState.url == adminRoutes.logout
       return
     minTimestamp = (+new Date)+rmapsMainOptions.logoutDelayMillis
     delayedUrl = (url) ->
       $timeout () ->
-        rmapsSpinner.decrementLoadingCount("logout")
+        rmapsSpinner.decrementLoadingCount('logout')
         $location.replace()
         $window.location.href = url
       , minTimestamp-(+new Date)
-    rmapsSpinner.incrementLoadingCount("logout")
+    rmapsSpinner.incrementLoadingCount('logout')
     rmapsprincipal.getIdentity()
     .then () ->
       if not rmapsprincipal.isAuthenticated()

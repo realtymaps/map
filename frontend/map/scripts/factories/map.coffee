@@ -7,7 +7,7 @@ _encode = require('geohash64').encode
 
 _eventReg = require '../utils/util.events.coffee'
 _emptyGeoJsonData =
-  type: "FeatureCollection"
+  type: 'FeatureCollection'
   features: []
 
 _wrapGeomPointJson = (obj) ->

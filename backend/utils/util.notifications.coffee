@@ -12,12 +12,12 @@ if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
 else
   tClient = null
   # make sure we know there wasn't twilio login
-  logger.warn "Twilio login not found in environment."
+  logger.warn 'Twilio login not found in environment.'
 
-  
+
 
 getSmsOptions = (to, subject) ->
-  to = "+1"+to if "+" not in to
+  to = '+1'+to if '+' not in to
   smsOptions =
     from: config.TWILIO.NUMBER
     to: to
@@ -56,10 +56,10 @@ notification = (type) ->
       # if notification lists grow large, we may need to refine this loop
       for datum in data
         do (datum) ->
-          if datum.email and datum.method == "email"
+          if datum.email and datum.method == 'email'
             emailList.push datum.email
 
-          # sms currently required to send one by one; If we implement 
+          # sms currently required to send one by one; If we implement
           # an async or bulk method, we can handle it similar to email
           if tClient? and datum.cell_phone and datum.method == 'sms'
             smsOptions = getSmsOptions(datum.cell_phone, options.subject)
@@ -76,9 +76,9 @@ notification = (type) ->
 
       # options.error flags whether to include the options data
       if options.error
-        msgContent.push "Details:"
-        msgContent.push ("  #{k}: #{v}" for k, v of options).join "\n"
-      message = msgContent.join "\n\n"
+        msgContent.push 'Details:'
+        msgContent.push ("  #{k}: #{v}" for k, v of options).join '\n'
+      message = msgContent.join '\n\n'
 
       # send email
       if emailList.length > 0

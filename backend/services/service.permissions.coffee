@@ -1,12 +1,12 @@
-_ = require "lodash"
-memoize = require("../extensions/memoizee").memoizeSlowExp
-Promise = require "bluebird"
+_ = require 'lodash'
+memoize = require('../extensions/memoizee').memoizeSlowExp
+Promise = require 'bluebird'
 
-config = require "../config/config"
+config = require '../config/config'
 logger = require '../config/logger'
-User = require "../models/model.user"
-Permission = require "../models/model.permission"
-Group = require "../models/model.group"
+User = require '../models/model.user'
+Permission = require '../models/model.permission'
+Group = require '../models/model.group'
 
 
 hashifyPermissions = (hash, permission) ->
@@ -23,7 +23,7 @@ getPermissionsForGroupId = (id) ->
   Group.forge(id: id).fetch(withRelated: ['permissions'], require: true)
   .then (group) ->
     # we want to reformat this data as a hash of codenames to truthy values
-    permissionsHash = _.reduce(group.related("permissions").toJSON(), hashifyPermissions, {})
+    permissionsHash = _.reduce(group.related('permissions').toJSON(), hashifyPermissions, {})
     logger.info("permissions loaded for groupid #{id}")
     #logger.debug(JSON.stringify(permissionsHash, null, 2))
     return permissionsHash

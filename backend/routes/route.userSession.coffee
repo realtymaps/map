@@ -69,7 +69,7 @@ login = (req, res, next) -> Promise.try () ->
   .then (user) ->
     if not user
       return next new ExpressResponse(alert: {
-        msg: "Email and/or password does not match our records."
+        msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
       }, httpStatus.UNAUTHORIZED)
     else
@@ -114,7 +114,7 @@ updateCache = (req, res, next) ->
 
 currentProfile = (req, res, next) -> Promise.try () ->
   unless req.body.currentProfileId
-    next new ExpressResponse(alert: { msg: "currentProfileId undefined"}, httpStatus.BAD_REQUEST)
+    next new ExpressResponse(alert: { msg: 'currentProfileId undefined'}, httpStatus.BAD_REQUEST)
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
@@ -144,27 +144,27 @@ profiles = (req, res, next) ->
   .catch (err) ->
     logger.error err
 
-getImage = (req, res, next, entity, typeStr = "user") -> Promise.try ->
+getImage = (req, res, next, entity, typeStr = 'user') -> Promise.try ->
   userSessionService.getImage(entity)
   .then (result) ->
     unless result?.blob?
       return next new ExpressResponse({} , httpStatus.NOT_FOUND)
 
     parsed = parseBase64(result.blob)
-    res.setHeader("Content-Type", parsed.type)
+    res.setHeader('Content-Type', parsed.type)
     buf = new Buffer(parsed.data, 'base64')
     dim = sizeOf buf
     if dim.width > dimensionLimits.width || dim.height > dimensionLimits.height
       logger.error "Dimensions of #{JSON.stringify dim} are outside of limits for entity.id: #{entity.id}; type: #{typeStr}"
     res.send(buf)
 
-updateImage = (req, res, next, entity, typeStr = "user", upsertImageFn = userSessionService.upsertImage) -> Promise.try ->
+updateImage = (req, res, next, entity, typeStr = 'user', upsertImageFn = userSessionService.upsertImage) -> Promise.try ->
   # logger.debug req.body.blob
-  if !req.body?.blob.contains "image/" or !req.body?.blob.contains "base64"
-    return next new ExpressResponse({alert: "image has incorrect formatting."} , httpStatus.BAD_REQUEST)
+  if !req.body?.blob.contains 'image/' or !req.body?.blob.contains 'base64'
+    return next new ExpressResponse({alert: 'image has incorrect formatting.'} , httpStatus.BAD_REQUEST)
 
   if !req.body?
-    return next new ExpressResponse({alert: "undefined image blob"} , httpStatus.BAD_REQUEST)
+    return next new ExpressResponse({alert: 'undefined image blob'} , httpStatus.BAD_REQUEST)
 
   parsed = parseBase64(req.body.blob)
   buf = new Buffer(parsed.data, 'base64')
@@ -191,10 +191,10 @@ companyImage = (req, res, next) ->
 
       validation.validateAndTransform(req.params, transforms)
       .then (validParams) ->
-        getImage(req, res, next, {account_image_id: validParams.account_image_id}, "company")
+        getImage(req, res, next, {account_image_id: validParams.account_image_id}, 'company')
 
     PUT: () ->
-      updateImage(req, res, next, _.omit(req.body, "blob"), "company", userSessionService.upsertCompanyImage)
+      updateImage(req, res, next, _.omit(req.body, 'blob'), 'company', userSessionService.upsertCompanyImage)
 
 
 #main entry point to update root user info
@@ -228,7 +228,7 @@ root = (req, res, next) ->
         email:
           transform: [
             validators.string(regex: config.VALIDATION.email)
-            validators.unique tableFn: userData.user, id: req.user.id, name: "email", clauseGenFn: (value) ->
+            validators.unique tableFn: userData.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
               email: value
           ]
           required: true
@@ -284,7 +284,7 @@ emailIsUnique = (req, res, next) ->
     email:
       transform: [
           validators.string(regex: config.VALIDATION.email)
-          validators.unique tableFn: userData.user, id: req.user.id, name: "email", clauseGenFn: (value) ->
+          validators.unique tableFn: userData.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
             email: value
       ]
       required: true

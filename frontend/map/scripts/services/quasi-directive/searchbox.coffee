@@ -49,5 +49,5 @@ app.service 'rmapssearchbox', (leafletData) ->
       map.addControl new L.Control.Search searchParams
 
     , (err) ->
-      console.log "Error loading search bar:"
+      console.log 'Error loading search bar:'
       console.log err

@@ -85,9 +85,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       if map_position?
         if map_position.center? and
         map_position.center.latitude? and
-        map_position.center.latitude != "NaN" and
+        map_position.center.latitude != 'NaN' and
         map_position.center.longitude? and
-        map_position.center.longitude != "NaN"
+        map_position.center.longitude != 'NaN'
           rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
         if map_position.zoom?
           rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
@@ -95,15 +95,15 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       map = new rmapsMap($scope, rmapsMainOptions.map)
 
       if profile.map_results?.selectedResultId? and map?
-        $log.debug "attempting to reinstate selectedResult"
+        $log.debug 'attempting to reinstate selectedResult'
         rmapsProperties.getPropertyDetail(null,
-          profile.map_results.selectedResultId,"all")
+          profile.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
-  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     # if we're not entering the map state, or if we're already on the map state, don't do anything
     if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
       return

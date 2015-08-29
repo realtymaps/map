@@ -3,7 +3,7 @@ paths = require '../../common/config/paths'
 $ = require('gulp-load-plugins')()
 
 gulp.task 'gzip', ->
-  gulp.src(paths.dest.root + "**/*")
+  gulp.src(paths.dest.root + '**/*')
   .pipe $.gzip
     gzipOptions: level: 9
     threshold: 1024

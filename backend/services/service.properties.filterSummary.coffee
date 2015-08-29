@@ -4,7 +4,7 @@ sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
 Point = require('../../common/utils/util.geometries').Point
 sqlCluster = require '../utils/util.sql.manual.cluster'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
 db = require('../config/dbs').properties
@@ -60,8 +60,8 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
     # data formatting
     query.then (data) ->
       geojson =
-        "type": "FeatureCollection"
-        "features": propMerge.updateSavedProperties(state, data).map (d) ->
+        'type': 'FeatureCollection'
+        'features': propMerge.updateSavedProperties(state, data).map (d) ->
           d.type = 'Feature'
           d.properties = {}
           d

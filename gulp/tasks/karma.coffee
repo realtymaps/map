@@ -1,13 +1,13 @@
 gulp = require 'gulp'
 Karma = require('karma').Server
-open  = require "gulp-open"
+open  = require 'gulp-open'
 concat = require 'gulp-concat'
-{log} = require('gulp-util')
+{log} = require 'gulp-util'
 
 karmaConf = require.resolve('../../karma/karma.conf.coffee')
 
 karmaRunner = (done) ->
-  log "-- Karma Setup --"
+  log '-- Karma Setup --'
   try
     server = new Karma
       configFile: karmaConf

@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 doValidationSteps = require './util.impl.doValidationSteps'
 

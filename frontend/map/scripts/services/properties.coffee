@@ -27,7 +27,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
   # this convention for a combined service call helps elsewhere because we know how to get the path used
   # by this call, which means we can do things with alerts related to it
-  _getPropertyData = (pathId, hash, mapState, returnType, filters="", cache = true) ->
+  _getPropertyData = (pathId, hash, mapState, returnType, filters='', cache = true) ->
     return null if !hash?
 
     if returnType? and !_.isString(returnType)
@@ -37,7 +37,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
     route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
     $http.get(route, cache: cache)
 
-  _getFilterSummary = (hash, mapState, returnType, filters="", cache = true, throttler = _filterThrottler) ->
+  _getFilterSummary = (hash, mapState, returnType, filters='', cache = true, throttler = _filterThrottler) ->
     throttler.invokePromise(
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
@@ -46,16 +46,16 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
     # will receive results from backend, which will be organzed either as
     #   standard results or cluster results, determined in backend by #of results returned
-    getFilterResults: (hash, mapState, filters="", cache = true) ->
-      _getFilterSummary(hash, mapState, "clusterOrDefault", filters, cache)
+    getFilterResults: (hash, mapState, filters='', cache = true) ->
+      _getFilterSummary(hash, mapState, 'clusterOrDefault', filters, cache)
 
-    getFilterSummary: (hash, mapState, filters="", cache = true) ->
+    getFilterSummary: (hash, mapState, filters='', cache = true) ->
       _getFilterSummary(hash, mapState, undefined, filters, cache)
 
-    getFilterSummaryAsCluster: (hash, mapState, filters="", cache = true) ->
+    getFilterSummaryAsCluster: (hash, mapState, filters='', cache = true) ->
       _getFilterSummary(hash, mapState, 'cluster', filters, cache, _filterThrottlerCluster)
 
-    getFilterSummaryAsGeoJsonPolys: (hash, mapState, filters="", cache = true) ->
+    getFilterSummaryAsGeoJsonPolys: (hash, mapState, filters='', cache = true) ->
       _getFilterSummary(hash, mapState, 'geojsonPolys', filters, cache, _filterThrottlerGeoJson)
 
     getParcelBase: (hash, mapState, cache = true) ->
@@ -89,7 +89,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       model.savedDetails = prop
 
       if !model.rm_status
-        service.getPropertyDetail("", rm_property_id, "filter")
+        service.getPropertyDetail('', rm_property_id, 'filter')
         .then (data) ->
           _.extend model, data
 

@@ -71,7 +71,7 @@ module.exports = ($rootScope, $q, $http, rmapsevents) ->
     return _authenticated && _identity.environment == 'development'
   isStaff: () ->
     if !_isStaff? && _identity?
-      _isStaff = permissionsUtil.checkAllowed("access_staff",_identity.permissions)
+      _isStaff = permissionsUtil.checkAllowed('access_staff',_identity.permissions)
     return _authenticated && _isStaff
   setIdentity: setIdentity
   unsetIdentity: unsetIdentity

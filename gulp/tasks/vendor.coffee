@@ -48,7 +48,7 @@ gulp.task 'vendor_assets', ->
 gulp.task 'vendor_scripts', ->
   gulp.src(vendorPipe)
   .pipe plumber()
-  .pipe(concat("vendor.js"))
+  .pipe(concat('vendor.js'))
   .pipe(gulp.dest paths.destFull.scripts)
 
 

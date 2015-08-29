@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 doValidationSteps = require './util.impl.doValidationSteps'
 logger = require '../../config/logger'
@@ -11,7 +11,7 @@ module.exports = (options = {}) ->
     if options.pluck
       return values[options.pluck]
     if !_.isPlainObject values
-      return Promise.reject new DataValidationError("plain object expected", param, values)
+      return Promise.reject new DataValidationError('plain object expected', param, values)
     if options.subValidateSeparate
       # subValidateSeparate can be an object of validations/transformations suitable for use in validateAndTransform()
       # (including arrays of iteratively applied functions).  Each validation/transformation in the object is applied to

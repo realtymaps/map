@@ -24,7 +24,7 @@ module.exports = (app) ->
     app[route.method](route.path, route.middleware..., wrappedHandle)
 
   logger.info '\n'
-  logger.info "available routes: "
+  logger.info 'available routes: '
   paths = {}
   app._router.stack.filter((r) ->
     r?.route?

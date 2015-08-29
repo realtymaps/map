@@ -17,13 +17,13 @@ properties.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, properties)
 
 
 shutdown = () ->
-  logger.info "database shutdowns initiated..."
+  logger.info 'database shutdowns initiated...'
 
   pgDbShutdown = new Promise (resolve, reject) ->
-    pg.on "end", () ->
+    pg.on 'end', () ->
       logger.info "... 'pg' database shutdown complete ..."
       process.nextTick resolve
-    pg.on "error", (error) ->
+    pg.on 'error', (error) ->
       logger.error "!!! 'pg' database shutdown error: #{error}"
       process.nextTick reject.bind(null, error)
     pg.end()
@@ -43,9 +43,9 @@ shutdown = () ->
     Promise.reject(error)
 
   return Promise.join pgDbShutdown, userDbShutdown, propertyDbShutdown, (pgDbShutdown, userDbShutdown, propertyDbShutdown) ->
-    logger.info "all databases successfully shut down."
+    logger.info 'all databases successfully shut down.'
   .catch (error) ->
-    logger.error "all databases shut down, some with errors."
+    logger.error 'all databases shut down, some with errors.'
     Promise.reject(error)
 
 
@@ -54,4 +54,3 @@ module.exports =
   properties: properties
   pg: pg
   shutdown: shutdown
-
