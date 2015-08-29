@@ -42,11 +42,11 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
   _handleHover = (model, lObject, type, layerName, eventName) ->
     return if !layerName or !type or !lObject
-    if type == "marker" and layerName != 'addresses'
+    if type == 'marker' and layerName != 'addresses'
       mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
       lObject.setIcon(new L.divIcon(model.icon))
-    if type == "geojson"
-      if eventName == "mouseout"
+    if type == 'geojson'
+      if eventName == 'mouseout'
         s = 's'
       opts = mapCtrl.layerFormatter.Parcels.getStyle(model, layerName)
       lObject.setStyle(opts)
@@ -63,7 +63,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
     $scope.formatters.results.mouseleave(null, model)
 
   _handleManualMarkerCluster = (model) ->
-    if model.markerType == "cluster"
+    if model.markerType == 'cluster'
       copy = _.cloneDeep $scope[mapPath].center
       copy.lat= model.lat
       copy.lng = model.lng
@@ -114,7 +114,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       _lastEvents.mouseover = model
       _lastEvents.mouseout = null
 
-      # $log.debug "mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
+      # $log.debug mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}
 
       #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
       mapCtrl.openWindow(model) if !maybeCaller
@@ -125,9 +125,9 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       if _lastHovered? and _lastHovered?.model?.rm_property_id != model.rm_property_id
         _lastHovered.model.isMousedOver = false
         _handleMouseout(_lastHovered.model, maybeCaller)
-        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName, "mouseover-out")
+        _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName, 'mouseover-out')
 
-      _handleHover(model, lObject, type, layerName, "mouseover")
+      _handleHover(model, lObject, type, layerName, 'mouseover')
 
       _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
 
@@ -143,10 +143,9 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
       _lastEvents.mouseout = model
       _lastEvents.mouseover = null
-      # $log.debug "mouseout: type: #{type}, layerName: #{layerName}, modelName: #{modelName}"
 
       _handleMouseout(model, maybeCaller)
-      _handleHover(model, lObject, type, layerName, "mouseout")
+      _handleHover(model, lObject, type, layerName, 'mouseout')
 
     click: (event, lObject, model, modelName, layerName, type) ->
       $scope.$evalAsync ->

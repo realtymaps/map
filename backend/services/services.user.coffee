@@ -24,18 +24,18 @@ for key, val of toInit
 
 permissionCols = [
   "#{userData.auth_user_user_permissions.tableName}.id as id"
-  "user_id"
-  "permission_id"
-  "content_type_id"
-  "name"
-  "codename"
+  'user_id'
+  'permission_id'
+  'content_type_id'
+  'name'
+  'codename'
 ]
 
 groupsCols = [
   "#{userData.auth_user_groups.tableName}.id as id"
-  "user_id"
-  "group_id"
-  "name"
+  'user_id'
+  'group_id'
+  'name'
 ]
 
 profileCols = [
@@ -51,11 +51,11 @@ class UserCrud extends ThenableCrud
     super(arguments...)
 
   permissions: thenableHasManyCrud(userData.auth_permission, permissionCols,
-    module.exports.auth_user_user_permissions, "permission_id", undefined, "auth_user_user_permissions.id")
+    module.exports.auth_user_user_permissions, 'permission_id', undefined, 'auth_user_user_permissions.id')
     .init(false)
 
   groups: thenableHasManyCrud(userData.auth_group, groupsCols,
-    module.exports.auth_user_groups, "group_id", undefined, "auth_user_groups.id").init(false)
+    module.exports.auth_user_groups, 'group_id', undefined, 'auth_user_groups.id').init(false)
 
   profiles: thenableHasManyCrud(userData.project, profileCols,
     module.exports.auth_user_profile, undefined, undefined, 'auth_user_profile.id').init(false)

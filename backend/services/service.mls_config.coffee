@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 dbs = require '../config/dbs'
 config = require '../config/config'
@@ -16,7 +16,7 @@ class MlsConfigCrud extends crudService.ThenableCrud
   getAll: (query = {}, doLogQuery = false) ->
     # schemaReady enacts a filter to return only mls configs with completed main_property_data
     if query?.schemaReady?
-      if query.schemaReady == "true"
+      if query.schemaReady == 'true'
 
         # extend our dbFn to account for specialized "where" query on the base dbFn
         transaction = @dbFn()

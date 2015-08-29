@@ -53,9 +53,9 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
             return @cropBlob
           if user.account_image_id?
             return @blob || backendRoutes.userSession.image
-          "/assets/avatar.svg"
+          '/assets/avatar.svg'
         save: ->
-          return spawnAlert "No Image to Save." unless @blob?
+          return spawnAlert 'No Image to Save.' unless @blob?
 
           if _.keys(@errors).length
             _.each @errors, (e) ->
@@ -76,25 +76,25 @@ app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
           if @cropBlob.length
             return @cropBlob
           if $scope.company.account_image_id?
-            return @blob || backendRoutes.userSession.companyImage.replace(":account_image_id", $scope.company.account_image_id)
+            return @blob || backendRoutes.userSession.companyImage.replace(':account_image_id', $scope.company.account_image_id)
           frontendRoutes.avatar
         save: ->
-          return spawnAlert "No Image to Save." unless @blob?
+          return spawnAlert 'No Image to Save.' unless @blob?
 
           if _.keys(@errors).length
             _.each @errors, (e) ->
               spawnAlert e
             return
 
-          $http.put backendRoutes.userSession.companyImage.replace(":account_image_id",""), _.extend(blob: @cropBlob, $scope.company)
+          $http.put backendRoutes.userSession.companyImage.replace(':account_image_id',''), _.extend(blob: @cropBlob, $scope.company)
           .success =>
             delete @cropBlob
             delete @blob
       pass:
-        username: "" + user.username
+        username: '' + user.username
         change: ->
           if @password != @confirmPassword
-            @errorMsg = "passwords do not match!"
+            @errorMsg = 'passwords do not match!'
           else
             delete @errorMsg
         submit: ->

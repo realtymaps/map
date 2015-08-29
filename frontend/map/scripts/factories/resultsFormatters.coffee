@@ -120,8 +120,8 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
     Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
     ###
     getAdditionalClasses: (result) ->
-      classes = ""
-      classes += "result-property-hovered" if result?.isMousedOver
+      classes = ''
+      classes += 'result-property-hovered' if result?.isMousedOver
       classes
 
     setOrReverseResultsPredicate: (predicate) =>
@@ -135,9 +135,9 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       result?.savedDetails?.isSaved == true
 
     getCurrentOwnersTitle: (result) =>
-      title = "Current Owner"
+      title = 'result-property-hovered'
       if @hasMultipleOwners(result)
-        title += "s"
+        title += 's'
       title
     hasMultipleOwners: (result) ->
       if result.owner_name2? and result.owner_name?
@@ -193,12 +193,12 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
 
     getCityStateZip: (model, owner=false) ->
       if !model?
-        return ""
-      prefix = if owner then "owner_" else ""
+        return ''
+      prefix = if owner then 'owner_' else ''
       csz = "#{model[prefix+"city"]}"
-      if model[prefix+"state"]
+      if model[prefix+'state']
         csz += ", #{model[prefix+"state"]}"
-      if model[prefix+"zip"]
+      if model[prefix+'zip']
         csz += " #{model[prefix+"zip"]}"
       return csz
 
@@ -215,12 +215,12 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       prefix += '_'
       differentFromPrefix += '_'
       # differing prices or >= 30 days difference in sale date
-      if (model[prefix+"date"] && !model[differentFromPrefix+"date"]) || model[prefix+"price"] != model[differentFromPrefix+"price"]
+      if (model[prefix+'date'] && !model[differentFromPrefix+'date']) || model[prefix+'price'] != model[differentFromPrefix+'price']
         return true
-      if !model[prefix+"date"]
+      if !model[prefix+'date']
         return false
-      millis1 = new Date(model[differentFromPrefix+"date"].toLocaleString()).getTime()
-      millis2 = new Date(model[prefix+"date"].toLocaleString()).getTime()
+      millis1 = new Date(model[differentFromPrefix+'date'].toLocaleString()).getTime()
+      millis2 = new Date(model[prefix+'date'].toLocaleString()).getTime()
       return Math.abs(millis1-millis2) > 30*86400000
 
     loadMore: =>
@@ -272,7 +272,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
           rmapsProperties.getPropertyDetail(@mapCtrl.refreshState(
             map_results:
               selectedResultId: result.rm_property_id)
-          , result.rm_property_id, if result.rm_status then "detail" else "all")
+          , result.rm_property_id, if result.rm_status then 'detail' else 'all')
           .then (data) =>
             return unless data
             $timeout () =>

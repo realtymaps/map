@@ -44,7 +44,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
 
   getDataDumpUrl = (configId, limit) ->
     # bypass XHR / $http file-dl drama, and Restangular req/res complication.
-    backendRoutes.mls.getDataDump.replace(":mlsId", configId) + "?limit=#{limit}"
+    backendRoutes.mls.getDataDump.replace(':mlsId', configId) + "?limit=#{limit}"
 
   service =
     getConfigs: getConfigs,

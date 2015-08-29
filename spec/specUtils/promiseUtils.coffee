@@ -56,7 +56,7 @@ module.exports =
     promise = Promise.try () ->
       promise
     .then (value) ->
-      Promise.reject(new PromiseExpectationError("expected promise to be rejected"+(if type? then " with #{analyzeValue(type).details}" else "")+", but was resolved", value))
+      Promise.reject(new PromiseExpectationError("expected promise to be rejected"+(if type? then " with #{analyzeValue(type).details}" else '')+", but was resolved", value))
     if !type?
       promise.catch (err) ->
         if err instanceof PromiseExpectationError

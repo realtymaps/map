@@ -1,7 +1,7 @@
 app = require '../app.coffee'
-fonts = require "../../../../common/documentTemplates/signature-fonts/index.coffee"
+fonts = require '../../../../common/documentTemplates/signature-fonts/index.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-pdfUtils = require "../../../../common/utils/util.pdf.coffee"
+pdfUtils = require '../../../../common/utils/util.pdf.coffee'
 
 
 setWatch = null
@@ -23,11 +23,11 @@ module.exports = app.controller 'rmapsSnailCtrl',
     $scope.placeholderValues =
       from:
         name: "Realtor's Name"
-        address_line1: "Real Estate Brokerage"
+        address_line1: 'Real Estate Brokerage'
         address_line2: "Realtor's Street Address"
         address_city: "Realtor's City"
-        address_state: "ST"
-        address_zip: "Zipcode"
+        address_state: 'ST'
+        address_zip: 'Zipcode'
         phone: "Realtor's Phone Number"
         email: "Realtor's Email Address"
       style: {}
@@ -36,14 +36,14 @@ module.exports = app.controller 'rmapsSnailCtrl',
       # instead of a blank form, use some fake default values for now
       #from: {}
       from:
-        name: "Dan Sexton"
-        address_line1: "Paradise Realty of Naples"
-        address_line2: "201 Goodlette Rd S"
-        address_city: "Naples"
-        address_state: "FL"
-        address_zip: "34102"
-        phone: "(239) 877-7853"
-        email: "dan@mangrovebaynaples.com"
+        name: 'Dan Sexton'
+        address_line1: 'Paradise Realty of Naples'
+        address_line2: '201 Goodlette Rd S'
+        address_city: 'Naples'
+        address_state: 'FL'
+        address_zip: '34102'
+        phone: '(239) 877-7853'
+        email: 'dan@mangrovebaynaples.com'
       style:
         signature: 'print font 3'
         # preselect a template as well for now
@@ -66,15 +66,15 @@ module.exports = app.controller 'rmapsSnailCtrl',
         $scope["height#{index}"] = 0
         $scope["heightRatio#{index}"] = '0'
 
-    _setContextValues(0, "about:blank")
-    _setContextValues(1, "about:blank")
+    _setContextValues(0, 'about:blank')
+    _setContextValues(1, 'about:blank')
 
     $scope.renderError = (reason) ->
-      rmapsSpinner.decrementLoadingCount("pdf rendering")
+      rmapsSpinner.decrementLoadingCount('pdf rendering')
 
     $scope.finishRender = () ->
       $scope.iframeIndex = ($scope.iframeIndex+1)%2
-      rmapsSpinner.decrementLoadingCount("pdf rendering")
+      rmapsSpinner.decrementLoadingCount('pdf rendering')
 
     doRender = () ->
       renderPromise = null
@@ -104,7 +104,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
         renderPromise = null
       else
         # create a new one
-        rmapsSpinner.incrementLoadingCount("pdf rendering")
+        rmapsSpinner.incrementLoadingCount('pdf rendering')
       renderPromise = $timeout(doRender, rmapsMainOptions.pdfRenderDelay)
 
     setWatch = () ->
@@ -119,7 +119,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
       $scope.modalControl = {}
       $modal.open
         templateUrl: 'modal-snailPrice.tpl.html'
-        controller: 'ModalSnailPriceCtrl'.ns()
+        controller: 'rmapsModalSnailPriceCtrl'
         scope: $scope
         keyboard: false
         backdrop: 'static'
@@ -130,19 +130,19 @@ module.exports = app.controller 'rmapsSnailCtrl',
       $location.url frontendRoutes.map
 app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
   initiateSend = (property) ->
-    _setContextValues?(0, "about:blank")
-    _setContextValues?(1, "about:blank")
+    _setContextValues?(0, 'about:blank')
+    _setContextValues?(1, 'about:blank')
     data.property = property
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
     $location.url frontendRoutes.snail
   $rootScope.$on rmapsevents.snail.initiateSend, (event, property) -> initiateSend(property)
 
-  $rootScope.$on "$stateChangeStart", (event, toState, toParams, fromState, fromParams) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     # if we're leaving the snail state, cancel the watch for performance
     if toState?.url != frontendRoutes.snail
       clearWatch?()
       if renderPromise
         $timeout.cancel(renderPromise)
         renderPromise = null
-        rmapsSpinner.decrementLoadingCount("pdf rendering")
+        rmapsSpinner.decrementLoadingCount('pdf rendering')

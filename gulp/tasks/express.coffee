@@ -7,7 +7,7 @@ do require '../../common/config/dbChecker.coffee'
 coffeelint = require 'gulp-coffeelint'
 
 options =
-  script: "backend/server.coffee"
+  script: 'backend/server.coffee'
   ext: 'js coffee cson'
   watch: [
     'backend'
@@ -20,22 +20,24 @@ options =
   tasks: ['lint']
 
 run_express = (done, nodeArgs) ->
-  log "ENV Port in gulp: " + config.PORT
+  log 'ENV Port in gulp: ' + config.PORT
   options.nodeArgs = nodeArgs if nodeArgs
   nodemon options
   done()
 
 gulp.task 'lint', () ->
   gulp.src [
+    'gulp/**/*.coffee'
     'backend/**/*.coffee'
     'common/**/*.coffee'
+    # 'spec/**/*.coffee'
     '!common/documentTemplates/**'
   ]
   .pipe coffeelint()
   .pipe coffeelint.reporter()
 
-gulp.task "express", gulp.series 'lint', (done) ->
+gulp.task 'express', gulp.series 'lint', (done) ->
   run_express(done)
 
-gulp.task "express_debug", gulp.series 'lint', (done) ->
+gulp.task 'express_debug', gulp.series 'lint', (done) ->
   run_express done, ['--debug=9999']

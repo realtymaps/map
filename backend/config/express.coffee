@@ -106,7 +106,7 @@ swagger.initializeMiddleware swaggerObject, (middleware) ->
     app.use middleware.swaggerUi()
 
   # bootstrap routes
-  require("../routes")(app)
+  require('../routes')(app)
 
 app.use (data, req, res, next) ->
   if data instanceof ExpressResponse
@@ -122,7 +122,7 @@ app.use (data, req, res, next) ->
 
   # otherwise, it's probably a thrown Error
   analysis = analyzeValue(data)
-  logger.error "uncaught error found by express:"
+  logger.error 'uncaught error found by express:'
   logger.error (JSON.stringify(analysis,null,2))
   res.status(status.INTERNAL_SERVER_ERROR).json alert:
     msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
@@ -132,7 +132,7 @@ app.use (data, req, res, next) ->
 if config.USE_ERROR_HANDLER
   app.use errorHandler { dumpExceptions: true, showStack: true }
 
-app.set("trust proxy", config.TRUST_PROXY)
+app.set('trust proxy', config.TRUST_PROXY)
 
 _.extend app.locals,
   newrelic: newrelic

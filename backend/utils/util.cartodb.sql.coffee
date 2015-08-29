@@ -1,6 +1,6 @@
 _destTable = 'parcels'
 
-_plusSign="%2B"
+_plusSign='%2B'
 
 _sql =
     update: """UPDATE #{_destTable}
@@ -31,7 +31,7 @@ _sql =
         );
         """
 
-    drop:"DROP TABLE $frmTable;"
+    drop:'DROP TABLE $frmTable;'
 
 _format = (sql, fipsCode) ->
   sql

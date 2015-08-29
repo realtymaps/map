@@ -4,7 +4,7 @@ log = require('gulp-util').log
 globDebug = require('../../debug/glob')
 
 bowerFilesLoader = require('main-bower-files')
-bowerPath = "bower_components/"
+bowerPath = 'bower_components/'
 
 bower = bowerFilesLoader
   filter: /[.]css$/

@@ -31,7 +31,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
     _parcels = do ->
 
-      _strokeColor = "#1269D8"
+      _strokeColor = '#1269D8'
       _strokeWeight = 1.5
 
       _parcelBaseStyle =
@@ -59,7 +59,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
       labelFromStreetNum = (model) ->
         _.extend model,
-          markerType: "streetNum"
+          markerType: 'streetNum'
           icon:
             type: 'div'
             iconSize: [10, 10]
@@ -100,7 +100,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       setMarkerPriceOptions: (model) ->
         return {} unless model
         if not model.price
-          formattedPrice = " &nbsp; &nbsp; &nbsp;"
+          formattedPrice = ' &nbsp; &nbsp; &nbsp;'
         else if model.price >= 1000000
           formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
         else
@@ -119,7 +119,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
           status = model.rm_status
 
         _.extend model,
-          markerType: "price"
+          markerType: 'price'
           icon:
             type: 'div'
             iconSize: [60, 30]
@@ -129,7 +129,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
         return {} unless model
         #important for the clusterer css a div must have child span
         _.extend model,
-          markerType: "cluster"
+          markerType: 'cluster'
           icon:
             type: 'div'
             html: pieUtil.pieCreateFunctionBackend(model)

@@ -13,13 +13,13 @@ permissionsService = require '../services/service.permissions'
 cacheUserValues = (req) ->
   promises = []
   if not req.session.permissions
-    logger.debug "req.session.permissions"
+    logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
       req.session.permissions = permissionsHash
     promises.push permissionsPromise
   if not req.session.groups
-    logger.debug "req.session.groups"
+    logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
       req.session.groups = groupsHash
@@ -28,7 +28,7 @@ cacheUserValues = (req) ->
     logger.debug "req.session.profiles: #{req.user.id}"
     profilesPromise = userSessionService.getProfiles(req.user.id)
     .then (profiles) ->
-      logger.debug "userSessionService.getProfiles.then"
+      logger.debug 'userSessionService.getProfiles.then'
       req.session.profiles = profiles
       # logger.debug profiles
     promises.push profilesPromise

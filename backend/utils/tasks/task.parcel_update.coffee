@@ -40,9 +40,9 @@ _subtasks =
       jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_mv_parcels', subtask.data, true
 
   sync_mv_parcels: (subtask) -> Promise.try ->
-    db.knex.raw("SELECT stage_dirty_views();")
+    db.knex.raw('SELECT stage_dirty_views();')
     .then ->
-      db.knex.raw("SELECT push_staged_views(FALSE);")
+      db.knex.raw('SELECT push_staged_views(FALSE);')
     .then ->
       jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_cartodb', subtask.data, true
 

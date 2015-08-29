@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 knex = dbs.users.knex

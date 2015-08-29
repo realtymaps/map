@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 DataValidationError = require './validation/util.error.dataValidation'
 loaders = require './util.loaders'
@@ -27,7 +27,7 @@ validateAndTransformSingleOutput = (params, output, definition) -> Promise.try (
   .then (transformed) ->
     # check for required value
     if required && !transformed?
-      return Promise.reject new DataValidationError("required", output, undefined)
+      return Promise.reject new DataValidationError('required', output, undefined)
     else
       return transformed
 

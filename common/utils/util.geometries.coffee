@@ -1,4 +1,4 @@
-_ = require "lodash"
+_ = require 'lodash'
 
 _point = (maybeObjOrLat, maybeLon) ->
   @longitude = @latitude = @lon = @lat = @lng = null
@@ -22,7 +22,7 @@ _point = (maybeObjOrLat, maybeLon) ->
     @setLat maybeObjOrLat?.lat or maybeObjOrLat?.latitude
     @setLon maybeObjOrLat?.lon or maybeObjOrLat?.lng or maybeObjOrLat?.longitude
     return @
-  throw Error("Arguments incorrect for Point")
+  throw Error('Arguments incorrect for Point')
 
 
 _ngLeafletCenter = (pointWZoom) ->

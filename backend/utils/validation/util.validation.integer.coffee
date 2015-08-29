@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
@@ -7,10 +7,10 @@ module.exports = (options = {}) ->
       return null
     type = typeof(value)
     if type != 'string' and type != 'number'
-      return Promise.reject new DataValidationError("invalid data type given for integer field", param, value)
+      return Promise.reject new DataValidationError('invalid data type given for integer field', param, value)
     numvalue = +value
     if isNaN(numvalue) || numvalue != Math.floor(numvalue)
-      return Promise.reject new DataValidationError("invalid data type given for integer field", param, value)
+      return Promise.reject new DataValidationError('invalid data type given for integer field', param, value)
     if options.min? and numvalue < options.min
       return Promise.reject new DataValidationError("value less than minimum: #{options.min}", param, value)
     if options.max? and numvalue > options.max

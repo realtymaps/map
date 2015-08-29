@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 config = require '../config/config'
 validation = require '../utils/util.validation'
@@ -14,16 +14,16 @@ statuses = filterStatuses.keys
 filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
-  price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
+  price: [validators.string(replace: [/[$,]/g, '']), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
   baths: validators.integer()
   acres: validators.float()
-  sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
+  sqft: [ validators.string(replace: [/,/g, '']), validators.integer() ]
 
 otherValidations =
   returnType: validators.string()
-  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
+  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: '')]
   hasOwner: validators.boolean(truthy: 'true', falsy: 'false')
   bounds:
     transform: [
@@ -51,7 +51,7 @@ minMaxes = _.transform(minMaxValidations, makeMinMaxes)
 transforms = _.extend {}, otherValidations, minMaxes
 
 _getDefaultQuery = ->
-  sqlHelpers.select(tables.propertyData.propertyDetails(), "filter", true, 'distinct on (rm_property_id)')
+  sqlHelpers.select(tables.propertyData.propertyDetails(), 'filter', true, 'distinct on (rm_property_id)')
 
 _getResultCount = (state, filters) ->
   # obtain a count(*)-style select query
@@ -73,10 +73,10 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
   sqlHelpers.between(query, 'acres', filters.acresMin, filters.acresMax)
 
   if filters.bedsMin
-    query.where("bedrooms", '>=', filters.bedsMin)
+    query.where('bedrooms', '>=', filters.bedsMin)
 
   if filters.bathsMin
-    query.where("baths_full", '>=', filters.bathsMin)
+    query.where('baths_full', '>=', filters.bathsMin)
 
   if filters.hasOwner?
     # only checking owner_name here and now owner_name2 because we do normalization in the property summary
@@ -90,18 +90,18 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
   if filters.ownerName
     # need to avoid any characters that have special meanings in regexes
     # then split on whitespace and commas to get chunks to search for
-    patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, " ").split(/[,\s]/), (result, chunk) ->
+    patterns = _.transform filters.ownerName.replace(/[\\|().[\]*+?{}^$]/g, ' ').split(/[,\s]/), (result, chunk) ->
       if !chunk
         return
       # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
       # since this is after the split, a space here will be an actual part of the search
-      result.push chunk.replace(/(['-])/g, "[$1 ]?")
+      result.push chunk.replace(/(['-])/g, '[$1 ]?')
     sqlHelpers.allPatternsInAnyColumn(query, patterns, ['owner_name', 'owner_name2'])
 
   if filters.listedDaysMin
-    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', ">=", filters.listedDaysMin)
+    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', '>=', filters.listedDaysMin)
   if filters.listedDaysMax
-    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', "<=", filters.listedDaysMax)
+    sqlHelpers.ageOrDaysFromStartToNow(query, 'listing_age_days', 'listing_start_date', '<=', filters.listedDaysMax)
 
   query
 

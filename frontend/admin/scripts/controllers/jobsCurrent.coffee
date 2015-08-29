@@ -164,8 +164,8 @@ app.controller 'rmapsJobsCurrentCtrl',
       summaryObj = initDataObj([showTimeframes, showStatus])
 
       # populate summaryObj with flat dataset
-      dimension1 = "timeframe"
-      dimension2 = "status"
+      dimension1 = 'timeframe'
+      dimension2 = 'status'
       for d in data when d[dimension1] in showTimeframes and d[dimension2] in showStatus
         summaryObj[d[dimension1]][d[dimension2]] = d.count
 
@@ -181,7 +181,7 @@ app.controller 'rmapsJobsCurrentCtrl',
         thisCount
 
       # obj to table conversion
-      initialDimension = "timeframe"
+      initialDimension = 'timeframe'
       summaryTable = []
       empty = emptyDatum(col.field for col in $scope.summaryGrid.columnDefs)
       for timeframe, statuses of summaryObj
