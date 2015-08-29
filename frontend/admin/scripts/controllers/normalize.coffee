@@ -239,8 +239,14 @@ app.controller 'rmapsNormalizeCtrl',
       .then (fields) ->
         parseFields(fields)
 
-  $scope.loadReadyMls = () ->
+  $scope.getMlsList = () ->
     rmapsMlsService.getConfigs({schemaReady: true})
+    .then (configs) ->
+      $scope.mlsConfigs = configs
+      configs
+
+  $scope.loadReadyMls = () ->
+    $scope.getMlsList()
     .then (configs) ->
       $scope.mlsConfigs = configs
       if $state.params.id

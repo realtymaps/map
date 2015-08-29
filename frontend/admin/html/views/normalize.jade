@@ -4,7 +4,7 @@
     .col-md-4 Select MLS
       select(ng-model="mlsData.current" ng-options="value.name + ' (' + value.id + ')' for value in mlsConfigs" ng-change="selectMls()")
         option(value="" disabled)
-      .btn.btn-primary.reload(ng-click="loadReadyMls()")
+      .btn.btn-primary.reload(ng-click="getMlsList()")
         img(src="../../assets/reload-arrow.png" width="10" height="10")
     .col-md-3
       .row
