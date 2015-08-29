@@ -1,13 +1,11 @@
 #map
+  .leaflet-top.leaflet-right
+    height 100%
 
   .old-controls
     display none
 
   .map-navigation
-
-    .properties-tools
-      &.btn-group
-        margin-right 0
 
     .projects-list
       >button
@@ -52,7 +50,11 @@
             -moz-border-bottom-right-radius 0
             -webkit-border-bottom-right-radius 0
             -o-border-bottom-right-radius 0
+
     .properties-tools
+      &.btn-group
+        margin-right 0
+
       &.opened
         button.btn
           border-bottom-left-radius  0
@@ -62,6 +64,7 @@
           border-bottom-right-radius 0
           -moz-border-bottom-right-radius 0
           -webkit-border-bottom-right-radius 0
+
           -o-border-bottom-right-radius 0
     ul.dropdown-menu
       width 100%
@@ -119,7 +122,10 @@
             transform scale(1)
 
     .properties-list
+      background-color $white
+      height 95%
       .inner
+        height 100%
         background-color $white
         background-image none
       >button
@@ -452,9 +458,11 @@
               transform rotate(180deg)
 
     .inner
-      max-height 600px
+      max-height 100%
       overflow auto
       padding-top 10px
+      padding-bottom 10px
+
       ul.list
         padding 0 10px
         list-style none
@@ -723,6 +731,14 @@
       a
         background-color $light_blue
         color $white
+
+.rmaps-properties-control
+  height 90%
+
+#results-list
+  background-color $white
+  min-height 200px
+  max-height 100%
 
 @-moz-document url-prefix()
   .pinned-projects-list
