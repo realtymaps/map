@@ -305,8 +305,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       # @lastResultMouseLeave = result or model
       _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results, originator)
 
-    clickSaveResultFromList: (result, eventOpts) =>
-      event = eventOpts.$event
+    clickSaveResultFromList: (result, event) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
       wasSaved = result?.savedDetails?.isSaved
       @mapCtrl.saveProperty(result).then =>
