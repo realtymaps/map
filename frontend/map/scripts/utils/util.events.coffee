@@ -161,14 +161,14 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
         , limits.clickDelayMilliSeconds
 
     dblclick: (event, lObject, model, modelName, layerName, type) ->
-      lastEvents.last = 'dblclick'
+      _lastEvents.last = 'dblclick'
       {originalEvent} = event
       if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
 
       mapCtrl.saveProperty model, lObject
       $timeout ->
         #cleanup
-        lastEvents.last = undefined
+        _lastEvents.last = undefined
       , limits.clickDelayMilliSeconds + 100
   #end prep w dependencies
 

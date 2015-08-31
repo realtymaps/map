@@ -1,11 +1,8 @@
 mixin resultButtons(resultName)
   div.btn-actions
-    //button.details
-    //  span.icon.icon-arrow
-    //  span See details
-    button.pinto(ng-click="formatters.results.clickSaveResultFromList(resultName); $event.stopPropagation()")
+    button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()")
       span.icon.icon-pin
-      span Pin to
+      span(ng-cloak) {{formatters.results.isSavedResult(#{resultName}) ? 'Pinned' : 'Pin'}}
     button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
       span.icon.icon-send_email
       span Mail

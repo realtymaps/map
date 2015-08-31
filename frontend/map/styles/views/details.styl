@@ -30,10 +30,9 @@ detailTitle()
   font-size 14px
 
 .detail-container
-  width: $listNormalWidth
+  width: 500px
   savedButton()
   $fnMobileToolbarPadding()
-  padding-left 41px
   @extends .slide-out-container
   z-index: 1001 /*above results by 1*/
 
@@ -59,6 +58,7 @@ detailTitle()
     $fnOverrideSliderBackgroundColor()
 
   #detail-list
+    height 100%
     background: $white
     overflow-y: auto
     position: absolute
