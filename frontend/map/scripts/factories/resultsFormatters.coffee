@@ -147,8 +147,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
     getSortClass: (toMatchSortStr) =>
       if toMatchSortStr != @mapCtrl.scope.resultsPredicate
         return ''
-      sortClass = 'active-sort fa-chevron-circle-'
-      sortClass += if @mapCtrl.scope.resultsDescending then 'down' else 'up'
+      sortClass = 'active-sort'
       return sortClass
 
     getForSaleClass: (result) ->

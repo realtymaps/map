@@ -3,16 +3,18 @@ include ./mixins/result-buttons.jade
 .results-container.navbar-below#results-slide(ng-show="Toggles.showResults"
 ng-init="resultsInit('results-list')")
   .filters
-      span Sort By
+      span Sort By:
       ul(ng-click="$event.stopPropagation()")
-          li(ng-click="order('attr.beds')") Beds
-              span(class="caret {{reverse ? 'desc' : 'asc'}}")
-          li(ng-click="order('attr.square')") Sq Ft
-              span(class="caret {{reverse ? 'desc' : 'asc'}}")
-          li(ng-click="order('attr.year')") Year
-              span(class="caret {{reverse ? 'desc' : 'asc'}}")
-          li(ng-click="order('price')") Price
-              span(class="caret {{reverse ? 'desc' : 'asc'}}")
+          li(ng-click="formatters.results.getSortClass('bedrooms')") Beds
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('bedrooms')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')") Sq Ft
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('savedDetails.isSaved')") Saved
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('savedDetails.isSaved')")
   .inner
     #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
       ul.list
