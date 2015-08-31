@@ -1,7 +1,7 @@
-#map
-  .leaflet-top.leaflet-right
-    height 100%
+.leaflet-control-layers
+  display none
 
+#map
   .old-controls
     display none
 
@@ -413,145 +413,6 @@
           position relative
           top -3px
 
-    .filters
-      display block
-      background $dark_white
-      border-bottom 1px solid $darker_white
-      border-top 1px solid $darker_white
-      padding 10px
-      span
-        display inline-block
-        line-height 24px
-        font-weight bold
-        margin-right 10px
-      ul
-        list-style none
-        display inline-block
-        line-height 24px
-        margin 0
-        padding 0
-        li
-          list-style none
-          display inline-block
-          border none
-          padding-right 20px
-          cursor pointer
-          position relative
-          &:hover
-          &:focus
-            color $light_blue
-
-            span.caret
-              display block
-
-          span.caret
-            border-left 5px solid transparent;
-            border-right 5px solid transparent;
-            border-top 5px dashed;
-            right -4px
-            top 16px
-            display none
-
-            &.asc
-              transform rotate(0deg)
-            &.desc
-              transform rotate(180deg)
-
-    .inner
-      max-height 100%
-      overflow auto
-      padding-top 10px
-      padding-bottom 10px
-
-      ul.list
-        padding 0 10px
-        list-style none
-        > li
-          list-style none
-          box-shadow 0px 1px 3px $black_30
-          margin-bottom 10px
-          .property-img
-            width 100%
-            margin-bottom 10px
-            position relative
-
-            .status
-              background $green
-              color $white
-              text-transform uppercase
-              bottom 0
-              left 0
-              display inline-block
-              padding 5px 10px
-              font-size 11px
-              position absolute
-
-              &.pending
-                background $yellow
-
-              &.sold
-                background $red
-
-            img
-              max-width 100%
-              display inline-block
-
-
-          .price
-            margin 0
-            font-size 18px
-            font-weight bold
-            padding 0 10px
-            color $green
-            &.pending
-              color $yellow
-            &.sold
-              color $red
-
-          .property-attr
-            padding 0 10px
-            list-style none
-            display inline-block
-            ul.attr
-              padding 0
-              margin 5px -4px
-              li
-                list-style none
-                display inline-block
-                border-right 1px solid $black
-                border-bottom none
-                padding 0 4px
-                font-size 12px
-                &:last-child
-                  border none
-          .title
-            padding 0 10px
-            margin 0 0 5px 0
-            a
-              padding 0
-              text-decoration none
-              &:hover
-              &:focus
-                color $light_blue
-          .location
-            padding 0 10px
-            color $gray
-            font-size 12px
-            font-weight bold
-          .btn-actions
-            overflow hidden
-            border-top 1px solid $darker_white
-            button
-              font-size 11px
-              border none
-              border-right 1px solid $darker_white
-              background $white
-              padding 0
-              width 33.3333%
-              float left
-              min-width 10px
-              &:last-child
-                border none
 
     .settings-list
       min-width 350px
@@ -731,14 +592,6 @@
       a
         background-color $light_blue
         color $white
-
-.rmaps-properties-control
-  height 90%
-
-#results-list
-  background-color $white
-  min-height 200px
-  max-height 100%
 
 @-moz-document url-prefix()
   .pinned-projects-list

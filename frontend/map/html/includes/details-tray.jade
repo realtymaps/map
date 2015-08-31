@@ -139,5 +139,3 @@ include ./mixins/spinner.jade
                             .data
                                 span(ng-if="selectedResult.prior_sale_date") {{selectedResult.prior_sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                                 span(ng-if="!selectedResult.prior_sale_date") N/A
-    #results-footer
-        i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleDetails()")
