@@ -1,13 +1,13 @@
 mixin resultButtons(resultName)
-  button.snail.btn.btn-primary-outline.btn-xs(
-  ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
-      i.fa.fa-map-marker &nbsp;
-      | Zoom To
-  button.snail.btn.btn-primary-outline.btn-xs(
-  ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
-      i.fa.fa-envelope &nbsp;
-      | Send Mailing
-      
-  button.save-button.btn.btn-default.btn-xs(
-  ng-class="{'label-saved-property':formatters.results.isSavedResult(#{resultName})}",
-  ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event)") {{formatters.results.isSavedResult(#{resultName}) ? 'Saved' : 'Save'}}
+  div.btn-actions
+    button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()")
+      span.icon.icon-pin
+      span(ng-cloak) {{formatters.results.isSavedResult(#{resultName}) ? 'Pinned' : 'Pin'}}
+    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
+      span.icon.icon-send_email
+      span Mail
+
+    button.snail.btn.btn-primary-outline.btn-xs(
+    ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
+        i.fa.fa-map-marker &nbsp;
+        | Zoom To

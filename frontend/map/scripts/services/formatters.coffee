@@ -68,11 +68,6 @@ app.service 'rmapsFormattersService', ($log) ->
       return result
 
   Google:
-    getCurbsideImage: (geoObj) ->
-      return 'http://placehold.it/100x75' unless geoObj
-      lonLat = geoObj.geom_point_json.coordinates
-      "http://cbk0.google.com/cbk?output=thumbnail&w=100&h=75&ll=#{lonLat[1]},#{lonLat[0]}&thumb=1"
-
     getStreetView: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
       # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama
       # heading is better left as undefined as google figures out the best heading based on the lat lon target
