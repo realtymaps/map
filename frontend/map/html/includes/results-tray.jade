@@ -13,8 +13,6 @@ ng-init="resultsInit('results-list')")
               span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
           li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
               span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
-          li(ng-click="formatters.results.setOrReverseResultsPredicate('savedDetails.isSaved')") Saved
-              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('savedDetails.isSaved')")
   .inner
     #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
       ul.list
