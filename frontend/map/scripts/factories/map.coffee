@@ -26,6 +26,7 @@ app.factory 'rmapsMap',
     rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData, rmapsControls) ->
 
     _initToggles = ($scope, toggles) ->
+      return unless toggles?
       _handleMoveToMyLocation = (position) ->
         if position
           position = position.coords
@@ -36,7 +37,8 @@ app.factory 'rmapsMap',
         $scope.map.center = NgLeafletCenter position
         $scope.$evalAsync()
 
-      toggles.setLocationCb(_handleMoveToMyLocation)
+      if toggles?.setLocationCb?
+        toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
     class Map extends rmapsBaseMap
@@ -67,10 +69,6 @@ app.factory 'rmapsMap',
             limits: limits
 
         @singleClickCtrForDouble = 0
-        $log.debug $scope.map
-        $log.debug "map center: #{JSON.stringify($scope.map.center)}"
-        $log.debug "map zoom: #{JSON.stringify($scope.map.center.zoom)}"
-
 
         @filters = ''
         @filterDrawPromise = false
