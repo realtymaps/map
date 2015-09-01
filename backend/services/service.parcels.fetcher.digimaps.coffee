@@ -14,7 +14,7 @@ DIGIMAPS =
 DATA_SOURCE_TYPE = 'parcels'
 
 _getClientFromDigiSettings = (digiMapsSettings) ->
-  logger.debug digiMapsSettings
+  # logger.debug digiMapsSettings
   if _.isFunction digiMapsSettings?.then
     return digiMapsSettings
   {URL, ACCOUNT, PASSWORD} = digiMapsSettings
