@@ -21,5 +21,13 @@ describe "map factory", ->
   it 'ctor exists', ->
     @ctor.should.be.ok
 
-  it 'subject can be created', ->
-    @subject.should.be.ok
+  describe 'subject', ->
+
+    it 'can be created', ->
+      @subject.should.be.ok
+
+    xit 'drawFilterSummary keeps filter in sync', ->
+      #TODO: mock the http requests to get some responses to play with
+      @subject.drawFilterSummary()
+      @subject.scope.$digest()
+      @subject.filters.length.should.be.ok
