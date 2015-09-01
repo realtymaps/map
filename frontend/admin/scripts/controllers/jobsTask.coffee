@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
+app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, $modal, Restangular, rmapsJobsService) ->
 
   $scope.getData = rmapsJobsService.getTasks
 
@@ -20,6 +20,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
     ,
       field: 'description'
       displayName: 'Description'
+      defaultValue: ''
       width: 300
     ,
       field: 'data'
@@ -27,6 +28,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       type: 'object'
       enableCellEdit: true
       editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
+      defaultValue: "{}"
       width: 250
     ,
       field: 'ignore_until'
@@ -56,6 +58,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       field: 'active'
       displayName: 'Active?'
       type: 'boolean'
+      defaultValue: false
       width: 100
     ,
       field: '_run'
@@ -74,4 +77,5 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
   $injector.invoke GridController, this,
     $scope: $scope
     $rootScope: $rootScope
+    $modal: $modal
     Restangular: Restangular
