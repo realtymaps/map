@@ -60,5 +60,10 @@ module.exports =
     _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
     .then (data) ->
       type: 'FeatureCollection'
-      features: data
+      features: data.map (d) ->
+        d.type = 'Feature'
+        d.properties = {}
+        d.geometry = d.geom_polys_json
+        delete d.geom_polys_json
+        d
   upsert: _upsert
