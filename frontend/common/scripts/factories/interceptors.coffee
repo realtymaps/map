@@ -1,4 +1,3 @@
-urlHelpers = require '../utils/util.urlHelpers.coffee'
 qs = require 'qs'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
@@ -8,8 +7,8 @@ mod = require '../module.coffee'
 defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor', 'rmapsRedirectInterceptor']
 
 interceptors =
-  rmapsRedirectInterceptor: ($location, $rootScope) ->
-    routes = urlHelpers.getRoutes($location)
+  rmapsRedirectInterceptor: ($location, $rootScope, rmapsUrlHelpers) ->
+    routes = rmapsUrlHelpers.getRoutes()
 
     'response': (response) ->
       if response.data?.doLogin and $location.path() != '/'+routes.login

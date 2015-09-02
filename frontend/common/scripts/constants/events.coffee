@@ -1,6 +1,7 @@
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
+mod = require '../module.coffee'
 
-module.exports =
+mod.constant 'rmapsevents',
   keysToValues
     map:
       drawPolys:

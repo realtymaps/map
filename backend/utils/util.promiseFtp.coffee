@@ -9,7 +9,7 @@ class FtpConnectionError extends VError
     super(args...)
     @name = 'FtpConnectionError'
 
-    
+
 simplePassthroughMethods = [
   'ascii'
   'binary'
@@ -33,10 +33,10 @@ simplePassthroughMethods = [
   'lastMod'
   'restart'
 ]
-    
+
 
 class PromiseFtp
-  
+
   constructor: () ->
     @options = null
     @name = "PromiseFtp"
@@ -44,7 +44,7 @@ class PromiseFtp
     @connected = false
     @closedWithError = false
     @errors = []
-    
+
     @client = new FtpClient()
     @client.on 'greeting', (msg) =>
       @serverMessage = msg
@@ -54,9 +54,9 @@ class PromiseFtp
         @closedWithError = true
     @client.once 'error', (err) =>
       @errors.push(err)
-      
+
     promisifiedMethods = {}
-    
+
     for name in simplePassthroughMethods
       promisifiedMethods[name] = Promise.promisify(FtpClient.prototype[name], @client)
       @[name] = do (name) => (args...) =>
@@ -68,7 +68,7 @@ class PromiseFtp
       if !@connected
         return Promise.reject(new FtpConnectionError("client not currently connected"))
       promisifiedMethods.site(args...)
-      .spread (text, code) =>
+      .spread (text, code) ->
         text: text
         code: code
 
@@ -88,14 +88,14 @@ class PromiseFtp
         @client.removeListener 'ready', readyListener
         rejector(err)
     @client.connect @options
-  
+
   end: () -> new Promise (resolver, rejector) =>
     if !@connected
       return rejector(new FtpConnectionError("client not currently connected"))
-    @client.once 'close', (hadError) =>
+    @client.once 'close', (hadError) ->
       resolver(hadError)
     @client.end()
-  
+
   destroy: () -> Promise.try () =>
     if !@connected
       Promise.reject(new FtpConnectionError("client not currently connected"))
