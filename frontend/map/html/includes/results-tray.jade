@@ -20,7 +20,7 @@ ng-init="resultsInit('results-list')")
               ng-click="formatters.results.click(property,property);showDetails = !showDetails")
               div.property-img
                   span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-                  img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 300, 170)}}" title="{{property.title}}")
+                  img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 245, 163)}}" title="{{property.title}}")
               p.price(ng-class="formatters.results.getForSaleClass(property,true)") ${{property.price}}
               div.property-attr
                   ul.attr
