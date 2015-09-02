@@ -13,8 +13,6 @@ ng-init="resultsInit('results-list')")
               span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
           li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
               span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
-          li(ng-click="formatters.results.setOrReverseResultsPredicate('savedDetails.isSaved')") Saved
-              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('savedDetails.isSaved')")
   .inner
     #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
       ul.list
@@ -22,7 +20,7 @@ ng-init="resultsInit('results-list')")
               ng-click="formatters.results.click(property,property);showDetails = !showDetails")
               div.property-img
                   span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-                  img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 300, 170)}}" title="{{property.title}}")
+                  img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 245, 163)}}" title="{{property.title}}")
               p.price(ng-class="formatters.results.getForSaleClass(property,true)") ${{property.price}}
               div.property-attr
                   ul.attr
