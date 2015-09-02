@@ -9,15 +9,15 @@ describe 'service.digimaps', ->
     @subject = svc
     currentDir = null
     @mockFtpClient =
-      cwdAsync: (dirName) ->
+      cwd: (dirName) ->
         currentDir = dirName
         Promise.resolve dirName
-      pwdAsync: ->
+      pwd: ->
         Promise.resolve currentDir
-      listAsync: sinon.stub().returns Promise.resolve [
+      list: sinon.stub().returns Promise.resolve [
         {name:'Points123.zip'}
         ]
-      getAsync: (fileName) -> Promise.try ->
+      get: (fileName) -> Promise.try ->
         return new StringStream(fileName)
 
   it 'getParcelZipFileStream', (done) ->
