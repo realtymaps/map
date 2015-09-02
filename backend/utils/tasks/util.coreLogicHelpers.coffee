@@ -71,7 +71,7 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
         # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
         transform = (chunk, enc, callback) ->
           if chunk.length > 0
-            count++
+            count += 1
             this.push(chunk)
             this.push('\n')
           callback()
@@ -177,7 +177,6 @@ loadRawData = (subtask, options) ->
       data_type: subtask.data.type
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-
     _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
   .then (rowsInserted) ->
     return rowsInserted

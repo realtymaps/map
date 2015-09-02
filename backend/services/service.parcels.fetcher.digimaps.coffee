@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
-_createFtp = require '../utils/util.ftpPromisified'
+PromiseFtp = require '../utils/util.promiseFtp'
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 
@@ -18,7 +18,11 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
   if _.isFunction digiMapsSettings?.then
     return digiMapsSettings
   {URL, ACCOUNT, PASSWORD} = digiMapsSettings
-  _createFtp(URL, ACCOUNT, PASSWORD)
+  ftp = new PromiseFtp()
+  ftp.connect
+    host: URL
+    user: ACCOUNT
+    password: PASSWORD
 
 
 _numbersInString = (str) -> str.replace(/\D/g, '')
@@ -40,10 +44,10 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
 
   _getClientFromDigiSettings(digiMapsSettings)
   .then (client) -> #step 1
-    client.cwdAsync './' + rootDir
+    client.cwd './' + rootDir
     .then (dir) ->
       logger.debug 'defineImports: step 1'
-      client.listAsync()
+      client.list()
       .then (ls) ->
         logger.debug 'defineImports: step 1 listing folderNames'
 
@@ -70,10 +74,10 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
         #unique client for each pwd / ls combo as multiple Promises will occur at once
         #otherwise a single client will race itself and cause wierd errors
         _getClientFromDigiSettings(digiMapsSettings).then (getClient) ->
-          getClient.cwdAsync(lPath).then ->
-            getClient.pwdAsync().then (path) ->
+          getClient.cwd(lPath).then ->
+            getClient.pwd().then (path) ->
               logger.debug "pwd: #{path}"
-            getClient.listAsync()
+            getClient.list()
           .then (ls) ->
             logger.debug "defineImports: step 2, file count: #{ls?.length}"
             ls?.forEach (l) ->
@@ -102,7 +106,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
 
 _getParcelZipFileStream = (fullPath, digiMapsSettings) -> Promise.try ->
   _getClientFromDigiSettings(digiMapsSettings).then (client) ->
-    client.getAsync(fullPath)
+    client.get(fullPath)
     .then (stream) -> Promise.try ->
       logger.debug("download complete: #{fullPath}")
       stream.on 'error', (err) ->

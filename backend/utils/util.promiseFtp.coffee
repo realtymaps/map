@@ -4,6 +4,9 @@ _ = require 'lodash'
 Promise = require "bluebird"
 
 
+# TODO: open-source this
+
+
 class FtpConnectionError extends VError
   constructor: (args...) ->
     super(args...)
@@ -73,27 +76,27 @@ class PromiseFtp
         code: code
 
 
-  connect: (options) -> new Promise (resolver, rejector) =>
+  connect: (options) -> new Promise (resolve, reject) =>
     doneConnecting = false
     if @connected
-      return rejector(new FtpConnectionError("client currently connected to: #{@options.host}"))
+      return reject(new FtpConnectionError("client currently connected to: #{@options.host}"))
     @options = options
     readyListener = () =>
       doneConnecting = true
       @connected = true
-      resolver(@serverMessage)
+      resolve(@serverMessage)
     @client.once 'ready', readyListener
     @client.once 'error', (err) =>
       if !doneConnecting
         @client.removeListener 'ready', readyListener
-        rejector(err)
+        reject(err)
     @client.connect @options
-
-  end: () -> new Promise (resolver, rejector) =>
+  
+  end: () -> new Promise (resolve, reject) =>
     if !@connected
-      return rejector(new FtpConnectionError("client not currently connected"))
+      return reject(new FtpConnectionError("client not currently connected"))
     @client.once 'close', (hadError) ->
-      resolver(hadError)
+      resolve(hadError)
     @client.end()
 
   destroy: () -> Promise.try () =>
