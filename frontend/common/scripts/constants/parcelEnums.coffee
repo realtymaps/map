@@ -1,4 +1,5 @@
-_ = require('lodash')
+_ = require 'lodash'
+mod = require '../module.coffee'
 
 status =
   notForSale: 'not for sale'
@@ -41,7 +42,7 @@ address =
   unitNum: 'Unit Number'
   showStreetInfo: 'Show Street Info'
 
-module.exports =
+mod.constant 'rmapsParcelEnums',
   status: status
   subStatus: _.extend(subStatus, status)
   categories: categories
