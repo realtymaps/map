@@ -26,6 +26,7 @@ app.factory 'rmapsMap',
     rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData, rmapsControls) ->
 
     _initToggles = ($scope, toggles) ->
+      return unless toggles?
       _handleMoveToMyLocation = (position) ->
         if position
           position = position.coords
@@ -36,7 +37,8 @@ app.factory 'rmapsMap',
         $scope.map.center = NgLeafletCenter position
         $scope.$evalAsync()
 
-      toggles.setLocationCb(_handleMoveToMyLocation)
+      if toggles?.setLocationCb?
+        toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
     class Map extends rmapsBaseMap
@@ -67,10 +69,6 @@ app.factory 'rmapsMap',
             limits: limits
 
         @singleClickCtrForDouble = 0
-        $log.debug $scope.map
-        $log.debug "map center: #{JSON.stringify($scope.map.center)}"
-        $log.debug "map zoom: #{JSON.stringify($scope.map.center.zoom)}"
-
 
         @filters = ''
         @filterDrawPromise = false
@@ -157,9 +155,22 @@ app.factory 'rmapsMap',
           _.each @scope.map.geojson, (val) ->
             val.data = _emptyGeoJsonData
 
+      clearFilterSummary: =>
+        @scope.map.geojson.filterSummaryPoly =
+          data: _emptyGeoJsonData
+          style: @layerFormatter.Parcels.getStyle
+
+        @scope.map.markers.filterSummary = {}
+
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
+
+        # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
+        # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
+        if !/status/.test(@getFilters())
+          @clearFilterSummary()
+          return promises
 
         handleClusterResults = (data) =>
           @scope.map.markers.filterSummary = {}
@@ -182,43 +193,35 @@ app.factory 'rmapsMap',
               data: data
               style: @layerFormatter.Parcels.getStyle
 
-        # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
-        if /status/.test(@filters) # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
-          promise = rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
-          .then (data) =>
-            if Object.prototype.toString.call(data) is '[object Array]'
-              return if !data? or _.isString data
-              handleClusterResults(data)
+        p = rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+        .then (data) =>
+          if Object.prototype.toString.call(data) is '[object Array]'
+            return if !data? or _.isString data
+            handleClusterResults(data)
+
+          else
+            #needed for results list, rendering price markers, and address Markers
+            #depending on zoome we want address or price
+            #the data structure is the same (do we clone and hide one?)
+            #or do we have the results list view grab one that exists with items?
+            return if !data? or _.isString data
+            handleSummaryResults(data)
+
+            if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
+              if overlays?.parcels?
+                overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
+              if overlays?.parcelsAddresses?
+                overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+
+              overlays.filterSummary.visible = false
+
+              handleGeoJsonResults()
 
             else
-              #needed for results list, rendering price markers, and address Markers
-              #depending on zoome we want address or price
-              #the data structure is the same (do we clone and hide one?)
-              #or do we have the results list view grab one that exists with items?
-              return if !data? or _.isString data
-              handleSummaryResults(data)
-
-              if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
-                if overlays?.parcels?
-                  overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
-                if overlays?.parcelsAddresses?
-                  overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
-
-                overlays.filterSummary.visible = false
-
-                rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
-                .then (data) =>
-                  return if !data? or _.isString data
-                  @scope.map.geojson.filterSummaryPoly =
-                    data: data
-                    style: _this.layerFormatter.Parcels.getStyle
-
-              else
-                overlays.parcels.visible = false
-                overlays.filterSummary.visible = true
-                overlays.parcelsAddresses.visible = false
-          promises.push promise
-
+              overlays.parcels.visible = false
+              overlays.filterSummary.visible = true
+              overlays.parcelsAddresses.visible = false
+        promises.push p
         promises
 
       redraw: (cache = true) =>
@@ -299,6 +302,14 @@ app.factory 'rmapsMap',
       refreshState: (overrideObj = {}) =>
         @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
         @mapState
+
+      getFilters: =>
+        anyTrue = _.any @scope.selectedFilters,  (val) -> val
+        if anyTrue && !@filters?.length #we're out of sync sync up filters
+          @filter(@scope.selectedFilters)
+          #rather then re-doing the workflow just return undefined since @filter() will redraw anyhow
+          return ''
+        @filters
 
       filter: (newFilters, oldFilters) =>
         return if (not newFilters and not oldFilters) or newFilters == oldFilters

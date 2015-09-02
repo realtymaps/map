@@ -6135,6 +6135,11 @@
         }
       }
     },
+    "geojson-validation": {
+      "version": "0.1.6",
+      "from": "geojson-validation@*",
+      "resolved": "https://registry.npmjs.org/geojson-validation/-/geojson-validation-0.1.6.tgz"
+    },
     "globby": {
       "version": "2.1.0",
       "from": "globby@*",
