@@ -116,7 +116,7 @@ app.controller 'rmapsNormalizeCtrl',
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
-      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.main_property_data.db, field.LookupName
+      $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
         if lookups.length <= 50
@@ -235,7 +235,7 @@ app.controller 'rmapsNormalizeCtrl',
       rmapsNormalizeService.getRules(config.id)
       .then (rules) ->
         parseRules(rules)
-        rmapsMlsService.getColumnList(config.id, config.main_property_data.db, config.main_property_data.table)
+        rmapsMlsService.getColumnList(config.id, config.listing_data.db, config.listing_data.table)
       .then (fields) ->
         parseFields(fields)
 

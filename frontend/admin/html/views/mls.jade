@@ -75,7 +75,7 @@
                           select(
                           id="dbselect"
                           type="text"
-                          ng-model="mlsData.current.main_property_data.db"
+                          ng-model="mlsData.current.listing_data.db"
                           ng-options="value.ResourceID as value.VisibleName for value in dbOptions"
                           ng-change="processAndProceed(1)"
                           ng-disabled="formItems[1].disabled")
@@ -87,7 +87,7 @@
                           select(
                           id="tableselect"
                           type="text"
-                          ng-model="mlsData.current.main_property_data.table"
+                          ng-model="mlsData.current.listing_data.table"
                           ng-options="value.ClassName as value.VisibleName for value in tableOptions"
                           ng-change="processAndProceed(2)"
                           ng-disabled="formItems[2].disabled")
@@ -98,7 +98,7 @@
                         td
                           select(
                           type="text"
-                          ng-model="mlsData.current.main_property_data.field"
+                          ng-model="mlsData.current.listing_data.field"
                           ng-options="value.SystemName as value.LongName group by value.DataType for value in columnOptions"
                           ng-disabled="formItems[3].disabled")
                             option(value="" disabled)
@@ -107,10 +107,10 @@
                     label.data-label Formatting:
                 .row
                   .col-md-12
-                    input(type="text" ng-model="mlsData.current.main_property_data.queryTemplate").max-width
+                    input(type="text" ng-model="mlsData.current.listing_data.queryTemplate").max-width
                 .row
                   .col-md-12
-                    button(ng-click="assignConfigDefault(mlsData.current, 'main_property_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
+                    button(ng-click="assignConfigDefault(mlsData.current, 'listing_data');updateObjectOptions(mlsData.current)").btn.btn-success Reset to defaults
 
               accordion-group(is-disabled="!mlsData.current.id")
                 accordion-heading
@@ -168,22 +168,22 @@
                     td
                       label.data-label Database:
                     td
-                      span.data-entry {{fieldNameMap.dbNames[mlsData.current.main_property_data.db]}}
+                      span.data-entry {{fieldNameMap.dbNames[mlsData.current.listing_data.db]}}
                   tr
                     td
                       label.data-label Table:
                     td
-                      span.data-entry {{fieldNameMap.tableNames[mlsData.current.main_property_data.table]}}
+                      span.data-entry {{fieldNameMap.tableNames[mlsData.current.listing_data.table]}}
                   tr
                     td
                       label.data-label Update Timestamp Column:
                     td
-                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.main_property_data.field]}}
+                      span.data-entry {{fieldNameMap.columnNames[mlsData.current.listing_data.field]}}
                   tr
                     td
                       label.data-label Formatting:
                     td
-                      span.data-entry {{mlsData.current.main_property_data.queryTemplate}}
+                      span.data-entry {{mlsData.current.listing_data.queryTemplate}}
             tr
               td
                 label.data-label Notes:

@@ -24,7 +24,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         # part of the bug here is that options.selectedIndex returns -1 even though an element has the selected property
         # note: the options here are all constructed involving typical ngmodel binding and ngoptions
         i = 0
-        while options.item(i).getAttribute('label') isnt $scope.mlsData.current.main_property_data.db and i < options.length
+        while options.item(i).getAttribute('label') isnt $scope.mlsData.current.listing_data.db and i < options.length
           i += 1 # go through items to see which has correct label
 
         if i > 1 and i < options.length # ensure index is valid bound
@@ -54,7 +54,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       tableNames: {}
       columnNames: {}
 
-    # simple tracking for main_property_data dropdowns
+    # simple tracking for listing_data dropdowns
     $scope.formItems = [
       disabled: false
     ,
@@ -155,8 +155,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     # pull table options and enable next step as appropriate
     getTableOptions = () ->
-      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db
-        rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db)
+      if $scope.mlsData.current.id and $scope.mlsData.current.listing_data.db
+        rmapsMlsService.getTableList($scope.mlsData.current.id, $scope.mlsData.current.listing_data.db)
         .then (rawData) ->
           data = ({ClassName: x.ClassName, StandardName: x.StandardName, VisibleName: x.VisibleName} for x in rawData)
           $scope.tableOptions = data
@@ -181,8 +181,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     # pull column options and enable next step as appropriate
     getColumnOptions = () ->
       # when going BACK to this step, only re-query if we have a table to use
-      if $scope.mlsData.current.id and $scope.mlsData.current.main_property_data.db and $scope.mlsData.current.main_property_data.table
-        rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.main_property_data.db, $scope.mlsData.current.main_property_data.table)
+      if $scope.mlsData.current.id and $scope.mlsData.current.listing_data.db and $scope.mlsData.current.listing_data.table
+        rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.listing_data.db, $scope.mlsData.current.listing_data.table)
         .then (rawData) ->
           data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
           r = mlsConstants.dtColumnRegex
@@ -246,15 +246,15 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       if toStep == 1 # db option just changed, reset table and fields
         $scope.tableOptions = []
         $scope.columnOptions = []
-        $scope.mlsData.current.main_property_data.table = ''
-        $scope.mlsData.current.main_property_data.field = ''
+        $scope.mlsData.current.listing_data.table = ''
+        $scope.mlsData.current.listing_data.field = ''
         $scope.formItems[2].disabled = true
         $scope.formItems[3].disabled = true
         promise = getTableOptions()
 
       else if toStep == 2 # table option just changed, reset table and fields
         $scope.columnOptions = []
-        $scope.mlsData.current.main_property_data.field = ''
+        $scope.mlsData.current.listing_data.field = ''
         $scope.formItems[3].disabled = true
         promise = getColumnOptions()
 
@@ -281,7 +281,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     # test for whether MLS is ready and eligible for task activation and normalization
     $scope.isReady = (mlsObj) ->
       _.every ['queryTemplate', 'db', 'table', 'field'], (k) ->
-        return mlsObj.main_property_data? and k of mlsObj.main_property_data and mlsObj.main_property_data[k] != ''
+        return mlsObj.listing_data? and k of mlsObj.listing_data and mlsObj.listing_data[k] != ''
 
     # modal for Create mlsData
     $scope.animationsEnabled = true

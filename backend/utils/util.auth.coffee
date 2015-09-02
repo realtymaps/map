@@ -1,6 +1,5 @@
 querystring = require 'querystring'
 Promise = require 'bluebird'
-bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'

@@ -9,21 +9,26 @@ config = require '../../config/config'
 logger = require '../../config/logger'
 jobQueue = require '../util.jobQueue'
 validation = require '../util.validation'
-memoize = require 'memoizee'
-vm = require 'vm'
 tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
+PromiseFtp = require '../util.promiseFtp'
+encryptor = require '../../config/encryptor'
+unzip = require 'unzip2'
+split = require 'split'
+fs = require 'fs'
+path = require 'path'
+through = require 'through2'
+rimraf = require 'rimraf'
 
 
-_streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
-  # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-  # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
-  # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
+_streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
+  # stream the contents of the file into a COPY FROM query
+  count = 0
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
-  pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgQuery = Promise.promisify(pgClient.query, pgClient)
+  pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
   .then () ->
     pgQuery('BEGIN')
@@ -32,25 +37,65 @@ _streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
     .insert(dataLoadHistory)
     .toString()
     pgQuery(startSql)
-  .then () ->
-    pgQuery dataLoadHelpers.createRawTempTable(tableName, Object.keys(fields)).toString()
   .then () -> new Promise (resolve, reject) ->
-    copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
-    rawDataStream = pgClient.query(copyStream.from(copyStart))
-    rawDataStream.on('finish', resolve)
-    rawDataStream.on('error', reject)
-    # stream from array to object serializer stream to COPY FROM
-    from(objects)
-    .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
-    .pipe(rawDataStream)
+    rejected = false
+    doReject = (message) ->
+      (err) ->
+        if rejected
+          return
+        rejected = true
+        if !(err instanceof PartiallyHandledError)
+          err = new PartiallyHandledError(err, message)
+        reject(err)
+    splitter = split()
+    initialDoReject = doReject("error reading data from file: #{filePath}")
+    fileStream = fs.createReadStream(filePath)
+    .pipe(splitter)
+    .on('end', resolve)
+    .on('error', initialDoReject)
+    .once 'data', (headerLine) ->
+      fileStream.pause()
+      fileStream.removeListener('end', resolve)
+      fileStream.removeListener('error', initialDoReject)
+      # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
+      fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
+      pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
+      .then () -> new Promise (resolve2, reject2) ->
+        rejected2 = false
+        doReject2 = (message) ->
+          (err) ->
+            if rejected2
+              return
+            rejected2 = true
+            reject2(new PartiallyHandledError(err, message))
+        # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
+        transform = (chunk, enc, callback) ->
+          if chunk.length > 0
+            count++
+            this.push(chunk)
+            this.push('\n')
+          callback()
+        flush = (callback) ->
+          this.push('\\.\n')
+          callback()
+        copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
+        fileStream
+        .pipe(through(transform, flush))
+        .pipe(pgClient.query(copyStream.from(copyStart)))
+        .on('finish', resolve2)
+        .on('error', doReject2("error streaming data to #{tableName}"))
+        fileStream.resume()
+      .then resolve
+      .catch doReject("error executing COPY FROM for #{tableName}")
   .then () ->
-    finishSql = tables.jobQueue.dataLoadHistory()
+    finishQuery = tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
-    .update(raw_rows: objects.length)
-    .toString()
-    pgQuery(finishSql)
+    .update raw_rows: count
+    pgQuery(finishQuery.toString())
   .then () ->
     pgQuery('COMMIT')
+  .then () ->
+    return count
   .finally () ->
     # always try to disconnect the db client when we're done, but don't crash if we disconnected prematurely
     try
@@ -101,59 +146,53 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
   _.extend result, _.omit(fields2, Object.keys(fields1))
 
 
-# loads all records from a given (conceptual) table that have changed since the last successful run of the task
-loadUpdates = (subtask, options) ->
-  # figure out when we last got updates from this table
-  jobQueue.getLastTaskStartTime(subtask.task_name)
-  .then (lastSuccess) ->
-    now = new Date()
-    if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
-      # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
-      return new Date(0)
-    else
-      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
-      return lastSuccess
-  .then (refreshThreshold) ->
-    tables.config.mls()
-    .where(id: subtask.task_name)
-    .then (mlsInfo) ->
-      mlsInfo = mlsInfo?[0]
-      retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
-      .then (results) ->
-        if !results?.length
-          # nothing to do, GTFO
-          logger.info("No data updates for #{subtask.task_name}.")
-          return
-        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-        # on whether this is a dump or an update)
-        doDeletes = refreshThreshold.getTime() == 0
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
-        finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+# loads all records from a ftp-dropped zip file
+loadRawData = (subtask, options) ->
+  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
+  fileBaseName = "corelogic_#{subtask.batch_id}_#{options.rawTableSuffix}"
+  ftp = new PromiseFtp()
+  ftp.connect
+    host: subtask.task_data.host
+    user: subtask.task_data.user
+    password: encryptor.decrypt(subtask.task_data.password)
+  .then () ->
+    ftp.get(subtask.data.path)
+  .then (zipFileStream) -> new Promise (resolve, reject) ->
+    zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
+    .on('finish', resolve)
+    .on('error', reject)
+  .then () ->  # just in case this is a retry, do rm -rf
+    rimraf.async("/tmp/#{fileBaseName}")
+  .then () ->
+    fs.mkdirAsync("/tmp/#{fileBaseName}")
+  .then () -> new Promise (resolve, reject) ->
+    fs.createReadStream("/tmp/#{fileBaseName}.zip")
+    .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+    .on('close', resolve)
+    .on('error', reject)
+  .then () ->
+    dataLoadHistory =
+      data_source_id: options.dataSourceId
+      data_source_type: 'county'
+      data_type: subtask.data.type
+      batch_id: subtask.batch_id
+      raw_table_name: rawTableName
 
-        handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
-        .then (fieldInfo) ->
-          fields = _.indexBy(fieldInfo, 'LongName')
-          rawTableName = dataLoadHelpers.getRawTableName subtask, 'listing'
-          dataLoadHistory =
-            data_source_id: options.dataSourceId
-            data_source_type: 'mls'
-            data_type: 'listing'
-            batch_id: subtask.batch_id
-            raw_table_name: rawTableName
-          _streamArrayToDbTable(results, rawTableName, fields, dataLoadHistory)
-          .then () ->
-            return results.length
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
-          return numRawRows
+    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
+  .then (rowsInserted) ->
+    return rowsInserted
   .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, 'failed to load RETS data for update')
+    throw new PartiallyHandledError(error, "failed to load corelogic data for update")
+  .finally () ->
+    try
+      # try to clean up after ourselves
+      rimraf.async("/tmp/#{fileBaseName}")
+    catch err
+      logger.warn("Error trying to rm -rf temporary directory /tmp/#{fileBaseName}: #{err}")
 
 
 updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+  throw new jobQueue.HardFail('not finished yet')
   # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
@@ -243,6 +282,6 @@ finalizeData = (subtask, id) ->
     .insert(listing)
 
 module.exports =
-  loadUpdates: loadUpdates
+  loadRawData: loadRawData
   updateRecord: updateRecord
   finalizeData: finalizeData

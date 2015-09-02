@@ -20,7 +20,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
     throw new PartiallyHandledError(error, 'RETS client could not be created')
   .then (retsClient) ->
-    logger.info 'Logging in client ', loginUrl
+    logger.debug 'Logging in client ', loginUrl
     retsClient.login()
   .catch isUnhandled, (error) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
@@ -32,7 +32,7 @@ _getRetsClientInternal = memoize _getRetsClientInternal,
   refCounter: true
   dispose: (promise) ->
     promise.then (retsClient) ->
-      logger.info 'Logging out client', retsClient?.urls?.Logout
+      logger.debug 'Logging out client', retsClient?.urls?.Logout
       retsClient.logout()
 
 _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
@@ -44,10 +44,10 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
 
 getDataDump = (mlsInfo, limit, minDate=0) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClient) ->
-    if !mlsInfo.main_property_data.queryTemplate || !mlsInfo.main_property_data.field
+    if !mlsInfo.listing_data.queryTemplate || !mlsInfo.listing_data.field
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
-    momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.main_property_data.queryTemplate.replace('__FIELD_NAME__', mlsInfo.main_property_data.field))
-    retsClient.search.query(mlsInfo.main_property_data.db, mlsInfo.main_property_data.table, momentThreshold, limit: limit)
+    momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.listing_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.listing_data.field))
+    retsClient.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, limit: limit)
   .catch isUnhandled, (error) ->
     if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
       # code for 0 results, not really an error (DMQL is a clunky language)

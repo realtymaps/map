@@ -2,6 +2,10 @@ dbs = require '../../config/dbs'
 tables = require '../../config/tables'
 Promise = require 'bluebird'
 jobQueue = require '../util.jobQueue'
+validation = require '../util.validation'
+memoize = require 'memoizee'
+vm = require 'vm'
+_ = require 'lodash'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -85,42 +89,121 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
 
 
 activateNewData = (subtask) ->
-  # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
-  if subtask.data.deleteUntouchedRows
-    # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
-    # full data sync, and if we didn't touch it that means it should be deleted
-    tables.propertyData.combined()
-    .where(data_source_id: subtask.task_name)
-    .update(active: dbs.properties.knex.raw('NOT "active"'))
-    .then () ->
-      tables.propertyData.combined()
+  # wrapping this in a transaction improves performance, since we're editing some rows twice
+  tables.propertyData.combined.transaction (transaction) ->
+    # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
+    if subtask.data.deleteUntouchedRows
+      # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
+      # full data sync, and if we didn't touch it that means it should be deleted
+      tables.propertyData.combined(transaction)
+      .where(data_source_id: subtask.task_name)
+      .update(active: tables.propertyData.combined.raw('NOT "active"'))
+      .then () ->
+        tables.propertyData.combined(transaction)
+        .where
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
+    else
+      # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
+      # the rm_property_id that has been updated in this batch
+      checkSubquery = () ->
+        tables.propertyData.combined(this)
+        .select('rm_property_id')
+        .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+          active: false
+      tables.propertyData.combined(transaction)
       .where
         data_source_id: subtask.task_name
-        active: false
-      .delete()
+      .whereIn 'rm_property_id', checkSubquery
+      .update(active: dbs.properties.knex.raw('NOT "active"'))
+      .then () ->
+        tables.propertyData.combined(transaction)
+        .where
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
+
+
+_getUsedInputFields = (validationDefinition) ->
+  if validationDefinition.input?
+    if _.isObject validationDefinition.input
+      return _.values(validationDefinition.input)
+    else
+      return validationDefinition.input
   else
-    # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
-    # the rm_property_id that has been updated in this batch
-    checkSubquery = () ->
-      tables.propertyData.combined(this)
-      .select('rm_property_id')
-      .where
-        data_source_id: subtask.task_name
+    return [validationDefinition.output]
+
+
+getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
+  tables.config.dataNormalization()
+  .where
+    data_source_id: dataSourceId
+    data_type: dataType
+  .orderBy('list')
+  .orderBy('ordering')
+  .then (validations=[]) ->
+    validationMap = {}
+    context = vm.createContext(validators: validation.validators)
+    for validationDef in validations
+      validationMap[validationDef.list] ?= []
+      validationDef.transform = vm.runInContext(validationDef.transform, context)
+      validationMap[validationDef.list].push(validationDef)
+    # pre-calculate the keys that are grouped for later use
+    usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
+    diffExcludeKeys = []
+    if dataSourceType == 'mls'
+      for groupName, validationList of validationMap
+        for validationDefinition in validationList
+          # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
+          # fields for those don't have to be explicitly reused
+          if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
+            usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
+          else if validationDefinition.output == 'days_on_market'
+            # explicitly exclude these keys from diff, because they are derived values based on date
+            diffExcludeKeys = _getUsedInputFields(validationDefinition)
+    else if dataSourceType == 'county'
+      for groupName, validationList of validationMap
+        for validationDefinition in validationList
+          # generally, don't count the 'base' fields as being used, but we do for 'address', as the source
+          # fields for those don't have to be explicitly reused
+          if validationDefinition.list != 'base' || validationDefinition.output == 'address'
+            usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
+    return {validationMap: validationMap, usedKeys: usedKeys, diffExcludeKeys: diffExcludeKeys}
+# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
+getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
+
+
+# normalizes data from the raw data table into the permanent data table
+normalizeData = (subtask, options) -> Promise.try () ->
+  rawTableName = getRawTableName subtask, options.rawTableSuffix
+  # get rows for this subtask
+  rowsPromise = dbs.properties.knex(rawTableName)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  # get validations
+  validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.type)
+  # get start time for "last updated" stamp
+  startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
+  Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationInfo, startTime) ->
+    promises = for row in rows then do (row) ->
+      stats =
+        data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
-        active: false
-    tables.propertyData.combined()
-    .where
-      data_source_id: subtask.task_name
-      batch_id: subtask.batch_id
-    .whereIn 'rm_property_id', checkSubquery
-    .update(active: dbs.properties.knex.raw('NOT "active"'))
-    .then () ->
-      tables.propertyData.combined()
-      .where
-        data_source_id: subtask.task_name
-        batch_id: subtask.batch_id
-        active: false
-      .delete()
+        rm_raw_id: row.rm_raw_id
+        up_to_date: startTime
+      Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+      .then options.updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, validationInfo.usedKeys, row)
+      .then () ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: true)
+      .catch validation.DataValidationError, (err) ->
+        dbs.properties.knex(rawTableName)
+        .where(rm_raw_id: row.rm_raw_id)
+        .update(rm_valid: false, rm_error_msg: err.toString())
+    Promise.all promises
 
 
 module.exports =
@@ -128,3 +211,5 @@ module.exports =
   createRawTempTable: createRawTempTable
   recordChangeCounts: recordChangeCounts
   activateNewData: activateNewData
+  getValidationInfo: getValidationInfo
+  normalizeData: normalizeData

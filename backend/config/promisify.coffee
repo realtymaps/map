@@ -51,6 +51,8 @@ fs = require 'fs'
 Promise.promisifyAll fs, filter: (name, func, target) ->
   return (name.slice(-4) != 'Sync' && name.indexOf('watch') == -1 && name.slice(6) != 'create')
 
+rimraf = require 'rimraf'
+rimraf.async = Promise.promisify(rimraf)
 
 # a function to properly promisify an instantiated Lob object, since we can't promisify the module
 module.exports.lob = (Lob) ->

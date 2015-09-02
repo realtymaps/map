@@ -19,7 +19,7 @@ _subtasks =
     _defineImports(subtask, _getCreds(subtask))
     .then (imports) ->
       fileToDownload = imports.map (f) -> f.source_id
-      jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'digimaps_save', fileToDownload, true
+      jobQueue.queueSubsequentSubtask null, subtask, 'digimaps_save', fileToDownload, true
 
   digimaps_save: (subtask) ->
     #all saving and upserting is handled in this function
@@ -37,14 +37,14 @@ _subtasks =
         data_source_type: 'parcels'
         data_source_id: subtask.data
     .then ->
-      jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_mv_parcels', subtask.data, true
+      jobQueue.queueSubsequentSubtask null, subtask, 'sync_mv_parcels', subtask.data, true
 
   sync_mv_parcels: (subtask) -> Promise.try ->
     db.knex.raw('SELECT stage_dirty_views();')
     .then ->
       db.knex.raw('SELECT push_staged_views(FALSE);')
     .then ->
-      jobQueue.queueSubsequentSubtask jobQueue.knex, subtask, 'sync_cartodb', subtask.data, true
+      jobQueue.queueSubsequentSubtask null, subtask, 'sync_cartodb', subtask.data, true
 
   sync_cartodb: (subtask) -> Promise.try ->
     fileName = _.last subtask.task_data.split('/')
