@@ -24,8 +24,6 @@ rimraf = require 'rimraf'
 
 
 _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
-  if debug
-    console.log("-------------------------- streaming")
   # stream the contents of the file into a COPY FROM query
   count = 0
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
@@ -33,24 +31,16 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
   pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
   .then () ->
-    if debug
-      console.log("-------------------------- begin")
     pgQuery('BEGIN')
   .then () ->
-    if debug
-      console.log("-------------------------- dataLoadHistory insert")
     startSql = tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
     .toString()
     pgQuery(startSql)
   .then () -> new Promise (resolve, reject) ->
-    if debug
-      console.log("-------------------------- reading")
     rejected = false
     doReject = (message) ->
       (err) ->
-        if debug
-          console.log("-------------------------- error: #{message}: #{err.stack||err}")
         if rejected
           return
         rejected = true
@@ -64,8 +54,6 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
     .on('end', resolve)
     .on('error', initialDoReject)
     .once 'data', (headerLine) ->
-      if debug
-        console.log("-------------------------- creating temp table")
       fileStream.pause()
       fileStream.removeListener('end', resolve)
       fileStream.removeListener('error', initialDoReject)
@@ -73,13 +61,9 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
       fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
       pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
       .then () -> new Promise (resolve2, reject2) ->
-        if debug
-          console.log("-------------------------- copying...")
         rejected2 = false
         doReject2 = (message) ->
           (err) ->
-            if debug
-              console.log("-------------------------- error2: #{message}: #{err.stack||err}")
             if rejected2
               return
             rejected2 = true
@@ -88,17 +72,10 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
         transform = (chunk, enc, callback) ->
           if chunk.length > 0
             count++
-            if debug
-              console.log("............ line #{count}: #{chunk.length} chars")
             this.push(chunk)
             this.push('\n')
-          else
-            if debug
-              console.log("............ empty line")
           callback()
         flush = (callback) ->
-          if debug
-            console.log("............ flushing")
           this.push('\\.\n')
           callback()
         copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
@@ -111,25 +88,17 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
       .then resolve
       .catch doReject("error executing COPY FROM for #{tableName}")
   .then () ->
-    if debug
-      console.log("-------------------------- finishing...")
     finishQuery = tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tableName)
     .update raw_rows: count
     pgQuery(finishQuery.toString())
   .then () ->
-    if debug
-      console.log("-------------------------- committing...")
     pgQuery('COMMIT')
   .then () ->
-    if debug
-      console.log("-------------------------- counting...")
     return count
   .finally () ->
     # always try to disconnect the db client when we're done, but don't crash if we disconnected prematurely
     try
-      if debug
-        console.log("-------------------------- disconnecting...")
       pgClient.end()
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
@@ -179,8 +148,6 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
-  if options.rawTableSuffix == 'deed_TXC48123'
-    console.log("================================= (#{subtask.retry_num}) starting")
   rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
   fileBaseName = "corelogic_#{subtask.batch_id}_#{options.rawTableSuffix}"
   ftp = new PromiseFtp()
@@ -189,33 +156,21 @@ loadRawData = (subtask, options) ->
     user: subtask.task_data.user
     password: encryptor.decrypt(subtask.task_data.password)
   .then () ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) connected to ftp")
     ftp.get(subtask.data.path)
   .then (zipFileStream) -> new Promise (resolve, reject) ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) streaming zip file")
     zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
     .on('finish', resolve)
     .on('error', reject)
   .then () ->  # just in case this is a retry, do rm -rf
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) rimraf")
     rimraf.async("/tmp/#{fileBaseName}")
   .then () ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) mkdir")
     fs.mkdirAsync("/tmp/#{fileBaseName}")
   .then () -> new Promise (resolve, reject) ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) extracting zip file")
     fs.createReadStream("/tmp/#{fileBaseName}.zip")
     .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
     .on('close', resolve)
     .on('error', reject)
   .then () ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) streaming to db")
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
@@ -225,17 +180,11 @@ loadRawData = (subtask, options) ->
 
     _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
   .then (rowsInserted) ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) done, inserted #{rowsInserted} rows")
     return rowsInserted
   .catch isUnhandled, (error) ->
-    if options.rawTableSuffix == 'deed_TXC48123'
-      console.log("================================= (#{subtask.retry_num}) loading error! #{error.stack||error}")
     throw new PartiallyHandledError(error, "failed to load corelogic data for update")
   .finally () ->
     try
-      if options.rawTableSuffix == 'deed_TXC48123'
-        console.log("================================= (#{subtask.retry_num}) cleaning up")
       # try to clean up after ourselves
       rimraf.async("/tmp/#{fileBaseName}")
     catch err
