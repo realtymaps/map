@@ -13,7 +13,7 @@ _getAllConfigs = (rootName, props, spacer = '_', config) ->
       name = maybePropName
     else if _.isString maybePropName?.name
       name = maybePropName.name
-    throw new Error("config property is an unsupported type or malformed object.") unless name
+    throw new Error('config property is an unsupported type or malformed object.') unless name
     ret[name] = _getConfig(rootName, name, spacer, config)
     if maybePropName?.isJson?
       ret[name] = JSON.parse ret[name]
@@ -27,7 +27,7 @@ base =
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
   PORT: '/tmp/nginx.socket'  # unix domain socket, unless overriden below for dev
   LOGGING:
-    PATH: "mean.coffee.log"
+    PATH: 'mean.coffee.log'
     LEVEL: 'info'
     FILE_AND_LINE: false
     LONG_STACK_TRACES: false
@@ -49,17 +49,17 @@ base =
       pingTimeout: 10*60*1000
   TRUST_PROXY: 1
   SESSION:
-    secret: "thisistheREALTYMAPSsecretforthesession"
+    secret: 'thisistheREALTYMAPSsecretforthesession'
     cookie:
       maxAge: null
       secure: true
-    name: "connect.sid"
+    name: 'connect.sid'
     resave: false
     saveUninitialized: true
-    unset: "destroy"
+    unset: 'destroy'
   SESSION_SECURITY:
-    name: "anticlone"
-    app: "map"
+    name: 'anticlone'
+    app: 'map'
     rememberMeAge: 30*24*60*60*1000 # 30 days
     cookie:
       httpOnly: true
@@ -196,7 +196,7 @@ environmentConfig =
         secure: false
     NEW_RELIC:
       RUN: true
-      APP_NAME: "realtymaps-map"
+      APP_NAME: 'realtymaps-map'
 
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 

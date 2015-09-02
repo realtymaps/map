@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 
 module.exports = {}
 
@@ -64,7 +64,7 @@ module.exports.lob = (Lob) ->
         continue
       submodule[key+'Async'] = Promise.promisify(val, submodule)
 
-      
+
 _ = require 'lodash'
 memoize = require 'memoizee'
 memoize.promise = (promiseFunc, options={}) ->

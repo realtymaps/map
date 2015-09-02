@@ -14,7 +14,7 @@ valueFunc = (c) ->
 
 # return class denoting parcel type (see piechart.styl)
 pathClassFunc = (d) ->
-  "category-"+d.data.key.replace(/\ /g,'-')
+  'category-'+d.data.key.replace(/\ /g,'-')
 
 # provide a title for the parcel type when hovering over the arc
 pathTitleFunc = (d) ->

@@ -31,7 +31,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
     _parcels = do ->
 
-      _strokeColor = "#1269D8"
+      _strokeColor = '#1269D8'
       _strokeWeight = 1.5
 
       _parcelBaseStyle =
@@ -45,7 +45,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       normalColors[rmapsParcelEnums.status.pending] = rmapsstylusVariables.$rm_pending
       normalColors[rmapsParcelEnums.status.forSale] = rmapsstylusVariables.$rm_forsale
       normalColors[rmapsParcelEnums.status.notForSale] = rmapsstylusVariables.$rm_notforsale
-      normalColors['saved'] = '#F3F315'
+      normalColors['saved'] = rmapsstylusVariables['$rm-highlight-yellow']
       normalColors['default'] = 'transparent'
 
       hoverColors = {}
@@ -53,13 +53,13 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       hoverColors[rmapsParcelEnums.status.pending] = rmapsstylusVariables.$rm_pending_hover
       hoverColors[rmapsParcelEnums.status.forSale] = rmapsstylusVariables.$rm_forsale_hover
       hoverColors[rmapsParcelEnums.status.notForSale] = rmapsstylusVariables.$rm_notforsale_hover
-      hoverColors['saved'] = '#AA1'
+      hoverColors['saved'] = rmapsstylusVariables['$rm-saved-hover']
       hoverColors['default'] = 'rgba(153,153,153,.8)'
 
 
       labelFromStreetNum = (model) ->
         _.extend model,
-          markerType: "streetNum"
+          markerType: 'streetNum'
           icon:
             type: 'div'
             iconSize: [10, 10]
@@ -100,7 +100,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       setMarkerPriceOptions: (model) ->
         return {} unless model
         if not model.price
-          formattedPrice = " &nbsp; &nbsp; &nbsp;"
+          formattedPrice = ' &nbsp; &nbsp; &nbsp;'
         else if model.price >= 1000000
           formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
         else
@@ -119,7 +119,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
           status = model.rm_status
 
         _.extend model,
-          markerType: "price"
+          markerType: 'price'
           icon:
             type: 'div'
             iconSize: [60, 30]
@@ -129,7 +129,7 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
         return {} unless model
         #important for the clusterer css a div must have child span
         _.extend model,
-          markerType: "cluster"
+          markerType: 'cluster'
           icon:
             type: 'div'
             html: pieUtil.pieCreateFunctionBackend(model)

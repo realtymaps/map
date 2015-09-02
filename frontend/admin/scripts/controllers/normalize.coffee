@@ -47,7 +47,7 @@ app.controller 'rmapsNormalizeCtrl',
     getUrl: (rows) ->
       rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, rows)
   $scope.dlCSV = (url) ->
-    $window.open url, "_self"
+    $window.open url, '_self'
     return true
 
   allRules = {}
@@ -239,8 +239,14 @@ app.controller 'rmapsNormalizeCtrl',
       .then (fields) ->
         parseFields(fields)
 
-  $scope.loadReadyMls = () ->
+  $scope.getMlsList = () ->
     rmapsMlsService.getConfigs({schemaReady: true})
+    .then (configs) ->
+      $scope.mlsConfigs = configs
+      configs
+
+  $scope.loadReadyMls = () ->
+    $scope.getMlsList()
     .then (configs) ->
       $scope.mlsConfigs = configs
       if $state.params.id

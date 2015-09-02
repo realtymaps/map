@@ -3,7 +3,7 @@ pieUtil = require './util.piechart.coffee'
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
     name: 'Homes Detail'
-    type: "markercluster"
+    type: 'markercluster'
     visible: true
     layerOptions:
       maxClusterRadius: 100
@@ -31,6 +31,6 @@ module.exports = ($log) ->
           apikey: _cartodb.API_KEY
           account: _cartodb.ACCOUNT
           mapid: map.mapId
-          attribution: ""
+          attribution: ''
           maxZoom: 21
   _overlays

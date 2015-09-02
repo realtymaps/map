@@ -19,8 +19,8 @@ keystore = require '../services/service.keystore'
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 
-MAINTENANCE_TIMESTAMP = "job queue maintenance timestamp"
-sendNotification = notification("jobQueue")
+MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
+sendNotification = notification('jobQueue')
 knex = dbs.users.knex
 
 class SoftFail extends Error
@@ -97,7 +97,7 @@ queueReadyTasks = () -> Promise.try () ->
           .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
           .where () ->
             this
-            .whereIn("status", ['running', 'preparing'])             # ... it's currently running or preparing to run ...
+            .whereIn('status', ['running', 'preparing'])             # ... it's currently running or preparing to run ...
             .orWhere () ->
               this
               .where(status: 'success')                 # ... or it was successful
@@ -107,7 +107,7 @@ queueReadyTasks = () -> Promise.try () ->
                 .orWhereRaw("started + #{tables.jobQueue.taskConfig.tableName}.repeat_period_minutes * INTERVAL '1 minute' > NOW()") # or hasn't passed its success repeat delay
             .orWhere () ->   # ... or it failed and hasn't passed its fail retry delay
               this
-              .whereIn("status", ['hard fail','canceled','timeout'])           # ... or it failed
+              .whereIn('status', ['hard fail','canceled','timeout'])           # ... or it failed
               .where () ->
                 this
                 .whereNull("#{tables.jobQueue.taskConfig.tableName}.fail_retry_minutes")   # ... and it isn't set to retry ...
@@ -118,7 +118,7 @@ queueReadyTasks = () -> Promise.try () ->
 
 queueManualTask = (name, initiator) ->
   if !name
-    throw new Error("Task name required!")
+    throw new Error('Task name required!')
   knex.transaction (transaction) ->
     tables.jobQueue.taskConfig(transaction)
     .select()
@@ -441,7 +441,7 @@ _sendLongTaskWarnings = (transaction=null) ->
     sendNotification
       subject: 'task: long run warning'
       tasks: tasks
-      error: "tasks have been running for longer than expected"
+      error: 'tasks have been running for longer than expected'
 
 _killLongTasks = (transaction=null) ->
   # kill long-running tasks
@@ -457,7 +457,7 @@ _killLongTasks = (transaction=null) ->
     notificationPromise = sendNotification
       subject: 'task: long run killed'
       tasks: tasks
-      error: "tasks have been running for longer than expected"
+      error: 'tasks have been running for longer than expected'
     Promise.join cancelPromise, notificationPromise
 
 _handleZombies = (transaction=null) ->

@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 
 module.exports = (options = {}) ->
@@ -7,7 +7,7 @@ module.exports = (options = {}) ->
       return null
     numvalue = +value
     if isNaN(numvalue)
-      return Promise.reject new DataValidationError("invalid data type given for numeric value", param, value)
+      return Promise.reject new DataValidationError('invalid data type given for numeric value', param, value)
     if options.min? and numvalue < options.min
       return Promise.reject new DataValidationError("value less than minimum: #{options.min}", param, value)
     if options.max? and numvalue > options.max

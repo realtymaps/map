@@ -45,7 +45,7 @@ generateErrorHandler = (actionMsg) ->
       return new ExpressResponse
         errmsg:
           text: validationErrorMessage(actionMsg)
-          troubleshooting: _.flatten(err, "message").join(" | "),
+          troubleshooting: _.flatten(err, 'message').join(' | '),
         httpStatus.INTERNAL_SERVER_ERROR
     new ExpressResponse
       errmsg:
@@ -64,7 +64,7 @@ module.exports =
         lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
       .then (price) ->
         new ExpressResponse(price: price)
-      .catch generateErrorHandler("get a price quote for that mailing")
+      .catch generateErrorHandler('get a price quote for that mailing')
       .then (response) ->
         next(response)
 
@@ -77,6 +77,6 @@ module.exports =
         lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
       .then () ->
         new ExpressResponse({})
-      .catch generateErrorHandler("send your mailing")
+      .catch generateErrorHandler('send your mailing')
       .then (response) ->
         next(response)

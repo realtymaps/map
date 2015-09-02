@@ -150,7 +150,7 @@ loadUpdates = (subtask, options) ->
         Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
           return numRawRows
   .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, "failed to load RETS data for update")
+    throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 
 
 updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->

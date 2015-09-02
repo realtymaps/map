@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 arrayValidation = require './util.validation.array'
 fipsValidation = require './util.validation.fips'
@@ -24,8 +24,8 @@ module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     if !value
       return null
-      
+
     if !value.stateCode || !value.county || !value.parcelId
-      throw new DataValidationError("state, county, and parcelId are all required", param, value)
-    
+      throw new DataValidationError('state, county, and parcelId are all required', param, value)
+
     return composite(param, [value, value])

@@ -28,9 +28,9 @@ directiveControls = [
   directive:
     template: require('../../../html/includes/layers.jade')()
     compile: (tElement, tAttrs, transclude) ->
-      console.debug "LayerControl compile"
+      console.debug 'LayerControl compile'
       (scope, iElement, iAttrs, controller, transcludeFn) ->
-        console.debug "LayerControl link"
+        console.debug 'LayerControl link'
 ,
   name: 'location'
   options:
@@ -58,7 +58,7 @@ app.service 'rmapsControls', ($compile) ->
           super options
         onAdd: (map) ->
           console.debug "#{control.dName} onAdd"
-          wrapper = L.DomUtil.create 'div', 'rmaps-control'
+          wrapper = L.DomUtil.create 'div', 'rmaps-control' + " rmaps-#{control.name}-control"
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
           templateFn = $compile wrapper
           templateFn @options.scope

@@ -33,6 +33,6 @@ gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'otherAssets', 'angular
 
 gulp.task 'default', gulp.series 'develop'
 
-gulp.task "server", gulp.series 'default'
+gulp.task 'server', gulp.series 'default'
 
 gulp.task 's', gulp.series 'server'

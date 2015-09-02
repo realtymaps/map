@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 logger = require '../../config/logger'
 _ = require 'lodash'
@@ -7,7 +7,7 @@ _ = require 'lodash'
 #string should be an array of [[nelat,nelon],[swlat,swlon]]
 module.exports = (param, boundsObjStr) -> Promise.try ->
   # logger.debug "boundsObjStr: #{boundsObjStr}"
-  throw new Error("neSwBounds Param undefined!") unless boundsObjStr
+  throw new Error('neSwBounds Param undefined!') unless boundsObjStr
   # logger.debug "newSw validator"
   obj = JSON.parse boundsObjStr
   # console.debug "isArray: #{_.isArray obj}"
@@ -16,4 +16,4 @@ module.exports = (param, boundsObjStr) -> Promise.try ->
     throw new Error("[nesw] bounds format error Obj is not an array or incorrect array length. Obj: #{obj}")
   obj
 .catch (err) ->
-  Promise.reject new DataValidationError("error decoding nesw string", param, err)
+  Promise.reject new DataValidationError('error decoding nesw string', param, err)

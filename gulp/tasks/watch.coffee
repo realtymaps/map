@@ -8,9 +8,9 @@ gulp.task 'watch_vendor', (done) ->
 
 gulp.task 'watch_all_front', gulp.series 'angularWatch', 'angularWatchAdmin'
 
-specCommon = "spec/common/**/*.coffee"
+specCommon = 'spec/common/**/*.coffee'
 gulp.task 'watch', gulp.series 'watch_all_front', (done) ->
-  gulp.watch ['gulp/**/*.coffee',"spec/gulp/**/*.coffee", specCommon], gulp.series 'gulpSpec'
+  gulp.watch ['gulp/**/*.coffee','spec/gulp/**/*.coffee', specCommon], gulp.series 'gulpSpec'
   gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon], gulp.series 'backendSpec'
   gulp.watch [
     paths.destFull.scripts + '/map.bundle.js',

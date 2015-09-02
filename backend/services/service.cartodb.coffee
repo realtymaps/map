@@ -1,6 +1,6 @@
 db = require('../config/dbs').properties
 sqlHelpers = require '../utils/util.sql.helpers'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 {CARTODB} = require '../config/config'
 cartodb = require 'cartodb-api'
@@ -38,7 +38,7 @@ _upload = (stream, fileName) -> Promise.try ->
           uploadFileName: fileName
 
 _fipsCodeQuery = (opts) ->
-  throw new Error("opts.fipscode required!") unless opts?.fipscode?
+  throw new Error('opts.fipscode required!') unless opts?.fipscode?
   query =
   sqlHelpers.select(tables.propertyData.parcel(), 'cartodb_parcel', false, 'distinct on (rm_property_id)')
   .where fips_code:opts.fipscode

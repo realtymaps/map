@@ -4,7 +4,7 @@ _ = require 'lodash'
 app.controller 'rmapsJobsHealthCtrl',
 ($window, $scope, $rootScope, rmapsJobsService, uiGridConstants) ->
 
-  $scope.healthTimerange = "1 day"
+  $scope.healthTimerange = '1 day'
 
   $scope.jobsGrid =
     enableColumnMenus: false

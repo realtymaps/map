@@ -1,9 +1,9 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-{userData} = require "../config/tables"
+{userData} = require '../config/tables'
 {auth_user_profile, project} = userData
 {singleRow} = require '../utils/util.sql.helpers'
 {currentProfile} = require '../utils/util.session.helpers'
@@ -52,7 +52,7 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
 
     if !withProject and !hasAProject
       q =  auth_user_profile().select(cols...).innerJoin(project.tableName,
-      project.tableName + ".id", auth_user_profile.tableName + '.project_id')
+      project.tableName + '.id', auth_user_profile.tableName + '.project_id')
       .where(auth_user_id: auth_user_id)
       # logger.debug q.toString()
       return q

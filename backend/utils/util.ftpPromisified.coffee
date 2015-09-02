@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 ftp = require 'ftp'
 
@@ -19,7 +19,7 @@ _createFtp = (url, account, password) ->
     logger.error(err)
     throw err
   .then ->
-    logger.debug("new client connected")
+    logger.debug('new client connected')
     c
 
 module.exports = _createFtp

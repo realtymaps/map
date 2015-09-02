@@ -23,7 +23,7 @@ createRawTempTable = (tableName, fields) ->
 
 
 _countInvalidRows = (knex, tableName, assignedFalse) ->
-  asPrefix = if assignedFalse then "invalids" else "unvalids"
+  asPrefix = if assignedFalse then 'invalids' else 'unvalids'
   knex
   .sum('invalid')
   .from () ->
@@ -35,7 +35,7 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
     else
       query = query.whereNull('rm_valid')
     query.as(asPrefix)
-        
+
 recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted

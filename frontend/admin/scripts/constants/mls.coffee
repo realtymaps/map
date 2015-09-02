@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-_queryTemplate = "[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]"
+_queryTemplate = '[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]'
 
 mls =
   queryTemplate: _queryTemplate
@@ -9,12 +9,12 @@ mls =
     base:
       id: null
       name: null
-      notes: ""
+      notes: ''
       username: null
       password: null
       url: null
     propertySchema:
-      listing_data: {"queryTemplate": _queryTemplate}
+      listing_data: {'queryTemplate': _queryTemplate}
     otherConfig: {}
     task:
       active: false

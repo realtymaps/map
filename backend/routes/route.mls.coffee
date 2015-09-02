@@ -103,7 +103,7 @@ module.exports =
 
               .then (humanList) ->
                 resObj = new ExpressResponse(humanList)
-                resObj.format = "csv"
+                resObj.format = 'csv'
                 next resObj
           .catch (error) ->
             next new ExpressResponse

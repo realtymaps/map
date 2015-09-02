@@ -1,6 +1,7 @@
 #mail
+  @extends .font-regular
   .inner
-    height:100%;
+    height 100%
     overflow scroll
 
     header
@@ -25,7 +26,7 @@
         height 32px
 
         display inline-block
-    
+
     span
       &.sent
       &.draft
@@ -84,6 +85,7 @@
           h4
             font-size 12px
             margin 0
+            color inherit
           a.details
             font-size 11px
             display none

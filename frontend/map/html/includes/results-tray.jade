@@ -2,69 +2,34 @@ include ./mixins/result-buttons.jade
 
 .results-container.navbar-below#results-slide(ng-show="Toggles.showResults"
 ng-init="resultsInit('results-list')")
-    .tray-close#results-close(ng-click="Toggles.toggleResults()")
-        i.centered.fa.fa-chevron-right.fa-2x
-    #results-list-inner
-        #results-header
-            div(id="results-header-results-count-arrow")
-            div(id="results-header-results-count")
-                .ng-cloak {{resultsPotentialLength}} Results
-            div(id="results-header-right")
-                span.sort-by Sort by:&nbsp;
-                .btn-group
-                    button(id="results-sort-beds" class="btn btn-default btn-xs"
-                    ng-click="formatters.results.setOrReverseResultsPredicate('bedrooms')"
-                    ng-class="formatters.results.getSortClass('bedrooms')") Beds
+  .filters
+      span Sort By:
+      ul(ng-click="$event.stopPropagation()")
+          li(ng-click="formatters.results.getSortClass('bedrooms')") Beds
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('bedrooms')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')") Sq Ft
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
+          li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
+              span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
+  .inner
+    #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
+      ul.list
+          li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
+              ng-click="formatters.results.click(property,property);showDetails = !showDetails")
+              div.property-img
+                  span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+                  img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 245, 163)}}" title="{{property.title}}")
+              p.price(ng-class="formatters.results.getForSaleClass(property,true)") ${{property.price}}
+              div.property-attr
+                  ul.attr
+                      li {{property.bedrooms}} beds
+                      li {{property.baths_total}} bath
+                      li {{property.finished_sqft}} Sq Ft
+                      li {{formatters.results.getYear(property.year_built)}} built
+              h4.title(ng-if="property.street_address_num || property.street_address_name || property.street_address_unit",ng-cloak) {{property.street_address_num}} {{property.street_address_name}} {{property.street_address_unit}}
 
-                    button(id="results-sort-sqft" class="btn btn-default btn-xs"
-                    ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')"
-                    ng-class="formatters.results.getSortClass('finished_sqft')") Sq Ft
+              p.location(ng-if="property.owner_city || property.owner_state") {{formatters.results.getCityStateZip(property,true)}}
 
-                    button(id="results-sort-year" class="btn btn-default btn-xs"
-                    ng-click="formatters.results.setOrReverseResultsPredicate('year_built')"
-                    ng-class="formatters.results.getSortClass('year_built')") Year
-
-                    button(id="results-sort-price" class="btn btn-default btn-xs"
-                    ng-click="formatters.results.setOrReverseResultsPredicate('price')"
-                    ng-class="formatters.results.getSortClass('price')") Price
-
-                    button(id="results-sort-saved" class="btn btn-default btn-xs"
-                    ng-click="formatters.results.setOrReverseResultsPredicate('savedDetails.isSaved')"
-                    ng-class="formatters.results.getSortClass('savedDetails.isSaved')") Saved
-
-        #results-list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
-            //DEBUG repeat
-            //div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property" rmaps-post-repeat options="resultsRepeatPerf")
-            div(ng-repeat="result in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit" class="result-property")
-
-                .card( ng-class="formatters.results.getAdditionalClasses(result)" id="l-el{{result.rm_property_id}}"
-                ng-click="formatters.results.click(result,result);showDetails = !showDetails"
-                ng-mouseenter="formatters.results.mouseenter(result,result)"
-                ng-mouseleave="formatters.results.mouseleave(result,result)")
-                    .photo()
-                        img(ng-cloak ng-src="{{formatters.results.getCurbsideImage(result)}}")
-                    .info
-                        .address(ng-if="result.street_address_num || result.street_address_name || result.street_address_unit",ng-cloak)
-                            | {{result.street_address_num}} {{result.street_address_name}} {{result.street_address_unit}}
-                            .city-state-zip {{formatters.results.getCityStateZip(result)}}
-                        .price(ng-cloak)
-                            .price-value {{formatters.results.getPrice(result.price)}}
-                            .property-status(ng-class="formatters.results.getStatusLabelClass(result,true)") {{result.rm_status}}
-
-                        .quick-summary
-                            .beds(ng-if="result.bedrooms" ng-cloak)
-                                span.data {{result.bedrooms}}
-                                span.title Beds
-                            .baths(ng-if="result.baths_total" ng-cloak)
-                                span.data {{result.baths_total}}
-                                span.title Baths
-                            .sqft(ng-if="result.finished_sqft" ng-cloak)
-                                span.data {{result.finished_sqft}}
-                                span.title Sq Ft
-                            .year(ng-if="result.year_built" ng-cloak)
-                                span.data {{formatters.results.getYear(result.year_built)}}
-                                span.title Built
-                    .card-buttons
-                      +resultButtons('result')
-        #results-footer
-            i.close.fa.fa-times.fa-3(ng-click="Toggles.toggleResults()")
+              +resultButtons('property')

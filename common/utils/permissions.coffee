@@ -14,7 +14,7 @@ checkAllowed = (required, allowed) ->
   if not allowed
     return false
 
-  if typeof(required) is "string"
+  if typeof(required) is 'string'
     required = {any: [required]}
   granted = false
   if required.any

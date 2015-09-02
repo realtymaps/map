@@ -23,7 +23,7 @@ describe 'utils/validation.validators.defaults()'.ns().ns('Backend'), ->
         value.should.equal(42)
       expectResolve(validators.defaults(options)(param, null)).then (value) ->
         value.should.equal(42)
-      expectResolve(validators.defaults(options)(param, "")).then (value) ->
+      expectResolve(validators.defaults(options)(param, '')).then (value) ->
         value.should.equal(42)
     ]
 

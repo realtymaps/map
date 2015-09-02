@@ -18,7 +18,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip) ->
       proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)
   .catch isUnhandled, (error) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
-    throw new PartiallyHandledError(error, "RETS client could not be created")
+    throw new PartiallyHandledError(error, 'RETS client could not be created')
   .then (retsClient) ->
     logger.debug 'Logging in client ', loginUrl
     retsClient.login()
@@ -26,7 +26,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
     if error.replyCode
       error = new Error("#{error.replyText} (#{error.replyCode})")
-    throw new PartiallyHandledError(error, "RETS login failed")
+    throw new PartiallyHandledError(error, 'RETS login failed')
 # reference counting memoize
 _getRetsClientInternal = memoize _getRetsClientInternal,
   refCounter: true
@@ -54,7 +54,7 @@ getDataDump = (mlsInfo, limit, minDate=0) ->
       return []
     # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
     # code for too many results, must manually paginate or something to get all the data
-    throw new PartiallyHandledError(error, "failed to query RETS system")
+    throw new PartiallyHandledError(error, 'failed to query RETS system')
 
 getDatabaseList = (serverInfo) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
@@ -63,7 +63,7 @@ getDatabaseList = (serverInfo) ->
       logger.error error.stack
       if error.replyCode
         error = new Error("#{error.replyText} (#{error.replyCode})")
-      throw new PartiallyHandledError(error, "Failed to retrieve RETS databases")
+      throw new PartiallyHandledError(error, 'Failed to retrieve RETS databases')
     .then (response) ->
       _.map response.Resources, (r) ->
         _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
@@ -74,7 +74,7 @@ getTableList = (serverInfo, databaseName) ->
     .catch isUnhandled, (error) ->
       if error.replyCode
         error = new Error("#{error.replyText} (#{error.replyCode})")
-      throw new PartiallyHandledError(error, "Failed to retrieve RETS tables")
+      throw new PartiallyHandledError(error, 'Failed to retrieve RETS tables')
     .then (response) ->
       _.map response.Classes, (r) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
@@ -83,7 +83,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
     .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS columns")
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), 'Failed to retrieve RETS columns')
     .then (response) ->
       _.map response.Fields, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
@@ -92,7 +92,7 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), "Failed to retrieve RETS types")
+      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), 'Failed to retrieve RETS types')
     .then (response) ->
       response.LookupTypes
 

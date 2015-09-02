@@ -1,4 +1,4 @@
-Promise = require "bluebird"
+Promise = require 'bluebird'
 logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
@@ -8,13 +8,13 @@ tables = require '../config/tables'
 
 
 DIGIMAPS =
-  DIRECTORIES:[{name:"DELIVERIES"}, {name: "DMP_DELIVERY_", doParseDate:true}, {name:"ZIPS"}]
-  FILE:{name:"Parcels_", appendFipsCode:true, ext:".zip"}
+  DIRECTORIES:[{name:'DELIVERIES'}, {name: 'DMP_DELIVERY_', doParseDate:true}, {name:'ZIPS'}]
+  FILE:{name:'Parcels_', appendFipsCode:true, ext:'.zip'}
 
 DATA_SOURCE_TYPE = 'parcels'
 
 _getClientFromDigiSettings = (digiMapsSettings) ->
-  logger.debug digiMapsSettings
+  # logger.debug digiMapsSettings
   if _.isFunction digiMapsSettings?.then
     return digiMapsSettings
   {URL, ACCOUNT, PASSWORD} = digiMapsSettings
@@ -60,7 +60,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
 
           folderObjs.map (f) -> f.name
     .finally ->
-      logger.debug "closing client"
+      logger.debug 'closing client'
       client.end()
     .then (folderNamesToProcess) -> #step 2
       logger.debug 'defineImports: step 2'
@@ -83,7 +83,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
                 batch_id: subtask.batch_id
 
           .finally ->
-            logger.debug "closing getClient"
+            logger.debug 'closing getClient'
             getClient.end()
 
       for key, name of folderNamesToProcess
@@ -91,7 +91,7 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
         logger.debug "defineImports: step 2, fullPath: #{fullPath}"
         promises.push _getImports(fullPath)
 
-      logger.debug "defineImports: step 2"
+      logger.debug 'defineImports: step 2'
       Promise.all promises
     .then -> #step 3
       logger.debug 'defineImports: step 3'

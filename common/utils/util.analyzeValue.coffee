@@ -6,7 +6,7 @@ getFunctionName = (funcString) ->
   if not funcString then return null
   funcNameRegex = /function (.{1,})\(/
   results = (funcNameRegex).exec(funcString.toString())
-  if results && results.length > 1 then results[1] else ""
+  if results && results.length > 1 then results[1] else ''
 
 analyzeValue = (value, fullJson=false) ->
   result = {}
@@ -27,7 +27,7 @@ analyzeValue = (value, fullJson=false) ->
       result.type = null
     result.type = result.type || value?.constructor?.name || getFunctionName(value?.constructor?.toString()) || 'object'
     result.details = result.details || value.toString()
-    if (result.details.substr(0, 7) == "[object" || result.type == 'Array')
+    if (result.details.substr(0, 7) == '[object' || result.type == 'Array')
       result.details = util.inspect(value, depth: null)
   else if result.type == 'string'
     result.details = util.inspect(value, depth: null)
@@ -37,7 +37,7 @@ analyzeValue = (value, fullJson=false) ->
     result.details = ''+value
   if fullJson
     result.json = util.inspect(value, depth: null)
-  
+
   return result
 
 module.exports = analyzeValue

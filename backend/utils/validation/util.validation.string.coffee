@@ -1,5 +1,5 @@
 _ = require 'lodash'
-Promise = require "bluebird"
+Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 require '../../../common/extensions/strings'
 
@@ -9,7 +9,7 @@ module.exports = (options = {}) ->
     if !value?
       return null
     if !_.isString(value)
-      return Promise.reject new DataValidationError("invalid data type given for string field", param, value)
+      return Promise.reject new DataValidationError('invalid data type given for string field', param, value)
     if options.minLength? and value.length < options.minLength
       return Promise.reject new DataValidationError("string shorter than minimum length: #{options.minLength}", param, value)
     if options.maxLength? and value.length > options.maxLength
