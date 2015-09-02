@@ -119,9 +119,12 @@ base =
     LOCK_KEY: 0x1693F8A6  # random number
     SCHEDULING_LOCK_ID: 0
     MAINTENANCE_LOCK_ID: 1
-    MAINTENANCE_WINDOW: 300000  # 5 minutes
+    MAINTENANCE_WINDOW: 30000  # 30 seconds
     SUBTASK_ZOMBIE_SLACK: "INTERVAL '1 minute'"
     LOCK_DEBUG: process.env.LOCK_DEBUG
+  CLEANUP:
+    OLD_TABLE_DAYS: 7
+    SUBTASK_ERROR_DAYS: 90
 
 
 # this one's separated out so we can re-use the USER_DB.connection value
@@ -154,6 +157,9 @@ environmentConfig =
       RUN: Boolean(process.env.NEW_RELIC_RUN)
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
+    CLEANUP:
+      OLD_TABLE_DAYS: 1
+      SUBTASK_ERROR_DAYS: 7
 
   test: # test inherits from development below
     LOGGING:

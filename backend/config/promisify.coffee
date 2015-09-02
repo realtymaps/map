@@ -70,4 +70,6 @@ memoize = require 'memoizee'
 memoize.promise = (promiseFunc, options={}) ->
   promiseOptions = _.clone(options)
   promiseOptions.async = true
+  if !promiseOptions.length?
+    promiseOptions.length = promiseFunc.length
   Promise.promisify memoize(Promise.nodeifyWrapper(promiseFunc), promiseOptions)
