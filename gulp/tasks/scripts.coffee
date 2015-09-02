@@ -20,7 +20,7 @@ ignore = require 'ignore'
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  inputGlob = paths[app].root + 'scripts/**/*.coffee'
+  inputGlob = [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
   outputName = app + '.bundle.js'
   startTime = ''
 
@@ -40,7 +40,7 @@ browserifyTask = (app, watch = false) ->
 
   bundledStream = pipeline through()
 
-  globby [inputGlob], (err, entries) ->
+  globby inputGlob, (err, entries) ->
     # gutil.log "entries: #{entries}"
     if (err)
       bundledStream.emit('error', err)

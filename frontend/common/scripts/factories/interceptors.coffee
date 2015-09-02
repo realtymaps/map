@@ -3,7 +3,7 @@ qs = require 'qs'
 httpStatus = require '../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../common/config/commonConfig.coffee'
 escapeHtml = require 'escape-html'
-
+mod = require '../module.coffee'
 
 defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor', 'rmapsRedirectInterceptor']
 
@@ -63,12 +63,13 @@ interceptors =
     'responseError': (rejection) ->
       rmapsSpinner.decrementLoadingCount(rejection.config?.url)
       $q.reject(rejection)
+###
+take care of loading common interceptors among apps,
+also provides flexibility for loading different list per app if necessary
+###
+for interceptorName in defaultInterceptorList
+  mod.factory interceptorName, interceptors[interceptorName]
 
-# take care of loading common interceptors among apps, also provides flexibility for loading different list per app if necessary
-module.exports.loadInterceptors = (app, interceptorNames=defaultInterceptorList) ->
-  for interceptorName in interceptorNames
-    app.factory interceptorName, interceptors[interceptorName]
-
-  app.config ($httpProvider) ->
-    for interceptorName in interceptorNames
-      $httpProvider.interceptors.push interceptorName
+mod.config ($httpProvider) ->
+  for interceptorName in defaultInterceptorList
+    $httpProvider.interceptors.push interceptorName

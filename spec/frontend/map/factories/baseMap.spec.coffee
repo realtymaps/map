@@ -1,4 +1,4 @@
-Point = require('../../../common/utils/util.geometries.coffee').Point
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 describe "BaseMapCtrl", ->
   beforeEach ->
