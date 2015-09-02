@@ -1,21 +1,24 @@
+_ = require 'lodash'
+
 beforeEach ->
   window.isTest = true
 
-  angular.module('rmapsCommon').config ($provide) ->
+  angular.module('rmapsCommon')
+  .config ($provide) ->
     $provide.decorator '$timeout', ($delegate, $browser) ->
       $delegate.hasPendingTasks = ->
         $browser.deferredFns.length > 0
 
       $delegate
 
-    @digest = (scope, $timeout, fn) ->
-      hasTimeout = $timeout?.hasPendingTasks?
-      if !hasTimeout
-        fn = $timeout
+  .service 'digestor', ($rootScope, $timeout) ->
+    digest: (scope = $rootScope, fn = ->) ->
+      if _.isFunction scope
+        fn = scope
+        scope = $rootScope
 
-      if hasTimeout
-        while $timeout.hasPendingTasks()
-          $timeout.flush()
+      while $timeout.hasPendingTasks()
+        $timeout.flush()
 
       fn() if fn?
       scope.$digest() unless scope.$$phase

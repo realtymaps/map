@@ -1,11 +1,11 @@
 mod = require '../module.coffee'
 
 mod.service 'rmapsRendering', ($timeout) ->
-  debounce: (stateObj, fn, delayMilliSecs) ->
-    if stateObj
+  debounce: (stateObj, propName, fn, delayMilliSecs) ->
+    if stateObj?[propName]
       $timeout.cancel(@filterDrawPromise)
 
-    stateObj = $timeout ->
+    stateObj[propName] = $timeout ->
       fn()
-      stateObj = false
+      stateObj[propName] = false
     , delayMilliSecs

@@ -314,7 +314,7 @@ app.factory 'rmapsMap',
 
       filter: (newFilters, oldFilters) =>
         return if (not newFilters and not oldFilters) or newFilters == oldFilters
-        rmapsRendering.debounce @filterDrawPromise, =>
+        rmapsRendering.debounce @, 'filterDrawPromise', =>
           rmapsFilterManager.manage (@filters) =>
             @redraw()
             @filterDrawPromise = false
