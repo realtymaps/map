@@ -36,6 +36,7 @@ module.exports =
   common: 'common/**/*.*'
   webroot: 'common/webroot/**/*.*'
 
+  frontendCommon: getAssetCollection('common')
   map: getAssetCollection(appMap)
   admin: getAssetCollection(appAdmin)
 

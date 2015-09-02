@@ -1,10 +1,9 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
-
-
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
+mod = require '../module.coffee'
 
-module.exports = ($rootScope, $q, $http, rmapsevents) ->
+mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
   _identity = null
   _authenticated = false
   _resolved = false

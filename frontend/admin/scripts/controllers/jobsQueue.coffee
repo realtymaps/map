@@ -1,7 +1,6 @@
 app = require '../app.coffee'
-GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService) ->
+app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
 
   $scope.getData = rmapsJobsService.getQueue
 
@@ -44,7 +43,4 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular
       defaultValue: false
   ]
 
-  $injector.invoke GridController, this,
-    $scope: $scope
-    $rootScope: $rootScope
-    Restangular: Restangular
+  new rmapsGridFactory($scope)

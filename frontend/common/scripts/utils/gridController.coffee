@@ -1,58 +1,59 @@
 _ = require 'lodash'
+mod = require '../module.coffee'
 
-module.exports = ($scope, $rootScope, Restangular) ->
+mod.factory 'rmapsGridFactory', ($rootScope, Restangular) ->
+  ($scope) ->
+    @gridName = @gridName or 'Grid'
 
-  @gridName = @gridName or 'Grid'
+    $scope.gridName = @gridName[0].toUpperCase() + @gridName.slice(1)
 
-  $scope.gridName = @gridName[0].toUpperCase() + @gridName.slice(1)
+    $scope.grid =
+      enableColumnMenus: false
+      columnDefs: @columnDefs
+      onRegisterApi: (gridApi) ->
+        gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
+          if newValue != oldValue
+            $scope.$apply()
+            rowEntity.save()
 
-  $scope.grid =
-    enableColumnMenus: false
-    columnDefs: @columnDefs
-    onRegisterApi: (gridApi) ->
-      gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
-        if newValue != oldValue
-          $scope.$apply()
-          rowEntity.save()
+    $scope.exists = () ->
+      idx = _.findIndex $scope.grid.data, name: $scope.recordName
+      $scope.nameExists = idx != -1
 
-  $scope.exists = () ->
-    idx = _.findIndex $scope.grid.data, name: $scope.recordName
-    $scope.nameExists = idx != -1
+    $scope.create = () ->
+      if !$scope.recordName
+        return
 
-  $scope.create = () ->
-    if !$scope.recordName
-      return
+      record = name: $scope.recordName
+      _.each @columnDefs, (c) ->
+        if (v = c.defaultValue)?
+          record[c.name] = if _.isFunction v then v() else v
 
-    record = name: $scope.recordName
-    _.each @columnDefs, (c) ->
-      if (v = c.defaultValue)?
-        record[c.name] = if _.isFunction v then v() else v
-
-    $scope.gridBusy = $scope.grid.data.post(record)
-    .then () ->
-      route = [record.name]
-      data = $scope.grid.data
-      while data
-        route.unshift data.route
-        data = data.parentResource
-
-      record = Restangular.restangularizeElement(null, record, route.join('/'))
-      record.fromServer = true
-      $scope.grid.data.push(record)
-      $scope.exists()
-
-  $scope.delete = () ->
-    idx = _.findIndex $scope.grid.data, name: $scope.recordName
-    if idx > -1
-      $scope.jobsBusy = $scope.grid.data[idx].remove()
+      $scope.gridBusy = $scope.grid.data.post(record)
       .then () ->
-        $scope.grid.data.splice(idx, 1)
+        route = [record.name]
+        data = $scope.grid.data
+        while data
+          route.unshift data.route
+          data = data.parentResource
+
+        record = Restangular.restangularizeElement(null, record, route.join('/'))
+        record.fromServer = true
+        $scope.grid.data.push(record)
         $scope.exists()
 
-  $scope.load = () ->
-    $scope.jobsBusy = $scope.getData()
-    .then (data) ->
-      $scope.grid.data = data
+    $scope.delete = () ->
+      idx = _.findIndex $scope.grid.data, name: $scope.recordName
+      if idx > -1
+        $scope.jobsBusy = $scope.grid.data[idx].remove()
+        .then () ->
+          $scope.grid.data.splice(idx, 1)
+          $scope.exists()
 
-  $rootScope.registerScopeData () ->
-    $scope.load()
+    $scope.load = () ->
+      $scope.jobsBusy = $scope.getData()
+      .then (data) ->
+        $scope.grid.data = data
+
+    $rootScope.registerScopeData () ->
+      $scope.load()

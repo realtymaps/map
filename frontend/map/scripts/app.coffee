@@ -6,6 +6,7 @@ require '../../../common/extensions/angular.coffee'
 appName = 'rmapsMapApp'
 
 app = window.angular.module appName, [
+  'rmapsCommon'
   'logglyLogger.logger'
   'angular-data.DSCacheFactory'
   'leaflet-directive'

@@ -44,8 +44,8 @@
 #   quietMillis: milliseconds until a hidden alert will auto-dismiss (counted from its most recent repetition); defaults
 #     to MainOpions.alerts.quietMillis
 ###
-
-module.exports = ($scope, $timeout, $sce, rmapsevents, $log, rmapsMainOptions) ->
+mod = require '../module.coffee'
+mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsevents, $log, rmapsMainOptions) ->
   $scope.alerts = []
   alertsMap = {}
   anonymousAlertCounter = 1
