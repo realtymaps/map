@@ -28,7 +28,7 @@ String::replaceLast = (find, replace) ->
   return @toString()
 
 String::toInitCaps = () ->
-  @replace(/[^-'#\d\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+  @replace(/\d*[^-'#\d\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
 
 if !String::startsWith
   String::startsWith = (searchString, position=0) ->

@@ -13,6 +13,7 @@ cluster = require 'cluster'
 memoize = require 'memoizee'
 config = require '../config/config'
 keystore = require '../services/service.keystore'
+{PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -41,7 +42,7 @@ _getTaskCode = (taskName) ->
     .then (mlsConfigs) ->
       if mlsConfigs?[0]?
         return require("./tasks/task.default.mls")
-      throw new Error("can't find code for task with name: #{taskName}")
+      throw new PartiallyHandledError(err, "can't find code for task with name: #{taskName}")
 _getTaskCode = memoize.promise(_getTaskCode)
 
 _withDbLock = (lockId, handler) ->
@@ -284,26 +285,32 @@ queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, repla
         .then () ->
           return 1
 
-cancelTask = (taskName, status) ->
+cancelTask = (taskName, status, withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  tables.jobQueue.taskHistory()
-  .where
-    name: taskName
-    current: true
-  .whereNull('finished')
-  .update
-    status: status
-    status_changed: knex.raw('NOW()')
-    finished: knex.raw('NOW()')
-  .then () ->
-    tables.jobQueue.currentSubtasks()
+  tables.jobQueue.taskHistory.transaction (transaction) ->
+    tables.jobQueue.taskHistory(transaction)
     .where
-      task_name: taskName
-      status: 'queued'
+      name: taskName
+      current: true
+    .whereNull('finished')
     .update
-      status: 'canceled'
+      status: status
+      status_changed: knex.raw('NOW()')
       finished: knex.raw('NOW()')
+    .then () ->
+      subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction)
+      .where(task_name: taskName)
+      if withPrejudice
+        subtaskCancelQuery = subtaskCancelQuery
+        .whereNull('finished')
+      else
+        subtaskCancelQuery = subtaskCancelQuery
+        .where(status: 'queued')
+      subtaskCancelQuery
+      .update
+        status: 'canceled'
+        finished: knex.raw('NOW()')
 
 executeSubtask = (subtask) ->
   tables.jobQueue.currentSubtasks()
@@ -351,17 +358,27 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     if hard
       logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
     else
-      if subtask.retry_max_count? && subtask.retry_max_count >= subtask.retry_num
+      if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
         if subtask.hard_fail_after_retries
           hard = true
           status = 'hard fail'
           error = "max retries exceeded: #{error}"
+          logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+        else
+          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
       else
-        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started')
+        retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
         retrySubtask.ignore_until = knex.raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
-        tables.jobQueue.currentSubtasks()
-        .insert retrySubtask
+        _checkTask(null, subtask.batch_id, subtask.task_name)
+        .then (taskData) ->
+          # need to make sure we don't continue to retry subtasks if the task has errored in some way
+          if taskData == undefined
+            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+            return
+          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+          tables.jobQueue.currentSubtasks()
+          .insert retrySubtask
   .then () ->
     tables.jobQueue.currentSubtasks()
     .where(id: subtask.id)
@@ -494,7 +511,7 @@ _updateTaskCounts = (transaction=knex) ->
 
 doMaintenance = () ->
   _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
-    keystore.getUserDbValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
+    keystore.userDb.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
       if Date.now() - timestamp < config.JOB_QUEUE.MAINTENANCE_WINDOW
         return
@@ -513,7 +530,7 @@ doMaintenance = () ->
       .then () ->
         _updateTaskCounts(transaction)
       .then () ->
-        keystore.setUserDbValue(MAINTENANCE_TIMESTAMP, Date.now())
+        keystore.userDb.setValue(MAINTENANCE_TIMESTAMP, Date.now())
 
 getQueueNeeds = () ->
   queueNeeds = {}
@@ -530,11 +547,11 @@ getQueueNeeds = () ->
       queueNeeds[name] = 0
       queueZombies[name] = 0
     currentSubtasks = _.groupBy(currentSubtasks, 'task_name')
-    for taskName,taskList of currentSubtasks
-      if !queueConfigs[taskList[0]?.queue_name]?.active
+    for taskName,subtaskList of currentSubtasks
+      if !queueConfigs[subtaskList[0]?.queue_name]?.active
         # any task running on an inactive queue (or a queue without config) can be ignored without further processing
         continue
-      taskSteps = _.groupBy(taskList, 'step_num')
+      taskSteps = _.groupBy(subtaskList, 'step_num')
       steps = _.keys(taskSteps).sort()
       # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
       # anything from steps past that (in this task)
@@ -550,7 +567,7 @@ getQueueNeeds = () ->
           if subtask.status == 'zombie'
             queueZombies[subtask.queue_name] += 1
         if !acceptablyDone
-          continue
+          break
     result = []
     for name of queueConfigs
       # if the queue has nothing that's not a zombie, let it scale down to 0; otherwise we need to leave something
@@ -559,16 +576,16 @@ getQueueNeeds = () ->
       needs = 0
       if queueNeeds[name] > 0
         needs = queueNeeds[name] * queueConfigs[name].priority_factor + queueZombies[name]
-        needs /= queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno
+        needs /= (queueConfigs[name].subtasks_per_process * queueConfigs[name].processes_per_dyno)
         needs = Math.ceil(needs)
       result.push(name: name, quantity: needs)
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = (transaction=knex, currentSubtask, total, maxPage, laterSubtaskName) ->
+queueSubsequentPaginatedSubtask = (transaction=knex, currentSubtask, total, maxPage, laterSubtaskName, mergeData) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask)
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask, mergeData)
 
 queuePaginatedSubtask = (transaction=knex, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
   if _.isArray(totalOrList)
@@ -665,3 +682,4 @@ module.exports =
   SoftFail: SoftFail
   HardFail: HardFail
   getLastTaskStartTime: getLastTaskStartTime
+  transaction: knex.transaction.bind(knex)

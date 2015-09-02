@@ -53,27 +53,36 @@ checkFtpDrop = (subtask) ->
       return ftp.end()
     dates = {}
     if todo[TAX]?
-      logger.debug "Found new corelogic tax directory to process: #{todo[TAX]}}"
+      # ##################################### TODO: debugging, remove this when done coding the corelogic task
+      todo[TAX] = '20140919Tax'  ############ TODO: debugging, remove this when done coding the corelogic task
+      # ##################################### TODO: debugging, remove this when done coding the corelogic task
+      logger.debug "Found new corelogic tax directory to process: #{todo[TAX]}"
       dates[TAX] = todo[TAX].slice(0, 8)
       taxFilesPromise = ftp.list("/#{todo[TAX]}")
     else
       taxFilesPromise = Promise.resolve()
     if todo[DEED]?
-      logger.debug "Found new corelogic deed directory to process: #{todo[DEED]}}"
+      logger.debug "Found new corelogic deed directory to process: #{todo[DEED]}"
       dates[DEED] = todo[DEED].slice(0, 8)
       deedFilesPromise = ftp.list("/#{todo[DEED]}")
     else
       deedFilesPromise = Promise.resolve()
     Promise.join taxFilesPromise, deedFilesPromise, (taxFiles, deedFiles) ->
       ftpEnd = ftp.end()
-      taxSubtasks = _queuePerFileSubtasks(subtask, todo[TAX], TAX, taxFiles)
-      deedSubtasks = _queuePerFileSubtasks(subtask, todo[DEED], DEED, deedFiles)
-      finalizePrep = jobQueue.queueSubsequentSubtask(null, subtask, "corelogic_finalizeDataPrep", null, true)
-      activate = jobQueue.queueSubsequentSubtask(null, subtask, "corelogic_activateNewData", {deleteUntouchedRows: dates[TAX]?}, true)
-      dates = jobQueue.queueSubsequentSubtask(null, subtask, 'corelogic_saveProcessDates', dates: dates, true)
-      Promise.join ftpEnd, taxSubtasks, deedSubtasks, finalizePrep, activate, dates, () ->  # empty handler
+      # this transaction is important because we don't want the subtasks enqueued below to start showing up as available
+      # on their queue out-of-order; normally, subtasks enqueued by another subtask won't be considered as available
+      # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
+      # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
+      # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
+      jobQueue.transaction (transaction) ->
+        taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
+        deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
+        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", null, true)
+        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deleteUntouchedRows: dates[TAX]?}, true)
+        dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'corelogic_saveProcessDates', dates: dates, true)
+        Promise.join ftpEnd, taxSubtasks, deedSubtasks, finalizePrep, activate, dates, () ->  # empty handler
 
-queuePerFileSubtasks = (subtask, dir, type, files) -> Promise.try () ->
+_queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try () ->
   if !files?.length
     return
   loadDataList = []
@@ -88,8 +97,8 @@ queuePerFileSubtasks = (subtask, dir, type, files) -> Promise.try () ->
       rawTableSuffix: rawTableSuffix
       type: type
       markOtherRowsDeleted: (type == TAX)  # tax data is full-dump, deed data is incremental
-  loadRawDataPromise = jobQueue.queueSubsequentSubtask(null, subtask, "corelogic_loadRawData", loadDataList, true)
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "corelogic_recordChangeCounts", countDataList, true)
+  loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_loadRawData", loadDataList, true)
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 loadRawData = (subtask) ->
@@ -105,9 +114,11 @@ saveProcessedDates = (subtask) ->
   keystore.propertyDb.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
     
 normalizeData = (subtask) ->
-  coreLogicHelpers.normalizeData subtask,
+  dataLoadHelpers.normalizeData subtask,
     rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: 'corelogic'
+    dataSourceType: 'county'
+    updateRecord: coreLogicHelpers.updateRecord
 
 finalizeDataPrep = (subtask) ->
   tables.propertyData.mls()

@@ -14,17 +14,20 @@ _ = require 'lodash'
 NUM_ROWS_TO_PAGINATE = 500
 
 
-loadDataRawMain = (subtask) ->
+loadRawData = (subtask) ->
   mlsHelpers.loadUpdates subtask,
-    rawTableSuffix: 'main'
     dataSourceId: subtask.task_name
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData")
+    jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData",
+      type: 'listing'
+      rawTableSuffix: 'listing'
 
 normalizeData = (subtask) ->
-  mlsHelpers.normalizeData subtask,
-    rawTableSuffix: 'main'
+  dataLoadHelpers.normalizeData subtask,
+    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: subtask.task_name
+    dataSourceType: 'mls'
+    updateRecord: mlsHelpers.updateRecord
 
 finalizeDataPrep = (subtask) ->
   tables.propertyData.mls()
@@ -41,9 +44,9 @@ finalizeData = (subtask) ->
 
 
 subtasks =
-  loadDataRawMain: loadDataRawMain
+  loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.mls)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData

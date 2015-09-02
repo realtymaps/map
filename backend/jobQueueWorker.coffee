@@ -8,6 +8,8 @@ logger = require './config/logger'
 cluster = require './config/cluster'
 tables = require './config/tables'
 jobQueue = require './utils/util.jobQueue'
+# just to make sure we can run the hirefire backup if necessary (in case the web process is down)
+require './routes/route.hirefire'
 
 
 # catch all uncaught exceptions
@@ -23,11 +25,11 @@ tables.jobQueue.queueConfig()
 .then (queues) ->
   if !queues || !queues.length
     logger.error "Can't find config for queue: #{queueName}"
-    process.exit(1)
+    process.exit(2)
   queue = queues[0]
   if !queue.active
     logger.error "Queue shouldn't be active: #{queueName}"
-    process.exit(2)
+    process.exit(3)
   
   cluster queueName, queue.processes_per_dyno, () ->
     workers = for i in [1..queue.subtasks_per_process]

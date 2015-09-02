@@ -1,17 +1,23 @@
 dbs = require '../config/dbs'
 logger = require '../config/logger'
 
+
+buildQuery = (dbName, tableName) ->
+  query = (transaction=dbs[dbName].knex) ->
+    ret = transaction.from(tableName)
+    ret.raw = dbs[dbName].knex.raw.bind(transaction)
+    ret
+  query.tableName = tableName
+  query.transaction = dbs[dbName].knex.transaction.bind(dbs[dbName].knex)
+  query.raw = dbs[dbName].knex.raw.bind(dbs[dbName].knex)
+  query
+  
+  
 _buildQueries = (tables) ->
   queries = {}
-  for id, tableSpecifier of tables then do (id, tableSpecifier) ->
+  for id, tableSpecifier of tables
     [dbName, tableName] = tableSpecifier.split('.')
-    query = (transaction=dbs[dbName].knex) ->
-      ret = transaction.from(tableName)
-      ret.raw = transaction.raw
-      ret
-    query.tableName = tableName
-    query.transaction = dbs[dbName].knex.transaction.bind(dbs[dbName].knex)
-    queries[id] = query
+    queries[id] = buildQuery(dbName, tableName)
   queries
 
 
@@ -61,3 +67,5 @@ module.exports =
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports
   module.exports[key] = _buildQueries(val)
+
+module.exports.buildQuery = buildQuery

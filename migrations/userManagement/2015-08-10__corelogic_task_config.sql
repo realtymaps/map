@@ -221,13 +221,71 @@ INSERT INTO jq_subtask_config (
   'corelogic_finalizeData',
   'corelogic',
   'corelogic',
-  '5',
+  '6',
   NULL,
   '0',
   TRUE,
   TRUE,
   TRUE,
-  60,
-  75,
+  240,
+  300,
+  FALSE
+);
+
+-- this subtask enqueues dynamic subtasks for the next step
+INSERT INTO jq_subtask_config (
+  name,
+  task_name,
+  queue_name,
+  step_num,
+  retry_delay_seconds,
+  retry_max_count,
+  hard_fail_timeouts,
+  hard_fail_after_retries,
+  hard_fail_zombies,
+  warn_timeout_seconds,
+  kill_timeout_seconds,
+  auto_enqueue
+) VALUES (
+  'corelogic_activateNewData',
+  'corelogic',
+  'corelogic',
+  '7',
+  NULL,
+  '0',
+  TRUE,
+  TRUE,
+  TRUE,
+  240,
+  300,
+  FALSE
+);
+
+-- this subtask enqueues dynamic subtasks for the next step
+INSERT INTO jq_subtask_config (
+  name,
+  task_name,
+  queue_name,
+  step_num,
+  retry_delay_seconds,
+  retry_max_count,
+  hard_fail_timeouts,
+  hard_fail_after_retries,
+  hard_fail_zombies,
+  warn_timeout_seconds,
+  kill_timeout_seconds,
+  auto_enqueue
+) VALUES (
+  'corelogic_saveProcessDates',
+  'corelogic',
+  'corelogic',
+  '8',
+  NULL,
+  '0',
+  TRUE,
+  TRUE,
+  TRUE,
+  15,
+  30,
   FALSE
 );

@@ -58,7 +58,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'data'
       displayName: 'Data'
       visible: false
-  ].concat _.map [
+    ].concat _.map [
       field: 'subtasks_created'
       displayName: 'Created'
     ,

@@ -15,70 +15,121 @@ retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 PromiseFtp = require '../util.promiseFtp'
 encryptor = require '../../config/encryptor'
-unzip = require 'unzip'
+unzip = require 'unzip2'
 split = require 'split'
-combinedStream = require('combined-stream2')
+fs = require 'fs'
+path = require 'path'
+through = require 'through2'
+rimraf = require 'rimraf'
 
 
-_streamZipToDbTable = (zipFileStream, tableName, dataLoadHistory) ->
+_streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
+  if debug
+    console.log("-------------------------- streaming")
   # stream the contents of the file into a COPY FROM query
+  count = 0
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
-  pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgQuery = Promise.promisify(pgClient.query, pgClient)
+  pgConnect = Promise.promisify(pgClient.connect, pgClient)
   pgConnect()
   .then () ->
+    if debug
+      console.log("-------------------------- begin")
     pgQuery('BEGIN')
   .then () ->
+    if debug
+      console.log("-------------------------- dataLoadHistory insert")
     startSql = tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
     .toString()
     pgQuery(startSql)
   .then () -> new Promise (resolve, reject) ->
-    gotFile = false
-    zipFileStream
-    .pipe(unzip.Parse())
-    .on 'entry', (entry) ->
-      if entry.type == 'Directory'
-        logger.warn "Found an unexpected directory inside zip: #{entry.path}"
-        entry.autodrain()
-        return
-      if gotFile
-        logger.warn "found an unexpected additional file inside zip: #{entry.path}"
-        entry.autodrain()
-        return
-      gotFile = true
-      splitter = split()
-      lineSplits = entry
-      .pipe(splitter)
-      lineSplits.once 'data', (headerLine) ->
-        # immediately unpipe, so the line splitter doesn't pull more data
-        entry.unpipe(splitter)
-        # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
-        fields = headerLine.toLowerCase().replace(/[^a-z0-9\t]+/g, '_').split('\t')
-        pgQuery dataLoadHelpers.createRawTempTable(tableName, fields).toString()
-        .then () ->
-          copyStart = "COPY #{tableName} (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
-          rawDataStream = pgClient.query(copyStream.from(copyStart))
-          rawDataStream.on('finish', resolve)
-          rawDataStream.on('error', reject)
-          # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
-          copyInto = combinedStream.create()
-          copyInto.append(entry)
-          copyInto.append(new Buffer('\\.\n'))
-          copyInto.pipe(rawDataStream)
+    if debug
+      console.log("-------------------------- reading")
+    rejected = false
+    doReject = (message) ->
+      (err) ->
+        if debug
+          console.log("-------------------------- error: #{message}: #{err.stack||err}")
+        if rejected
+          return
+        rejected = true
+        if !(err instanceof PartiallyHandledError)
+          err = new PartiallyHandledError(err, message)
+        reject(err)
+    splitter = split()
+    initialDoReject = doReject("error reading data from file: #{filePath}")
+    fileStream = fs.createReadStream(filePath)
+    .pipe(splitter)
+    .on('end', resolve)
+    .on('error', initialDoReject)
+    .once 'data', (headerLine) ->
+      if debug
+        console.log("-------------------------- creating temp table")
+      fileStream.pause()
+      fileStream.removeListener('end', resolve)
+      fileStream.removeListener('error', initialDoReject)
+      # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
+      fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
+      pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
+      .then () -> new Promise (resolve2, reject2) ->
+        if debug
+          console.log("-------------------------- copying...")
+        rejected2 = false
+        doReject2 = (message) ->
+          (err) ->
+            if debug
+              console.log("-------------------------- error2: #{message}: #{err.stack||err}")
+            if rejected2
+              return
+            rejected2 = true
+            reject2(new PartiallyHandledError(err, message))
+        # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
+        transform = (chunk, enc, callback) ->
+          if chunk.length > 0
+            count++
+            if debug
+              console.log("............ line #{count}: #{chunk.length} chars")
+            this.push(chunk)
+            this.push('\n')
+          else
+            if debug
+              console.log("............ empty line")
+          callback()
+        flush = (callback) ->
+          if debug
+            console.log("............ flushing")
+          this.push('\\.\n')
+          callback()
+        copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
+        fileStream
+        .pipe(through(transform, flush))
+        .pipe(pgClient.query(copyStream.from(copyStart)))
+        .on('finish', resolve2)
+        .on('error', doReject2("error streaming data to #{tableName}"))
+        fileStream.resume()
+      .then resolve
+      .catch doReject("error executing COPY FROM for #{tableName}")
   .then () ->
-    finishSql = tables.jobQueue.dataLoadHistory()
-    .where
-      raw_table_name: tableName
-    .update
-      raw_rows: objects.length
-    .toString()
-    pgQuery(finishSql)
+    if debug
+      console.log("-------------------------- finishing...")
+    finishQuery = tables.jobQueue.dataLoadHistory()
+    .where(raw_table_name: tableName)
+    .update raw_rows: count
+    pgQuery(finishQuery.toString())
   .then () ->
+    if debug
+      console.log("-------------------------- committing...")
     pgQuery('COMMIT')
+  .then () ->
+    if debug
+      console.log("-------------------------- counting...")
+    return count
   .finally () ->
     # always try to disconnect the db client when we're done, but don't crash if we disconnected prematurely
     try
+      if debug
+        console.log("-------------------------- disconnecting...")
       pgClient.end()
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
@@ -128,15 +179,43 @@ _diff = (row1, row2, diffExcludeKeys=[]) ->
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
+  if options.rawTableSuffix == 'deed_TXC48123'
+    console.log("================================= (#{subtask.retry_num}) starting")
   rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
+  fileBaseName = "corelogic_#{subtask.batch_id}_#{options.rawTableSuffix}"
   ftp = new PromiseFtp()
   ftp.connect
     host: subtask.task_data.host
     user: subtask.task_data.user
     password: encryptor.decrypt(subtask.task_data.password)
   .then () ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) connected to ftp")
     ftp.get(subtask.data.path)
-  .then (zipFileStream) ->
+  .then (zipFileStream) -> new Promise (resolve, reject) ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) streaming zip file")
+    zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
+    .on('finish', resolve)
+    .on('error', reject)
+  .then () ->  # just in case this is a retry, do rm -rf
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) rimraf")
+    rimraf.async("/tmp/#{fileBaseName}")
+  .then () ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) mkdir")
+    fs.mkdirAsync("/tmp/#{fileBaseName}")
+  .then () -> new Promise (resolve, reject) ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) extracting zip file")
+    fs.createReadStream("/tmp/#{fileBaseName}.zip")
+    .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+    .on('close', resolve)
+    .on('error', reject)
+  .then () ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) streaming to db")
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
@@ -144,61 +223,27 @@ loadRawData = (subtask, options) ->
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
 
-    _streamZipToDbTable(zipFileStream, rawTableName, dataLoadHistory)
-    .then (rowsInserted) ->
-      return rowsInserted
-    .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-  Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
-    return numRawRows
+    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
+  .then (rowsInserted) ->
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) done, inserted #{rowsInserted} rows")
+    return rowsInserted
   .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, "failed to load RETS data for update")
+    if options.rawTableSuffix == 'deed_TXC48123'
+      console.log("================================= (#{subtask.retry_num}) loading error! #{error.stack||error}")
+    throw new PartiallyHandledError(error, "failed to load corelogic data for update")
+  .finally () ->
+    try
+      if options.rawTableSuffix == 'deed_TXC48123'
+        console.log("================================= (#{subtask.retry_num}) cleaning up")
+      # try to clean up after ourselves
+      rimraf.async("/tmp/#{fileBaseName}")
+    catch err
+      logger.warn("Error trying to rm -rf temporary directory /tmp/#{fileBaseName}: #{err}")
 
 
-# normalizes data from the raw data table into the permanent data table
-normalizeData = (subtask, options) -> Promise.try () ->
-  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
-  # get rows for this subtask
-  rowsPromise = dbs.properties.knex(rawTableName)
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
-  # get validations
-  validationPromise = dataLoadHelpers.getValidations(options.dataSourceId)
-  # get start time for "last updated" stamp
-  startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
-  Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationMap, startTime) ->
-    # calculate the keys that are grouped for later
-    usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-    diffExcludeKeys = []
-    for groupName, validationList of validationMap
-      for validationDefinition in validationList
-        # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
-        # fields for those don't have to be explicitly reused
-        if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
-          usedKeys = usedKeys.concat(dataLoadHelpers.getUsedInputFields(validationDefinition))
-        else if validationDefinition.output == 'days_on_market'
-          # explicitly exclude these keys from diff, because they are derived values based on date
-          diffExcludeKeys = dataLoadHelpers.getUsedInputFields(validationDefinition)
-    promises = for row in rows
-      do (row) ->
-        stats =
-          data_source_id: options.dataSourceId
-          batch_id: subtask.batch_id
-          rm_raw_id: row.rm_raw_id
-          up_to_date: startTime
-        Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
-        .then _updateRecord.bind(null, stats, diffExcludeKeys, usedKeys, row)
-        .then () ->
-          dbs.properties.knex(rawTableName)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: true)
-        .catch validation.DataValidationError, (err) ->
-          dbs.properties.knex(rawTableName)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: err.toString())
-    Promise.all promises
-
-
-_updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+  throw new jobQueue.HardFail('not finished yet')
   # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
@@ -288,6 +333,6 @@ finalizeData = (subtask, id) ->
     .insert(listing)
 
 module.exports =
-  loadUpdates: loadUpdates
-  normalizeData: normalizeData
+  loadRawData: loadRawData
+  updateRecord: updateRecord
   finalizeData: finalizeData

@@ -45,10 +45,8 @@ _streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
     .pipe(rawDataStream)
   .then () ->
     finishSql = tables.jobQueue.dataLoadHistory()
-    .where
-      raw_table_name: tableName
-    .update
-      raw_rows: objects.length
+    .where(raw_table_name: tableName)
+    .update(raw_rows: objects.length)
     .toString()
     pgQuery(finishSql)
   .then () ->
@@ -134,10 +132,10 @@ loadUpdates = (subtask, options) ->
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
 
-        handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.main_property_data.db, mlsInfo.main_property_data.table)
+        handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
         .then (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
-          rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
+          rawTableName = dataLoadHelpers.getRawTableName subtask, 'listing'
           dataLoadHistory =
             data_source_id: options.dataSourceId
             data_source_type: 'mls'
@@ -155,50 +153,7 @@ loadUpdates = (subtask, options) ->
     throw new PartiallyHandledError(error, "failed to load RETS data for update")
 
 
-# normalizes data from the raw data table into the permanent data table
-normalizeData = (subtask, options) -> Promise.try () ->
-  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
-  # get rows for this subtask
-  rowsPromise = dbs.properties.knex(rawTableName)
-  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
-  # get validations
-  validationPromise = dataLoadHelpers.getValidations(options.dataSourceId)
-  # get start time for "last updated" stamp
-  startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
-  Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationMap, startTime) ->
-    # calculate the keys that are grouped for later
-    usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-    diffExcludeKeys = []
-    for groupName, validationList of validationMap
-      for validationDefinition in validationList
-        # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
-        # fields for those don't have to be explicitly reused
-        if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
-          usedKeys = usedKeys.concat(dataLoadHelpers.getUsedInputFields(validationDefinition))
-        else if validationDefinition.output == 'days_on_market'
-          # explicitly exclude these keys from diff, because they are derived values based on date
-          diffExcludeKeys = dataLoadHelpers.getUsedInputFields(validationDefinition)
-    promises = for row in rows
-      do (row) ->
-        stats =
-          data_source_id: options.dataSourceId
-          batch_id: subtask.batch_id
-          rm_raw_id: row.rm_raw_id
-          up_to_date: startTime
-        Promise.props(_.mapValues(validationMap, validation.validateAndTransform.bind(null, row)))
-        .then _updateRecord.bind(null, stats, diffExcludeKeys, usedKeys, row)
-        .then () ->
-          dbs.properties.knex(rawTableName)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: true)
-        .catch validation.DataValidationError, (err) ->
-          dbs.properties.knex(rawTableName)
-          .where(rm_raw_id: row.rm_raw_id)
-          .update(rm_valid: false, rm_error_msg: err.toString())
-    Promise.all promises
-
-
-_updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = _getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
@@ -289,5 +244,5 @@ finalizeData = (subtask, id) ->
 
 module.exports =
   loadUpdates: loadUpdates
-  normalizeData: normalizeData
+  updateRecord: updateRecord
   finalizeData: finalizeData

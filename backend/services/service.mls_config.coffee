@@ -14,7 +14,7 @@ mainDb = tables.config.mls
 class MlsConfigCrud extends crudService.ThenableCrud
 
   getAll: (query = {}, doLogQuery = false) ->
-    # schemaReady enacts a filter to return only mls configs with completed main_property_data
+    # schemaReady enacts a filter to return only mls configs with completed listing_data
     if query?.schemaReady?
       if query.schemaReady == "true"
 
@@ -22,13 +22,13 @@ class MlsConfigCrud extends crudService.ThenableCrud
         transaction = @dbFn()
         tableName = @dbFn.tableName
         @dbFn = () =>
-          # for "schemaReady" to be true, the main_property_data json fields
+          # for "schemaReady" to be true, the listing_data json fields
           # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
           ret = transaction
-          .whereRaw("char_length(cast(main_property_data->>\'db\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(main_property_data->>\'table\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(main_property_data->>\'field\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(main_property_data->>\'queryTemplate\' as text)) > ?", [0])
+          .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
+          .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
+          .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
+          .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
           ret.raw = transaction.raw
 
           # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
@@ -41,10 +41,10 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
   update: (id, entity) ->
     # as config options are added to the mls_config table, they need to be added here as well
-    super(id, entity, ['name', 'notes', 'active', 'main_property_data'])
+    super(id, entity, ['name', 'notes', 'active', 'listing_data'])
 
   updatePropertyData: (id, propertyData) ->
-    @update(id, {main_property_data: propertyData})
+    @update(id, {listing_data: propertyData})
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->
@@ -73,9 +73,9 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
       # prepare subtasks for this new MLS
       subtaskObjs = [
-        _.merge _.clone(jobQueueTaskDefaults.subtask_loadDataRawMain),
+        _.merge _.clone(jobQueueTaskDefaults.subtask_loadRawData),
           task_name: entity.id
-          name: "#{entity.id}_loadDataRawMain"
+          name: "#{entity.id}_loadRawData"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_normalizeData),
           task_name: entity.id
