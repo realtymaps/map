@@ -21,7 +21,7 @@ util = require 'gulp-util'
 #gulp dependency hell
 gulp.task 'express_watch', gulp.series 'watch', 'express'
 
-gulp.task 'develop', gulp.series 'clean', 'otherAssets', 'express_watch'
+gulp.task 'develop', gulp.series 'clean', 'otherAssets', 'spec', 'express_watch'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 

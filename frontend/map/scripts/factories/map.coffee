@@ -23,7 +23,8 @@ _wrapGeomPointJson = (obj) ->
 app.factory 'rmapsMap',
   ($log, $timeout, $q, $rootScope, $http, rmapsBaseMap,
     rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel, rmapsPopupLoader, leafletData, rmapsControls) ->
+    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
+    rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering) ->
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -313,13 +314,10 @@ app.factory 'rmapsMap',
 
       filter: (newFilters, oldFilters) =>
         return if (not newFilters and not oldFilters) or newFilters == oldFilters
-        if @filterDrawPromise
-          $timeout.cancel(@filterDrawPromise)
-
-        @filterDrawPromise = $timeout =>
+        rmapsRendering.debounce @, 'filterDrawPromise', =>
           rmapsFilterManager.manage (@filters) =>
-            @filterDrawPromise = false
             @redraw()
+            @filterDrawPromise = false
         , rmapsMainOptions.filterDrawDelay
 
       subscribe: ->

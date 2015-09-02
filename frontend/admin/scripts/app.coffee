@@ -6,6 +6,7 @@ appName = 'rmapsAdminApp'
 
 
 app = window.angular.module appName, [
+  'rmapsCommon'
   'logglyLogger.logger'
   'angular-data.DSCacheFactory'
   'leaflet-directive'

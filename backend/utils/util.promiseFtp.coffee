@@ -12,7 +12,7 @@ class FtpConnectionError extends VError
     super(args...)
     @name = 'FtpConnectionError'
 
-    
+
 simplePassthroughMethods = [
   'ascii'
   'binary'
@@ -36,10 +36,10 @@ simplePassthroughMethods = [
   'lastMod'
   'restart'
 ]
-    
+
 
 class PromiseFtp
-  
+
   constructor: () ->
     @options = null
     @name = "PromiseFtp"
@@ -47,7 +47,7 @@ class PromiseFtp
     @connected = false
     @closedWithError = false
     @errors = []
-    
+
     @client = new FtpClient()
     @client.on 'greeting', (msg) =>
       @serverMessage = msg
@@ -57,9 +57,9 @@ class PromiseFtp
         @closedWithError = true
     @client.once 'error', (err) =>
       @errors.push(err)
-      
+
     promisifiedMethods = {}
-    
+
     for name in simplePassthroughMethods
       promisifiedMethods[name] = Promise.promisify(FtpClient.prototype[name], @client)
       @[name] = do (name) => (args...) =>
@@ -98,7 +98,7 @@ class PromiseFtp
     @client.once 'close', (hadError) ->
       resolve(hadError)
     @client.end()
-  
+
   destroy: () -> Promise.try () =>
     if !@connected
       Promise.reject(new FtpConnectionError("client not currently connected"))

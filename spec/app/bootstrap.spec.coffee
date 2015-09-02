@@ -1,2 +1,0 @@
-beforeEach ->
-  window.isTest = true
