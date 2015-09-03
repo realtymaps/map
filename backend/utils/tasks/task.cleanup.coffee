@@ -5,12 +5,6 @@ logger = require '../../config/logger'
 config = require '../../config/config'
 
 
-# NOTE: This file a default task definition used for MLSs that have no special cases
-
-
-NUM_ROWS_TO_PAGINATE = 500
-
-
 _doTableDeletes = (tableList) -> Promise.try () ->
   if !tableList?.length
     return
@@ -44,6 +38,10 @@ subtaskErrors = (subtask) ->
     logger.debug "Deleted #{deleted} rows from subtask error history"
 
 
+# TODO: since almost every task will have the same executeSubtask logic, we should bring that out into jobQueue
+# TODO: and make it the default behavior if executeSubtask() isn't defined (just like we have with every other
+# TODO: function in the implied task implementation interface.  Or maybe I should make a class and allow
+# TODO: subclasses to override the parent functions -- that would pull the default behavior out of jobQueue.
 subtasks =
   rawTables: rawTables
   subtaskErrors: subtaskErrors
