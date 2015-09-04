@@ -1,0 +1,81 @@
+#favorites
+  ul.favorites
+    list-style none
+    padding 0
+    margin 0
+    li
+      padding 10px
+      .property-card
+        box-shadow 0px 2px 3px rgba(0,0,0,0.15)
+        overflow hidden
+        .property-img
+          max-height 200px
+          overflow hidden
+          position relative
+          .property-status
+            position absolute
+            left 0
+            bottom 0
+            background-color c_white
+            padding 10px
+            font-weight bold
+            color c_white
+            text-transform uppercase
+            &.pending
+              background-color c_yellow
+            &.sold
+              background-color c_red
+            &.for.sale
+              background-color c_green
+          img
+            display inline-block
+            max-width 100%
+
+        .property-data
+          padding 10px
+          .price
+            font-size 20px
+            font-weight bold
+            margin-bottom 10px
+            display block
+            &.pending
+              color c_yellow
+            &.sold
+              color c_red
+            &.for.sale
+              color c_green
+
+          .property-attr
+            display block
+            clear both
+            margin 0 -10px
+            ul.attr
+              list-style none
+              padding 0
+              li
+                float left
+                border-right 1px solid c_black_30
+                line-height 0
+                &:last-child
+                  border 0 none
+          h4.title
+            font-weight bold
+            display block
+            clear both
+            margin 0 0 10px 0
+
+          .location
+            color c_gray
+
+      .actions
+        button
+          width 50%
+          float left
+          border-top 1px solid c_gray_ligther
+          border-bottom 1px solid c_gray_ligther
+          border-left 0 none
+          border-right 0 none
+          padding 10px
+          background-color c_white
+          &:first-child
+            border-right 1px solid c_gray_ligther

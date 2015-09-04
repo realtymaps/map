@@ -20,7 +20,7 @@ directiveControls = [
   options:
     position: 'topright'
   directive:
-    template: require('../../../html/includes/properties.jade')()
+    template: require('../../../html/includes/propertiesButton.jade')()
 ,
   name: 'layer'
   options:

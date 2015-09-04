@@ -26,13 +26,6 @@ module.exports = (app) ->
       $scope.JSONData = data
       $scope.singleNote = $scope.JSONData[$routeParams.id]
 
-  .controller 'rmapsFavoritesCtrl',
-    ($scope, $http, $routeParams) ->
-      $scope.JSONData = []
-      $http.get('json/favorites.json').success (data) ->
-        $scope.JSONData = data
-        $scope.singleFavorite = $scope.JSONData[$routeParams.id]
-
   .controller 'rmapsAddProjectCtrl',
     ($scope, $http, $routeParams, $modal, $location, $log) ->
       $scope.items = [
