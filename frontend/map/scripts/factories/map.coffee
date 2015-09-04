@@ -114,11 +114,6 @@ app.factory 'rmapsMap',
             geojson: {}
 
           controls:
-            parcels: {}
-            satParcels: {}
-            streetNumMarkers: {}
-            priceMarkers: {}
-            streetView: {}
             custom: [
               rmapsControls.NavigationControl scope: @scope
               rmapsControls.PropertiesControl scope: @scope

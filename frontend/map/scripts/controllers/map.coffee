@@ -108,6 +108,7 @@ app.run ($rootScope, $timeout) ->
     if toState.url != frontendRoutes.map || fromState.url == frontendRoutes.map
       return
 
+    return unless map?.scope.controls?.streetView?
     $timeout () ->
       # main map
       map?.scope.control.refresh?()
