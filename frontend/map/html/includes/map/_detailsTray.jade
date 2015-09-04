@@ -1,5 +1,5 @@
-include ./mixins/result-buttons.jade
-include ./mixins/spinner.jade
+include ../mixins/result-buttons.jade
+include ../mixins/spinner.jade
 
 .navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
     .tray-close-light#detail-close(ng-click="Toggles.toggleDetails()" ng-cloak)
@@ -9,7 +9,7 @@ include ./mixins/spinner.jade
             +spinner()
             //background-color:transparent; must be here to override googles meddling where it forces style via element
             ui-gmap-street-view-panorama(ng-cloak,style="background-color:transparent;",ng-if="streetViewPanorama.status == 'OK'",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
-            include ./satilite-map.jade
+            include ./_satilite.jade
             .info.container
                 .row
                     .col-sm-7

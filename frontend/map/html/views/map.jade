@@ -4,7 +4,7 @@ section.map(ng-cloak ng-init="init('page-map')")
   div(ng-if="map.isReady" id="map")
     +leaflet('map', 'mainMap')
 
-  include ../includes/detailsTray
-  include ../includes/filtersTray
-  include ../includes/properties
-  include ../includes/searchbox
+  include ../includes/map/_detailsTray
+  include ../includes/map/_filtersTray
+  include ../includes/map/_properties
+  include ../includes/map/_searchbox

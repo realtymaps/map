@@ -14,19 +14,19 @@ directiveControls = [
   options:
     position: 'topleft'
   directive:
-    template: require('../../../html/includes/navigation.jade')()
+    template: require('../../../html/includes/map/_navigation.jade')()
 ,
   name: 'properties'
   options:
     position: 'topright'
   directive:
-    template: require('../../../html/includes/propertiesButton.jade')()
+    template: require('../../../html/includes/map/_propertiesButton.jade')()
 ,
   name: 'layer'
   options:
     position: 'bottomleft'
   directive:
-    template: require('../../../html/includes/layers.jade')()
+    template: require('../../../html/includes/map/_layers.jade')()
     compile: (tElement, tAttrs, transclude) ->
       console.debug 'LayerControl compile'
       (scope, iElement, iAttrs, controller, transcludeFn) ->
@@ -36,7 +36,7 @@ directiveControls = [
   options:
     position: 'bottomleft'
   directive:
-    template: require('../../../html/includes/location.jade')()
+    template: require('../../../html/includes/map/_location.jade')()
 ]
 
 for control in directiveControls
