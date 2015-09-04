@@ -1,0 +1,26 @@
+span(ng-controller="rmapsFavoritesCtrl" class="dropdown btn-group pinned-projects-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
+    button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
+        span.icon.icon-pin
+    ul(class="dropdown-menu whiteblock no-margin")
+        li.count
+            a(href="#favorites") {{favorites.length}} Favorities
+        li(ng-repeat="(id, fav) in favorites")
+            div(ng-click="formatters.results.click(fav,fav);showDetails = !showDetails")
+                span.enity
+                    span.circle-nr
+                        span {{$index+1}}
+                    span.content
+                        span(class="status" ng-class="fav.status") {{fav.status}}
+                        p(class="price" ng-class="fav.status") ${{fav.price}}
+                        div.property-attr
+                            ul.attr
+                                li {{fav.bedrooms}} beds
+                                li {{fav.baths_total}} bath
+                                li {{fav.finished_sqft}} Sq Ft
+                                li {{formatters.results.getYear(fav.year_built)}} built
+                        h3.title {{fav.title}}
+                        span.location {{fav.location}}
+                span.actions
+                    span.unpin
+                        span.action Unpin
+                        span.icon.icon-pin
