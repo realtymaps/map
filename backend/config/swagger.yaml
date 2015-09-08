@@ -588,7 +588,7 @@ definitions:
       - username
       - password
       - url
-      - main_property_data
+      - listing_data
     properties:
       id:
         type: string
@@ -604,7 +604,7 @@ definitions:
         type: string
       url:
         type: string
-      main_property_data:
+      listing_data:
         type: object
   MlsNormalization:
     type: 'object'
