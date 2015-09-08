@@ -1,31 +1,36 @@
 app = require '../app.coffee'
 
-app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
+app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory, uiGridConstants) ->
 
   $scope.getData = rmapsJobsService.getSubtask
 
-  @gridName = 'Subtask'
+  $scope.gridName = 'Subtask'
 
-  @columnDefs = [
+  $scope.columnDefs = [
       field: 'name'
       displayName: 'Name'
       width: 200
       enableCellEdit: false
+      pinnedLeft: true
     ,
       field: 'task_name'
       displayName: 'Task'
       width: 125
       defaultValue: ''
-    ,
-      field: 'queue_name'
-      displayName: 'Queue'
-      width: 125
-      defaultValue: ''
+      sort:
+        direction: uiGridConstants.ASC
     ,
       field: 'step_num'
       displayName: 'Step#'
       type: 'number'
       width: 75
+      sort:
+        direction: uiGridConstants.ASC
+    ,
+      field: 'queue_name'
+      displayName: 'Queue'
+      width: 125
+      defaultValue: ''
     ,
       field: 'data'
       displayName: 'Data'

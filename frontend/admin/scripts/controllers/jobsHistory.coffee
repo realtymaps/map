@@ -13,10 +13,12 @@ app.controller 'rmapsJobsHistoryCtrl',
 
   $scope.jobsGrid =
     enableColumnMenus: false
-    columnDefs:[
+    enablePinning: true
+    columnDefs: [
       field: 'name'
       displayName: 'Task'
       width: 100
+      pinnedLeft: true
     ,
       field: 'status'
       displayName: 'Status'
@@ -54,7 +56,7 @@ app.controller 'rmapsJobsHistoryCtrl',
       field: 'data'
       displayName: 'Data'
       visible: false
-  ].concat _.map [
+    ].concat _.map [
       field: 'subtasks_created'
       displayName: 'Created'
     ,

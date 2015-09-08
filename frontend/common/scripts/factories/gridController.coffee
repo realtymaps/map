@@ -3,13 +3,14 @@ mod = require '../module.coffee'
 
 mod.factory 'rmapsGridFactory', ($rootScope, Restangular) ->
   ($scope) ->
-    @gridName = @gridName or 'Grid'
+    $scope.gridName = $scope.gridName or 'Grid'
 
-    $scope.gridName = @gridName[0].toUpperCase() + @gridName.slice(1)
+    $scope.gridName = $scope.gridName[0].toUpperCase() + $scope.gridName.slice(1)
 
     $scope.grid =
       enableColumnMenus: false
-      columnDefs: @columnDefs
+      enablePinning: true
+      columnDefs: $scope.columnDefs
       onRegisterApi: (gridApi) ->
         gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
           if newValue != oldValue
@@ -25,7 +26,7 @@ mod.factory 'rmapsGridFactory', ($rootScope, Restangular) ->
         return
 
       record = name: $scope.recordName
-      _.each @columnDefs, (c) ->
+      _.each $scope.columnDefs, (c) ->
         if (v = c.defaultValue)?
           record[c.name] = if _.isFunction v then v() else v
 
