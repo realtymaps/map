@@ -1,0 +1,59 @@
+/* RWD (What does this stand for?)*/
+
+/* Use @media mobile, @media desktop, etc. */
+
+mobile = "(max-width: " + xs-1 + ")"
+
+mobileUp = "(min-width:" + xs + ") and (max-width:" + s-1 + ")"
+
+tablet = "(min-width:" + s + ") and (max-width:" + md-1 + ")"
+
+desktop = "(min-width:" + md + ")"
+
+/*RWD helpers*/
+
+.hidden-xs
+  @media mobile
+    display none!important
+
+.hidden-s
+  @media mobileUp
+    display none!important
+
+.hidden-md
+  @media tablet
+    display none!important
+
+.hidden-lg
+  @media desktop
+    display none!important
+
+.visible-xs
+  @media mobile
+    display block!important
+
+.visible-s
+  @media mobileUp
+    display block!important
+
+.visible-md
+  @media tablet
+    display block!important
+
+.visible-lg
+  @media desktop
+    display block!important
+
+.desktop-view
+  display none
+  @media desktop
+    display block!important
+  @media tablet
+    display block!important
+  @media mobileUp
+    display block!important
+
+.mobile-view
+  display none
+  @media mobile
+    display block!important

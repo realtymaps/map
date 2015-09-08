@@ -4,13 +4,14 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular
 
   $scope.getData = rmapsJobsService.getQueue
 
-  @gridName = 'Queue'
+  $scope.gridName = 'Queue'
 
-  @columnDefs = [
+  $scope.columnDefs = [
       field: 'name'
       displayName: 'Name'
       width: 150
       enableCellEdit: false
+      pinnedLeft: true
     ,
       field: 'lock_id'
       displayName: 'Lock ID'

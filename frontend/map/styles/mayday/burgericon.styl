@@ -1,11 +1,12 @@
 #burgericon
-  @extends .hidden-s
-  @extends .visible-xs
   float left
   position relative
   width 44px
   height 44px
-  @media (max-width: xs-1)
+  display none
+
+  @media mobile
+    display block
     margin-left -10px
 
   .burger

@@ -12,6 +12,8 @@ app.service 'rmapsNormalizeService', ['Restangular', (Restangular) ->
     output: rule.output
     input: JSON.stringify(rule.input) # ensure strings are quoted
     required: !!rule.required
+    data_source_type: 'mls'
+    data_type: 'listing'
 
   getRules = (mlsId) ->
     Restangular.all(mlsConfigAPI).one(mlsId).all('rules').getList()
