@@ -49,7 +49,7 @@
         .inner
             .container
                 .row
-                    .col-md-12(ng-controller="AccordionCtrl")
+                    .col-md-12(ng-controller="rmapsAccordionCtrl")
                         accordion(close-others="oneAtATime")
                             accordion-group(ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
                                 ul.favorites-list

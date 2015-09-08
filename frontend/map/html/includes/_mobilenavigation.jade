@@ -5,6 +5,13 @@ include mixins/_avatar
         include ./header/_logo
         ul.nav(ng-click="toggleIsOn()")
             li
+                a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                    span.icon.icon-property
+                    span.label Properties
+
+                    span.conut {{propertiesArray.length}}
+
+            li
                 a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
 
                     span.icon.icon-property

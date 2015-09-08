@@ -16,9 +16,10 @@
       margin 0 0 0 20px
 
     ul.nav
-      padding 0 10px
+      padding 40px 10px
       float left
       width 100%
+      border-bottom 1px solid c_gray
       li
         a
           text-transform capitalize
@@ -30,40 +31,29 @@
           &.neighbourhoods
           &.favorites
             position relative
-            &:before
-              content ''
-              position absolute
-              top 0
-              left 0
-              display block
-              width 40px
-              height 40px
-
-          &.projects
-            &:before
-              background url('/assets/base/icons/my_projects_icon_mobile.png') no-repeat center center;
-          &.properties
-            &:before
-              background url('/assets/base/icons/properties_icon_mobile.png') no-repeat center center;
-          &.notes
-            &:before
-              background url('/assets/base/icons/notes_icon_mobile.png') no-repeat center center;
-          &.neighbourhoods
-            &:before
-              background url('/assets/base/icons/neighbourhoods_icon_mobile.png') no-repeat center center;
-          &.favorites
-            &:before
-              background url('/assets/base/icons/favorites_icon_mobile.png') no-repeat center center;
 
         a
-          color $white_50
-          padding 10px 10px 10px 40px
-          @extends .global-transition
+          color c_white_50
+          padding 10px
+
+          *
+            @extends .global-transition
+
+          .icon
+            font-size 16px
+            vertical-align bottom
+          .label
+            color c_gray
+            font-size 16px
+            font-weight normal
 
           &:hover
           &:focus
-            background $black_20
+            background c_black_20
             color $white
+
+            .label
+              color $white
 
         span.new
           color $light_blue
