@@ -1,4 +1,4 @@
-#favorites.content-section-container(ng-controller="rmapsFavoritesCtrl" ng-class="{active:isActive('favorites')}")
+#favorites.content-section-container(ng-class="{active:isActive('favorites')}")
     .desktop-view
         header
             a(class="btn btn-default back" href="#map")
@@ -7,12 +7,12 @@
             .container
                 .row
                     .col-md-3.navbar
-                        include ../includes/_sidebar
+                        include ../includes/_sidebar.jade
                     .col-md-9.content
-                        h2.title Favorites ({{favorites.length}})
+                        h2.title Favorites ({{favoritesList.length}})
                         .row
                             ul.favorites
-                                li(ng-repeat="(id, entity) in favorites" class="col-md-6")
+                                li(ng-repeat="enity in favoritesList" class="col-md-6")
                                     div.property-card
                                         div.property-img
                                             img(src="static/img/{{enity.image}}")
@@ -40,7 +40,12 @@
                         hr
     .mobile-view
         header
-            |asd
+            a(class="subnav" href="#map")
+                | Add Pin
+            .menu
+                a(class="close" href="#map")
+                    span.icon.icon-remove
+
         .inner
             .container
                 .row
@@ -57,7 +62,8 @@
                                             div.col-sm-9.col-xs-7
                                                 div.info
                                                     p(class="price" ng-class="favoritesData[id].status") ${{favoritesData[id].price}}
-
+                                                        a(class="magnify" href="#map")
+                                                            span.icon.icon-pin
                                                     div.property-attr
                                                         ul.attr
                                                             li {{favoritesData[id].attr.beds}} beds

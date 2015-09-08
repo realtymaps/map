@@ -1,13 +1,105 @@
-#properties
+#properties-view.content-section-container(ng-class="{ active: isActive('properties') }")
     header
-        a(class="btn btn-default back" href="#map") Back
-        h1.title Propertiey
+        a(class="btn btn-default back" href="#map")
+            span.icon.icon-remove
     .inner
-        h4 Projects 1
-        div.property-detail
-            tabset
-                tab(heading="Property Detail")
-                    .property-img
-                        img(src="/assets/test_property.jpg")
-                tab(heading="Public Record")
-                tab(heading="Notes")
+        .container(ng-controller="TabsCtrl")
+            .row
+                .col-md-3.navbar
+                    ul.nav
+                        li
+                            button(class="btn btn-link" ng-click="setActiveTab('t1')" ng-class="active.t1 ? 'active' : '' ") Property Detail
+                        li
+                            button(class="btn btn-link" ng-click="setActiveTab('t2')" ng-class="active.t2 ? 'active' : '' ") Tax Detail
+
+                .col-md-9
+                    tabset
+                        tab(active="active.t1")
+                            .property-img
+                                span(class="status" ng-class="singleProperty.status") {{singleProperty.status}}
+                                img(src="static/img/{{singleProperty.image}}" title="{{singleProperty.title}}")
+
+                            .row.property-heading
+                                .col-md-6
+                                    p(class="price" ng-class="singleProperty.status") ${{singleProperty.price}}
+                                    h3.title {{singleProperty.title}}
+                                    p.location {{singleProperty.location}}
+                                .col-md-6.text-right
+                                    button(class="btn btn-white") Add to Mailing List
+                                    button.pinto
+                                        span.icon.icon-pin
+                            .row.property-description
+                                .col-md-8.border-right
+                                    h3 Description
+                                    p.description {{singleProperty.description}}
+                                .col-md-4.border-left
+                                    h3 Property Info
+                                    div.property-attr
+                                        ul.attr
+                                            li
+                                                span {{singleProperty.attr.beds}}
+                                                |Beds
+                                            li
+                                                span {{singleProperty.attr.bath}}
+                                                |Bath
+                                            li
+                                                span {{singleProperty.attr.square}}
+                                                | Sq Ft
+                                            li
+                                                span {{singleProperty.attr.year}}
+                                                | Built
+                                            li
+                                                span {{singleProperty.attr.beds}}
+                                                | Acres
+                                            li
+                                                span {{singleProperty.attr.bath}}
+                                                | Lot SqFt
+                                            li
+                                                span {{singleProperty.attr.square}}
+                                                | Front Ft
+                                            li
+                                                span {{singleProperty.attr.year}}
+                                                | Depth Ft
+                            .row.property-owner
+                                .col-md-12
+                                    h3 Owner Info
+                                    .row
+                                        .col-md-6
+                                            span.label Current Owner
+                                            p {{singleProperty.owner.name}}
+                                        .col-md-6
+                                            span.label Address
+                                            p {{singleProperty.owner.address}}
+                            .row.property-additional
+                                .col-md-6.border-right
+                                    h3 MLS Listing Info
+                                    .row
+                                        .col-md-6
+                                            span.label Listed for
+                                            p 6m, 25d
+                                        .col-md-6
+                                            span.label Orginal Asked Price
+                                            p $329,000
+                                        .col-md-6
+                                            span.label Close Price
+                                            p $305,000
+                                        .col-md-6
+                                            span.label Close Date
+                                            p 07/28/2013
+                                .col-md-6.border-left
+                                    h3 Historical Sales Info
+                                    .row
+                                        .col-md-6
+                                            span.label Mortgage
+                                            p $0
+                                        .col-md-6
+                                            span.label Prior Sales Price
+                                            p $58,000
+                                        .col-md-6
+                                            span.label Prior Sale Date
+                                            p 06/30/2004
+                                        .col-md-6
+
+
+                        tab(active="active.t2")
+                            | Tax detial

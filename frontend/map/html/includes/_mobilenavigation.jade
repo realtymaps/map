@@ -5,27 +5,27 @@ include mixins/_avatar
         include ./header/_logo
         ul.nav(ng-click="toggleIsOn()")
             li
-                a(ng-cloak href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }" )
-                    span neighbourhoods
-                    span.new new
-                    span.conut {{neighbourArray.length}}
-            li
-                a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
-                    span properties
-                    span.new new
-                    span.conut {{propertiesArray.length}}
-            li
-                a(ng-cloak href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
-                    span notes
-                    span.conut {{notesArray.length}}
-            li
-                a(ng-cloak href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
-                    span favorites
+                a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+
+                    span.icon.icon-property
+                    span.label Projects
+
                     span.conut {{projectsArray.length}}
             li
-                a(ng-cloak href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
-                    span my projects
-                    span.conut {{projectsArray.length}}
+                a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
+                    span.icon.icon-pin
+                    span.label Favorites
+                    span.conut {{favoritesList.length}}
+            li
+                a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                    span.icon.icon-note
+                    span.label Notes
+                    span.conut {{notesList.length}}
+            li
+                a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                    span.icon.icon-neighbourhood
+                    span.label Neighbourhoods
+                    span.conut {{neighbourhoodList.length}}
         .bottom
             a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
                 +avatar()(class='tiny-avatar')
