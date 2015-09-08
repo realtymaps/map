@@ -1,18 +1,48 @@
 
-@font-face {
-    font-family: 'museo_sans500';
-    src: url('/fonts/MuseoSans_500-webfont.eot');
-    src: url('/fonts/MuseoSans_500-webfont.eot?#iefix') format('embedded-opentype'),
-         url('/fonts/MuseoSans_500-webfont.woff2') format('woff2'),
-         url('/fonts/MuseoSans_500-webfont.woff') format('woff'),
-         url('/fonts/MuseoSans_500-webfont.ttf') format('truetype'),
-         url('/fonts/MuseoSans_500-webfont.svg#museo_sans500') format('svg');
-    font-weight: normal;
-    font-style: normal;
+/*Museo font*/
+@import url("http://fast.fonts.net/t/1.css?apiType=css&projectid=b23a8dc1-fd85-4830-bcc2-8a95246dbcf8");
+@font-face{
+  font-family:"Museo Sans W03_300";
+  src:url("../fonts/museo/f2cf6cf9-9ec6-4945-a525-f5873d143c2a.eot?#iefix");
+  src:url("../fonts/museo/f2cf6cf9-9ec6-4945-a525-f5873d143c2a.eot?#iefix") format("eot"),url("../fonts/museo/9803fddf-c005-431a-92d5-0f18688f945d.woff2") format("woff2"),url("../fonts/museo/ea9b8ac3-ff16-4387-a473-32a6a617329f.woff") format("woff"),url("../fonts/museo/353acc2c-88f2-4de3-83eb-6cc2c9b05af1.ttf") format("truetype"),url("../fonts/museo/0ede1b31-d0aa-4645-8dfd-6dabfc46f004.svg#0ede1b31-d0aa-4645-8dfd-6dabfc46f004") format("svg");
+}
+@font-face{
+  font-family:"Museo Sans W03_500";
+  src:url("../fonts/museo/e6c8dd64-2c03-43f2-ba95-996f168bc701.eot?#iefix");
+  src:url("../fonts/museo/e6c8dd64-2c03-43f2-ba95-996f168bc701.eot?#iefix") format("eot"),url("../fonts/museo/0672fa78-143a-4a7b-9140-86205c4c65c9.woff2") format("woff2"),url("../fonts/museo/2a0dda39-dc44-4540-9f6b-2cc54a9eefc1.woff") format("woff"),url("../fonts/museo/9af1bf81-cfac-4104-899d-e70ab97ce71c.ttf") format("truetype"),url("../fonts/museo/fd5642a0-bcd3-4af7-84c4-5e8b87fa04eb.svg#fd5642a0-bcd3-4af7-84c4-5e8b87fa04eb") format("svg");
+}
+@font-face{
+  font-family:"Museo Sans W03_700";
+  src:url("../fonts/museo/1c070cdb-18d8-440e-be9d-2448fa3930c4.eot?#iefix");
+  src:url("../fonts/museo/1c070cdb-18d8-440e-be9d-2448fa3930c4.eot?#iefix") format("eot"),url("../fonts/museo/66c06801-da3e-4587-a89c-674cfbe39c21.woff2") format("woff2"),url("../fonts/museo/f3c7f613-9728-4ed6-a383-1c8519b215d2.woff") format("woff"),url("../fonts/museo/c21bf502-6b58-4bf0-9ddd-169929c263e7.ttf") format("truetype"),url("../fonts/museo/b1bba468-817a-4cfd-891e-18fc989e7e5b.svg#b1bba468-817a-4cfd-891e-18fc989e7e5b") format("svg");
 }
 
-.font-museo-500 {
-  font-family "museo_sans500"
+.font-museo-300{
+  font-family "Museo Sans W03_300", arial;
+  speak none
+  font-style normal
+  font-weight normal
+  font-variant normal
+  text-transform none
+  line-height 1
+  -webkit-font-smoothing antialiased
+  -moz-osx-font-smoothing grayscale
+}
+
+.font-museo-500{
+  font-family "Museo Sans W03_500"
+  speak none
+  font-style normal
+  font-weight normal
+  font-variant normal
+  text-transform none
+  line-height 1
+  -webkit-font-smoothing antialiased
+  -moz-osx-font-smoothing grayscale
+}
+
+.font-museo-700{
+  font-family "Museo Sans W03_700"
   speak none
   font-style normal
   font-weight normal
@@ -24,42 +54,7 @@
 }
 
 .font-regular
-  @extends .font-museo-500
-
-
-/*helpers*/
-
-.hidden-xs
-  @media (max-width: xs-1)
-    display none!important
-
-.hidden-s
-  @media (min-width: xs), (max-width: s-1)
-    display none!important
-
-.hidden-md
-  @media (min-width: s), (max-width: md-1)
-    display none!important
-
-.hidden-lg
-  @media (min-width: md)
-    display none!important
-
-.visible-xs
-  @media (max-width: xs-1)
-    display block!important
-
-.visible-s
-  @media (min-width: xs), (max-width: s-1)
-    display block!important
-
-.visible-md
-  @media (min-width: s), (max-width: md-1)
-    display block!important
-
-.visible-lg
-  @media (min-width: md)
-    display block!important
+  @extends .font-museo-500;
 
 /*misc*/
 
@@ -74,15 +69,15 @@
     right -2px
     top 50%
     width 11px
-    border 2px solid $dark_blue
+    border 2px solid c_dark_blue
     border-radius 100%
-    background $light_blue
+    background c_light_blue
 
 .circle-nr
   span
-    background-color $black
+    background-color c_black
     border-radius 500px
-    color $white
+    color c_white
     display block
     font-size 10px
     font-weight bold
@@ -92,13 +87,13 @@
     width 20px
 
 .underline
-  border-bottom 1px solid $gray_ligther
+  border-bottom 1px solid c_gray_ligther
   padding 10px 0
   margin 0
   display block
 
 .pathway
-  border-bottom 1px solid $gray_ligther
+  border-bottom 1px solid c_gray_ligther
   margin-bottom 20px
   text-align center
   overflow hidden
@@ -109,12 +104,12 @@
     li
       display inline-block
       line-height 24px
-      color $text_gray_lighter
+      color c_text_gray_lighter
 
       &.active
-        color $light_blue
+        color c_light_blue
       &:after
-        color $black
+        color c_black
         content '>'
         display inline-block
         font-size 12px
@@ -143,14 +138,14 @@
         text-align center
         margin 0 0 20px 0
         cursor pointer
-        border 2px solid $white_0
-        background-color $white_0
+        border 2px solid c_white_0
+        background-color c_white_0
         overflow hidden
         border-radius 10px
         padding 10px
         @extends .global-transition
         .template-img
-          background-image url(/assets/base/template_img.png)
+          background-image url(../img/base/template_img.png)
           background-repeat no-repeat
           background-position center
           width 100%
@@ -163,8 +158,8 @@
           font-weight bold
         &:hover
         &:focus
-          border 2px solid $light_blue
-          background-color $light_blue_select
+          border 2px solid c_light_blue
+          background-color c_light_blue_select
           .template-img
             opacity 1
 
@@ -174,7 +169,7 @@
     .confirm-box
       overflow hidden
       .confirm-template-img
-        background-image url(/assets/base/email_confirm_img.png)
+        background-image url(../img/base/email_confirm_img.png)
         background-position center top
         background-repeat no-repeat
         display block
@@ -189,7 +184,7 @@
     .mail-sent
       padding-top 40px
       .mail-sent-img
-        background-image url(/assets/base/mail_sent_img.png)
+        background-image url(../img/base/mail_sent_img.png)
         background-repeat no-repeat
         background-position center center
         display block
