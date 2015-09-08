@@ -1,0 +1,44 @@
+#notes
+  ul.notes
+    list-style none
+    margin 0
+    padding 0
+
+    li
+      border-bottom 1px solid c_gray_ligther
+      .note-img
+        margin 10px 0
+        display inline-block
+        width 100%
+        border 1px solid c_gray_ligther
+        border-radius 6px
+        max-height 80px
+        overflow hidden
+        img
+          display inline-block
+          max-width 100%
+
+      .data
+        padding 10px 0
+      .note-date
+        color c_gray
+        padding 20px 0
+        text-align right
+      .tools
+        text-align right
+        opacity 0
+        @extends .global-transition
+
+        button
+          display inline-block
+          padding 0
+          margin-right 5px
+          &:last-child
+            margin-right 0
+
+      &:hover
+      &:active
+        background-color c_light_blue_select
+
+        .tools
+          opacity 1

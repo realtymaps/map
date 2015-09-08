@@ -1,16 +1,20 @@
 .notes-layer
+  @media desktop
+    display none
+
   .tutorial
     position absolute
     left 50%
     top 100px
-    background $light_blue
+    background c_light_blue
     padding 10px 20px
     border-radius 5px
     opacity .5
     transform translateX(-50%)
+
     p
       margin 0px
-      color $white
+      color c_white
       @extends .grow
 
   ul
@@ -23,7 +27,7 @@
         cursor pointer
         @extends .grow
         span
-          background-color $black_80
+          background-color c_black_80
           width 30px
           height 30px
           font-size 14px
