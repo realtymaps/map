@@ -1,11 +1,13 @@
 'use strict'
 
 require '../../../common/extensions/strings.coffee'
+require '../../common/scripts/factories/gridController.coffee'
 
 appName = 'rmapsAdminApp'
 
 
 app = window.angular.module appName, [
+  'rmapsCommon'
   'logglyLogger.logger'
   'angular-data.DSCacheFactory'
   'leaflet-directive'
@@ -26,6 +28,7 @@ app = window.angular.module appName, [
   'ui.grid.resizeColumns'
   'ui.grid.edit'
   'ui.grid.autoResize'
+  'ui.grid.pinning'
 ]
 
 module.exports = app

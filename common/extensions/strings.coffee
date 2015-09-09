@@ -28,4 +28,16 @@ String::replaceLast = (find, replace) ->
   return @toString()
 
 String::toInitCaps = () ->
-  @replace(/[^-'#\d\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+  @replace(/\d*[^-'#\d\s]+/g, (word) -> word.charAt(0).toUpperCase() + word.substr(1).toLowerCase())
+
+if !String::startsWith
+  String::startsWith = (searchString, position=0) ->
+    return @indexOf(searchString, position) == position
+
+if !String::endsWith
+  String::endsWith = (searchString, position) ->
+    if !position? || position > @length
+      position = @length
+    position -= searchString.length
+    lastIndex = @indexOf(searchString, position)
+    return lastIndex != -1 && lastIndex == position

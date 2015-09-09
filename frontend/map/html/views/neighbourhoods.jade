@@ -1,21 +1,64 @@
 #neighbour.content-section-container(ng-class="{active:isActive('neighbourhoods')}")
-    header
-        a(class="btn btn-default back" href="#map")
-            span.icon.icon-remove
-    .inner
-        .container
-            .col-md-3.navbar
-                include ../includes/_sidebar
-            .col-md-9.content
-                h2.title Neighbourhoods ({{JSONData.length}})
-                .row
-                    ul.neighbourhoods
-                        li(ng-repeat="enity in JSONData" class="col-md-6")
-                            a(class="map" href="#/neighbourhoods/{{enity.id}}")
-                                span View Neighbourhood
-                                img(src="assets/{{enity.mapImg}}")
-                            div.data
-                                h3 Neighbourhood {{enity.id}}
-                                button(class="btn btn-link") Delete
+    .desktop-view
+        header
+            a(class="btn btn-default back" href="#map")
+                span.icon.icon-remove
+            .top-bar
+                .pull-left
+                    a(class="btn btn-link toggle" href="#map")
+                        span.icon.icon-remove
+                    h2 Neightborhoods
+                .pull-right
+                    span Filter
 
-                hr
+        .inner
+            .container
+                .row
+                    .col-md-3.navbar
+                        include ../includes/_sidebar.jade
+                    .col-md-9.content
+                        h2.title Neighbourhoods ({{neighbourhoodList.length}})
+                        .row
+                            ul.neighbourhoods
+                                li(ng-repeat="enity in neighbourhoodList" class="col-md-6")
+                                    a(class="map" href="#/neighbourhoods/{{enity.id}}")
+                                        span View Neighbourhood
+                                        img(src="static/img/{{enity.mapImg}}")
+                                    div.data
+                                        h3 Neighbourhood {{enity.id}}
+                                        button(class="btn btn-link") Delete
+
+                        hr
+    .mobile-view
+        header
+            a(class="subnav" href="#map")
+                img(src='static/img/base/icons/mobile_back_icon.png', width='23px' height='23px' alt='back')
+                | Neighborhoods
+            .menu
+                a(href="#map")
+                    | Filter
+                    img(src='static/img/base/icons/mobile_main_navigation.png', alt='option')
+
+        .inner
+            .container
+                .row
+                    .col-md-12(ng-controller="rmapsAccordionCtrl")
+                        accordion(close-others="oneAtATime")
+                            accordion-group(ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
+                                ul.neighbourhood-list
+                                    li(ng-repeat="id in enity.neighborhoods")
+                                        div.mapimg
+                                            img(src="static/img/{{neighbourhoodData[id].mapImg}}" alt="Neighbourhood map")
+                                        div.info
+                                            div.content
+                                                h2.title
+                                                    a(href="neighbourhood/{{neighbourhoodData[id].id}}") {{neighbourhoodData[id].title}}
+                                                ul.data
+                                                    li
+                                                        | {{neighbourhoodData[id].vicinity}}
+                                                    li
+                                                        a(href="") {{neighbourhoodData[id].properties.length}} properties
+
+                                            div.tools
+                                                a(href="#/neighbourhood/{{neighbourhoodData[id].id}}")
+                                                    img(src='static/img/base/icons/mobile_next_2_icon.png', width='23px' height='23px' alt='next')

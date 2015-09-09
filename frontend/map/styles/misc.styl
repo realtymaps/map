@@ -1,4 +1,3 @@
-
 @font-face {
     font-family: 'museo_sans500';
     src: url('/fonts/MuseoSans_500-webfont.eot');
@@ -11,7 +10,7 @@
     font-style: normal;
 }
 
-.font-museo-500 {
+.font-museo-500{
   font-family "museo_sans500"
   speak none
   font-style normal
@@ -24,42 +23,7 @@
 }
 
 .font-regular
-  @extends .font-museo-500
-
-
-/*helpers*/
-
-.hidden-xs
-  @media (max-width: xs-1)
-    display none!important
-
-.hidden-s
-  @media (min-width: xs), (max-width: s-1)
-    display none!important
-
-.hidden-md
-  @media (min-width: s), (max-width: md-1)
-    display none!important
-
-.hidden-lg
-  @media (min-width: md)
-    display none!important
-
-.visible-xs
-  @media (max-width: xs-1)
-    display block!important
-
-.visible-s
-  @media (min-width: xs), (max-width: s-1)
-    display block!important
-
-.visible-md
-  @media (min-width: s), (max-width: md-1)
-    display block!important
-
-.visible-lg
-  @media (min-width: md)
-    display block!important
+  @extends .font-museo-500;
 
 /*misc*/
 
@@ -150,7 +114,7 @@
         padding 10px
         @extends .global-transition
         .template-img
-          background-image url(/assets/base/template_img.png)
+          background-image url(../img/base/template_img.png)
           background-repeat no-repeat
           background-position center
           width 100%
@@ -174,7 +138,7 @@
     .confirm-box
       overflow hidden
       .confirm-template-img
-        background-image url(/assets/base/email_confirm_img.png)
+        background-image url(../img/base/email_confirm_img.png)
         background-position center top
         background-repeat no-repeat
         display block
@@ -189,7 +153,7 @@
     .mail-sent
       padding-top 40px
       .mail-sent-img
-        background-image url(/assets/base/mail_sent_img.png)
+        background-image url(../img/base/mail_sent_img.png)
         background-repeat no-repeat
         background-position center center
         display block

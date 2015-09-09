@@ -1,6 +1,8 @@
+mod = require '../module.coffee'
 loadingCount = 0
 
-module.exports = ($log) ->
+mod.service 'rmapsSpinner', ($log) ->
+
   incrementLoadingCount: (logMessage, delta=1) ->
     loadingCount += delta
     #$log.debug("incremented loadingCount by #{delta} (#{logMessage}): #{loadingCount}")

@@ -14,7 +14,6 @@
     .content-section-container
       top 47px
       position relative
-
       header
         position absolute
         right 0
@@ -29,6 +28,40 @@
           height 32px
           line-height 32px
           padding 0
+
+        .top-bar
+          display none
+          position absolute
+          top 0
+          left 0
+          width 100%
+          height 47px
+          top -94px
+          background-color c_dark_blue
+          @extends .global-transition
+          @media (max-width: xs-1)
+            display block
+
+          button.toggle
+            padding 0
+            color c_white
+            width 47px
+            height 47px
+            vertical-align top
+            &:hover
+              text-decoration none
+
+          h2
+            display inline-block
+            color c_white
+            font-size 20px
+            padding 0
+            margin 0
+            line-height 47px
+
+      &.active
+        .top-bar
+          top -47px
 
       h2.title
         color $light_blue
@@ -50,9 +83,13 @@
         ul.nav
           margin-top 10px
           li
+            width 100%
+            display block
+            clear both
             a
               color $black
               padding 5px 0
+              float left
               @extends .global-transition
 
               &:hover
@@ -61,6 +98,312 @@
                 background-color $white_0
                 color $light_blue
 
+              span
+                float right
+
             &.active
               a
                 color $light_blue
+
+            .btn
+              margin 0 0 5px 0
+              padding 0
+              color c_black
+
+              &.active
+                color c_light_blue
+
+      .mobile-view
+
+        header
+          position absolute
+          top 0
+
+        .inner
+          ul.projects-list
+            margin 0 -15px
+            & > li
+              float left
+              width 100%
+              clear both
+              border-bottom 1px solid c_gray_ligther
+              padding 10px 15px
+
+              h2.title
+                font-size 16px
+                color c_text_gray
+
+          .data
+            float left
+            padding 0
+            margin 0
+            width auto
+            border none
+            list-style none
+            li
+              font-size 12px
+              padding 0
+              float left
+              color c_text_gray_lighter
+              a
+                color c_text_gray_lighter
+
+
+              &:before
+                content ''
+                width 5px
+                height 5px
+                background-color c_text_gray_lighter
+                border-radius 10px
+                display inline-block
+                vertical-align middle
+                margin 0 5px
+
+              &:first-child
+                &:before
+                  display none
+
+          .tools
+            float right
+
+          accordion
+            .panel-group
+              margin 0 -15px
+              .panel
+                border 0 none
+                border-bottom 1px solid c_gray_ligther
+                margin 0
+
+              .panel-heading
+                padding 0
+                .panel-title
+                  font-weight bold
+                a
+                  padding 10px 15px
+                  display block
+                  width 100%
+                  &:hover
+                  &:active
+                    text-decoration none
+              .panel-body
+                padding 0
+
+            .neighbourhood-list
+              list-style none
+              margin 0
+              padding 0
+              li
+                overflow hidden
+                .mapimg
+                  max-height 120px
+                  overflow hidden
+                  float left
+                  width 100%
+                  img
+                    max-width 100%
+                    display inline-block
+
+                .info
+                  padding 15px
+                  overflow hidden
+                  display flex
+                  align-items center
+                  justify-content space-between
+                  h2.title
+                    margin 0
+                    padding 0
+                    font-size 16px
+                    line-height 24px
+                    a
+                      color c_text_gray
+                      &:hover
+                      &:active
+                        color c_light_blue
+                        text-decoration none
+
+            .note-list
+              list-style none
+              margin 0
+              padding 0
+              li
+                overflow hidden
+                border-bottom 1px solid c_gray_ligther
+                padding 15px 0
+                .note-img
+                  max-height 120px
+                  overflow hidden
+                  float left
+                  width 100%
+                  padding-left: 15px;
+                  img
+                    max-width 100%
+                    display inline-block
+                .description
+                  color c_text_gray_lighter
+                h2.title
+                  margin 0
+                  padding 0
+                  font-size 16px
+                  line-height 24px
+                  color c_text_gray
+                  button
+                    color c_text_gray
+                    padding 0
+                    font-weight bold
+                    &:hover
+                    &:active
+                      color c_light_blue
+                      text-decoration none
+
+                  span
+                    float right
+                    font-size: 14px;
+                    padding-right: 10px;
+                    color: c_gray;
+
+            .favorites-list
+              list-style none
+              margin 0
+              padding 0 15px
+              & > li
+                border-bottom 1px solid c_gray_ligther
+                padding 10px 15px
+                margin 0 -15px
+                &:last-child
+                  border-bottom 0px none
+
+                .property-img
+                  float left
+                  width 100%
+                  position relative
+                  img
+                    max-width 100%
+                    display inline-block
+
+                  .status
+                    position absolute
+                    bottom 0
+                    background c_green
+                    color c_white
+                    text-transform uppercase
+                    display inline-block
+                    padding 5px 10px
+                    font-size 11px
+                    &.pending
+                      background c_yellow
+
+                    &.sold
+                      background c_red
+
+                .price
+                  margin 0
+                  font-size 18px
+                  font-weight bold
+                  color c_green
+                  &.pending
+                    color c_yellow
+                  &.sold
+                    color c_red
+
+                .property-attr
+                  list-style none
+                  display inline-block
+                  ul.attr
+                    padding 0
+                    margin 0 -4px
+                    li
+                      list-style none
+                      display inline-block
+                      border-right 1px solid c_black
+                      border-bottom none
+                      padding 0 4px
+                      font-size 12px
+                      &:last-child
+                        border none
+
+                .title
+                  margin 0
+                  font-size 16px
+                  padding 5px 0
+                  line-height 24px
+                  button
+                    color c_text_gray
+                    padding 0
+                    text-decoration none
+                    &:hover
+                    &:focus
+                      color c_light_blue
+                .location
+                  color c_gray
+                  font-size 12px
+                  font-weight 100
+
+                h2.title
+                  padding 0
+
+
+  // COMMON
+  &.show-notes .content-section .content-section-container .mobile-view,
+  &.show-favorites .content-section .content-section-container .mobile-view,
+  &.show-neighbourhoods .content-section .content-section-container .mobile-view
+    header
+      display flex
+      align-items center
+      justify-content space-between
+      position fixed
+      top 0
+      left 0
+      height 47px
+      z-index: 1
+      background c_dark_blue
+      color: c_darker_white
+      a
+        @extends .font-museo-500
+        font-size 18px
+        color c_darker_white
+        &:hover
+          text-decoration none
+      .subnav
+        display flex
+        align-items center
+      .menu
+        display flex
+        align-items center
+
+
+  &.show-favorites
+    .content-section
+      .content-section-container
+        .mobile-view
+          header
+            .close
+              opacity 1
+              &:hover
+                opacity 1
+          .favorites-list
+            .row
+              display flex
+              align-items center
+            .info
+              overflow hidden
+              a
+                float: right
+                font-size: 14px;
+                &:hover
+                  text-decoration none
+
+
+  &.show-notes
+    .content-section
+      .content-section-container
+        .mobile-view
+          header
+            .close
+              opacity 1
+              &:hover
+                opacity 1
+
+
+  &.show-projects
+    header
+      z-index 1

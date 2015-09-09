@@ -21,7 +21,6 @@ module.exports = ($scope, $rootScope, $modal, Restangular) ->
     idx = _.findIndex $scope.grid.data, name: $scope.recordName
     $scope.nameExists = idx != -1
 
-
   $scope.create = () =>
     if !$scope.recordName
       return

@@ -16,6 +16,7 @@ app.controller 'rmapsJobsCurrentCtrl',
   $scope.jobsGrid =
     enableColumnMenus: false
     showColumnFooter: true
+    enablePinning: true
     columnDefs:[
       field: 'name'
       displayName: 'Task'
@@ -24,6 +25,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       footerCellTemplate: '<div>Totals</div>'
       sort:
         direction: uiGridConstants.ASC
+      pinnedLeft: true
     ,
       field: 'status'
       displayName: 'Status'
@@ -58,7 +60,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'data'
       displayName: 'Data'
       visible: false
-  ].concat _.map [
+    ].concat _.map [
       field: 'subtasks_created'
       displayName: 'Created'
     ,
@@ -105,8 +107,10 @@ app.controller 'rmapsJobsCurrentCtrl',
 
   $scope.summaryGrid =
     enableColumnMenus: false
+    enablePinning: true
     columnDefs: [
       field: 'timeframe'
+      pinnedLeft: true
     ,
       field: 'preparing'
     ,

@@ -92,7 +92,7 @@ module.exports =
             .then (rawList) ->
               # incoming column names can be arcane and technical, let's humanize them
               humanList = []
-              retsHelpers.getColumnList mlsConfig, mlsConfig.main_property_data.db, mlsConfig.main_property_data.table
+              retsHelpers.getColumnList mlsConfig, mlsConfig.listing_data.db, mlsConfig.listing_data.table
               .then (fields) ->
                 # map the arcane (system) field names to human readable (longname) names
                 readableMap = {}

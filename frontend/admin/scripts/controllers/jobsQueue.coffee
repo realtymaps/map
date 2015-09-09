@@ -1,18 +1,19 @@
 app = require '../app.coffee'
-GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, $modal, Restangular, rmapsJobsService) ->
+app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
 
+  console.log "#### test"
   console.log "#### rmapsJobsQueueCtrl"
   $scope.getData = rmapsJobsService.getQueue
 
-  @gridName = 'Queue'
+  $scope.gridName = 'Queue'
 
-  @columnDefs = [
+  $scope.columnDefs = [
       field: 'name'
       displayName: 'Name'
       width: 150
       enableCellEdit: false
+      pinnedLeft: true
     ,
       field: 'lock_id'
       displayName: 'Lock ID'
@@ -45,8 +46,4 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, $modal, Res
       defaultValue: false
   ]
 
-  $injector.invoke GridController, this,
-    $scope: $scope
-    $rootScope: $rootScope
-    $modal: $modal
-    Restangular: Restangular
+  new rmapsGridFactory($scope)

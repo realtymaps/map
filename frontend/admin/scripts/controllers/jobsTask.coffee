@@ -1,7 +1,6 @@
 app = require '../app.coffee'
-GridController = require '../../../common/scripts/utils/gridController.coffee'
 
-app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, $modal, Restangular, rmapsJobsService) ->
+app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
 
   $scope.getData = rmapsJobsService.getTasks
 
@@ -9,14 +8,15 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, $modal, Rest
 
   $scope.cancelTask = rmapsJobsService.cancelTask
 
-  @gridName = 'Task'
+  $scope.gridName = 'Task'
 
-  @columnDefs = [
+  $scope.columnDefs = [
       field: 'name'
       displayName: 'Name'
       cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
       width: 100
       enableCellEdit: false
+      pinnedLeft: true
     ,
       field: 'description'
       displayName: 'Description'
@@ -64,18 +64,14 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, $modal, Rest
       field: '_run'
       displayName: 'Run'
       enableCellEdit: false
-      cellTemplate: '<div><a href="#" ng-click="grid.appScope.runTask(row.entity)">RUN</a></div>'
+      cellTemplate: '<div class="ui-grid-cell-contents"><a href="#" ng-click="grid.appScope.runTask(row.entity)">RUN</a></div>'
       width: 100
     ,
       field: '_cancel'
       displayName: 'Cancel'
       enableCellEdit: false
-      cellTemplate: '<div><a href="#" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</a></div>'
+      cellTemplate: '<div class="ui-grid-cell-contents"><a href="#" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</a></div>'
       width: 100
   ]
 
-  $injector.invoke GridController, this,
-    $scope: $scope
-    $rootScope: $rootScope
-    $modal: $modal
-    Restangular: Restangular
+  new rmapsGridFactory($scope)

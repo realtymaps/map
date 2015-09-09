@@ -1,10 +1,10 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
-urlHelpers = require '../utils/util.urlHelpers.coffee'
 qs = require 'qs'
+mod = require '../module.coffee'
 
-module.exports = ($rootScope, $location, rmapsprincipal) ->
+mod.factory 'rmapsauthorization', ($rootScope, $location, rmapsprincipal, rmapsUrlHelpers) ->
 
-  routes = urlHelpers.getRoutes($location)
+  routes = rmapsUrlHelpers.getRoutes()
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
     if not rmapsprincipal.isAuthenticated()
@@ -44,3 +44,9 @@ module.exports = ($rootScope, $location, rmapsprincipal) ->
     $location.url routes.authenticating
     rmapsprincipal.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)
+
+
+mod.run ($rootScope, rmapsauthorization) ->
+  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
+    rmapsauthorization.authorize(toState, toParams, fromState, fromParams)
+    return

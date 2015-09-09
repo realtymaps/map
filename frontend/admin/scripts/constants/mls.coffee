@@ -14,7 +14,7 @@ mls =
       password: null
       url: null
     propertySchema:
-      main_property_data: {'queryTemplate': _queryTemplate}
+      listing_data: {'queryTemplate': _queryTemplate}
     otherConfig: {}
     task:
       active: false

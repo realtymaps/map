@@ -1,5 +1,6 @@
 /* Set some basic rules */
 
+@import "./rwd"
 @import "./header/navigation"
 @import "./header/notices"
 @import "./header/search-field"
@@ -34,6 +35,11 @@ h1.logo
     width 180px
     height 44px
     display block
+
+p
+  font-size 16px
+  font-weight 200
+  line-height 24px
 
 .propertyMarker
   box-sizing border-box
@@ -83,7 +89,7 @@ header.site-header
 @media screen and (-webkit-min-device-pixel-ratio:0)
   .site-main
     .inner
-      // perspective 2000px
+      perspective 2000px
 
 .site-main
   position absolute

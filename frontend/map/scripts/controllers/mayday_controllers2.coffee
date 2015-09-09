@@ -3,35 +3,21 @@
 ###
 module.exports = (app) ->
   app.controller 'rmapsPropertiesCtrl', ($scope, $http, $routeParams) ->
+    $scope.activeView = 'properties'
+
     $scope.JSONData = []
     $http.get('json/properties.json').success (data) ->
       $scope.JSONData = data
       $scope.singleProperty = $scope.JSONData[$routeParams.id]
 
   .controller 'rmapsProjectsCtrl', ($scope, $http, $routeParams) ->
-    $scope.JSONData = []
-    $http.get('json/projects.json').success (data) ->
-      $scope.JSONData = data
-      $scope.singleProject = $scope.JSONData[$routeParams.id]
+    $scope.activeView = 'projects'
 
   .controller 'rmapsNeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
-    $scope.JSONData = []
-    $http.get('json/neighbourhoods.json').success (data) ->
-      $scope.JSONData = data
-      $scope.singleNeighbourhoods = $scope.JSONData[$routeParams.id]
+    $scope.activeView = 'neighbourhoods'
 
   .controller 'rmapsNotesCtrl', ($scope, $http, $routeParams) ->
-    $scope.JSONData = []
-    $http.get('json/notes.json').success (data) ->
-      $scope.JSONData = data
-      $scope.singleNote = $scope.JSONData[$routeParams.id]
-
-  .controller 'rmapsFavoritesCtrl',
-    ($scope, $http, $routeParams) ->
-      $scope.JSONData = []
-      $http.get('json/favorites.json').success (data) ->
-        $scope.JSONData = data
-        $scope.singleFavorite = $scope.JSONData[$routeParams.id]
+    $scope.activeView = 'notes'
 
   .controller 'rmapsAddProjectCtrl',
     ($scope, $http, $routeParams, $modal, $location, $log) ->

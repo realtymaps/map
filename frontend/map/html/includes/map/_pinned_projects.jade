@@ -2,7 +2,8 @@ span(class="dropdown btn-group pinned-projects-list" dropdown on-toggle="toggled
     button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
         span.icon.icon-pin
     ul(class="dropdown-menu whiteblock no-margin")
-        li.count {{pinsArray.length}} Pinned projects
+        li.count
+            a(href="#favorites") {{pinsArray.length}} Pinned projects
         li(ng-repeat="pin in pinsArray")
             a(href="#/favorites/{{pin.id}}")
                 span.enity

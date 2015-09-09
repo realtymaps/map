@@ -9,6 +9,7 @@ app.controller 'rmapsJobsHealthCtrl',
   $scope.jobsGrid =
     enableColumnMenus: false
     showColumnFooter: true
+    enablePinning: true
     columnDefs:[
       field: 'load_id'
       displayName: 'Data Source'
@@ -16,6 +17,7 @@ app.controller 'rmapsJobsHealthCtrl',
       footerCellTemplate: '<div>Totals</div>'
       sort:
         direction: uiGridConstants.ASC
+      pinnedLeft: true
     ].concat _.map [
       field: 'load_count'
       displayName: 'Loads'
