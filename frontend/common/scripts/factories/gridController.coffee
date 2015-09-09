@@ -22,10 +22,8 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
       $scope.nameExists = idx != -1
 
-    console.log "#### controller, columnDefs:"
-    console.log $scope.columnDefs
-
     $scope.create = () ->
+      $scope.refreshFieldTypes()
       if !$scope.recordName
         return
 
@@ -72,9 +70,9 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
         ]
 
       modalInstance.result
-      .then (record) =>
+      .then (record) ->
         for k, v of record
-          if @fieldTypeMap[k] == 'object'
+          if $scope.fieldTypeMap[k] == 'object'
             record[k] = JSON.parse(v)
         console.log "#### modal result, created record:"
         console.log record
@@ -101,14 +99,17 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
           $scope.exists()
 
     $scope.load = () ->
-      $scope.jobsBusy = $scope.getData()
+      $scope.jobsBusy = $scope.getData($scope.nameFilters)
       .then (data) ->
         $scope.grid.data = data
 
-    $rootScope.registerScopeData () ->
-      $scope.load()
+    $scope.refreshFieldTypes = () ->
       $scope.fieldTypeMap = {}
       for c in $scope.columnDefs
         $scope.fieldTypeMap[c.name] = c.type
 
+
+    $rootScope.registerScopeData () ->
+      $scope.load()
+      $scope.refreshFieldTypes()
 

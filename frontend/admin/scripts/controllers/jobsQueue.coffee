@@ -4,6 +4,7 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular
 
   console.log "#### test"
   console.log "#### rmapsJobsQueueCtrl"
+  $scope.nameFilters = {}
   $scope.getData = rmapsJobsService.getQueue
 
   $scope.gridName = 'Queue'

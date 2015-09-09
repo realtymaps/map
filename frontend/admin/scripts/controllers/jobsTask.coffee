@@ -55,6 +55,12 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       defaultValue: 5
       width: 125
     ,
+      field: 'fail_retry_minutes'
+      displayName: 'Fail Retry min'
+      type: 'number'
+      defaultValue: 5
+      width: 125
+    ,
       field: 'active'
       displayName: 'Active?'
       type: 'boolean'
