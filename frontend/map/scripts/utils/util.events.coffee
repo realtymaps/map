@@ -59,7 +59,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
     return if maybeCaller == 'results' #avoid recursion
 
-    mapCtrl.closeWindow()
+    mapCtrl.closeWindow() if mapCtrl.closeWindow?
     $scope.formatters.results.mouseleave(null, model)
 
   _handleManualMarkerCluster = (model) ->
