@@ -5,6 +5,7 @@ tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 mlsHelpers = require './util.mlsHelpers'
+TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 
 
@@ -43,15 +44,10 @@ finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
 
-subtasks =
+module.exports = new TaskImplementation
   loadRawData: loadRawData
   normalizeData: normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.mls)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
-
-module.exports =
-  executeSubtask: (subtask) ->
-    # call the handler for the subtask
-    subtasks[subtask.name.replace(/[^_]+_/g,'')](subtask)
