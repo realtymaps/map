@@ -59,7 +59,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
     return if maybeCaller == 'results' #avoid recursion
 
-    mapCtrl.closeWindow()
+    mapCtrl.closeWindow() if mapCtrl.closeWindow?
     $scope.formatters.results.mouseleave(null, model)
 
   _handleManualMarkerCluster = (model) ->
@@ -117,7 +117,7 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
       # $log.debug mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}
 
       #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-      mapCtrl.openWindow(model) if !maybeCaller
+      mapCtrl.openWindow(model, lObject) if !maybeCaller && mapCtrl.openWindow?
 
       model.isMousedOver = true
 

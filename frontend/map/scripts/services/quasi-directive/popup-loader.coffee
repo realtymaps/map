@@ -1,8 +1,18 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
-app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVariables) ->
+
+app.service 'rmapsPopupLoader', ($rootScope, $templateCache, $http, $compile, rmapspopupVariables, rmapsRendering) ->
   _map = null
+  _templateScope = null
+  _renderPromises =
+    loadPromise: false
+  _lObj =  null
+  _handleMouseMove = null
+
+  _close =  ->
+    return unless _map
+    _map.closePopup()
 
   _getOffset = (map, model, offsets = rmapspopupVariables.offsets) ->
     # get center and point container coords
@@ -23,9 +33,8 @@ app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVari
       else new L.Point offsets.left, offsets.bottom
 
 
-  load: _.debounce ($scope, map, model, opts = _defaultOptions, templateUrl = './views/templates/map-smallDetails.tpl.jade') ->
+  load: ($scope, map, model, lTriggerObject, opts = _defaultOptions, templateUrl = './views/templates/map-smallDetails.tpl.jade') ->
     _map = map
-
     return if model?.markerType == 'cluster'
 
     # redundant but forces out window to not have a close buttons since we always hide on mouseoff
@@ -39,25 +48,27 @@ app.service 'rmapsPopupLoader', ($templateCache, $http, $compile, rmapspopupVari
         closeButton: false
 
       # template for the popup box
-      templateScope = $scope.$new()
-      templateScope.model = model
-      compiled = $compile(content.data)(templateScope)
+      _templateScope = $scope.$new() unless _templateScope?
+      _templateScope.model = model
+      compiled = $compile(content.data)(_templateScope)
       coords = model.coordinates or model.geom_point_json?.coordinates
 
       # set the offset
       opts.offset = _getOffset map, model
 
       # generate and apply popup object
-      lObj = new L.popup opts
-      .setLatLng
+      if _lObj
+        L.Util.setOptions _lObj, opts
+      else
+        _lObj = new L.popup opts
+
+      _lObj.setLatLng
         lat: coords[1]
         lng: coords[0]
       .openOn map
-      lObj.setContent compiled[0]
-      lObj
-  , 500
+      _lObj.setContent compiled[0]
+      _lObj
 
+  close: _close
 
-  close:  ->
-    return unless _map
-    _map.closePopup()
+  getCurrent: -> _lObj

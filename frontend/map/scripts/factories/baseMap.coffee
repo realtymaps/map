@@ -51,7 +51,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
 
       angular.extend @scope, settings
 
-    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', mapId,  baseLayers = _baseLayers(), mapEvents = ['resize','moveend', 'zoomend'])->
+    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers = _baseLayers(), mapEvents = ['resize','moveend', 'zoomend'])->
       _throttler =  _eventThrottler($log, options)
       @initScopeSettings(options, mapPath, baseLayers, mapEvents)
 
@@ -86,11 +86,11 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
         self.draw? 'idle'
       , redrawDebounceMilliSeconds
 
-      leafletData.getDirectiveControls(mapId)
+      leafletData.getDirectiveControls(@mapId)
       .then (controls) =>
         @directiveControls = controls
 
-      leafletData.getMap(mapId).then (map) =>
+      leafletData.getMap(@mapId).then (map) =>
         @map =  map
         @map.whenReady  =>
           @scope[mapPath].isReady = true
