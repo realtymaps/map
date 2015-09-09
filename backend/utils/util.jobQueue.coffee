@@ -14,6 +14,7 @@ memoize = require 'memoizee'
 config = require '../config/config'
 keystore = require '../services/service.keystore'
 {PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
+TaskImplementation = require './tasks/util.taskImplementation'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -30,20 +31,6 @@ class SoftFail extends Error
 class HardFail extends Error
   constructor: (@message) ->
     @name = 'HardFail'
-
-# takes a task name and returns a promise resolving to either the task's module, or if it can't find one and there is
-# an MLS config with the task name as its id, then use the default MLS module
-_getTaskCode = (taskName) ->
-  try
-    return Promise.resolve(require("./tasks/task.#{taskName}"))
-  catch err
-    tables.config.mls()
-    .where(id: taskName)
-    .then (mlsConfigs) ->
-      if mlsConfigs?[0]?
-        return require("./tasks/task.default.mls")
-      throw new PartiallyHandledError(err, "can't find code for task with name: #{taskName}")
-_getTaskCode = memoize.promise(_getTaskCode)
 
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
@@ -152,38 +139,9 @@ queueTask = (transaction=knex, batchId, task, initiator) -> Promise.try () ->
     .delete()
   .then () ->  # now to enqueue (initial) subtasks
     # see if the task wants to specify the subtasks to run (vs using static config)
-    _getTaskCode(task.name)
-    .then (taskImpl) ->
-      subtaskOverridesPromise = taskImpl.prepSubtasks?(transaction, batchId, task.data) || false
-      subtaskConfigPromise = tables.jobQueue.subtaskConfig(transaction)
-      .where
-        task_name: task.name
-        auto_enqueue: true
-      .then (subtaskConfig=[]) ->
-        subtaskConfig
-      Promise.props
-        subtaskOverrides: subtaskOverridesPromise
-        subtaskConfig: subtaskConfigPromise
-  .then (subtaskInfo) ->
-    if typeof(subtaskInfo.subtaskOverrides) == 'number'   # subtasks already enqueued by custom logic, count returned
-      return subtaskInfo.subtaskOverrides
-    else if subtaskInfo.subtaskOverrides == false  # use config-based values for all subtasks and data
-      return queueSubtasks(transaction, batchId, subtaskInfo.subtaskConfig)
-    else  # handle on a case-by-case basis
-      subtasks = []
-      subtaskCount = 0
-      subtaskHash = _.indexBy(subtaskInfo.subtaskConfig, 'name')
-      for name, data of subtaskInfo.subtaskOverrides
-        if typeof(data) == 'number'  # this subtask already enqueued by task logic, count given
-          subtaskCount += data
-        else if data == false  # use config static values for this subtask
-          subtasks.push(subtaskHash[name])
-        else  # this subtask's data was overridden by task logic
-          subtaskHash[name].data = data
-          subtasks.push(subtaskHash[name])
-      return queueSubtasks(transaction, batchId, subtasks)
-      .then (count) ->
-        return subtaskCount+count  # add up the counts from overridden and config-based subtasks
+    TaskImplementation.getTaskCode(task.name)
+  .then (taskImpl) ->
+    taskImpl.initialize(transaction, batchId, task)
   .then (count) ->
     tables.jobQueue.taskHistory(transaction)
     .where
@@ -319,7 +277,7 @@ executeSubtask = (subtask) ->
     status: 'running'
     started: knex.raw('NOW()')
   .then () ->
-    _getTaskCode(subtask.task_name)
+    TaskImplementation.getTaskCode(subtask.task_name)
     .then (taskImpl) ->
       subtaskPromise = taskImpl.executeSubtask(subtask)
       .then () ->

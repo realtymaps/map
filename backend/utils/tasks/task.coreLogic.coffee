@@ -9,6 +9,7 @@ encryptor = require '../../config/encryptor'
 PromiseFtp = require '../util.promiseFtp'
 _ = require 'lodash'
 keystore = require '../../services/service.keystore'
+TaskImplementation = require './util.taskImplementation'
 
 
 NUM_ROWS_TO_PAGINATE = 500
@@ -132,9 +133,9 @@ finalizeDataPrep = (subtask) ->
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, coreLogicHelpers.finalizeData.bind(null, subtask)
-  
 
-subtasks =
+
+module.exports = new TaskImplementation
   checkFtpDrop: checkFtpDrop
   loadRawData: loadRawData
   normalizeData: normalizeData
@@ -142,8 +143,3 @@ subtasks =
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
-
-module.exports =
-  executeSubtask: (subtask) ->
-    # call the handler for the subtask
-    subtasks[subtask.name.replace(/[^_]+_/g,'')](subtask)
