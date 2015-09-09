@@ -84,7 +84,7 @@ app.controller 'rmapsNormalizeCtrl',
         addBaseRule rule
 
     # Save base rules
-    $scope.baseLoading = rmapsNormalizeService.createListRules $scope.mlsData.current.id, 'base', $scope.categories.base
+    $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base
 
   # Handles parsing RETS fields for display
   parseFields = (fields) ->
@@ -132,8 +132,7 @@ app.controller 'rmapsNormalizeCtrl',
     idx = _.indexOf(drop.collection, target)
     if to.list != 'unassigned'
       $scope.fieldData.category = to
-    from.loading = to.loading = rmapsNormalizeService.moveRule(
-      $scope.mlsData.current.id,
+    from.loading = to.loading = normalizeService.moveRule(
       drag.model,
       from,
       to,
@@ -196,7 +195,7 @@ app.controller 'rmapsNormalizeCtrl',
     $scope.saveRuleDebounced()
 
   saveRule = (rule) ->
-    $scope.fieldLoading = rmapsNormalizeService.updateRule $scope.mlsData.current.id, rule
+    $scope.fieldLoading = normalizeService.updateRule rule
 
   # Separate debounce/timeout for each rule
   saveFns = _.memoize((rule) ->
@@ -218,8 +217,7 @@ app.controller 'rmapsNormalizeCtrl',
     rule = $scope.fieldData.current
     from = _.find $scope.targetCategories, 'list', rule.list
     to = _.find $scope.targetCategories, 'list', 'unassigned'
-    from.loading = to.loading = rmapsNormalizeService.moveRule(
-      $scope.mlsData.current.id,
+    from.loading = to.loading = normalizeService.moveRule(
       rule,
       from,
       to,
@@ -229,10 +227,14 @@ app.controller 'rmapsNormalizeCtrl',
       $scope.fieldData.current = null
       $scope.$evalAsync()
 
+  # Data service. Initialized once an MLS is selected
+  normalizeService = null
+
   # Load saved MLS config and RETS fields
   loadMls = (config) ->
+    normalizeService = new rmapsNormalizeService config.id, 'mls', 'listing'
     $scope.mlsLoading =
-      rmapsNormalizeService.getRules(config.id)
+      normalizeService.getRules()
       .then (rules) ->
         parseRules(rules)
         rmapsMlsService.getColumnList(config.id, config.listing_data.db, config.listing_data.table)
