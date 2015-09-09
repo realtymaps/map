@@ -1,9 +1,9 @@
 app = require '../app.coffee'
 
-app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
+app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
 
-  console.log "#### test"
-  console.log "#### rmapsJobsQueueCtrl"
+  $log.log "#### test"
+  $log.log "#### rmapsJobsQueueCtrl"
   $scope.getData = rmapsJobsService.getQueue
 
   $scope.gridName = 'Queue'

@@ -2,7 +2,7 @@ _ = require 'lodash'
 mod = require '../module.coffee'
 createTemplate = require('../../../common/html/views/templates/gridCreateModal.jade')()
 
-mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
+mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModal) ->
   ($scope) ->
     $scope.gridName = $scope.gridName or 'Grid'
 
@@ -22,8 +22,8 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
       $scope.nameExists = idx != -1
 
-    console.log "#### controller, columnDefs:"
-    console.log $scope.columnDefs
+    $log.log "#### controller, columnDefs:"
+    $log.log $scope.columnDefs
 
     $scope.create = () ->
       if !$scope.recordName
@@ -42,42 +42,15 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
           fieldTypeMap: () ->
             return $scope.fieldTypeMap
 
-        controller: ['$scope', '$modalInstance', 'columnDefs', 'record', 'gridName', 'fieldTypeMap', ($scope, $modalInstance, columnDefs, record, gridName, fieldTypeMap) ->
-          console.log '#### columnDefs:'
-          console.log columnDefs
-          console.log "#### fieldTypeMap:"
-          console.log fieldTypeMap
-
-          $scope.gridName = gridName
-          $scope.record = record
-          $scope.fieldTypeMap = fieldTypeMap
-
-          _.each columnDefs, (c) ->
-            # console.log "#### checking c:"
-            # console.log c
-            if (v = c.defaultValue)?
-              # console.log "#### checking v:"
-              # console.log v
-              $scope.record[c.name] = if _.isFunction v then v() else v
-
-          console.log "#### record:"
-          console.log $scope.record
-
-          $scope.ok = () ->
-            $modalInstance.close($scope.record)
-
-          $scope.cancel = () ->
-            $modalInstance.dismiss('cancel')
-
-        ]
+        controller: rmapsGridModal()
 
       modalInstance.result
-      .then (record) =>
+      .then (record) ->
         for k, v of record
-          if @fieldTypeMap[k] == 'object'
+          if $scope.fieldTypeMap[k] == 'object'
             record[k] = JSON.parse(v)
-        console.log "#### modal result, created record:"
-        console.log record
+        $log.log "#### modal result, created record:"
+        $log.log record
 
         $scope.gridBusy = $scope.grid.data.post(record)
         .then () ->
@@ -110,5 +83,3 @@ mod.factory 'rmapsGridFactory', ($rootScope, $modal, Restangular) ->
       $scope.fieldTypeMap = {}
       for c in $scope.columnDefs
         $scope.fieldTypeMap[c.name] = c.type
-
-
