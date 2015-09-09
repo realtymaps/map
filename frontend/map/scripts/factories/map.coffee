@@ -48,6 +48,7 @@ app.factory 'rmapsMap',
       constructor: ($scope, limits) ->
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
+
         _initToggles $scope, limits.toggles
 
         $scope.zoomLevelService = rmapsZoomLevel
@@ -333,8 +334,8 @@ app.factory 'rmapsMap',
             _.reduce(polygon.getPaths().getArray()).getArray()
           @draw 'draw_tool', paths
 
-      openWindow: (model) =>
-        rmapsPopupLoader.load(@scope, @map, model)
+      openWindow: (model, lTriggerObject) =>
+        rmapsPopupLoader.load(@scope, @map, model, lTriggerObject)
 
       closeWindow: ->
         rmapsPopupLoader.close()
