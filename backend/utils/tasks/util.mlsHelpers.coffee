@@ -35,7 +35,7 @@ _streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
   .then () ->
     pgQuery dataLoadHelpers.createRawTempTable(tableName, Object.keys(fields)).toString()
   .then () -> new Promise (resolve, reject) ->
-    copyStart = "COPY #{tableName} (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+    copyStart = "COPY \"#{tableName}\" (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
     rawDataStream = pgClient.query(copyStream.from(copyStart))
     rawDataStream.on('finish', resolve)
     rawDataStream.on('error', reject)
