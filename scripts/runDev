@@ -34,4 +34,4 @@ then
   foreman run $MAYDAY_OPTS npm install
 fi
 
-foreman start $MAYDAY_OPTS web
+PATH=$PATH:node_modules/.bin foreman run $MAYDAY_OPTS ./scripts/app/startAppWrapper

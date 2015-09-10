@@ -1,4 +1,6 @@
-span(ng-controller="rmapsFavoritesCtrl" class="dropdown btn-group pinned-projects-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
+include ../mixins/property/_propertyAttributes.jade
+
+span(ng-controller="rmapsFavoritesCtrl" class="favorites dropdown btn-group" dropdown on-toggle="toggled(open)" auto-close="disabled")
     button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
         span.icon.icon-pin
     ul(class="dropdown-menu whiteblock no-margin")
@@ -11,15 +13,7 @@ span(ng-controller="rmapsFavoritesCtrl" class="dropdown btn-group pinned-project
                         span {{$index+1}}
                     span.content
                         span(class="status" ng-class="fav.status") {{fav.status}}
-                        p(class="price" ng-class="fav.status") ${{fav.price}}
-                        div.property-attr
-                            ul.attr
-                                li {{fav.bedrooms}} beds
-                                li {{fav.baths_total}} bath
-                                li {{fav.finished_sqft}} Sq Ft
-                                li {{formatters.results.getYear(fav.year_built)}} built
-                        h3.title {{fav.title}}
-                        span.location {{fav.location}}
+                        +propertyAttributes('fav')
                 span.actions
                     span.unpin
                         span.action Unpin
