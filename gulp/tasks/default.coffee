@@ -12,7 +12,7 @@ gulp = require 'gulp'
   './watch'
   './angular'
 ].forEach (dep) ->
-  console.log 'requiring', dep
+  # console.log 'requiring', dep
   require dep
 #help = require('gulp-help')(gulp)
 plumber = require 'gulp-plumber'

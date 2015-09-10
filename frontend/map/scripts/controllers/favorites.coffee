@@ -13,3 +13,5 @@ app.controller 'rmapsFavoritesCtrl', ($scope) ->
     for id, entity of newVal
       if entity?.savedDetails?.isSaved
         $scope.favorites[id] = entity
+
+    $scope.favorites
