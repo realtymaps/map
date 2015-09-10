@@ -1,0 +1,52 @@
+$fnMakeMapProperties()
+  .properties-list
+    background-color $white
+    height 95%
+    .inner
+      height 100%
+      background-color $white
+      background-image none
+    >button
+      height 50px
+      position relative
+      min-width 280px
+      @media (min-width: md)
+        min-width 280px
+      &:before
+        content ""
+        height 20px
+        left 0
+        margin-top -10px
+        position absolute
+        top 50%
+        width 3px
+        background $light_blue
+      > span
+        .icon-property
+          text-align left
+          font-size 20px
+          line-height 28px
+          float left
+        h4
+          margin 0 30px 0 40px
+          font-size 12px
+          font-weight bold
+          line-height 30px
+          text-align left
+          display block
+          color $black
+  .properties-tools
+    &.btn-group
+      margin-right 0
+
+    &.opened
+      button.btn
+        border-bottom-left-radius  0
+        -moz-border-bottom-left-radius 0
+        -webkit-border-bottom-left-radius 0
+        -o-border-bottom-left-radius 0
+        border-bottom-right-radius 0
+        -moz-border-bottom-right-radius 0
+        -webkit-border-bottom-right-radius 0
+
+        -o-border-bottom-right-radius 0

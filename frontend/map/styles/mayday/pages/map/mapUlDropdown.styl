@@ -1,0 +1,73 @@
+$fnMakeMapUlDropdown()
+  ul.dropdown-menu
+    width 100%
+    li.count
+      background-color $dark_white
+      border-bottom 1px solid $darker_white
+      border-top 1px solid $darker_white
+      color $dark_blue
+      font-size 12px
+      font-weight bold
+      padding 15px
+      a
+        padding 0
+        font-weight bold
+        &:hover
+        &:active
+          color $light_blue
+    li
+      a
+        overflow hidden
+        padding 10px
+
+        span.enity
+          position relative
+          float left
+          width 80%
+          span.title
+            font-weight bold
+            display block
+            float left
+            @extends .global-transition
+            h3
+              font-weight normal
+              margin 0
+              font-size 16px
+              color black
+            // span.count
+            //   font-size 10px
+            //   color $gray
+            //   float left
+          span.count
+            font-size 10px
+            color $gray
+            float left
+          span.icon
+            float left
+            font-size 18px
+            margin-right 10px
+            padding 8px
+        span.actions
+          width 20%
+          float right
+          opacity 0
+          transform scale(.2)
+          @extends .global-transition
+          .icon
+            display inline-block
+            font-size 20px
+            padding 7px
+            &.icon-remove
+              display none
+
+            &:hover
+            &:focus
+              color $light_blue
+
+      &:hover
+      &:focus
+        span.title
+          color $light_blue
+        span.actions
+          opacity 1
+          transform scale(1)
