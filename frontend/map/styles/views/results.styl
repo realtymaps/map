@@ -1,3 +1,4 @@
+@import '../components/propertiesAttr'
 /* Results Container
 ============================================================================= */
 $listNormalWidth = 280px
@@ -121,9 +122,6 @@ $fnOverrideSliderBackgroundColor()
             display block
         $fnMakeCaret()
 
-
-
-
   .inner
     max-height 85%
     overflow auto
@@ -168,58 +166,4 @@ $fnOverrideSliderBackgroundColor()
           padding 0 10px
           $fnPropertyStatus(color)
 
-        .property-attr
-          padding 0 10px
-          list-style none
-          display inline-block
-          ul.attr
-            padding 0
-            margin 5px -4px
-            li
-              list-style none
-              display inline-block
-              border-right 1px solid $black
-              border-bottom none
-              padding 0 4px
-              font-size 12px
-              &:last-child
-                border none
-        .title
-          padding 0 10px
-          margin 0 0 5px 0
-          color: $dark_blue_darker
-          &:hover
-          &:focus
-            color $light_blue
-        .location
-          padding 0 10px
-          color $gray
-          font-size 12px
-          font-weight bold
-        .btn-actions
-          overflow hidden
-          border-top 1px solid $darker_white
-
-          a
-            font-size 11px
-            border none
-            border-right 1px solid c_darker_white
-            background c_white
-            line-height 50px
-            text-align center
-            padding 0
-            width 33.3333%
-            float left
-            min-width 10px
-
-          button
-            font-size 11px
-            border none
-            border-right 1px solid $darker_white
-            background $white
-            padding 0
-            width 33.3333%
-            float left
-            min-width 10px
-            &:last-child
-              border none
+        $fnMakePropertyAttr()

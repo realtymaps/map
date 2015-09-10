@@ -1,4 +1,4 @@
-include ../mixins/result-buttons.jade
+include ../mixins/property/_propertyButtons.jade
 include ../mixins/spinner.jade
 
 .navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
@@ -15,7 +15,7 @@ include ../mixins/spinner.jade
                     .col-sm-7
                         .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
                         .city-state-zip {{formatters.results.getCityStateZip(selectedResult)}}
-                        +resultButtons('selectedResult')
+                        +propertyButtons('selectedResult')
                     .col-sm-5
                         .price(ng-if="selectedResult.price")
                             span.price-label {{formatters.results.getPriceLabel(selectedResult.rm_status)}}&nbsp;

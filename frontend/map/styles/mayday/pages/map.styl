@@ -1,3 +1,5 @@
+@import './map/mapFavorites.styl'
+
 .leaflet-control-layers
   display none
 
@@ -157,96 +159,8 @@
             text-align left
             display block
             color $black
-    .pinned-projects-list
-      .enity
-        display table
-        .circle-nr
-          display table-cell
-          padding 5px
-          span
-            background-color $black
-            border-radius 500px
-            color $white
-            display block
-            font-size 10px
-            font-weight bold
-            height 20px
-            line-height 20px
-            text-align center
-            width 20px
-        .content
-          display table-cell
-          padding 5px
-          .status
-            background $green
-            color $white
-            text-transform uppercase
-            display inline-block
-            padding 5px 10px
-            font-size 11px
-            margin-bottom 5px
-            &.pending
-              background $yellow
 
-            &.sold
-              background $red
-
-          .price
-            margin 0
-            font-size 18px
-            font-weight bold
-            color $green
-            &.pending
-              color $yellow
-            &.sold
-              color $red
-
-          .property-attr
-            list-style none
-            display inline-block
-            ul.attr
-              padding 0
-              margin 0 -4px
-              li
-                list-style none
-                display inline-block
-                border-right 1px solid $black
-                border-bottom none
-                padding 0 4px
-                font-size 12px
-                &:last-child
-                  border none
-          .title
-            margin 0
-            font-size 16px
-            a
-              padding 0
-              text-decoration none
-              &:hover
-              &:focus
-                color $light_blue
-          .location
-            color $gray
-            font-size 12px
-            font-weight bold
-      .actions
-        transform scale(1) !important
-        opacity 1 !important
-        text-align right
-        vertical-align middle
-        span.unpin
-          span.action
-            font-size 10px
-            line-height 30px
-            vertical-align top
-            opacity 0
-            @extends .global-transition
-          span.icon
-            font-size 16px!important
-          &:hover
-          &:focus
-            span.action
-              opacity 1
+    $fnMakeMapFavorites()
     .notes-list
       ul
         li
@@ -402,7 +316,7 @@
           padding 7px
           cursor pointer
 
-    .pinned-projects-list
+    .favorites
     .notes-list
     .neighbourhood-list
       button
@@ -594,7 +508,7 @@
         color $white
 
 @-moz-document url-prefix()
-  .pinned-projects-list
+  .favorites
   .notes-list
   .neighbourhood-list
     button

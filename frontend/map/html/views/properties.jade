@@ -1,3 +1,4 @@
+include ../includes/mixins/property/_propertyAttributes.jade
 #properties-view.content-section-container(ng-class="{ active: isActive('properties') }")
     header
         a(class="btn btn-default back" href="#map")
@@ -34,32 +35,7 @@
                                     p.description {{singleProperty.description}}
                                 .col-md-4.border-left
                                     h3 Property Info
-                                    div.property-attr
-                                        ul.attr
-                                            li
-                                                span {{singleProperty.attr.beds}}
-                                                |Beds
-                                            li
-                                                span {{singleProperty.attr.bath}}
-                                                |Bath
-                                            li
-                                                span {{singleProperty.attr.square}}
-                                                | Sq Ft
-                                            li
-                                                span {{singleProperty.attr.year}}
-                                                | Built
-                                            li
-                                                span {{singleProperty.attr.beds}}
-                                                | Acres
-                                            li
-                                                span {{singleProperty.attr.bath}}
-                                                | Lot SqFt
-                                            li
-                                                span {{singleProperty.attr.square}}
-                                                | Front Ft
-                                            li
-                                                span {{singleProperty.attr.year}}
-                                                | Depth Ft
+                                    +propertyAttributes('singleProperty')
                             .row.property-owner
                                 .col-md-12
                                     h3 Owner Info
