@@ -4,6 +4,8 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
 
   $scope.getData = rmapsJobsService.getSubtask
 
+  $scope.nameFilters = ""
+
   $scope.gridName = 'Subtask'
 
   $scope.columnDefs = [

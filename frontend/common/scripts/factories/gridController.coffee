@@ -75,7 +75,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
           $scope.exists()
 
     $scope.load = () ->
-      $scope.jobsBusy = $scope.getData($scope.nameFilters)
+      $scope.jobsBusy = $scope.getData({"search": $scope.nameFilters})
       .then (data) ->
         $scope.grid.data = data
 

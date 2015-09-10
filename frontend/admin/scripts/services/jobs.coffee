@@ -27,10 +27,16 @@ app.service 'rmapsJobsService', (Restangular) ->
     Restangular.all(jobsAPI).all('health').getList(timerange: timerange)
 
   getQueue = (filters) ->
+    if filters?.search?
+      filters.name = filters.search
+      delete filters.search
     Restangular.all(jobsAPI).all('queues').getList(filters)
 
-  getTasks = () ->
-    Restangular.all(jobsAPI).all('tasks').getList()
+  getTasks = (filters) ->
+    if filters?.search?
+      filters.name = filters.search
+      delete filters.search
+    Restangular.all(jobsAPI).all('tasks').getList(filters)
 
   getTask = (name) ->
     Restangular.all(jobsAPI).all('tasks').one(name).get()
@@ -38,8 +44,12 @@ app.service 'rmapsJobsService', (Restangular) ->
   updateTask = (name, task) ->
     Restangular.all(jobsAPI).all('tasks').one(name).customPUT(task)
 
-  getSubtask = () ->
-    Restangular.all(jobsAPI).all('subtasks').getList()
+  getSubtask = (filters) ->
+    if filters?.search?
+      filters.name = filters.search
+      filters.task_name = filters.search
+      delete filters.search
+    Restangular.all(jobsAPI).all('subtasks').getList(filters)
 
   getSummary = () ->
     Restangular.all(jobsAPI).all('summary').getList()

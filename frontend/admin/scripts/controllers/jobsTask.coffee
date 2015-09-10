@@ -8,13 +8,15 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
 
   $scope.cancelTask = rmapsJobsService.cancelTask
 
+  $scope.nameFilters = ""
+
   $scope.gridName = 'Task'
 
   $scope.columnDefs = [
       field: 'name'
       displayName: 'Name'
       cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
-      width: 100
+      width: 120
       enableCellEdit: false
       pinnedLeft: true
     ,

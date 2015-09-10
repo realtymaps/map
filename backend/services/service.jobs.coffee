@@ -15,6 +15,78 @@ class JobService extends crudService.Crud
       return super(query, doLogQuery)
 
 class TaskService extends crudService.Crud
+  getAll: (query = {}, doLogQuery = false) ->
+    logger.debug "#### TaskService, query:"
+    logger.debug query
+
+    substrFields = {}
+
+    if query?.name?
+      if query.name
+        logger.debug "#### query.name:"
+        logger.debug query.name
+        substrFields.name = query.name
+      delete query.name
+
+    if query?.task_name?
+      if query.task_name
+        logger.debug "#### query.task_name:"
+        logger.debug query.task_name
+        substrFields.task_name = query.task_name
+      delete query.task_name
+
+    logger.debug "#### substrFields:"
+    logger.debug JSON.stringify(substrFields)
+
+    if not _.isEmpty substrFields
+      logger.debug "#### substrFields, really isnt {}?:"
+      logger.debug JSON.stringify(substrFields)
+
+      old_dbFn = @dbFn
+      transaction = @dbFn()
+      tableName = @dbFn.tableName
+      @dbFn = () =>
+        ret = transaction
+        fields = Object.keys substrFields
+        logger.debug "#### substr fields:"
+        logger.debug fields
+        firstKey = fields.pop()
+        whereRawStr = "strpos(#{firstKey}, '#{substrFields[firstKey]}') > 0"
+        while fields.length > 0
+          nextKey = fields.pop()
+          whereRawStr = "#{whereRawStr} or strpos(#{nextKey}, '#{substrFields[nextKey]}') > 0"
+        ret = ret.whereRaw(whereRawStr)
+        ret.raw = transaction.raw
+
+        @dbFn = old_dbFn
+        logger.debug "#### sql:"
+        logger.debug ret.toString()
+        ret
+      @dbFn.tableName = tableName
+      # if query.schemaReady == 'true'
+
+      #   # extend our dbFn to account for specialized "where" query on the base dbFn
+      #   transaction = @dbFn()
+      #   tableName = @dbFn.tableName
+      #   @dbFn = () =>
+      #     # for "schemaReady" to be true, the listing_data json fields
+      #     # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
+      #     ret = transaction
+      #     .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
+      #     .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
+      #     .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
+      #     .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
+      #     ret.raw = transaction.raw
+
+      #     # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
+      #     @dbFn = tables.config.mls
+      #     ret
+
+      #   @dbFn.tableName = tableName
+
+    super(query, doLogQuery)
+
+
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
@@ -22,6 +94,9 @@ class TaskService extends crudService.Crud
 
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
+_queues = new TaskService(tables.jobQueue.queueConfig, 'name')
+_tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
+_subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
 
 
 # provide a contrived "query" that meets requirements for our Crud object
@@ -81,8 +156,8 @@ healthDbFn = () ->
 
 module.exports =
   taskHistory: _taskHistory
-  queues: crudService.crud(tables.jobQueue.queueConfig, 'name')
-  tasks: crudService.crud(tables.jobQueue.taskConfig, 'name')
-  subtasks: crudService.crud(tables.jobQueue.subtaskConfig, 'name')
+  queues: _queues
+  tasks: _tasks
+  subtasks: _subtasks
   summary: _summary
   health: crudService.crud(healthDbFn)
