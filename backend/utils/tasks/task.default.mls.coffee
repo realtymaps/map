@@ -31,7 +31,7 @@ normalizeData = (subtask) ->
     updateRecord: mlsHelpers.updateRecord
 
 finalizeDataPrep = (subtask) ->
-  tables.propertyData.mls()
+  tables.propertyData.listing()
   .distinct('rm_property_id')
   .select()
   .where(batch_id: subtask.batch_id)
@@ -47,7 +47,7 @@ finalizeData = (subtask) ->
 module.exports = new TaskImplementation
   loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.mls)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.listing)
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData

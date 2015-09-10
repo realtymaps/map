@@ -128,7 +128,7 @@ baseRules =
     alias: 'Discontinued Date'
     type: 'datetime'
 
-  mls_uuid:
+  data_source_uuid:
     alias: 'MLS Number'
     required: true
 

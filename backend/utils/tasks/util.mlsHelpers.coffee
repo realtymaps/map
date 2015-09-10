@@ -120,7 +120,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
+    address: sqlHelpers.safeJsonArray(tables.propertyData.listing(), base.address)
     hide_listing: base.hide_listing ? false
     shared_groups:
       general: normalizedData.general || []
@@ -140,16 +140,16 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
     deleted: null
   updateRow = _.extend base, stats, data
   # check for an existing row
-  tables.propertyData.mls()
+  tables.propertyData.listing()
   .select('*')
   .where
-    mls_uuid: updateRow.mls_uuid
+    data_source_uuid: updateRow.data_source_uuid
     data_source_id: updateRow.data_source_id
   .then (result) ->
     if !result?.length
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
-      tables.propertyData.mls()
+      tables.propertyData.listing()
       .insert(updateRow)
     else
       # found an existing row, so need to update, but include change log
@@ -159,16 +159,16 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
       if !_.isEmpty changes
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.mls(), updateRow.change_history)
-      tables.propertyData.mls()
+      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.listing(), updateRow.change_history)
+      tables.propertyData.listing()
       .where
-        mls_uuid: updateRow.mls_uuid
+        data_source_uuid: updateRow.data_source_uuid
         data_source_id: updateRow.data_source_id
       .update(updateRow)
 
 
 finalizeData = (subtask, id) ->
-  listingsPromise = tables.propertyData.mls()
+  listingsPromise = tables.propertyData.listing()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -194,7 +194,7 @@ finalizeData = (subtask, id) ->
     delete listing.hide_listing
     delete listing.rm_inserted_time
     delete listing.rm_modified_time
-    listing.prior_listings = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
+    listing.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
     listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
     listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
     tables.propertyData.combined()
