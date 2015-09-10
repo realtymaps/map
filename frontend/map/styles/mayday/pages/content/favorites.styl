@@ -1,3 +1,5 @@
+@import '../../../components/propertiesAttr.styl'
+
 #favorites
   ul.favorites
     list-style none
@@ -45,27 +47,7 @@
             &.for.sale
               color c_green
 
-          .property-attr
-            display block
-            clear both
-            margin 0 -10px
-            ul.attr
-              list-style none
-              padding 0
-              li
-                float left
-                border-right 1px solid c_black_30
-                line-height 0
-                &:last-child
-                  border 0 none
-          h4.title
-            font-weight bold
-            display block
-            clear both
-            margin 0 0 10px 0
-
-          .location
-            color c_gray
+          $fnMakePropertyAttr()
 
       .actions
         button
