@@ -44,7 +44,6 @@
     "chai": "3.x.x",
     "coffee-script": "^1.8.0",
     "coffee-script-mapped": "^0.1.7",
-    "coffeegulp": "0.0.4",
     "coffeeify": "^1.1.0",
     "combined-stream2": "^1.1.1",
     "compression": "1.1.x",

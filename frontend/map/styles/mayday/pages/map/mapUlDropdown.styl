@@ -2,11 +2,13 @@ $fnMakeMapUlDropdown()
   ul.dropdown-menu
     width 100%
     li.count
+      background-color $dark_white
+      border-bottom 1px solid $darker_white
+      border-top 1px solid $darker_white
       color $dark_blue
       font-size 12px
       font-weight bold
       padding 15px
-      background $black_10
       a
         padding 0
         font-weight bold
@@ -15,6 +17,9 @@ $fnMakeMapUlDropdown()
           color $light_blue
     li
       a
+        overflow hidden
+        padding 10px
+
         span.enity
           position relative
           float left
@@ -22,13 +27,26 @@ $fnMakeMapUlDropdown()
           span.title
             font-weight bold
             display block
+            float left
             @extends .global-transition
+            h3
+              font-weight normal
+              margin 0
+              font-size 16px
+              color black
+            // span.count
+            //   font-size 10px
+            //   color $gray
+            //   float left
           span.count
             font-size 10px
             color $gray
             float left
           span.icon
             float left
+            font-size 18px
+            margin-right 10px
+            padding 8px
         span.actions
           width 20%
           float right
@@ -53,32 +71,3 @@ $fnMakeMapUlDropdown()
         span.actions
           opacity 1
           transform scale(1)
-
-  ul.dropdown-menu
-    width 100%
-    li.count
-      background $dark_white
-      border-bottom 1px solid $darker_white
-      border-top 1px solid $darker_white
-    li
-      a
-        overflow hidden
-        padding 10px
-        span.enity
-          span.icon
-            float left
-            font-size 18px
-            margin-right 10px
-            padding 8px
-          span.title
-            float left
-            @extends .global-transition
-            h3
-              font-weight normal
-              margin 0
-              font-size 16px
-              color black
-            span.count
-              font-size 10px
-              color $gray
-                      float left
