@@ -1,0 +1,89 @@
+$fnMakeMapNotes()
+  .notes-list
+    ul
+      li
+        > div
+          overflow hidden
+          padding 10px
+          position relative
+          @extend .global-transition
+          &:hover
+          &.active
+          &.focus
+            background-color $light_blue_select
+
+    .enity
+      display table
+      position relative
+      float left
+      margin-right 32px
+      .circle-nr
+        display table-cell
+        padding 5px
+        span
+          background-color $black
+          border-radius 500px
+          color $white
+          display block
+          font-size 10px
+          font-weight bold
+          height 20px
+          line-height 20px
+          text-align center
+          width 20px
+      .content
+        display table-cell
+        padding 5px
+        h3
+          font-size 16px
+          margin 0 0 10px 0
+
+        p.text
+          font-size 12px
+          color $text_gray
+          margin 0 0 10px 0
+
+        .comment
+          display block
+          clear both
+          a
+            text-decoration underline
+            background transparent
+            font-size 12px
+            padding 0
+            &:hover
+            &:focus
+            &:active
+              color $light_blue
+        .sketch
+          background-color $pastel_blue
+          border 1px solid $light_blue
+          padding 5px
+          border-radius 5px
+          float left
+          margin 0 0 10px 0
+          cursor pointer
+          width: 100%;
+          .action
+            font-size 10px
+            float left
+            line-height 20px
+          .icon
+            color $light_blue
+            font-size 20px
+            float left
+            margin 0 10px 0 0
+    span.actions
+      width 32px
+      position absolute
+      top 10px
+      right 10px
+      opacity 0
+      transform scale(.2)
+      text-align center
+      @extends .global-transition
+      .icon
+        display inline-block
+        font-size 20px
+        padding 7px
+        cursor pointer
