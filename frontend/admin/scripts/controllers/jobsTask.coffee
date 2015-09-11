@@ -1,14 +1,11 @@
 app = require '../app.coffee'
 
 app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
-
   $scope.getData = rmapsJobsService.getTasks
 
   $scope.runTask = rmapsJobsService.runTask
 
   $scope.cancelTask = rmapsJobsService.cancelTask
-
-  $scope.nameFilters = ""
 
   $scope.gridName = 'Task'
 

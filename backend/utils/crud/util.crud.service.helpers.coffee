@@ -23,8 +23,6 @@ class Crud extends BaseObject
     obj
 
   getAll: (query = {}, doLogQuery = false) ->
-    logger.debug "#### query:"
-    logger.debug query
     execQ @dbFn().where(query), doLogQuery
 
   getById: (id, doLogQuery = false) ->

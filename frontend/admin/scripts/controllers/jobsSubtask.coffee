@@ -1,10 +1,7 @@
 app = require '../app.coffee'
 
 app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory, uiGridConstants) ->
-
   $scope.getData = rmapsJobsService.getSubtask
-
-  $scope.nameFilters = ""
 
   $scope.gridName = 'Subtask'
 

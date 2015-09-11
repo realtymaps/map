@@ -4,6 +4,8 @@ createTemplate = require('../../../common/html/views/templates/gridCreateModal.j
 
 mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModal) ->
   ($scope) ->
+    $scope.nameFilters = ""
+
     $scope.gridName = $scope.gridName or 'Grid'
 
     $scope.gridName = $scope.gridName[0].toUpperCase() + $scope.gridName.slice(1)
@@ -21,9 +23,6 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
     $scope.exists = () ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
       $scope.nameExists = idx != -1
-
-    $log.log "#### controller, columnDefs:"
-    $log.log $scope.columnDefs
 
     $scope.create = () ->
       $scope.refreshFieldTypes()
@@ -50,8 +49,6 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
         for k, v of record
           if $scope.fieldTypeMap[k] == 'object'
             record[k] = JSON.parse(v)
-        $log.log "#### modal result, created record:"
-        $log.log record
 
         $scope.gridBusy = $scope.grid.data.post(record)
         .then () ->
@@ -65,14 +62,19 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
           record.fromServer = true
           $scope.grid.data.push(record)
           $scope.exists()
+          $scope.recordName = ""
 
     $scope.delete = () ->
+      check = confirm "Are you sure you want to delete #{$scope.recordName}?"
+      if !check
+        return
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
       if idx > -1
         $scope.jobsBusy = $scope.grid.data[idx].remove()
         .then () ->
           $scope.grid.data.splice(idx, 1)
           $scope.exists()
+          $scope.recordName = ""
 
     $scope.load = () ->
       $scope.jobsBusy = $scope.getData({"search": $scope.nameFilters})

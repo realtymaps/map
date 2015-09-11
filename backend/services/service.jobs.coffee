@@ -16,40 +16,29 @@ class JobService extends crudService.Crud
 
 class TaskService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
-    logger.debug "#### TaskService, query:"
-    logger.debug query
-
     substrFields = {}
 
+    # test for expected values (mapping of field names -> substring would be in query)
     if query?.name?
       if query.name
-        logger.debug "#### query.name:"
-        logger.debug query.name
         substrFields.name = query.name
       delete query.name
 
     if query?.task_name?
       if query.task_name
-        logger.debug "#### query.task_name:"
-        logger.debug query.task_name
         substrFields.task_name = query.task_name
       delete query.task_name
 
-    logger.debug "#### substrFields:"
-    logger.debug JSON.stringify(substrFields)
-
     if not _.isEmpty substrFields
-      logger.debug "#### substrFields, really isnt {}?:"
-      logger.debug JSON.stringify(substrFields)
-
+      # extend our dbFn to account for specialized "where" query on the base dbFn
       old_dbFn = @dbFn
       transaction = @dbFn()
       tableName = @dbFn.tableName
+
+      # build query for searching given substrings on given fields of @dbFn table
       @dbFn = () =>
         ret = transaction
         fields = Object.keys substrFields
-        logger.debug "#### substr fields:"
-        logger.debug fields
         firstKey = fields.pop()
         whereRawStr = "strpos(#{firstKey}, '#{substrFields[firstKey]}') > 0"
         while fields.length > 0
@@ -58,34 +47,11 @@ class TaskService extends crudService.Crud
         ret = ret.whereRaw(whereRawStr)
         ret.raw = transaction.raw
 
+        # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
         @dbFn = old_dbFn
-        logger.debug "#### sql:"
-        logger.debug ret.toString()
         ret
       @dbFn.tableName = tableName
-      # if query.schemaReady == 'true'
-
-      #   # extend our dbFn to account for specialized "where" query on the base dbFn
-      #   transaction = @dbFn()
-      #   tableName = @dbFn.tableName
-      #   @dbFn = () =>
-      #     # for "schemaReady" to be true, the listing_data json fields
-      #     # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
-      #     ret = transaction
-      #     .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
-      #     .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
-      #     .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
-      #     .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
-      #     ret.raw = transaction.raw
-
-      #     # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
-      #     @dbFn = tables.config.mls
-      #     ret
-
-      #   @dbFn.tableName = tableName
-
     super(query, doLogQuery)
-
 
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
