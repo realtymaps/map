@@ -1,4 +1,4 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 
 app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
   $scope.getData = rmapsJobsService.getTasks
@@ -26,7 +26,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       displayName: 'Data'
       type: 'object'
       enableCellEdit: true
-      editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
+      editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
       defaultValue: "{}"
       width: 250
     ,
