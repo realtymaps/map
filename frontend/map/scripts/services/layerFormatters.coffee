@@ -134,8 +134,6 @@ app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
             type: 'div'
             html: pieUtil.pieCreateFunctionBackend(model)
 
-        visible: true
-
     #public
     Parcels: _parcels
     MLS: _mls
