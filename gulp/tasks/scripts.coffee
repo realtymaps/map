@@ -67,11 +67,11 @@ browserifyTask = (app) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
-        # if process.env.CIRCLECI #enforce linting at CircleCI
-        #   lintStream.on 'error', ->
-        #     process.exit(1)
-        # lintStream
+        lintStream = browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
+        if process.env.CIRCLECI #enforce linting at CircleCI
+          lintStream.on 'error', ->
+            process.exit(1)
+        lintStream
 
     bundle = (stream) ->
       startTime = process.hrtime()
