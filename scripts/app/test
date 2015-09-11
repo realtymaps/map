@@ -5,4 +5,4 @@ then
     gem install foreman
 fi
 
-foreman run gulp spec
+foreman run gulp rspec
