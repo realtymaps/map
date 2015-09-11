@@ -4,8 +4,11 @@ require './otherAssets'
 require './karma'
 require './mocha'
 
-gulp.task 'spec',
-  gulp.series 'commonSpec', 'backendSpec', 'gulpSpec', 'otherAssets', 'angular', 'angularAdmin', 'frontendSpec'
+gulp.task 'spec', gulp.parallel 'commonSpec', 'backendSpec', 'gulpSpec', 'frontendSpec'
+
+gulp.task 'rebuildSpec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'gulpSpec'), gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'frontendSpec'
+
+gulp.task 'rspec', gulp.series 'rebuildSpec'
 
 #front end coverage
 gulp.task 'coverage', gulp.series 'spec', ->

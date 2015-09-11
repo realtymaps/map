@@ -1,3 +1,4 @@
+_ = require 'lodash'
 gulp = require 'gulp'
 [
   './spec'
@@ -16,9 +17,23 @@ gulp = require 'gulp'
   require dep
 #help = require('gulp-help')(gulp)
 
-gulp.task 'developNoSpec', gulp.series 'clean', gulp.parallel('angular', 'angularAdmin', 'otherAssets'), gulp.parallel('express', 'watch')
+developNoSpec = (additionalEndings, additionalAssets) ->
+  assetsParallel = ['angular', 'angularAdmin', 'otherAssets']
+  endsParallel = ['express', 'watch']
 
-gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
+  if additionalAssets? and _.isArray additionalAssets
+    assetsParallel = assetsParallel.concat additionalAssets
+
+  if additionalEndings? and _.isArray additionalEndings
+    endsParallel = endsParallel.concat additionalEndings
+
+  gulp.series 'clean', gulp.parallel(assetsParallel...), gulp.parallel(endsParallel...)
+
+gulp.task 'developNoSpec', developNoSpec()
+
+# There is a specific reason why we are not just tacking on spec to developNoSpec as a series.. (IT IS SLOWER)
+# instead we tack it into the last parallel
+gulp.task 'develop', developNoSpec(['spec'])
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
@@ -26,7 +41,7 @@ gulp.task 'noSpec', gulp.series 'developNoSpec'
 
 gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'otherAssets', 'angular', 'angularAdmin', 'minify', 'gzip'
 
-gulp.task 'default', gulp.series 'develop'
+gulp.task 'default', gulp.parallel 'develop'
 
 gulp.task 'server', gulp.series 'default'
 
