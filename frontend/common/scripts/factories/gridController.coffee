@@ -14,11 +14,14 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
       enableColumnMenus: false
       enablePinning: true
       columnDefs: $scope.columnDefs
+      enableCellEditOnFocus: true
       onRegisterApi: (gridApi) ->
         gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
           if newValue != oldValue
             $scope.$apply()
             rowEntity.save()
+          # CellEditOnFocus selects cells as part of focusing, so clear focus after edit since we dont care for the selection to remain
+          gridApi.grid.cellNav.clearFocus()
 
     $scope.exists = () ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName

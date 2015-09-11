@@ -29,6 +29,7 @@ app = window.angular.module appName, [
   'ui.grid.edit'
   'ui.grid.autoResize'
   'ui.grid.pinning'
+  'ui.grid.cellNav'
 ]
 
 module.exports = app
