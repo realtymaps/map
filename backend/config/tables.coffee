@@ -26,7 +26,9 @@ module.exports =
     dataNormalization: 'users.data_normalization_config'
     mls: 'users.mls_config'
   propertyData:
-    mls: 'properties.mls_data'
+    listing: 'properties.normal_listing_data'
+    tax: 'properties.normal_tax_data'
+    deed: 'properties.normal_deed_data'
     rootParcel: 'properties.parcels'
     parcel: 'properties.mv_parcels'
     propertyDetails: 'properties.mv_property_details'
