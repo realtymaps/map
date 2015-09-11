@@ -67,11 +67,11 @@ browserifyTask = (app) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        lintStream = browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
-        if process.env.CIRCLECI #enforce linting at CircleCI
-          lintStream.on 'error', ->
-            process.exit(1)
-        lintStream
+        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
+        # if process.env.CIRCLECI #enforce linting at CircleCI
+        #   lintStream.on 'error', ->
+        #     process.exit(1)
+        # lintStream
 
     bundle = (stream) ->
       startTime = process.hrtime()
@@ -93,13 +93,13 @@ browserifyImpl = ->
 browserIfyAdminImpl = ->
   browserifyTask 'admin'
 
-gulp.task 'browserify', -> browserifyImpl
+gulp.task 'browserify', browserifyImpl
 
 gulp.task 'browserifyWatch', (done) ->
   gulp.watch getScriptsGlob('map'), browserifyImpl
   done()
 
-gulp.task 'browserifyAdmin', -> browserIfyAdminImpl
+gulp.task 'browserifyAdmin', browserIfyAdminImpl
 
 gulp.task 'browserifyWatchAdmin', (done) ->
   gulp.watch getScriptsGlob('admin'), browserIfyAdminImpl

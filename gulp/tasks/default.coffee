@@ -16,18 +16,13 @@ gulp = require 'gulp'
   require dep
 #help = require('gulp-help')(gulp)
 
-#gulp dependency hell
-gulp.task 'spec_watch', gulp.parallel 'spec', 'watch'
+gulp.task 'developNoSpec', gulp.series 'clean', gulp.parallel('angular', 'angularAdmin', 'otherAssets'), gulp.parallel('express', 'watch')
 
-gulp.task 'express_assets', gulp.parallel 'express', 'otherAssets'
-
-gulp.task 'develop', gulp.series 'clean', 'express_assets', 'spec_watch'
+gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'develop_no_spec', gulp.series 'clean', 'otherAssets', 'angular', 'angularAdmin', 'express', 'watch'
-
-gulp.task 'no_spec', gulp.series 'develop_no_spec'
+gulp.task 'noSpec', gulp.series 'developNoSpec'
 
 gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'otherAssets', 'angular', 'angularAdmin', 'minify', 'gzip'
 

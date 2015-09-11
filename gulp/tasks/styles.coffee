@@ -40,7 +40,7 @@ stylesImpl = ->
 stylesAdminImpl = ->
   styles paths.admin
 
-gulp.task 'styles', -> stylesImpl()
+gulp.task 'styles', stylesImpl
 
 gulp.task 'stylesWatch', (done) ->
   gulp.watch [
