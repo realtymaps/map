@@ -34,19 +34,25 @@ styles = (src) ->
     title: paths.dest.root
     showFiles: true
 
-gulp.task 'styles', -> styles paths.map
+stylesImpl = ->
+  styles paths.map
 
-gulp.task 'stylesWatch', gulp.series 'styles', (done) ->
+stylesAdminImpl = ->
+  styles paths.admin
+
+gulp.task 'styles', -> stylesImpl()
+
+gulp.task 'stylesWatch', (done) ->
   gulp.watch [
     paths.map.less
     paths.map.styles
     paths.map.stylus
-  ], gulp.series 'styles'
+  ], stylesImpl
   done()
 
-gulp.task 'stylesAdmin', -> styles paths.admin
+gulp.task 'stylesAdmin', stylesAdminImpl
 
-gulp.task 'stylesWatchAdmin', gulp.series 'stylesAdmin', (done) ->
+gulp.task 'stylesWatchAdmin', (done) ->
   gulp.watch [
     paths.map.less
     paths.map.styles
@@ -54,5 +60,5 @@ gulp.task 'stylesWatchAdmin', gulp.series 'stylesAdmin', (done) ->
     paths.admin.less
     paths.admin.styles
     paths.admin.stylus
-  ], gulp.series 'stylesAdmin'
+  ], stylesAdminImpl
   done()

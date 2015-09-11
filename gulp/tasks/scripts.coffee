@@ -17,10 +17,17 @@ conf = require './conf'
 require './markup'
 ignore = require 'ignore'
 
-browserifyTask = (app, watch = false) ->
+getScriptsGlob = (app) ->
+  [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
+
+###
+Yes browserify can do build and watching itself. However, this is not optimal as we need building and watching seperated.
+Otherwise you get duplicate actions on initial builds.
+###
+browserifyTask = (app) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  inputGlob = [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
+  inputGlob = getScriptsGlob(app)
   outputName = app + '.bundle.js'
   startTime = ''
 
@@ -52,9 +59,6 @@ browserifyTask = (app, watch = false) ->
       dest: paths.destFull.scripts
       debug: true
 
-    if watch
-      _.extend config, watchify.args
-
     # This file acts like a .gitignore for excluding files from linter
     lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
 
@@ -63,34 +67,40 @@ browserifyTask = (app, watch = false) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
-        .on 'error', ->
-          process.exit(1)
+        lintStream = browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
+        if process.env.CIRCLECI #enforce linting at CircleCI
+          lintStream.on 'error', ->
+            process.exit(1)
+        lintStream
 
     bundle = (stream) ->
       startTime = process.hrtime()
       gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
       b.bundle().pipe(stream)
 
-    if watch
-      b = watchify b
-      b.on 'update', () ->
-        bundle pipeline through()
-      gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
-    else
-      if config.require
-        b.require config.require
-      if config.external
-        b.external config.external
+    if config.require
+      b.require config.require
+    if config.external
+      b.external config.external
 
     bundle bundledStream
 
   bundledStream
 
-gulp.task 'browserify', -> browserifyTask 'map'
+browserifyImpl = ->
+  browserifyTask 'map'
 
-gulp.task 'browserifyWatch', -> browserifyTask 'map', true
+browserIfyAdminImpl = ->
+  browserifyTask 'admin'
 
-gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
+gulp.task 'browserify', -> browserifyImpl
 
-gulp.task 'browserifyWatchAdmin', -> browserifyTask 'admin', true
+gulp.task 'browserifyWatch', (done) ->
+  gulp.watch getScriptsGlob('map'), browserifyImpl
+  done()
+
+gulp.task 'browserifyAdmin', -> browserIfyAdminImpl
+
+gulp.task 'browserifyWatchAdmin', (done) ->
+  gulp.watch getScriptsGlob('admin'), browserIfyAdminImpl
+  done()

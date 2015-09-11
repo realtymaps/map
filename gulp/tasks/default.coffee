@@ -15,13 +15,13 @@ gulp = require 'gulp'
   # console.log 'requiring', dep
   require dep
 #help = require('gulp-help')(gulp)
-plumber = require 'gulp-plumber'
-util = require 'gulp-util'
 
 #gulp dependency hell
-gulp.task 'express_watch', gulp.series 'watch', 'express'
+gulp.task 'spec_watch', gulp.parallel 'spec', 'watch'
 
-gulp.task 'develop', gulp.series 'clean', 'otherAssets', 'spec', 'express_watch'
+gulp.task 'express_assets', gulp.parallel 'express', 'otherAssets'
+
+gulp.task 'develop', gulp.series 'clean', 'express_assets', 'spec_watch'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
