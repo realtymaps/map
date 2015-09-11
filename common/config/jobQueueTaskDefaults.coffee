@@ -10,9 +10,9 @@ module.exports =
     fail_retry_minutes: 1
     active: false
 
-  subtask_loadDataRawMain:
+  subtask_loadRawData:
     # task_name: '' # required
-    # name: '' # should be set to task-centric "#{task_name}_loadDataRawMain"
+    # name: '' # should be set to task-centric "#{task_name}_loadRawData"
     step_num: 1
     queue_name: 'mls'
     data: null
