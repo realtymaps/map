@@ -59,48 +59,6 @@ _streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
       logger.warn "Error disconnecting raw db connection: #{err}"
 
 
-_getValues = (list, target) ->
-  if !target
-    target = {}
-  for item in list
-    target[item.name] = item.value
-  target
-
-
-# this performs a diff of 2 sets of MLS data, returning only the changed/new/deleted fields as keys, with the value
-# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source MLS data,
-# excluding those that are expected to be date-related derived values (notably DOM and CDOM)
-_diff = (row1, row2, diffExcludeKeys=[]) ->
-  fields1 = {}
-  fields2 = {}
-
-  # first, flatten the objects
-  for groupName, groupList of row1.client_groups
-    _getValues(groupList, fields1)
-  for groupName, groupList of row1.realtor_groups
-    _getValues(groupList, fields1)
-  _.extend(fields1, row1.hidden_fields)
-  _.extend(fields1, row1.ungrouped_fields)
-
-  for groupName, groupList of row2.client_groups
-    _getValues(groupList, fields2)
-  for groupName, groupList of row2.realtor_groups
-    _getValues(groupList, fields2)
-  _.extend(fields2, row2.hidden_fields)
-  _.extend(fields2, row2.ungrouped_fields)
-
-  # then get changes from row1 to row2
-  result = {}
-  for fieldName, value1 of fields1
-    if fieldName in diffExcludeKeys
-      continue
-    if !_.isEqual value1, fields2[fieldName]
-      result[fieldName] = (fields2[fieldName] ? null)
-
-  # then get fields missing from row1
-  _.extend result, _.omit(fields2, Object.keys(fields1))
-
-
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
   # figure out when we last got updates from this table
@@ -164,7 +122,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
   data =
     address: sqlHelpers.safeJsonArray(tables.propertyData.mls(), base.address)
     hide_listing: base.hide_listing ? false
-    client_groups:
+    shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
       listing: normalizedData.listing || []
@@ -173,7 +131,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
       lot: normalizedData.lot || []
       location: normalizedData.location || []
       restrictions: normalizedData.restrictions || []
-    realtor_groups:
+    subscriber_groups:
       contacts: normalizedData.contacts || []
       realtor: normalizedData.realtor || []
       sale: normalizedData.sale || []
@@ -197,7 +155,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
       # found an existing row, so need to update, but include change log
       result = result[0]
       updateRow.change_history = result.change_history ? []
-      changes = _diff(updateRow, result, diffExcludeKeys)
+      changes = dataLoadHelpers.getRowChanges(updateRow, result, diffExcludeKeys)
       if !_.isEmpty changes
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id

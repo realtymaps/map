@@ -36,6 +36,7 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
       query = query.whereNull('rm_valid')
     query.as(asPrefix)
 
+    
 recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
@@ -206,6 +207,48 @@ normalizeData = (subtask, options) -> Promise.try () ->
     Promise.all promises
 
 
+_getValues = (list, target) ->
+  if !target
+    target = {}
+  for item in list
+    target[item.name] = item.value
+  target
+
+
+# this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
+# taken from row2.  Not all row fields are considered, only those that correspond most directly to the source data,
+# excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
+getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
+  fields1 = {}
+  fields2 = {}
+
+  # first, flatten the objects
+  for groupName, groupList of row1.shared_groups
+    _getValues(groupList, fields1)
+  for groupName, groupList of row1.subscriber_groups
+    _getValues(groupList, fields1)
+  _.extend(fields1, row1.hidden_fields)
+  _.extend(fields1, row1.ungrouped_fields)
+
+  for groupName, groupList of row2.shared_groups
+    _getValues(groupList, fields2)
+  for groupName, groupList of row2.subscriber_groups
+    _getValues(groupList, fields2)
+  _.extend(fields2, row2.hidden_fields)
+  _.extend(fields2, row2.ungrouped_fields)
+
+  # then get changes from row1 to row2
+  result = {}
+  for fieldName, value1 of fields1
+    if fieldName in diffExcludeKeys
+      continue
+    if !_.isEqual value1, fields2[fieldName]
+      result[fieldName] = (fields2[fieldName] ? null)
+
+  # then get fields missing from row1
+  _.extend result, _.omit(fields2, Object.keys(fields1))
+
+
 module.exports =
   getRawTableName: getRawTableName
   createRawTempTable: createRawTempTable
@@ -213,3 +256,4 @@ module.exports =
   activateNewData: activateNewData
   getValidationInfo: getValidationInfo
   normalizeData: normalizeData
+  getRowChanges: getRowChanges
