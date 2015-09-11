@@ -1,5 +1,5 @@
 _thisName = 'util.events'
-Point = require('../../../../common/utils/util.geometries.coffee').Point
+NgLeafletCenter = require('../../../../common/utils/util.geometries.coffee').NgLeafletCenter
 caseing = require 'case'
 
 _markerEvents= ['click', 'dblclick', 'mousedown', 'mouseover', 'mouseout']
@@ -64,12 +64,9 @@ module.exports = ($timeout, $scope, mapCtrl, limits, $log, mapPath = 'map', this
 
   _handleManualMarkerCluster = (model) ->
     if model.markerType == 'cluster'
-      copy = _.cloneDeep $scope[mapPath].center
-      copy.lat= model.lat
-      copy.lng = model.lng
-      zoom = 14
-      obj = _.extend new Point(copy), zoom: zoom
-      $scope[mapPath].center = obj
+      center = NgLeafletCenter(model)
+      center.setZoom($scope[mapPath].center.zoom + 1)
+      $scope[mapPath].center = center
       return true
     false
 
