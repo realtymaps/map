@@ -1,4 +1,3 @@
-_ = require 'lodash'
 gulp = require 'gulp'
 [
   './spec'
