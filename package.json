@@ -20,7 +20,7 @@
     "test-backend": "gulp backendSpec",
     "test-gulp": "gulp gulpSpec",
     "test": "./scripts/app/test",
-    "spec": "gulp spec",
+    "spec": "gulp rspec",
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
     "job-queue": "./scripts/app/processJobQueue"

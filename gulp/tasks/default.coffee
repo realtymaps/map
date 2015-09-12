@@ -15,23 +15,17 @@ gulp = require 'gulp'
   # console.log 'requiring', dep
   require dep
 #help = require('gulp-help')(gulp)
-plumber = require 'gulp-plumber'
-util = require 'gulp-util'
 
-#gulp dependency hell
-gulp.task 'express_watch', gulp.series 'watch', 'express'
+gulp.task 'developNoSpec', gulp.series 'clean', 'otherAssets', gulp.parallel('express', 'watch')
 
-gulp.task 'develop', gulp.series 'clean', 'otherAssets', 'spec', 'express_watch'
+#note specs must come after watch since browserifyWatch also builds scripts
+gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'develop_no_spec', gulp.series 'clean', 'otherAssets', 'angular', 'angularAdmin', 'express', 'watch'
+gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'minify', 'gzip'
 
-gulp.task 'no_spec', gulp.series 'develop_no_spec'
-
-gulp.task 'prod', gulp.series 'prodAssetCheck', 'clean', 'otherAssets', 'angular', 'angularAdmin', 'minify', 'gzip'
-
-gulp.task 'default', gulp.series 'develop'
+gulp.task 'default', gulp.parallel 'develop'
 
 gulp.task 'server', gulp.series 'default'
 

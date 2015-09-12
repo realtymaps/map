@@ -52,7 +52,8 @@ app.use helmet.nocache()
 app.use compress()
 
 # setting the favicon and static folder
-
+# NOTE TODO: THIS IS THE ONLY DEPENDENCY THAT EXPRESS HAS on Assets to be compiled prior
+# THEREFORE it would be nice to set this setting reactivley at a later time to speed up builds.
 app.use favicon "#{config.FRONTEND_ASSETS_PATH}/assets/favicons/favicon.ico"
 app.use serveStatic config.FRONTEND_ASSETS_PATH
 

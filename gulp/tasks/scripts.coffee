@@ -88,9 +88,21 @@ browserifyTask = (app, watch = false) ->
   bundledStream
 
 gulp.task 'browserify', -> browserifyTask 'map'
-
-gulp.task 'browserifyWatch', -> browserifyTask 'map', true
-
 gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
 
+###
+NOTE the watches here are the odd ball of all the gulp watches we have.
+They are odd in that browserify builds the script and watches at the same
+time. Normally in most things we would be against this. However, due to
+browserifies watchify rebuild times are greatly improved without the need
+of `gulp.lastRun`.
+
+The reason this is a problem is it requires watching to occur
+at times when you don't want to (might trigger watches accidently). The main
+thing here is specs can not run until all builds are finished. Therefore specs
+now depends on watch.
+
+Therefore in most conditions a watch should only watch period.
+###
+gulp.task 'browserifyWatch', -> browserifyTask 'map', true
 gulp.task 'browserifyWatchAdmin', -> browserifyTask 'admin', true

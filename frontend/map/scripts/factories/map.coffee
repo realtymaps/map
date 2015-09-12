@@ -171,9 +171,11 @@ app.factory 'rmapsMap',
 
         handleClusterResults = (data) =>
           @scope.map.markers.filterSummary = {}
+          clusters = {}
           _.each data, (model,k) =>
-            @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          @scope.map.markers.backendPriceCluster = data
+            # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
+            clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+          @scope.map.markers.backendPriceCluster = clusters
 
         handleSummaryResults = (data) =>
           @scope.map.markers.backendPriceCluster = {}

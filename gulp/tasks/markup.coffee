@@ -26,14 +26,17 @@ markup = (app) ->
     title: paths.dest.root
     showFiles: true
 
-gulp.task 'markup', -> markup 'map'
+markupImpl = -> markup 'map'
+markupAdminImpl = -> markup 'admin'
 
-gulp.task 'markupWatch', gulp.series 'markup', (done) ->
-  gulp.watch paths.map.jade, gulp.series 'markup'
+gulp.task 'markup', markupImpl
+
+gulp.task 'markupWatch', (done) ->
+  gulp.watch paths.map.jade, markupImpl
   done()
 
-gulp.task 'markupAdmin', -> markup 'admin'
+gulp.task 'markupAdmin', markupAdminImpl
 
-gulp.task 'markupWatchAdmin', gulp.series 'markupAdmin', (done) ->
-  gulp.watch paths.admin.jade, gulp.series 'markupAdmin'
+gulp.task 'markupWatchAdmin', (done) ->
+  gulp.watch paths.admin.jade, markupAdminImpl
   done()
