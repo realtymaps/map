@@ -17,17 +17,10 @@ conf = require './conf'
 require './markup'
 ignore = require 'ignore'
 
-getScriptsGlob = (app) ->
-  [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
-
-###
-Yes browserify can do build and watching itself. However, this is not optimal as we need building and watching seperated.
-Otherwise you get duplicate actions on initial builds.
-###
-browserifyTask = (app) ->
+browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  inputGlob = getScriptsGlob(app)
+  inputGlob = [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
   outputName = app + '.bundle.js'
   startTime = ''
 
@@ -59,6 +52,9 @@ browserifyTask = (app) ->
       dest: paths.destFull.scripts
       debug: true
 
+    if watch
+      _.extend config, watchify.args
+
     # This file acts like a .gitignore for excluding files from linter
     lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
 
@@ -67,40 +63,46 @@ browserifyTask = (app) ->
         if (lintIgnore.filter [file]).length == 0
           # console.log 'Ignoring', file
           file += '.ignore'
-        lintStream = browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: true)
-        if process.env.CIRCLECI #enforce linting at CircleCI
-          lintStream.on 'error', ->
-            process.exit(1)
-        lintStream
+        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
+        .on 'error', ->
+          process.exit(1)
 
     bundle = (stream) ->
       startTime = process.hrtime()
       gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
       b.bundle().pipe(stream)
 
-    if config.require
-      b.require config.require
-    if config.external
-      b.external config.external
+    if watch
+      b = watchify b
+      b.on 'update', () ->
+        bundle pipeline through()
+      gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
+    else
+      if config.require
+        b.require config.require
+      if config.external
+        b.external config.external
 
     bundle bundledStream
 
   bundledStream
 
-browserifyImpl = ->
-  browserifyTask 'map'
+gulp.task 'browserify', -> browserifyTask 'map'
+gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
 
-browserIfyAdminImpl = ->
-  browserifyTask 'admin'
+###
+NOTE the watches here are the odd ball of all the gulp watches we have.
+They are odd in that browserify builds the script and watches at the same
+time. Normally in most things we would be against this. However, due to
+browserifies watchify rebuild times are greatly improved without the need
+of `gulp.lastRun`.
 
-gulp.task 'browserify', browserifyImpl
+The reason this is a problem is it requires watching to occur
+at times when you don't want to (might trigger watches accidently). The main
+thing here is specs can not run until all builds are finished. Therefore specs
+now depends on watch.
 
-gulp.task 'browserifyWatch', (done) ->
-  gulp.watch getScriptsGlob('map'), browserifyImpl
-  done()
-
-gulp.task 'browserifyAdmin', browserIfyAdminImpl
-
-gulp.task 'browserifyWatchAdmin', (done) ->
-  gulp.watch getScriptsGlob('admin'), browserIfyAdminImpl
-  done()
+Therefore in most conditions a watch should only watch period.
+###
+gulp.task 'browserifyWatch', -> browserifyTask 'map', true
+gulp.task 'browserifyWatchAdmin', -> browserifyTask 'admin', true

@@ -17,23 +17,10 @@ gulp = require 'gulp'
   require dep
 #help = require('gulp-help')(gulp)
 
-developNoSpec = (additionalEndings, additionalAssets) ->
-  assetsParallel = ['angular', 'angularAdmin', 'otherAssets']
-  endsParallel = ['express', 'watch']
+gulp.task 'developNoSpec', gulp.series 'clean', 'otherAssets', gulp.parallel('express', 'watch')
 
-  if additionalAssets? and _.isArray additionalAssets
-    assetsParallel = assetsParallel.concat additionalAssets
-
-  if additionalEndings? and _.isArray additionalEndings
-    endsParallel = endsParallel.concat additionalEndings
-
-  gulp.series 'clean', gulp.parallel(assetsParallel...), gulp.parallel(endsParallel...)
-
-gulp.task 'developNoSpec', developNoSpec()
-
-# There is a specific reason why we are not just tacking on spec to developNoSpec as a series.. (IT IS SLOWER)
-# instead we tack it into the last parallel
-gulp.task 'develop', developNoSpec(['spec'])
+#note specs must come after watch since browserifyWatch also builds scripts
+gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
