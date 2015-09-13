@@ -58,6 +58,13 @@ class TaskService extends crudService.Crud
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
     super(entity, id, doLogQuery)
 
+  delete: (id, doLogQuery = false) ->
+    super(id, doLogQuery)
+    .then () =>
+      if @dbFn.tableName == 'jq_task_config'
+        tables.jobQueue.subtaskConfig().where('task_name', id).delete()
+
+
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
 _queues = new TaskService(tables.jobQueue.queueConfig, 'name')

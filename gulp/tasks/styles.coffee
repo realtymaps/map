@@ -47,7 +47,8 @@ gulp.task 'stylesWatch', (done) ->
     paths.map.less
     paths.map.styles
     paths.map.stylus
-  ], stylesImpl
+  ]
+  stylesImpl()
   done()
 
 gulp.task 'stylesAdmin', stylesAdminImpl
@@ -60,5 +61,6 @@ gulp.task 'stylesWatchAdmin', (done) ->
     paths.admin.less
     paths.admin.styles
     paths.admin.stylus
-  ], stylesAdminImpl
+  ]
+  stylesAdminImpl()
   done()

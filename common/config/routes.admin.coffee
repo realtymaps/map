@@ -4,12 +4,11 @@ module.exports =
   # states:
   login: 'login'
   logout: 'logout'
-  # mls: 'mls'
-  # normalize: 'normalize?id'
 
   dataSource: 'dataSource'
   mls: '/mls'
   normalize: '/normalize?id'
+  county: '/county?id'
 
   jobs: 'jobs'
   jobsCurrent: '/current'
@@ -27,8 +26,6 @@ module.exports =
   urls:
     login: '/admin/login'
     logout: '/admin/logout'
-    # mls: '/admin/mls'
-    # normalize: '/admin/normalize'
     jobs: '/admin/jobs'
     dataSource: '/admin/dataSource'
     authenticating: '/admin/authenticating'

@@ -4,7 +4,9 @@
       li
         a(ui-sref="mls" ui-sref-opts="{reload: true}") MLS Setup
       li
-        a(ui-sref="normalize" ui-sref-opts="{reload: true}") MLS Rules
+        a(ui-sref="normalize" ui-sref-opts="{reload: true}") MLS Data Rules
+      li
+        a(ui-sref="county" ui-sref-opts="{reload: true}") County Data Rules
 
   .col-md-11
     div(ng-repeat="state in $state.get() | filter:{parent: 'dataSource'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)

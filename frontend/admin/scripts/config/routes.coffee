@@ -25,8 +25,6 @@ module.exports = app.config ['$stateProvider', '$stickyStateProvider', '$urlRout
           console.debug 'loading template:', templateName
           $templateCache.get templateName
 
-      # state.template = _getTemplate(state.templatePath)
-      # delete state.templatePath
       if state.parent
         state.views = {}
         state.views["#{name}@#{state.parent}"] =
@@ -53,8 +51,7 @@ module.exports = app.config ['$stateProvider', '$stickyStateProvider', '$urlRout
     buildState 'dataSource', sticky: true, loginRequired: true
     buildState 'mls', sticky: true, parent: 'dataSource', loginRequired: true
     buildState 'normalize', sticky: true, parent: 'dataSource', loginRequired: true
-    # buildState 'mls', sticky: true, loginRequired: true
-    # buildState 'normalize', sticky: true, loginRequired: true
+    buildState 'county', sticky: true, parent: 'dataSource', loginRequired: true
 
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null
