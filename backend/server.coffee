@@ -1,9 +1,5 @@
 config = require './config/config'
 
-# "long stack traces" support
-if config.LOGGING.LONG_STACK_TRACES
-  require 'longjohn'
-
 require '../common/extensions/strings'
 require './config/promisify'
 require './extensions'
