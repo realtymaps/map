@@ -83,7 +83,9 @@ getColumnList = (serverInfo, databaseName, tableName) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getTable(databaseName, tableName)
     .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), 'Failed to retrieve RETS columns')
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, 'Failed to retrieve RETS columns')
     .then (response) ->
       _.map response.Fields, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
@@ -92,7 +94,9 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
     retsClient.metadata.getLookupTypes(databaseName, lookupId)
     .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(new Error("#{error.replyText} (#{error.replyCode})"), 'Failed to retrieve RETS types')
+      if error.replyCode
+        error = new Error("#{error.replyText} (#{error.replyCode})")
+      throw new PartiallyHandledError(error, 'Failed to retrieve RETS types')
     .then (response) ->
       response.LookupTypes
 
