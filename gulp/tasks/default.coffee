@@ -16,7 +16,9 @@ gulp = require 'gulp'
   require dep
 #help = require('gulp-help')(gulp)
 
-gulp.task 'developNoSpec', gulp.series 'clean', 'otherAssets', gulp.parallel('express', 'watch')
+#gulp spec has been seperated as to not collide with the actual build routine (it invalidates the spec due to races)
+
+gulp.task 'developNoSpec', gulp.series 'clean', 'gulpSpec', 'otherAssets', gulp.parallel('express', 'watch')
 
 #note specs must come after watch since browserifyWatch also builds scripts
 gulp.task 'develop', gulp.series 'developNoSpec', 'spec'

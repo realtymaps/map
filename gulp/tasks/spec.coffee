@@ -4,7 +4,8 @@ require './otherAssets'
 require './karma'
 require './mocha'
 
-gulp.task 'spec', gulp.parallel 'commonSpec', 'backendSpec', 'gulpSpec', 'frontendSpec'
+#gulp spec has been seperated as to not collide with the actual build routine (it invalidates the spec due to races)
+gulp.task 'spec', gulp.parallel 'commonSpec', 'backendSpec', 'frontendSpec'
 
 gulp.task 'rebuildSpec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'gulpSpec'), gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'frontendSpec'
 
