@@ -207,7 +207,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
     Promise.all promises
 
 
-_getValues = (list, target) ->
+getValues = (list, target) ->
   if !target
     target = {}
   for item in list
@@ -224,16 +224,16 @@ getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
 
   # first, flatten the objects
   for groupName, groupList of row1.shared_groups
-    _getValues(groupList, fields1)
+    getValues(groupList, fields1)
   for groupName, groupList of row1.subscriber_groups
-    _getValues(groupList, fields1)
+    getValues(groupList, fields1)
   _.extend(fields1, row1.hidden_fields)
   _.extend(fields1, row1.ungrouped_fields)
 
   for groupName, groupList of row2.shared_groups
-    _getValues(groupList, fields2)
+    getValues(groupList, fields2)
   for groupName, groupList of row2.subscriber_groups
-    _getValues(groupList, fields2)
+    getValues(groupList, fields2)
   _.extend(fields2, row2.hidden_fields)
   _.extend(fields2, row2.ungrouped_fields)
 
@@ -257,3 +257,4 @@ module.exports =
   getValidationInfo: getValidationInfo
   normalizeData: normalizeData
   getRowChanges: getRowChanges
+  getValues: getValues

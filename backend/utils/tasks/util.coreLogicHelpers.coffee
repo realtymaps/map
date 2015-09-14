@@ -151,7 +151,7 @@ loadRawData = (subtask, options) ->
 updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
   throw new jobQueue.HardFail('not finished yet')
   # build the row's new values
-  base = _getValues(normalizedData.base || [])
+  base = dataLoadHelpers.getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
   normalizedData.general.unshift(name: 'Status', value: base.status_display)
   ungrouped = _.omit(rawData, usedKeys)
@@ -173,7 +173,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
       contacts: normalizedData.contacts || []
       realtor: normalizedData.realtor || []
       sale: normalizedData.sale || []
-    hidden_fields: _getValues(normalizedData.hidden || [])
+    hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: null
   updateRow = _.extend base, stats, data
