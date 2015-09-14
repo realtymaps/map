@@ -6,6 +6,10 @@ loginTemplate = require '../../../common/html/login.jade'
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
 
+stateDefaults =
+  sticky: true
+  loginRequired: true
+
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
 
   buildState = (name, overrides = {}) ->
@@ -15,6 +19,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
       url:          frontendRoutes[name],
       controller:   "rmaps#{name.toInitCaps()}Ctrl"
     _.extend(state, overrides)
+    _.defaults(state, stateDefaults)
 
     if !state.template
       state.templateProvider = ($templateCache) ->
@@ -33,27 +38,27 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     state
 
 
-  buildState 'main', parent: null, url: frontendRoutes.index, sticky: true
-  buildState 'map', sticky:true, loginRequired:true
-  buildState 'snail', sticky: true, loginRequired:true
-  buildState 'user', sticky:true, loginRequired:true
-  buildState 'profiles', sticky:true, loginRequired:true
-  buildState 'history', sticky:true, loginRequired:true
-  buildState 'mail', sticky:true, loginRequired:true
-  buildState 'properties', sticky:true, loginRequired:true
-  buildState 'projects', sticky:true, loginRequired:true
-  buildState 'neighbourhoods', sticky:true, loginRequired:true
-  buildState 'notes', sticky:true, loginRequired:true
-  buildState 'favorites', sticky:true, loginRequired:true
-  buildState 'addProjects', sticky:true, loginRequired:true
-  buildState 'sendEmailModal', sticky:true, loginRequired:true
-  buildState 'newEmail', sticky:true, loginRequired:true
+  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
+  buildState 'map'
+  buildState 'snail'
+  buildState 'user'
+  buildState 'profiles'
+  buildState 'history'
+  buildState 'mail'
+  buildState 'properties'
+  buildState 'projects'
+  buildState 'neighbourhoods'
+  buildState 'notes'
+  buildState 'favorites'
+  buildState 'addProjects'
+  buildState 'sendEmailModal'
+  buildState 'newEmail'
 
-  buildState 'login', template: loginTemplate
-  buildState 'logout'
-  buildState 'accessDenied', controller: null
-  buildState 'authenticating', controller: null
+  buildState 'login', template: loginTemplate, sticky: false, loginRequired: false
+  buildState 'logout', sticky: false, loginRequired: false
+  buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
+  buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   # this one has to be last, since it is a catch-all
-  buildState 'pageNotFound', controller: null
+  buildState 'pageNotFound', controller: null, sticky: false, loginRequired: false
 
   $urlRouterProvider.when '', frontendRoutes.index

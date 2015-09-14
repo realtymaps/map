@@ -7,6 +7,10 @@ loginTemplate = require '../../../common/html/login.jade'
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
 
+stateDefaults =
+  sticky: true
+  loginRequired: true
+
 module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider',
 
   ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
@@ -18,6 +22,7 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
         url:          adminRoutes[name],
         controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl"
       _.extend(state, overrides)
+      _.defaults(state, stateDefaults)
 
       if !state.template
         state.templateProvider = ($templateCache) ->
@@ -38,26 +43,26 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
       $stateProvider.state(state)
       state
 
-    buildState 'main', parent: null, url: adminRoutes.index, sticky: true
-    buildState 'home', sticky: true, loginRequired: true
-    buildState 'mls', sticky: true, loginRequired: true
-    buildState 'normalize', sticky: true, loginRequired: true
+    buildState 'main', parent: null, url: adminRoutes.index, loginRequired: false
+    buildState 'home'
+    buildState 'mls'
+    buildState 'normalize'
 
-    buildState 'jobs', sticky: true, loginRequired: true
-    buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsHistory', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsHealth', sticky: true, parent: 'jobs', loginRequired: true
-    buildState 'jobsQueue', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
-    buildState 'jobsTask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
-    buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
+    buildState 'jobs'
+    buildState 'jobsCurrent', parent: 'jobs'
+    buildState 'jobsHistory', parent: 'jobs'
+    buildState 'jobsHealth', parent: 'jobs'
+    buildState 'jobsQueue', parent: 'jobs', template: jobsEditTemplate
+    buildState 'jobsTask', parent: 'jobs', template: jobsEditTemplate
+    buildState 'jobsSubtask', parent: 'jobs', template: jobsEditTemplate
 
-    buildState 'authenticating', controller: null
-    buildState 'accessDenied', controller: null
-    buildState 'login', template: loginTemplate
-    buildState 'logout'
+    buildState 'authenticating', controller: null, sticky: false, loginRequired: false
+    buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
+    buildState 'login', template: loginTemplate, sticky: false, loginRequired: false
+    buildState 'logout', sticky: false, loginRequired: false
 
     # this one has to be last, since it is a catch-all
-    buildState 'pageNotFound', controller: null
+    buildState 'pageNotFound', controller: null, sticky: false, loginRequired: false
 
     $urlRouterProvider.when /\/admin$/, adminRoutes.index
 ]
