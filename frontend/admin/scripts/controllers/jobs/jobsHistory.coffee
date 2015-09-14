@@ -1,4 +1,4 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 _ = require 'lodash'
 
 app.controller 'rmapsJobsHistoryCtrl',

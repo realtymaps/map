@@ -1,13 +1,13 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
-jobsEditTemplate = require '../../html/views/jobsEdit.jade'
+jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
 loginTemplate = require '../../../common/html/login.jade'
 
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
 
-module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRouterProvider',
+module.exports = app.config ['$stateProvider', '$stickyStateProvider', '$urlRouterProvider',
 
   ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
 
@@ -21,11 +21,10 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
       if !state.template
         state.templateProvider = ($templateCache) ->
-          console.debug 'loading template:', name
-          $templateCache.get "./views/#{name}.jade"
+          templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
+          console.debug 'loading template:', templateName
+          $templateCache.get templateName
 
-      # state.template = _getTemplate(state.templatePath)
-      # delete state.templatePath
       if state.parent
         state.views = {}
         state.views["#{name}@#{state.parent}"] =
@@ -40,8 +39,6 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
     buildState 'main', parent: null, url: adminRoutes.index, sticky: true
     buildState 'home', sticky: true, loginRequired: true
-    buildState 'mls', sticky: true, loginRequired: true
-    buildState 'normalize', sticky: true, loginRequired: true
 
     buildState 'jobs', sticky: true, loginRequired: true
     buildState 'jobsCurrent', sticky: true, parent: 'jobs', loginRequired: true
@@ -50,6 +47,11 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'jobsQueue', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
     buildState 'jobsTask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
     buildState 'jobsSubtask', sticky: true, parent: 'jobs', template: jobsEditTemplate, loginRequired: true
+
+    buildState 'dataSource', sticky: true, loginRequired: true
+    buildState 'mls', sticky: true, parent: 'dataSource', loginRequired: true
+    buildState 'normalize', sticky: true, parent: 'dataSource', loginRequired: true
+    buildState 'county', sticky: true, parent: 'dataSource', loginRequired: true
 
     buildState 'authenticating', controller: null
     buildState 'accessDenied', controller: null

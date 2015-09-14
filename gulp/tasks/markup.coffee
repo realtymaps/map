@@ -32,11 +32,13 @@ markupAdminImpl = -> markup 'admin'
 gulp.task 'markup', markupImpl
 
 gulp.task 'markupWatch', (done) ->
-  gulp.watch paths.map.jade, markupImpl
+  gulp.watch paths.map.jade
+  markupImpl()
   done()
 
 gulp.task 'markupAdmin', markupAdminImpl
 
 gulp.task 'markupWatchAdmin', (done) ->
-  gulp.watch paths.admin.jade, markupAdminImpl
+  gulp.watch paths.admin.jade
+  markupAdminImpl()
   done()

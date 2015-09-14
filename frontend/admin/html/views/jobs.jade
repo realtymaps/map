@@ -1,5 +1,6 @@
 .jobs.row
   .col-md-1.menu
+    h5 Status
     ul.nav.nav-pills.nav-stacked
       li
         a(ui-sref="jobsCurrent" ui-sref-opts="{reload: true}") Current
@@ -7,6 +8,8 @@
         a(ui-sref="jobsHistory" ui-sref-opts="{reload: true}") History
       li
         a(ui-sref="jobsHealth" ui-sref-opts="{reload: true}") Health
+    h5 Config
+    ul.nav.nav-pills.nav-stacked
       li
         a(ui-sref="jobsQueue" ui-sref-opts="{reload: true}") Queues
       li
