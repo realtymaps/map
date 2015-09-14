@@ -14,9 +14,11 @@ gulp = require 'gulp'
 ].forEach (dep) ->
   # console.log 'requiring', dep
   require dep
-#help = require('gulp-help')(gulp)
 
-gulp.task 'developNoSpec', gulp.series 'clean', 'otherAssets', gulp.parallel('express', 'watch')
+#this allows `gulp help` task to work which will display all taks via CLI so yes it is used
+# help = require('gulp-help')(gulp) #BROKEN IN GULP 4
+
+gulp.task 'developNoSpec', gulp.series 'clean', gulp.parallel('angular', 'angularAdmin', 'otherAssets', 'express', 'watch')
 
 #note specs must come after watch since browserifyWatch also builds scripts
 gulp.task 'develop', gulp.series 'developNoSpec', 'spec'

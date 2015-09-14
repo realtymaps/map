@@ -6,7 +6,11 @@ plumber = require 'gulp-plumber'
 
 $ = require('gulp-load-plugins')()
 
+_testCb = null
+
 markup = (app) ->
+  _testCb() if _testCb
+
   gulp.src paths[app].jade
   .pipe plumber()
   .pipe $.consolidate 'jade',
@@ -29,16 +33,29 @@ markup = (app) ->
 markupImpl = -> markup 'map'
 markupAdminImpl = -> markup 'admin'
 
+watchImpl = ->
+  gulp.watch paths.map.jade, markupImpl
+
+watchAdminImpl = ->
+  gulp.watch paths.admin.jade, markupAdminImpl
+
 gulp.task 'markup', markupImpl
 
 gulp.task 'markupWatch', (done) ->
-  gulp.watch paths.map.jade
-  markupImpl()
+  watchImpl()
   done()
 
 gulp.task 'markupAdmin', markupAdminImpl
 
 gulp.task 'markupWatchAdmin', (done) ->
-  gulp.watch paths.admin.jade
-  markupAdminImpl()
+  watchAdminImpl()
   done()
+
+module.exports =
+  ###
+  For intent and purposes these exports are for testing only
+  ###
+  watchImpl: watchImpl
+  watchAdminImpl:watchAdminImpl
+  setTestCb: (cb) ->
+    _testCb = cb
