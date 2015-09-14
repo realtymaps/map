@@ -53,7 +53,7 @@ if config.LOGGING.LONG_STACK_TRACES
   #source_map.install()
   #longjohn.format_stack_frame = (frame) ->
   #  return longjohn.empty_frame if frame.getFileName() is longjohn.empty_frame
-  #  return '    at ' + source_map.wrapCallSite(frame);
+  #  return '    at ' + source_map.wrapCallSite(frame)
 
 
 if config.LOGGING.FILE_AND_LINE
