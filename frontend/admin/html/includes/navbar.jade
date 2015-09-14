@@ -8,11 +8,10 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           a(href="{{adminRoutes.index}}").navbar-brand.navbar-hide
             img(src="/assets/logo.png")
       li
-        a(href="{{adminRoutes.urls.mls}}") MLS
+        a(href="{{adminRoutes.urls.dataSource}}") Data Source
+
       li
-        a(href="{{adminRoutes.urls.normalize}}") MLS Rules
-      li
-        a(href="{{adminRoutes.urls.jobs}}") Job Status
+        a(href="{{adminRoutes.urls.jobs}}") Jobs
 
       li(ng-hide="$state.is('main')")
         +spinner()(ng-if="Spinner.getLoadingCount() > 0")

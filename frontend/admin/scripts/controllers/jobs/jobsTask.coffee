@@ -1,7 +1,6 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 
 app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
-
   $scope.getData = rmapsJobsService.getTasks
 
   $scope.runTask = rmapsJobsService.runTask
@@ -14,19 +13,21 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       field: 'name'
       displayName: 'Name'
       cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
-      width: 100
+      width: 120
       enableCellEdit: false
       pinnedLeft: true
     ,
       field: 'description'
       displayName: 'Description'
+      defaultValue: ''
       width: 300
     ,
       field: 'data'
       displayName: 'Data'
       type: 'object'
       enableCellEdit: true
-      editableCellTemplate: require '../../html/views/templates/jsonInput.jade'
+      editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
+      defaultValue: "{}"
       width: 250
     ,
       field: 'ignore_until'
@@ -53,9 +54,16 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       defaultValue: 5
       width: 125
     ,
+      field: 'fail_retry_minutes'
+      displayName: 'Fail Retry min'
+      type: 'number'
+      defaultValue: 5
+      width: 125
+    ,
       field: 'active'
       displayName: 'Active?'
       type: 'boolean'
+      defaultValue: false
       width: 100
     ,
       field: '_run'

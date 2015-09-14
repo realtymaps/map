@@ -1,0 +1,15 @@
+.normalize-container
+  .row.mls-select
+    .col-md-4 Select County
+      select(ng-model="countyData.current" ng-options="value.name + ' (' + value.id + ')' for value in countyConfigs" ng-change="selectCounty()")
+        option(value="" disabled)
+      .btn.btn-primary.reload(ng-click="getCountyList()")
+        img(src="../../assets/reload-arrow.png" width="10" height="10")
+    .col-md-3
+      .row
+        .col-md-12
+          .col-md-4
+            button(ng-click="dlCSV(csv.getUrl(csv.rowCount))" ng-disabled="!countyData.current.id").btn.btn-primary.download-csv-button Download CSV
+          .col-md-4
+            input(type="text" ng-model="csv.rowCount" tooltip="Number of records in CSV" ng-disabled="!countyData.current.id").form-control.download-csv-input
+    .col-md-5

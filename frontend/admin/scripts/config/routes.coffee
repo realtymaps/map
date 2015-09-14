@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 adminRoutes = require '../../../../common/config/routes.admin.coffee'
-jobsEditTemplate = require '../../html/views/jobsEdit.jade'
+jobsEditTemplate = require '../../html/views/jobs/jobsEdit.jade'
 loginTemplate = require '../../../common/html/login.jade'
 
 # for documentation, see the following:
@@ -26,11 +26,10 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
       if !state.template
         state.templateProvider = ($templateCache) ->
-          console.debug 'loading template:', name
-          $templateCache.get "./views/#{name}.jade"
+          templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
+          console.debug 'loading template:', templateName
+          $templateCache.get templateName
 
-      # state.template = _getTemplate(state.templatePath)
-      # delete state.templatePath
       if state.parent
         state.views = {}
         state.views["#{name}@#{state.parent}"] =
@@ -45,8 +44,6 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
 
     buildState 'main', parent: null, url: adminRoutes.index, loginRequired: false
     buildState 'home'
-    buildState 'mls'
-    buildState 'normalize'
 
     buildState 'jobs'
     buildState 'jobsCurrent', parent: 'jobs'
@@ -55,6 +52,11 @@ module.exports = app.config [ '$stateProvider', '$stickyStateProvider', '$urlRou
     buildState 'jobsQueue', parent: 'jobs', template: jobsEditTemplate
     buildState 'jobsTask', parent: 'jobs', template: jobsEditTemplate
     buildState 'jobsSubtask', parent: 'jobs', template: jobsEditTemplate
+    
+    buildState 'dataSource'
+    buildState 'mls', parent: 'dataSource'
+    buildState 'normalize', parent: 'dataSource'
+    buildState 'county', parent: 'dataSource'
 
     buildState 'authenticating', controller: null, sticky: false, loginRequired: false
     buildState 'accessDenied', controller: null, sticky: false, loginRequired: false

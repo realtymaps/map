@@ -1,7 +1,6 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 
 app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory, uiGridConstants) ->
-
   $scope.getData = rmapsJobsService.getSubtask
 
   $scope.gridName = 'Subtask'
@@ -36,7 +35,7 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
       displayName: 'Data'
       type: 'object'
       enableCellEdit: true
-      editableCellTemplate: require('../../html/views/templates/jsonInput.jade')()
+      editableCellTemplate: require('../../../html/views/templates/jsonInput.jade')()
       width: 125
     ,
       field: 'retry_delay_seconds'

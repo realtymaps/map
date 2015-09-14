@@ -15,13 +15,61 @@ class JobService extends crudService.Crud
       return super(query, doLogQuery)
 
 class TaskService extends crudService.Crud
+  getAll: (query = {}, doLogQuery = false) ->
+    substrFields = {}
+
+    # test for expected values (mapping of field names -> substring would be in query)
+    if query?.name?
+      if query.name
+        substrFields.name = query.name
+      delete query.name
+
+    if query?.task_name?
+      if query.task_name
+        substrFields.task_name = query.task_name
+      delete query.task_name
+
+    if not _.isEmpty substrFields
+      # extend our dbFn to account for specialized "where" query on the base dbFn
+      old_dbFn = @dbFn
+      transaction = @dbFn()
+      tableName = @dbFn.tableName
+
+      # build query for searching given substrings on given fields of @dbFn table
+      @dbFn = () =>
+        ret = transaction
+        fields = Object.keys substrFields
+        firstKey = fields.pop()
+        whereRawStr = "strpos(#{firstKey}, '#{substrFields[firstKey]}') > 0"
+        while fields.length > 0
+          nextKey = fields.pop()
+          whereRawStr = "#{whereRawStr} or strpos(#{nextKey}, '#{substrFields[nextKey]}') > 0"
+        ret = ret.whereRaw(whereRawStr)
+        ret.raw = transaction.raw
+
+        # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
+        @dbFn = old_dbFn
+        ret
+      @dbFn.tableName = tableName
+    super(query, doLogQuery)
+
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
     super(entity, id, doLogQuery)
 
+  delete: (id, doLogQuery = false) ->
+    super(id, doLogQuery)
+    .then () =>
+      if @dbFn.tableName == 'jq_task_config'
+        tables.jobQueue.subtaskConfig().where('task_name', id).delete()
+
+
 _summary = new JobService(tables.jobQueue.jqSummary)
 _taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
+_queues = new TaskService(tables.jobQueue.queueConfig, 'name')
+_tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
+_subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
 
 
 # provide a contrived "query" that meets requirements for our Crud object
@@ -81,8 +129,8 @@ healthDbFn = () ->
 
 module.exports =
   taskHistory: _taskHistory
-  queues: crudService.crud(tables.jobQueue.queueConfig, 'name')
-  tasks: crudService.crud(tables.jobQueue.taskConfig, 'name')
-  subtasks: crudService.crud(tables.jobQueue.subtaskConfig, 'name')
+  queues: _queues
+  tasks: _tasks
+  subtasks: _subtasks
   summary: _summary
   health: crudService.crud(healthDbFn)

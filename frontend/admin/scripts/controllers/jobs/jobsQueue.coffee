@@ -1,7 +1,6 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 
-app.controller 'rmapsJobsQueueCtrl', ($scope, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
-
+app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Restangular, rmapsJobsService, rmapsGridFactory) ->
   $scope.getData = rmapsJobsService.getQueue
 
   $scope.gridName = 'Queue'

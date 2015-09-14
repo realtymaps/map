@@ -1,0 +1,18 @@
+.panel.panel-default
+  .panel-heading
+    h3 Create New {{gridName}}
+  .panel-body
+    form(name="newRecordForm")
+      table.max-width
+        tr(ng-repeat="(field, value) in record")
+          td
+            label.data-label {{field}}
+          td.pad-left
+            input(
+              type="text" 
+              ng-model="record[field]" 
+              ng-if="fieldTypeMap[field] == 'string' || fieldTypeMap[field] == 'number' || fieldTypeMap[field] == 'date' || fieldTypeMap[field] == 'object'").form-control.input-lg
+            input(type="checkbox" ng-model="record[field]" ng-if="fieldTypeMap[field] == 'boolean'").form-control
+
+    button(ng-click="ok()").btn.btn-success Save
+    button(ng-click="cancel()").btn.btn-danger Cancel
