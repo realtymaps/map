@@ -72,9 +72,9 @@ app.factory 'rmapsMap',
 
         @singleClickCtrForDouble = 0
 
-        @filters = ''
-        @filterDrawPromise = false
-        $rootScope.$watchCollection 'selectedFilters', @filter#, true
+        $rootScope.$onRootScope rmapsevents.map.filters.updated, => #tried without the closure and bombs
+          @redraw()
+
         @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
         @layerFormatter = rmapsLayerFormatters(@)
 
@@ -165,7 +165,8 @@ app.factory 'rmapsMap',
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
-        if !/status/.test(@getFilters())
+        filters = rmapsFilterManager.getFilters()
+        if !/status/.test(filters)
           @clearFilterSummary()
           return promises
 
@@ -185,14 +186,14 @@ app.factory 'rmapsMap',
           @scope.map.markers.filterSummary = data
 
         handleGeoJsonResults = () =>
-          rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, @filters, cache)
+          rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
           .then (data) =>
             return if !data? or _.isString data
             @scope.map.geojson.filterSummaryPoly =
               data: data
               style: @layerFormatter.Parcels.getStyle
 
-        p = rmapsProperties.getFilterResults(@hash, @mapState, @filters, cache)
+        p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
@@ -301,22 +302,6 @@ app.factory 'rmapsMap',
       refreshState: (overrideObj = {}) =>
         @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
         @mapState
-
-      getFilters: =>
-        anyTrue = _.any @scope.selectedFilters,  (val) -> val
-        if anyTrue && !@filters?.length #we're out of sync sync up filters
-          @filter(@scope.selectedFilters)
-          #rather then re-doing the workflow just return undefined since @filter() will redraw anyhow
-          return ''
-        @filters
-
-      filter: (newFilters, oldFilters) =>
-        return if (not newFilters and not oldFilters) or newFilters == oldFilters
-        rmapsRendering.debounce @, 'filterDrawPromise', =>
-          rmapsFilterManager.manage (@filters) =>
-            @redraw()
-            @filterDrawPromise = false
-        , rmapsMainOptions.filterDrawDelay
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
