@@ -1,9 +1,11 @@
 include ../mixins/property/_propertyAttributes.jade
 
-span(ng-controller="rmapsFavoritesCtrl" class="favorites dropdown btn-group" dropdown on-toggle="toggled(open)" auto-close="disabled")
+span(ng-controller="rmapsFavoritesCtrl" ng-click="clickToggle()" class="favorites dropdown btn-group" 
+dropdown on-toggle="toggled(open)" auto-close="disabled" dropdown-append-to-body)
+
     button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
         span.icon.icon-pin
-    ul(class="dropdown-menu whiteblock no-margin")
+    ul(class="favorites dropdown-menu whiteblock no-margin")
         li.count
             a(href="#favorites") {{favorites.length}} Favorities
         li(ng-repeat="(id, fav) in favorites")
