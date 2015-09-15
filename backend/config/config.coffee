@@ -30,7 +30,6 @@ base =
     PATH: 'mean.coffee.log'
     LEVEL: 'info'
     FILE_AND_LINE: false
-    LONG_STACK_TRACES: false
   USER_DB:
     client: 'pg'
     connection: process.env.USER_DATABASE_URL
@@ -151,7 +150,6 @@ environmentConfig =
     LOGGING:
       LEVEL: 'sql'
       FILE_AND_LINE: true
-      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
     USE_ERROR_HANDLER: true
     NEW_RELIC:
       RUN: Boolean(process.env.NEW_RELIC_RUN)
@@ -171,8 +169,6 @@ environmentConfig =
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
       FAST_REFRESH: 60*1000     # 1 minute
-    LOGGING:
-      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
     # the proxy and secure settings below need to be removed when we start using nginx
     TRUST_PROXY: false
     SESSION:
