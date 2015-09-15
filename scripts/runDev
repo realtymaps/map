@@ -26,7 +26,7 @@ do
             export SKIP_NGINX=true
             ;;
         --no-gulp-colors)
-            export GULP_COLOR=""
+            export GULP_COLOR="--no-color"
             ;;
     esac
 done
