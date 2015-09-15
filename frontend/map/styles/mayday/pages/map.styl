@@ -11,6 +11,9 @@
 .leaflet-control-layers
   display none
 
+body
+  $fnMakeMapFavorites()
+
 #map
   .old-controls
     display none
@@ -20,7 +23,7 @@
     $fnMakeMapProjects()
     $fnMakeMapProperties()
     $fnMakeMapUlDropdown()
-    $fnMakeMapFavorites()
+
     $fnMakeMapNotes()
     $fnMakeMapNeighborhoods()
     $fnMakeMapSettings()

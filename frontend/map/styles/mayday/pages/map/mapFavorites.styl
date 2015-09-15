@@ -1,7 +1,17 @@
 @import '../../../components/propertiesAttr'
 
 $fnMakeMapFavorites()
-  .favorites
+  // Begin clean up of ui-bootstrap
+  // these important overrides get the styling setup the way dan wants
+  // this overrides dropdown-append-to-body attempt to put it in the location we want
+  ul.favorites[style]
+    left 80px !important
+    top 111px !important
+  //end cleanup
+  ul.favorites
+    overflow auto
+    max-height 85%
+    max-width 370px
     .enity
       display table
       .circle-nr
