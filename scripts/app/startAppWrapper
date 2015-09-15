@@ -2,26 +2,50 @@
 set -e
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+APP_DIR="$SCRIPT_DIR/.."
 
-
-if [[ "$IS_HEROKU" != "" ]]
+if [[ "$SKIP_NGINX" == "true" ]]
 then
+  export NGINX_SOCKET_LOCATION=""
+  $SCRIPT_DIR/app/startApp
+else
+  if [[ "$IS_HEROKU" == "" ]]
+  then
+    # not on heroku, so first we need to bootstrap the nginx buildpack
+    BUILDPACK_DIR=/var/tmp/nginx-buildpack
+    if [ ! -e $BUILDPACK_DIR/.git ]
+    then
+      echo "Installing nginx buildpack..."
+      mkdir -p $BUILDPACK_DIR
+      mkdir -p ${BUILDPACK_DIR}-env
+      cd $BUILDPACK_DIR
+      git clone --depth 1 `fgrep nginx $APP_DIR/.buildpacks` .
+    else
+      echo -n "Updating nginx buildpack...  "
+      cd $BUILDPACK_DIR
+      git pull --depth 1
+    fi
+    export STATIC_ROOT="$APP_DIR/_public"
+    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
+    cd $APP_DIR
+  fi
+  
+  
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
-  # we give 15s slack for heroku startup overhead, nginx startup, etc
-
+  # we give a bit of slack for heroku startup overhead, nginx startup, etc
+  
   rm -f /tmp/app-initialized
-  rm -f /tmp/nginx.socket
+  rm -f /tmp/nginx-app-start
+  rm -f /tmp/nginx-app-end
   
   (
-    # this value is used in a calculation in nginx.conf.coffee, so if it is changed here, that file should be changed too
     sleep 50
-    echo "forcing 50s init..."
-    touch /tmp/app-initialized
+    if [ -e /tmp/nginx-app-start ] && [ ! -e /tmp/nginx-app-end ]
+    then
+      echo "forcing 50s init..."
+      touch /tmp/app-initialized
+    fi
   ) &
-
-  mkdir -p config
-  bin/start-nginx $SCRIPT_DIR/app/startApp
-else
-  # not on heroku, so don't mess with nginx
-  $SCRIPT_DIR/app/startApp
+  
+  ./bin/start-nginx $SCRIPT_DIR/app/startApp
 fi

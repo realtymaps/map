@@ -1,11 +1,11 @@
 
 process.stdout.write """
 daemon off;
-worker_processes #{process.env['NGINX_WORKERS'] || 4};
-pid /app/nginx.pid;
+worker_processes #{process.env.NGINX_WORKERS || 4};
+pid /tmp/nginx.pid;
 
 events {
-  use epoll;
+  use #{process.env.NGINX_CONNECTION_METHOD || "poll"};
   accept_mutex on;
   worker_connections 1024;
 }
@@ -33,15 +33,15 @@ http {
   client_max_body_size 10M;
 
   upstream app_server {
-    server unix:/tmp/nginx.socket fail_timeout=0;
+    server unix:#{process.env.NGINX_SOCKET_LOCATION} fail_timeout=0;
   }
 
   server {
-    listen #{process.env["PORT"]};
+    listen #{process.env.PORT || 8085};
     server_name _;
     keepalive_timeout 5;
 
-    root "/app/_public";
+    root "#{process.env.STATIC_ROOT}";
 
     location @node {
       proxy_set_header  X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -54,6 +54,7 @@ http {
       error_page 502 = @delayed_retry;
       gzip_static on; # to serve pre-gzipped version
       add_header        Cache-Control "public, must-revalidate, max-age=0";
+      add_header        Last-Modified "";
       expires           10m;
       try_files $uri /$uri /rmap.html @node;
     }
@@ -72,7 +73,7 @@ http {
       expires           max;
 
       add_header        Cache-Control "public";
-      add_header        Last-Modified '';
+      add_header        Last-Modified "";
 
       try_files $uri /$uri;
       break;
@@ -81,7 +82,7 @@ http {
     # this is a recursive retry location; nginx will only recurse 10 times before returning a 500 error
     location @delayed_retry {
       error_page 502 = @delayed_retry;
-      delay #{process.env["STARTUP_RETRY_TIME"]}s;
+      delay #{process.env.NGINX_STARTUP_RETRY_TIME}s;
       try_files uri @node;
     }
   }

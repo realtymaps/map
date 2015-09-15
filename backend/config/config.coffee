@@ -2,6 +2,7 @@ _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig'
 
+
 _getConfig = (rootName, propName, spacer, config = process.env) ->
   envVarName = rootName + spacer + propName
   config[envVarName]
@@ -19,13 +20,13 @@ _getAllConfigs = (rootName, props, spacer = '_', config) ->
       ret[name] = JSON.parse ret[name]
   ret
 
-#console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
+
 base =
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
-  PORT: '/tmp/nginx.socket'  # unix domain socket, unless overriden below for dev
+  PORT: process.env.NGINX_SOCKET_LOCATION || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'mean.coffee.log'
     LEVEL: 'info'
@@ -135,7 +136,6 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
-    PORT: parseInt(process.env.PORT) || 4000
     USER_DB:
       debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:
