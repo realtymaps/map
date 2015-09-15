@@ -50,7 +50,7 @@ if config.LOGGING.FILE_AND_LINE
     oldFunc = logger[level]
     do (oldFunc) ->
       logger[level] = () ->
-        trace = stackTrace.get()
+        trace = stackTrace.parse(new Error())  # this gets correct coffee line, where stackTrace.get() does not
         args = Array.prototype.slice.call(arguments)
         filename = path.basename(trace[1].getFileName(), '.coffee')
         decorator = "[#{filename}:#{trace[1].getLineNumber()}]"
