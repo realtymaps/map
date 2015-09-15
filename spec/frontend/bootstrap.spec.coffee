@@ -11,13 +11,14 @@ beforeEach ->
 
       $delegate
 
-  .service 'digestor', ($rootScope, $timeout) ->
+  .service 'digestor', ($rootScope, $timeout, $log) ->
     digest: (scope = $rootScope, fn = ->) ->
       if _.isFunction scope
         fn = scope
         scope = $rootScope
 
       while $timeout.hasPendingTasks()
+        # $log.debug 'FLUSHING!'
         $timeout.flush()
 
       fn() if fn?
