@@ -134,17 +134,18 @@
     bottom 0
     width 95%
     color black
-    .scroll
-      overflow-y scroll
-      .row
-        height 3em
-        > div
-          top 50%
-          transform translateY(-50%)
-      .row:nth-child(even)
-        background-color #eee
-      .row.advanced > :first-child
-          text-align center
+
+  .scroll
+    overflow-y scroll
+    .row
+      height 3em
+      > div
+        top 50%
+        transform translateY(-50%)
+    .row:nth-child(even)
+      background-color #eee
+    .row.advanced > :first-child
+        text-align center
 
     input, textarea
       width 90%
@@ -215,11 +216,12 @@
     @extend .clickable-icon
     float right
 
-  .download-csv-button
+  .header-button
     margin-top 10px
     font-size 12px
     padding 2px
     height 22px
+    background-color #35a7e0 !important
 
   .download-csv-input
     margin-top 10px
@@ -237,3 +239,12 @@
 
   .collapse .expand-icon:before
       content "+"
+
+  .global-rules
+    background-color white
+    color black
+    padding 10px
+    border 2px solid #999
+
+  .dropdown-menu
+    width 400px

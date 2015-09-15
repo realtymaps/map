@@ -227,6 +227,10 @@ app.controller 'rmapsNormalizeCtrl',
       $scope.fieldData.current = null
       $scope.$evalAsync()
 
+  $scope.updateDataRules = _.debounce () ->
+    rmapsMlsService.update $scope.mlsData.current.id, data_rules: $scope.mlsData.current.data_rules
+  , 2000
+
   # Data service. Initialized once an MLS is selected
   normalizeService = null
 
