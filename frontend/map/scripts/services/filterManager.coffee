@@ -2,19 +2,21 @@
 app = require '../app.coffee'
 qs = require 'qs'
 
-app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums) ->
+app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums, rmapsRendering, rmapsevents, rmapsMainOptions) ->
+  _promiseObject =
+    filterDrawPromise: false
 
-  cleanFilters = (filters) ->
+  _cleanFilters = (filters) ->
     #remove all null, zero, and empty string values so we don't send them
     _.each filters, (v,k) ->
       if !v && v != false
         delete filters[k]
 
-  manage: (cb) ->
+  getFilters = () ->
     filter = null
     if $rootScope.selectedFilters
       selectedFilters = _.clone($rootScope.selectedFilters)
-      cleanFilters(selectedFilters)
+      _cleanFilters(selectedFilters)
       selectedFilters.status = []
       if (selectedFilters.forSale)
         selectedFilters.status.push(rmapsParcelEnums.status.forSale)
@@ -32,4 +34,14 @@ app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums) ->
       filter = qs.stringify(selectedFilters)
       if filter.length > 0
         filter = '&' + filter
-      cb(filter)
+      filter
+
+  _updateFilters = (newFilters, oldFilters) ->
+    return if (not newFilters and not oldFilters) or newFilters == oldFilters
+    rmapsRendering.debounce _promiseObject, 'filterDrawPromise', ->
+      $rootScope.$emit rmapsevents.map.filters.updated, getFilters()
+    , rmapsMainOptions.filterDrawDelay
+
+  $rootScope.$watchCollection 'selectedFilters', _updateFilters
+
+  getFilters: getFilters
