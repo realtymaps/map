@@ -21,6 +21,9 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
       newMls.fromServer = true
       newMls
 
+  update = (configId, mlsConfig) ->
+    Restangular.all(mlsConfigAPI).one(configId).customPUT(mlsConfig)
+
   postMainPropertyData = (configId, mainPropertyData) ->
     Restangular.all(mlsConfigAPI).one(configId).all('propertyData').customPUT(mainPropertyData)
 
@@ -49,6 +52,7 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   service =
     getConfigs: getConfigs,
     postConfig: postConfig,
+    update: update,
     postMainPropertyData: postMainPropertyData,
     postServerData: postServerData,
     postServerPassword: postServerPassword,
