@@ -169,7 +169,7 @@ environmentConfig =
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
       FAST_REFRESH: 60*1000     # 1 minute
-    # the proxy and secure settings below need to be removed when we start using nginx
+    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
     TRUST_PROXY: false
     SESSION:
       cookie:
@@ -188,7 +188,7 @@ environmentConfig =
       FAST_REFRESH: 60*1000      # 1 minute
     MEM_WATCH:
       IS_ON: true
-  # the proxy and secure settings below need to be removed when we start using nginx
+    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
     TRUST_PROXY: false
     SESSION:
       cookie:
@@ -203,7 +203,7 @@ environmentConfig =
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 
 config = _.merge({}, base, environmentConfig[base.ENV])
-# console.log "config: "+JSON.stringify(config, null, 2)
+
 
 module.exports = config
 

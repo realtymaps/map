@@ -4,14 +4,6 @@ logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
 viewsRoute = require './route.views'
 
-_staticAssets = [
-  /\/assets\//
-  /\/json\//
-  /\/fonts\//
-  /\/scripts\//
-  /\/styles\//
-]
-
 module.exports =
 
   # this wildcard allows express to deal with any unknown api URL
@@ -32,8 +24,8 @@ module.exports =
     method: 'all'
     order: 10000 # needs to be last
     handle: (req, res, next) ->
-      for key, regEx of _staticAssets
-        if req.path.match regEx
-          next new ExpressResponse(alert: {msg: "Oops!  The resource #{req.path} was not found.  Try reloading the page."}, httpStatus.NOT_FOUND)
-
+      # if the request had a file-ish format (with a '.' in it), then return a 404 -- it would have been caught by the
+      # static serving middleware if we had the file
+      if req.path.indexOf('.') != -1
+        return next new ExpressResponse("Oops!  The resource #{req.path} was not found.  Try reloading the page, or try again later.", httpStatus.NOT_FOUND)
       viewsRoute.rmap(req,res,next)
