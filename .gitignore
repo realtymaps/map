@@ -32,3 +32,4 @@ vagrant_app.log
 
 config/
 bin/
+uwsgi_temp/

@@ -19,9 +19,6 @@ do
         --bare-server)
             export BARE_EXPRESS_SERVER=true
             ;;
-        --mayday)
-            export MAYDAY_OPTS="-e .env-mayday"
-            ;;
         --skip-nginx)
             export SKIP_NGINX=true
             ;;
@@ -34,12 +31,12 @@ done
 
 if [[ "$DO_CLEAN" == "true" ]]
 then
-  foreman run $MAYDAY_OPTS npm run clean
+  foreman run npm run clean
 fi
 
 if [[ "$DO_INSTALL" == "true" ]]
 then
-  foreman run $MAYDAY_OPTS npm install
+  foreman run npm install
 fi
 
-foreman run $MAYDAY_OPTS npm start
+foreman run npm start
