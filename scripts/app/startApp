@@ -10,4 +10,6 @@ source $SCRIPT_DIR/app/syncVars
 
 $SCRIPT_DIR/database/syncAll --breaking
 
+coffee $SCRIPT_DIR/misc/syncEncryptionKey.coffee
+
 $SCRIPT_DIR/app/serve
