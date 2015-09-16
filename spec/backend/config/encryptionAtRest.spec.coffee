@@ -1,5 +1,4 @@
 basePath = require '../basePath'
-encryptor = require "#{basePath}/config/encryptor"
 
 
 describe 'ENCRYPTION_AT_REST', () ->
@@ -8,7 +7,9 @@ describe 'ENCRYPTION_AT_REST', () ->
     it "can't run on CircleCI because we don't have the encryption key there", () ->
       #noop
     return
-    
+
+  encryptor = require "#{basePath}/config/encryptor"
+  
   it 'should decrypt to a known string', () ->
     encryptor.decrypt('1+1GDvOrzpSe/p6lBlzkOQ==$$TdAmWuLMgXVY8h9aB/Y9QnxjeIA1BiGyTTY3Pjx5$')
     .should.equal 'you are using the correct key!'

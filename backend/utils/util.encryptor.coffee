@@ -34,7 +34,7 @@ class Encryptor
       @payloadDelimiter
     } = options
 
-    if !@cipherKey
+    if !@cipherKey?
       throw new Error('A cipher key is required')
     
     
