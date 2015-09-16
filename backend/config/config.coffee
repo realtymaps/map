@@ -29,7 +29,7 @@ base =
   PORT: process.env.NGINX_SOCKET_LOCATION || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'mean.coffee.log'
-    LEVEL: 'info'
+    LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
   USER_DB:
     client: 'pg'
@@ -148,7 +148,6 @@ environmentConfig =
       cookie:
         secure: false
     LOGGING:
-      LEVEL: 'sql'
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
     NEW_RELIC:
@@ -161,7 +160,7 @@ environmentConfig =
 
   test: # test inherits from development below
     LOGGING:
-      LEVEL: 'debug'
+      LEVEL: 'info'
     MEM_WATCH:
       IS_ON: true
 
