@@ -11,22 +11,22 @@ describe 'rmapsAdminApp.validatorBuilder', ->
 
     rules = [
       # RETS rules
-       field: @validatorBuilder.buildRetsRule {"DataType": "Int"}
+       field: @validatorBuilder.buildRetsRule {"config": "DataType": "Int"}
        transform: '[validators.integer({}),validators.nullify({"value":0})]'
       ,
-       field: @validatorBuilder.buildRetsRule {"DataType": "Decimal"}
+       field: @validatorBuilder.buildRetsRule {"config": "DataType": "Decimal"}
        transform: '[validators.float({}),validators.nullify({"value":0})]'
       ,
-       field: @validatorBuilder.buildRetsRule {"DataType": "Long"}
+       field: @validatorBuilder.buildRetsRule {"config": "DataType": "Long"}
        transform: '[validators.float({}),validators.nullify({"value":0})]'
       ,
-       field: @validatorBuilder.buildRetsRule {"DataType": "Character"}
+       field: @validatorBuilder.buildRetsRule {"config": "DataType": "Character"}
        transform: '[validators.string({}),validators.nullify({"value":""})]'
       ,
-       field: @validatorBuilder.buildRetsRule {"DataType": "DateTime"}
+       field: @validatorBuilder.buildRetsRule {"config": "DataType": "DateTime"}
        transform: '[validators.datetime({})]'
       ,
-       field: @validatorBuilder.buildRetsRule {"DataType": "Boolean", "config": {"value": false}}
+       field: @validatorBuilder.buildRetsRule {"config": {"DataType": "Boolean", "value": false}}
        transform: '[validators.nullify({"value":false})]'
 
        # Base rules

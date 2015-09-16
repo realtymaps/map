@@ -14,6 +14,9 @@ ruleDefaults =
   valid: () ->
     !@required || @input
 
+  getOptions: () ->
+    _.pick @config, (v, k) -> ['advanced', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
+
   getTransform: (globalOpts = {}) ->
     transformArr = []
 
@@ -22,8 +25,7 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
 
     # Primary transform
-    options = _.pick @config, (v, k) -> ['advanced', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
-    transformArr.push name: (@type?.name || @type), options: options
+    transformArr.push name: (@type?.name || @type), options: @getOptions()
 
     # Transforms that should occur after type-specific logic
     if @config.nullZero
@@ -185,7 +187,7 @@ retsRules =
       name: 'boolean'
       label: 'Yes/No'
     getTransform: () ->
-      name: 'nullify', options: @config
+      name: 'nullify', options: @getOptions()
 
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, defaults, ruleDefaults
