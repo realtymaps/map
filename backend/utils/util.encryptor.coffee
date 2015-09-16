@@ -33,6 +33,9 @@ class Encryptor
       @unpackPayload
       @payloadDelimiter
     } = options
+
+    if !@cipherKey
+      throw new Error('A cipher key is required')
     
     # set some default values
     @textEncoding ?= 'utf8'
