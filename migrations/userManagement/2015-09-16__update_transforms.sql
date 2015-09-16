@@ -1,0 +1,1 @@
+UPDATE data_normalization_config SET transform = NULL WHERE config ->> 'advanced' = 'false' OR NOT config::jsonb ? 'advanced';
