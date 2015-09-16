@@ -32,7 +32,6 @@ Promise.try () ->
   .then () ->
     
     tables = require "#{basePath}/config/tables"
-    newEncryptor = new Encryptor(cipherKey: process.env.ENCRYPTION_AT_REST)
   
     
     recrypt = (payload) ->
