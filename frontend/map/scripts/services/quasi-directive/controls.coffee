@@ -13,36 +13,36 @@ directiveControls = [
   name: 'navigation'
   options:
     position: 'topleft'
-  directive:
+  directive: ($log) ->
     template: require('../../../html/includes/map/_navigation.jade')()
 ,
   name: 'properties'
   options:
     position: 'topright'
-  directive:
+  directive: ($log) ->
     template: require('../../../html/includes/map/_propertiesButton.jade')()
 ,
   name: 'layer'
   options:
     position: 'bottomleft'
-  directive:
+  directive: ($log) ->
     template: require('../../../html/includes/map/_layers.jade')()
     compile: (tElement, tAttrs, transclude) ->
-      console.debug 'LayerControl compile'
+      $log.debug 'LayerControl compile'
       (scope, iElement, iAttrs, controller, transcludeFn) ->
-        console.debug 'LayerControl link'
+        $log.debug 'LayerControl link'
 ,
   name: 'location'
   options:
     position: 'bottomleft'
-  directive:
+  directive: ($log) ->
     template: require('../../../html/includes/map/_location.jade')()
 ]
 
 for control in directiveControls
   do (control) ->
     control.dName = control.name[0].toUpperCase() + control.name.slice(1) + 'Control'
-    app.directive "rmaps#{control.dName}", -> control.directive
+    app.directive "rmaps#{control.dName}", ($log) -> control.directive($log)
 
 # Leaflet usage:
 #    rmapsControls.{Some}Control position: 'botomleft', scope: mapScope

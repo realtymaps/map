@@ -1,4 +1,6 @@
 
+pak =  require('./package.json')
+
 module.exports = (config) ->
   config.set
   # base path that will be used to resolve all patterns (eg. files, exclude)
@@ -16,16 +18,34 @@ module.exports = (config) ->
       'spec/fixtures/*.html': ['html2js']
       'spec/fixtures/*.json': ['html2js']
       'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
-    #'_public/*.js': ['coverage']
+      '_public/scripts/*.bundle.js': ['coverage']
     }
 
     browserify:
       debug: true
+      ### TODO MAIN Problem HERE as soon as I start mucking with the transform all hell break loose and specs no longer work
+       WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
+       Working towards this via https://github.com/karma-runner/karma-coverage/issues/16
+
+       note @weikinhuang comment on fslookup , leads to here
+       https://github.com/karma-runner/karma-coverage/blob/master/docs/configuration.md#sourcestore
+
+
+      ###
+      # transform: ['coffeeify', 'brfs', ["browserify-istanbul",{"ignore": ["**/bower_components/**","**/node_modules/**","**/spec/**"]}]]
+      # extensions: ['.coffee', '.js']
+
+
+      ### PROBLEM 2
+        17 09 2015 16:44:06.455:ERROR [coverage]: [TypeError: Cannot read property 'text' of undefined]
+        see: https://github.com/karma-runner/karma-coverage/issues/157
+      ###
     coverageReporter:
+      #https://github.com/karma-runner/karma-coverage/blob/master/docs/configuration.md#sourcestore
       reporters:[
-        { type : 'html', dir : '_public/coverage/', subdir: "application" }
-        { type : 'cobertura', dir : '_public/coverage/', subdir: "application" }
+        { type : 'html', dir : '_public/coverage/', subdir: "application", sourceStore : require('istanbul').Store.create('fslookup')}
+        { type : 'cobertura', dir : '_public/coverage/', subdir: "application", sourceStore : require('istanbul').Store.create('fslookup')}
       ]
 
   # list of files / patterns to load in the browser
@@ -57,7 +77,7 @@ module.exports = (config) ->
   # NOTE , TODO 'html' reporter use if you want to hit the karma jasmine runner (frequently causes karma to blow up at the end of run),
   # test results reporter to use
   # possible values: 'dots', 'progress', 'mocha'
-    reporters: ['mocha']
+    reporters: ['mocha', 'coverage']
 
   # htmlReporter:
   #   middlePathDir: "chrome"
@@ -77,7 +97,7 @@ module.exports = (config) ->
   # - config.LOG_WARN
   # - config.LOG_INFO
   # - config.LOG_DEBUG
-    logLevel: config.LOG_INFO
+    logLevel: config.LOG_WARN
 
   # enable / disable watching file and executing tests whenever any file changes
     autoWatch: false

@@ -1,6 +1,6 @@
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
-describe "map factory", ->
+describe "rmapsMap factory", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
@@ -26,8 +26,4 @@ describe "map factory", ->
     it 'can be created', ->
       @subject.should.be.ok
 
-    xit 'drawFilterSummary keeps filter in sync', ->
-      #TODO: mock the http requests to get some responses to play with
-      @subject.drawFilterSummary()
-      @subject.scope.$digest()
-      @subject.filters.length.should.be.ok
+    describe 'results handles', ->

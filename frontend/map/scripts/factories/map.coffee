@@ -159,6 +159,29 @@ app.factory 'rmapsMap',
 
         @scope.map.markers.filterSummary = {}
 
+      handleClusterResults: (data) =>
+        @scope.map.markers.filterSummary = {}
+        clusters = {}
+        for k, model of data
+          # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
+          clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+        @scope.map.markers.backendPriceCluster = clusters
+
+      handleSummaryResults: (data) =>
+        @scope.map.markers.backendPriceCluster = {}
+        @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+        for key, model of data
+          _wrapGeomPointJson model
+        @scope.map.markers.filterSummary = data
+
+      handleGeoJsonResults: (filters, cache) =>
+        rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
+        .then (data) =>
+          return if !data? or _.isString data
+          @scope.map.geojson.filterSummaryPoly =
+            data: data
+            style: @layerFormatter.Parcels.getStyle
+
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
@@ -170,34 +193,11 @@ app.factory 'rmapsMap',
           @clearFilterSummary()
           return promises
 
-        handleClusterResults = (data) =>
-          @scope.map.markers.filterSummary = {}
-          clusters = {}
-          _.each data, (model,k) =>
-            # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
-            clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          @scope.map.markers.backendPriceCluster = clusters
-
-        handleSummaryResults = (data) =>
-          @scope.map.markers.backendPriceCluster = {}
-          @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
-          for key, val of data
-            _wrapGeomPointJson val
-          @scope.map.markers.filterSummary = data
-
-        handleGeoJsonResults = () =>
-          rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
-          .then (data) =>
-            return if !data? or _.isString data
-            @scope.map.geojson.filterSummaryPoly =
-              data: data
-              style: @layerFormatter.Parcels.getStyle
-
         p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
-            handleClusterResults(data)
+            @handleClusterResults(data)
 
           else
             #needed for results list, rendering price markers, and address Markers
@@ -205,7 +205,7 @@ app.factory 'rmapsMap',
             #the data structure is the same (do we clone and hide one?)
             #or do we have the results list view grab one that exists with items?
             return if !data? or _.isString data
-            handleSummaryResults(data)
+            @handleSummaryResults(data)
 
             if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
               if overlays?.parcels?
@@ -215,7 +215,7 @@ app.factory 'rmapsMap',
 
               overlays.filterSummary.visible = false
 
-              handleGeoJsonResults()
+              @handleGeoJsonResults(filters, cache)
 
             else
               overlays.parcels.visible = false

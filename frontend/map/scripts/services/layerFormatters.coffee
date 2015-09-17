@@ -5,7 +5,9 @@ casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
 
 app.factory 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
-
+  ###
+  TODO goal: remove the rmapsMap factory instance as a dependency
+  ###
   (mapCtrl) ->
 
     _filterSummary = ->
