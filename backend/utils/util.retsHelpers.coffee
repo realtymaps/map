@@ -61,11 +61,12 @@ getDataDump = (mlsInfo, limit, minDate=0) ->
             fieldMappings[field.LongName] = field.LongName.replace(/\./g, '')
         if _.isEmpty(fieldMappings)
           return results
-        _.map results, (result) ->
+        for result in results
           for oldName, newName of fieldMappings
             if oldName of result
               result[newName] = result[oldName]
               delete result[oldName]
+        return results
   .catch isUnhandled, (error) ->
     if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
       # code for 0 results, not really an error (DMQL is a clunky language)
@@ -112,6 +113,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .then (fields) ->
       for field in fields
         field.LongName = field.LongName.replace(/\./g, '')
+      fields
         
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
