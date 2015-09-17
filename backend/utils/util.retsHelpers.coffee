@@ -48,11 +48,31 @@ getDataDump = (mlsInfo, limit, minDate=0) ->
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
     momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.listing_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.listing_data.field))
     retsClient.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, limit: limit)
+    .then (results) ->
+      retsClient.metadata.getTable(mlsInfo.listing_data.db, mlsInfo.listing_data.table)
+      .catch isUnhandled, (error) ->
+        if error.replyCode
+          error = new Error("#{error.replyText} (#{error.replyCode})")
+        throw new PartiallyHandledError(error, 'Failed to retrieve RETS columns')
+      .then (response) ->
+        fieldMappings = {}
+        for field in response.Fields
+          if field.LongName.indexOf('.') != -1
+            fieldMappings[field.LongName] = field.LongName.replace(/\./g, '')
+        if _.isEmpty(fieldMappings)
+          return results
+        _.map results, (result) ->
+          for oldName, newName of fieldMappings
+            if oldName of result
+              result[newName] = result[oldName]
+              delete result[oldName]
   .catch isUnhandled, (error) ->
     if error.replyCode == "#{rets.replycode.NO_RECORDS_FOUND}"
       # code for 0 results, not really an error (DMQL is a clunky language)
       return []
     # TODO: else if error.replyCode == rets.replycode.MAX_RECORDS_EXCEEDED # "20208"
+    if error.replyCode
+      error = new Error("#{error.replyText} (#{error.replyCode})")
     # code for too many results, must manually paginate or something to get all the data
     throw new PartiallyHandledError(error, 'failed to query RETS system')
 
@@ -89,6 +109,10 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .then (response) ->
       _.map response.Fields, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
+    .then (fields) ->
+      for field in fields
+        field.LongName = field.LongName.replace(/\./g, '')
+        
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
