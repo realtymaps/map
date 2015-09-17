@@ -140,10 +140,19 @@ _getUsedInputFields = (validationDefinition) ->
 
 
 getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
-  tables.config.mls()
-  .where
-    id: dataSourceId
-  .then (mlsConfig) ->
+  if dataSourceType == 'mls'
+    dataSourcePromise = Promise.try () ->
+      tables.config.mls()
+      .where
+        id: dataSourceId
+      .then (mlsConfig) ->
+        mlsConfig.data_rules
+  else if dataSourceType == 'county'
+    dataSourcePromise = Promise.try() ->
+      # Query for county/corelogic global rules?
+
+  dataSourcePromise
+  .then (global_rules) ->
     tables.config.dataNormalization()
     .where
       data_source_id: dataSourceId
@@ -168,7 +177,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
           else
             rule = validatorBuilder.buildRetsRule validationDef
 
-          transforms = rule.getTransform mlsConfig.data_rules
+          transforms = rule.getTransform global_rules
           if !_.isArray transforms
             transforms = [ transforms ]
 
