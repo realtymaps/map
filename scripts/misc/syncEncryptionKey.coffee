@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 basePath = '../../backend'
 logger = require "#{basePath}/config/logger"
+sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 
 
 Promise.try () ->
@@ -69,7 +70,7 @@ Promise.try () ->
             task.data.DIGIMAPS[key] = recrypt(payload)
           tables.jobQueue.taskConfig(transaction)
           .where(name: 'parcel_update')
-          .update(data: task.data)
+          .update(data: sqlHelpers.safeJsonArray(dbs.users.knex, task.data))
       .then () ->
         logger.info "#{prefix} changing key for mls passwords..."
         tables.config.mls(transaction)
@@ -91,6 +92,7 @@ Promise.try () ->
             account.api_key = recrypt(account.api_key)
             for key, payload of account.other
               account.other[key] = recrypt(payload)
+            account.other = sqlHelpers.safeJsonArray(dbs.users.knex, account.other)
             tables.userData.externalAccounts(transaction)
             .where(name: account.name)
             .update(account)
