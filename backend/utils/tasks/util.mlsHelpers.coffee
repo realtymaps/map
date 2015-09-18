@@ -86,7 +86,7 @@ loadUpdates = (subtask, options) ->
         # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
         # on whether this is a dump or an update)
         doDeletes = refreshThreshold.getTime() == 0
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes, dataType: 'listing', rawTableSuffix: 'listing'}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
 
@@ -111,7 +111,7 @@ loadUpdates = (subtask, options) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 
 
-updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
@@ -120,7 +120,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData.listing(), base.address)
+    address: sqlHelpers.safeJsonArray(tables.propertyData[dataType](), base.address)
     hide_listing: base.hide_listing ? false
     shared_groups:
       general: normalizedData.general || []
@@ -138,33 +138,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: null
-  updateRow = _.extend base, stats, data
-  # check for an existing row
-  tables.propertyData.listing()
-  .select('*')
-  .where
-    data_source_uuid: updateRow.data_source_uuid
-    data_source_id: updateRow.data_source_id
-  .then (result) ->
-    if !result?.length
-      # no existing row, just insert
-      updateRow.inserted = stats.batch_id
-      tables.propertyData.listing()
-      .insert(updateRow)
-    else
-      # found an existing row, so need to update, but include change log
-      result = result[0]
-      updateRow.change_history = result.change_history ? []
-      changes = dataLoadHelpers.getRowChanges(updateRow, result, diffExcludeKeys)
-      if !_.isEmpty changes
-        updateRow.change_history.push changes
-        updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.listing(), updateRow.change_history)
-      tables.propertyData.listing()
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
-      .update(updateRow)
+  _.extend base, stats, data
 
 
 finalizeData = (subtask, id) ->
@@ -202,5 +176,5 @@ finalizeData = (subtask, id) ->
 
 module.exports =
   loadUpdates: loadUpdates
-  updateRecord: updateRecord
+  buildRecord: buildRecord
   finalizeData: finalizeData

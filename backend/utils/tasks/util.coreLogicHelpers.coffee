@@ -132,7 +132,7 @@ loadRawData = (subtask, options) ->
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
-      data_type: subtask.data.type
+      data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
     _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
@@ -148,61 +148,31 @@ loadRawData = (subtask, options) ->
       logger.warn("Error trying to rm -rf temporary directory /tmp/#{fileBaseName}: #{err}")
 
 
-updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
-  throw new jobQueue.HardFail('not finished yet')
+buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
-  normalizedData.general.unshift(name: 'Status', value: base.status_display)
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData.listing(), base.address)
-    hide_listing: base.hide_listing ? false
+    address: sqlHelpers.safeJsonArray(tables.propertyData[dataType](), base.address)
     shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
-      listing: normalizedData.listing || []
+      sale: normalizedData.sale || []
       building: normalizedData.building || []
-      dimensions: normalizedData.dimensions || []
+      taxes: normalizedData.taxes || []
       lot: normalizedData.lot || []
       location: normalizedData.location || []
       restrictions: normalizedData.restrictions || []
     subscriber_groups:
-      contacts: normalizedData.contacts || []
-      realtor: normalizedData.realtor || []
-      sale: normalizedData.sale || []
+      owner: normalizedData.owner || []
+      deed: normalizedData.deed || []
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: null
-  updateRow = _.extend base, stats, data
-  # check for an existing row
-  tables.propertyData.listing()
-  .select('*')
-  .where
-    data_source_uuid: updateRow.data_source_uuid
-    data_source_id: updateRow.data_source_id
-  .then (result) ->
-    if !result?.length
-      # no existing row, just insert
-      updateRow.inserted = stats.batch_id
-      tables.propertyData.listing()
-      .insert(updateRow)
-    else
-      # found an existing row, so need to update, but include change log
-      result = result[0]
-      updateRow.change_history = result.change_history ? []
-      changes = dataLoadHelpers.getRowChanges(updateRow, result, diffExcludeKeys)
-      if !_.isEmpty changes
-        updateRow.change_history.push changes
-        updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.listing(), updateRow.change_history)
-      tables.propertyData.listing()
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
-      .update(updateRow)
+  _.extend base, stats, data
 
 
 finalizeData = (subtask, id) ->
@@ -240,5 +210,5 @@ finalizeData = (subtask, id) ->
 
 module.exports =
   loadRawData: loadRawData
-  updateRecord: updateRecord
+  buildRecord: buildRecord
   finalizeData: finalizeData

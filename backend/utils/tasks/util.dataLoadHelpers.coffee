@@ -6,6 +6,7 @@ validation = require '../util.validation'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
+sqlHelpers = require '../util.sql.helpers'
 
 
 getRawTableName = (subtask, suffix) ->
@@ -37,12 +38,12 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
     query.as(asPrefix)
 
     
-recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
+recordChangeCounts = (subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
       # first such row rather than return all or count them all
-      destDataTable()
+      tables.propertyData[subtask.data.dataType]()
       .select('rm_raw_id')
       .where(batch_id: subtask.batch_id)
       .where(data_source_id: subtask.data_source_id)
@@ -55,28 +56,28 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
         # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
         # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
         # will resolve to a count of affected rows
-        destDataTable()
+        tables.propertyData[subtask.data.dataType]()
         .whereNot(batch_id: subtask.batch_id)
         .where(data_source_id: subtask.data_source_id)
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
   .then (deletedCount=0) ->
     # get a count of raw rows from all raw tables from this batch with rm_valid == false
-    invalidSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, rawDataSuffix), true)
+    invalidSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, subtask.data.rawTableSuffix), true)
     # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
-    unvalidatedSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, rawDataSuffix), false)
+    unvalidatedSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, subtask.data.rawTableSuffix), false)
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
-      destDataTable(this)
+      tables.propertyData[subtask.data.dataType](this)
       .where(inserted: subtask.batch_id)
       .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = () ->
-      destDataTable(this)
+      tables.propertyData[subtask.data.dataType](this)
       .where(updated: subtask.batch_id)
       .count('*')
     touchedSubquery = () ->
-      destDataTable(this)
+      tables.propertyData[subtask.data.dataType](this)
       .where(batch_id: subtask.batch_id)
       .orWhere(deleted: subtask.batch_id)
       .count('*')
@@ -186,7 +187,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   rowsPromise = dbs.properties.knex(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   # get validations
-  validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.type)
+  validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   # get start time for "last updated" stamp
   startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
   Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationInfo, startTime) ->
@@ -197,7 +198,9 @@ normalizeData = (subtask, options) -> Promise.try () ->
         rm_raw_id: row.rm_raw_id
         up_to_date: startTime
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
-      .then options.updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, validationInfo.usedKeys, row)
+      #.then options.buildRecord.bind(null, stats, validationInfo.diffExcludeKeys, validationInfo.usedKeys, row, options.dataSourceType, subtask.data.dataType)
+      .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
+      .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
       .then () ->
         dbs.properties.knex(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
@@ -208,6 +211,35 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.all promises
 
+
+_updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
+  # check for an existing row
+  tables.propertyData[dataType]()
+  .select('*')
+  .where
+    data_source_uuid: updateRow.data_source_uuid
+    data_source_id: updateRow.data_source_id
+  .then (result) ->
+    if !result?.length
+      # no existing row, just insert
+      updateRow.inserted = stats.batch_id
+      tables.propertyData[dataType]()
+      .insert(updateRow)
+    else
+      # found an existing row, so need to update, but include change log
+      result = result[0]
+      updateRow.change_history = result.change_history ? []
+      changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      if !_.isEmpty changes
+        updateRow.change_history.push changes
+        updateRow.updated = stats.batch_id
+      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData[dataType](), updateRow.change_history)
+      tables.propertyData[dataType]()
+      .where
+        data_source_uuid: updateRow.data_source_uuid
+        data_source_id: updateRow.data_source_id
+      .update(updateRow)
+    
 
 getValues = (list, target) ->
   if !target
@@ -220,7 +252,7 @@ getValues = (list, target) ->
 # this performs a diff of 2 sets of data, returning only the changed/new/deleted fields as keys, with the value
 # taken from row2.  Not all row fields are considered, only those that correspond most directly to the source data,
 # excluding those that are expected to be date-related derived values (such as DOM and CDOM for MLS listings)
-getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
+_getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
   fields1 = {}
   fields2 = {}
 
@@ -258,5 +290,4 @@ module.exports =
   activateNewData: activateNewData
   getValidationInfo: getValidationInfo
   normalizeData: normalizeData
-  getRowChanges: getRowChanges
   getValues: getValues

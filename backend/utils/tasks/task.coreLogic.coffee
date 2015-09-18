@@ -93,10 +93,10 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
     loadDataList.push
       path: "/#{dir}/#{file.name}"
       rawTableSuffix: rawTableSuffix
-      type: type
+      dataType: type
     countDataList.push
       rawTableSuffix: rawTableSuffix
-      type: type
+      dataType: type
       markOtherRowsDeleted: (type == TAX)  # tax data is full-dump, deed data is incremental
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_recordChangeCounts", countDataList, true)
@@ -139,7 +139,7 @@ module.exports = new TaskImplementation
   checkFtpDrop: checkFtpDrop
   loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.listing)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData

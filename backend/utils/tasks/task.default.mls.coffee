@@ -47,7 +47,7 @@ finalizeData = (subtask) ->
 module.exports = new TaskImplementation
   loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.listing)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
