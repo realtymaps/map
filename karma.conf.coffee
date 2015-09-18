@@ -19,7 +19,7 @@ module.exports = (config) ->
       'spec/fixtures/*.html': ['html2js']
       'spec/fixtures/*.json': ['html2js']
       'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
-      '_public/scripts/*.bundle.js': ['coverage']
+      # '_public/scripts/*.bundle.js': ['coverage']
     }
 
     browserify:
@@ -27,7 +27,7 @@ module.exports = (config) ->
       #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
-      transform: ['coffeeify', 'brfs', ["browserify-istanbul",{ global: true, "ignore": ["**/spec/**"]}]]
+      transform: ['coffeeify', 'brfs', ["browserify-istanbul",{ "ignore": ["**/spec/**"]}]]
       # extensions: ['.coffee', '.js']
 
 

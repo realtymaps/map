@@ -14,11 +14,11 @@ gulp.task 'rebuildSpec', gulp.series(
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 
 #front end coverage
-gulp.task 'coverage', ->
+gulp.task 'openCoverage', ->
   gulp.src('')
   .pipe open
     uri: 'http://localhost:8085/coverage/application/index.html'
     app: 'Google Chrome' #osx , linux: google-chrome, windows: chrome
 
 
-gulp.task 'rcoverage', gulp.series 'frontendSpec', 'coverage'
+gulp.task 'rcoverage', gulp.series 'browserifyCover', 'frontendSpec', 'openCoverage'
