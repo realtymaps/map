@@ -1,9 +1,5 @@
 config = require './config/config'
 
-# "long stack traces" support
-if config.LOGGING.LONG_STACK_TRACES
-  require 'longjohn'
-
 logger = require './config/logger'
 cluster = require './config/cluster'
 tables = require './config/tables'

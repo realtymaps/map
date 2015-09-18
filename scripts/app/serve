@@ -5,6 +5,8 @@ if [[ "$IS_HEROKU" == "" ]]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
     cd "$DIR/../.."
+else
+    cd /app
 fi
 
 
@@ -15,12 +17,8 @@ fi
 
 if [[ "$IS_HEROKU" != "" ]]
 then
-  gulp prod
-  coffee /app/backend/server.coffee
-elif [[  "$BARE_EXPRESS_SERVER" != "" ]]
-then
-  gulp prod
+  gulp $GULP_COLOR prod
   coffee ./backend/server.coffee
 else
-  gulp
+  gulp $GULP_COLOR
 fi

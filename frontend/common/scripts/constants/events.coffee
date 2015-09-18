@@ -8,6 +8,8 @@ mod.constant 'rmapsevents',
         isEnabled: 1
         clear: 1
         query:  1
+      filters:
+        updated: 1
     principal:
       login:
         success: 1

@@ -1,6 +1,8 @@
 #!/bin/bash
 set -e
 
+export GULP_COLOR="--color"
+
 for ((i=1; i<=$#; i++))
 do
     case "${!i}" in
@@ -17,8 +19,11 @@ do
         --bare-server)
             export BARE_EXPRESS_SERVER=true
             ;;
-        --mayday)
-            export MAYDAY_OPTS="-e .env-mayday"
+        --skip-nginx)
+            export SKIP_NGINX=true
+            ;;
+        --no-gulp-colors)
+            export GULP_COLOR="--no-color"
             ;;
     esac
 done
@@ -26,12 +31,12 @@ done
 
 if [[ "$DO_CLEAN" == "true" ]]
 then
-  foreman run $MAYDAY_OPTS npm run clean
+  foreman run npm run clean
 fi
 
 if [[ "$DO_INSTALL" == "true" ]]
 then
-  foreman run $MAYDAY_OPTS npm install
+  foreman run npm install
 fi
 
-PATH=$PATH:node_modules/.bin foreman run $MAYDAY_OPTS ./scripts/app/startAppWrapper
+foreman run npm start

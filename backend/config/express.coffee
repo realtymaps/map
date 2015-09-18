@@ -51,6 +51,8 @@ app.use helmet.nocache()
 # ensure all assets and data are compressed - above static
 app.use compress()
 
+app.use serveStatic config.FRONTEND_ASSETS_PATH
+
 # cookie parser - above session
 app.use cookieParser config.SESSION.secret
 

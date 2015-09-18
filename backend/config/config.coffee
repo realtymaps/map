@@ -2,6 +2,7 @@ _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig'
 
+
 _getConfig = (rootName, propName, spacer, config = process.env) ->
   envVarName = rootName + spacer + propName
   config[envVarName]
@@ -19,18 +20,17 @@ _getAllConfigs = (rootName, props, spacer = '_', config) ->
       ret[name] = JSON.parse ret[name]
   ret
 
-#console.info "ENV: !!!!!!!!!!!!!!!!!!! %j", process.env
+
 base =
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
-  PORT: '/tmp/nginx.socket'  # unix domain socket, unless overriden below for dev
+  PORT: process.env.NGINX_SOCKET_LOCATION || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'mean.coffee.log'
-    LEVEL: 'info'
+    LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    LONG_STACK_TRACES: false
   USER_DB:
     client: 'pg'
     connection: process.env.USER_DATABASE_URL
@@ -136,7 +136,6 @@ base.SESSION_STORE =
 environmentConfig =
 
   development:
-    PORT: parseInt(process.env.PORT) || 4000
     USER_DB:
       debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:
@@ -149,9 +148,7 @@ environmentConfig =
       cookie:
         secure: false
     LOGGING:
-      LEVEL: 'sql'
       FILE_AND_LINE: true
-      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
     USE_ERROR_HANDLER: true
     NEW_RELIC:
       RUN: Boolean(process.env.NEW_RELIC_RUN)
@@ -163,7 +160,7 @@ environmentConfig =
 
   test: # test inherits from development below
     LOGGING:
-      LEVEL: 'debug'
+      LEVEL: 'info'
     MEM_WATCH:
       IS_ON: true
 
@@ -171,9 +168,7 @@ environmentConfig =
     DB_CACHE_TIMES:
       SLOW_REFRESH: 5*60*1000   # 5 minutes
       FAST_REFRESH: 60*1000     # 1 minute
-    LOGGING:
-      LONG_STACK_TRACES: !!process.env.LONG_STACK_TRACES
-    # the proxy and secure settings below need to be removed when we start using nginx
+    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
     TRUST_PROXY: false
     SESSION:
       cookie:
@@ -192,7 +187,7 @@ environmentConfig =
       FAST_REFRESH: 60*1000      # 1 minute
     MEM_WATCH:
       IS_ON: true
-  # the proxy and secure settings below need to be removed when we start using nginx
+    # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
     TRUST_PROXY: false
     SESSION:
       cookie:
@@ -207,7 +202,7 @@ environmentConfig =
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 
 config = _.merge({}, base, environmentConfig[base.ENV])
-# console.log "config: "+JSON.stringify(config, null, 2)
+
 
 module.exports = config
 

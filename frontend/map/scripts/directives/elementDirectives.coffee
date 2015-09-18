@@ -33,21 +33,30 @@ app.directive 'rmapsFileRead', () ->
       link: (scope, element, attrs) ->
         prop = heightType + name.toInitCaps()
         obj = scope.$eval(attrs[directiveName])
-        max = parseInt attrs["rmapsGetMax#{heightType.toInitCaps()}#{name.toInitCaps()}"]
+
+        attrName = "rmapsGetMax#{heightType.toInitCaps()}#{name.toInitCaps()}"
+        if attrs[attrName]?
+          max = parseInt attrs[attrName]
+
         eleType = attrs['rmapsMsgReplace']
+
         msg = "element #{prop} is > #{max} pixles. element must be smaller."
-        if eleType
+
+        if eleType?
           msg.replace(/element/g, eleType)
+
         update = ->
           scope.$evalAsync ->
             obj[prop] = element[0][prop]
-            if obj[prop] > max
-              if !obj.errors?
-                obj.errors = {}
-              return obj.errors[prop] = msg
-            else
-              if obj.errors?[prop]
-                delete obj.errors[prop]
+
+            if max?
+              if obj[prop] > max
+                if !obj.errors?
+                  obj.errors = {}
+                return obj.errors[prop] = msg
+              else
+                if obj.errors?[prop]
+                  delete obj.errors[prop]
 
         element.on 'change', update
         element.on 'load', update
@@ -57,6 +66,5 @@ app.directive 'rmapsFileRead', () ->
 app.directive 'rmapsGetElement', ->
   scope: false
   link: (scope, element, attrs) ->
-    obj = scope.$eval(attrs['rmapsGetElement'])
-    elementPropName = attrs['rmapsGetElementName'] or 'element'
-    obj[elementPropName] = element
+    elementName = attrs['rmapsGetElement']
+    scope[elementName] = element

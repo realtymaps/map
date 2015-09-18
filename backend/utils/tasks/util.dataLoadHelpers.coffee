@@ -46,6 +46,7 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
       destDataTable()
       .select('rm_raw_id')
       .where(batch_id: subtask.batch_id)
+      .where(data_source_id: subtask.data_source_id)
       .whereNull('deleted')
       .limit(1)
       .then (row) ->
@@ -57,6 +58,7 @@ recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
         # will resolve to a count of affected rows
         destDataTable()
         .whereNot(batch_id: subtask.batch_id)
+        .where(data_source_id: subtask.data_source_id)
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
   .then (deletedCount=0) ->

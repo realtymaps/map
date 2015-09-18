@@ -163,7 +163,6 @@
     "should": "^4.0.4",
     "shp2jsonx": "^1.0.1",
     "sinon": "1.x.x",
-    "source-map": "^0.1.43",
     "split": "^0.3.3",
     "sprintf-js": "^1.0.2",
     "stack-trace": "0.0.9",
