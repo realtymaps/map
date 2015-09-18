@@ -17,6 +17,7 @@ conf = require './conf'
 require './markup'
 ignore = require 'ignore'
 
+
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
@@ -66,6 +67,15 @@ browserifyTask = (app, watch = false) ->
         browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
         .on 'error', ->
           process.exit(1)
+      #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
+      #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post
+      #  coffeelint.
+      .transform('coffeeify')
+      .transform('browserify-ngannotate', { "ext": ".coffee" })
+      .transform('jadeify')
+      .transform('stylusify')
+      .transform('brfs')
+      # .transform("istanbul-ignoreify", { global: true })
 
     bundle = (stream) ->
       startTime = process.hrtime()

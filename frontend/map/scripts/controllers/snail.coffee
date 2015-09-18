@@ -15,7 +15,7 @@ _setContextValues = null
 
 module.exports = app.controller 'rmapsSnailCtrl',
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-   rmapsRenderPdfBlob, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinner) ->
+  rmapsRenderPdfBlob, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinner) ->
 
     $scope.data = data
     $scope.rmapsdocumentTemplates = rmapsdocumentTemplates

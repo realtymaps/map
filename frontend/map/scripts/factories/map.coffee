@@ -22,9 +22,9 @@ _wrapGeomPointJson = (obj) ->
 ###
 app.factory 'rmapsMap',
   ($log, $timeout, $q, $rootScope, $http, rmapsBaseMap,
-    rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-    rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering) ->
+  rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
+  rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering) ->
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?

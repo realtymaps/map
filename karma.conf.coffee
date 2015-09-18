@@ -1,5 +1,6 @@
 
 pak =  require('./package.json')
+istanbul = require('istanbul')
 
 module.exports = (config) ->
   config.set
@@ -23,17 +24,10 @@ module.exports = (config) ->
 
     browserify:
       debug: true
-      ### TODO MAIN Problem HERE as soon as I start mucking with the transform all hell break loose and specs no longer work
-       WTF!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-       Working towards this via https://github.com/karma-runner/karma-coverage/issues/16
-
-       note @weikinhuang comment on fslookup , leads to here
-       https://github.com/karma-runner/karma-coverage/blob/master/docs/configuration.md#sourcestore
-
-
-      ###
-      # transform: ['coffeeify', 'brfs', ["browserify-istanbul",{"ignore": ["**/bower_components/**","**/node_modules/**","**/spec/**"]}]]
+      #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
+      # THEREFORE it must go in the gulp task
+      # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
+      transform: ['coffeeify', 'brfs', ["browserify-istanbul",{ global: true, "ignore": ["**/spec/**"]}]]
       # extensions: ['.coffee', '.js']
 
 
@@ -44,8 +38,8 @@ module.exports = (config) ->
     coverageReporter:
       #https://github.com/karma-runner/karma-coverage/blob/master/docs/configuration.md#sourcestore
       reporters:[
-        { type : 'html', dir : '_public/coverage/', subdir: "application", sourceStore : require('istanbul').Store.create('fslookup')}
-        { type : 'cobertura', dir : '_public/coverage/', subdir: "application", sourceStore : require('istanbul').Store.create('fslookup')}
+        { type : 'html', dir : '_public/coverage/', subdir: "application", sourceStore : istanbul.Store.create('fslookup')}
+        { type : 'cobertura', dir : '_public/coverage/', subdir: "application", sourceStore : istanbul.Store.create('fslookup')}
       ]
 
   # list of files / patterns to load in the browser
@@ -97,7 +91,7 @@ module.exports = (config) ->
   # - config.LOG_WARN
   # - config.LOG_INFO
   # - config.LOG_DEBUG
-    logLevel: config.LOG_WARN
+    logLevel: config.LOG_INFO
 
   # enable / disable watching file and executing tests whenever any file changes
     autoWatch: false
