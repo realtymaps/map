@@ -3,6 +3,7 @@ tables = require '../../config/tables'
 Promise = require 'bluebird'
 jobQueue = require '../util.jobQueue'
 validation = require '../util.validation'
+validatorBuilder = require '../../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
@@ -36,7 +37,7 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
       query = query.whereNull('rm_valid')
     query.as(asPrefix)
 
-    
+
 recordChangeCounts = (rawDataSuffix, destDataTable, subtask) ->
   Promise.try () ->
     if subtask.data.markOtherRowsDeleted
@@ -141,40 +142,79 @@ _getUsedInputFields = (validationDefinition) ->
 
 
 getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
-  tables.config.dataNormalization()
-  .where
-    data_source_id: dataSourceId
-    data_type: dataType
-  .orderBy('list')
-  .orderBy('ordering')
-  .then (validations=[]) ->
-    validationMap = {}
-    context = vm.createContext(validators: validation.validators)
-    for validationDef in validations
-      validationMap[validationDef.list] ?= []
-      validationDef.transform = vm.runInContext(validationDef.transform, context)
-      validationMap[validationDef.list].push(validationDef)
-    # pre-calculate the keys that are grouped for later use
-    usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
-    diffExcludeKeys = []
-    if dataSourceType == 'mls'
-      for groupName, validationList of validationMap
-        for validationDefinition in validationList
-          # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
-          # fields for those don't have to be explicitly reused
-          if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
-            usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
-          else if validationDefinition.output == 'days_on_market'
-            # explicitly exclude these keys from diff, because they are derived values based on date
-            diffExcludeKeys = _getUsedInputFields(validationDefinition)
-    else if dataSourceType == 'county'
-      for groupName, validationList of validationMap
-        for validationDefinition in validationList
-          # generally, don't count the 'base' fields as being used, but we do for 'address', as the source
-          # fields for those don't have to be explicitly reused
-          if validationDefinition.list != 'base' || validationDefinition.output == 'address'
-            usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
-    return {validationMap: validationMap, usedKeys: usedKeys, diffExcludeKeys: diffExcludeKeys}
+  if dataSourceType == 'mls'
+    dataSourcePromise = Promise.try () ->
+      tables.config.mls()
+      .where
+        id: dataSourceId
+      .then (mlsConfig) ->
+        mlsConfig.data_rules
+  else if dataSourceType == 'county'
+    dataSourcePromise = Promise.try() ->
+      # Query for county/corelogic global rules?
+
+  dataSourcePromise
+  .then (global_rules) ->
+    tables.config.dataNormalization()
+    .where
+      data_source_id: dataSourceId
+      data_type: dataType
+    .orderBy('list')
+    .orderBy('ordering')
+    .then (validations=[]) ->
+      validationMap = {}
+      for validationDef in validations
+        validationMap[validationDef.list] ?= []
+
+        # If transform was overridden, use it directly
+        if !_.isEmpty validationDef.transform
+          if !context
+            context = vm.createContext(validators: validation.validators)
+          validationDef.transform = vm.runInContext(validationDef.transform, context)
+
+        # Most common case, generate the transform from the rule configuration
+        else
+          if validationDef.list == 'base'
+            rule = validatorBuilder.buildBaseRule validationDef
+          else
+            rule = validatorBuilder.buildRetsRule validationDef
+
+          transforms = rule.getTransform global_rules
+          if !_.isArray transforms
+            transforms = [ transforms ]
+
+          validationDef.transform = _.map transforms, (transform) ->
+            # If the transform returned was a string treat it like an override
+            #   - note: it would be nice to eliminate this, the only obstacle is 'days_on_market' which has nested validator calls
+            if _.isString transform
+              if !context
+                context = vm.createContext(validators: validation.validators)
+              validationDef.transform = vm.runInContext(validationDef.transform, context)
+            else
+              validation.validators[transform.name](transform.options)
+
+        validationMap[validationDef.list].push(validationDef)
+      # pre-calculate the keys that are grouped for later use
+      usedKeys = ['rm_raw_id', 'rm_valid', 'rm_error_msg'] # exclude these internal-only fields from showing up as "unused"
+      diffExcludeKeys = []
+      if dataSourceType == 'mls'
+        for groupName, validationList of validationMap
+          for validationDefinition in validationList
+            # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
+            # fields for those don't have to be explicitly reused
+            if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
+              usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
+            else if validationDefinition.output == 'days_on_market'
+              # explicitly exclude these keys from diff, because they are derived values based on date
+              diffExcludeKeys = _getUsedInputFields(validationDefinition)
+      else if dataSourceType == 'county'
+        for groupName, validationList of validationMap
+          for validationDefinition in validationList
+            # generally, don't count the 'base' fields as being used, but we do for 'address', as the source
+            # fields for those don't have to be explicitly reused
+            if validationDefinition.list != 'base' || validationDefinition.output == 'address'
+              usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
+      return {validationMap: validationMap, usedKeys: usedKeys, diffExcludeKeys: diffExcludeKeys}
 # memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
 getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
 

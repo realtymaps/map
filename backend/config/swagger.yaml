@@ -610,7 +610,6 @@ definitions:
     type: 'object'
     required:
       - config
-      - transform
     properties:
       data_source_id:
         type: string
@@ -624,8 +623,6 @@ definitions:
         type: boolean
       config:
         type: object
-      transform:
-        type: string
   MlsPropertyData:
     type: 'object'
     properties:

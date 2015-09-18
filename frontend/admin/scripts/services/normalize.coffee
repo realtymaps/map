@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 Promise = require 'bluebird'
+_ = require 'lodash'
 
 app.factory 'rmapsNormalizeService', (Restangular) ->
 
@@ -12,7 +13,7 @@ app.factory 'rmapsNormalizeService', (Restangular) ->
       @endpoint = Restangular.all(mlsConfigAPI).one(@data_source_id).all('rules')
 
     _formatRule: (rule) =>
-      config: rule.config
+      config: _.omit rule.config, (v) -> !v? || v == ''
       transform: rule.transform
       output: rule.output
       input: JSON.stringify(rule.input) # ensure strings are quoted
