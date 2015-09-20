@@ -18,7 +18,7 @@ require './markup'
 ignore = require 'ignore'
 
 
-browserifyTask = (app, watch = false, cover = false ) ->
+browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
   inputGlob = [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
@@ -75,8 +75,6 @@ browserifyTask = (app, watch = false, cover = false ) ->
       .transform('jadeify')
       .transform('stylusify')
       .transform('brfs')
-    if cover
-      b.transform "browserify-istanbul",{"ignore": ['**/html/**', '**/styles/**']}
 
     bundle = (stream) ->
       startTime = process.hrtime()
@@ -100,8 +98,6 @@ browserifyTask = (app, watch = false, cover = false ) ->
 
 gulp.task 'browserify', -> browserifyTask 'map'
 gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
-
-gulp.task 'browserifyCover', -> browserifyTask 'map', false, true
 
 ###
 NOTE the watches here are the odd ball of all the gulp watches we have.

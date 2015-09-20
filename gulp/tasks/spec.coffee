@@ -20,5 +20,4 @@ gulp.task 'openCoverage', ->
     uri: 'http://localhost:8085/coverage/application/index.html'
     app: 'Google Chrome' #osx , linux: google-chrome, windows: chrome
 
-
-gulp.task 'rcoverage', gulp.series 'browserifyCover', 'frontendSpec', 'openCoverage'
+gulp.task 'rcoverage', gulp.series 'vendor', 'frontendSpec', 'openCoverage'
