@@ -76,7 +76,7 @@ app.factory 'rmapsMap',
           @redraw()
 
         @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
-        @layerFormatter = rmapsLayerFormatters(@)
+        @layerFormatter = rmapsLayerFormatters
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle

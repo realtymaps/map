@@ -85,7 +85,6 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
           prop.isSaved = !prop.isSaved
           unless prop.notes
             delete _savedProperties[rm_property_id]
-            #main dependency is layerFormatters.isVisible
         model.savedDetails = prop
 
         if !model.rm_status
