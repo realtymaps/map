@@ -11,8 +11,18 @@ beforeEach ->
         $browser.deferredFns.length > 0
 
       $delegate
+    $provide.decorator '$httpBackend', ($delegate) ->
 
-  .service 'digestor', ($rootScope, $timeout, $log) ->
+      $delegate.hasPendingRequests = ->
+        pending = false
+        try
+          $delegate.verifyNoOutstandingRequest()
+        catch
+          pending = true
+        pending
+      $delegate
+
+  .service 'digestor', ($rootScope, $timeout, $log, $httpBackend) ->
     digest: (scope = $rootScope, fn = ->) ->
       if _.isFunction scope
         fn = scope
@@ -24,3 +34,7 @@ beforeEach ->
 
       fn() if fn?
       scope.$digest() unless scope.$$phase
+
+      if $httpBackend.hasPendingRequests()
+        # $log.debug "FLUSHING $httpBackend"
+        $httpBackend.flush()

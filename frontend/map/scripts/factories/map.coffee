@@ -189,13 +189,13 @@ app.factory 'rmapsMap',
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManager.getFilters()
-        $log.debug filters
+        # $log.debug filters
         if !/status/.test(filters)
           @clearFilterSummary()
           return promises
 
-        $log.debug "hash: #{@hash}"
-        $log.debug "mapState: #{@mapState}"
+        # $log.debug "hash: #{@hash}"
+        # $log.debug "mapState: #{@mapState}"
         p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'

@@ -11,13 +11,14 @@ describe "rmapsMap factory", ->
     @mocks =
       options:
         json:
-          center: _.extend Point(latitude: 26.221501806466513, longitude: -81.80125951766968), zoom: 3
+          center: _.extend Point(latitude: 26.221501806466513, longitude: -81.80125951766968), zoom: mockRoutes.zoom
 
       zoomThresholdMilli: 1000
 
-    inject ($rootScope, rmapsMap, rmapsMainOptions, $httpBackend, digestor) =>
+    inject ($rootScope, rmapsMap, rmapsMainOptions, $httpBackend, digestor, rmapsMapToggles) =>
       @$rootScope = $rootScope
       $rootScope.silenceRmapsControls = true
+      @rmapsMapToggles = rmapsMapToggles
       @digestor = digestor
       @ctor = rmapsMap
       @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
@@ -56,10 +57,17 @@ describe "rmapsMap factory", ->
           promises.should.be.ok
           promises.length.should.be.equal 1
 
-        xit 'has mocked cluserOrDefault response', (done) ->
-          promises = @subject.drawFilterSummary(false)
+        it 'has mocked geojsonPolys response', (done) ->
           @subject.hash = mockRoutes.hash
-          promises[0].then (data) ->
-            data.should.be.equal mockRoutes.clusterOrDefault.response
+          @subject.mapState = mockRoutes.mapState
+          @subject.scope.Toggles = @rmapsMapToggles()
+            # showResults: true
+          promises = @subject.drawFilterSummary(true)
+          @digestor.digest()
+          console.log promises[0]
+          promises[0].then ({data}) ->
+            angular.equals(data,mockRoutes.geojsonPolys.response).should.equal true
             done()
+          promises[0].catch ->
+            should.fail()
           @digestor.digest()
