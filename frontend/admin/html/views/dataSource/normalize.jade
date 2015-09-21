@@ -381,13 +381,7 @@
         .col-md-2
           .btn-group
             .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="false" ng-change="updateRule()") Simple
-            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true") Advanced
+            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true" ng-change="updateRule()") Advanced
         .col-md-10
-          textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
-
-    .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
-      .row.advanced
-        .col-md-2
-        .col-md-10
-          textarea.transform(ng-bind="JSON.stringify(fieldData.current.input)" disabled)
-
+          textarea.transform(ng-model="fieldData.current.transform" ng-show="fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
+          textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" disabled)

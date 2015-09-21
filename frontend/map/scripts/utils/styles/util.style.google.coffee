@@ -47,20 +47,32 @@ module.exports = styles: [
         ]
     },
     {
-        'featureType': 'landscape',
-        'elementType': 'all',
-        'stylers': [
+        "featureType": "landscape",
+        "elementType": "all",
+        "stylers": [
             {
-                'color': '#f2f2f2'
+                "color": "#f2efea"
             }
         ]
     },
     {
-        'featureType': 'landscape',
-        'elementType': 'geometry.fill',
-        'stylers': [
+        "featureType": "landscape",
+        "elementType": "geometry.fill",
+        "stylers": [
             {
-                'color': '#f8f8f8'
+                "color": "#f2efea"
+            }
+        ]
+    },
+    {
+        "featureType": "landscape",
+        "elementType": "geometry.stroke",
+        "stylers": [
+            {
+                "color": "#afafaf"
+            },
+            {
+                "lightness": "25"
             }
         ]
     },
@@ -212,32 +224,11 @@ module.exports = styles: [
         ]
     },
     {
-        'featureType': 'water',
-        'elementType': 'all',
-        'stylers': [
+        "featureType": "water",
+        "elementType": "all",
+        "stylers": [
             {
-                'color': '#6e769e'
-            },
-            {
-                'visibility': 'on'
-            }
-        ]
-    },
-    {
-        'featureType': 'water',
-        'elementType': 'geometry.fill',
-        'stylers': [
-            {
-                'color': '#a8d9ef'
-            }
-        ]
-    },
-    {
-        'featureType': 'water',
-        'elementType': 'labels.text.stroke',
-        'stylers': [
-            {
-                'visibility': 'off'
+                "color": "#5787b1"
             }
         ]
     }
