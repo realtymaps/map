@@ -188,14 +188,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
             transforms = [ transforms ]
 
           validationDef.transform = _.map transforms, (transform) ->
-            # If the transform returned was a string treat it like an override
-            #   - note: it would be nice to eliminate this, the only obstacle is 'days_on_market' which has nested validator calls
-            if _.isString transform
-              if !context
-                context = vm.createContext(validators: validation.validators)
-              validationDef.transform = vm.runInContext(validationDef.transform, context)
-            else
-              validation.validators[transform.name](transform.options)
+            validation.validators[transform.name](transform.options)
 
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use

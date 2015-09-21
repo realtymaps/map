@@ -77,11 +77,8 @@ baseRules =
   days_on_market:
     alias: 'Days on Market'
     required: true
+    type: 'days_on_market'
     input: []
-    getTransform: () ->
-      '[validators.pickFirst({criteria: validators.integer()})]'
-    getTransformString: () ->
-      '[validators.pickFirst({criteria: validators.integer()})]'
     valid: () ->
       @input[0] || @input[1]
 
