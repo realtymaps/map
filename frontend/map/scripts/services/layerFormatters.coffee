@@ -11,10 +11,6 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
       directive: 0
       control: 0
 
-  _getPixelFromLatLng = (latLng, map) ->
-    point = map.getProjection().fromLatLngToPoint(latLng)
-    point
-
   _isVisible = (scope, model, requireFilterModel=false) ->
     filterSummary = scope.map.markers.filterSummary
     if !model || requireFilterModel && !filterSummary[model.rm_property_id]
@@ -70,7 +66,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
     getStyle : (feature, layerName) ->
       return {} unless feature
-      if feature.savedDetails?.isSaved
+      if feature?.savedDetails?.isSaved
         status = 'saved'
       else if feature?.rm_status?
         status = feature?.rm_status
@@ -78,7 +74,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
         status = 'default'
 
       colors = if feature?.isMousedOver then hoverColors else normalColors
-      color = colors[status]
+      color = colors[status] || colors['default']
 
       weight: if layerName == 'parcelBase' then _parcelBaseStyle.weight else 2
       opacity: 1

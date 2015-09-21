@@ -1,20 +1,13 @@
-Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 describe "rmapsLayerFormatters", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    @mocks =
-      options:
-        json:
-          center: _.extend Point(latitude: 90.0, longitude: 89.0), zoom: 3
-
-      zoomThresholdMilli: 1000
-
-    inject ($rootScope,  rmapsLayerFormatters) =>
+    inject ($rootScope,  rmapsLayerFormatters, rmapsstylusVariables) =>
       @$rootScope = $rootScope
       @subject = rmapsLayerFormatters
+      @rmapsstylusVariables = rmapsstylusVariables
 
 
   it 'subject exists', ->
@@ -117,3 +110,76 @@ describe "rmapsLayerFormatters", ->
           expect(obj).to.be.ok
           expect(obj.type).to.be.equal 'div'
           expect(obj.html).to.an 'string'
+
+    describe 'Parcels', ->
+
+      describe 'labelFromStreetNum', ->
+        before ->
+          @subject = @subject.Parcels.labelFromStreetNum
+
+        it 'model with nothin', ->
+          model = @subject {}
+          model.markerType.should.be.equal 'streetNum'
+          model.zIndex.should.be.equal 1
+          expect(model.icon.iconSize).to.include.members [10, 10]
+          expect(model.icon.html).to.be.equal "<span class='address-label'>#{String.orNA undefined}</span>"
+
+        it 'model with streetNum', ->
+          model = @subject street_address_num: 12
+          model.markerType.should.be.equal 'streetNum'
+          model.zIndex.should.be.equal 1
+          expect(model.icon.iconSize).to.include.members [10, 10]
+          expect(model.icon.html).to.be.equal "<span class='address-label'>12</span>"
+
+      describe 'getStyle', ->
+        before ->
+          @subject = @subject.Parcels.getStyle
+
+        describe 'w/o layerName', ->
+          it 'undefined feature', ->
+            (@subject undefined).should.be.ok
+
+          it 'feature saved', ->
+            style = @subject {savedDetails:isSaved: true}
+            style.should.be.ok
+            style.weight.should.be.equal 2
+            style.color.should.be.equal @rmapsstylusVariables['$rm-highlight-yellow']
+            style.fillColor.should.be.equal @rmapsstylusVariables['$rm-highlight-yellow']
+            style.fillOpacity.should.be.equal .75
+
+          describe 'feature not saved', ->
+            it 'w no status', ->
+              style = @subject {savedDetails:isSaved: false}
+              style.should.be.ok
+              style.weight.should.be.equal 2
+              style.color.should.be.equal 'transparent'
+              style.fillColor.should.be.equal 'transparent'
+              style.fillOpacity.should.be.equal .75
+
+            it 'invalid status', ->
+              style = @subject(
+                rm_status: 'crap'
+                savedDetails:
+                  isSaved: false
+              )
+
+              style.should.be.ok
+              style.weight.should.be.equal 2
+              style.color.should.be.equal 'transparent'
+              style.fillColor.should.be.equal 'transparent'
+              style.fillOpacity.should.be.equal .75
+
+            it 'sold', ->
+              style = @subject(
+                rm_status: 'recently sold'
+                savedDetails:
+                  isSaved: false
+              )
+
+              style.should.be.ok
+              style.weight.should.be.equal 2
+              style.color.should.be.equal @rmapsstylusVariables.$rm_sold
+              style.fillColor.should.be.equal @rmapsstylusVariables.$rm_sold
+              style.fillOpacity.should.be.equal .75
+
+        describe 'w/ layerName', ->
