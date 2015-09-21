@@ -5,6 +5,7 @@ beforeEach ->
 
   angular.module('rmapsCommon')
   .config ($provide) ->
+    $provide.value('$log', console)
     $provide.decorator '$timeout', ($delegate, $browser) ->
       $delegate.hasPendingTasks = ->
         $browser.deferredFns.length > 0
