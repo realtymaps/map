@@ -1,88 +1,49 @@
 _ = require 'lodash'
-retsHelpers = require '../utils/util.retsHelpers'
+dataSourceService = require '../services/service.dataSource'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require '../config/logger'
-mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
+
+
+
+mlsConfigService = require '../services/service.mls_config'
 
 fs = require 'fs'
 
 module.exports =
-  getDatabaseList:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getDatabaseList mlsConfig
-          .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
-
-  getTableList:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getTableList mlsConfig, req.params.databaseId
-          .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
-
   getColumnList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        if !mlsConfig
-          next new ExpressResponse
-            alert:
-              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
-            404
-        else
-          retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
-          .then (list) ->
+      # mlsConfigService.getById(req.params.mlsId)
+      # .then (mlsConfig) ->
+      #   if !mlsConfig
+      #     next new ExpressResponse
+      #       alert:
+      #         msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
+      #       404
+      #   else
+      dataSourceService.getColumnList req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
+      .then (list) ->
 
-            # console #### remove 
-            fs.writeFile '/tmp/ColumnList.txt', "mlsConfig: #{JSON.stringify(mlsConfig)}, databaseId: #{req.params.databaseId}, id: #{req.params.tableId}\n", (err) ->
-              if err
-                console.log "#### lookuptypes error:"
-                console.log err
-            for l in list
-              fs.appendFile '/tmp/ColumnList.txt', "#{JSON.stringify(l)}\n", (err) ->
-                if err
-                  console.log "#### lookuptypes error:"
-                  console.log err
+        # console #### remove 
+        fs.writeFile '/tmp/DataSourceColumnList.txt', "dataSourceId: #{req.params.dataSourceId}, dataSourceType: #{req.params.dataSourceType}, dataListType: #{req.params.dataListType}\n", (err) ->
+          if err
+            console.log "#### lookuptypes error:"
+            console.log err
+        for l in list
+          fs.appendFile '/tmp/DataSourceColumnList.txt', "#{JSON.stringify(l)}\n", (err) ->
+            if err
+              console.log "#### lookuptypes error:"
+              console.log err
 
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+        next new ExpressResponse(list)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
 
   getDataDump:
     method: 'get'

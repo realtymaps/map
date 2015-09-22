@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 Promise = require 'bluebird'
-_ = require 'lodash'
 
 app.factory 'rmapsNormalizeService', (Restangular) ->
 
@@ -10,6 +9,13 @@ app.factory 'rmapsNormalizeService', (Restangular) ->
   class NormalizeService
 
     constructor: (@data_source_id, @data_source_type, @data_type) ->
+      console.log "#### NormalizeService, data_source_id:"
+      console.log @data_source_id
+      console.log "#### NormalizeService, data_source_type:"
+      console.log @data_source_type
+      console.log "#### NormalizeService, data_type:"
+      console.log @data_type
+
       @endpoint = Restangular.all(mlsConfigAPI).one(@data_source_id).all('rules')
 
     _formatRule: (rule) =>
@@ -22,6 +28,7 @@ app.factory 'rmapsNormalizeService', (Restangular) ->
       data_type: @data_type
 
     getRules: () ->
+      console.log "#### NormalizeService.getRules()"
       @endpoint.getList()
 
     moveRule: (rule, listFrom, listTo, idx) ->

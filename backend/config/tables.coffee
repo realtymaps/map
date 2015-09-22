@@ -25,6 +25,8 @@ module.exports =
   config:
     dataNormalization: 'users.data_normalization_config'
     mls: 'users.mls_config'
+    dataSource: 'users.data_source_fields'
+    dataSourceLookups: 'users.data_source_lookups'
   propertyData:
     listing: 'properties.normal_listing_data'
     tax: 'properties.normal_tax_data'

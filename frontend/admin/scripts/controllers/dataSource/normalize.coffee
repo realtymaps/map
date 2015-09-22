@@ -112,6 +112,10 @@ app.controller 'rmapsNormalizeCtrl',
     $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
 
   $scope.loadLookups = (field) ->
+    console.log "#### loadLookups()"
+    console.log "#### loadLookups(), field:"
+    console.log field.plain()
+
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
       if field._lookups.length <= 50
@@ -120,6 +124,10 @@ app.controller 'rmapsNormalizeCtrl',
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
+
+        console.log "#### lookups:"
+        console.log lookups.plain()
+
         $scope.fieldData.current._lookups = field._lookups = lookups
         if lookups.length <= 50
           $scope.fieldData.current.lookups = lookups
@@ -251,6 +259,10 @@ app.controller 'rmapsNormalizeCtrl',
         parseRules(rules)
         rmapsMlsService.getColumnList(config.id, config.listing_data.db, config.listing_data.table)
       .then (fields) ->
+
+        console.log "#### loadMls(), fields:"
+        console.log fields
+
         parseFields(fields)
 
   $scope.getMlsList = () ->
