@@ -32,7 +32,7 @@ analyzeValue = (value, fullJson=false) ->
   else if result.type == 'string'
     result.details = util.inspect(value, depth: null)
   else if result.type == 'undefined'
-    # do nothing
+    ### do nothing ###
   else # boolean, number, or symbol
     result.details = ''+value
   if fullJson

@@ -4,7 +4,6 @@ routes = require '../../../../common/config/routes.backend.coffee'
 module.exports = ->
   try
     _cartodb = JSON.parse http.get routes.config.cartodb
-  catch
 
   ret =  {}
 

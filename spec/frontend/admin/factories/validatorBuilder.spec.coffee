@@ -35,7 +35,7 @@ describe 'rmapsAdminApp.validatorBuilder', ->
        transform: '[validators.rm_property_id({})]'
       ,
        field: @validatorBuilder.buildBaseRule {"output": "days_on_market"}
-       transform: '[validators.pickFirst({criteria: validators.integer()})]'
+       transform: '[validators.days_on_market({})]'
       ,
        field: @validatorBuilder.buildBaseRule {"output": "address"}
        transform: '[validators.address({})]'

@@ -20,5 +20,5 @@ then
   gulp $GULP_COLOR prod
   coffee ./backend/server.coffee
 else
-  gulp $GULP_COLOR
+  gulp $GULP_COLOR $GULP_TARGET
 fi
