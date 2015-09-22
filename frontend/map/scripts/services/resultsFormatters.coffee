@@ -4,7 +4,7 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
-app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmapsParcelEnums,
+app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmapsParcelEnums,
   rmapsGoogleService, rmapsProperties, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
   rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
 
@@ -256,7 +256,7 @@ app.factory 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
 
       if not @mapCtrl.scope.results.length # only do this once (per map bound)
         _.each @filterSummaryInBounds, (summary) =>
-          if @mapCtrl.layerFormatter.isVisible(summary)
+          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
             @mapCtrl.scope.results[summary.rm_property_id] = summary
 
       @mapCtrl.scope.resultsLimit += amountToLoad

@@ -35,6 +35,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
     returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
     route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
+    $log.debug(route) if window.isTest
     $http.get(route, cache: cache)
 
   _getFilterSummary = (hash, mapState, returnType, filters='', cache = true, throttler = _filterThrottler) ->
@@ -85,7 +86,6 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
         prop.isSaved = !prop.isSaved
         unless prop.notes
           delete _savedProperties[rm_property_id]
-          #main dependency is layerFormatters.isVisible
       model.savedDetails = prop
 
       if !model.rm_status

@@ -1,4 +1,7 @@
 
+pak =  require('./package.json')
+istanbul = require('istanbul')
+
 module.exports = (config) ->
   config.set
   # base path that will be used to resolve all patterns (eg. files, exclude)
@@ -16,16 +19,37 @@ module.exports = (config) ->
       'spec/fixtures/*.html': ['html2js']
       'spec/fixtures/*.json': ['html2js']
       'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee': ['coffee']
-    #'_public/*.js': ['coverage']
+      'frontend/**/scripts/**/*.coffee': ['browserify']
     }
 
     browserify:
       debug: true
+      #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
+      # THEREFORE it must go in the gulp task
+      # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs', ["browserify-istanbul",{ "ignore": ["**/spec/**"]}]]
+      # extensions: ['.coffee', '.js']
 
+
+      ### PROBLEM 2
+        17 09 2015 16:44:06.455:ERROR [coverage]: [TypeError: Cannot read property 'text' of undefined]
+        see: https://github.com/karma-runner/karma-coverage/issues/157
+      ###
     coverageReporter:
+      #https://github.com/karma-runner/karma-coverage/blob/master/docs/configuration.md#sourcestore
       reporters:[
-        { type : 'html', dir : '_public/coverage/', subdir: "application" }
-        { type : 'cobertura', dir : '_public/coverage/', subdir: "application" }
+        {
+          type : 'html'
+          dir : '_public/coverage/'
+          subdir: "application"
+          sourceStore : istanbul.Store.create('fslookup')
+        }
+        {
+          type : 'cobertura'
+          dir : '_public/coverage/'
+          subdir: "application"
+          sourceStore : istanbul.Store.create('fslookup')
+        }
       ]
 
   # list of files / patterns to load in the browser
@@ -33,10 +57,7 @@ module.exports = (config) ->
       'node_modules/phantomjs-polyfill/bind-polyfill.js'
       '_public/scripts/vendor.js'
       '_public/styles/vendor.css'
-      '_public/scripts/map.bundle.js'
-      '_public/scripts/map.templates.js'
-      '_public/scripts/admin.bundle.js'
-      '_public/scripts/admin.templates.js'
+      'frontend/**/scripts/**/*.coffee'
       'bower_components/angular-google-maps/spec/coffee/helpers/google-api-mock.coffee'
       'spec/fixtures/*.html'
       'spec/fixtures/*.json'
@@ -57,7 +78,7 @@ module.exports = (config) ->
   # NOTE , TODO 'html' reporter use if you want to hit the karma jasmine runner (frequently causes karma to blow up at the end of run),
   # test results reporter to use
   # possible values: 'dots', 'progress', 'mocha'
-    reporters: ['mocha']
+    reporters: ['mocha', 'coverage']
 
   # htmlReporter:
   #   middlePathDir: "chrome"
