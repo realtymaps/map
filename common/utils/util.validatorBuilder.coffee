@@ -14,22 +14,41 @@ ruleDefaults =
   valid: () ->
     !@required || @input
 
-  # Cleans up the config and assigns a new transform unless it was edited manually
-  updateTransform: (rule) ->
-    @config = _.omit @config, _.isNull
-    @config = _.omit @config, _.isUndefined
-    @config = _.omit @config, (v) -> v == ''
-    if !@config?.advanced
-      @transform = @getTransform()
+  getOptions: () ->
+    _.pick @config, (v, k) -> ['advanced', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
 
-  getTransform: () ->
-    @getTransformString @type, @config
+  getTransform: (globalOpts = {}) ->
+    transformArr = []
 
-  getTransformString: (type, vOptions = {}) ->
-    type = type.name || type
-    vOptions = _.omit vOptions, 'advanced'
-    vOptionsStr = JSON.stringify(vOptions)
-    "validators.#{type}(#{vOptionsStr})"
+    # Transforms that should precede type-specific logic
+    if globalOpts.nullString
+      transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
+
+    # Primary transform
+    transformArr.push name: (@type?.name || @type), options: @getOptions()
+
+    # Transforms that should occur after type-specific logic
+    if @config.nullZero
+      transformArr.push name: 'nullify', options: value: 0
+    if @config.nullEmpty
+      transformArr.push name: 'nullify', options: value: ''
+    if @config.nullNumber
+      transformArr.push name: 'nullify', options: values: _.map @config.nullNumber, Number
+    if @config.nullString
+      transformArr.push name: 'nullify', options: values: _.map @config.nullString, String
+
+    transformArr
+
+  getTransformString: (globalOpts = {}) ->
+    transforms = @getTransform(globalOpts)
+    if !_.isArray transforms
+      transforms = [ transforms ]
+    strs = _.map transforms, @validatorString
+    '[' + strs.join(',') + ']'
+
+  validatorString: (validator) ->
+    vOptionsStr = JSON.stringify(validator.options)
+    "validators.#{validator.name}(#{vOptionsStr})"
 
 # Base/filter rule definitions
 baseRules =
@@ -58,9 +77,8 @@ baseRules =
   days_on_market:
     alias: 'Days on Market'
     required: true
+    type: 'days_on_market'
     input: []
-    getTransform: () ->
-      'validators.pickFirst({criteria: validators.integer()})'
     valid: () ->
       @input[0] || @input[1]
 
@@ -105,20 +123,20 @@ baseRules =
     alias: 'Status'
     required: true
     getTransform: () ->
-      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+      name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
   status_display:
     alias: 'Status Display'
     required: true
     group: 'general'
     getTransform: () ->
-      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+      name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
   substatus:
     alias: 'Sub-Status'
     required: true
     getTransform: () ->
-      @getTransformString 'map', map: @config.map ? {}, passUnmapped: true
+      name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
   close_date:
     alias: 'Close Date'
@@ -166,14 +184,13 @@ retsRules =
       name: 'boolean'
       label: 'Yes/No'
     getTransform: () ->
-      @getTransformString 'nullify', @config
+      name: 'nullify', options: @getOptions()
 
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, defaults, ruleDefaults
-  rule.updateTransform()
 
 buildRetsRule = (rule) ->
-  _buildRule rule, retsRules[rule.DataType]
+  _buildRule rule, retsRules[rule.config.DataType]
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'

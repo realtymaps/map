@@ -97,6 +97,8 @@ app.controller 'rmapsNormalizeCtrl',
         rule.output = rule.LongName
         addRule rule, 'unassigned'
 
+      # It is important to save the data type so a transform can be regenerated entirely from the config
+      rule.config = _.defaults rule.config ? {}, DataType: field.DataType
       validatorBuilder.buildRetsRule rule
       true
 
@@ -176,7 +178,6 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    field.updateTransform()
     updateAssigned(field, removed)
     saveRule(field)
 
@@ -191,7 +192,10 @@ app.controller 'rmapsNormalizeCtrl',
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    field.updateTransform()
+    if field.config.advanced && !field.transform
+      field.transform = field.getTransformString $scope.mlsData.current.data_rules
+    else
+      field.transform = null
     $scope.saveRuleDebounced()
 
   saveRule = (rule) ->
@@ -230,6 +234,10 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.updateDataRules = _.debounce () ->
     rmapsMlsService.update $scope.mlsData.current.id, data_rules: $scope.mlsData.current.data_rules
   , 2000
+
+  $scope.getTransform = () ->
+    if $scope.fieldData.current
+      $scope.fieldData.current.getTransformString $scope.mlsData.current.data_rules
 
   # Data service. Initialized once an MLS is selected
   normalizeService = null
