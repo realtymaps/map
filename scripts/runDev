@@ -16,8 +16,8 @@ do
         --skip-dbsync)
             export SKIP_DBSYNC=true
             ;;
-        --bare-server)
-            export BARE_EXPRESS_SERVER=true
+        --gulp-*)
+            export GULP_TARGET="${!i:7}"
             ;;
         --skip-nginx)
             export SKIP_NGINX=true
