@@ -302,7 +302,7 @@ app.factory 'rmapsMap',
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
 
-        if @scope.selectedResult? and @scope.selectedResult.rm_property_id?
+        if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
