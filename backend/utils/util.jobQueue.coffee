@@ -79,7 +79,7 @@ queueReadyTasks = () -> Promise.try () ->
         sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
         .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
           tables.jobQueue.taskHistory(this)
-          .select()
+          .select(1)
           .where(current: true)
           .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
           .where () ->
@@ -217,7 +217,7 @@ queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, repla
         # return 0 to indicate we queued 0 subtasks
         logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
-      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
+      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
@@ -435,6 +435,7 @@ _handleSuccessfulTasks = (transaction=null) ->
   .where(status: 'running')
   .whereNotExists () ->
     tables.jobQueue.currentSubtasks(this)
+    .select(1)
     .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
       this

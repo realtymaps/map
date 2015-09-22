@@ -75,11 +75,12 @@ checkFtpDrop = (subtask) ->
       # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
       # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
       # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
+      deletes = if dates[TAX]? then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
       jobQueue.transaction (transaction) ->
         taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
         deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
         finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", null, true)
-        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deleteUntouchedRows: dates[TAX]?}, true)
+        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deletes: deletes}, true)
         dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'corelogic_saveProcessDates', dates: dates, true)
         Promise.join ftpEnd, taxSubtasks, deedSubtasks, finalizePrep, activate, dates, () ->  # empty handler
 
@@ -97,7 +98,9 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
     countDataList.push
       rawTableSuffix: rawTableSuffix
       dataType: type
-      markOtherRowsDeleted: (type == TAX)  # tax data is full-dump, deed data is incremental
+      deletes: if type == TAX then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.INDICATED  # tax data is full-dump, deed data is incremental
+      subset:
+        fips_code: file.name.slice(3, -4)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler

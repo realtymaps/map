@@ -171,7 +171,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
       deed: normalizedData.deed || []
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
-    deleted: null
+    deleted: if dataType == 'deed' && base.update_type == 'D' then stats.batch_id else null
   _.extend base, stats, data
 
 

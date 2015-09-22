@@ -85,10 +85,10 @@ loadUpdates = (subtask, options) ->
           return
         # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
         # on whether this is a dump or an update)
-        doDeletes = refreshThreshold.getTime() == 0
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes, dataType: 'listing', rawTableSuffix: 'listing'}, true)
+        deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing', rawTableSuffix: 'listing'}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
 
         handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
         .then (fieldInfo) ->

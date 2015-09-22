@@ -10,6 +10,12 @@ _ = require 'lodash'
 sqlHelpers = require '../util.sql.helpers'
 
 
+DELETE =
+  UNTOUCHED: 'untouched'
+  INDICATED: 'indicated'
+  NONE: 'none'
+
+
 getRawTableName = (subtask, suffix) ->
   suffix = if suffix then "_#{suffix}" else ''
   "raw_#{subtask.task_name}#{suffix}_#{subtask.batch_id}"
@@ -40,54 +46,62 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
 
     
 recordChangeCounts = (subtask) ->
+  rawTableName = getRawTableName(subtask, subtask.data.rawTableSuffix)
+  subset =
+    data_source_id: subtask.task_name
+  _.extend(subset, subtask.data.subset)
   Promise.try () ->
-    if subtask.data.markOtherRowsDeleted
+    if subtask.data.deletes == DELETE.UNTOUCHED
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
       # first such row rather than return all or count them all
       tables.propertyData[subtask.data.dataType]()
       .select('rm_raw_id')
       .where(batch_id: subtask.batch_id)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .whereNull('deleted')
       .limit(1)
       .then (row) ->
         if !row?[0]?
-          throw new jobQueue.HardFail("operation would delete all active rows from #{subtask.task_name}")
+          throw new jobQueue.HardFail("operation would delete all active rows for #{subtask.task_name}")
       .then () ->
         # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
         # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
         # will resolve to a count of affected rows
         tables.propertyData[subtask.data.dataType]()
         .whereNot(batch_id: subtask.batch_id)
-        .where(data_source_id: subtask.task_name)
+        .where(subset)
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
+    else if subtask.data.deletes == DELETE.INDICATED
+      tables.propertyData[subtask.data.dataType]()
+      .where(subset)
+      .where(deleted: subtask.batch_id)
   .then (deletedCount=0) ->
     # get a count of raw rows from all raw tables from this batch with rm_valid == false
-    invalidSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, subtask.data.rawTableSuffix), true)
+    invalidSubquery = () -> _countInvalidRows(this, rawTableName, true)
     # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
-    unvalidatedSubquery = () -> _countInvalidRows(this, getRawTableName(subtask, subtask.data.rawTableSuffix), false)
+    unvalidatedSubquery = () -> _countInvalidRows(this, rawTableName, false)
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
       tables.propertyData[subtask.data.dataType](this)
       .where(inserted: subtask.batch_id)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = () ->
       tables.propertyData[subtask.data.dataType](this)
       .where(updated: subtask.batch_id)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .count('*')
     touchedSubquery = () ->
       tables.propertyData[subtask.data.dataType](this)
       .where(batch_id: subtask.batch_id)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .orWhere(deleted: subtask.batch_id)
-      .where(data_source_id: subtask.task_name)
+      .where(subset)
       .count('*')
     tables.jobQueue.dataLoadHistory()
-    .where(batch_id: subtask.batch_id)
+    .where(raw_table_name: rawTableName)
     .update
       invalid_rows: invalidSubquery
       unvalidated_rows: unvalidatedSubquery
@@ -101,39 +115,35 @@ activateNewData = (subtask) ->
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   tables.propertyData.combined.transaction (transaction) ->
     # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
-    if subtask.data.deleteUntouchedRows
+    if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
-      tables.propertyData.combined(transaction)
+      activatePromise = tables.propertyData.combined(transaction)
       .where(data_source_id: subtask.task_name)
       .update(active: tables.propertyData.combined.raw('NOT "active"'))
-      .then () ->
-        tables.propertyData.combined(transaction)
-        .where
-          data_source_id: subtask.task_name
-          active: false
-        .delete()
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
-      # the rm_property_id that has been updated in this batch
-      checkSubquery = () ->
+      # rm_property_id that has been updated in this batch
+      activatePromise = tables.propertyData.combined(transaction)
+      .as('updater')
+      .where(data_source_id: subtask.task_name)
+      .whereExists () ->
         tables.propertyData.combined(this)
-        .select('rm_property_id')
+        .select(1)
         .where
           data_source_id: subtask.task_name
           batch_id: subtask.batch_id
           active: false
+          rm_property_id: tables.propertyData.combined.raw('updater.rm_property_id')
+      .update(active: tables.propertyData.combined.raw('NOT "active"'))
+      
+    activatePromise
+    .then () ->
       tables.propertyData.combined(transaction)
       .where
         data_source_id: subtask.task_name
-      .whereIn 'rm_property_id', checkSubquery
-      .update(active: dbs.properties.knex.raw('NOT "active"'))
-      .then () ->
-        tables.propertyData.combined(transaction)
-        .where
-          data_source_id: subtask.task_name
-          active: false
-        .delete()
+        active: false
+      .delete()
 
 
 _getUsedInputFields = (validationDefinition) ->
@@ -221,7 +231,7 @@ getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
 normalizeData = (subtask, options) -> Promise.try () ->
   rawTableName = getRawTableName subtask, options.rawTableSuffix
   # get rows for this subtask
-  rowsPromise = dbs.properties.knex(rawTableName)
+  rowsPromise = tables.buildQuery('properties', rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
@@ -239,11 +249,11 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
       .then () ->
-        dbs.properties.knex(rawTableName)
+        tables.buildQuery('properties', rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
-        dbs.properties.knex(rawTableName)
+        tables.buildQuery('properties', rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.all promises
@@ -328,3 +338,4 @@ module.exports =
   getValidationInfo: getValidationInfo
   normalizeData: normalizeData
   getValues: getValues
+  DELETE: DELETE
