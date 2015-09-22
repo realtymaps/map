@@ -17,8 +17,8 @@ fi
 
 if [[ "$IS_HEROKU" != "" ]]
 then
-    gulp $GULP_COLOR prod
-    coffee ./backend/server.coffee
+  gulp $GULP_COLOR prod
+  coffee ./backend/server.coffee
 else
   gulp $GULP_COLOR $GULP_TARGET
 fi
