@@ -2,6 +2,7 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 mockRoutes = require '../fixtures/propertyData.coffee'
+qs = require 'qs'
 
 describe "rmapsMap factory", ->
   beforeEach ->
@@ -72,6 +73,52 @@ describe "rmapsMap factory", ->
             should.fail()
           @digestor.digest()
 
+    describe 'getMapStateObj', ->
+      it 'can run', ->
+        test = @subject.getMapStateObj()
+        test.should.be.ok
+
+      describe 'uses long position naming as pref', ->
+        beforeEach ->
+          @subject.scope.map =
+            center:
+              latitude: 89
+              longitude: 178
+          @subject.scope.zoom = mockRoutes.zoom
+
+        it 'default (no results)', ->
+          test = @subject.getMapStateObj()
+          test.map_position.center.should.be.ok
+          test.map_position.center.should.be.equal @subject.scope.map.center
+          test.map_position.zoom.should.be.equal mockRoutes.zoom
+          expect(test.map_results).to.not.be.ok
+
+        it 'has invalid results', ->
+          @subject.scope.selectedResult = {}
+          test = @subject.getMapStateObj()
+          expect(test.map_results).to.not.be.ok
+
+        it 'has results', ->
+          @subject.scope.selectedResult =
+            rm_property_id: 1
+          test = @subject.getMapStateObj()
+          test.map_results.should.be.ok
+          test.map_results.selectedResultId.should.be.equal 1
+
+    describe 'refreshState', ->
+      beforeEach ->
+        @subject.getMapStateObj = ->
+          a: 'a'
+
+      it 'no args', ->
+        test = @subject.refreshState()
+        test.should.be.equal qs.stringify @subject.getMapStateObj()
+
+      it 'args', ->
+        arg = b: 'b'
+        test = @subject.refreshState(arg)
+        test.should.be.equal qs.stringify(angular.extend @subject.getMapStateObj(), arg )
+
     describe 'draw', ->
       beforeEach ->
         @subject.hash = mockRoutes.hash
@@ -106,15 +153,18 @@ describe "rmapsMap factory", ->
 
           expect(@subject.draw()).to.not.be.ok
 
-        # it 'returns promises', (done) ->
-        #   @subject.map =
-        #     getBounds: ->
-        #       _northEast:
-        #         lat: 90
-        #         lng: 1
-        #       _southWest:
-        #         lat: 1
-        #         lng: 179
-        #
-        #   expect(@subject.draw()).to.be.ok
-        #   done()
+        it 'returns promises', ->
+          #if this is not mocked it hangs draw
+          @subject.refreshState = ->
+            mockRoutes.mapState
+
+          @subject.map =
+            getBounds: ->
+              _northEast:
+                lat: 90
+                lng: 1
+              _southWest:
+                lat: 35
+                lng: 70
+
+          expect(@subject.draw()).to.be.ok
