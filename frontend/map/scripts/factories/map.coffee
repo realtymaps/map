@@ -257,12 +257,14 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
+        $log.info 'draw'
         return if !@scope.map.isReady
+        $log.info 'isReady'
         @scope?.formatters?.results?.reset()
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
-        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lon == lBounds._southWest.lon
-
+        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng
+        $log.info 'lBounds'
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of lBounds
@@ -271,11 +273,13 @@ app.factory 'rmapsMap',
 
         if !paths? or paths.length < 2
           return
-
+        $log.info 'paths'
         @hash = _encode paths
-
+        $log.info 'encoded hash'
         @refreshState()
+        $log.info 'refreshState'
         @redraw()
+        $log.info 'redraw'
 
       getMapStateObj: =>
         centerToSave = undefined

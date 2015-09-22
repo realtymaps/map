@@ -71,3 +71,50 @@ describe "rmapsMap factory", ->
           promises[0].catch ->
             should.fail()
           @digestor.digest()
+
+    describe 'draw', ->
+      beforeEach ->
+        @subject.hash = mockRoutes.hash
+        @subject.mapState = mockRoutes.mapState
+        @subject.scope.Toggles = @rmapsMapToggles()
+
+      afterEach ->
+        @subject.map = null
+
+      describe 'can run', ->
+        it 'bails early identical lat bounds', ->
+          @subject.map =
+            getBounds: ->
+              _northEast:
+                lat: 90
+                lng: 1
+              _southWest:
+                lat: 90
+                lng: 1
+
+          expect(@subject.draw()).to.not.be.ok
+
+        it 'bails early identical lat/lng (invalid lon) bounds', ->
+          @subject.map =
+            getBounds: ->
+              _northEast:
+                lat: 90
+                lon: 1
+              _southWest:
+                lat: 90
+                lon: 1
+
+          expect(@subject.draw()).to.not.be.ok
+
+        # it 'returns promises', (done) ->
+        #   @subject.map =
+        #     getBounds: ->
+        #       _northEast:
+        #         lat: 90
+        #         lng: 1
+        #       _southWest:
+        #         lat: 1
+        #         lng: 179
+        #
+        #   expect(@subject.draw()).to.be.ok
+        #   done()
