@@ -114,6 +114,7 @@ _httpOptionsErrorMsg = (optStr = '') ->
 _requiredOpts = [undefined,'method', 'url', 'isAsync']
 
 _http = (opts, cb) ->
+  return '' if window.isTest
   for key,val of _requiredOpts
     toCheck = if val? then opts[val] else opts
     if !toCheck?

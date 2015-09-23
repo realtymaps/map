@@ -8,7 +8,7 @@ appName = 'rmapsAdminApp'
 
 app = window.angular.module appName, [
   'rmapsCommon'
-  'logglyLogger.logger'
+  'nemLogging'
   'angular-data.DSCacheFactory'
   'leaflet-directive'
   'uiGmapgoogle-maps'

@@ -1,11 +1,6 @@
 app = require '../app.coffee'
 
-app.constant('rmapsLogglyToken', 'rmapsLogglyMap')
-.config (LogglyLoggerProvider, rmapsLogglyToken, rmapsMainOptions) ->
-  LogglyLoggerProvider
-  .level(rmapsMainOptions.map.options.logLevel.toUpperCase())
-  .inputToken(rmapsLogglyToken)
-  .includeTimestamp(true)
-  .includeUrl(true)
-  .sendConsoleErrors(true)
-  .logToConsole true
+app.config ($provide, nemSimpleLoggerProvider) ->
+  $provide.decorator nemSimpleLoggerProvider.decorator...
+.run ($log, rmapsMainOptions) ->
+  $log.currentLevel = $log.LEVELS[rmapsMainOptions.map.options.logLevel]

@@ -1,1 +1,1 @@
-module.exports = window.angular.module 'rmapsCommon', []
+module.exports = window.angular.module 'rmapsCommon', ['nemLogging']
