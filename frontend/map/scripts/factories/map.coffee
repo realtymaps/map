@@ -232,7 +232,7 @@ app.factory 'rmapsMap',
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
              rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
-          $log.info 'isAddressParcel'
+          $log.debug 'isAddressParcel'
           promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
@@ -242,7 +242,7 @@ app.factory 'rmapsMap',
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
         else
-          $log.info 'not, isAddressParcel'
+          $log.debug 'not, isAddressParcel'
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 

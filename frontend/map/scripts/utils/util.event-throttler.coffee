@@ -14,13 +14,13 @@ module.exports = ($log, options) ->
     distance = Math.sqrt(Math.pow(event.clientX - last.x, 2) + Math.pow(event.clientY - last.y, 2))
     time = now.getTime() - last.time.getTime()
     if _doThrottle(event, distance, time)  #event arrived too soon or mouse moved too little or both
-      $log.info 'event stopped'
+      $log.debug 'event stopped'
       if event.stopPropagation # W3C/addEventListener()
         event.stopPropagation()
       else # Older IE.
         event.cancelBubble = true
     else
-      $log.info 'event allowed: ' + now.getTime() if event.type == 'mousewheel'
+      $log.debug 'event allowed: ' + now.getTime() if event.type == 'mousewheel'
       last.time = now
       last.x = event.clientX
       last.y = event.clientY
