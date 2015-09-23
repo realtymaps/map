@@ -37,7 +37,7 @@ module.exports = (app) ->
       modalInstance.result.then ((selectedItem) ->
         $scope.selected = selectedItem
       ), ->
-        $log.info 'Modal dismissed at: ' + new Date
+        $log.debug 'Modal dismissed at: ' + new Date
         $location.path '/map'
 
   .controller 'rmapsModalAddProjectCtrl', ($scope, $modalInstance, items, $location) ->

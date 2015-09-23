@@ -2,8 +2,7 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location,
-  $http, rmapsevents, rmapsprincipal, rmapsMainOptions, $log) ->
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsevents, rmapsprincipal, rmapsMainOptions, $log) ->
 
   {profile} = rmapsMainOptions.images.dimensions
   maxImagePixles = profile.width

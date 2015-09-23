@@ -13,3 +13,45 @@ describe "extensions > String".ns().ns('Common'), ->
 
     it 'can be overriden', ->
       ''.ns('test').should.not.be.eql 'test\--'
+
+  it 'space', ->
+    ''.space().should.be.eql ' '
+
+  describe 'orNA', ->
+    it 'empty', ->
+      String.orNA().should.be.eql 'N/A'
+
+    it 'not empty', ->
+      String.orNA('crap').should.be.eql 'crap'
+
+  describe 'orDash', ->
+    it 'empty', ->
+      String.orDash().should.be.eql '-'
+
+    it 'not empty', ->
+      String.orDash('crap').should.be.eql 'crap'
+
+  describe 'toInitCaps', ->
+    it 'single word', ->
+      'crap'.toInitCaps().should.be.eql 'Crap'
+
+    it 'two words', ->
+      'crap beer'.toInitCaps().should.be.eql 'Crap Beer'
+
+  describe 'replaceLast', ->
+    it 'last word', ->
+      'redonkulous poopy poopy beer'.replaceLast('poopy', 'yummy').should.be.eql 'redonkulous poopy yummy beer'
+
+  describe 'startsWith', ->
+    it 'has last', ->
+      'redonkulous poopy poopy beer'.startsWith('redonkulous').should.be.ok
+
+    it 'does not have last', ->
+      'redonkulous poopy poopy beer'.startsWith('beers').should.not.be.ok
+
+  describe 'endsWith', ->
+    it 'has last', ->
+      'redonkulous poopy poopy beer'.endsWith('beer').should.be.ok
+
+    it 'does not have last', ->
+      'redonkulous poopy poopy beer'.endsWith('beers').should.not.be.ok

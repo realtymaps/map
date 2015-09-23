@@ -22,9 +22,9 @@ _wrapGeomPointJson = (obj) ->
 ###
 app.factory 'rmapsMap',
   ($log, $timeout, $q, $rootScope, $http, rmapsBaseMap,
-    rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-    rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-    rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering) ->
+  rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
+  rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering) ->
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -76,7 +76,7 @@ app.factory 'rmapsMap',
           @redraw()
 
         @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
-        @layerFormatter = rmapsLayerFormatters(@)
+        @layerFormatter = rmapsLayerFormatters
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
@@ -159,6 +159,29 @@ app.factory 'rmapsMap',
 
         @scope.map.markers.filterSummary = {}
 
+      handleClusterResults: (data) =>
+        @scope.map.markers.filterSummary = {}
+        clusters = {}
+        for k, model of data
+          # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
+          clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
+        @scope.map.markers.backendPriceCluster = clusters
+
+      handleSummaryResults: (data) =>
+        @scope.map.markers.backendPriceCluster = {}
+        @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+        for key, model of data
+          _wrapGeomPointJson model
+        @scope.map.markers.filterSummary = data
+
+      handleGeoJsonResults: (filters, cache) =>
+        rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
+        .then (data) =>
+          return if !data? or _.isString data
+          @scope.map.geojson.filterSummaryPoly =
+            data: data
+            style: @layerFormatter.Parcels.getStyle
+
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
@@ -166,38 +189,18 @@ app.factory 'rmapsMap',
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManager.getFilters()
+        # $log.debug filters
         if !/status/.test(filters)
           @clearFilterSummary()
           return promises
 
-        handleClusterResults = (data) =>
-          @scope.map.markers.filterSummary = {}
-          clusters = {}
-          _.each data, (model,k) =>
-            # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
-            clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-          @scope.map.markers.backendPriceCluster = clusters
-
-        handleSummaryResults = (data) =>
-          @scope.map.markers.backendPriceCluster = {}
-          @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
-          for key, val of data
-            _wrapGeomPointJson val
-          @scope.map.markers.filterSummary = data
-
-        handleGeoJsonResults = () =>
-          rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
-          .then (data) =>
-            return if !data? or _.isString data
-            @scope.map.geojson.filterSummaryPoly =
-              data: data
-              style: @layerFormatter.Parcels.getStyle
-
+        # $log.debug "hash: #{@hash}"
+        # $log.debug "mapState: #{@mapState}"
         p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
-            handleClusterResults(data)
+            @handleClusterResults(data)
 
           else
             #needed for results list, rendering price markers, and address Markers
@@ -205,7 +208,7 @@ app.factory 'rmapsMap',
             #the data structure is the same (do we clone and hide one?)
             #or do we have the results list view grab one that exists with items?
             return if !data? or _.isString data
-            handleSummaryResults(data)
+            @handleSummaryResults(data)
 
             if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
               if overlays?.parcels?
@@ -215,7 +218,7 @@ app.factory 'rmapsMap',
 
               overlays.filterSummary.visible = false
 
-              handleGeoJsonResults()
+              @handleGeoJsonResults(filters, cache)
 
             else
               overlays.parcels.visible = false
@@ -229,7 +232,7 @@ app.factory 'rmapsMap',
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
              rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
-
+          $log.debug 'isAddressParcel'
           promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
@@ -239,6 +242,7 @@ app.factory 'rmapsMap',
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
         else
+          $log.debug 'not, isAddressParcel'
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
@@ -254,12 +258,14 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
+        $log.debug 'draw'
         return if !@scope.map.isReady
+        $log.debug 'isReady'
         @scope?.formatters?.results?.reset()
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
-        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lon == lBounds._southWest.lon
-
+        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng
+        $log.debug 'lBounds'
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of lBounds
@@ -268,11 +274,14 @@ app.factory 'rmapsMap',
 
         if !paths? or paths.length < 2
           return
-
+        $log.debug 'paths'
         @hash = _encode paths
-
+        $log.debug 'encoded hash'
         @refreshState()
-        @redraw()
+        $log.debug 'refreshState'
+        ret = @redraw()
+        $log.debug 'redraw'
+        ret
 
       getMapStateObj: =>
         centerToSave = undefined
@@ -293,7 +302,7 @@ app.factory 'rmapsMap',
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
 
-        if @scope.selectedResult? and @scope.selectedResult.rm_property_id?
+        if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
