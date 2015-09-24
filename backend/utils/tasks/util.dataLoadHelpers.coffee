@@ -178,7 +178,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
 
         # Most common case, generate the transform from the rule configuration
         else
-          _buildBaseRule = validatorBuilder.buildBaseRule[dataSourceType]
+          _buildBaseRule = validatorBuilder.buildBaseRule(dataSourceType, dataType)
           if validationDef.list == 'base'
             rule = _buildBaseRule validationDef
           else

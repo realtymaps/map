@@ -64,7 +64,7 @@ app.controller 'rmapsCountyCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.buildBaseRule($scope.countyData.dataSourceType.id) rule
+    validatorBuilder.buildBaseRule($scope.countyData.dataSourceType.id, $scope.countyData.dataListType.id) rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display

@@ -168,25 +168,26 @@ _allBaseRules =
 
 # there is much crossover among baserules for different sources, so let's just pull what we need from the above list here for each source:
 baseRules =
-  'mls': _.pick _allBaseRules, [
-    'acres',
-    'address',
-    'baths_full',
-    'bedrooms',
-    'days_on_market',
-    'fips_code',
-    'hide_address',
-    'hide_listing',
-    'parcel_id',
-    'price',
-    'rm_property_id',
-    'sqft_finished',
-    'status',
-    'status_display',
-    'substatus',
-    'close_date',
-    'discontinued_date',
-    'data_source_uuid' ]
+  'mls':
+    'listing': _.pick _allBaseRules, [
+      'acres',
+      'address',
+      'baths_full',
+      'bedrooms',
+      'days_on_market',
+      'fips_code',
+      'hide_address',
+      'hide_listing',
+      'parcel_id',
+      'price',
+      'rm_property_id',
+      'sqft_finished',
+      'status',
+      'status_display',
+      'substatus',
+      'close_date',
+      'discontinued_date',
+      'data_source_uuid' ]
   'county':
     'tax': _.pick _allBaseRules, [
       'data_source_uuid_county',
@@ -254,9 +255,9 @@ buildDataRule = (rule) ->
       rule.type.label = 'User-Entered Text'
   rule
 
-buildBaseRule = (dataSourceType) ->
+buildBaseRule = (dataSourceType, dataListType) ->
   (rule) ->
-    _buildRule rule, baseRules[dataSourceType][rule.output]
+    _buildRule rule, baseRules[dataSourceType][dataListType][rule.output]
     rule
 
 module.exports =

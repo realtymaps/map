@@ -63,7 +63,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.buildBaseRule('mls') rule
+    validatorBuilder.buildBaseRule('mls', 'listing') rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display

@@ -8,7 +8,7 @@ describe 'rmapsAdminApp.validatorBuilder', ->
       @validatorBuilder = validatorBuilder
 
   it 'should transform fields correctly', ->
-    _buildBaseRule = @validatorBuilder.buildBaseRule('mls')
+    _buildBaseRule = @validatorBuilder.buildBaseRule('mls','listing')
     rules = [
       # RETS rules
        field: @validatorBuilder.buildDataRule {"config": "DataType": "Int"}

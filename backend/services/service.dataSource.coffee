@@ -9,13 +9,13 @@ require '../config/promisify'
 getColumnList = (dataSourceId, dataSourceType, dataListType) ->
   query = tables.config.dataSource()
   .select(
-    'metadataentryid as MetadataEntryID',
-    'systemname as SystemName',
-    'shortname as ShortName',
-    'longname as LongName',
-    'datatype as DataType',
-    'interpretation as Interpretation',
-    'lookupname as LookupName'
+    'MetadataEntryID',
+    'SystemName',
+    'ShortName',
+    'LongName',
+    'DataType',
+    'Interpretation',
+    'LookupName'
   )
   .where
     data_source_id: dataSourceId
