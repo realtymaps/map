@@ -33,7 +33,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
-  $scope.baseRules = validatorBuilder.baseRules['mls']
+  $scope.baseRules = validatorBuilder.baseRules['mls']['listing']
 
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories['mls']['listing'], (label, list) ->
