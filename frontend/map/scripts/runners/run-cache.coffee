@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.run ($http, DSCacheFactory, $log) ->
+app.run ($http, DSCacheFactory, rmapsMapCacheLogger) ->
   #init caches here begining w default
   DSCacheFactory 'defaultCache',
     #capacity: 100000
@@ -11,6 +11,6 @@ app.run ($http, DSCacheFactory, $log) ->
     storageMode: 'memory' #options (memory , localStorage, sessionStorage)
     verifyIntegrity: true
     onExpire: (key, value) ->
-      $log.debug "Cache Expired: key: #{key}"
+      rmapsMapCacheLogger.debug "Expired: key: #{key}"
 
   $http.defaults.cache = DSCacheFactory.get('defaultCache')

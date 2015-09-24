@@ -9,7 +9,8 @@ _baseLayers = require '../utils/util.layers.base.coffee'
 ###
 _mapClassContainerName = 'angular-leaflet-map'
 
-module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
+module.exports = app.factory 'rmapsBaseMap', (rmapsBaseMapFactoryLogger, $timeout, leafletData) ->
+  $log = rmapsBaseMapFactoryLogger
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
       settings =
