@@ -130,7 +130,7 @@ module.exports = app.factory 'rmapsBaseMap', ($log, $timeout, leafletData) ->
         ###
         mapElement.addEventListener('mousemove', _throttler.throttle_events, true)
 
-      $log.info 'BaseMap: ' + @
+      # $log.info 'BaseMap: ' + @
 
 #public fns
       isZoomIn: (newValue, oldValue) -> newValue > oldValue

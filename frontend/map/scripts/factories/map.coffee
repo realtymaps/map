@@ -232,7 +232,7 @@ app.factory 'rmapsMap',
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
              rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
-
+          $log.debug 'isAddressParcel'
           promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
@@ -242,6 +242,7 @@ app.factory 'rmapsMap',
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
         else
+          $log.debug 'not, isAddressParcel'
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
@@ -257,12 +258,14 @@ app.factory 'rmapsMap',
 
 
       draw: (event, paths) =>
+        $log.debug 'draw'
         return if !@scope.map.isReady
+        $log.debug 'isReady'
         @scope?.formatters?.results?.reset()
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
-        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lon == lBounds._southWest.lon
-
+        return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng
+        $log.debug 'lBounds'
         if not paths and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of lBounds
@@ -271,11 +274,14 @@ app.factory 'rmapsMap',
 
         if !paths? or paths.length < 2
           return
-
+        $log.debug 'paths'
         @hash = _encode paths
-
+        $log.debug 'encoded hash'
         @refreshState()
-        @redraw()
+        $log.debug 'refreshState'
+        ret = @redraw()
+        $log.debug 'redraw'
+        ret
 
       getMapStateObj: =>
         centerToSave = undefined
@@ -296,7 +302,7 @@ app.factory 'rmapsMap',
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
 
-        if @scope.selectedResult? and @scope.selectedResult.rm_property_id?
+        if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
