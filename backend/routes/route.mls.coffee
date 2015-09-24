@@ -6,7 +6,6 @@ mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 
-fs = require 'fs'
 
 module.exports =
   getDatabaseList:
@@ -65,18 +64,6 @@ module.exports =
         else
           retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
           .then (list) ->
-
-            # console #### remove 
-            fs.writeFile '/tmp/ColumnList.txt', "mlsConfig: #{JSON.stringify(mlsConfig)}, databaseId: #{req.params.databaseId}, id: #{req.params.tableId}\n", (err) ->
-              if err
-                console.log "#### lookuptypes error:"
-                console.log err
-            for l in list
-              fs.appendFile '/tmp/ColumnList.txt', "#{JSON.stringify(l)}\n", (err) ->
-                if err
-                  console.log "#### lookuptypes error:"
-                  console.log err
-
             next new ExpressResponse(list)
           .catch (error) ->
             next new ExpressResponse
@@ -139,18 +126,6 @@ module.exports =
         else
           retsHelpers.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
           .then (list) ->
-
-            # console #### remove 
-            fs.writeFile '/tmp/LookupTypesList.txt', "mlsConfig: #{JSON.stringify(mlsConfig)}, databaseId: #{req.params.databaseId}, id: #{req.params.lookupId}\n", (err) ->
-              if err
-                console.log "#### lookuptypes error:"
-                console.log err
-            for l in list
-              fs.appendFile '/tmp/LookupTypesList.txt', "#{JSON.stringify(l)}\n", (err) ->
-                if err
-                  console.log "#### lookuptypes error:"
-                  console.log err
-
             next new ExpressResponse(list)
           .catch (error) ->
             next new ExpressResponse

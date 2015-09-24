@@ -51,7 +51,7 @@ ruleDefaults =
     "validators.#{validator.name}(#{vOptionsStr})"
 
 # Base/filter rule definitions
-baseRules =
+_allBaseRules =
   acres:
     alias: 'Acres'
     type: 'float'
@@ -89,6 +89,11 @@ baseRules =
     type: 'fips'
     valid: () ->
       @input.stateCode && @input.county
+
+  fips_code_field:
+    alias: 'FIPS code'
+    required: true
+    type: 'fips'
 
   hide_address:
     alias: 'Hide Address'
@@ -150,8 +155,57 @@ baseRules =
     alias: 'MLS Number'
     required: true
 
+  data_source_uuid_county:
+    alias: 'County Number'
+    required: true
+
+  owner_name:
+    alias: 'Owner 1'
+
+  owner_name_2:
+    alias: 'Owner 2'
+
+
+# there is much crossover among baserules for different sources, so let's just pull what we need from the above list here for each source:
+baseRules =
+  'mls': _.pick _allBaseRules, [
+    'acres',
+    'address',
+    'baths_full',
+    'bedrooms',
+    'days_on_market',
+    'fips_code',
+    'hide_address',
+    'hide_listing',
+    'parcel_id',
+    'price',
+    'rm_property_id',
+    'sqft_finished',
+    'status',
+    'status_display',
+    'substatus',
+    'close_date',
+    'discontinued_date',
+    'data_source_uuid' ]
+  'county':
+    'tax': _.pick _allBaseRules, [
+      'data_source_uuid_county',
+      'rm_property_id',
+      'fips_code_field',
+      'parcel_id',
+      'address',
+      'price',
+      'close_date',
+      'bedrooms',
+      'baths_full',
+      'acres',
+      'sqft_finished',
+      'owner_name',
+      'owner_name_2' ]
+    'deed': {}
+
 # RETS/MLS rule defaults for each data type
-retsRules =
+typeRules =
   Int:
     type:
       name: 'integer'
@@ -189,8 +243,8 @@ retsRules =
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, defaults, ruleDefaults
 
-buildRetsRule = (rule) ->
-  _buildRule rule, retsRules[rule.config.DataType]
+buildDataRule = (rule) ->
+  _buildRule rule, typeRules[rule.config.DataType]
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
@@ -200,11 +254,12 @@ buildRetsRule = (rule) ->
       rule.type.label = 'User-Entered Text'
   rule
 
-buildBaseRule = (rule) ->
-  _buildRule rule, baseRules[rule.output]
-  rule
+buildBaseRule = (dataSourceType) ->
+  (rule) ->
+    _buildRule rule, baseRules[dataSourceType][rule.output]
+    rule
 
 module.exports =
   baseRules: baseRules
-  buildRetsRule: buildRetsRule
+  buildDataRule: buildDataRule
   buildBaseRule: buildBaseRule

@@ -178,10 +178,11 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
 
         # Most common case, generate the transform from the rule configuration
         else
+          _buildBaseRule = validatorBuilder.buildBaseRule[dataSourceType]
           if validationDef.list == 'base'
-            rule = validatorBuilder.buildBaseRule validationDef
+            rule = _buildBaseRule validationDef
           else
-            rule = validatorBuilder.buildRetsRule validationDef
+            rule = _buildBaseRule validationDef
 
           transforms = rule.getTransform global_rules
           if !_.isArray transforms

@@ -152,7 +152,6 @@ module.exports =
     apiBaseDataSource: apiBaseDataSource
     getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
     getLookupTypes: "#{apiBaseDataSource}/:dataSourceId/sourceDataType/:sourceDataType/lookups/:lookupId/types"
-    getDataDump: "#{apiBaseDataSource}/:dataSourceId/data"
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"
