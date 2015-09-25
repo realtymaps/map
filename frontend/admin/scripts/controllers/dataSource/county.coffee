@@ -119,7 +119,7 @@ app.controller 'rmapsCountyCtrl',
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName
       $log.debug "#### has lookup types!!!"
-      config = $scope.mlsData.current
+      config = $scope.countyData.current
       $scope.fieldData.current.lookups = []
       $scope.$evalAsync()
       # $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
@@ -170,6 +170,9 @@ app.controller 'rmapsCountyCtrl',
 
   # Move rules to base field config
   $scope.onDropBase = (drag, drop, target) ->
+    $log.debug "#### fieldData:"
+    $log.debug $scope.fieldData
+
     field = $scope.fieldData.current
     removed = field.input
     field.input = drag.model.output

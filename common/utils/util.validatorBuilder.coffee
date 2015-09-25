@@ -94,6 +94,7 @@ _allBaseRules =
     alias: 'FIPS code'
     required: true
     type: 'fips'
+    input: {}
 
   hide_address:
     alias: 'Hide Address'
