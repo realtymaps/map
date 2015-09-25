@@ -6,6 +6,10 @@ beforeEach ->
   window.isTest = true
 
   angular.module('rmapsCommon')
+  .config (nemDebugProvider) ->
+    debug = nemDebugProvider.debug
+    debug.enable("test:*")
+
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)
     $provide.decorator nemSimpleLoggerProvider.decorator...
