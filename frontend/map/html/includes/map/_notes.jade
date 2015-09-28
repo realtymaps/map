@@ -1,10 +1,10 @@
-span(class="dropdown btn-group notes-list" dropdown on-toggle="toggled(open)")
+span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dropdown on-toggle="toggled(open)")
     button(class="dropdown-toggle btn btn-transparent notes" dropdown-toggle)
         span.icon.icon-note
     ul(class="dropdown-menu whiteblock no-margin")
         li.count
-            a(href="#notes") {{notesList.length}} Notes
-        li(ng-repeat="note in notesArray")
+            a(href="#notes") {{notes.length}} Notes
+        li(ng-repeat="note in notes")
             div
                 span.enity
                     span.circle-nr

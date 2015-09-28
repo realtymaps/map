@@ -11,8 +11,8 @@ buildQuery = (dbName, tableName) ->
   query.transaction = dbs[dbName].knex.transaction.bind(dbs[dbName].knex)
   query.raw = dbs[dbName].knex.raw.bind(dbs[dbName].knex)
   query
-  
-  
+
+
 _buildQueries = (tables) ->
   queries = {}
   for id, tableSpecifier of tables
@@ -62,6 +62,7 @@ module.exports =
     company: 'users.company'
     account_images: 'users.account_images'
     account_use_types:'users.account_use_types'
+    notes:'users.notes'
   keystore:
     userDb: 'users.keystore_user'
     propertyDb: 'properties.keystore_property'

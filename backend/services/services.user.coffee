@@ -2,6 +2,7 @@ _ = require 'lodash'
 logger = require '../config/logger'
 {userData} = require '../config/tables'
 userModel = require '../models/model.user'
+
 toInit = _.pick userData, [
   'auth_group'
   'auth_user_groups'
@@ -15,6 +16,7 @@ toInit = _.pick userData, [
   'account_images'
   'account_use_types'
   'website_url'
+  'notes'
 ]
 
 {crud,ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
@@ -59,6 +61,5 @@ class UserCrud extends ThenableCrud
 
   profiles: thenableHasManyCrud(userData.project, profileCols,
     module.exports.auth_user_profile, undefined, undefined, 'auth_user_profile.id').init(false)
-
 
 module.exports.user = new UserCrud(userData.user)

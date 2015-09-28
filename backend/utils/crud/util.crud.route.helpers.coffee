@@ -6,11 +6,11 @@ ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
 
 class Crud extends BaseObject
-  constructor: (@svc, @paramIdKey = 'id') ->
+  constructor: (@svc, @paramIdKey = 'id', @name = '') ->
     unless @svc?
-      throw new Error('@svc must be defined')
+      throw new Error("#{@name} @svc must be defined.")
     unless @paramIdKey?
-      throw new Error('@paramIdKey must be defined')
+      throw new Error("#{@name} @paramIdKey must be defined")
     @init()
 
   onError: (next, error) ->
@@ -76,8 +76,8 @@ class Crud extends BaseObject
     super([Crud,@].concat(_.toArray arguments)...)
 
 class HasManyCrud extends Crud
-  constructor: (svc, paramIdKey, @rootGETKey) ->
-    super(svc, paramIdKey)
+  constructor: (svc, paramIdKey, @rootGETKey, name) ->
+    super(svc, paramIdKey, name)
     unless @rootGETKey?
       throw new Error('@rootGETKey must be defined')
 
@@ -90,7 +90,7 @@ TODO:
 - needs error handling
 ###
 
-routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
+wrapRoutesTrait = (baseKlass) ->
   class RoutesTrait extends baseKlass
     handleQuery: (q, res) ->
       #if we have a stream avail pipe it
@@ -106,6 +106,9 @@ routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
     byId: (req, res, next) ->
       @handleQuery super(req, res, next), res
 
+routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
+  wrapRoutesTrait(baseKlass)
+
 RouteCrud = routeCruds[0]
 HasManyRouteCrud = routeCruds[1]
 
@@ -116,3 +119,4 @@ module.exports =
   routeCrud: factory(RouteCrud)
   HasManyRouteCrud: HasManyRouteCrud
   hasManyRouteCrud: factory(HasManyRouteCrud)
+  wrapRoutesTrait: wrapRoutesTrait
