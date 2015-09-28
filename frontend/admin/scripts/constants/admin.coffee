@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 _queryTemplate = '[(__FIELD_NAME__=]YYYY-MM-DD[T]HH:mm:ss[+)]'
 
-mls =
+admin =
   queryTemplate: _queryTemplate
   dtColumnRegex: /.*?date.*?|.*?time.*?|.*?modif.*?|.*?change.*?/
   defaults:
@@ -19,4 +19,7 @@ mls =
     task:
       active: false
 
-app.constant 'mlsConstants', mls
+  dataSource:
+    lookupThreshold: 50
+
+app.constant 'adminConstants', admin

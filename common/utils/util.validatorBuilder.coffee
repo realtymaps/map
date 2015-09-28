@@ -51,160 +51,148 @@ ruleDefaults =
     "validators.#{validator.name}(#{vOptionsStr})"
 
 # Base/filter rule definitions
-_allBaseRules =
-  acres:
-    alias: 'Acres'
-    type: 'float'
+_rules =
+  common:
+    acres:
+      alias: 'Acres'
+      type: 'float'
 
-  address:
-    alias: 'Address'
-    required: true
-    input: {}
-    group: 'general'
-    type: 'address'
-    valid: () ->
-      @input.city && @input.state && (@input.zip || @input.zip9) &&
-      ((@input.streetName && @input.streetNum) || @input.streetFull)
+    address:
+      alias: 'Address'
+      required: true
+      input: {}
+      group: 'general'
+      type: 'address'
+      valid: () ->
+        @input.city && @input.state && (@input.zip || @input.zip9) &&
+        ((@input.streetName && @input.streetNum) || @input.streetFull)
 
-  baths_full:
-    alias: 'Baths Full'
-    type: 'integer'
+    baths_full:
+      alias: 'Baths Full'
+      type: 'integer'
 
-  bedrooms:
-    alias: 'Bedrooms'
-    type: 'integer'
+    bedrooms:
+      alias: 'Bedrooms'
+      type: 'integer'
 
-  days_on_market:
-    alias: 'Days on Market'
-    required: true
-    type: 'days_on_market'
-    input: []
-    valid: () ->
-      @input[0] || @input[1]
+    parcel_id:
+      alias: 'Parcel ID'
+      required: true
+      config:
+        stripFormatting: true
 
-  fips_code:
-    alias: 'FIPS code'
-    required: true
-    input: {}
-    type: 'fips'
-    valid: () ->
-      @input.stateCode && @input.county
+    price:
+      alias: 'Price'
+      type: 'currency'
+      required: true
 
-  fips_code_field:
-    alias: 'FIPS code'
-    required: true
-    type: 'fips'
-    input: {}
+    sqft_finished:
+      alias: 'Finished Sq Ft'
+      type: 'integer'
 
-  hide_address:
-    alias: 'Hide Address'
-    type: 'boolean'
+    close_date:
+      alias: 'Close Date'
+      type: 'datetime'
 
-  hide_listing:
-    alias: 'Hide Listing'
-    type: 'boolean'
+  mls:
+    listing:
+      rm_property_id:
+        alias: 'Property ID'
+        required: true
+        type: 'rm_property_id'
+        input: {}
 
-  parcel_id:
-    alias: 'Parcel ID'
-    required: true
-    config:
-      stripFormatting: true
+      data_source_uuid:
+        alias: 'MLS Number'
+        required: true
 
-  price:
-    alias: 'Price'
-    type: 'currency'
-    required: true
+      fips_code:
+        alias: 'FIPS code'
+        required: true
+        input: {}
+        type: 'fips'
+        valid: () ->
+          @input.stateCode && @input.county
 
-  rm_property_id:
-    alias: 'Property ID'
-    required: true
-    type: 'rm_property_id'
-    input: {}
+      days_on_market:
+        alias: 'Days on Market'
+        required: true
+        type: 'days_on_market'
+        input: []
+        valid: () ->
+          @input[0] || @input[1]
 
-  sqft_finished:
-    alias: 'Finished Sq Ft'
-    type: 'integer'
+      hide_address:
+        alias: 'Hide Address'
+        type: 'boolean'
 
-  status:
-    alias: 'Status'
-    required: true
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      hide_listing:
+        alias: 'Hide Listing'
+        type: 'boolean'
 
-  status_display:
-    alias: 'Status Display'
-    required: true
-    group: 'general'
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      status:
+        alias: 'Status'
+        required: true
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  substatus:
-    alias: 'Sub-Status'
-    required: true
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      status_display:
+        alias: 'Status Display'
+        required: true
+        group: 'general'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  close_date:
-    alias: 'Close Date'
-    type: 'datetime'
+      substatus:
+        alias: 'Sub-Status'
+        required: true
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  discontinued_date:
-    alias: 'Discontinued Date'
-    type: 'datetime'
-
-  data_source_uuid:
-    alias: 'MLS Number'
-    required: true
-
-  data_source_uuid_county:
-    alias: 'County Number'
-    required: true
-
-  owner_name:
-    alias: 'Owner 1'
-
-  owner_name_2:
-    alias: 'Owner 2'
+      discontinued_date:
+        alias: 'Discontinued Date'
+        type: 'datetime'
 
 
-# there is much crossover among baserules for different sources, so let's just pull what we need from the above list here for each source:
-baseRules =
-  'mls':
-    'listing': _.pick _allBaseRules, [
-      'acres',
-      'address',
-      'baths_full',
-      'bedrooms',
-      'days_on_market',
-      'fips_code',
-      'hide_address',
-      'hide_listing',
-      'parcel_id',
-      'price',
-      'rm_property_id',
-      'sqft_finished',
-      'status',
-      'status_display',
-      'substatus',
-      'close_date',
-      'discontinued_date',
-      'data_source_uuid' ]
-  'county':
-    'tax': _.pick _allBaseRules, [
-      'data_source_uuid_county',
-      'rm_property_id',
-      'fips_code_field',
-      'parcel_id',
-      'address',
-      'price',
-      'close_date',
-      'bedrooms',
-      'baths_full',
-      'acres',
-      'sqft_finished',
-      'owner_name',
-      'owner_name_2' ]
-    'deed': {}
+  county:
+    tax:
+      rm_property_id:
+        alias: 'Property ID'
+        required: true
+        type: 'rm_property_id'
+        input: {}
+        valid: () ->
+          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
+
+      data_source_uuid:
+        alias: 'County Number'
+        required: true
+        input: {}
+        valid: () ->
+          @input.batchid && @input.batchseq
+
+      fips_code:
+        alias: 'FIPS code'
+        required: true
+
+      owner_name:
+        alias: 'Owner 1'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
+      owner_name_2:
+        alias: 'Owner 2'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
+    deed: {}
+
+getBaseRules = (dataSourceType, dataListType) ->
+  _.merge _rules.common, _rules[dataSourceType][dataListType]
 
 # RETS/MLS rule defaults for each data type
 typeRules =
@@ -258,10 +246,10 @@ buildDataRule = (rule) ->
 
 buildBaseRule = (dataSourceType, dataListType) ->
   (rule) ->
-    _buildRule rule, baseRules[dataSourceType][dataListType][rule.output]
+    _buildRule rule, getBaseRules(dataSourceType, dataListType)[rule.output]
     rule
 
 module.exports =
-  baseRules: baseRules
+  getBaseRules: getBaseRules
   buildDataRule: buildDataRule
   buildBaseRule: buildBaseRule

@@ -5,13 +5,13 @@ adminRoutes = require '../../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'mlsConstants', 'rmapsprincipal', 'rmapsJobsService'
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, mlsConstants, rmapsprincipal, rmapsJobsService) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'adminConstants', 'rmapsprincipal', 'rmapsJobsService'
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, adminConstants, rmapsprincipal, rmapsJobsService) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
       obj = {}
-      for key, value of mlsConstants.defaults.base
+      for key, value of adminConstants.defaults.base
         obj[key] = value
       return obj
 
@@ -31,7 +31,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
           dbIndex = i - 1 # identifier corresponds to index of selected item, minus 1 to accout for blank element
           dropdown.value = dbIndex # forceably assign the value (for some reason this is what is not occuring upon refresh)
 
-    nonBaseDefaults = _.assign {}, mlsConstants.defaults.otherConfig, _.clone mlsConstants.defaults.propertySchema
+    nonBaseDefaults = _.assign {}, adminConstants.defaults.otherConfig, _.clone adminConstants.defaults.propertySchema
 
     # init our dropdowns & mlsData
     $scope.loading = false
@@ -44,9 +44,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
     $scope.allowPasswordReset = false
     $scope.mlsData =
       current: getDefaultBase()
-      propertySchemaDefaults: mlsConstants.defaults.propertySchema
-      configDefaults: mlsConstants.defaults.otherConfig
-      task: mlsConstants.defaults.task
+      propertySchemaDefaults: adminConstants.defaults.propertySchema
+      configDefaults: adminConstants.defaults.otherConfig
+      task: adminConstants.defaults.task
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -185,7 +185,7 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         rmapsMlsService.getColumnList($scope.mlsData.current.id, $scope.mlsData.current.listing_data.db, $scope.mlsData.current.listing_data.table)
         .then (rawData) ->
           data = ({SystemName: x.SystemName, LongName: x.LongName, DataType: x.DataType} for x in rawData)
-          r = mlsConstants.dtColumnRegex
+          r = adminConstants.dtColumnRegex
           $scope.columnOptions = _.flatten([o for o in data when (_.some(k for k in _.keys(o) when typeof(k) == 'string' && r.test(k.toLowerCase())) or _.some(v for v in _.values(o) when typeof(v) == 'string' && r.test(v.toLowerCase())))], true)
           $scope.formItems[3].disabled = false
           $scope.fieldNameMap.columnNames = {}
@@ -273,9 +273,9 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
 
     # test for whether all default values being used or not
     $scope.hasAllDefaultOtherConfig = () ->
-      _.every(_.keys(mlsConstants.defaults.otherConfig), (k) ->
+      _.every(_.keys(adminConstants.defaults.otherConfig), (k) ->
         # null is a valid field value
-        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is mlsConstants.defaults.otherConfig[k])
+        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is adminConstants.defaults.otherConfig[k])
       )
 
     # test for whether MLS is ready and eligible for task activation and normalization
@@ -324,8 +324,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
       )
 ]
 
-app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'mlsConstants',
-  ($scope, $modalInstance, mlsModalData, mlsConstants) ->
+app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'adminConstants',
+  ($scope, $modalInstance, mlsModalData, adminConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
     $scope.editing = !!mlsModalData.id

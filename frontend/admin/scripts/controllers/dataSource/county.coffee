@@ -5,7 +5,7 @@ require '../../directives/listinput.coffee'
 
 
 app.controller 'rmapsCountyCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal) ->
+($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
 
   $scope.$state = $state
 
@@ -49,7 +49,7 @@ app.controller 'rmapsCountyCtrl',
       items: $scope.categories[list] = []
 
   $scope.getBaseRules = (dataSourceType, dataListType) ->
-    $scope.baseRules = validatorBuilder.baseRules[dataSourceType][dataListType]
+    $scope.baseRules = validatorBuilder.getBaseRules(dataSourceType, dataListType)
 
   allRules = {}
 
@@ -79,7 +79,8 @@ app.controller 'rmapsCountyCtrl',
         addRule rule, 'unassigned'
 
     # Create base rules that don't exist yet
-    _.forEach $scope.baseRules, (rule, output) ->
+    _.forEach $scope.baseRules, (rule, baseRulesKey) ->
+      output = rule.getOutput? && rule.getOutput() || baseRulesKey
       if !allRules[output]
         rule.output = output
         addBaseRule rule
@@ -115,23 +116,16 @@ app.controller 'rmapsCountyCtrl',
   $scope.loadLookups = (field) ->
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
-      if field._lookups.length <= 50
+      if field._lookups.length <= adminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
-    else if field && !field._lookups && field.LookupName
-      $log.debug "#### has lookup types!!!"
+    else if field && !field._lookups && field.MetadataEntryID
       config = $scope.countyData.current
-      $scope.fieldData.current.lookups = []
-      $scope.$evalAsync()
-      # $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
-      # .then (lookups) ->
-
-      #   $log.debug "#### lookups:"
-      #   $log.debug lookups.plain()
-
-      #   $scope.fieldData.current._lookups = field._lookups = lookups
-      #   if lookups.length <= 50
-      #     $scope.fieldData.current.lookups = lookups
-      #   $scope.$evalAsync()
+      $scope.countyLoading = rmapsCountyService.getLookupTypes field.MetadataEntryID
+      .then (lookups) ->
+        $scope.fieldData.current._lookups = field._lookups = lookups
+        if lookups.length <= adminConstants.dataSource.lookupThreshold
+          $scope.fieldData.current.lookups = lookups
+        $scope.$evalAsync()
 
   # Move rules between categories
   $scope.onDropCategory = (drag, drop, target) ->
@@ -170,9 +164,6 @@ app.controller 'rmapsCountyCtrl',
 
   # Move rules to base field config
   $scope.onDropBase = (drag, drop, target) ->
-    $log.debug "#### fieldData:"
-    $log.debug $scope.fieldData
-
     field = $scope.fieldData.current
     removed = field.input
     field.input = drag.model.output

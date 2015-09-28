@@ -8,8 +8,8 @@ require '../../directives/listinput.coffee'
 require '../../factories/validatorBuilder.coffee'
 
 app.controller 'rmapsNormalizeCtrl',
-['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal',
-($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal) ->
+['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal', 'adminConstants',
+($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
 
   $scope.$state = $state
 
@@ -33,7 +33,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
-  $scope.baseRules = validatorBuilder.baseRules['mls']['listing']
+  $scope.baseRules = validatorBuilder.getBaseRules('mls', 'listing')
 
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories['mls']['listing'], (label, list) ->
@@ -114,14 +114,14 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.loadLookups = (field) ->
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
-      if field._lookups.length <= 50
+      if field._lookups.length <= adminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= 50
+        if lookups.length <= adminConstants.dataSource.lookupThreshold
           $scope.fieldData.current.lookups = lookups
         $scope.$evalAsync()
 

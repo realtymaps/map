@@ -23,15 +23,25 @@ getColumnList = (dataSourceId, dataSourceType, dataListType) ->
     data_list_type: dataListType
   .catch errorLib.isUnhandled, (error) ->
     throw new errorLib.PartiallyHandledError(error, "Failed to retrieve #{dataSourceId} columns")
-  .then (response) ->
-    response
   .then (fields) ->
     for field in fields
       field.LongName = field.LongName.replace(/\./g, '')
     fields
 
-getLookupTypes = (serverInfo, databaseName, lookupId) ->
-
+getLookupTypes = (lookupId) ->
+  query = tables.config.dataSourceLookups()
+  .select(
+    'MetadataEntryID',
+    'LongValue',
+    'ShortValue',
+    'Value'
+  )
+  .where
+    MetadataEntryID: lookupId
+  .catch errorLib.isUnhandled, (error) ->
+    throw new errorLib.PartiallyHandledError(error, "Failed to retrieve lookups for metadata entry #{lookupId}")
+  .then (fields) ->
+    fields
 
 module.exports =
   getColumnList: getColumnList

@@ -7,6 +7,7 @@ apiBase = '/api'
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
 apiBaseDataSource = "#{apiBase}/data_source"
+apiBaseDataSourceLookups = "#{apiBase}/lookups"
 apiBaseUsers = "#{apiBase}/users"
 apiBaseUsersGroups = "#{apiBase}/usersGroups"
 apiBaseGroups = "#{apiBase}/groups"
@@ -150,8 +151,9 @@ module.exports =
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
   data_source:
     apiBaseDataSource: apiBaseDataSource
+    apiBaseDataSourceLookups: apiBaseDataSourceLookups
     getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
-    getLookupTypes: "#{apiBaseDataSource}/:dataSourceId/sourceDataType/:sourceDataType/lookups/:lookupId/types"
+    getLookupTypes: "#{apiBaseDataSourceLookups}/:lookupId/types"
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"
