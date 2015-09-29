@@ -1,89 +1,82 @@
-script(type="text/ng-template" id="modalContent.html")
-    form
-        div.modal-header
-            h3.modal-title Add Project
-            span.icon.icon-close(ng-click="cancel()")
-        div.modal-body
-            div.form-group
-                label(for="proejct_name_input") Name your project
-                input(type="text" class="form-control" id="project_name_input" placeholder="Type project name here")
-            button(class="btn btn-link" ng-click="showAddClientInfo = !showAddClientInfo") + Add Client Info
-            div(class="add-client-info" ng-init="showAddClientInfo = false" ng-show="showAddClientInfo")
-                div.form-section
-                    h4.title Client Info
-                    p.required.text-right Required
-                    div.form-group
-                        div.row
-                            div(class="col-sm-6")
-                                label(for="client_first_name" class="required") First Name
-                                input(type="text" class="form-control" id="client_first_name")
-                            div(class="col-sm-6")
-                                label(for="client_last_name") Last Name
-                                input(type="text" class="form-control" id="client_last_name")
-                    div.form-group
-                        div.row
-                            div(class="col-sm-6")
-                                label(for="client_email") Email
-                                input(type="text" class="form-control" id="client_email" placeholder="name@email.com")
-                            div(class="col-sm-6")
-                                label(for="client_phone_number") Phone Number
-                                input(type="text" class="form-control" id="client_phone_number")
-                    div.form-group
-                        div.row
-                            div(class="col-sm-6")
-                                label(for="client_address_1" ) Address 1
-                                input(type="text" class="form-control" id="client_address_1")
-                            div(class="col-sm-6")
-                                label(for="client_address_2") Address 2
-                                input(type="text" class="form-control" id="client_address_2")
-                    div.form-group
-                        div.row
-                            div(class="col-sm-6")
-                                label(for="client_city") City
-                                input(type="text" class="form-control" id="client_city")
-                            div(class="col-sm-6")
-                                label(for="client_state") State
-                                select(class="form-control" id="client_state")
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                div.form-section
-                    h4.title Property Ask
-                    div.form-group
-                        div.row
-                            div(class="col-sm-12")
-                                label(for="property_price_range") Price Range
-                                div.row
-                                    div.col-sm-6
-                                        input(type="text" class="form-control" id="property_price_range_min" placeholder="$0")
-                                    div.col-sm-6.minus
-                                        input(type="text" class="form-control" id="property_price_range_max" placeholder="$0")
-                    div.form-group
-                        div.row
-                            div(class="col-sm-4")
-                                label(for="property_beds") Beds
-                                select(class="form-control" id="property_beds")
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                            div(class="col-sm-4")
-                                label(for="property_bath") Bath
-                                select(class="form-control" id="property_bath")
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                                    option 1
-                            div(class="col-sm-4")
-                                label(for="property_sq_ft") Sq Ft
-                                input(type="text" class="form-control" id="property_sq_ft")
-        div.modal-footer
-            button(class="btn btn-default" ng-click="cancel()") Cancel
-            button(type="submit" class="btn btn-primary" ng-click="save()") Save
+form.add-project(name="newProject")
+  div.modal-header
+    h3.modal-title Add Project
+    span.icon.icon-close(ng-click="cancelModal()")
+  div.modal-body
+    div.form-group
+      label(for="proejct_name_input") Name your project
+      input(type="text" class="form-control" name="name" placeholder="Type project name here")
+    button(class="btn btn-link" ng-click="showAddClientInfo = !showAddClientInfo") + Add Client Info
+    div(class="add-client-info" ng-init="showAddClientInfo = false" ng-show="showAddClientInfo")
+      div.form-section
+        h4.title Client Info
+        p.required.text-right Required
+        div.form-group
+          div.row
+            div(class="col-sm-6")
+              label(for="client_first_name" class="required") First Name
+              input(type="text" class="form-control" id="client_first_name")
+            div(class="col-sm-6")
+              label(for="client_last_name") Last Name
+              input(type="text" class="form-control" id="client_last_name")
+        div.form-group
+          div.row
+            div(class="col-sm-6")
+              label(for="client_email") Email
+              input(type="text" class="form-control" id="client_email" placeholder="name@email.com")
+            div(class="col-sm-6")
+              label(for="client_phone_number") Phone Number
+              input(type="text" class="form-control" id="client_phone_number")
+        div.form-group
+          div.row
+            div(class="col-sm-6")
+              label(for="client_address_1" ) Address 1
+              input(type="text" class="form-control" id="client_address_1")
+            div(class="col-sm-6")
+              label(for="client_address_2") Address 2
+              input(type="text" class="form-control" id="client_address_2")
+        div.form-group
+          div.row
+            div(class="col-sm-6")
+              label(for="client_city") City
+              input(type="text" class="form-control" id="client_city")
+            div(class="col-sm-6")
+              label(for="client_state") State
+              select(class="form-control" id="client_state")
+                option FL
+      div.form-section
+        h4.title Property Ask
+        div.form-group
+          div.row
+            div(class="col-sm-12")
+              label(for="property_price_range") Price Range
+              div.row
+                div.col-sm-6
+                  input(type="text" class="form-control" id="property_price_range_min" placeholder="$0")
+                div.col-sm-6.minus
+                  input(type="text" class="form-control" id="property_price_range_max" placeholder="$0")
+        div.form-group
+          div.row
+            div(class="col-sm-4")
+              label(for="property_beds") Beds
+              select(class="form-control" id="property_beds")
+                option 1
+                option 2
+                option 3
+                option 4
+                option 5
+                option 6
+            div(class="col-sm-4")
+              label(for="property_bath") Bath
+              select(class="form-control" id="property_bath")
+                option 1
+                option 2
+                option 3
+                option 4
+                option 5
+            div(class="col-sm-4")
+              label(for="property_sq_ft") Sq Ft
+              input(type="text" class="form-control" id="property_sq_ft")
+  div.modal-footer
+    button(class="btn btn-default" ng-click="cancelModal()") Cancel
+    button(type="submit" class="btn btn-primary" ng-click="saveProject()") Save

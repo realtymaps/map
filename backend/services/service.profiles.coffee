@@ -8,6 +8,8 @@ logger = require '../config/logger'
 {singleRow} = require '../utils/util.sql.helpers'
 {currentProfile} = require '../utils/util.session.helpers'
 
+analyzeValue = require '../../common/utils/util.analyzeValue'
+
 cols =  [
   "#{auth_user_profile.tableName}.id as id", 'auth_user_id',
   'filters', 'properties_selected', 'map_toggles',
@@ -19,6 +21,7 @@ cols =  [
   "#{project.tableName}.rm_modified_time as #{project.tableName}_rm_modified_time",
   "#{project.tableName}.rm_inserted_time as #{project.tableName}_rm_inserted_time",
   "#{project.tableName}.name as #{project.tableName}_name",
+  "#{project.tableName}.archived as #{project.tableName}_archived",
 ]
 
 safe = [
@@ -38,20 +41,41 @@ toReturn = safe.concat ['id']
 get = (id, withProject = true) ->
   return auth_user_profile().where(id: id) unless withProject
 
-create = (auth_user_id) ->
-  auth_user_profile().insert(auth_user_id: auth_user_id).returning(toReturn)
+create = (newProfile, projectName) ->
+  logger.debug 'PROFILE SVC: creating a profile'
+  Promise.try () ->
+    if projectName
+      project()
+      .returning('id')
+      .insert(name: projectName)
+      .then (inserted) ->
+        inserted?[0]
+  .then (maybeProjectId) ->
+    if maybeProjectId
+      newProfile.project_id = maybeProjectId
+      newProfile.name = projectName
+    else
+      newProfile.name = 'New Project'
+    auth_user_profile()
+    .returning(toReturn)
+    .insert(_.pick newProfile, safe)
+  .then (inserted) ->
+    inserted?[0]
+  .catch (error) ->
+    logger.error analyzeValue error
+    throw new Error('Error creating new project')
 
 getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
   noProjQ = auth_user_profile().where(auth_user_id: auth_user_id)
   logger.debug noProjQ.toString()
   noProjQ.then (profilesNoProject) ->
-    hasAProject = _.some profilesNoProject, (p) -> !_.isUndefined(p.project_id)
+    hasAProject = _.some profilesNoProject, (p) -> p.project_id?
 
     logger.debug "hasAProject: #{hasAProject}"
     logger.debug "withProject: #{withProject}"
 
-    if !withProject and !hasAProject
-      q =  auth_user_profile().select(cols...).innerJoin(project.tableName,
+    if withProject and hasAProject
+      q =  auth_user_profile().select(cols...).leftJoin(project.tableName,
       project.tableName + '.id', auth_user_profile.tableName + '.project_id')
       .where(auth_user_id: auth_user_id)
       # logger.debug q.toString()
@@ -59,7 +83,7 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
 
     unless profilesNoProject?.length
       logger.debug "no profiles exist for auth_user_id: #{auth_user_id}. Creating"
-      return create(auth_user_id)
+      return create(auth_user_id: auth_user_id)
     logger.debug "returning profilesNoProject: #{JSON.stringify profilesNoProject}"
     profilesNoProject
 
@@ -80,6 +104,9 @@ getFirst = (userId) ->
       result = userState
       delete result.id
       return result
+
+getCurrent = (session) ->
+  currentProfile(session)
 
 update = (profile) ->
   q = userData.auth_user_profile()
@@ -114,6 +141,8 @@ updateCurrent = (session, partialState) ->
 module.exports =
   get: get
   getProfiles: getProfiles
+  getCurrent: getCurrent
   updateCurrent: updateCurrent
   update: update
   getFirst: getFirst
+  create: create

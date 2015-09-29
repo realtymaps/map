@@ -4,6 +4,7 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 {uiProfile} = require('../../../../common/utils/util.profile.coffee')
+Promise = require 'bluebird'
 
 ###
   Our Main Map Controller, logic
@@ -22,7 +23,7 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $state, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
@@ -39,60 +40,88 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   $rootScope.registerScopeData () ->
     rmapsprincipal.getIdentity()
+    .then $scope.loadIdentity
+
+  $scope.loadIdentity = (identity) ->
+    $scope.projects = identity.profiles
+    $scope.projectsTotal = (_.keys $scope.projects).length
+    _.each $scope.projects, (project) ->
+      project.totalProperties = (_.keys project.properties_selected).length
+
+    rmapsprincipal.getCurrentProfile()
+    .then ->
+      rmapsprincipal.getIdentity()
     .then (identity) ->
-      $scope.projects = identity.profiles
-      $scope.projectsTotal = (_.keys $scope.projects).length
-      _.each $scope.projects, (project) ->
-        project.totalPropertiesSelected = (_.keys project.propertiesSelected).length
+      $scope.loadProfile uiProfile(identity)
 
-      rmapsprincipal.getCurrentProfile()
-      .then ->
-        rmapsprincipal.getIdentity()
-      .then (identity) ->
-        loadProfile uiProfile(identity)
+    if not identity?.currentProfileId
+      $location.path(frontendRoutes.profiles)
 
-      if not identity?.currentProfileId
-        $location.path(frontendRoutes.profiles)
+  $scope.loadProfile = (profile) ->
+    if profile == $scope.selectedProfile
+      return
 
-  loadProfile = (profile) ->
-    $rootScope.selectedFilters = {}
+    Promise.try () ->
+      # If switching profiles, ensure the old profile is saved
+      if $scope.selectedProfile
+        $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+        $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+        $scope.selectedProfile.map_position = center: NgLeafletCenter(
+          lat: $scope.map.center.lat
+          lng: $scope.map.center.lng
+          zoom: $scope.map.center.zoom
+        )
+        $http.put(backendRoutes.userSession.profiles, _.pick($scope.selectedProfile, ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']))
+        .then () ->
+          # Set the current profile
+          $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+        .then () ->
+          # Set the current profile
+          rmapsprincipal.getCurrentProfile(profile.id)
 
-    map_position = profile.map_position
-    #fix messed center
-    if !map_position?.center?.lng or !map_position?.center?.lat
+    .then () ->
+      $scope.selectedProfile = profile
+
+      $rootScope.selectedFilters = {}
+
+      $scope.projectDropdown.isOpen = false
+
+      map_position = profile.map_position
+      #fix messed center
+      if !map_position?.center?.lng or !map_position?.center?.lat
+        map_position =
+          center:
+            lat: 26.129241
+            lng: -81.782227
+            zoom: 15
+
       map_position =
-        center:
-          lat: 26.129241
-          lng: -81.782227
-          zoom: 15
+        center: NgLeafletCenter map_position.center
 
-    map_position =
-      center: NgLeafletCenter map_position.center
+      if profile.filters
+        statusList = profile.filters.status || []
+        for key,status of rmapsParcelEnums.status
+          profile.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
+        _.extend($rootScope.selectedFilters, _.omit(profile.filters, 'status'))
+      if map
+        if map_position?.center?
+          $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
+        if map_position?.zoom?
+          $scope.map.center.zoom = Number map_position.zoom
+        $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
+      else
+        if map_position?
+          if map_position.center? and
+          map_position.center.latitude? and
+          map_position.center.latitude != 'NaN' and
+          map_position.center.longitude? and
+          map_position.center.longitude != 'NaN'
+            rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
+          if map_position.zoom?
+            rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
-    if profile.filters
-      statusList = profile.filters.status || []
-      delete profile.filters.status
-      for key,status of rmapsParcelEnums.status
-        profile.filters[key] = (statusList.indexOf(status) > -1)
-      _.extend($rootScope.selectedFilters, profile.filters)
-    if map
-      if map_position?.center?
-        $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
-      if map_position?.zoom?
-        $scope.map.center.zoom = Number map_position.zoom
-      $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
-    else
-      if map_position?
-        if map_position.center? and
-        map_position.center.latitude? and
-        map_position.center.latitude != 'NaN' and
-        map_position.center.longitude? and
-        map_position.center.longitude != 'NaN'
-          rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
-        if map_position.zoom?
-          rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
-      rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
-      map = new rmapsMap($scope, rmapsMainOptions.map)
+        rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
+        map = new rmapsMap($scope, rmapsMainOptions.map)
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
@@ -100,6 +129,36 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           profile.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
+
+  $scope.projectDropdown = isOpen: false
+
+  $scope.addProject = () ->
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/addProjects.jade')()
+
+    modalInstance.result.then (result) ->
+
+    $scope.cancelModal = () ->
+      modalInstance.dismiss('cancel')
+
+    $scope.saveProject = () ->
+      modalInstance.dismiss('save')
+      $http.post backendRoutes.userSession.newProject, projectName: newProject.name.value
+      .then (response) ->
+        rmapsprincipal.setIdentity response.data.identity
+        $scope.loadIdentity response.data.identity
+      # $state.go($state.current, $state.params, { reload: true })
+
+  $scope.archiveProject = (project) ->
+    project.project_archived = !project.project_archived
+    $http.put backendRoutes.user_projects.root + "/#{project.project_id}",
+      id: project.project_id
+      name: project.project_name
+      archived: project.project_archived
+    .then () ->
+      $scope.projectDropdown.isOpen = false
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
