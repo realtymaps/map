@@ -157,20 +157,15 @@ finalizeData = (subtask, id) ->
   # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
-      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
-      return
-    listing = listings.shift()
+      # might happen if a singleton listing is deleted during the day
+      return tables.propertyData.deletes()
+      .insert
+        rm_property_id: id
+        data_source_id: subtask.task_name
+        batch_id: subtask.batch_id
+    listing = dataLoadHelpers.finalizeEntry(listings)
     listing.data_source_type = 'mls'
-    listing.active = false
     _.extend(listing, parcel[0])
-    delete listing.deleted
-    delete listing.hide_address
-    delete listing.hide_listing
-    delete listing.rm_inserted_time
-    delete listing.rm_modified_time
-    listing.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
-    listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
-    listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
     tables.propertyData.combined()
     .insert(listing)
 

@@ -33,6 +33,7 @@ module.exports =
     parcel: 'properties.mv_parcels'
     propertyDetails: 'properties.mv_property_details'
     combined: 'properties.combined_data'
+    deletes: 'properties.combined_data_deletes'
   jobQueue:
     dataLoadHistory: 'properties.data_load_history'
     taskConfig: 'users.jq_task_config'

@@ -60,7 +60,9 @@ checkFtpDrop = (subtask) ->
       logger.debug "Found new corelogic tax directory to process: #{todo[TAX]}"
       dates[TAX] = todo[TAX].slice(0, 8)
       taxFilesPromise = ftp.list("/#{todo[TAX]}")
+      deletes = dataLoadHelpers.DELETE.UNTOUCHED
     else
+      deletes = dataLoadHelpers.DELETE.NONE
       taxFilesPromise = Promise.resolve()
     if todo[DEED]?
       logger.debug "Found new corelogic deed directory to process: #{todo[DEED]}"
@@ -75,11 +77,10 @@ checkFtpDrop = (subtask) ->
       # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
       # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
       # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-      deletes = if dates[TAX]? then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
       jobQueue.transaction (transaction) ->
         taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
         deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
-        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", null, true)
+        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", {sources: _.keys(todo)}, true)
         activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deletes: deletes}, true)
         dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'corelogic_saveProcessDates', dates: dates, true)
         Promise.join ftpEnd, taxSubtasks, deedSubtasks, finalizePrep, activate, dates, () ->  # empty handler
@@ -125,14 +126,14 @@ normalizeData = (subtask) ->
     updateRecord: coreLogicHelpers.updateRecord
 
 finalizeDataPrep = (subtask) ->
-  tables.propertyData.listing()
-  .distinct('rm_property_id')
-  .select()
-  .where(batch_id: subtask.batch_id)
-  .whereNull('deleted')
-  .where(hide_listing: false)
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "corelogic_finalizeData")
+  Promise.map subtask.data.sources, (source) ->
+    tables.propertyData[source]()
+    .select('rm_property_id')
+    .where(batch_id: subtask.batch_id)
+    .then (ids) ->
+      _.pluck(ids, 'rm_property_id')
+  .then (lists) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.union(lists), NUM_ROWS_TO_PAGINATE, "corelogic_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, coreLogicHelpers.finalizeData.bind(null, subtask)

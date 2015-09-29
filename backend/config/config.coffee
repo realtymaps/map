@@ -125,6 +125,7 @@ base =
   CLEANUP:
     OLD_TABLE_DAYS: 7
     SUBTASK_ERROR_DAYS: 90
+    OLD_DELETE_MARKER_DAYS: 7
 
 
 # this one's separated out so we can re-use the USER_DB.connection value
@@ -157,6 +158,7 @@ environmentConfig =
     CLEANUP:
       OLD_TABLE_DAYS: 1
       SUBTASK_ERROR_DAYS: 7
+      OLD_DELETE_MARKER_DAYS: 1
 
   test: # test inherits from development below
     LOGGING:

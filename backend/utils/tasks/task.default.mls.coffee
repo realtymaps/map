@@ -32,13 +32,11 @@ normalizeData = (subtask) ->
 
 finalizeDataPrep = (subtask) ->
   tables.propertyData.listing()
-  .distinct('rm_property_id')
-  .select()
+  .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
-  .whereNull('deleted')
-  .where(hide_listing: false)
   .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+    ids = _.uniq(_.pluck(ids, 'rm_property_id'))
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)

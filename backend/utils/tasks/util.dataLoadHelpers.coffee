@@ -111,10 +111,10 @@ recordChangeCounts = (subtask) ->
       touched_rows: touchedSubquery
 
 
+# this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
 activateNewData = (subtask) ->
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   tables.propertyData.combined.transaction (transaction) ->
-    # this function flips inactive rows to active, active rows to inactive, and deletes the now-inactive rows
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
@@ -126,23 +126,37 @@ activateNewData = (subtask) ->
       # rm_property_id that has been updated in this batch
       activatePromise = tables.propertyData.combined(transaction)
       .as('updater')
-      .where(data_source_id: subtask.task_name)
       .whereExists () ->
         tables.propertyData.combined(this)
         .select(1)
         .where
-          data_source_id: subtask.task_name
+          update_source: subtask.task_name
           batch_id: subtask.batch_id
           active: false
           rm_property_id: tables.propertyData.combined.raw('updater.rm_property_id')
+          data_source_id: tables.propertyData.combined.raw('updater.data_source_id')
       .update(active: tables.propertyData.combined.raw('NOT "active"'))
       
     activatePromise
     .then () ->
+      # delete inactive rows
       tables.propertyData.combined(transaction)
       .where
         data_source_id: subtask.task_name
         active: false
+      .delete()
+    .then () ->
+      # delete rows marked explicitly for deletion
+      tables.propertyData.combined(transaction)
+      .as('deleter')
+      .where(data_source_id: subtask.task_name)
+      .whereExists () ->
+        tables.propertyData.deletes(this)
+        .select(1)
+        .where
+          data_source_id: subtask.task_name
+          batch_id: subtask.batch_id
+          rm_property_id: tables.propertyData.combined.raw('deleter.rm_property_id')
       .delete()
 
 
@@ -286,7 +300,7 @@ _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () 
         data_source_uuid: updateRow.data_source_uuid
         data_source_id: updateRow.data_source_id
       .update(updateRow)
-    
+
 
 getValues = (list, target) ->
   if !target
@@ -330,6 +344,20 @@ _getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
   _.extend result, _.omit(fields2, Object.keys(fields1))
 
 
+finalizeEntry = (entries) ->
+  entry = entries.shift()
+  entry.active = false
+  delete entry.deleted
+  delete entry.hide_address
+  delete entry.hide_listing
+  delete entry.rm_inserted_time
+  delete entry.rm_modified_time
+  entry.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entries)
+  entry.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entry.address)
+  entry.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entry.change_history)
+  entry.update_source = entry.data_source_id
+  
+
 module.exports =
   getRawTableName: getRawTableName
   createRawTempTable: createRawTempTable
@@ -338,4 +366,5 @@ module.exports =
   getValidationInfo: getValidationInfo
   normalizeData: normalizeData
   getValues: getValues
+  finalizeEntry: finalizeEntry
   DELETE: DELETE
