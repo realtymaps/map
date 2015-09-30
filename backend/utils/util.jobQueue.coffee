@@ -79,7 +79,7 @@ queueReadyTasks = () -> Promise.try () ->
         sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
         .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
           tables.jobQueue.taskHistory(this)
-          .select()
+          .select(1)
           .where(current: true)
           .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
           .where () ->
@@ -194,7 +194,7 @@ queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, repla
         subtaskData = manualData
       else
         if _.isArray manualData && _.isArray subtask.data
-          throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.task_name}/#{subtask.name}")
+          throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.name}")
         else if _.isArray manualData
           subtaskData = manualData
           mergeData = subtask.data
@@ -217,7 +217,7 @@ queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, repla
         # return 0 to indicate we queued 0 subtasks
         logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
-      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else ''
+      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
@@ -314,16 +314,16 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+      logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
     else
       if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
         if subtask.hard_fail_after_retries
           hard = true
           status = 'hard fail'
           error = "max retries exceeded: #{error}"
-          logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+          logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
         else
-          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
@@ -332,9 +332,9 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         .then (taskData) ->
           # need to make sure we don't continue to retry subtasks if the task has errored in some way
           if taskData == undefined
-            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
             return
-          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
@@ -435,6 +435,7 @@ _handleSuccessfulTasks = (transaction=null) ->
   .where(status: 'running')
   .whereNotExists () ->
     tables.jobQueue.currentSubtasks(this)
+    .select(1)
     .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
       this
@@ -595,7 +596,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
   .then (subtask) ->
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.task_name}/#{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
+      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       executeSubtask(subtask)
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
     else if quit

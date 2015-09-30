@@ -20,25 +20,21 @@ loadRawData = (subtask) ->
     dataSourceId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData",
-      type: 'listing'
-      rawTableSuffix: 'listing'
+      dataType: 'listing'
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: subtask.task_name
     dataSourceType: 'mls'
-    updateRecord: mlsHelpers.updateRecord
+    buildRecord: mlsHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
   tables.propertyData.listing()
-  .distinct('rm_property_id')
-  .select()
+  .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
-  .whereNull('deleted')
-  .where(hide_listing: false)
   .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+    ids = _.uniq(_.pluck(ids, 'rm_property_id'))
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
@@ -47,7 +43,7 @@ finalizeData = (subtask) ->
 module.exports = new TaskImplementation
   loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'listing', tables.propertyData.listing)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
