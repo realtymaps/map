@@ -1,5 +1,7 @@
 basePath = require '../../basePath'
-coreLogicHelpers = require "#{basePath}/utils/tasks/util.coreLogicHelpers"
+rewire = require 'rewire'
+coreLogicHelpers = rewire "#{basePath}/utils/tasks/util.coreLogicHelpers"
+_listExtend = coreLogicHelpers.__get__('_listExtend')
 
 describe 'coreLogicHelpers', () ->
   describe '_listExtend', () ->
@@ -76,5 +78,5 @@ describe 'coreLogicHelpers', () ->
         name: 'item10'
         value: 'list1-value10'
       ]
-      coreLogicHelpers._listExtend(list1, list2)
+      _listExtend(list1, list2)
       list1.should.eql(expected)

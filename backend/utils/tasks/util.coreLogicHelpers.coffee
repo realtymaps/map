@@ -283,7 +283,6 @@ finalizeData = (subtask, id) ->
     .insert(tax)
 
 
-# note that this is not a general-purpose method, it has some quirks built-in -- only being exported for specs
 _listExtend = (list1, list2) ->
   list1Map = dataLoadHelpers.getValues(list1)
   i=0
@@ -308,4 +307,3 @@ module.exports =
   loadRawData: loadRawData
   buildRecord: buildRecord
   finalizeData: finalizeData
-  _listExtend: _listExtend
