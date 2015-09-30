@@ -10,8 +10,6 @@ do require '../../common/config/dbChecker.coffee'
 bookshelfRaw = require('bookshelf.raw.safe')(logger)
 
 # bind the bookshelf raw safe query logic into the db object
-users = bookshelf knex(config.USER_DB)
-users.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, users)
 properties = bookshelf knex(config.PROPERTY_DB)
 properties.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, properties)
 
@@ -28,13 +26,6 @@ shutdown = () ->
       process.nextTick reject.bind(null, error)
     pg.end()
 
-  userDbShutdown = module.exports.users.knex.destroy()
-  .then () ->
-    logger.info "... 'users' database shutdown complete ..."
-  .catch (error) ->
-    logger.error "!!! 'users' database shutdown error: #{error}"
-    Promise.reject(error)
-
   propertyDbShutdown = module.exports.properties.knex.destroy()
   .then () ->
     logger.info "... 'properties' database shutdown complete ..."
@@ -42,7 +33,7 @@ shutdown = () ->
     logger.error "!!! 'properties' database shutdown error: #{error}"
     Promise.reject(error)
 
-  return Promise.join pgDbShutdown, userDbShutdown, propertyDbShutdown, (pgDbShutdown, userDbShutdown, propertyDbShutdown) ->
+  return Promise.join pgDbShutdown, propertyDbShutdown, (pgDbShutdown, propertyDbShutdown) ->
     logger.info 'all databases successfully shut down.'
   .catch (error) ->
     logger.error 'all databases shut down, some with errors.'
@@ -50,7 +41,7 @@ shutdown = () ->
 
 
 module.exports =
-  users: users
+  users: properties
   properties: properties
   pg: pg
   shutdown: shutdown
