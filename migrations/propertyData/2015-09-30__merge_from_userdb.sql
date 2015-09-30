@@ -1,5 +1,6 @@
 
 CREATE EXTENSION IF NOT EXISTS tablefunc;
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
 
 DROP TABLE IF EXISTS keystore;
 ALTER TABLE keystore_property RENAME TO keystore;
