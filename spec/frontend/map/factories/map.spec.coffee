@@ -1,4 +1,4 @@
-Point = require('../../../../common/utils/util.geometries.coffee').Point
+{Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 mockRoutes = require '../fixtures/propertyData.coffee'
@@ -89,7 +89,9 @@ describe "rmapsMap factory", ->
         it 'default (no results)', ->
           test = @subject.getMapStateObj()
           test.map_position.center.should.be.ok
-          test.map_position.center.should.be.equal @subject.scope.map.center
+          test.map_position.center.latitude.should.be.equal @subject.scope.map.center.latitude
+          test.map_position.center.longitude.should.be.equal @subject.scope.map.center.longitude
+
           test.map_position.zoom.should.be.equal mockRoutes.zoom
           expect(test.map_results).to.not.be.ok
 
