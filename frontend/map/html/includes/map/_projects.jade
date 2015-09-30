@@ -1,22 +1,26 @@
-span(class="dropdown btn-group projects-list" dropdown on-toggle="toggled(open)")
+span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen")
   button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
     span
       span.icon.icon-project
-      h4 {{selectedProject.title}}
+      h4(ng-show="selectedProfile.project_name") {{selectedProfile.project_name}}
+      h4(ng-show="!selectedProfile.project_name") Sandbox ({{selectedProfile.name}})
     span.caret
   ul(class="dropdown-menu whiteblock no-margin")
     li.count
-      //TODO: use frontend routes!
-      a(ng-show="projectsTotal == 1" href="{{frontendRoutes.projects}}") {{projectsArray.length}} Project
-      a(ng-show="projectsTotal != 1" href="{{frontendRoutes.projects}}") {{projectsArray.length}} Projects
-    li(ng-repeat="project in projects" ng-click="selectProject(project)" )
-      a(href="#")
+      a(ng-show="projectsTotal == 1" href="{{frontendRoutes.projects}}") {{projectsTotal}} Project
+      a(ng-show="projectsTotal != 1" href="{{frontendRoutes.projects}}") {{projectsTotal}} Projects
+    li(ng-repeat="profile in projects| orderBy: '-project_archived'" ng-click="loadProfile(profile)" )
+      a
         span.enity
           span.icon.icon-project
           span.title
-            h3 {{project.title}}
-            span.count {{project.properties.length}} Properties
+            h3(ng-show="profile.project_name") {{profile.project_name}}
+            h3(ng-show="!profile.project_name") Sandbox ({{profile.name}})
+            span.count {{profile.totalProperties}}
+              span(ng-show="profile.totalProperties == 1")  Property
+              span(ng-show="profile.totalProperties != 1")  Properties
+              span(ng-show="profile.project_archived")  -- archived
         span.actions
-          span.icon.icon-save_on_disk
-          span.icon.icon-checked
-          span.icon.icon-remove
+          //- span.icon.icon-remove
+          //- span.icon.icon-checked
+          span.icon.icon-save_on_disk(ng-show="profile.project_id" ng-click="archiveProject(profile)")
