@@ -191,7 +191,7 @@ finalizeData = (subtask, id) ->
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('deleted')
-  .orderByRaw('close_date DESC NULLS FIRST')
+  .orderByRaw('close_date ASC NULLS LAST')
   # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
   # TODO: simultaneous closings, how do we property sort to account for that?
   parcelsPromise = tables.propertyData.parcel()
@@ -230,7 +230,7 @@ finalizeData = (subtask, id) ->
       delete tax[field]
     salesHistory = []
     if deedEntries.length
-      while deed = deedEntries.shift()
+      while deed = deedEntries.pop()
         if deed.close_date.getTime() > current.close_date.getTime()
           salesHistory.push(deed)
         else if deed.close_date.getTime() == current.close_date.getTime()
@@ -244,7 +244,7 @@ finalizeData = (subtask, id) ->
         else
           # insert the current tax sale into the list and then pick back up with the prior tax sale
           salesHistory.push(current)
-          deedEntries.unshift(deed)
+          deedEntries.push(deed)
           current = null
           break
       if current != null
@@ -252,7 +252,7 @@ finalizeData = (subtask, id) ->
         salesHistory.push(current, prior)
       else
         # now do sort of the same thing for prior
-        while deed = deedEntries.shift()
+        while deed = deedEntries.pop()
           if deed.close_date.getTime() > prior.close_date.getTime()
             salesHistory.push(deed)
           else if deed.close_date.getTime() == prior.close_date.getTime()
@@ -283,6 +283,7 @@ finalizeData = (subtask, id) ->
     .insert(tax)
 
 
+# note that this is not a general-purpose method, it has some quirks built-in -- only being exported for specs
 _listExtend = (list1, list2) ->
   list1Map = dataLoadHelpers.getValues(list1)
   i=0
@@ -307,3 +308,4 @@ module.exports =
   loadRawData: loadRawData
   buildRecord: buildRecord
   finalizeData: finalizeData
+  _listExtend: _listExtend
