@@ -33,9 +33,6 @@ class Encryptor
       @unpackPayload
       @payloadDelimiter
     } = options
-
-    if !@cipherKey?
-      throw new Error('A cipher key is required')
     
     
     # set some default values
@@ -62,13 +59,17 @@ class Encryptor
       }
     
     # coerce keys to Buffers if necessary
-    if !Buffer.isBuffer(@cipherKey)
+    if @cipherKey && !Buffer.isBuffer(@cipherKey)
       @cipherKey = new Buffer(@cipherKey, @keyEncoding)
     if @authenticationKey && !Buffer.isBuffer(@authenticationKey)
       @authenticationKey = new Buffer(@authenticationKey, @keyEncoding)
   
     
   encrypt: (plainData, authData, initVector) ->
+
+    if !@cipherKey?
+      throw new Error('A cipher key is required')
+
     payloadData = {}
     
     if !Buffer.isBuffer(plainData)
@@ -133,6 +134,10 @@ class Encryptor
     
     
   decrypt: (payload, withAAD=false) ->
+
+    if !@cipherKey?
+      throw new Error('A cipher key is required')
+
     if typeof(payload) != 'string'
       payload = payload.toString()
     
