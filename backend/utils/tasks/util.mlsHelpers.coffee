@@ -67,10 +67,10 @@ loadUpdates = (subtask, options) ->
     now = new Date()
     if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
       # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
+      logger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
       return new Date(0)
     else
-      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
+      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
       return lastSuccess
   .then (refreshThreshold) ->
     tables.config.mls()
@@ -86,14 +86,14 @@ loadUpdates = (subtask, options) ->
         # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
         # on whether this is a dump or an update)
         deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing', rawTableSuffix: 'listing'}, true)
+        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
         activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
 
         handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
         .then (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
-          rawTableName = dataLoadHelpers.getRawTableName subtask, 'listing'
+          rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
           dataLoadHistory =
             data_source_id: options.dataSourceId
             data_source_type: 'mls'

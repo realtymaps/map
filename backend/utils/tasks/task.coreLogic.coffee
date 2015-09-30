@@ -91,7 +91,7 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
   loadDataList = []
   countDataList = []
   for file in files when file.name.endsWith('.zip')
-    rawTableSuffix = "#{type}_#{file.name.slice(0, -4)}"
+    rawTableSuffix = "#{file.name.slice(0, -4)}"
     loadDataList.push
       path: "/#{dir}/#{file.name}"
       rawTableSuffix: rawTableSuffix
@@ -108,22 +108,20 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
 
 loadRawData = (subtask) ->
   coreLogicHelpers.loadRawData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: 'corelogic'
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "corelogic_normalizeData",
       rawTableSuffix: subtask.data.rawTableSuffix
-      type: subtask.data.type
+      dataType: subtask.data.dataType
 
 saveProcessedDates = (subtask) ->
   keystore.propertyDb.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
     
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: 'corelogic'
     dataSourceType: 'county'
-    updateRecord: coreLogicHelpers.updateRecord
+    buildRecord: coreLogicHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
   Promise.map subtask.data.sources, (source) ->

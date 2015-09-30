@@ -23,7 +23,7 @@ through = require 'through2'
 rimraf = require 'rimraf'
 
 
-_streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
+_streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
   # stream the contents of the file into a COPY FROM query
   count = 0
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
@@ -106,8 +106,8 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
-  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
-  fileBaseName = "corelogic_#{subtask.batch_id}_#{options.rawTableSuffix}"
+  rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, 'corelogic')
   ftp = new PromiseFtp()
   ftp.connect
     host: subtask.task_data.host
@@ -135,7 +135,7 @@ loadRawData = (subtask, options) ->
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
+    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory)
   .then (rowsInserted) ->
     return rowsInserted
   .catch isUnhandled, (error) ->
@@ -270,7 +270,7 @@ finalizeData = (subtask, id) ->
     
     # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
     # TODO: static data fields?
-    
+
     # now that we have an ordered sales history, overwrite that into the tax record
     lastSale = salesHistory.shift()
     tax.subscriber_groups.owner = lastSale.subscriber_groups.owner

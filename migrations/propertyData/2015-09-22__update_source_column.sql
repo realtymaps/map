@@ -1,5 +1,8 @@
 
-ALTER combined_data ADD COLUMN update_source TEXT NOT NULL USING data_source_id;
+ALTER TABLE combined_data ADD COLUMN update_source TEXT;
+UPDATE combined_data set update_source = data_source_id;
+ALTER TABLE combined_data ALTER COLUMN update_source SET NOT NULL;
+
 CREATE INDEX ON combined_data (data_source_id, rm_property_id, update_source, batch_id)
   WHERE active = FALSE;
 

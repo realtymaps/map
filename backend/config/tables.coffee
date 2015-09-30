@@ -3,8 +3,15 @@ logger = require '../config/logger'
 
 
 buildQuery = (dbName, tableName) ->
-  query = (transaction=dbs[dbName].knex) ->
-    ret = transaction.from(tableName)
+  query = (transaction=dbs[dbName].knex, asName) ->
+    if typeof(transaction) == 'string'
+      # syntactic sugar to allow passing just the asName
+      asName = transaction
+      transaction = dbs[dbName].knex
+    if asName
+      ret = transaction.from(dbs[dbName].knex.raw("#{tableName} AS #{asName}"))
+    else
+      ret = transaction.from(tableName)
     ret.raw = dbs[dbName].knex.raw.bind(transaction)
     ret
   query.tableName = tableName

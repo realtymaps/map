@@ -16,9 +16,11 @@ DELETE =
   NONE: 'none'
 
 
-getRawTableName = (subtask, suffix) ->
-  suffix = if suffix then "_#{suffix}" else ''
-  "raw_#{subtask.task_name}#{suffix}_#{subtask.batch_id}"
+buildUniqueSubtaskName = (subtask, prefix='raw') ->
+  parts = [prefix, subtask.batch_id, subtask.task_name, subtask.data.dataType]
+  if subtask.data.rawTableSuffix
+    parts.push(subtask.data.rawTableSuffix)
+  parts.join('_')
 
 
 createRawTempTable = (tableName, fields) ->
@@ -46,7 +48,7 @@ _countInvalidRows = (knex, tableName, assignedFalse) ->
 
     
 recordChangeCounts = (subtask) ->
-  rawTableName = getRawTableName(subtask, subtask.data.rawTableSuffix)
+  rawTableName = buildUniqueSubtaskName(subtask)
   subset =
     data_source_id: subtask.task_name
   _.extend(subset, subtask.data.subset)
@@ -124,8 +126,7 @@ activateNewData = (subtask) ->
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
       # rm_property_id that has been updated in this batch
-      activatePromise = tables.propertyData.combined(transaction)
-      .as('updater')
+      activatePromise = tables.propertyData.combined(transaction, 'updater')
       .whereExists () ->
         tables.propertyData.combined(this)
         .select(1)
@@ -133,8 +134,9 @@ activateNewData = (subtask) ->
           update_source: subtask.task_name
           batch_id: subtask.batch_id
           active: false
-          rm_property_id: tables.propertyData.combined.raw('updater.rm_property_id')
-          data_source_id: tables.propertyData.combined.raw('updater.data_source_id')
+          rm_property_id: tables.propertyData.combined.raw("updater.rm_property_id")
+          data_source_id: tables.propertyData.combined.raw("updater.data_source_id")
+        .as('exister')
       .update(active: tables.propertyData.combined.raw('NOT "active"'))
       
     activatePromise
@@ -147,8 +149,7 @@ activateNewData = (subtask) ->
       .delete()
     .then () ->
       # delete rows marked explicitly for deletion
-      tables.propertyData.combined(transaction)
-      .as('deleter')
+      tables.propertyData.combined(transaction, 'deleter')
       .where(data_source_id: subtask.task_name)
       .whereExists () ->
         tables.propertyData.deletes(this)
@@ -156,7 +157,7 @@ activateNewData = (subtask) ->
         .where
           data_source_id: subtask.task_name
           batch_id: subtask.batch_id
-          rm_property_id: tables.propertyData.combined.raw('deleter.rm_property_id')
+          rm_property_id: tables.propertyData.combined.raw("deleter.rm_property_id")
       .delete()
 
 
@@ -243,9 +244,9 @@ getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
-  rawTableName = getRawTableName subtask, options.rawTableSuffix
+  rawTableName = buildUniqueSubtaskName(subtask)
   # get rows for this subtask
-  rowsPromise = tables.buildQuery('properties', rawTableName)
+  rowsPromise = tables.buildQuery('properties', rawTableName)()
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
@@ -259,15 +260,14 @@ normalizeData = (subtask, options) -> Promise.try () ->
         rm_raw_id: row.rm_raw_id
         up_to_date: startTime
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
-      #.then options.buildRecord.bind(null, stats, validationInfo.diffExcludeKeys, validationInfo.usedKeys, row, options.dataSourceType, subtask.data.dataType)
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
       .then () ->
-        tables.buildQuery('properties', rawTableName)
+        tables.buildQuery('properties', rawTableName)()
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
-        tables.buildQuery('properties', rawTableName)
+        tables.buildQuery('properties', rawTableName)()
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.all promises
@@ -352,14 +352,15 @@ finalizeEntry = (entries) ->
   delete entry.hide_listing
   delete entry.rm_inserted_time
   delete entry.rm_modified_time
-  entry.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entries)
-  entry.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entry.address)
-  entry.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), entry.change_history)
+  entry.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined, entries)
+  entry.address = sqlHelpers.safeJsonArray(tables.propertyData.combined, entry.address)
+  entry.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined, entry.change_history)
   entry.update_source = entry.data_source_id
-  
+  entry
+
 
 module.exports =
-  getRawTableName: getRawTableName
+  buildUniqueSubtaskName: buildUniqueSubtaskName
   createRawTempTable: createRawTempTable
   recordChangeCounts: recordChangeCounts
   activateNewData: activateNewData

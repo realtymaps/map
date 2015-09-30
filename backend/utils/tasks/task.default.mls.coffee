@@ -20,15 +20,13 @@ loadRawData = (subtask) ->
     dataSourceId: subtask.task_name
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData",
-      type: 'listing'
-      rawTableSuffix: 'listing'
+      dataType: 'listing'
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: subtask.task_name
     dataSourceType: 'mls'
-    updateRecord: mlsHelpers.updateRecord
+    buildRecord: mlsHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
   tables.propertyData.listing()
