@@ -31,13 +31,13 @@ getColumnList = (dataSourceId, dataSourceType, dataListType) ->
 getLookupTypes = (lookupId) ->
   query = tables.config.dataSourceLookups()
   .select(
-    'MetadataEntryID',
+    'LookupName',
     'LongValue',
     'ShortValue',
     'Value'
   )
   .where
-    MetadataEntryID: lookupId
+    LookupName: lookupId
   .catch errorLib.isUnhandled, (error) ->
     throw new errorLib.PartiallyHandledError(error, "Failed to retrieve lookups for metadata entry #{lookupId}")
   .then (fields) ->

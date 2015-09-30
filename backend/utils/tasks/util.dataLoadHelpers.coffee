@@ -154,7 +154,8 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
       .then (mlsConfig) ->
         mlsConfig.data_rules
   else if dataSourceType == 'county'
-    dataSourcePromise = Promise.try() ->
+    dataSourcePromise = Promise.try () ->
+      Promise.resolve {}
       # Query for county/corelogic global rules?
 
   dataSourcePromise
@@ -189,7 +190,15 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
             transforms = [ transforms ]
 
           validationDef.transform = _.map transforms, (transform) ->
-            validation.validators[transform.name](transform.options)
+            v = validation.validators[transform.name](transform.options)
+            console.log "transform.name:"
+            console.log JSON.stringify(transform.name)
+            console.log "transform.options:"
+            console.log JSON.stringify(transform.options)
+            console.log "transform:"
+            console.log JSON.stringify(transform)
+            console.log "v:"
+            console.log JSON.stringify(v)
 
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use

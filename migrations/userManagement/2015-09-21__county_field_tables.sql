@@ -18,7 +18,7 @@ CREATE TABLE data_source_fields (
 
 DROP TABLE IF EXISTS data_source_lookups;
 CREATE TABLE data_source_lookups (
-  "MetadataEntryID" TEXT,
+  "LookupName" TEXT,
   "LongValue" TEXT,
   "ShortValue" TEXT,
   "Value" TEXT

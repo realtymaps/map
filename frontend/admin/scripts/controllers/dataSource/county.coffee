@@ -118,9 +118,9 @@ app.controller 'rmapsCountyCtrl',
       $scope.fieldData.current._lookups = field._lookups
       if field._lookups.length <= adminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
-    else if field && !field._lookups && field.MetadataEntryID
+    else if field && !field._lookups && field.LookupName && field.Interpretation
       config = $scope.countyData.current
-      $scope.countyLoading = rmapsCountyService.getLookupTypes field.MetadataEntryID
+      $scope.countyLoading = rmapsCountyService.getLookupTypes field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
         if lookups.length <= adminConstants.dataSource.lookupThreshold
