@@ -4,7 +4,6 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 {uiProfile} = require('../../../../common/utils/util.profile.coffee')
-Promise = require 'bluebird'
 
 ###
   Our Main Map Controller, logic
@@ -23,7 +22,7 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $state, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
@@ -61,25 +60,27 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     if profile == $scope.selectedProfile
       return
 
-    Promise.try () ->
-      # If switching profiles, ensure the old profile is saved
-      if $scope.selectedProfile
-        $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-        $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-        $scope.selectedProfile.map_position = center: NgLeafletCenter(
-          lat: $scope.map.center.lat
-          lng: $scope.map.center.lng
-          zoom: $scope.map.center.zoom
-        )
-        $http.put(backendRoutes.userSession.profiles, _.pick($scope.selectedProfile, ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']))
-        .then () ->
-          # Set the current profile
-          $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
-        .then () ->
-          # Set the current profile
-          rmapsprincipal.getCurrentProfile(profile.id)
+    deferred = $q.defer()
+    # If switching profiles, ensure the old profile is saved
+    if $scope.selectedProfile
 
-    .then () ->
+      $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+      $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+      $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
+
+      $http.put(backendRoutes.userSession.profiles, _.pick($scope.selectedProfile, ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']))
+      .then () ->
+        # Set the current profile
+        $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+      .then () ->
+        # Set the current profile
+        rmapsprincipal.getCurrentProfile(profile.id)
+      .then () ->
+        deferred.resolve()
+    else
+      deferred.resolve()
+
+    deferred.promise.then () ->
       $scope.selectedProfile = profile
 
       $rootScope.selectedFilters = {}
@@ -149,7 +150,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
-      # $state.go($state.current, $state.params, { reload: true })
 
   $scope.archiveProject = (project) ->
     project.project_archived = !project.project_archived
