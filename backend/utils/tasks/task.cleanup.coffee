@@ -38,7 +38,14 @@ subtaskErrors = (subtask) ->
   .then (deleted) ->
     logger.debug "Deleted #{deleted} rows from subtask error history"
 
+deleteMarkers = (subtask) ->
+  tables.propertyData.deletes()
+  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
+  .delete()
+  .then (deleted) ->
+    logger.debug "Deleted #{deleted} rows from delete marker table"
 
 module.exports = new TaskImplementation
   rawTables: rawTables
   subtaskErrors: subtaskErrors
+  deleteMarkers: deleteMarkers

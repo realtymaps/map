@@ -1,11 +1,14 @@
+require '../config/promisify'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 _ = require 'lodash'
 Promise = require "bluebird"
+memoize = require 'memoizee'
+config = require '../config/config'
 
 
-_getValuesMap = (table, namespace, options={}) ->
-  _getValues(table, namespace, options)
+getValuesMap = (namespace, options={}) ->
+  getValues(namespace, options)
   .then (result) ->
     map = {}
     for kv in result
@@ -14,15 +17,15 @@ _getValuesMap = (table, namespace, options={}) ->
       _.defaults(map, options.defaultValues)
     map
 
-_getValues = (table, namespace, options={}) ->
-  table(options.transaction)
+getValues = (namespace, options={}) ->
+  tables.config.keystore(options.transaction)
   .select('key', 'value')
   .where(namespace: namespace)
   .then (result=[]) ->
     result
 
-_getValue = (table, key, options={}) ->
-  query = table(options.transaction)
+getValue = (key, options={}) ->
+  query = tables.config.keystore(options.transaction)
   .select('value')
   .where(key: key)
   if !options.namespace?
@@ -35,15 +38,15 @@ _getValue = (table, key, options={}) ->
     else
       result[0].value
 
-# _setValue resolves to the previous value for the namespace/key (or undefined if it didn't exist)
-_setValue = (table, key, value, options={}) ->
+# setValue resolves to the previous value for the namespace/key (or undefined if it didn't exist)
+setValue = (key, value, options={}) ->
   if options.transaction?
-    _setValueImpl(table, key, value, options, options.transaction)
+    _setValueImpl(key, value, options, options.transaction)
   else
-    table.transaction _setValueImpl.bind(null, table, key, value, options)
+    tables.config.keystore.transaction _setValueImpl.bind(null, key, value, options)
 
-_setValueImpl = (table, key, value, options, transaction) ->
-  query = table(options.transaction)
+_setValueImpl = (key, value, options, transaction) ->
+  query = tables.config.keystore(options.transaction)
   if !options.namespace?
     query = query.whereNull('namespace')
   else
@@ -53,49 +56,53 @@ _setValueImpl = (table, key, value, options, transaction) ->
   .then (result) ->
     if !result?.length
       # couldn't find it to update, need to insert
-      table(options.transaction)
+      tables.config.keystore(options.transaction)
       .insert
         key: key
-        value: sqlHelpers.safeJsonArray(table(options.transaction), value)
+        value: sqlHelpers.safeJsonArray(tables.config.keystore, value)
         namespace: options.namespace
       .then () ->
         undefined
     else
       # found a result, so update it and return the old value
-      query = table(options.transaction)
+      query = tables.config.keystore(options.transaction)
       if !options.namespace?
         query = query.whereNull('namespace')
       else
         query = query.where(namespace: options.namespace)
       query
       .where(key: key)
-      .update(value: sqlHelpers.safeJsonArray(table(), value))
+      .update(value: sqlHelpers.safeJsonArray(tables.config.keystore, value))
       .then () ->
         result[0].value  # note this is the old value
 
-# _setValuesMap resolves to a map of the previous values for the namespace/keys (with undefined for keys that didn't exist)
-_setValuesMap = (table, map, options={}) ->
-  handler =  (transaction) ->
+# setValuesMap resolves to a map of the previous values for the namespace/keys (with undefined for keys that didn't exist)
+setValuesMap = (map, options={}) ->
+  handler = (transaction) ->
     resultsPromises = {}
     for key,value of map
-      resultsPromises[key] = _setValueImpl(table, key, value, options, transaction)
+      resultsPromises[key] = _setValueImpl(tables.config.keystore, key, value, options, transaction)
     return Promise.props resultsPromises
   if options.transaction?
     handler(options.transaction)
   else
-    table.transaction handler
+    tables.config.keystore.transaction handler
 
   
 module.exports =
   userDb:
-    getValues: _getValues.bind(null, tables.keystore.userDb)
-    getValuesMap: _getValuesMap.bind(null, tables.keystore.userDb)
-    getValue: _getValue.bind(null, tables.keystore.userDb)
-    setValue: _setValue.bind(null, tables.keystore.userDb)
-    setValuesMap: _setValuesMap.bind(null, tables.keystore.userDb)
+    getValues: getValues
+    getValuesMap: getValuesMap
+    getValue: getValue
+    setValue: setValue
+    setValuesMap: setValuesMap
   propertyDb:
-    getValues: _getValues.bind(null, tables.keystore.propertyDb)
-    getValuesMap: _getValuesMap.bind(null, tables.keystore.propertyDb)
-    getValue: _getValue.bind(null, tables.keystore.propertyDb)
-    setValue: _setValue.bind(null, tables.keystore.propertyDb)
-    setValuesMap: _setValuesMap.bind(null, tables.keystore.propertyDb)
+    getValues: getValues
+    getValuesMap: getValuesMap
+    getValue: getValue
+    setValue: setValue
+    setValuesMap: setValuesMap
+  cache:
+    getValues: memoize.promise(getValues, maxAge: 10*60*1000)
+    getValuesMap: memoize.promise(getValuesMap, maxAge: 10*60*1000)
+    getValue: memoize.promise(getValue, maxAge: 10*60*1000)

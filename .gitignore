@@ -31,5 +31,10 @@ TAGS
 vagrant_app.log
 
 config/
+!common/config/*
 bin/
 uwsgi_temp/
+client_body_temp/
+proxy_temp/
+scgi_temp/
+fastcgi_temp/

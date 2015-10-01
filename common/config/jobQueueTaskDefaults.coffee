@@ -15,7 +15,7 @@ module.exports =
     # name: '' # should be set to task-centric "#{task_name}_loadRawData"
     step_num: 1
     queue_name: 'mls'
-    data: null
+    data: {dataType: 'listing'}
     retry_delay_seconds: 10
     retry_max_count: 10
     hard_fail_timeouts: false

@@ -67,10 +67,10 @@ loadUpdates = (subtask, options) ->
     now = new Date()
     if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
       # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.debug("Last successful run: #{lastSuccess} === performing full refresh")
+      logger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
       return new Date(0)
     else
-      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update")
+      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
       return lastSuccess
   .then (refreshThreshold) ->
     tables.config.mls()
@@ -85,15 +85,15 @@ loadUpdates = (subtask, options) ->
           return
         # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
         # on whether this is a dump or an update)
-        doDeletes = refreshThreshold.getTime() == 0
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {markOtherRowsDeleted: doDeletes}, true)
+        deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
         finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deleteUntouchedRows: doDeletes}, true)
+        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
 
         handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
         .then (fieldInfo) ->
           fields = _.indexBy(fieldInfo, 'LongName')
-          rawTableName = dataLoadHelpers.getRawTableName subtask, 'listing'
+          rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
           dataLoadHistory =
             data_source_id: options.dataSourceId
             data_source_type: 'mls'
@@ -111,7 +111,7 @@ loadUpdates = (subtask, options) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 
 
-updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
+buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   normalizedData.general.unshift(name: 'Address', value: base.address)
@@ -120,7 +120,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData.listing(), base.address)
+    address: sqlHelpers.safeJsonArray(tables.propertyData[dataType](), base.address)
     hide_listing: base.hide_listing ? false
     shared_groups:
       general: normalizedData.general || []
@@ -138,33 +138,7 @@ updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Pr
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: null
-  updateRow = _.extend base, stats, data
-  # check for an existing row
-  tables.propertyData.listing()
-  .select('*')
-  .where
-    data_source_uuid: updateRow.data_source_uuid
-    data_source_id: updateRow.data_source_id
-  .then (result) ->
-    if !result?.length
-      # no existing row, just insert
-      updateRow.inserted = stats.batch_id
-      tables.propertyData.listing()
-      .insert(updateRow)
-    else
-      # found an existing row, so need to update, but include change log
-      result = result[0]
-      updateRow.change_history = result.change_history ? []
-      changes = dataLoadHelpers.getRowChanges(updateRow, result, diffExcludeKeys)
-      if !_.isEmpty changes
-        updateRow.change_history.push changes
-        updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.listing(), updateRow.change_history)
-      tables.propertyData.listing()
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
-      .update(updateRow)
+  _.extend base, stats, data
 
 
 finalizeData = (subtask, id) ->
@@ -183,24 +157,19 @@ finalizeData = (subtask, id) ->
   # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
-      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
-      return
-    listing = listings.shift()
+      # might happen if a singleton listing is deleted during the day
+      return tables.propertyData.deletes()
+      .insert
+        rm_property_id: id
+        data_source_id: subtask.task_name
+        batch_id: subtask.batch_id
+    listing = dataLoadHelpers.finalizeEntry(listings)
     listing.data_source_type = 'mls'
-    listing.active = false
     _.extend(listing, parcel[0])
-    delete listing.deleted
-    delete listing.hide_address
-    delete listing.hide_listing
-    delete listing.rm_inserted_time
-    delete listing.rm_modified_time
-    listing.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
-    listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
-    listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
     tables.propertyData.combined()
     .insert(listing)
 
 module.exports =
   loadUpdates: loadUpdates
-  updateRecord: updateRecord
+  buildRecord: buildRecord
   finalizeData: finalizeData

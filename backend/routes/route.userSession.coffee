@@ -4,6 +4,7 @@ logger = require '../config/logger'
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
+profileService = require '../services/service.profiles'
 {userData} = require '../config/tables'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
@@ -19,6 +20,7 @@ auth = require '../utils/util.auth.coffee'
 sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
 {validators} = require '../utils/util.validation'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -133,16 +135,30 @@ profiles = (req, res, next) ->
   methodExec req,
     GET: () ->
       userSessionService.getProfiles(auth_user_id)
-
+      .then (result) ->
+        res.json result
     PUT: () ->
       q = userSessionService.updateProfile(req.body)
       q.then ()->
+        logger.debug 'SESSION: clearing profiles'
         delete req.session.profiles#to force profiles refresh in cache
         updateCache(req, res, next)
-  .then (result) ->
-    res.json result
   .catch (err) ->
-    logger.error err
+    logger.error analyzeValue err
+
+newProject = (req, res, next) ->
+  logger.debug 'NEWPROJECT:', req.body.projectName
+  if !req.body.projectName
+    throw new Error('Error creating new project, name is required')
+  Promise.try () ->
+    profileService.getCurrent(req.session)
+  .then (profile) ->
+    profileService.create _.clone(profile), req.body.projectName
+  .then (newProfile) ->
+    req.session.current_profile_id = newProfile.id
+    logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
+    delete req.session.profiles#to force profiles refresh in cache
+    updateCache(req, res, next)
 
 getImage = (req, res, next, entity, typeStr = 'user') -> Promise.try ->
   userSessionService.getImage(entity)
@@ -324,6 +340,11 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: currentProfile
+
+  newProject:
+    method: 'post'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: newProject
 
   image:
     methods: ['get', 'put']

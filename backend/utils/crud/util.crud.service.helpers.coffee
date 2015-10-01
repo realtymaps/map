@@ -22,30 +22,40 @@ class Crud extends BaseObject
     obj[@idKey] = val
     obj
 
+  withSafeEntity = (entity, safe, cb, skipSafeError) ->
+    if entity? and !safe
+      throw new Error('safe must be defined if entity is defined') unless skipSafeError
+    if entity? and safe?.length
+      throw new Error('safe must be Array type') unless _.isArray safe
+      entity = _.pick(entity, safe)
+    cb(entity or {}, safe)
+
   getAll: (query = {}, doLogQuery = false) ->
     execQ @dbFn().where(query), doLogQuery
 
-  getById: (id, doLogQuery = false) ->
-    execQ @dbFn().where(@idObj(id)), doLogQuery
+  getById: (id, doLogQuery = false, entity, safe) ->
+    withSafeEntity entity, safe, (entity, safe) =>
+      execQ @dbFn().where(_.extend @idObj(id), entity), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false) ->
-    if safe?
-      throw new Error('safe must be Array type') unless _.isArray safe
-      if safe.length
-        entity = _.pick(entity, safe)
-    execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
+    withSafeEntity entity, safe, (entity, safe) =>
+      execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
+    , true
 
-  create: (entity, id, doLogQuery = false) ->
-    # support entity or array of entities
-    if _.isArray entity
-      execQ @dbFn().insert(entity), doLogQuery
-    else
-      obj = {}
-      obj = @idObj id if id?
-      execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+  create: (entity, id, doLogQuery = false, safe) ->
+    withSafeEntity entity, safe, (entity, safe) =>
+      # support entity or array of entities
+      if _.isArray entity
+        execQ @dbFn().insert(entity), doLogQuery
+      else
+        obj = {}
+        obj = @idObj id if id?
+        execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+    , true
 
-  delete: (id, doLogQuery = false) ->
-    execQ @dbFn().where(@idObj(id)).delete(), doLogQuery
+  delete: (id, doLogQuery = false, entity, safe) ->
+    withSafeEntity entity, safe, (entity, safe) =>
+      execQ @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
