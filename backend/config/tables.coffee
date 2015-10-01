@@ -32,6 +32,7 @@ module.exports =
     dataNormalization: 'data_normalization_config'
     mls: 'mls_config'
     keystore: 'keystore'
+    dataSource: 'data_source_fields'
     dataSourceLookups: 'data_source_lookups'
   propertyData:
     listing: 'normal_listing_data'
