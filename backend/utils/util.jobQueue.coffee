@@ -107,16 +107,26 @@ queueManualTask = (name, initiator) ->
   if !name
     throw new Error('Task name required!')
   knex.transaction (transaction) ->
-    tables.jobQueue.taskConfig(transaction)
+    # need to be sure it's not already running
+    tables.jobQueue.taskHistory(transaction)
     .select()
-    .where(name: name)
-    .then (result) ->
-      if result.length == 0
-        throw new Error("Task not found: #{name}")
-      else if result.length == 1
-        batchId = (Date.now()).toString(36)
-        logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
-        queueTask(transaction, batchId, result[0], initiator)
+    .where
+      current: true
+      name: name
+    .then (task) ->
+      if task?.length && !task[0].finished
+        Promise.reject(new Error("Refusing to queue task #{name}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}"))
+    .then () ->
+      tables.jobQueue.taskConfig(transaction)
+      .select()
+      .where(name: name)
+      .then (result) ->
+        if result.length == 0
+          throw new Error("Task not found: #{name}")
+        else if result.length == 1
+          batchId = (Date.now()).toString(36)
+          logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
+          queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction=knex, batchId, task, initiator) -> Promise.try () ->
   logger.debug "Queueing task for batchId #{batchId}: #{task.name}"

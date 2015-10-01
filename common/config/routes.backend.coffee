@@ -37,12 +37,16 @@ module.exports =
     logout: "#{apiBaseSession}/logout"
     currentProfile: "#{apiBaseSession}/currentProfile"
     profiles: "#{apiBaseSession}/profiles"
+    newProject: "#{apiBaseSession}/newProject"
     image: "#{apiBaseSession}/image"
     companyImage: "#{apiBaseSession}/companyImage/:account_image_id"
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
     emailIsUnique: "#{apiBaseSession}/emailIsUnique"
+  notesSession:
+    root: "#{apiBaseSession}/notes"
+    byId: "#{apiBaseSession}/notes/:id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
