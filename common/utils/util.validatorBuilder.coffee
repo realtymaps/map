@@ -173,6 +173,7 @@ _rules =
 
       fips_code:
         alias: 'FIPS code'
+        type: 'fips'
         required: true
 
       owner_name:

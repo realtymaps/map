@@ -23,7 +23,6 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
     Restangular.all(dataSourceAPI).one(dataSourceId).all('dataSourceType').one(dataSourceType).all('dataListType').one(dataListType).all('columns').getList()
 
   getLookupTypes = (lookupId) ->
-    debugger
     Restangular.one(lookupAPI, lookupId).getList('types')
 
   service =

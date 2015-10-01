@@ -7,7 +7,7 @@ validatorBuilder = require '../../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
-
+logger = require '../../config/logger'
 
 getRawTableName = (subtask, suffix) ->
   suffix = if suffix then "_#{suffix}" else ''
@@ -179,11 +179,10 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
 
         # Most common case, generate the transform from the rule configuration
         else
-          _buildBaseRule = validatorBuilder.buildBaseRule(dataSourceType, dataType)
           if validationDef.list == 'base'
-            rule = _buildBaseRule validationDef
+            rule = validatorBuilder.buildBaseRule(dataSourceType, dataType) validationDef
           else
-            rule = _buildBaseRule validationDef
+            rule = validatorBuilder.buildDataRule validationDef
 
           transforms = rule.getTransform global_rules
           if !_.isArray transforms
@@ -191,14 +190,6 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
 
           validationDef.transform = _.map transforms, (transform) ->
             v = validation.validators[transform.name](transform.options)
-            console.log "transform.name:"
-            console.log JSON.stringify(transform.name)
-            console.log "transform.options:"
-            console.log JSON.stringify(transform.options)
-            console.log "transform:"
-            console.log JSON.stringify(transform)
-            console.log "v:"
-            console.log JSON.stringify(v)
 
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
