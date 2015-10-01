@@ -23,7 +23,7 @@ through = require 'through2'
 rimraf = require 'rimraf'
 
 
-_streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
+_streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
   # stream the contents of the file into a COPY FROM query
   count = 0
   pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
@@ -106,8 +106,8 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory, debug) ->
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
-  rawTableName = dataLoadHelpers.getRawTableName subtask, options.rawTableSuffix
-  fileBaseName = "corelogic_#{subtask.batch_id}_#{options.rawTableSuffix}"
+  rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, 'corelogic')
   ftp = new PromiseFtp()
   ftp.connect
     host: subtask.task_data.host
@@ -132,10 +132,10 @@ loadRawData = (subtask, options) ->
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
-      data_type: subtask.data.type
+      data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory, options.rawTableSuffix == 'deed_TXC48123')
+    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory)
   .then (rowsInserted) ->
     return rowsInserted
   .catch isUnhandled, (error) ->
@@ -148,97 +148,162 @@ loadRawData = (subtask, options) ->
       logger.warn("Error trying to rm -rf temporary directory /tmp/#{fileBaseName}: #{err}")
 
 
-updateRecord = (stats, diffExcludeKeys, usedKeys, rawData, normalizedData) -> Promise.try () ->
-  throw new jobQueue.HardFail('not finished yet')
+buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->
   # build the row's new values
   base = dataLoadHelpers.getValues(normalizedData.base || [])
+  update_type = base.update_type
+  delete base.update_type
   normalizedData.general.unshift(name: 'Address', value: base.address)
-  normalizedData.general.unshift(name: 'Status', value: base.status_display)
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData.listing(), base.address)
-    hide_listing: base.hide_listing ? false
+    address: sqlHelpers.safeJsonArray(tables.propertyData[dataType](), base.address)
     shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
-      listing: normalizedData.listing || []
+      sale: normalizedData.sale || []
       building: normalizedData.building || []
-      dimensions: normalizedData.dimensions || []
+      taxes: normalizedData.taxes || []
       lot: normalizedData.lot || []
       location: normalizedData.location || []
       restrictions: normalizedData.restrictions || []
     subscriber_groups:
-      contacts: normalizedData.contacts || []
-      realtor: normalizedData.realtor || []
-      sale: normalizedData.sale || []
+      owner: normalizedData.owner || []
+      deed: normalizedData.deed || []
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
-    deleted: null
-  updateRow = _.extend base, stats, data
-  # check for an existing row
-  tables.propertyData.listing()
-  .select('*')
-  .where
-    data_source_uuid: updateRow.data_source_uuid
-    data_source_id: updateRow.data_source_id
-  .then (result) ->
-    if !result?.length
-      # no existing row, just insert
-      updateRow.inserted = stats.batch_id
-      tables.propertyData.listing()
-      .insert(updateRow)
-    else
-      # found an existing row, so need to update, but include change log
-      result = result[0]
-      updateRow.change_history = result.change_history ? []
-      changes = dataLoadHelpers.getRowChanges(updateRow, result, diffExcludeKeys)
-      if !_.isEmpty changes
-        updateRow.change_history.push changes
-        updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData.listing(), updateRow.change_history)
-      tables.propertyData.listing()
-      .where
-        data_source_uuid: updateRow.data_source_uuid
-        data_source_id: updateRow.data_source_id
-      .update(updateRow)
+    deleted: if update_type == 'D' then stats.batch_id else null
+  _.extend base, stats, data
 
 
 finalizeData = (subtask, id) ->
-  listingsPromise = tables.propertyData.listing()
+  taxEntriesPromise = tables.propertyData.tax()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
-  .where(hide_listing: false)
   .orderBy('rm_property_id')
   .orderBy('deleted')
-  .orderBy('hide_listing')
   .orderByRaw('close_date DESC NULLS FIRST')
+  deedEntriesPromise = tables.propertyData.deed()
+  .select('*')
+  .where(rm_property_id: id)
+  .whereNull('deleted')
+  .orderBy('rm_property_id')
+  .orderBy('deleted')
+  .orderByRaw('close_date ASC NULLS LAST')
+  # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
+  # TODO: simultaneous closings, how do we property sort to account for that?
   parcelsPromise = tables.propertyData.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
-  # TODO: we also need to select from the tax table for owner name info
-  Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
-    if listings.length == 0
-      # might happen if a listing is deleted during the day -- we'll catch it during the next full sync
-      return
-    listing = listings.shift()
-    listing.data_source_type = 'mls'
-    listing.active = false
-    _.extend(listing, parcel[0])
-    delete listing.deleted
-    delete listing.hide_address
-    delete listing.hide_listing
-    delete listing.rm_inserted_time
-    delete listing.rm_modified_time
-    listing.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listings)
-    listing.address = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.address)
-    listing.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined(), listing.change_history)
-    tables.propertyData.combined()
-    .insert(listing)
+  Promise.join taxEntriesPromise, deedEntriesPromise, parcelsPromise, (taxEntries=[], deedEntries=[], parcel=[]) ->
+    if taxEntries.length == 0
+      # not sure if this should ever be possible, but we'll handle it anyway
+      return tables.propertyData.deletes()
+      .insert
+        rm_property_id: id
+        data_source_id: subtask.task_name
+        batch_id: subtask.batch_id
+    tax = dataLoadHelpers.finalizeEntry(taxEntries)
+    tax.data_source_type = 'county'
+    _.extend(tax, parcel[0])
+    currentSale = []
+    priorSale = []
+    for field in tax.sale
+      if field.name.startsWith('Prior ')
+        field.name = field.slice(6)
+        priorSale.push(field)
+      else
+        currentSale.push(field)
+    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address']
+    current = _.pick(tax, saleFields)
+    current.subscriber_groups = _.pick(tax.subscriber_groups, 'owner', 'deed')
+    current.shared_groups = {sale: currentSale}
+    delete tax.subscriber_groups.owner
+    delete tax.subscriber_groups.deed
+    delete tax.shared_groups.sale
+    prior = _.pick(tax, _.map(saleFields, (fieldName) -> "prior_#{fieldName}"))
+    prior.subscriber_groups = {}
+    prior.shared_groups = {sale: priorSale}
+    for field in _.map(saleFields, (fieldName) -> "prior_#{fieldName}")
+      delete tax[field]
+    salesHistory = []
+    if deedEntries.length
+      while deed = deedEntries.pop()
+        if deed.close_date.getTime() > current.close_date.getTime()
+          salesHistory.push(deed)
+        else if deed.close_date.getTime() == current.close_date.getTime()
+          # merge them, they're the same sale
+          _listExtend(deed.subscriber_groups.owner, current.subscriber_groups.owner)
+          _listExtend(deed.subscriber_groups.deed, current.subscriber_groups.deed)
+          _listExtend(deed.shared_groups.sale, current.shared_groups.sale)
+          salesHistory.push(deed)
+          current = null
+          break
+        else
+          # insert the current tax sale into the list and then pick back up with the prior tax sale
+          salesHistory.push(current)
+          deedEntries.push(deed)
+          current = null
+          break
+      if current != null
+        # we never found a spot to insert, so go ahead and put them both in
+        salesHistory.push(current, prior)
+      else
+        # now do sort of the same thing for prior
+        while deed = deedEntries.pop()
+          if deed.close_date.getTime() > prior.close_date.getTime()
+            salesHistory.push(deed)
+          else if deed.close_date.getTime() == prior.close_date.getTime()
+            # we would merge them, but prior has nothing to add
+            salesHistory.push(deed)
+            break
+          else
+            salesHistory.push(prior)
+            salesHistory.push(deed)
+            break
+        # through any remaining deeds in
+        salesHistory.concat(deedEntries)
+    else
+      salesHistory = [current, prior]
+    
+    # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
+    # TODO: static data fields?
 
+    # now that we have an ordered sales history, overwrite that into the tax record
+    lastSale = salesHistory.shift()
+    tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+    tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+    for field in saleFields
+      tax[field] = lastSale[field]
+    tax.shared_groups.sale = salesHistory
+    
+    tables.propertyData.combined()
+    .insert(tax)
+
+
+_listExtend = (list1, list2) ->
+  list1Map = dataLoadHelpers.getValues(list1)
+  i=0
+  j=0
+  while j<list2.length
+    if list1[i].name == list2[j].name
+      # field exists on both sides, keep the list1 value and increment both sides
+      i++
+      j++
+    else if list1Map[list2[j].name]?
+      # fields don't match, but the list2 field exists somewhere in list1 -- we must be looking at a unique field in
+      # list1, so increment past it
+      i++
+    else
+      # fields don't match, and the list2 field is unique -- splice it into list1, then increment past it
+      list1.splice(i, 0, list2[j])
+      i++
+      j++
+      
+    
 module.exports =
   loadRawData: loadRawData
-  updateRecord: updateRecord
+  buildRecord: buildRecord
   finalizeData: finalizeData

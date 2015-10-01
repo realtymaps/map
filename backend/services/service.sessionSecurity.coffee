@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 logger = require '../config/logger'
 SessionSecurity = require '../models/model.sessionSecurity'
-environmentSettingsService = require '../services/service.environmentSettings'
+keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
 dbs = require '../config/dbs'
@@ -34,9 +34,9 @@ setSecurityCookie = (req, res, token, rememberMe) ->
 # this is for when new logins occur, or when we want to create a session based on rememberMe
 createNewSeries = (req, res, rememberMe) ->
   token = uuid.genToken()
-  environmentSettingsService.getSettings()
-  .then (settings) ->
-    bcrypt.genSaltAsync(settings['token hashing cost factor'])
+  keystore.cache.getValues('hashing cost factors')
+  .then (hashCosts) ->
+    bcrypt.genSaltAsync(hashCosts.token)
   .then (salt) ->
     hashToken(token, salt)
     .then (tokenHash) ->
@@ -66,16 +66,16 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = environmentSettingsService.getSettings()
-  .then (settings) ->
+  maxLoginsPromise = keystore.cache.getValues('max logins')
+  .then (maxLogins) ->
     if req.session.groups['Premium Tier']
-      return settings['default premium logins']
+      return maxLogins.premium
     if req.session.groups['Standard Tier']
-      return settings['default standard logins']
+      return maxLogins.standard
     if req.session.groups['Basic Tier']
-      return settings['default basic logins']
+      return maxLogins.basic
     if req.session.groups['Free Tier']
-      return settings['default free logins']
+      return maxLogins.free
 
   sessionSecuritiesPromise = dbs.users.raw(CLEAN_SESSION_SECURITY)
   .then () ->

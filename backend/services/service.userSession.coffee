@@ -5,7 +5,7 @@ _ = require 'lodash'
 logger = require '../config/logger'
 User = require '../models/model.user'
 {userData} = require '../config/tables'
-environmentSettingsService = require '../services/service.environmentSettings'
+keystore = require '../services/service.keystore'
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'
 accountImagesSvc = require('./services.user').account_images
@@ -37,9 +37,9 @@ preprocessHash = (password) ->
     if password?.indexOf('bcrypt$') == 0
       hashData.algo = 'bcrypt'
       hashData.hash = password.slice('bcrypt$'.length)
-      return environmentSettingsService.getSettings()
-      .then (settings) ->
-        hashData.needsUpdate = bcrypt.getRounds(hashData.hash) isnt settings['password hashing cost factor']
+      return keystore.cache.getValues('hashing cost factors')
+      .then (hashCosts) ->
+        hashData.needsUpdate = (bcrypt.getRounds(hashData.hash) != hashCosts.password)
         return hashData
     # ... else check for other valid formats and do preprocessing for them
     # ...
@@ -47,11 +47,10 @@ preprocessHash = (password) ->
     return Promise.reject('failed to determine password hash algorithm')
 
 createPasswordHash = (password) ->
-  environmentSettingsService.getSettings()
-  .then (settings) ->
-    cost = settings['password hashing cost factor']
+  keystore.cache.getValues('hashing cost factors')
+  .then (hashCosts) ->
     #logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
-    return bcrypt.hashAsync(password, cost)
+    return bcrypt.hashAsync(password, hashCosts.password)
   .then (hash) -> return "bcrypt$#{hash}"
 
 

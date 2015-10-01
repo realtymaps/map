@@ -31,14 +31,6 @@ base =
     PATH: 'mean.coffee.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-  USER_DB:
-    client: 'pg'
-    connection: process.env.USER_DATABASE_URL
-    pool:
-      min: 1
-      max: if process.env.JQ_QUEUE_NAME then 8 else 10
-      # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-      pingTimeout: 10*60*1000
   PROPERTY_DB:
     client: 'pg'
     connection: process.env.PROPERTY_DATABASE_URL
@@ -125,19 +117,18 @@ base =
   CLEANUP:
     OLD_TABLE_DAYS: 7
     SUBTASK_ERROR_DAYS: 90
+    OLD_DELETE_MARKER_DAYS: 7
 
 
-# this one's separated out so we can re-use the USER_DB.connection value
+# this one's separated out so we can re-use the PROPERTY_DB.connection value
 base.SESSION_STORE =
-  conString: base.USER_DB.connection
+  conString: base.PROPERTY_DB.connection
 
 
 # use environment-specific configuration as little as possible
 environmentConfig =
 
   development:
-    USER_DB:
-      debug: false # set to true for verbose db logging on the user db
     PROPERTY_DB:
       debug: false # set to true for verbose db logging on the properties db
     TRUST_PROXY: false
@@ -157,6 +148,7 @@ environmentConfig =
     CLEANUP:
       OLD_TABLE_DAYS: 1
       SUBTASK_ERROR_DAYS: 7
+      OLD_DELETE_MARKER_DAYS: 1
 
   test: # test inherits from development below
     LOGGING:

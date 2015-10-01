@@ -60,7 +60,9 @@ checkFtpDrop = (subtask) ->
       logger.debug "Found new corelogic tax directory to process: #{todo[TAX]}"
       dates[TAX] = todo[TAX].slice(0, 8)
       taxFilesPromise = ftp.list("/#{todo[TAX]}")
+      deletes = dataLoadHelpers.DELETE.UNTOUCHED
     else
+      deletes = dataLoadHelpers.DELETE.NONE
       taxFilesPromise = Promise.resolve()
     if todo[DEED]?
       logger.debug "Found new corelogic deed directory to process: #{todo[DEED]}"
@@ -78,8 +80,8 @@ checkFtpDrop = (subtask) ->
       jobQueue.transaction (transaction) ->
         taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
         deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
-        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", null, true)
-        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deleteUntouchedRows: dates[TAX]?}, true)
+        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", {sources: _.keys(todo)}, true)
+        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_activateNewData", {deletes: deletes}, true)
         dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'corelogic_saveProcessDates', dates: dates, true)
         Promise.join ftpEnd, taxSubtasks, deedSubtasks, finalizePrep, activate, dates, () ->  # empty handler
 
@@ -89,47 +91,47 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
   loadDataList = []
   countDataList = []
   for file in files when file.name.endsWith('.zip')
-    rawTableSuffix = "#{type}_#{file.name.slice(0, -4)}"
+    rawTableSuffix = "#{file.name.slice(0, -4)}"
     loadDataList.push
       path: "/#{dir}/#{file.name}"
       rawTableSuffix: rawTableSuffix
-      type: type
+      dataType: type
     countDataList.push
       rawTableSuffix: rawTableSuffix
-      type: type
-      markOtherRowsDeleted: (type == TAX)  # tax data is full-dump, deed data is incremental
+      dataType: type
+      deletes: if type == TAX then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.INDICATED  # tax data is full-dump, deed data is incremental
+      subset:
+        fips_code: file.name.slice(3, -4)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 loadRawData = (subtask) ->
   coreLogicHelpers.loadRawData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: 'corelogic'
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "corelogic_normalizeData",
       rawTableSuffix: subtask.data.rawTableSuffix
-      type: subtask.data.type
+      dataType: subtask.data.dataType
 
 saveProcessedDates = (subtask) ->
   keystore.propertyDb.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
     
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
-    rawTableSuffix: subtask.data.rawTableSuffix
     dataSourceId: 'corelogic'
     dataSourceType: 'county'
-    updateRecord: coreLogicHelpers.updateRecord
+    buildRecord: coreLogicHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
-  tables.propertyData.listing()
-  .distinct('rm_property_id')
-  .select()
-  .where(batch_id: subtask.batch_id)
-  .whereNull('deleted')
-  .where(hide_listing: false)
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.pluck(ids, 'rm_property_id'), NUM_ROWS_TO_PAGINATE, "corelogic_finalizeData")
+  Promise.map subtask.data.sources, (source) ->
+    tables.propertyData[source]()
+    .select('rm_property_id')
+    .where(batch_id: subtask.batch_id)
+    .then (ids) ->
+      _.pluck(ids, 'rm_property_id')
+  .then (lists) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.union(lists), NUM_ROWS_TO_PAGINATE, "corelogic_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, coreLogicHelpers.finalizeData.bind(null, subtask)
@@ -139,7 +141,7 @@ module.exports = new TaskImplementation
   checkFtpDrop: checkFtpDrop
   loadRawData: loadRawData
   normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts.bind(null, 'main', tables.propertyData.listing)
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts
   finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData

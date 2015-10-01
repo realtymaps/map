@@ -4,6 +4,7 @@ logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
 ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
+{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = '') ->
@@ -14,6 +15,8 @@ class Crud extends BaseObject
     @init()
 
   onError: (next, error) ->
+    if isUnhandled(error)
+      logger.error("Crud error: #{error.stack||error}")
     next new ExpressResponse
       alert:
         msg: error.message

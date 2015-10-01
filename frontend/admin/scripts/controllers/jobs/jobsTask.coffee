@@ -69,13 +69,13 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       field: '_run'
       displayName: 'Run'
       enableCellEdit: false
-      cellTemplate: '<div class="ui-grid-cell-contents"><a href="#" ng-click="grid.appScope.runTask(row.entity)">RUN</a></div>'
+      cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-primary btn-xs" ng-click="grid.appScope.runTask(row.entity)">RUN</button></div>'
       width: 100
     ,
       field: '_cancel'
       displayName: 'Cancel'
       enableCellEdit: false
-      cellTemplate: '<div class="ui-grid-cell-contents"><a href="#" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</a></div>'
+      cellTemplate: '<div class="ui-grid-cell-contents"><button type="button" class="btn btn-danger btn-xs" ng-click="grid.appScope.cancelTask(row.entity)">CANCEL</button></div>'
       width: 100
   ]
 

@@ -34,6 +34,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
+        logger.debug 'Current Profile is', currentProfile(req).name
         filterSummaryService.getFilterSummary(currentProfile(req), req.query)
 
   parcelBase:
