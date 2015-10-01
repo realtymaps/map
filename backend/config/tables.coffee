@@ -70,6 +70,7 @@ module.exports =
     company: 'company'
     account_images: 'account_images'
     account_use_types:'account_use_types'
+    notes: 'notes'
 
 # set up this way so IntelliJ's autocomplete works
 for key,val of module.exports

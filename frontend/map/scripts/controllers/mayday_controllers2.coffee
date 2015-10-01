@@ -16,9 +16,6 @@ module.exports = (app) ->
   .controller 'rmapsNeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
     $scope.activeView = 'neighbourhoods'
 
-  .controller 'rmapsNotesCtrl', ($scope, $http, $routeParams) ->
-    $scope.activeView = 'notes'
-
   .controller 'rmapsAddProjectCtrl',
     ($scope, $http, $routeParams, $modal, $location, $log) ->
       $scope.items = [

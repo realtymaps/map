@@ -189,7 +189,7 @@
   },
   "devDependencies": {
     "gulp-wrap-commonjs": "^0.1.13",
-    "istanbul": "git://github.com/realtymaps/istanbul.git",
+    "istanbul": "git://github.com/gotwarlost/istanbul.git#source-map",
     "karma-browserify": "^4.3.0",
     "karma-chai": "^0.1.0",
     "karma-expect": "^1.1.0",

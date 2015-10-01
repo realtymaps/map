@@ -44,6 +44,9 @@ module.exports =
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
     emailIsUnique: "#{apiBaseSession}/emailIsUnique"
+  notesSession:
+    root: "#{apiBaseSession}/notes"
+    byId: "#{apiBaseSession}/notes/:id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
