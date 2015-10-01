@@ -19,6 +19,10 @@ body
     display none
 
   .map-navigation
+    // override some default bootstrap stuff for all dropdown controls
+    .dropdown.btn-group
+      h1, h2, h3, h4, span, div, p
+        color $black
 
     $fnMakeMapProjects()
     $fnMakeMapProperties()

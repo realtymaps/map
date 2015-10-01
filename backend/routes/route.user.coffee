@@ -17,6 +17,7 @@ class UserCrud extends RouteCrud
     @profilesCrud = hasManyRouteCrud(@svc.profiles, 'profile_id', 'auth_user_id')
     @profiles = @profilesCrud.root
     @profilesById = @profilesCrud.byId
+
     super()
 
 
