@@ -1,7 +1,6 @@
 require '../config/promisify'
 path = require 'path'
 loaders = require './util.loaders'
-dbs = require '../config/dbs'
 Promise = require 'bluebird'
 sqlHelpers = require './util.sql.helpers'
 logger = require '../config/logger'
@@ -15,6 +14,7 @@ config = require '../config/config'
 keystore = require '../services/service.keystore'
 {PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
 TaskImplementation = require './tasks/util.taskImplementation'
+dbs = require '../config/dbs'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -22,7 +22,6 @@ TaskImplementation = require './tasks/util.taskImplementation'
 
 MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 sendNotification = notification('jobQueue')
-knex = dbs.users.knex
 
 class SoftFail extends Error
   constructor: (@message) ->
@@ -34,11 +33,11 @@ class HardFail extends Error
 
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
-  knex.transaction (transaction) ->
+  dbs.get('main').transaction (transaction) ->
     if config.JOB_QUEUE.LOCK_DEBUG
       logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
-    .select(knex.raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
+    .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
     .then () ->
       if config.JOB_QUEUE.LOCK_DEBUG
         logger.error "==================<#{id}>  Acquired lock: #{lockId}"
@@ -106,7 +105,7 @@ queueReadyTasks = () -> Promise.try () ->
 queueManualTask = (name, initiator) ->
   if !name
     throw new Error('Task name required!')
-  knex.transaction (transaction) ->
+  dbs.get('main').transaction (transaction) ->
     # need to be sure it's not already running
     tables.jobQueue.taskHistory(transaction)
     .select()
@@ -128,7 +127,7 @@ queueManualTask = (name, initiator) ->
           logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
           queueTask(transaction, batchId, result[0], initiator)
 
-queueTask = (transaction=knex, batchId, task, initiator) -> Promise.try () ->
+queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
   logger.debug "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
@@ -160,9 +159,9 @@ queueTask = (transaction=knex, batchId, task, initiator) -> Promise.try () ->
     .update
       subtasks_created: count
       status: 'running'
-      status_changed: knex.raw('NOW()')
+      status_changed: dbs.get('main').raw('NOW()')
 
-_checkTask = (transaction=knex, batchId, taskName) ->
+_checkTask = (transaction, batchId, taskName) ->
   # need to get taskData such that we fail if the task is not still preparing or running i.e. has errored in some way
   tables.jobQueue.taskHistory(transaction)
   .where
@@ -176,7 +175,7 @@ _checkTask = (transaction=knex, batchId, taskName) ->
       return undefined
     task?[0]?.data
 
-queueSubtasks = (transaction=knex, batchId, subtasks) -> Promise.try () ->
+queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
   if !subtasks?.length
     return 0
   _checkTask(transaction, batchId, subtasks[0].task_name)
@@ -192,12 +191,12 @@ queueSubtasks = (transaction=knex, batchId, subtasks) -> Promise.try () ->
     return _.reduce counts, (sum, count) -> sum+count
 
 # convenience function to get another subtask config and then enqueue it based on the current subtask
-queueSubsequentSubtask = (transaction=knex, currentSubtask, laterSubtaskName, manualData, replace) ->
+queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
     queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
 
-queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, replace) ->
+queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
   Promise.try () ->
     if manualData?
       if replace
@@ -256,7 +255,7 @@ queueSubtask = (transaction=knex, batchId, _taskData, subtask, manualData, repla
 cancelTask = (taskName, status, withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  tables.jobQueue.taskHistory.transaction (transaction) ->
+  dbs.get('main').transaction (transaction) ->
     tables.jobQueue.taskHistory(transaction)
     .where
       name: taskName
@@ -264,8 +263,8 @@ cancelTask = (taskName, status, withPrejudice=false) ->
     .whereNull('finished')
     .update
       status: status
-      status_changed: knex.raw('NOW()')
-      finished: knex.raw('NOW()')
+      status_changed: dbs.get('main').raw('NOW()')
+      finished: dbs.get('main').raw('NOW()')
     .then () ->
       subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction)
       .where(task_name: taskName)
@@ -278,14 +277,14 @@ cancelTask = (taskName, status, withPrejudice=false) ->
       subtaskCancelQuery
       .update
         status: 'canceled'
-        finished: knex.raw('NOW()')
+        finished: dbs.get('main').raw('NOW()')
 
 executeSubtask = (subtask) ->
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
   .update
     status: 'running'
-    started: knex.raw('NOW()')
+    started: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
     .then (taskImpl) ->
@@ -295,7 +294,7 @@ executeSubtask = (subtask) ->
         .where(id: subtask.id)
         .update
           status: 'success'
-          finished: knex.raw('NOW()')
+          finished: dbs.get('main').raw('NOW()')
       if subtask.kill_timeout_seconds?
         subtaskPromise = subtaskPromise
         .timeout(subtask.kill_timeout_seconds*1000)
@@ -337,7 +336,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
-        retrySubtask.ignore_until = knex.raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
+        retrySubtask.ignore_until = dbs.get('main').raw("NOW() + ? * INTERVAL '1 second'", [subtask.retry_delay_seconds])
         _checkTask(null, subtask.batch_id, subtask.task_name)
         .then (taskData) ->
           # need to make sure we don't continue to retry subtasks if the task has errored in some way
@@ -352,7 +351,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     .where(id: subtask.id)
     .update
       status: status
-      finished: knex.raw('NOW()')
+      finished: dbs.get('main').raw('NOW()')
     .returning('*')
   .then (updatedSubtask) ->
     # handle condition where currentSubtasks table gets cleared before the update -- it shouldn't happen under normal
@@ -361,7 +360,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
     if !updatedSubtask?[0]?
       errorSubtask = _.clone(subtask)
       errorSubtask.status = status
-      errorSubtask.finished = knex.raw('NOW()')
+      errorSubtask.finished = dbs.get('main').raw('NOW()')
     else
       errorSubtask = updatedSubtask[0]
     errorSubtask.error = "#{error}"
@@ -459,12 +458,12 @@ _handleSuccessfulTasks = (transaction=null) ->
         .where("#{tables.jobQueue.currentSubtasks.tableName}.hard_fail_zombies", true)
   .update
     status: 'success'
-    status_changed: knex.raw('NOW()')
+    status_changed: dbs.get('main').raw('NOW()')
 
 _setFinishedTimestamps = (transaction=null) ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
   tables.jobQueue.currentSubtasks(transaction)
-  .select('task_name', knex.raw('MAX(finished) AS finished'))
+  .select('task_name', dbs.get('main').raw('MAX(finished) AS finished'))
   .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
@@ -475,12 +474,12 @@ _setFinishedTimestamps = (transaction=null) ->
       .whereNotIn('status', ['preparing', 'running'])
       .update(finished: task.finished)
 
-_updateTaskCounts = (transaction=knex) ->
-  transaction.select(knex.raw('jq_update_task_counts()'))
+_updateTaskCounts = (transaction) ->
+  transaction.select(dbs.get('main').raw('jq_update_task_counts()'))
 
 doMaintenance = () ->
   _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
-    keystore.userDb.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
+    keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
       if Date.now() - timestamp < config.JOB_QUEUE.MAINTENANCE_WINDOW
         return
@@ -499,7 +498,7 @@ doMaintenance = () ->
       .then () ->
         _updateTaskCounts(transaction)
       .then () ->
-        keystore.userDb.setValue(MAINTENANCE_TIMESTAMP, Date.now())
+        keystore.setValue(MAINTENANCE_TIMESTAMP, Date.now())
 
 getQueueNeeds = () ->
   queueNeeds = {}
@@ -551,12 +550,12 @@ getQueueNeeds = () ->
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = (transaction=knex, currentSubtask, total, maxPage, laterSubtaskName, mergeData) ->
+queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName, mergeData) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
     queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask, mergeData)
 
-queuePaginatedSubtask = (transaction=knex, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
+queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
   if _.isArray(totalOrList)
     list = totalOrList
     total = totalOrList.length
@@ -585,7 +584,7 @@ queuePaginatedSubtask = (transaction=knex, batchId, taskData, totalOrList, maxPa
     countHandled += datum.count
   queueSubtask(transaction, batchId, taskData, subtask, data)
 
-getSubtaskConfig = (transaction=knex, subtaskName, taskName) ->
+getSubtaskConfig = (transaction, subtaskName, taskName) ->
   tables.jobQueue.subtaskConfig(transaction)
   .where
     name: subtaskName
@@ -651,4 +650,3 @@ module.exports =
   SoftFail: SoftFail
   HardFail: HardFail
   getLastTaskStartTime: getLastTaskStartTime
-  transaction: knex.transaction.bind(knex)

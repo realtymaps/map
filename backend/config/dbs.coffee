@@ -1,47 +1,88 @@
 knex = require 'knex'
-bookshelf = require 'bookshelf'
 pg = require 'pg'
 Promise = require 'bluebird'
-
 config = require './config'
 logger = require './logger'
+{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 do require '../../common/config/dbChecker.coffee'
 
-bookshelfRaw = require('bookshelf.raw.safe')(logger)
 
-# bind the bookshelf raw safe query logic into the db object
-properties = bookshelf knex(config.PROPERTY_DB)
-properties.raw = bookshelfRaw.safeQuery.bind(bookshelfRaw, properties)
+connectedDbs =
+  pg: pg
 
 
-shutdown = () ->
-  logger.info 'database shutdowns initiated...'
+_knexShutdown = (db, name) ->
+  logger.info "... attempting '#{name}' database shutdown ..."
+  db.destroy()
+  .then () ->
+    logger.info "... '#{name}' database shutdown complete ..."
+  .catch (error) ->
+    logger.error "!!! '#{name}' database shutdown error: #{error}"
+    Promise.reject(error)
 
-  pgDbShutdown = new Promise (resolve, reject) ->
+    
+_barePgShutdown = () ->
+  new Promise (resolve, reject) ->
+    logger.info "... attempting bare pg database shutdown ..."
     pg.on 'end', () ->
-      logger.info "... 'pg' database shutdown complete ..."
+      logger.info "... bare pg database shutdown complete ..."
       process.nextTick resolve
     pg.on 'error', (error) ->
-      logger.error "!!! 'pg' database shutdown error: #{error}"
+      logger.error "!!! bare pg database shutdown error: #{error}"
       process.nextTick reject.bind(null, error)
     pg.end()
 
-  propertyDbShutdown = module.exports.properties.knex.destroy()
-  .then () ->
-    logger.info "... 'properties' database shutdown complete ..."
-  .catch (error) ->
-    logger.error "!!! 'properties' database shutdown error: #{error}"
-    Promise.reject(error)
 
-  return Promise.join pgDbShutdown, propertyDbShutdown, (pgDbShutdown, propertyDbShutdown) ->
+shutdown = () ->
+  logger.info 'database shutdowns initiated ...'
+
+  pgDbShutdown = _barePgShutdown()
+  onDemandDbsShutdown = Promise.all _.map(connectedDbs, _knexShutdown)
+
+  return Promise.join pgDbShutdown, onDemandDbsShutdown, () ->
     logger.info 'all databases successfully shut down.'
   .catch (error) ->
-    logger.error 'all databases shut down, some with errors.'
+    logger.error 'all databases shut down (?), some with errors.'
     Promise.reject(error)
 
+    
+getKnex = (dbName) ->
+  if !connectedDbs[dbName]?
+    dbConfig = config.DBS[dbName.toUpperCase()]
+    connectedDbs[dbName] = knex(dbConfig)
+  connectedDbs[dbName]
+
+  
+getPlainClient = (dbName, handler) ->
+  pg.defaults.poolSize = config.SUBTASKS_PER_PROCESS || 1
+  pg.defaults.poolIdleTimeout = config.DBS.PLAIN.POOL_IDLE_TIMEOUT
+  dbConfig = config.DBS[dbName.toUpperCase()]
+  new Promise (resolve, reject) ->
+    pg.connect dbConfig.connection, (err, client, done) ->
+      if err
+        done(client?)
+        reject(new PartiallyHandledError(err, "Problem getting plain pg client for #{dbName} db"))
+        return
+      isDone = false
+      isResolved = false
+      Promise.try () ->
+        handler(client)
+      .then (result) ->
+        isDone = true
+        done()
+        isResolved = true
+        resolve(result)
+      .catch (err) ->
+        try
+          if !isDone
+            done(true)
+          if !isResolved
+            reject(err)
+        catch err
+          # noop
+      
 
 module.exports =
-  users: properties
-  properties: properties
-  pg: pg
   shutdown: shutdown
+  get: getKnex
+  getPlainClient: getPlainClient

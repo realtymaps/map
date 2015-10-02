@@ -8,7 +8,7 @@ $SCRIPT_DIR/app/stopServe
 
 source $SCRIPT_DIR/app/syncVars
 
-$SCRIPT_DIR/database/syncAll --breaking
+$SCRIPT_DIR/database/syncMainDb
 
 coffee $SCRIPT_DIR/misc/syncEncryptionKey.coffee
 

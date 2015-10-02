@@ -1,12 +1,10 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
-dbs = require '../../config/dbs'
 sqlHelpers = require '../util.sql.helpers'
 require '../../../common/extensions/strings'
-
-
-knex = dbs.users.knex
+tables = '../../config/tables'
+dbs = '../../config/dbs'
 
 
 module.exports = (options = {}) ->
@@ -17,8 +15,8 @@ module.exports = (options = {}) ->
     # force correct caps
     county = value.county.toInitCaps()
     state = value.stateCode.toUpperCase()
-    knex.select('*', knex.raw("similarity(county, '#{county}') AS similarity"))
-    .from('fips_lookup')
+    tables.lookup.fipsCodes()
+    .select('*', dbs.get('main').raw("similarity(county, '#{county}') AS similarity"))
     .where(state: state)
     .orderByRaw("similarity(county, '#{county}') DESC")
     .limit(1)

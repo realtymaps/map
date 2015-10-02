@@ -22,6 +22,7 @@ _getAllConfigs = (rootName, props, spacer = '_', config) ->
 
 
 base =
+  JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
@@ -31,14 +32,25 @@ base =
     PATH: 'mean.coffee.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-  PROPERTY_DB:
-    client: 'pg'
-    connection: process.env.PROPERTY_DATABASE_URL
-    pool:
-      min: 2
-      max: if process.env.JQ_QUEUE_NAME then 8 else 10
-      # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-      pingTimeout: 10*60*1000
+  DBS:
+    MAIN:
+      client: 'pg'
+      connection: process.env.DATABASE_URL
+      pool:
+        min: 2
+        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
+        pingTimeout: 10*60*1000
+    RAW_TEMP:
+      client: 'pg'
+      connection: process.env.RAW_TEMP_DATABASE_URL
+      pool:
+        min: 2
+        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
+        pingTimeout: 10*60*1000
+    PLAIN:
+      POOL_IDLE_TIMEOUT: 60*1000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
@@ -58,10 +70,6 @@ base =
       signed: true
       secure: true
   USE_ERROR_HANDLER: false
-  DB_CACHE_TIMES:
-    SLOW_REFRESH: 60*1000   # 1 minute
-    FAST_REFRESH: 30*1000   # 30 seconds
-    PRE_FETCH: .1
   MEM_WATCH:
     IS_ON: process.env.MEM_WATCH_IS_ON || false
   TEMP_DIR: '/tmp'
@@ -120,17 +128,21 @@ base =
     OLD_DELETE_MARKER_DAYS: 7
 
 
-# this one's separated out so we can re-use the PROPERTY_DB.connection value
+# this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
-  conString: base.PROPERTY_DB.connection
+  conString: base.DBS.MAIN.connection
+  tableName: 'auth_session'
 
 
 # use environment-specific configuration as little as possible
 environmentConfig =
 
   development:
-    PROPERTY_DB:
-      debug: false # set to true for verbose db logging on the properties db
+    DBS:
+      MAIN:
+        debug: false # set to true for verbose logging
+      RAW_TEMP:
+        debug: false # set to true for verbose logging
     TRUST_PROXY: false
     SESSION:
       cookie:
@@ -157,9 +169,6 @@ environmentConfig =
       IS_ON: true
 
   staging:
-    DB_CACHE_TIMES:
-      SLOW_REFRESH: 5*60*1000   # 5 minutes
-      FAST_REFRESH: 60*1000     # 1 minute
     # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint
     TRUST_PROXY: false
     SESSION:
@@ -174,9 +183,6 @@ environmentConfig =
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
   production:
-    DB_CACHE_TIMES:
-      SLOW_REFRESH: 10*60*1000   # 10 minutes
-      FAST_REFRESH: 60*1000      # 1 minute
     MEM_WATCH:
       IS_ON: true
     # the proxy and secure settings below need to be removed when we start using the heroku SSL endpoint

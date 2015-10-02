@@ -7,8 +7,6 @@ sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
 logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
-db = require('../config/dbs').properties
-tables = require '../config/tables'
 _ = require 'lodash'
 
 _getZoom = (position) ->

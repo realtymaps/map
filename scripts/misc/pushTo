@@ -91,9 +91,8 @@ fi
 
 if [[ "$DO_DBSYNC" == "--dbsync" ]]
 then
-    # do non-breaking db changes before we push, so app startup won't take long and heroku won't panic
-    $SCRIPT_DIR/database/syncPropertyData --to PROPERTY_DATABASE@$PROJECT
-    $SCRIPT_DIR/database/syncUserData --to USER_DATABASE@$PROJECT
+    # do db changes before we push, so app startup won't take long and heroku won't panic
+    $SCRIPT_DIR/database/syncMainDb --to DATABASE@$PROJECT
 fi
 
 

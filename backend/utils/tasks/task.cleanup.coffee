@@ -1,26 +1,19 @@
 Promise = require 'bluebird'
-dbs = require '../../config/dbs'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 config = require '../../config/config'
+dbs = require '../../config/dbs'
 TaskImplementation = require './util.taskImplementation'
 
+_doTableDeletes = (tableList) ->
+  Promise.map tableList, (tableEntry) ->
+    logger.debug("cleaning up old raw table: #{tableEntry.raw_table_name}")
 
-_doTableDeletes = (tableList) -> Promise.try () ->
-  if !tableList?.length
-    return
-    
-  tableName = tableList.pop()?.raw_table_name
-  logger.debug("cleaning up old raw table: #{tableName}")
-  
-  dbs.properties.knex.transaction (transaction) ->
-    transaction.schema.dropTableIfExists(tableName)
+    dbs.get('raw_temp').schema.dropTableIfExists(tableName)
     .then () ->
       tables.jobQueue.dataLoadHistory(transaction)
       .where(raw_table_name: tableName)
       .update(cleaned: true)
-  .then () ->
-    _doTableDeletes(tableList)
 
 
 rawTables = (subtask) ->

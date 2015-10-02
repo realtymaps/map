@@ -33,8 +33,6 @@
     "blob-stream": "^0.1.3",
     "bluebird": "2.9.x",
     "body-parser": "1.9.x",
-    "bookshelf": "^0.7.7",
-    "bookshelf.raw.safe": "0.0.2",
     "bower": "1.x.x",
     "brfs": "^1.4.0",
     "browserify": "^11.0.1",

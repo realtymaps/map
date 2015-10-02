@@ -10,7 +10,7 @@ mocks =
 
 describe 'service.properties.parcels', ->
   if process.env.CIRCLECI
-    it "can't run on CircleCI because postgres-based trigram matching can't be mocked", () ->
+    it "can't run on CircleCI because it's an integration test that hits the db", () ->
       #noop
     return
 
@@ -22,5 +22,6 @@ describe 'service.properties.parcels', ->
   it 'getBaseParcelData returns valid geojson', (done) ->
     @subject.getBaseParcelData mocks.map.state, mocks.map.filter
     .then (data) ->
+      console.log("################################# #{JSON.stringify(data,null,2)}")
       gjv.valid(data).should.be.ok
       done()

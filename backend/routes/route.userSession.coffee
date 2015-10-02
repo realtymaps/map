@@ -5,7 +5,7 @@ httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
 profileService = require '../services/service.profiles'
-{userData} = require '../config/tables'
+tables = require '../config/tables'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
 userUtils = require '../utils/util.user'
@@ -244,7 +244,7 @@ root = (req, res, next) ->
         email:
           transform: [
             validators.string(regex: config.VALIDATION.email)
-            validators.unique tableFn: userData.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
+            validators.unique tableFn: tables.auth.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
               email: value
           ]
           required: true
@@ -300,7 +300,7 @@ emailIsUnique = (req, res, next) ->
     email:
       transform: [
           validators.string(regex: config.VALIDATION.email)
-          validators.unique tableFn: userData.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
+          validators.unique tableFn: tables.auth.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
             email: value
       ]
       required: true

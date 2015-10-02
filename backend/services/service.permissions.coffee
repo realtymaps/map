@@ -1,12 +1,11 @@
 _ = require 'lodash'
-memoize = require('../extensions/memoizee').memoizeSlowExp
+memoize = require 'memoizee'
 Promise = require 'bluebird'
 
 config = require '../config/config'
 logger = require '../config/logger'
-User = require '../models/model.user'
-Permission = require '../models/model.permission'
-Group = require '../models/model.group'
+tables = require '../config/tables'
+dbs = require '../config/dbs'
 
 
 hashifyPermissions = (hash, permission) ->
@@ -20,48 +19,50 @@ hashifyGroups = (hash, group) ->
 
 # returns: a hash of codenames to truthy values
 getPermissionsForGroupId = (id) ->
-  Group.forge(id: id).fetch(withRelated: ['permissions'], require: true)
-  .then (group) ->
+  tables.auth.permission()
+  .whereExists () ->
+    tables.auth.m2m_group_permission()
+    .where
+      group_id: id
+      permission_id: dbs.get('main').raw("#{tables.auth.permission.tableName}.id")
+  .then (permissions=[]) ->
     # we want to reformat this data as a hash of codenames to truthy values
-    permissionsHash = _.reduce(group.related('permissions').toJSON(), hashifyPermissions, {})
     logger.info("permissions loaded for groupid #{id}")
-    #logger.debug(JSON.stringify(permissionsHash, null, 2))
-    return permissionsHash
+    _.reduce(permissions, hashifyPermissions, {})
   .catch (err) ->
     logger.error "error loading permissions for groupid #{id}: #{err}"
     Promise.reject(err)
 
-
 # returns: a hash of codenames to truthy values
 getPermissionsForUserId = (id) ->
-  User.forge(id: id).fetch(withRelated: ['permissions', 'groups'], require: true)
+  tables.auth.user()
+  .where(id: id)
   .then (user) ->
-    if user.get('is_superuser')
+    if user[0].is_superuser
       # just give them all the permissions
-      Permission.fetchAll()
-      .then((permissions) -> return permissions.toJSON())
-      .reduce(hashifyPermissions, {})
-      .then (permissionsHash) ->
-        #logger.debug "superuser permissions loaded for userid #{id}"
-        return permissionsHash
+      tables.auth.permission()
+      .select()
+      .then (permissions=[]) ->
+        _.reduce(permissions, hashifyPermissions, {})
     else
       # grab the permissions on the user
-      userPermissions = _.reduce(user.related('permissions').toJSON(), hashifyPermissions, {})
-      #logger.debug "user permissions loaded for userid: #{id}"
+      userPermissionsPromise = tables.auth.permission()
+      .whereExists () ->
+        tables.auth.m2m_user_permission()
+        .where
+          user_id: id
+          permission_id: dbs.get('main').raw("#{tables.auth.permission.tableName}.id")
+      .then (permissions=[]) ->
+        _.reduce(permissions, hashifyPermissions, {})
       # grab the permissions on each group
-      groupPermissions = user.related('groups')
-      .mapThen((group) -> return group.id)
-      .map(getPermissionsForGroupId)
-      .then (groupPermissionsArray) ->
-        #logger.debug "group permissions loaded for userid #{id}"
-        return groupPermissionsArray
+      groupPermissionsPromise = tables.auth.m2m_user_group()
+      .select('group_id')
+      .where(user_id: id)
+      .then (groups=[]) ->
+        _.map _.pluck(groups, 'group_id'), getPermissionsForGroupId
       # merge them all together
-      return Promise.join userPermissions, groupPermissions, (userPermissions, groupPermissions) ->
-        return _.merge(userPermissions, groupPermissions...)
-  .then (permissionsHash) ->
-    #logger.debug "all permissions loaded for userid #{id}:"
-    #logger.debug JSON.stringify(permissionsHash, null, 2)
-    return permissionsHash
+      Promise.join userPermissionsPromise, groupPermissionsPromise, (userPermissions, groupPermissions) ->
+        _.merge(userPermissions, groupPermissions...)
   .catch (err) ->
     logger.error "error loading permissions for userid #{id}"
     return Promise.reject(err)
@@ -71,17 +72,19 @@ getPermissionsForUserId = (id) ->
 
 # returns: a hash of group names to truthy values
 getGroupsForUserId = (id) ->
-  User.forge(id: id).fetch(withRelated: ['groups'], require: true)
-  .then (user) ->
-    return _.reduce(user.related('groups').toJSON(), hashifyGroups, {})
-  .catch (err) ->
-    logger.error "error loading groups for userid #{id}"
-    return Promise.reject(err)
+  tables.auth.group()
+  .whereExists () ->
+    tables.auth.m2m_user_group()
+    .where
+      user_id: id
+      group_id: dbs.get('main').raw("#{tables.auth.group.tableName}.id")
+  .then (groups=[]) ->
+    _.reduce(groups, hashifyGroups, {})
 # we're not going to memoize this one because we're caching the results on the
 # session, and want new logins to get new groups instantly
 
 
 module.exports =
-  getPermissionsForGroupId: memoize(getPermissionsForGroupId)
+  getPermissionsForGroupId: memoize(getPermissionsForGroupId, maxAge: 10*60*1000, preFetch: .1)
   getPermissionsForUserId: getPermissionsForUserId
   getGroupsForUserId: getGroupsForUserId

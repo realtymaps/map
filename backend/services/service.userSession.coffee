@@ -3,31 +3,23 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-User = require '../models/model.user'
-{userData} = require '../config/tables'
 keystore = require '../services/service.keystore'
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'
-accountImagesSvc = require('./services.user').account_images
+accountImagesSvc = require('./services.user').accountImages
 {NotFoundError} =  require '../utils/util.route.helpers'
+tables = require '../config/tables'
 
-getUser = (attributes) ->
-  User.forge(attributes)
-  .fetch()
-  .then (user) ->
-    if not user
-      return {}
-    else
-      return user.toJSON()
+_getUser = (attributes) ->
+  tables.auth.user()
+  .where(attributes)
+  .then (user=[]) ->
+    user[0] ? {}
 
-updateUser = (attributes) ->
-  User.forge(attributes)
-  .save(attributes, patch: true)
-  .then (user) ->
-    if not user
-      return {}
-    else
-      return user.toJSON()
+_updateUser = (id, attributes) ->
+  tables.auth.user()
+  .where(id: id)
+  .update(attributes)
 
 # this skeleton for handling password hashes will make it easier to migrate
 # hashes to a new algo if we ever need to
@@ -56,7 +48,7 @@ createPasswordHash = (password) ->
 
 verifyPassword = (email, password) ->
   #logger.debug "attempting to verify password for email: #{email}"
-  getUser(email: email)
+  _getUser(email: email)
   .then (user) ->
     if not user or not user?.password
       # best practice is to go ahead and hash the password before returning,
@@ -81,7 +73,7 @@ verifyPassword = (email, password) ->
         # in the background, update this user's hash
         logger.info "updating password hash for email: #{email}"
         createPasswordHash(password)
-        .then (hash) -> return updateUser(id: user.id, password: hash)
+        .then (hash) -> return _updateUser(user.id, password: hash)
         .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
       return user
 
@@ -92,6 +84,7 @@ map_results =
   results: [] #maybe
 NOTE: IF columns for auth_user_profile need to be deleted Session.state should be purged! Otherwise,
   a invalid bookshelf object of old state will be queried.
+  TODO: is the above still true?  we're not using bookshelf any longer, I'm not sure if the problem still exists
 ###
 _userStateCols = ['map_position', 'map_toggles', 'map_results']
 #TODO: THIS NEEDS TO BE RETHOUGHT this special handling of removing types is very difficult
@@ -150,8 +143,6 @@ updatePassword = (user, password) ->
     .where(id: user.id)
 
 module.exports =
-  getUser: getUser
-  updateUser: updateUser
   verifyPassword: verifyPassword
   getProfile: profileSvc.getFirst
   updateCurrentProfile: profileSvc.updateCurrent

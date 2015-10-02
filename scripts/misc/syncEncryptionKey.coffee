@@ -19,7 +19,7 @@ Promise.try () ->
   newEncryptor = new Encryptor(cipherKey: process.env.ENCRYPTION_AT_REST)
   oldEncryptor = new Encryptor(cipherKey: process.env.OLD_ENCRYPTION_AT_REST)
   
-  keystore.userDb.getValue('ENCRYPTION_AT_REST', namespace: 'sanity')
+  keystore.getValue('ENCRYPTION_AT_REST', namespace: 'sanity')
   .then (sanity) ->
     if newEncryptor.decrypt(sanity) == 'you are using the correct key!'
       logger.warn "#{prefix} Old encryption key detected, but new key is already in use."
@@ -42,10 +42,10 @@ Promise.try () ->
   
   
     dbs = require "#{basePath}/config/dbs"
-    dbs.users.knex.transaction (transaction) ->
+    dbs.get('main').transaction (transaction) ->
       Promise.try () ->
         logger.info "#{prefix} changing key for sanity check..."
-        keystore.userDb.setValue('ENCRYPTION_AT_REST', newEncryptor.encrypt('you are using the correct key!'), namespace: 'sanity', transaction: transaction)
+        keystore.setValue('ENCRYPTION_AT_REST', newEncryptor.encrypt('you are using the correct key!'), namespace: 'sanity', transaction: transaction)
       .then () ->
         logger.info "#{prefix} changing key for corelogic task creds..."
         tables.jobQueue.taskConfig(transaction)
@@ -70,7 +70,7 @@ Promise.try () ->
             task.data.DIGIMAPS[key] = recrypt(payload)
           tables.jobQueue.taskConfig(transaction)
           .where(name: 'parcel_update')
-          .update(data: sqlHelpers.safeJsonArray(dbs.users.knex, task.data))
+          .update(data: sqlHelpers.safeJsonArray(task.data))
       .then () ->
         logger.info "#{prefix} changing key for mls passwords..."
         tables.config.mls(transaction)
@@ -83,7 +83,7 @@ Promise.try () ->
             .update(password: mls.password)
       .then () ->
         logger.info "#{prefix} changing key for external accounts..."
-        tables.userData.externalAccounts(transaction)
+        tables.config.externalAccounts(transaction)
         .then (rows=[]) ->
           Promise.map rows, (account) ->
             logger.info "#{prefix} ... changing key for account: #{account.name}..."
@@ -92,8 +92,8 @@ Promise.try () ->
             account.api_key = recrypt(account.api_key)
             for key, payload of account.other
               account.other[key] = recrypt(payload)
-            account.other = sqlHelpers.safeJsonArray(dbs.users.knex, account.other)
-            tables.userData.externalAccounts(transaction)
+            account.other = sqlHelpers.safeJsonArray(account.other)
+            tables.config.externalAccounts(transaction)
             .where(name: account.name)
             .update(account)
       .then () ->

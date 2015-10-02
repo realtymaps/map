@@ -29,7 +29,7 @@ normalizeData = (subtask) ->
     buildRecord: mlsHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
-  tables.propertyData.listing()
+  tables.property.listing()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
   .then (ids) ->

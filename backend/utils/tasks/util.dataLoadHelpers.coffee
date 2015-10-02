@@ -1,4 +1,3 @@
-dbs = require '../../config/dbs'
 tables = require '../../config/tables'
 Promise = require 'bluebird'
 jobQueue = require '../util.jobQueue'
@@ -8,6 +7,7 @@ memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
 sqlHelpers = require '../util.sql.helpers'
+dbs = require '../../config/dbs'
 
 
 DELETE =
@@ -24,7 +24,7 @@ buildUniqueSubtaskName = (subtask, prefix='raw') ->
 
 
 createRawTempTable = (tableName, fields) ->
-  dbs.properties.knex.schema.createTable tableName, (table) ->
+  dbs.get('raw_temp').schema tableName, (table) ->
     table.increments('rm_raw_id').notNullable()
     table.boolean('rm_valid')
     table.text('rm_error_msg')
@@ -56,7 +56,7 @@ recordChangeCounts = (subtask) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
       # first such row rather than return all or count them all
-      tables.propertyData[subtask.data.dataType]()
+      tables.property[subtask.data.dataType]()
       .select('rm_raw_id')
       .where(batch_id: subtask.batch_id)
       .where(subset)
@@ -69,13 +69,13 @@ recordChangeCounts = (subtask) ->
         # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
         # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
         # will resolve to a count of affected rows
-        tables.propertyData[subtask.data.dataType]()
+        tables.property[subtask.data.dataType]()
         .whereNot(batch_id: subtask.batch_id)
         .where(subset)
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
     else if subtask.data.deletes == DELETE.INDICATED
-      tables.propertyData[subtask.data.dataType]()
+      tables.property[subtask.data.dataType]()
       .where(subset)
       .where(deleted: subtask.batch_id)
   .then (deletedCount=0) ->
@@ -85,18 +85,18 @@ recordChangeCounts = (subtask) ->
     unvalidatedSubquery = () -> _countInvalidRows(this, rawTableName, false)
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
-      tables.propertyData[subtask.data.dataType](this)
+      tables.property[subtask.data.dataType](this)
       .where(inserted: subtask.batch_id)
       .where(subset)
       .count('*')
     # get a count of rows from this batch without a null change history, i.e. newly-updated rows
     updatedSubquery = () ->
-      tables.propertyData[subtask.data.dataType](this)
+      tables.property[subtask.data.dataType](this)
       .where(updated: subtask.batch_id)
       .where(subset)
       .count('*')
     touchedSubquery = () ->
-      tables.propertyData[subtask.data.dataType](this)
+      tables.property[subtask.data.dataType](this)
       .where(batch_id: subtask.batch_id)
       .where(subset)
       .orWhere(deleted: subtask.batch_id)
@@ -116,48 +116,48 @@ recordChangeCounts = (subtask) ->
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
 activateNewData = (subtask) ->
   # wrapping this in a transaction improves performance, since we're editing some rows twice
-  tables.propertyData.combined.transaction (transaction) ->
+  dbs.get('main').transaction (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # in this mode, we perform those actions to all rows on this data_source_id, because we assume this is a
       # full data sync, and if we didn't touch it that means it should be deleted
-      activatePromise = tables.propertyData.combined(transaction)
+      activatePromise = tables.property.combined(transaction)
       .where(data_source_id: subtask.task_name)
-      .update(active: tables.propertyData.combined.raw('NOT "active"'))
+      .update(active: dbs.get('main').raw('NOT "active"'))
     else
       # in this mode, we're doing an incremental update, so we only want to perform those actions for rows with an
       # rm_property_id that has been updated in this batch
-      activatePromise = tables.propertyData.combined(transaction, 'updater')
+      activatePromise = tables.property.combined(transaction, 'updater')
       .whereExists () ->
-        tables.propertyData.combined(this)
+        tables.property.combined(this)
         .select(1)
         .where
           update_source: subtask.task_name
           batch_id: subtask.batch_id
           active: false
-          rm_property_id: tables.propertyData.combined.raw("updater.rm_property_id")
-          data_source_id: tables.propertyData.combined.raw("updater.data_source_id")
+          rm_property_id: dbs.get('main').raw("updater.rm_property_id")
+          data_source_id: dbs.get('main').raw("updater.data_source_id")
         .as('exister')
-      .update(active: tables.propertyData.combined.raw('NOT "active"'))
+      .update(active: dbs.get('main').raw('NOT "active"'))
       
     activatePromise
     .then () ->
       # delete inactive rows
-      tables.propertyData.combined(transaction)
+      tables.property.combined(transaction)
       .where
         data_source_id: subtask.task_name
         active: false
       .delete()
     .then () ->
       # delete rows marked explicitly for deletion
-      tables.propertyData.combined(transaction, 'deleter')
+      tables.property.combined(transaction, 'deleter')
       .where(data_source_id: subtask.task_name)
       .whereExists () ->
-        tables.propertyData.deletes(this)
+        tables.property.deletes(this)
         .select(1)
         .where
           data_source_id: subtask.task_name
           batch_id: subtask.batch_id
-          rm_property_id: tables.propertyData.combined.raw("deleter.rm_property_id")
+          rm_property_id: dbs.get('main').raw("deleter.rm_property_id")
       .delete()
 
 
@@ -275,7 +275,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row
-  tables.propertyData[dataType]()
+  tables.property[dataType]()
   .select('*')
   .where
     data_source_uuid: updateRow.data_source_uuid
@@ -284,7 +284,7 @@ _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () 
     if !result?.length
       # no existing row, just insert
       updateRow.inserted = stats.batch_id
-      tables.propertyData[dataType]()
+      tables.property[dataType]()
       .insert(updateRow)
     else
       # found an existing row, so need to update, but include change log
@@ -294,8 +294,8 @@ _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () 
       if !_.isEmpty changes
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
-      updateRow.change_history = sqlHelpers.safeJsonArray(tables.propertyData[dataType](), updateRow.change_history)
-      tables.propertyData[dataType]()
+      updateRow.change_history = sqlHelpers.safeJsonArray(updateRow.change_history)
+      tables.property[dataType]()
       .where
         data_source_uuid: updateRow.data_source_uuid
         data_source_id: updateRow.data_source_id
@@ -352,9 +352,9 @@ finalizeEntry = (entries) ->
   delete entry.hide_listing
   delete entry.rm_inserted_time
   delete entry.rm_modified_time
-  entry.prior_entries = sqlHelpers.safeJsonArray(tables.propertyData.combined, entries)
-  entry.address = sqlHelpers.safeJsonArray(tables.propertyData.combined, entry.address)
-  entry.change_history = sqlHelpers.safeJsonArray(tables.propertyData.combined, entry.change_history)
+  entry.prior_entries = sqlHelpers.safeJsonArray(entries)
+  entry.address = sqlHelpers.safeJsonArray(entry.address)
+  entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
   entry
 

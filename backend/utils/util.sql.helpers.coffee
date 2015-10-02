@@ -218,12 +218,12 @@ isUnique = (tableFn, whereClause, id, name = 'Entity') ->
       return Promise.reject "#{name} already exists"
     true
 
-safeJsonArray = (knex, arr) ->
-  # this whole function is a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
-  # JSON array when serializing to SQL
+safeJsonArray = (arr) ->
+  # this function is minor a hack to deal with the fact that knex can't easily distinguish between a PG-array and a
+  # JSON array when serializing to SQL, plus to ensure we get a db-NULL instead of a JSON null
   if !arr?
     return arr
-  knex.raw('?', JSON.stringify(arr))
+  JSON.stringify(arr)
 
 
 module.exports =

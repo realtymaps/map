@@ -18,12 +18,12 @@ then
     shift
     shift
 else
-    DST_URL=`$SCRIPT_DIR/database/getDbUrl USER_DATABASE`
-    DST_DB=USER_DATABASE
+    DST_URL="$DATABASE_URL"
+    DST_DB="main db"
 fi
 
 source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
-echo "SYNC: performing user db migrations on db: $DST_DB"
-$DBSYNC --path migrations/userManagement --client pg --connection $DST_URL --reminder 1 --recursive
+echo "SYNC: performing property db migrations on db: $DST_DB"
+$DBSYNC --path migrations/propertyData --client pg --connection $DST_URL --reminder 1 --recursive

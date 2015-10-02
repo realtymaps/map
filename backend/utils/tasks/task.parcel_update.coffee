@@ -1,11 +1,11 @@
 Promise = require 'bluebird'
 {uploadToParcelsDb} = require '../../services/service.parcels.saver'
 {parcel} = require '../../services/service.cartodb'
-db = require('../../config/dbs').properties
 encryptor = require '../../config/encryptor'
 jobQueue = require '../util.jobQueue'
 _ = require 'lodash'
 tables = require '../../config/tables'
+dbs = require '../../config/dbs'
 
 
 _getCreds: (subtask) ->
@@ -40,9 +40,9 @@ _subtasks =
       jobQueue.queueSubsequentSubtask null, subtask, 'sync_mv_parcels', subtask.data, true
 
   sync_mv_parcels: (subtask) -> Promise.try ->
-    db.knex.raw('SELECT stage_dirty_views();')
+    dbs.get('main').raw('SELECT stage_dirty_views();')
     .then ->
-      db.knex.raw('SELECT push_staged_views(FALSE);')
+      dbs.get('main').raw('SELECT push_staged_views(FALSE);')
     .then ->
       jobQueue.queueSubsequentSubtask null, subtask, 'sync_cartodb', subtask.data, true
 

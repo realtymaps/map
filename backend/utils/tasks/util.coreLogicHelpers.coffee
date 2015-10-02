@@ -26,82 +26,76 @@ rimraf = require 'rimraf'
 _streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
   # stream the contents of the file into a COPY FROM query
   count = 0
-  pgClient = new dbs.pg.Client(config.PROPERTY_DB.connection)
-  pgQuery = Promise.promisify(pgClient.query, pgClient)
-  pgConnect = Promise.promisify(pgClient.connect, pgClient)
-  pgConnect()
-  .then () ->
-    pgQuery('BEGIN')
-  .then () ->
-    startSql = tables.jobQueue.dataLoadHistory()
-    .insert(dataLoadHistory)
-    .toString()
-    pgQuery(startSql)
-  .then () -> new Promise (resolve, reject) ->
-    rejected = false
-    doReject = (message) ->
-      (err) ->
-        if rejected
-          return
-        rejected = true
-        if !(err instanceof PartiallyHandledError)
-          err = new PartiallyHandledError(err, message)
-        reject(err)
-    splitter = split()
-    initialDoReject = doReject("error reading data from file: #{filePath}")
-    fileStream = fs.createReadStream(filePath)
-    .pipe(splitter)
-    .on('end', resolve)
-    .on('error', initialDoReject)
-    .once 'data', (headerLine) ->
-      fileStream.pause()
-      fileStream.removeListener('end', resolve)
-      fileStream.removeListener('error', initialDoReject)
-      # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
-      fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
-      pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
-      .then () -> new Promise (resolve2, reject2) ->
-        rejected2 = false
-        doReject2 = (message) ->
-          (err) ->
-            if rejected2
-              return
-            rejected2 = true
-            reject2(new PartiallyHandledError(err, message))
-        # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
-        transform = (chunk, enc, callback) ->
-          if chunk.length > 0
-            count += 1
-            this.push(chunk)
-            this.push('\n')
-          callback()
-        flush = (callback) ->
-          this.push('\\.\n')
-          callback()
-        copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
-        fileStream
-        .pipe(through(transform, flush))
-        .pipe(pgClient.query(copyStream.from(copyStart)))
-        .on('finish', resolve2)
-        .on('error', doReject2("error streaming data to #{tableName}"))
-        fileStream.resume()
-      .then resolve
-      .catch doReject("error executing COPY FROM for #{tableName}")
-  .then () ->
-    finishQuery = tables.jobQueue.dataLoadHistory()
-    .where(raw_table_name: tableName)
-    .update raw_rows: count
-    pgQuery(finishQuery.toString())
-  .then () ->
-    pgQuery('COMMIT')
-  .then () ->
-    return count
-  .finally () ->
-    # always try to disconnect the db client when we're done, but don't crash if we disconnected prematurely
-    try
-      pgClient.end()
-    catch err
-      logger.warn "Error disconnecting raw db connection: #{err}"
+  dbs.getPlainClient 'raw_temp', (pgClient) ->
+    pgQuery = Promise.promisify(pgClient.query, pgClient)
+    pgConnect = Promise.promisify(pgClient.connect, pgClient)
+    pgConnect()
+    .then () ->
+      pgQuery('BEGIN')
+    .then () ->
+      startSql = tables.jobQueue.dataLoadHistory()
+      .insert(dataLoadHistory)
+      .toString()
+      pgQuery(startSql)
+    .then () -> new Promise (resolve, reject) ->
+      rejected = false
+      doReject = (message) ->
+        (err) ->
+          if rejected
+            return
+          rejected = true
+          if !(err instanceof PartiallyHandledError)
+            err = new PartiallyHandledError(err, message)
+          reject(err)
+      splitter = split()
+      initialDoReject = doReject("error reading data from file: #{filePath}")
+      fileStream = fs.createReadStream(filePath)
+      .pipe(splitter)
+      .on('end', resolve)
+      .on('error', initialDoReject)
+      .once 'data', (headerLine) ->
+        fileStream.pause()
+        fileStream.removeListener('end', resolve)
+        fileStream.removeListener('error', initialDoReject)
+        # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
+        fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
+        pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
+        .then () -> new Promise (resolve2, reject2) ->
+          rejected2 = false
+          doReject2 = (message) ->
+            (err) ->
+              if rejected2
+                return
+              rejected2 = true
+              reject2(new PartiallyHandledError(err, message))
+          # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
+          transform = (chunk, enc, callback) ->
+            if chunk.length > 0
+              count += 1
+              this.push(chunk)
+              this.push('\n')
+            callback()
+          flush = (callback) ->
+            this.push('\\.\n')
+            callback()
+          copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
+          fileStream
+          .pipe(through(transform, flush))
+          .pipe(pgClient.query(copyStream.from(copyStart)))
+          .on('finish', resolve2)
+          .on('error', doReject2("error streaming data to #{tableName}"))
+          fileStream.resume()
+        .then resolve
+        .catch doReject("error executing COPY FROM for #{tableName}")
+    .then () ->
+      finishQuery = tables.jobQueue.dataLoadHistory()
+      .where(raw_table_name: tableName)
+      .update raw_rows: count
+      pgQuery(finishQuery.toString())
+    .then () ->
+      pgQuery('COMMIT')
+    .then () ->
+      return count
 
 
 # loads all records from a ftp-dropped zip file
@@ -158,7 +152,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   if _.isEmpty(ungrouped)
     ungrouped = null
   data =
-    address: sqlHelpers.safeJsonArray(tables.propertyData[dataType](), base.address)
+    address: sqlHelpers.safeJsonArray(base.address)
     shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
@@ -178,14 +172,14 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 
 
 finalizeData = (subtask, id) ->
-  taxEntriesPromise = tables.propertyData.tax()
+  taxEntriesPromise = tables.property.tax()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
-  deedEntriesPromise = tables.propertyData.deed()
+  deedEntriesPromise = tables.property.deed()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -194,13 +188,13 @@ finalizeData = (subtask, id) ->
   .orderByRaw('close_date ASC NULLS LAST')
   # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
   # TODO: simultaneous closings, how do we property sort to account for that?
-  parcelsPromise = tables.propertyData.parcel()
+  parcelsPromise = tables.property.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
   Promise.join taxEntriesPromise, deedEntriesPromise, parcelsPromise, (taxEntries=[], deedEntries=[], parcel=[]) ->
     if taxEntries.length == 0
       # not sure if this should ever be possible, but we'll handle it anyway
-      return tables.propertyData.deletes()
+      return tables.property.deletes()
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name
@@ -279,7 +273,7 @@ finalizeData = (subtask, id) ->
       tax[field] = lastSale[field]
     tax.shared_groups.sale = salesHistory
     
-    tables.propertyData.combined()
+    tables.property.combined()
     .insert(tax)
 
 

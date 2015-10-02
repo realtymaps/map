@@ -25,18 +25,9 @@ conninfo URL):
   * an environment variable fragment appended with `@` then the name of an heroku app, which is treated like an
   environment variable fragment as described above, except where all resolutions take place in the context of the
   given heroku app's environment
-    * example: `USER_DATABASE@realtymaps-map`
+    * example: `DATABASE@realtymaps-map`
 
 ## database scripts
-
-#### High-level intent of commonly-used scripts
-* `clonePropertyData` and `cloneUserData` can be used with `-t` options (possibly preceded by `--clean`) to manually
-copy specific tables from prod or staging to dev.  With `--to`, it will copy tables to prod or staging instead of from,
-in case you want to do some tweaking locally and then clone the results up.
-* `syncPropertyData`, `syncUserData`, and `syncAll` can be used to run migrations.  `--breaking` should be used only
-when it is OK for breaking changes to be made (e.g. during app startup).
-* `init` can be used to initially clone the dbs from production, or (with lots of caution!) to clone the dbs from local
-to staging (or accidentally production!).
 
 #### Low-level scripts
 * `./scripts/database/clone` is a generic script that clones tables (schema+data) from one db to another.  Arguments
@@ -56,54 +47,13 @@ scripts.  It takes a db specifier as an argument and echos the resolved conninfo
 conninfo URL, or the specifier itself if it wasn't a conninfo URL
   
 #### Direct-use scripts
-* `foreman run ./scripts/database/clonePropertyData` clones tables from one db to the currently-configured property db,
-then (by default) marks all materialized views as dirty.  Arguments are:
-  * <optional> `--to` reverses the direction of the clone
-  * a db specifier to use as the source (or the destination, if preceded by `--to`).
-  * <optional> `--clean` to force removal of objects before recreating them -- note this will cause errors if the
-  objects don't already exist
-  * <optional> `--no-rebuild` prevents the normal action of marking all materialized views on the destination db as
-  dirty
-  * <optional> any dump/restore options (such as `-t table1 -t table2` to clone just table1 and table2).  Default is to
-  dump the following tables: corelogic_deed, corelogic_tax, mls_listings, parcels (the source data tables).
-* `foreman run ./scripts/database/cloneUserData` clones tables from one db to the currently-configured user db.
-Arguments are:
-  * <optional> `--to` reverses the direction of the clone
-  * a db specifier to use as the source (or the destination, if preceded by `--to`).
-  * <optional> `--clean` to force removal of objects before recreating them -- note this will cause errors if the
-  objects don't already exist
-  * <optional> any dump/restore options (such as `-t table1 -t table2` to clone just table1 and table2).  Default is to
-  dump all the tables in the public schema.
-* `foreman run ./scripts/database/syncPropertyData` performs the following actions:
+* `foreman run ./scripts/database/syncMainDb` performs the following actions:
   * updates the property db with the latest migrations from `./scripts/migrations/propertyData` (recursively)
-  * stages any materialized views that have been marked dirty -- this will typically be the slowest part of the script
-  * pushes any non-breaking materialized views that have been staged, unless `--breaking` is an argument, in which case
-  all staged views are pushed
-* `foreman run ./scripts/database/syncUserData` updates the user db with the latest migrations from
-`./scripts/migrations/userManagement` (recursively)
 * `foreman run ./scripts/database/test` runs test migrations from `./scripts/migrations/test/`.
   * Adding `--fresh` will cause the test db to be dropped and recreated first.
   * Any additional arguments passed to `test` will be passed directly to `dbsync` to aid in testing.
   * There are 2 test migrations set up; the first will create a table in the test db, and the second will run a
   migration which will fail and roll back without changes.
-
-#### Convenience scripts
-* `foreman run ./scripts/database/syncAll` runs `syncPropertyData` then `syncUserData`.  If `--breaking` is given as an
-argument, it will be passed on to `syncPropertyData`. 
-* `foreman run ./scripts/database/init` is intended for use with a set of clean-slate dbs (with extensions installed
-appropriately), and will result in a fully-synced set of dbs.  By default, the destination dbs are the
-currently-configured ones.
-  * Arguments are:
-    * <optional> `--to` reverses the direction of the initialization
-    * source property db (or destination if preceded by `--to`)
-    * source user db (or destination if preceded by `--to`)
-    * <optional> `--clean` will be passed on to both clone scripts
-  * `init` will then execute the following scripts (in this order):
-    * `dbsync` migrations from the `./migrations/propertyData/-bootstrap` directory to the destination propertyData db
-    * `clonePropertyData`
-    * `syncPropertyData --breaking`
-    * `cloneUserData`
-    * `syncUserData`
 
 ## environmentNormalization scripts
 * `source ./scripts/environmentNormalization/dbsync` ensures dbsync is available for use by other scripts.  It finds
@@ -123,8 +73,8 @@ exception branches which will never be deleted, currently set to master and HEAD
 remotes on which no branches will be deleted, currently set to prod and upstream.
 * `./scripts/misc/pushTo <service> <projectName> [--dbsyc]` is intended to be run from within CircleCI only.  The
 service can be either 'heroku' or 'github', and the project is the destination github project or heroku app.  It
-performs misc tasks related to such pushes.  If `--dbsync` is present, it will also run non-breaking dbsync migrations
+performs misc tasks related to such pushes.  If `--dbsync` is present, it will also run dbsync migrations
 before attempting the push/deploy.
 * `./scripts/misc/setHerokuStack <stack>` will set the heroku stack for all apps accessible by the credentialled user.
-* `source ./scripts/misc/syncVars` sets PROPERTY_DATABASE_URL and USER_DATABASE_URL based on the values of other
+* `source ./scripts/misc/syncVars` sets DATABASE_URL and RAW_TEMP_DATABASE_URL based on the values of other
 environment variables.

@@ -10,14 +10,14 @@ if [[ "$1" == "--fresh" ]]
 then
     shift
 
-    # note we connect to USER_DATABASE_URL below, but that's because you can't drop the database you're connected to,
-    # and certainly not connect to it in order to create it, so USER_DATABASE_URL was just an arbitrary alternative
+    # note we connect to RAW_TEMP_DATABASE_URL below, but that's because you can't drop the database you're connected to,
+    # and certainly not connect to it in order to create it, so RAW_TEMP__DATABASE_URL was a semi-arbitrary alternative
     echo
     echo "Removing old test db..."
-    $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $USER_DATABASE_URL --reminder 1 --blindly --forget --autocommit --files 'drop_test_db.sql'
+    $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $RAW_TEMP_DATABASE_URL --reminder 1 --blindly --forget --autocommit --files 'drop_test_db.sql'
     echo
     echo "Creating fresh test db..."
-    $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $USER_DATABASE_URL --reminder 1 --blindly --forget --autocommit --files 'create_test_db.sql'
+    $DBSYNC --path $SCRIPT_DIR/sql --client pg --connection $RAW_TEMP_DATABASE_URL --reminder 1 --blindly --forget --autocommit --files 'create_test_db.sql'
     sleep 1
 fi
 
