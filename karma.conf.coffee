@@ -111,7 +111,7 @@ module.exports = (config) ->
     captureTimeout: 60000
   # Continuous Integration mode
   # if true, Karma captures browsers, runs the tests and exits
-    singleRun: false
+    singleRun: true
 
     plugins: [
       'karma-mocha-reporter'
