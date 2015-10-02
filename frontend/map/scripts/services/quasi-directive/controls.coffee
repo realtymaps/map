@@ -66,6 +66,7 @@ app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope) ->
           .on wrapper, 'click', L.DomEvent.stopPropagation
           .on wrapper, 'mousedown', L.DomEvent.stopPropagation
           .on wrapper, 'dblclick', L.DomEvent.stopPropagation
+          .on wrapper, 'mousewheel', L.DomEvent.stopPropagation
           wrapper
 
       svc[control.dName] = (options) -> new control.class(options)
