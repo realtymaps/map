@@ -7,6 +7,7 @@ validatorBuilder = require '../../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
+logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 
 
@@ -180,8 +181,8 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
       .then (mlsConfig) ->
         mlsConfig.data_rules
   else if dataSourceType == 'county'
-    dataSourcePromise = Promise.try() ->
-      # Query for county/corelogic global rules?
+    dataSourcePromise = Promise.try () ->
+      Promise.resolve {} # no global rules, so far
 
   dataSourcePromise
   .then (global_rules) ->
@@ -205,16 +206,16 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
         # Most common case, generate the transform from the rule configuration
         else
           if validationDef.list == 'base'
-            rule = validatorBuilder.buildBaseRule validationDef
+            rule = validatorBuilder.buildBaseRule(dataSourceType, dataType) validationDef
           else
-            rule = validatorBuilder.buildRetsRule validationDef
+            rule = validatorBuilder.buildDataRule validationDef
 
           transforms = rule.getTransform global_rules
           if !_.isArray transforms
             transforms = [ transforms ]
 
           validationDef.transform = _.map transforms, (transform) ->
-            validation.validators[transform.name](transform.options)
+            v = validation.validators[transform.name](transform.options)
 
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use

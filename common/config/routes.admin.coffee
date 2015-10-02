@@ -8,7 +8,7 @@ module.exports =
   dataSource: 'dataSource'
   mls: '/mls'
   normalize: '/normalize?id'
-  county: '/county?id'
+  county: '/county?id=&list='
 
   jobs: 'jobs'
   jobsCurrent: '/current'

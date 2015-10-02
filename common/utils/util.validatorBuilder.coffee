@@ -51,107 +51,152 @@ ruleDefaults =
     "validators.#{validator.name}(#{vOptionsStr})"
 
 # Base/filter rule definitions
-baseRules =
-  acres:
-    alias: 'Acres'
-    type: 'float'
+_rules =
+  common:
+    acres:
+      alias: 'Acres'
+      type: 'float'
 
-  address:
-    alias: 'Address'
-    required: true
-    input: {}
-    group: 'general'
-    type: 'address'
-    valid: () ->
-      @input.city && @input.state && (@input.zip || @input.zip9) &&
-      ((@input.streetName && @input.streetNum) || @input.streetFull)
+    address:
+      alias: 'Address'
+      required: true
+      input: {}
+      group: 'general'
+      type: 'address'
+      valid: () ->
+        @input.city && @input.state && (@input.zip || @input.zip9) &&
+        ((@input.streetName && @input.streetNum) || @input.streetFull)
 
-  baths_full:
-    alias: 'Baths Full'
-    type: 'integer'
+    baths_full:
+      alias: 'Baths Full'
+      type: 'integer'
 
-  bedrooms:
-    alias: 'Bedrooms'
-    type: 'integer'
+    bedrooms:
+      alias: 'Bedrooms'
+      type: 'integer'
 
-  days_on_market:
-    alias: 'Days on Market'
-    required: true
-    type: 'days_on_market'
-    input: []
-    valid: () ->
-      @input[0] || @input[1]
+    parcel_id:
+      alias: 'Parcel ID'
+      required: true
+      config:
+        stripFormatting: true
 
-  fips_code:
-    alias: 'FIPS code'
-    required: true
-    input: {}
-    type: 'fips'
-    valid: () ->
-      @input.stateCode && @input.county
+    price:
+      alias: 'Price'
+      type: 'currency'
+      required: true
 
-  hide_address:
-    alias: 'Hide Address'
-    type: 'boolean'
+    sqft_finished:
+      alias: 'Finished Sq Ft'
+      type: 'integer'
 
-  hide_listing:
-    alias: 'Hide Listing'
-    type: 'boolean'
+    close_date:
+      alias: 'Close Date'
+      type: 'datetime'
 
-  parcel_id:
-    alias: 'Parcel ID'
-    required: true
-    config:
-      stripFormatting: true
+  mls:
+    listing:
+      rm_property_id:
+        alias: 'Property ID'
+        required: true
+        type: 'rm_property_id'
+        input: {}
 
-  price:
-    alias: 'Price'
-    type: 'currency'
-    required: true
+      data_source_uuid:
+        alias: 'MLS Number'
+        required: true
 
-  rm_property_id:
-    alias: 'Property ID'
-    required: true
-    type: 'rm_property_id'
-    input: {}
+      fips_code:
+        alias: 'FIPS code'
+        required: true
+        input: {}
+        type: 'fips'
+        valid: () ->
+          @input.stateCode && @input.county
 
-  sqft_finished:
-    alias: 'Finished Sq Ft'
-    type: 'integer'
+      days_on_market:
+        alias: 'Days on Market'
+        required: true
+        type: 'days_on_market'
+        input: []
+        valid: () ->
+          @input[0] || @input[1]
 
-  status:
-    alias: 'Status'
-    required: true
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      hide_address:
+        alias: 'Hide Address'
+        type: 'boolean'
 
-  status_display:
-    alias: 'Status Display'
-    required: true
-    group: 'general'
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      hide_listing:
+        alias: 'Hide Listing'
+        type: 'boolean'
 
-  substatus:
-    alias: 'Sub-Status'
-    required: true
-    getTransform: () ->
-      name: 'map', options: map: @config.map ? {}, passUnmapped: true
+      status:
+        alias: 'Status'
+        required: true
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  close_date:
-    alias: 'Close Date'
-    type: 'datetime'
+      status_display:
+        alias: 'Status Display'
+        required: true
+        group: 'general'
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  discontinued_date:
-    alias: 'Discontinued Date'
-    type: 'datetime'
+      substatus:
+        alias: 'Sub-Status'
+        required: true
+        getTransform: () ->
+          name: 'map', options: map: @config.map ? {}, passUnmapped: true
 
-  data_source_uuid:
-    alias: 'MLS Number'
-    required: true
+      discontinued_date:
+        alias: 'Discontinued Date'
+        type: 'datetime'
+
+
+  county:
+    tax:
+      rm_property_id:
+        alias: 'Property ID'
+        required: true
+        type: 'rm_property_id'
+        input: {}
+        valid: () ->
+          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
+
+      data_source_uuid:
+        alias: 'County Number'
+        required: true
+        input: {}
+        valid: () ->
+          @input.batchid && @input.batchseq
+
+      fips_code:
+        alias: 'FIPS code'
+        type: 'fips'
+        required: true
+
+      owner_name:
+        alias: 'Owner 1'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
+      owner_name_2:
+        alias: 'Owner 2'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
+    deed: {}
+
+getBaseRules = (dataSourceType, dataListType) ->
+  _.merge _rules.common, _rules[dataSourceType][dataListType]
 
 # RETS/MLS rule defaults for each data type
-retsRules =
+typeRules =
   Int:
     type:
       name: 'integer'
@@ -189,8 +234,8 @@ retsRules =
 _buildRule = (rule, defaults) ->
   _.defaultsDeep rule, defaults, ruleDefaults
 
-buildRetsRule = (rule) ->
-  _buildRule rule, retsRules[rule.config.DataType]
+buildDataRule = (rule) ->
+  _buildRule rule, typeRules[rule.config.DataType]
   if rule.type?.name == 'string'
     if rule.Interpretation == 'Lookup'
       rule.type.label = 'Restricted Text (single value)'
@@ -200,11 +245,12 @@ buildRetsRule = (rule) ->
       rule.type.label = 'User-Entered Text'
   rule
 
-buildBaseRule = (rule) ->
-  _buildRule rule, baseRules[rule.output]
-  rule
+buildBaseRule = (dataSourceType, dataListType) ->
+  (rule) ->
+    _buildRule rule, getBaseRules(dataSourceType, dataListType)[rule.output]
+    rule
 
 module.exports =
-  baseRules: baseRules
-  buildRetsRule: buildRetsRule
+  getBaseRules: getBaseRules
+  buildDataRule: buildDataRule
   buildBaseRule: buildBaseRule
