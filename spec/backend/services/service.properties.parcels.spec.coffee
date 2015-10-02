@@ -22,6 +22,5 @@ describe 'service.properties.parcels', ->
   it 'getBaseParcelData returns valid geojson', (done) ->
     @subject.getBaseParcelData mocks.map.state, mocks.map.filter
     .then (data) ->
-      console.log("################################# #{JSON.stringify(data,null,2)}")
       gjv.valid(data).should.be.ok
       done()
