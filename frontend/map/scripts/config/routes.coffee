@@ -50,7 +50,6 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
-  buildState 'addProjects'
   buildState 'sendEmailModal'
   buildState 'newEmail'
 

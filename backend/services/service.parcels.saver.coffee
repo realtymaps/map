@@ -6,7 +6,7 @@ JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 parcelFetcher = require './service.parcels.fetcher.digimaps'
 parcelFetcher = parcelFetcher.getParcelZipFileStream
-{WGS84, UTM} = require '../../common/utils/enums/util.enums.map.coord_system'
+{WGS84, UTM, crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
 shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
@@ -23,10 +23,7 @@ _formatParcel = (feature) ->
     key.toLowerCase()
   obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
   obj.geometry = feature.geometry
-  obj.geometry.crs =
-    type: 'name'
-    properties:
-      name: 'EPSG:26910'
+  obj.geometry.crs = crsFactory()
   obj
 
 _getParcelJSON = (fullPath, digimapsSetings) ->

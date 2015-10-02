@@ -15,5 +15,5 @@ bower = bowerFilesLoader
 
 pipeline = _.flatten([bower])
 
-#pipe.logToob "Vendor", pipeline
+# log "Vendor", pipeline
 module.exports = pipeline

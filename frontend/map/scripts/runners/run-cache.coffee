@@ -13,4 +13,6 @@ app.run ($http, DSCacheFactory, rmapsMapCacheLogger) ->
     onExpire: (key, value) ->
       rmapsMapCacheLogger.debug "Expired: key: #{key}"
 
+  #BEWARE THIS TURNS CACHING ON BY DEFAULT!!!!!!!!!!!!!!
+  #http://stackoverflow.com/questions/14117653/how-to-cache-an-http-get-service-in-angularjs
   $http.defaults.cache = DSCacheFactory.get('defaultCache')

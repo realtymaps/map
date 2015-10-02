@@ -137,7 +137,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     modalInstance = $modal.open
       animation: true
       scope: $scope
-      template: require('../../html/views/addProjects.jade')()
+      template: require('../../html/views/templates/modals/addProjects.jade')()
 
     modalInstance.result.then (result) ->
 

@@ -5,8 +5,8 @@ adminRoutes = require '../../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'adminConstants', 'rmapsprincipal', 'rmapsJobsService'
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, adminConstants, rmapsprincipal, rmapsJobsService) ->
+app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', '$q', 'rmapsevents', 'adminConstants', 'rmapsprincipal', 'rmapsJobsService'
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, $q, rmapsevents, adminConstants, rmapsprincipal, rmapsJobsService) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
