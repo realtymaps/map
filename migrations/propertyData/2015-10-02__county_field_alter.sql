@@ -1,0 +1,1 @@
+UPDATE data_source_fields SET "Interpretation" = 'LookupMulti' where "LookupName" = 'OWNER_CORPORATE_INDICATOR_FLAG';

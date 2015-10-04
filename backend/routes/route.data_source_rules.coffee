@@ -1,20 +1,20 @@
-mlsNormalizationService = require '../services/service.mls_normalization'
+rulesService = require '../services/service.dataSourceRules'
 ExpressResponse = require '../utils/util.expressResponse'
 auth = require '../utils/util.auth'
 
 module.exports =
-  getMlsRules:
+  getRules:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.getRules req.params.mlsId
+      rulesService.getRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
       .then (result) ->
         if result
           next new ExpressResponse result
         else
           next new ExpressResponse
             alert:
-              msg: "Unknown rules #{req.params.mlsId}"
+              msg: "Unknown rules #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}"
             404
       .catch (error) ->
         next new ExpressResponse
@@ -22,11 +22,11 @@ module.exports =
             msg: error.message
           500
 
-  createMlsRules:
+  createRules:
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.createRules req.params.mlsId, req.body
+      rulesService.createRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
       .then (result) ->
         next new ExpressResponse result
       .catch (error) ->
@@ -35,11 +35,11 @@ module.exports =
             msg: error.message
           500
 
-  putMlsRules:
+  putRules:
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.putRules req.params.mlsId, req.body
+      rulesService.putRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
       .then (result) ->
         next new ExpressResponse(result)
       .catch (error) ->
@@ -48,11 +48,11 @@ module.exports =
             msg: error.message
           500
 
-  deleteMlsRules:
+  deleteRules:
     method: 'delete'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.deleteRules req.params.mlsId
+      mlsNormalizationService.deleteRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
       .then (result) ->
         next new ExpressResponse(result)
       .catch (error) ->
@@ -65,14 +65,14 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.getListRules req.params.mlsId, req.params.list
+      rulesService.getListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
       .then (result) ->
         if result
           next new ExpressResponse result
         else
           next new ExpressResponse
             alert:
-              msg: "Unknown rules #{req.params.mlsId} #{req.params.list}"
+              msg: "Unknown rules #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list}"
             404
       .catch (error) ->
         next new ExpressResponse
@@ -84,7 +84,7 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.createListRules req.params.mlsId, req.params.list, req.body
+      rulesService.createListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
       .then (result) ->
         next new ExpressResponse result
       .catch (error) ->
@@ -97,7 +97,7 @@ module.exports =
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.putListRules req.params.mlsId, req.params.list, req.body
+      rulesService.putListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
       .then (result) ->
         next new ExpressResponse(result)
       .catch (error) ->
@@ -110,7 +110,7 @@ module.exports =
     method: 'delete'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.deleteListRules req.params.mlsId, req.params.list
+      rulesService.deleteListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
       .then (result) ->
         next new ExpressResponse(result)
       .catch (error) ->
@@ -123,14 +123,14 @@ module.exports =
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.getRule req.params.mlsId, req.params.list, req.params.ordering
+      rulesService.getRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
       .then (result) ->
         if result
           next new ExpressResponse result
         else
           next new ExpressResponse
             alert:
-              msg: "Unknown rule #{req.params.mlsId} #{req.params.list} #{req.params.ordering}"
+              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.ordering}"
             404
       .catch (error) ->
         next new ExpressResponse
@@ -142,14 +142,14 @@ module.exports =
     method: 'patch'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.updateRule req.params.mlsId, req.params.list, req.params.ordering, req.body
+      rulesService.updateRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering, req.body
       .then (result) ->
         if result
           next new ExpressResponse(result)
         else
           next new ExpressResponse
             alert:
-              msg: "Unknown rule #{req.params.mlsId} #{req.params.list} #{req.params.ordering}"
+              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list} #{req.params.ordering}"
             404
       .catch (error) ->
         next new ExpressResponse
@@ -161,14 +161,14 @@ module.exports =
     method: 'delete'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      mlsNormalizationService.deleteRule req.params.mlsId, req.params.list, req.params.ordering
+      rulesService.deleteRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
       .then (result) ->
         if result
           next new ExpressResponse(result)
         else
           next new ExpressResponse
             alert:
-              msg: "Unknown rule #{req.params.mlsId} #{req.params.list} #{req.params.ordering}"
+              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list} #{req.params.ordering}"
             404
       .catch (error) ->
         next new ExpressResponse

@@ -192,8 +192,12 @@ _rules =
 
     deed: {}
 
+_noBase = ['deed']
+
 getBaseRules = (dataSourceType, dataListType) ->
-  _.merge _rules.common, _rules[dataSourceType][dataListType]
+  if dataListType in _noBase
+    return {}
+  _.merge _.cloneDeep(_rules.common), _rules[dataSourceType][dataListType]
 
 # RETS/MLS rule defaults for each data type
 typeRules =

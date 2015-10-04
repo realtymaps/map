@@ -42,7 +42,6 @@ categories =
       owner: 'Owner'
       deed: 'Deed & Mortgage'
     deed:
-      base: 'Base'
       unassigned: 'Unassigned'
       hidden: 'Hidden'
       general: 'General'

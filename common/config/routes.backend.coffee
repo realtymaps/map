@@ -6,6 +6,7 @@ frontend and backend in sync
 apiBase = '/api'
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
+apiBaseDataRules = "#{apiBase}/rules"
 apiBaseDataSource = "#{apiBase}/data_source"
 apiBaseDataSourceLookups = "#{apiBase}/lookups"
 apiBaseUsers = "#{apiBase}/users"
@@ -133,19 +134,6 @@ module.exports =
     updatePropertyData: "#{apiBaseMlsConfig}/:id/propertyData"
     updateServerInfo: "#{apiBaseMlsConfig}/:id/serverInfo"
 
-
-  mls_normalization:
-    getMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
-    createMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
-    putMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
-    deleteMlsRules: "#{apiBaseMlsConfig}/:mlsId/rules"
-    getListRules: "#{apiBaseMlsConfig}/:mlsId/rules/:list"
-    createListRules: "#{apiBaseMlsConfig}/:mlsId/rules/:list"
-    putListRules: "#{apiBaseMlsConfig}/:mlsId/rules/:list"
-    deleteListRules: "#{apiBaseMlsConfig}/:mlsId/rules/:list"
-    getRule: "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
-    updateRule: "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
-    deleteRule: "#{apiBaseMlsConfig}/:mlsId/rules/:list/:ordering"
   mls:
     apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
     getDatabaseList: "#{apiBaseMls}/:mlsId/databases"
@@ -158,6 +146,18 @@ module.exports =
     apiBaseDataSourceLookups: apiBaseDataSourceLookups
     getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
     getLookupTypes: "#{apiBaseDataSourceLookups}/:lookupId/types"
+  data_source_rules:
+    getRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
+    createRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
+    putRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
+    deleteRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
+    getListRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list"
+    createListRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list"
+    putListRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list"
+    deleteListRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list"
+    getRule: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list/:ordering"
+    updateRule: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list/:ordering"
+    deleteRule: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules/:list/:ordering"
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"

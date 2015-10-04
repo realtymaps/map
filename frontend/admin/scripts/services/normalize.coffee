@@ -2,14 +2,14 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 Promise = require 'bluebird'
 
-app.factory 'rmapsNormalizeService', (Restangular) ->
+app.factory 'rmapsNormalizeService', ($log, Restangular) ->
 
-  mlsConfigAPI = backendRoutes.mls_config.apiBase
+  ruleAPI = backendRoutes.data_source.apiBaseDataSource
 
   class NormalizeService
 
     constructor: (@data_source_id, @data_source_type, @data_type) ->
-      @endpoint = Restangular.all(mlsConfigAPI).one(@data_source_id).all('rules')
+      @endpoint = Restangular.all(ruleAPI).one(@data_source_id).all('dataSourceType').one(@data_source_type).all('dataListType').one(@data_type).all('rules')
 
     _formatRule: (rule) =>
       config: _.omit rule.config, (v) -> !v? || v == ''

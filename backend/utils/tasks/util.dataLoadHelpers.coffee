@@ -215,7 +215,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
             transforms = [ transforms ]
 
           validationDef.transform = _.map transforms, (transform) ->
-            v = validation.validators[transform.name](transform.options)
+            validation.validators[transform.name](transform.options)
 
         validationMap[validationDef.list].push(validationDef)
       # pre-calculate the keys that are grouped for later use
