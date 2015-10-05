@@ -49,6 +49,13 @@ describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
         value.should.equal('56037')
     ]
 
+  promiseIt 'should resolve to a given raw code if no state or county are provided', () ->
+    [
+      expectResolve(validators.fips()(param, "10000")).then (value) ->
+        value.should.equal('10000')
+
+    ]
+
   promiseIt 'should reject empty values', () ->
     [
       expectReject(validators.fips()(param, stateCode: 'DE', county: ''), DataValidationError)
@@ -65,3 +72,11 @@ describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
     [
       expectReject(validators.fips(minSimilarity: 0.9)(param, stateCode: 'DE', county: 'New Casle'), DataValidationError)
     ]
+
+  promiseIt 'should reject with no input values', () ->
+    [
+      expectReject(validators.fips()(param), DataValidationError)
+      expectReject(validators.fips()(param, ''), DataValidationError)
+    ]
+
+

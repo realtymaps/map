@@ -1,6 +1,7 @@
 _ = require 'lodash'
 logger = require '../config/logger'
 tables = require '../config/tables'
+
 toInit = {}
 _.extend toInit, _.pick tables.lookup, [
   'usStates'
@@ -18,6 +19,8 @@ _.extend toInit, _.pick tables.user, [
   'project'
   'company'
   'accountImages'
+  'accountUseTypes'
+  'notes'
 ]
 
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'

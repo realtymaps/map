@@ -101,7 +101,7 @@ module.exports = app.factory 'rmapsBaseMap', (rmapsBaseMapFactoryLogger, $timeou
           if e.keyCode == 27 #esc
             self.zoomBoxActive = false
             @zoomBox.deactivate()
-          if e.altKey
+          if e.altKey && !e.metaKey && !e.shiftKey && !e.ctrlKey
             self.zoomBoxActive = true
             @zoomBox.activate()
 

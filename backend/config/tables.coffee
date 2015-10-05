@@ -55,6 +55,8 @@ module.exports =
     keystore: 'config_keystore'
     externalAccounts: 'config_external_accounts'
     notification: 'config_notification'
+    dataSource: 'config_data_source_fields'
+    dataSourceLookups: 'config_data_source_lookups'
   lookup:
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
@@ -93,6 +95,7 @@ module.exports =
     project: 'user_project'
     company: 'user_company'
     accountImages: 'user_account_images'
+    notes: 'user_notes'
 
     
 # set up this way so IntelliJ's autocomplete works

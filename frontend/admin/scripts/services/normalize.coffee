@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 Promise = require 'bluebird'
-_ = require 'lodash'
 
 app.factory 'rmapsNormalizeService', (Restangular) ->
 

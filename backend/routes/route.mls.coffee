@@ -6,6 +6,7 @@ mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 
+
 module.exports =
   getDatabaseList:
     method: 'get'

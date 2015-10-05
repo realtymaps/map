@@ -6,6 +6,8 @@ frontend and backend in sync
 apiBase = '/api'
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
+apiBaseDataSource = "#{apiBase}/data_source"
+apiBaseDataSourceLookups = "#{apiBase}/lookups"
 apiBaseUsers = "#{apiBase}/users"
 apiBaseUsersGroups = "#{apiBase}/usersGroups"
 apiBaseGroups = "#{apiBase}/groups"
@@ -44,6 +46,9 @@ module.exports =
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
     emailIsUnique: "#{apiBaseSession}/emailIsUnique"
+  notesSession:
+    root: "#{apiBaseSession}/notes"
+    byId: "#{apiBaseSession}/notes/:id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -148,7 +153,11 @@ module.exports =
     getColumnList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
     getDataDump: "#{apiBaseMls}/:mlsId/data"
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
-
+  data_source:
+    apiBaseDataSource: apiBaseDataSource
+    apiBaseDataSourceLookups: apiBaseDataSourceLookups
+    getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
+    getLookupTypes: "#{apiBaseDataSourceLookups}/:lookupId/types"
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"

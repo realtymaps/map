@@ -17,6 +17,7 @@ span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-cont
         .col-md-10
           .btn-group
             label.btn.btn-white.btn-radio(
+              ng-class="{active: selectedFilters.bedsMin == c.value}"
               ng-repeat="c in filterValues.beds | filter: { value: '' }"
               ng-model="selectedFilters.bedsMin"
               btn-radio="{{c.value}}"
@@ -27,6 +28,7 @@ span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-cont
         .col-md-10
           .btn-group
             label.btn.btn-white.btn-radio(
+              ng-class="{active: selectedFilters.bathsMin == c.value}"
               ng-repeat="c in filterValues.baths | filter: { value: '' }"
               ng-model="selectedFilters.bathsMin"
               btn-radio="{{c.value}}"
