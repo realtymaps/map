@@ -17,6 +17,8 @@
     .col-md-2.list-container
       h4 Filters
       .field-container(cg-busy="baseLoading")
+        .placeholder-field(ng-hide="categories.base")
+          span No Base Filters
         .field.base(
         ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
         ng-click="selectField(item)"
