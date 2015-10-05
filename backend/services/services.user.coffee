@@ -19,7 +19,6 @@ _.extend toInit, _.pick tables.user, [
   'project'
   'company'
   'accountImages'
-  'accountUseTypes'
   'notes'
 ]
 

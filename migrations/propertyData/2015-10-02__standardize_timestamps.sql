@@ -1,4 +1,6 @@
 
+-- bookshelf was handling this before, so this change just makes this table work like our others
+
 ALTER TABLE auth_session_security RENAME COLUMN created_at TO rm_inserted_time;
 ALTER TABLE auth_session_security ALTER COLUMN rm_inserted_time TYPE TIMESTAMP WITHOUT TIME ZONE;
 ALTER TABLE auth_session_security ALTER COLUMN rm_inserted_time SET DEFAULT now_utc();

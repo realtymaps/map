@@ -55,7 +55,7 @@ module.exports =
     keystore: 'config_keystore'
     externalAccounts: 'config_external_accounts'
     notification: 'config_notification'
-    dataSource: 'config_data_source_fields'
+    dataSourceFields: 'config_data_source_fields'
     dataSourceLookups: 'config_data_source_lookups'
   lookup:
     usStates: 'lookup_us_states'
