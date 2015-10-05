@@ -33,13 +33,17 @@ _barePgShutdown = () ->
     pg.end()
 
 
+_shutdown = (db, name) ->
+  if name == 'pg'
+    _barePgShutdown()
+  else
+    _knexShutdown(db, name)
+
+
 shutdown = () ->
   logger.info 'database shutdowns initiated ...'
 
-  pgDbShutdown = _barePgShutdown()
-  onDemandDbsShutdown = Promise.all _.map(connectedDbs, _knexShutdown)
-
-  return Promise.join pgDbShutdown, onDemandDbsShutdown, () ->
+  return Promise.join Promise.all _.map(connectedDbs, _shutdown), () ->
     logger.info 'all databases successfully shut down.'
   .catch (error) ->
     logger.error 'all databases shut down (?), some with errors.'

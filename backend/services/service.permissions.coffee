@@ -21,7 +21,7 @@ hashifyGroups = (hash, group) ->
 getPermissionsForGroupId = (id) ->
   tables.auth.permission()
   .whereExists () ->
-    tables.auth.m2m_group_permission()
+    tables.auth.m2m_group_permission(this)
     .where
       group_id: id
       permission_id: dbs.get('main').raw("#{tables.auth.permission.tableName}.id")
@@ -48,7 +48,7 @@ getPermissionsForUserId = (id) ->
       # grab the permissions on the user
       userPermissionsPromise = tables.auth.permission()
       .whereExists () ->
-        tables.auth.m2m_user_permission()
+        tables.auth.m2m_user_permission(this)
         .where
           user_id: id
           permission_id: dbs.get('main').raw("#{tables.auth.permission.tableName}.id")
@@ -74,7 +74,7 @@ getPermissionsForUserId = (id) ->
 getGroupsForUserId = (id) ->
   tables.auth.group()
   .whereExists () ->
-    tables.auth.m2m_user_group()
+    tables.auth.m2m_user_group(this)
     .where
       user_id: id
       group_id: dbs.get('main').raw("#{tables.auth.group.tableName}.id")

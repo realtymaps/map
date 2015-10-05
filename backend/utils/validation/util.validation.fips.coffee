@@ -3,9 +3,8 @@ Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
 sqlHelpers = require '../util.sql.helpers'
 require '../../../common/extensions/strings'
-tables = '../../config/tables'
-dbs = '../../config/dbs'
-
+tables = require '../../config/tables'
+dbs = require '../../config/dbs'
 
 module.exports = (options = {}) ->
   minSimilarity = options.minSimilarity ? 0.4

@@ -27,7 +27,6 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
   validation.validateAndTransform(filters, transforms)
   .then (filters) ->
     query = _getBaseParcelQueryByBounds(filters.bounds, limit)
-    console.log("################################################ #{query.toString()}")
     return query.stream() if doStream
     query
 

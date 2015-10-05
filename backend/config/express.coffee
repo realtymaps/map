@@ -112,15 +112,14 @@ app.use (data, req, res, next) ->
       # this is not strictly an error handler now, it is also used for routine final handling of a response,
       # something not easily done with the standard way of using express -- so only log as an error if the
       # status indicates that it is
-      analysis = analyzeValue(data)
-      logger.error (JSON.stringify(analysis,null,2))
+      logger.error (data.toString())
 
     return data.send(res)
 
   # otherwise, it's probably a thrown Error
+  logger.error('uncaught error found by express:')
   analysis = analyzeValue(data)
-  logger.error 'uncaught error found by express:'
-  logger.error (JSON.stringify(analysis,null,2))
+  logger.error(analysis.toString())
   res.status(status.INTERNAL_SERVER_ERROR).json alert:
     msg: commonConfig.UNEXPECTED_MESSAGE(escape(data.message))
     id: "500-#{req.path}"

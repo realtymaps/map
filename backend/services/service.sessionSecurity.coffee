@@ -30,9 +30,9 @@ setSecurityCookie = (req, res, token, rememberMe) ->
 # this is for when new logins occur, or when we want to create a session based on rememberMe
 createNewSeries = (req, res, rememberMe) ->
   token = uuid.genToken()
-  keystore.cache.getValues('hashing cost factors')
-  .then (hashCosts) ->
-    bcrypt.genSaltAsync(hashCosts.token)
+  keystore.cache.getValue('token', namespace: 'hashing cost factors')
+  .then (tokenCostFactor) ->
+    bcrypt.genSaltAsync(tokenCostFactor)
   .then (salt) ->
     hashToken(token, salt)
     .then (tokenHash) ->
@@ -59,7 +59,7 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = keystore.cache.getValues('max logins')
+  maxLoginsPromise = keystore.cache.getValuesMap('max logins')
   .then (maxLogins) ->
     if req.session.groups['Premium Tier']
       return maxLogins.premium
@@ -85,7 +85,7 @@ ensureSessionCount = (req) -> Promise.try () ->
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
-      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'updated_at').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
+      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'rm_modified_time').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
       tables.auth.sessionSecurity()
       .whereIn('session_id', sessionIdsToDelete)
       .delete()

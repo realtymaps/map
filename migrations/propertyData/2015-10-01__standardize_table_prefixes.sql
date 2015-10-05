@@ -1,4 +1,4 @@
-DROP VIEW IF EXISTS jq_summary;
+DROP VIEW IF EXISTS jq_data_health;
 
 ALTER TABLE session RENAME TO auth_session;
 ALTER TABLE session_security RENAME TO auth_session_security;
@@ -17,6 +17,7 @@ ALTER TABLE data_normalization_config RENAME TO config_data_normalization;
 ALTER TABLE keystore RENAME TO config_keystore;
 ALTER TABLE external_accounts RENAME TO config_external_accounts;
 ALTER TABLE notification RENAME TO config_notification;
+ALTER TABLE mls_config RENAME TO config_mls;
 ALTER TABLE normal_listing_data RENAME TO data_normal_listing;
 ALTER TABLE normal_tax_data RENAME TO data_normal_tax;
 ALTER TABLE normal_deed_data RENAME TO data_normal_deed;
@@ -25,3 +26,6 @@ ALTER TABLE combined_data_deletes RENAME TO data_combined_deletes;
 
 -- this is an old remnant of having a completely separate admin app
 ALTER TABLE auth_session_security DROP COLUMN app;
+
+-- remnant of stuff from the django app
+DROP TABLE IF EXISTS management_useraccountprofile;

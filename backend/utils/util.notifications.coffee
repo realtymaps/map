@@ -4,6 +4,7 @@ twilio = require 'twilio'
 config = require '../config/config'
 logger = require '../config/logger'
 {mailer} = require '../config/email'
+tables = require '../config/tables'
 
 if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
   tClient = twilio(config.TWILIO.ACCOUNT, config.TWILIO.API_KEY)
@@ -36,7 +37,7 @@ notification = (type) ->
 
     # query
     query = tables.config.notification()
-    .select("user_id", "method", "email", "cell_phone")  #.select("#{tables.config.notification.tableName}.user_id", "#{tables.config.notification.tableName}.method", "#{tables.auth.user.tableName}.email", "#{tables.auth.user.tableName}.cell_phone")
+    .select("user_id", "method", "email", "cell_phone")
     .innerJoin(tables.auth.user.tableName, "#{tables.config.notification.tableName}.user_id", "#{tables.auth.user.tableName}.id")
     .where
       type: type

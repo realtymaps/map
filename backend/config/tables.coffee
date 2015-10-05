@@ -57,7 +57,7 @@ module.exports =
     notification: 'config_notification'
   lookup:
     usStates: 'lookup_us_states'
-    accountUseTypes:'lookup_account_use_types'
+    accountUseTypes: 'lookup_account_use_types'
     fipsCodes: 'lookup_fips_codes'
   property:
     listing: 'data_normal_listing'

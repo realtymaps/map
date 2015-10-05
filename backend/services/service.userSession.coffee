@@ -23,26 +23,24 @@ _updateUser = (id, attributes) ->
 
 # this skeleton for handling password hashes will make it easier to migrate
 # hashes to a new algo if we ever need to
-preprocessHash = (password) ->
-  Promise.try () ->
-    hashData = {}
-    if password?.indexOf('bcrypt$') == 0
-      hashData.algo = 'bcrypt'
-      hashData.hash = password.slice('bcrypt$'.length)
-      return keystore.cache.getValues('hashing cost factors')
-      .then (hashCosts) ->
-        hashData.needsUpdate = (bcrypt.getRounds(hashData.hash) != hashCosts.password)
-        return hashData
-    # ... else check for other valid formats and do preprocessing for them
-    # ...
-    # if nothing worked, indicate failure
-    return Promise.reject('failed to determine password hash algorithm')
+preprocessHash = (password) -> Promise.try () ->
+  if password?.indexOf('bcrypt$') == 0
+    keystore.cache.getValue('password', namespace: 'hashing cost factors')
+    .then (passwordCostFactor) ->
+      hash = password.slice('bcrypt$'.length)
+      update = (bcrypt.getRounds(hash) != passwordCostFactor)
+      return {algo: 'bcrypt', hash: hash, needsUpdate: update}
+  # ... else check for other valid formats and do preprocessing for them
+  # ...
+  # if nothing worked, indicate failure
+  else
+    Promise.reject('failed to determine password hash algorithm')
 
 createPasswordHash = (password) ->
-  keystore.cache.getValues('hashing cost factors')
-  .then (hashCosts) ->
+  keystore.cache.getValue('password', namespace: 'hashing cost factors')
+  .then (passwordCostFactor) ->
     #logger.debug "creating bcrypt password hash with 2^#{cost} rounds"
-    return bcrypt.hashAsync(password, hashCosts.password)
+    return bcrypt.hashAsync(password, passwordCostFactor)
   .then (hash) -> return "bcrypt$#{hash}"
 
 
@@ -54,28 +52,26 @@ verifyPassword = (email, password) ->
       # best practice is to go ahead and hash the password before returning,
       # to prevent timing attacks from determining validity of email
       return createPasswordHash(password).then (hash) -> return false
-    hashData = null
     preprocessHash(user.password)
     .catch (err) ->
       logger.error "error while preprocessing password hash for email #{email}: #{err}"
       Promise.reject(err)
-    .then (data) ->
-      hashData = data
-      #logger.debug "detected #{hashData.algo} password hash for email: #{email}"
+    .then (hashData) ->
+      compare = Promise.resolve(false)
       switch hashData.algo
         when 'bcrypt'
-          return bcrypt.compareAsync(password, hashData.hash)
-    .then (match) ->
-      if not match
-        return Promise.reject("given password doesn't match hash for email: #{email}")
-      #logger.debug "password verified for email: #{email}"
-      if hashData.needsUpdate
-        # in the background, update this user's hash
-        logger.info "updating password hash for email: #{email}"
-        createPasswordHash(password)
-        .then (hash) -> return _updateUser(user.id, password: hash)
-        .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
-      return user
+          compare = bcrypt.compareAsync(password, hashData.hash)
+      compare.then (match) ->
+        if not match
+          return Promise.reject("given password doesn't match hash for email: #{email}")
+        #logger.debug "password verified for email: #{email}"
+        if hashData.needsUpdate
+          # in the background, update this user's hash
+          logger.info "updating password hash for email: #{email}"
+          createPasswordHash(password)
+          .then (hash) -> _updateUser(user.id, password: hash)
+          .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
+        return user
 
 ###
 map_position -  is to hold center, zoom, bounds.., altitude.. any kind of position relative map info
