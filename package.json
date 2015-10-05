@@ -9,8 +9,8 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "0.12.6",
-    "npm": "2.13.x"
+    "node": "0.12.7",
+    "npm": "2.14.x"
   },
   "scripts": {
     "start": "./scripts/app/startAppWrapper",
@@ -67,10 +67,10 @@
     "forever": "0.11.x",
     "from": "^0.1.3",
     "ftp": "^0.3.10",
-    "geohash64": "1.0.4",
+    "geohash64": "^1.0.7",
     "geojson-validation": "^0.1.6",
     "globby": "^2.1.0",
-    "gulp": "git://github.com/gulpjs/gulp.git#4.0",
+    "gulp": "git://github.com/gulpjs/gulp.git#7243d6ead83c2e18236b9323be4a9265dcd511b6",
     "gulp-add-src": "^0.2.0",
     "gulp-angular-templatecache": "^1.7.0",
     "gulp-changed": "1.3.x",
@@ -189,7 +189,7 @@
   },
   "devDependencies": {
     "gulp-wrap-commonjs": "^0.1.13",
-    "istanbul": "git://github.com/realtymaps/istanbul.git",
+    "istanbul": "git://github.com/realtymaps/istanbul.git#source-map",
     "karma-browserify": "^4.3.0",
     "karma-chai": "^0.1.0",
     "karma-expect": "^1.1.0",
