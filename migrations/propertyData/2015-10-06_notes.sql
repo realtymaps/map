@@ -1,5 +1,5 @@
-DROP TRIGGER update_modified_geom_point_raw_notes IF EXISTS;
-DROP TRIGGER insert_modified_geom_point_raw_notes IF EXISTS;
+DROP TRIGGER IF EXISTS update_modified_geom_point_raw_notes ON user_notes;
+DROP TRIGGER IF EXISTS insert_modified_geom_point_raw_notes ON user_notes;
 
 CREATE TRIGGER update_modified_geom_point_raw_notes
   BEFORE UPDATE ON user_notes
