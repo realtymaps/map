@@ -4,9 +4,17 @@ include ../includes/mixins/property/_propertyAttributes.jade
     .inner
       .container
         .row
-          .col-md-8
+          .col-md-12
             i.fa.fa-chevron-left.back-button(ui-sref="projects")
             h1.pageTitle {{project.name}}
+            .project-tools
+              button(class="btn btn-white" ng-click="editProject(project, $event)")
+                i.fa.fa-pencil-square-o
+                span Edit
+              button.btn.btn-white(ng-click="archiveProject(project, $event)")
+                span.icon.icon-save_on_disk
+                span(ng-if="!project.archived") Archive
+                span(ng-if="project.archived") Unarchive
         .row
           .col-md-3.navbar
             include ../includes/_sidebar.jade
@@ -17,15 +25,6 @@ include ../includes/mixins/property/_propertyAttributes.jade
                   li
                     .data
                       div(ng-show="selected == 'project'")
-                        .collapse-header
-                          .tools
-                            button(class="btn btn-white" ng-click="editProject(project, $event)")
-                              i.fa.fa-pencil-square-o
-                              span Edit
-                            button.btn.btn-white(ng-click="archiveProject(project, $event)")
-                              span.icon.icon-save_on_disk
-                              span(ng-if="!project.archived") Archive
-                              span(ng-if="project.archived") Unarchive
                         h3 Property Info
                         .row.property
                           .col-md-6.price
