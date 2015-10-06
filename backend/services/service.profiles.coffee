@@ -11,7 +11,7 @@ logger = require '../config/logger'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 cols =  [
-  "#{auth_user_profile.tableName}.id as id", 'auth_user_id',
+  "#{auth_user_profile.tableName}.id as id", "#{auth_user_profile.tableName}.auth_user_id as auth_user_id",
   'filters', 'properties_selected', 'map_toggles',
   'map_position', 'map_results','parent_auth_user_id',
   "#{auth_user_profile.tableName}.rm_modified_time as rm_modified_time",
@@ -77,7 +77,7 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
     if withProject and hasAProject
       q =  auth_user_profile().select(cols...).leftJoin(project.tableName,
       project.tableName + '.id', auth_user_profile.tableName + '.project_id')
-      .where(auth_user_id: auth_user_id)
+      .where("#{auth_user_profile.tableName}.auth_user_id": auth_user_id)
       # logger.debug q.toString()
       return q
 
