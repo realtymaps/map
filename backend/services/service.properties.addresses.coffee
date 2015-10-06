@@ -1,4 +1,3 @@
-db = require('../config/dbs').properties
 Promise = require 'bluebird'
 logger = require '../config/logger'
 geohashHelper = require '../utils/validation/util.validation.geohash'

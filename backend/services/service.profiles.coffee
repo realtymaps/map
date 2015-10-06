@@ -3,25 +3,24 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-{userData} = require '../config/tables'
-{auth_user_profile, project} = userData
+tables = require '../config/tables'
 {singleRow} = require '../utils/util.sql.helpers'
 {currentProfile} = require '../utils/util.session.helpers'
 
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 cols =  [
-  "#{auth_user_profile.tableName}.id as id", 'auth_user_id',
+  "#{tables.user.profile.tableName}.id as id", 'auth_user_id',
   'filters', 'properties_selected', 'map_toggles',
   'map_position', 'map_results','parent_auth_user_id',
-  "#{auth_user_profile.tableName}.rm_modified_time as rm_modified_time",
-  "#{auth_user_profile.tableName}.rm_inserted_time as rm_inserted_time",
-  "#{auth_user_profile.tableName}.name as name",
+  "#{tables.user.profile.tableName}.rm_modified_time as rm_modified_time",
+  "#{tables.user.profile.tableName}.rm_inserted_time as rm_inserted_time",
+  "#{tables.user.profile.tableName}.name as name",
   'project_id',
-  "#{project.tableName}.rm_modified_time as #{project.tableName}_rm_modified_time",
-  "#{project.tableName}.rm_inserted_time as #{project.tableName}_rm_inserted_time",
-  "#{project.tableName}.name as #{project.tableName}_name",
-  "#{project.tableName}.archived as #{project.tableName}_archived",
+  "#{tables.user.project.tableName}.rm_modified_time as #{tables.user.project.tableName}_rm_modified_time",
+  "#{tables.user.project.tableName}.rm_inserted_time as #{tables.user.project.tableName}_rm_inserted_time",
+  "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name",
+  "#{tables.user.project.tableName}.archived as #{tables.user.project.tableName}_archived",
 ]
 
 safe = [
@@ -39,13 +38,13 @@ safe = [
 toReturn = safe.concat ['id']
 
 get = (id, withProject = true) ->
-  return auth_user_profile().where(id: id) unless withProject
+  return tables.user.profile().where(id: id) unless withProject
 
 create = (newProfile, projectName) ->
   logger.debug 'PROFILE SVC: creating a profile'
   Promise.try () ->
     if projectName
-      project()
+      tables.user.project()
       .returning('id')
       .insert(name: projectName)
       .then (inserted) ->
@@ -56,7 +55,7 @@ create = (newProfile, projectName) ->
       newProfile.name = projectName
     else
       newProfile.name = 'New Project'
-    auth_user_profile()
+    tables.user.profile()
     .returning(toReturn)
     .insert(_.pick newProfile, safe)
   .then (inserted) ->
@@ -66,7 +65,7 @@ create = (newProfile, projectName) ->
     throw new Error('Error creating new project')
 
 getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
-  noProjQ = auth_user_profile().where(auth_user_id: auth_user_id)
+  noProjQ = tables.user.profile().where(auth_user_id: auth_user_id)
   logger.debug noProjQ.toString()
   noProjQ.then (profilesNoProject) ->
     hasAProject = _.some profilesNoProject, (p) -> p.project_id?
@@ -75,8 +74,8 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
     logger.debug "withProject: #{withProject}"
 
     if withProject and hasAProject
-      q =  auth_user_profile().select(cols...).leftJoin(project.tableName,
-      project.tableName + '.id', auth_user_profile.tableName + '.project_id')
+      q =  tables.user.profile().select(cols...).leftJoin(tables.user.project.tableName,
+      tables.user.project.tableName + '.id', tables.user.profile.tableName + '.project_id')
       .where(auth_user_id: auth_user_id)
       # logger.debug q.toString()
       return q
@@ -92,10 +91,10 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
     _.indexBy profiles, 'id'
 
 getFirst = (userId) ->
-  singleRow(auth_user_profile().where(auth_user_id: userId))
+  singleRow(tables.user.profile().where(auth_user_id: userId))
   .then (userState) ->
     if not userState
-      userData.auth_user_profile()
+      tables.user.profile()
       .insert
         auth_user_id: userId
       .then () ->
@@ -109,7 +108,7 @@ getCurrent = (session) ->
   currentProfile(session)
 
 update = (profile) ->
-  q = userData.auth_user_profile()
+  q = tables.user.profile()
   .where(_.pick profile, ['auth_user_id', 'id'])
   .update(_.pick profile, safe)
   # logger.debug q.toString()

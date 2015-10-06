@@ -5,6 +5,7 @@ _ = require 'lodash'
 Promise = require "bluebird"
 memoize = require 'memoizee'
 config = require '../config/config'
+dbs = require '../config/dbs'
 
 
 getValuesMap = (namespace, options={}) ->
@@ -43,7 +44,7 @@ setValue = (key, value, options={}) ->
   if options.transaction?
     _setValueImpl(key, value, options, options.transaction)
   else
-    tables.config.keystore.transaction _setValueImpl.bind(null, key, value, options)
+    dbs.get('main').transaction _setValueImpl.bind(null, key, value, options)
 
 _setValueImpl = (key, value, options, transaction) ->
   query = tables.config.keystore(options.transaction)
@@ -59,7 +60,7 @@ _setValueImpl = (key, value, options, transaction) ->
       tables.config.keystore(options.transaction)
       .insert
         key: key
-        value: sqlHelpers.safeJsonArray(tables.config.keystore, value)
+        value: sqlHelpers.safeJsonArray(value)
         namespace: options.namespace
       .then () ->
         undefined
@@ -72,7 +73,7 @@ _setValueImpl = (key, value, options, transaction) ->
         query = query.where(namespace: options.namespace)
       query
       .where(key: key)
-      .update(value: sqlHelpers.safeJsonArray(tables.config.keystore, value))
+      .update(value: sqlHelpers.safeJsonArray(value))
       .then () ->
         result[0].value  # note this is the old value
 
@@ -86,22 +87,15 @@ setValuesMap = (map, options={}) ->
   if options.transaction?
     handler(options.transaction)
   else
-    tables.config.keystore.transaction handler
+    dbs.get('main').transaction handler
 
   
 module.exports =
-  userDb:
-    getValues: getValues
-    getValuesMap: getValuesMap
-    getValue: getValue
-    setValue: setValue
-    setValuesMap: setValuesMap
-  propertyDb:
-    getValues: getValues
-    getValuesMap: getValuesMap
-    getValue: getValue
-    setValue: setValue
-    setValuesMap: setValuesMap
+  getValues: getValues
+  getValuesMap: getValuesMap
+  getValue: getValue
+  setValue: setValue
+  setValuesMap: setValuesMap
   cache:
     getValues: memoize.promise(getValues, maxAge: 10*60*1000)
     getValuesMap: memoize.promise(getValuesMap, maxAge: 10*60*1000)

@@ -1,4 +1,3 @@
-db = require('../config/dbs').properties
 Promise = require 'bluebird'
 logger = require '../config/logger'
 validation = require '../utils/util.validation'
@@ -17,19 +16,12 @@ transforms =
     ]
     required: true
 
-_tableName = tables.propertyData.parcel.tableName
-_rootTableName = tables.propertyData.rootParcel.tableName
-
-_getBaseParcelQuery = (tblName = _tableName) ->
-  sqlHelpers.select(db.knex, 'parcel', false, 'distinct on (rm_property_id)')
-  .from(tblName)
 
 _getBaseParcelQueryByBounds = (bounds, limit) ->
-  query = _getBaseParcelQuery()
+  query = tables.property.parcel()
+  sqlHelpers.select(query, 'parcel', false, 'distinct on (rm_property_id)')
   sqlHelpers.whereInBounds(query, 'geom_polys_raw', bounds)
   query.limit(limit) if limit?
-  # logger.debug query.toString()
-  query
 
 _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try () ->
   validation.validateAndTransform(filters, transforms)
@@ -38,21 +30,18 @@ _getBaseParcelDataUnwrapped = (state, filters, doStream, limit) -> Promise.try (
     return query.stream() if doStream
     query
 
-_get = (rm_property_id, tblName = _tableName) ->
-  throw new Error('rm_property_id must be of type String') unless _.isString rm_property_id
-  #nmccready - note this might not be unique enough, I think parcels has dupes
-  db.knex.select().from(tblName)
-  .where rm_property_id: rm_property_id
-
 _upsert = (obj, insertCb, updateCb) ->
-  _get(obj.rm_property_id, _rootTableName).then (rows) ->
+  throw new Error('rm_property_id must be of type String') unless _.isString obj.rm_property_id
+  #nmccready - note this might not be unique enough, I think parcels has dupes
+  tables.property.rootParcel()
+  .where rm_property_id: obj.rm_property_id
+  .then (rows) ->
     if rows?.length
       # logger.debug JSON.stringify(rows)
       return updateCb(rows[0])
     return insertCb(obj)
 
 module.exports =
-  getBaseParcelQuery: _getBaseParcelQuery
   getBaseParcelQueryByBounds: _getBaseParcelQueryByBounds
   getBaseParcelDataUnwrapped: _getBaseParcelDataUnwrapped
   # pseudo-new implementation
@@ -60,10 +49,5 @@ module.exports =
     _getBaseParcelDataUnwrapped(state,filters, undefined, 500)
     .then (data) ->
       type: 'FeatureCollection'
-      features: data.map (d) ->
-        d.type = 'Feature'
-        d.properties = {}
-        d.geometry = d.geom_polys_json
-        delete d.geom_polys_json
-        d
+      features: data
   upsert: _upsert
