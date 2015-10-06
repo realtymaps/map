@@ -381,7 +381,7 @@ _getQueueLockId = (queueName) ->
   .where(name: queueName)
   .then (queueLockId) ->
     queueLockId[0].lock_id
-_getQueueLockId = memoize.promise(_getQueueLockId)
+_getQueueLockId = memoize.promise(_getQueueLockId, primitive: true)
 
 # TODO: should this be rewritten to use a query built by knex instead of a stored proc?
 getQueuedSubtask = (queueName) ->

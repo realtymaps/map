@@ -8,34 +8,34 @@ config = require '../config/config'
 dbs = require '../config/dbs'
 
 
-getValuesMap = (namespace, options={}) ->
-  getValues(namespace, options)
+_getValuesMap = (namespace, defaultValues, transaction) ->
+  _getValues(namespace, transaction)
   .then (result) ->
     map = {}
     for kv in result
       map[kv.key] = kv.value
-    if options.defaultValues?
-      _.defaults(map, options.defaultValues)
+    if defaultValues?
+      _.defaults(map, defaultValues)
     map
 
-getValues = (namespace, options={}) ->
-  tables.config.keystore(options.transaction)
+_getValues = (namespace, transaction) ->
+  tables.config.keystore(transaction)
   .select('key', 'value')
   .where(namespace: namespace)
   .then (result=[]) ->
     result
 
-getValue = (key, options={}) ->
-  query = tables.config.keystore(options.transaction)
+_getValue = (key, namespace, defaultValue, transaction) ->
+  query = tables.config.keystore(transaction)
   .select('value')
   .where(key: key)
-  if !options.namespace?
+  if !namespace?
     query = query.whereNull('namespace')
   else
-    query = query.where(namespace: options.namespace)
+    query = query.where(namespace: namespace)
   query.then (result) ->
     if !result?.length
-      options.defaultValue
+      defaultValue
     else
       result[0].value
 
@@ -89,14 +89,20 @@ setValuesMap = (map, options={}) ->
   else
     dbs.get('main').transaction handler
 
-  
+
+_cached = {}
+_cached.getValue = memoize.promise(_getValue, length: 3, primitive: true, maxAge: 10*60*1000, preFetch: .1)
+_cached.getValues = memoize.promise(_getValues, length: 1, primitive: true, maxAge: 10*60*1000, preFetch: .1)
+_cached.getValuesMap = memoize.promise(_getValuesMap, length: 2, primitive: true, maxAge: 10*60*1000, preFetch: .1)
+
+
 module.exports =
-  getValues: getValues
-  getValuesMap: getValuesMap
-  getValue: getValue
+  getValue: (key, options={}) -> _getValue(key, options.namespace, options.defaultValue, options.transaction)
+  getValues: (namespace, options={}) -> _getValues(namespace, options.transaction)
+  getValuesMap: (namespace, options={}) -> _getValuesMap(namespace, options.defaultValues, options.transaction)
   setValue: setValue
   setValuesMap: setValuesMap
   cache:
-    getValues: memoize.promise(getValues, maxAge: 10*60*1000)
-    getValuesMap: memoize.promise(getValuesMap, maxAge: 10*60*1000)
-    getValue: memoize.promise(getValue, maxAge: 10*60*1000)
+    getValue: (key, options={}) -> _cached.getValue(key, options.namespace, options.defaultValue)
+    getValues: (namespace, options={}) -> _cached.getValues(namespace)
+    getValuesMap: (namespace, options={}) -> _cached.getValuesMap(namespace, options.defaultValues)
