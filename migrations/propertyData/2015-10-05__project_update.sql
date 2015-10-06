@@ -1,4 +1,5 @@
 ALTER TABLE project ADD COLUMN "minPrice" integer;
+ALTER TABLE project ADD COLUMN "maxPrice" integer;
 ALTER TABLE project ADD COLUMN "beds" integer;
 ALTER TABLE project ADD COLUMN "baths" integer;
 ALTER TABLE project ADD COLUMN "sqft" integer;
