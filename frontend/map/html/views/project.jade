@@ -4,6 +4,9 @@ include ../includes/mixins/property/_propertyAttributes.jade
     .inner
       .container
         .row
+          .col-md-8
+            h1.pageTitle {{project.name}}
+        .row
           .col-md-3.navbar
             include ../includes/_sidebar.jade
           .col-md-9.content
@@ -14,9 +17,11 @@ include ../includes/mixins/property/_propertyAttributes.jade
                     .data
                       div(ng-show="selected == 'project'")
                         .collapse-header
-                          h2.title {{project.name}}
                           .tools
-                            button(class="btn btn-white" ng-click="archiveProject(project, $event)")
+                            button(class="btn btn-white" ng-click="editProject(project, $event)")
+                              i.fa.fa-pencil-square-o
+                              span Edit
+                            button.btn.btn-white(ng-click="archiveProject(project, $event)")
                               span.icon.icon-save_on_disk
                               span(ng-if="!project.archived") Archive
                               span(ng-if="project.archived") Unarchive
@@ -26,10 +31,10 @@ include ../includes/mixins/property/_propertyAttributes.jade
                             span.value ${{project.minPrice}} - ${{project.maxPrice}}
                             span.small Price
                           .col-md-2
-                            span.value ${{project.beds}}
+                            span.value {{project.beds}}
                             span.small Beds
                           .col-md-2
-                            span.value ${{project.baths}}
+                            span.value {{project.baths}}
                             span.small Bath
                           .col-md-2
                             span.value {{project.sqft}}
@@ -60,6 +65,57 @@ include ../includes/mixins/property/_propertyAttributes.jade
                               span.label Phone (Work)
                               span {{client.work_phone}}
 
+                      ul.neighborhoods(ng-show="selected == 'neighborhoods'")
+                        .collapse-header
+                          h2.title Neighborhoods ({{project.neighborhoods.length}})
+                        li(ng-repeat="neighborhood in project.neighborhoods" class="col-md-6")
+                          a(class="map" href="#/neighborhoods/{{neighborhood.id}}")
+                            span View Neighbourhood
+                            img(src="/assets/test_map.jpg")
+                          .data
+                            h3 {{neighborhood.name}}
+                          button.btn.btn-link
+                            i.fa.fa-trash-o
+                            span Delete
+
+                      ul.favorites-list(ng-show="selected == 'pins'")
+                        .collapse-header
+                          h2.title Pinned ({{project.pins.length}})
+                        .row
+                          li.col-md-6(ng-repeat="pin in project.pins")
+                            .property-card
+                              .property-img
+                                img(src="/assets/test_property.jpg")
+                                span.property-status(ng-class="pin.status")
+                                  | {{pin.status}}
+                              .property-data
+                                +propertyAttributes('pin')
+                              .actions
+                                button.details
+                                  span.icon.icon-arrow
+                                  span See details
+                                button.pinto
+                                  span.icon.icon-pin
+                                  span Pin to
+
+                      ul.notes(ng-show="selected == 'notes'")
+                        .collapse-header
+                          h2.title Notes ({{project.notes.length}})
+                        li(ng-repeat="note in project.notes" class="row")
+                          .col-md-2
+                            a(class="note-img" href="/map")
+                              img(src="/assets/test_map.jpg")
+                          .col-md-8
+                            .data
+                              h4 {{note.title}}
+                              p {{note.text}}
+                          .col-md-2
+                            .note-date
+                              | Apr 10
+                            .tools
+                              button(class="btn btn-link") Edit
+                              button(class="btn btn-link") Remove
+
                       ul.favorites-list(ng-show="selected == 'favorites'")
                         .collapse-header
                           h2.title Favorites ({{project.favorites.length}})
@@ -79,32 +135,3 @@ include ../includes/mixins/property/_propertyAttributes.jade
                                 button.pinto
                                   span.icon.icon-pin
                                   span Pin to
-
-                      ul.neighborhoods(ng-show="selected == 'neighborhoods'")
-                        .collapse-header
-                          h2.title Neighborhoods ({{project.neighborhoods.length}})
-                        li(ng-repeat="neighborhood in project.neighborhoods" class="col-md-6")
-                          a(class="map" href="#/neighborhoods/{{neighborhood.id}}")
-                            span View Neighbourhood
-                            img(src="/assets/test_map.jpg")
-                          .data
-                            h3 Neighbourhood {{neighborhood.id}}
-                          button(class="btn btn-link") Delete
-
-                      ul.notes(ng-show="selected == 'notes'")
-                        .collapse-header
-                          h2.title Notes ({{project.notes.length}})
-                        li(ng-repeat="note in project.notes" class="row")
-                          .col-md-2
-                            a(class="note-img" href="/map")
-                              img(src="/assets/test_map.jpg")
-                          .col-md-8
-                            .data
-                              h4 {{note.title}}
-                              p {{note.text}}
-                          .col-md-2
-                            .note-date
-                              | Apr 10
-                            .tools
-                              button(class="btn btn-link") Edit
-                              button(class="btn btn-link") Remove

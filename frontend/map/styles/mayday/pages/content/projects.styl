@@ -1,16 +1,20 @@
+#projects
+  @extends .font-regular
+  @extends .table-view
+
 #projects-list
   @extends .font-regular
-  h3
+
+  *
+    transition none
+
+  h3, .fa
     color $black
 
-  .btn
-    *
-      transition none
-    .icon
-      margin .25em
-    &:hover
-      .icon
-        color $white
+  .fa, .icon, .btn
+    margin .25em
+    &:hover, &:hover *
+      color $white
 
   .collapse-header
     overflow hidden

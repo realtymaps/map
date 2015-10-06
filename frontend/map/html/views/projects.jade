@@ -1,92 +1,56 @@
-#projects-list.content-section-container
-  .desktop-view
-    .inner
-      .container
-        .row
-          //- .col-md-3.navbar(ng-show="selected.project")
-            //- include ../includes/_sidebar.jade
-          .col-md-12.content
-            h2.title My Projects ({{projects.length}})
-            .row
-              div.col-md-12
-                ul.projects-list(ng-controller="CollapseCtrl")
-                  li(ng-repeat="project in projects | orderBy: 'name'" ng-click="selected.project = project")
-                    div.collapse-header(ng-click="collapsed = !collapsed")
-                      h2.title {{project.name}}
-                      div.tools
-                        button.btn.btn-white(ui-sref="project({id: {{project.id}}})")
-                          a(ui-sref="project({id: {{project.id}}})") Details
-                        button.btn.btn-white(ng-click="archiveProject(project, $event)")
-                          span.icon.icon-save_on_disk
-                          span(ng-if="!project.archived") Archive
-                          span(ng-if="project.archived") Unarchive
-                    div.data(collapse="!collapsed")
-                      //- ul.clients
-                      //-   li(class="client" ng-repeat="client in project.clients")
-                      //-     h3 Client
-                      //-     div.tools
-                      //-       button(class="btn btn-link") Edit
-                      //-       button(class="btn btn-link") Remove
-                      //-     div.row
-                      //-       div.col-md-6
-                      //-         span.label Name
-                      //-         span {{client.first_name}} {{client.last_name}}
-                      //-         span.label Phone (Cell)
-                      //-         span {{client.cell_phone}}
-                      //-         span.label Email
-                      //-         span {{client.email}}
-                      //-       div.col-md-6
-                      //-         span.label Address
-                      //-         span {{client.address_1}} {{client.address_2}} {{client.zip}}
-                      //-         span.label Phone (Work)
-                      //-         span {{client.work_phone}}
-
-                      //- h3 Property Info
-                      div.row.property
-                        .col-md-3
-                          span.value {{project.clients.length}}
-                          span.small Clients
-                        .col-md-3
-                          span.value {{project.neighborhoods.length}}
-                          span.small Neighborhoods
-                        .col-md-3
-                          span.value {{project.notes.length}}
-                          span.small Notes
-                        .col-md-3
-                          span.value {{project.favorites.length}}
-                          span.small Favorites
-
-                      div.row.property
-                        .col-md-3.price
-                          span.value ${{project.minPrice}} - ${{project.maxPrice}}
-                          span.small Price
-                        .col-md-3
-                          span.value {{project.beds}}
-                          span.small Beds
-                        .col-md-3
-                          span.value {{project.baths}}
-                          span.small Bath
-                        .col-md-3
-                          span.value {{project.sqft}}
-                          span.small Sq Ft
-  .mobile-view
-    header
-      | mobile
-    .inner
-      .container
-        .row
-          .col-md-12
-            ul.projects-list
-              li(ng-repeat="project in projects" ng-click="selectProject($index)")
-                h2.title {{project.title}}
-                div.tools
-                  a(href="#/project/{{project.id}}") Next
-                ul.data
-                  li
-                    a(href="#neighborhoods") {{project.neighborhoods.length}} Neighborhoods
-                  li
-                    a(href="#properties") {{project.properties.length}} Properties
-                  li
-                    a(href="#clients") {{project.clients.length}} Clients
-                  li
-                    a(href="#notes") {{project.notes.length}} Notes
+#projects
+  .inner
+    .container
+      header.row
+        .col-md-8
+          h1.pageTitle Projects
+          p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighborhoods, and clients.
+        .col-md-4.text-right
+          .tools
+            input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
+            span.divider
+            button.btn.btn-primary(ng-click="createProject()") Create
+      .row
+        .col-md-12
+          table.table.table-hover
+            thead
+              tr
+                th.select
+                  input(type="checkbox" name="selectAll")
+                th
+                  span Title
+                th
+                  span Pins
+                th
+                  span Neighborhoods
+                th
+                  span Favorites
+                th
+                  span Notes
+                th
+                  span Clients
+                th
+                  span Created
+                th.col-md-1
+                  span
+            tbody
+              tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
+                td.select
+                  input(type="checkbox" name="selectGroup_{{$index}}")
+                td
+                  h4 {{project.name}}
+                  a.details(ui-sref="project({id: {{project.id}}})" title="View details") View Details
+                td
+                  span {{project.pins.length}}
+                td
+                  span {{project.neighborhoods.length}}
+                td
+                  span {{project.favorites.length}}
+                td
+                  span {{project.notes.length}}
+                td
+                  span {{project.clients.length}}
+                td
+                  span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
+                td.col-md-1
+                  button.btn.btn-white(ui-sref="map({project: {{project.id}}})") View Map
