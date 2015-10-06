@@ -13,7 +13,7 @@ nav.navigation.pull-left(role="navigation")
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
       a(href="{{frontendRoutes.history}}")
         span history
-    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('projects') }")
+    li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('projects') || $state.is('project') }")
       a(href="{{frontendRoutes.projects}}")
         span projects
     li(ng-cloak ng-hide="$state.is('main')")

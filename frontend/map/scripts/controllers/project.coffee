@@ -4,7 +4,7 @@ module.exports = app
 
 app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, rmapsprincipal, rmapsProjects) ->
   $scope.activeView = 'project'
-  $log = $log.spawn("map:project")
+  $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl'
 
   $scope.selected = 'project'

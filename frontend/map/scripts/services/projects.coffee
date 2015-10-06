@@ -67,9 +67,10 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       finished_sqft: 2000
       year_built: 1980
       street_address_num: 1200
-      street_address_name: 'Main'
+      street_address_name: 'Main St'
       owner_city: 'Springfield'
-      owner_sate: 'IL'
+      owner_state: 'IL'
+      owner_zip: '55555'
       status: 'pending'
     project.favorites.push
       name: '4444 Four St'
@@ -79,9 +80,10 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       finished_sqft: 3200
       year_built: 1971
       street_address_num: 489
-      street_address_name: 'Oak'
+      street_address_name: 'Oak Ave'
       owner_city: 'Villville'
-      owner_sate: 'FL'
+      owner_state: 'FL'
+      owner_zip: '55555'
       status: 'for sale'
 
     project.pins = []
@@ -91,11 +93,12 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       bedrooms: 3
       baths_total: 2
       finished_sqft: 2000
-      year_built: 1980
+      year_built: '19800101'
       street_address_num: 1200
-      street_address_name: 'Main'
+      street_address_name: 'Main St'
       owner_city: 'Springfield'
-      owner_sate: 'IL'
+      owner_state: 'IL'
+      owner_zip: '55555'
       status: 'pending'
     project.pins.push
       name: '4444 Four St'
@@ -105,9 +108,10 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       finished_sqft: 3200
       year_built: 1971
       street_address_num: 489
-      street_address_name: 'Oak'
+      street_address_name: 'Oak Ave'
       owner_city: 'Villville'
-      owner_sate: 'FL'
+      owner_state: 'FL'
+      owner_zip: '55555'
       status: 'for sale'
 
     _.defaults project,
@@ -117,6 +121,9 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       minPrice: 50000
       maxPrice: 100000
       archived: false
+
+  _update = (project) ->
+    $http.put backendRoutes.projectSession.root + "/#{project.id}", project
 
   service =
     getProjects: () ->
@@ -135,4 +142,4 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
 
     archive: (project) ->
       project.archived = !project.archived
-      $http.put backendRoutes.projectSession.root + "/#{project.id}", project
+      _update project

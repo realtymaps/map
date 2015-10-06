@@ -5,6 +5,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
       .container
         .row
           .col-md-8
+            i.fa.fa-chevron-left.back-button(ui-sref="projects")
             h1.pageTitle {{project.name}}
         .row
           .col-md-3.navbar
@@ -78,7 +79,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                             i.fa.fa-trash-o
                             span Delete
 
-                      ul.favorites-list(ng-show="selected == 'pins'")
+                      ul.pinned(ng-show="selected == 'pins'")
                         .collapse-header
                           h2.title Pinned ({{project.pins.length}})
                         .row
@@ -116,7 +117,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                               button(class="btn btn-link") Edit
                               button(class="btn btn-link") Remove
 
-                      ul.favorites-list(ng-show="selected == 'favorites'")
+                      ul.favorites(ng-show="selected == 'favorites'")
                         .collapse-header
                           h2.title Favorites ({{project.favorites.length}})
                         .row
