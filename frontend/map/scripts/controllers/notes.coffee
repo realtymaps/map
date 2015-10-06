@@ -36,14 +36,14 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
           rm_property_id : property.rm_property_id
           geom_point_json : property.geom_point_json
 
-        _signalUpdate rmapsNotesService.post note
+        _signalUpdate rmapsNotesService.create note
 
     updateNote: (note) ->
       $scope.createModal(note).then (note) ->
-        _signalUpdate note.put()
+        _signalUpdate rmapsNotesService.update note
 
     removeNote: (note) ->
-      _signalUpdate note.remove()
+      _signalUpdate rmapsNotesService.remove note.id
 
 
 .controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService, rmapsevents) ->
@@ -53,18 +53,12 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
 
   promiseCacheIsDisabled = false
 
-  getNotesPromise = ->
+  getNotesPromise = () ->
     rmapsNotesService.getList()
 
-  getNotes = ->
-    getNotesPromise()
-    .then (data) ->
+  getNotes = () ->
+    getNotesPromise().then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
-      if data.getList and !promiseCacheIsDisabled
-        promiseCacheIsDisabled = true
-        ##onlyway to override http cache when using restangular service for getList
-        getNotesPromise = ->
-          data.withHttpConfig(cache:false).getList()
       $scope.notes = data
 
   $rootScope.$onRootScope rmapsevents.notes, ->

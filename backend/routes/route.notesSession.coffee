@@ -5,7 +5,6 @@ notesSvc = (require '../services/services.user').notes
 {Crud, wrapRoutesTrait} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth.coffee'
-db = require('../config/dbs').properties
 _ = require 'lodash'
 {crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
 
