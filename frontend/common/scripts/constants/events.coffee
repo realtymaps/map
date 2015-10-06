@@ -3,6 +3,7 @@ mod = require '../module.coffee'
 
 mod.constant 'rmapsevents',
   keysToValues
+    notes: 1
     map:
       drawPolys:
         isEnabled: 1

@@ -1,3 +1,23 @@
+.page-header
+  color $textColor
+
+input.btn.btn-primary
+  color $textColor
+/*
+set all page h tag overrides
+*/
+for num in (1...7)
+  h{num}
+    color $textColor
+
+main
+  for num in (1...7)
+    h{num}
+      color $black
+
+  div, p, span
+    color $black
+
 .navbar-brand
   padding 5px 10px;
   img
@@ -525,6 +545,10 @@ label
       transform translateY(-50%) !important
       top 50%
 
+.modal-title, .modal-content, .modal-body, .modal-footer
+  h1, h2, h3, h4, h5, h6, h7, span, p, div
+    color: $black
+  color $black
 .modal
   .modal-dialog
     .modal-content
@@ -716,15 +740,3 @@ Place for our custom Theming of bootstrap
       &:after
         color $rm-notsale-hover
         border-top-color $rm-notsale-hover !important
-
-.page-header
-  color $textColor
-
-input.btn.btn-primary
-  color $textColor
-/*
-set all page h tag overrides
-*/
-for num in (1...7)
-  h{num}
-    color $textColor

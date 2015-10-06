@@ -32,6 +32,8 @@ vagrant_app.log
 
 config/
 !common/config/*
+!backend/config/*
+!frontend/**/config/*
 bin/
 uwsgi_temp/
 client_body_temp/

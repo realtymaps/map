@@ -1,6 +1,7 @@
 app = require '../app.coffee'
 
-app.run ($http, DSCacheFactory, rmapsMapCacheLogger) ->
+app.run ($http, DSCacheFactory, nemSimpleLogger) ->
+  $log = nemSimpleLogger.spawn("map:cache")
   #init caches here begining w default
   DSCacheFactory 'defaultCache',
     #capacity: 100000
@@ -11,6 +12,8 @@ app.run ($http, DSCacheFactory, rmapsMapCacheLogger) ->
     storageMode: 'memory' #options (memory , localStorage, sessionStorage)
     verifyIntegrity: true
     onExpire: (key, value) ->
-      rmapsMapCacheLogger.debug "Expired: key: #{key}"
+      $log.debug "Expired: key: #{key}"
 
+  #BEWARE THIS TURNS CACHING ON BY DEFAULT!!!!!!!!!!!!!!
+  #http://stackoverflow.com/questions/14117653/how-to-cache-an-http-get-service-in-angularjs
   $http.defaults.cache = DSCacheFactory.get('defaultCache')
