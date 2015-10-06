@@ -23,7 +23,7 @@ module.exports = app
 #])
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects,
   rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
 
   #ng-inits or inits
@@ -43,14 +43,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   $scope.loadIdentity = (identity) ->
     $scope.projects = identity.profiles
-    $scope.projectsTotal = (_.keys $scope.projects).length
-    _.each $scope.projects, (project) ->
-      project.totalProperties = (_.keys project.properties_selected).length
 
     rmapsprincipal.getCurrentProfile()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->
+      $scope.totalProfiles = (_.keys identity.profiles).length
+      _.each $scope.projects, (project) ->
+        project.totalProperties = (_.keys project.properties_selected).length
       $scope.loadProfile uiProfile(identity)
 
     if not identity?.currentProfileId
@@ -152,11 +152,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    project.project_archived = !project.project_archived
-    $http.put backendRoutes.user_projects.root + "/#{project.project_id}",
-      id: project.project_id
-      name: project.project_name
-      archived: project.project_archived
+    rmapsProjects.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
 

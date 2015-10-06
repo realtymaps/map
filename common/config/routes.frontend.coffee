@@ -12,6 +12,7 @@ module.exports =
   mail:           'mail'
   properties:     'properties'
   projects:       'projects'
+  project:        'project?id'
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'
   favorites:      'favorites'

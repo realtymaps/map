@@ -1,16 +1,31 @@
 #projects-list
+  @extends .font-regular
+  h3
+    color $black
+
+  .btn
+    *
+      transition none
+    .icon
+      margin .25em
+    &:hover
+      .icon
+        color $white
 
   .collapse-header
     overflow hidden
-    border-bottom 1px solid $gray_ligther
     cursor pointer
     &:hover
     &:active
       background $light_blue_select
 
+  .projects-list
+    .collapse-header
+      border-bottom 1px solid $gray_ligther
+
   .data
     overflow hidden
-    border-bottom 4px solid $gray_ligther
+    // border-bottom 4px solid $gray_ligther
 
     .property
       margin-bottom 10px
