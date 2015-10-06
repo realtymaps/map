@@ -49,6 +49,9 @@ module.exports =
   notesSession:
     root: "#{apiBaseSession}/notes"
     byId: "#{apiBaseSession}/notes/:id"
+  projectSession:
+    root: "#{apiBaseSession}/projects"
+    byId: "#{apiBaseSession}/projects/:id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
