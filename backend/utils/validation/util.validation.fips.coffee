@@ -1,15 +1,11 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
-stringValidation = require './util.validation.string'
 dbs = require '../../config/dbs'
 sqlHelpers = require '../util.sql.helpers'
 require '../../../common/extensions/strings'
-logger = require '../../config/logger'
-
-
-knex = dbs.users.knex
-
+tables = require '../../config/tables'
+dbs = require '../../config/dbs'
 
 module.exports = (options = {}) ->
   minSimilarity = options.minSimilarity ? 0.4
@@ -20,8 +16,8 @@ module.exports = (options = {}) ->
     if value.stateCode && value.county
       county = value.county.toInitCaps()
       state = value.stateCode.toUpperCase()
-      knex.select('*', knex.raw("similarity(county, '#{county}') AS similarity"))
-      .from('fips_lookup')
+      tables.lookup.fipsCodes()
+      .select('*', dbs.get('main').raw("similarity(county, '#{county}') AS similarity"))
       .where(state: state)
       .orderByRaw("similarity(county, '#{county}') DESC")
       .limit(1)

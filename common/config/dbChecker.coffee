@@ -5,7 +5,7 @@ else
   logger = console
 
 module.exports = ->
-if (not config.PROPERTY_DB.connection) and
+if (not config.DBS.MAIN.connection) and
     !process.env.IS_HEROKU
   logger.error 'Did you use FOREMAN?'
   logger.error 'Database connection strings required! fatal and exiting!'

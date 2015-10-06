@@ -1,4 +1,3 @@
-db = require('../config/dbs').properties
 sqlHelpers = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
 logger = require '../config/logger'
@@ -40,7 +39,7 @@ _upload = (stream, fileName) -> Promise.try ->
 _fipsCodeQuery = (opts) ->
   throw new Error('opts.fipscode required!') unless opts?.fipscode?
   query =
-  sqlHelpers.select(tables.propertyData.parcel(), 'cartodb_parcel', false, 'distinct on (rm_property_id)')
+  sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false, 'distinct on (rm_property_id)')
   .where fips_code:opts.fipscode
   .whereNotNull 'rm_property_id'
   .orderBy 'rm_property_id'

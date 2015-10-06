@@ -1,9 +1,8 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
-knex = dbs.users.knex
 tables = require '../config/tables'
+dbs = require '../config/dbs'
 
 
 _getRules = (query) ->
@@ -12,7 +11,7 @@ _getRules = (query) ->
 
 _createRules = (query, rules) ->
   tables.config.dataNormalization()
-  .select(knex.raw('max(ordering) as count, list'))
+  .select(dbs.get('main').raw('max(ordering) as count, list'))
   .groupBy('list')
   .where(data_source_id: query.data_source_id)
   .then (counts) ->
@@ -38,7 +37,7 @@ _addRules = (query, rules, counts) ->
   .insert(rules)
 
 _putRules = (query, rules) ->
-  knex.transaction (trx) ->
+  dbs.get('main').transaction (trx) ->
     tables.config.dataNormalization(trx)
     .delete()
     .where(query)
