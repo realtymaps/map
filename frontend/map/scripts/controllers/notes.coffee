@@ -39,6 +39,7 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
         _signalUpdate rmapsNotesService.create note
 
     updateNote: (note) ->
+      note = _.cloneDeep note
       $scope.createModal(note).then (note) ->
         _signalUpdate rmapsNotesService.update note
 

@@ -24,8 +24,9 @@ module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
-  rmapsParcelEnums, rmapsProperties, $log, rmapssearchbox) ->
+  rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
+  $log = nemSimpleLogger.spawn("map:controller")
   #ng-inits or inits
   #must be defined pronto as they will be skipped if you try to hook them to factories
   $scope.resultsInit = (resultsListId) ->
