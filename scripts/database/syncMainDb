@@ -18,7 +18,7 @@ then
     shift
     shift
 else
-    DST_URL="$DATABASE_URL"
+    DST_URL="$MAIN_DATABASE_URL"
     DST_DB="main db"
 fi
 

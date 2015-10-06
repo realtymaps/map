@@ -35,7 +35,7 @@ base =
   DBS:
     MAIN:
       client: 'pg'
-      connection: process.env.DATABASE_URL
+      connection: process.env.MAIN_DATABASE_URL
       pool:
         min: 2
         max: if process.env.JQ_QUEUE_NAME then 8 else 10
