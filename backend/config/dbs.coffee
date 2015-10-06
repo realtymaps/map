@@ -52,38 +52,23 @@ shutdown = () ->
     
 getKnex = (dbName) ->
   if !connectedDbs[dbName]?
-    dbConfig = config.DBS[dbName.toUpperCase()]
-    connectedDbs[dbName] = knex(dbConfig)
+    connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
   connectedDbs[dbName]
 
   
 getPlainClient = (dbName, handler) ->
-  pg.defaults.poolSize = config.SUBTASKS_PER_PROCESS || 1
-  pg.defaults.poolIdleTimeout = config.DBS.PLAIN.POOL_IDLE_TIMEOUT
   dbConfig = config.DBS[dbName.toUpperCase()]
-  new Promise (resolve, reject) ->
-    pg.connect dbConfig.connection, (err, client, done) ->
-      if err
-        done(client?)
-        reject(new PartiallyHandledError(err, "Problem getting plain pg client for #{dbName} db"))
-        return
-      isDone = false
-      isResolved = false
-      Promise.try () ->
-        handler(client)
-      .then (result) ->
-        isDone = true
-        done()
-        isResolved = true
-        resolve(result)
-      .catch (err) ->
-        try
-          if !isDone
-            done(true)
-          if !isResolved
-            reject(err)
-        catch err
-          # noop
+  client = new pg.Client(dbConfig.connection)
+  promiseQuery = Promise.promisify(client.query, client)
+  streamQuery = client.query.bind(client)
+  Promise.promisify(client.connect, client)()
+  .then () ->
+    handler(((sql, args...) -> promiseQuery(sql.toString(), args...)), streamQuery)
+  .finally () ->
+    try
+      client.end()
+    catch err
+      logger.warn "Error disconnecting raw db connection: #{err}"
       
 
 module.exports =

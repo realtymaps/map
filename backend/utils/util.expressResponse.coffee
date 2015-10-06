@@ -13,8 +13,12 @@ class ExpressResponse
     result = "ExpressResponse:\n"
     result += "    Status: #{@status}\n"
     result += "    Format: #{@format}\n"
-    result += "    Details:\n"
-    result += "        " + (@originalMsg || JSON.stringify(@payload,null,2).split('\n').join('\n        '))
+    details = (@originalMsg || JSON.stringify(@payload,null,2)).split('\n')
+    if details.length > 1
+      result += "    Details:\n"
+      result += "        " + details.join('\n        ')
+    else
+      result += "    Details: #{details}"
     result
   send: (res) ->
     if @format == 'csv'

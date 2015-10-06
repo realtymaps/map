@@ -83,7 +83,7 @@ healthDbFn = () ->
       if query.timerange in ['1 hour', '1 day', '7 days', '30 days']
         _interval = query.timerange
       delete query.timerange
-    whereInterval = "now() - rm_modified_time <= interval '#{_interval}'"
+    whereInterval = "now_utc() - rm_inserted_time <= interval '#{_interval}'"
 
     # segregate query parameters for each of the subqueries, if applicable
     _query1 = query # _.pluck query, [<foo-items>]

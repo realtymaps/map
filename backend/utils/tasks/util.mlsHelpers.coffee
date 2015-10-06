@@ -17,26 +17,15 @@ retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 
-_streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
+_arrayToDbStreamer = (objects, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
   # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
   # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
-  dbs.getPlainClient 'raw_temp', (pgClient) ->
-    pgConnect = Promise.promisify(pgClient.connect, pgClient)
-    pgQuery = Promise.promisify(pgClient.query, pgClient)
-    pgConnect()
-    .then () ->
-      pgQuery('BEGIN')
-    .then () ->
-      startSql = tables.jobQueue.dataLoadHistory()
-      .insert(dataLoadHistory)
-      .toString()
-      pgQuery(startSql)
-    .then () ->
-      pgQuery dataLoadHelpers.createRawTempTable(tableName, Object.keys(fields)).toString()
+  (tableName, promiseQuery, streamQuery) ->
+    promiseQuery dataLoadHelpers.createRawTempTable(tableName, Object.keys(fields))
     .then () -> new Promise (resolve, reject) ->
       copyStart = "COPY \"#{tableName}\" (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
-      rawDataStream = pgClient.query(copyStream.from(copyStart))
+      rawDataStream = streamQuery(copyStream.from(copyStart))
       rawDataStream.on('finish', resolve)
       rawDataStream.on('error', reject)
       # stream from array to object serializer stream to COPY FROM
@@ -44,13 +33,7 @@ _streamArrayToDbTable = (objects, tableName, fields, dataLoadHistory) ->
       .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
       .pipe(rawDataStream)
     .then () ->
-      finishSql = tables.jobQueue.dataLoadHistory()
-      .where(raw_table_name: tableName)
-      .update(raw_rows: objects.length)
-      .toString()
-      pgQuery(finishSql)
-    .then () ->
-      pgQuery('COMMIT')
+      objects.length
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -94,9 +77,7 @@ loadUpdates = (subtask, options) ->
             data_type: 'listing'
             batch_id: subtask.batch_id
             raw_table_name: rawTableName
-          _streamArrayToDbTable(results, rawTableName, fields, dataLoadHistory)
-          .then () ->
-            return results.length
+          dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbStreamer(results, fields))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
         Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->

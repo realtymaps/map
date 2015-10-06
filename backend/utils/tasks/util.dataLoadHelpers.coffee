@@ -25,7 +25,7 @@ buildUniqueSubtaskName = (subtask, prefix='raw') ->
 
 
 createRawTempTable = (tableName, fields) ->
-  dbs.get('raw_temp').schema tableName, (table) ->
+  dbs.get('raw_temp').schema.createTable tableName, (table) ->
     table.increments('rm_raw_id').notNullable()
     table.boolean('rm_valid')
     table.text('rm_error_msg')
@@ -33,19 +33,16 @@ createRawTempTable = (tableName, fields) ->
       table.text(fieldName.replace(/\./g, ''))
 
 
-_countInvalidRows = (knex, tableName, assignedFalse) ->
-  asPrefix = if assignedFalse then 'invalids' else 'unvalids'
-  knex
-  .sum('invalid')
-  .from () ->
-    query = this
-    .count('* AS invalid')
-    .from(tableName)
-    if assignedFalse
-      query = query.where(rm_valid: false)
-    else
-      query = query.whereNull('rm_valid')
-    query.as(asPrefix)
+_countInvalidRows = (tableName, assignedFalse) ->
+  query = tables.buildRawTableQuery(tableName)
+  .count('* AS count')
+  if assignedFalse
+    query.where(rm_valid: false)
+  else
+    query.whereNull('rm_valid')
+  query
+  .then (results) ->
+    results?[0].count ? 0
 
     
 recordChangeCounts = (subtask) ->
@@ -53,7 +50,7 @@ recordChangeCounts = (subtask) ->
   subset =
     data_source_id: subtask.task_name
   _.extend(subset, subtask.data.subset)
-  Promise.try () ->
+  deletedPromise = Promise.try () ->
     if subtask.data.deletes == DELETE.UNTOUCHED
       # check if any rows will be left active after delete, and error if not; for efficiency, just grab the id of the
       # first such row rather than return all or count them all
@@ -79,11 +76,11 @@ recordChangeCounts = (subtask) ->
       tables.property[subtask.data.dataType]()
       .where(subset)
       .where(deleted: subtask.batch_id)
-  .then (deletedCount=0) ->
-    # get a count of raw rows from all raw tables from this batch with rm_valid == false
-    invalidSubquery = () -> _countInvalidRows(this, rawTableName, true)
-    # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
-    unvalidatedSubquery = () -> _countInvalidRows(this, rawTableName, false)
+  # get a count of raw rows from all raw tables from this batch with rm_valid == false
+  invalidPromise = _countInvalidRows(rawTableName, true)
+  # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
+  unvalidatedPromise = _countInvalidRows(rawTableName, false)
+  Promise.join deletedPromise, invalidPromise, unvalidatedPromise, (deletedCount=0, invalidCount, unvalidatedCount) ->
     # get a count of rows from this batch with null change history, i.e. newly-inserted rows
     insertedSubquery = () ->
       tables.property[subtask.data.dataType](this)
@@ -106,8 +103,8 @@ recordChangeCounts = (subtask) ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: rawTableName)
     .update
-      invalid_rows: invalidSubquery
-      unvalidated_rows: unvalidatedSubquery
+      invalid_rows: invalidCount
+      unvalidated_rows: unvalidatedCount
       inserted_rows: insertedSubquery
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
@@ -247,7 +244,7 @@ getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
 normalizeData = (subtask, options) -> Promise.try () ->
   rawTableName = buildUniqueSubtaskName(subtask)
   # get rows for this subtask
-  rowsPromise = tables.buildQuery('properties', rawTableName)()
+  rowsPromise = tables.buildRawTableQuery(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
@@ -264,11 +261,11 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
       .then () ->
-        tables.buildQuery('properties', rawTableName)()
+        tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
-        tables.buildQuery('properties', rawTableName)()
+        tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.all promises
@@ -360,6 +357,24 @@ finalizeEntry = (entries) ->
   entry
 
 
+manageRawDataStream = (tableName, dataLoadHistory, doStream) ->
+  dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
+    tables.jobQueue.dataLoadHistory()
+    .insert(dataLoadHistory)
+    .then () ->
+      promiseQuery('BEGIN')
+    .then () ->
+      doStream(tableName, promiseQuery, streamQuery)
+    .then (count) ->
+      promiseQuery('COMMIT')
+      .then () ->
+        tables.jobQueue.dataLoadHistory()
+        .where(raw_table_name: tableName)
+        .update(raw_rows: count)
+      .then () ->
+        count
+  
+
 module.exports =
   buildUniqueSubtaskName: buildUniqueSubtaskName
   createRawTempTable: createRawTempTable
@@ -369,4 +384,5 @@ module.exports =
   normalizeData: normalizeData
   getValues: getValues
   finalizeEntry: finalizeEntry
+  manageRawDataStream: manageRawDataStream
   DELETE: DELETE

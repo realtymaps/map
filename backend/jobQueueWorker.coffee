@@ -10,7 +10,7 @@ require './routes/route.hirefire'
 
 # catch all uncaught exceptions
 process.on 'uncaughtException', (err) ->
-  logger.error 'Something very bad happened: ', err.message
+  logger.error 'Something very bad happened!!!'
   logger.error err.stack || err
   process.exit 1  # because now, you are in unpredictable state!
 

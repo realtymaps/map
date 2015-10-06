@@ -23,21 +23,11 @@ through = require 'through2'
 rimraf = require 'rimraf'
 
 
-_streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
+_fileToDbStreamer = (filePath) ->
   # stream the contents of the file into a COPY FROM query
-  count = 0
-  dbs.getPlainClient 'raw_temp', (pgClient) ->
-    pgQuery = Promise.promisify(pgClient.query, pgClient)
-    pgConnect = Promise.promisify(pgClient.connect, pgClient)
-    pgConnect()
-    .then () ->
-      pgQuery('BEGIN')
-    .then () ->
-      startSql = tables.jobQueue.dataLoadHistory()
-      .insert(dataLoadHistory)
-      .toString()
-      pgQuery(startSql)
-    .then () -> new Promise (resolve, reject) ->
+  (tableName, promiseQuery, streamQuery) ->
+    count = 0
+    new Promise (resolve, reject) ->
       rejected = false
       doReject = (message) ->
         (err) ->
@@ -59,7 +49,7 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
         fileStream.removeListener('error', initialDoReject)
         # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
         fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
-        pgQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
+        promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
         .then () -> new Promise (resolve2, reject2) ->
           rejected2 = false
           doReject2 = (message) ->
@@ -81,21 +71,14 @@ _streamFileToDbTable = (filePath, tableName, dataLoadHistory) ->
           copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
           fileStream
           .pipe(through(transform, flush))
-          .pipe(pgClient.query(copyStream.from(copyStart)))
+          .pipe(streamQuery(copyStream.from(copyStart)))
           .on('finish', resolve2)
           .on('error', doReject2("error streaming data to #{tableName}"))
           fileStream.resume()
         .then resolve
         .catch doReject("error executing COPY FROM for #{tableName}")
     .then () ->
-      finishQuery = tables.jobQueue.dataLoadHistory()
-      .where(raw_table_name: tableName)
-      .update raw_rows: count
-      pgQuery(finishQuery.toString())
-    .then () ->
-      pgQuery('COMMIT')
-    .then () ->
-      return count
+      count
 
 
 # loads all records from a ftp-dropped zip file
@@ -129,7 +112,8 @@ loadRawData = (subtask, options) ->
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    _streamFileToDbTable("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt", rawTableName, dataLoadHistory)
+    filePath = "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
+    dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _fileToDbStreamer(filePath))
   .then (rowsInserted) ->
     return rowsInserted
   .catch isUnhandled, (error) ->
