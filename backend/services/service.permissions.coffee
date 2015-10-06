@@ -85,6 +85,6 @@ getGroupsForUserId = (id) ->
 
 
 module.exports =
-  getPermissionsForGroupId: memoize(getPermissionsForGroupId, maxAge: 10*60*1000, preFetch: .1)
+  getPermissionsForGroupId: memoize(getPermissionsForGroupId, primitive: true, maxAge: 10*60*1000, preFetch: .1)
   getPermissionsForUserId: getPermissionsForUserId
   getGroupsForUserId: getGroupsForUserId

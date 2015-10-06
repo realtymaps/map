@@ -237,7 +237,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
               usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
       return {validationMap: validationMap, usedKeys: usedKeys, diffExcludeKeys: diffExcludeKeys}
 # memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
-getValidationInfo = memoize.promise(getValidationInfo, maxAge: 850000)
+getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 850000)
 
 
 # normalizes data from the raw data table into the permanent data table

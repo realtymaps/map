@@ -157,9 +157,6 @@ between = (query, column, min, max) ->
   else if max
     query.where(column, '<=', max)
 
-tableName = memoize (model) ->
-  model.query()._single.table
-
 ageOrDaysFromStartToNow = (query, listingAge, beginDate, operator, val) ->
   _whereRawSafe query,
     sql: "#{_ageOrDaysFromStartToNow(listingAge, beginDate)} #{operator} ?"
@@ -228,7 +225,6 @@ safeJsonArray = (arr) ->
 
 module.exports =
   between: between
-  tableName: tableName
   ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
   orderByDistanceFromPoint: orderByDistanceFromPoint
   allPatternsInAnyColumn: allPatternsInAnyColumn
