@@ -40,3 +40,4 @@ client_body_temp/
 proxy_temp/
 scgi_temp/
 fastcgi_temp/
+dumps/
