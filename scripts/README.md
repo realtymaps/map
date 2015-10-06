@@ -25,7 +25,7 @@ conninfo URL):
   * an environment variable fragment appended with `@` then the name of an heroku app, which is treated like an
   environment variable fragment as described above, except where all resolutions take place in the context of the
   given heroku app's environment
-    * example: `DATABASE@realtymaps-map`
+    * example: `MAIN_DATABASE@realtymaps-map`
 
 ## database scripts
 
@@ -76,5 +76,5 @@ service can be either 'heroku' or 'github', and the project is the destination g
 performs misc tasks related to such pushes.  If `--dbsync` is present, it will also run dbsync migrations
 before attempting the push/deploy.
 * `./scripts/misc/setHerokuStack <stack>` will set the heroku stack for all apps accessible by the credentialled user.
-* `source ./scripts/misc/syncVars` sets DATABASE_URL and RAW_TEMP_DATABASE_URL based on the values of other
+* `source ./scripts/misc/syncVars` sets MAIN_DATABASE_URL and RAW_TEMP_DATABASE_URL based on the values of other
 environment variables.

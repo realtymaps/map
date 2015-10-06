@@ -25,5 +25,5 @@ fi
 source $SCRIPT_DIR/environmentNormalization/dbsync
 
 
-echo "SYNC: performing property db migrations on db: $DST_DB"
+echo "SYNC: performing main db migrations on db: $DST_DB"
 $DBSYNC --path migrations/propertyData --client pg --connection $DST_URL --reminder 1 --recursive
