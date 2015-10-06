@@ -134,6 +134,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   $scope.projectDropdown = isOpen: false
 
   $scope.addProject = () ->
+    $scope.newProject = {}
+
     modalInstance = $modal.open
       animation: true
       scope: $scope
@@ -146,7 +148,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      $http.post backendRoutes.userSession.newProject, projectName: newProject.name.value
+      rmapsProjects.createProject newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity

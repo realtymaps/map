@@ -7,46 +7,44 @@ projectsSvc = (require '../services/services.user').project
 auth = require '../utils/util.auth.coffee'
 _ = require 'lodash'
 
-safeQuery = ['id']
+safeQuery = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft']
 
 class ProjectsSessionCrud extends Crud
   init: ->
     super()
     @safe = safeQuery
 
-  withUser: (req, cb) =>
+  withUser: (req, target, cb) =>
     return @onError('User not logged in') unless req.user
-    _.extend req.query, auth_user_id: req.user.id
+    _.extend target, auth_user_id: req.user.id
     cb()
 
   rootGET: (req, res, next) =>
-    logger.debug "rootGet of projects"
-    @withUser req, =>
-      logger.debug "rootGet has user"
+    @withUser req, req.query, =>
       super(req, res, next)
 
   rootPOST: (req, res, next) =>
-    @withUser req, =>
+    @withUser req, req.body, =>
       @svc.create(req.body, undefined, @doLogQuery, safeQuery)
       .catch _.partial(@onError, next)
 
   byIdGET: (req, res, next) =>
-    @withUser req, =>
+    @withUser req, req.query, =>
       @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
       .catch _.partial(@onError, next)
 
   byIdPOST: (req, res, next) =>
-    @withUser req, =>
+    @withUser req, req.body, =>
       @svc.create(req.body, req.params[@paramIdKey], undefined, @doLogQuery, safeQuery)
       .catch _.partial(@onError, next)
 
   byIdDELETE: (req, res, next) =>
-    @withUser req, =>
+    @withUser req, req.query, =>
       @svc.delete(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
       .catch _.partial(@onError, next)
 
   byIdPUT: (req, res, next) =>
-    @withUser req, => super(req, res, next)
+    @withUser req, req.body, => super(req, res, next)
 
 ProjectsSessionRouteCrud = wrapRoutesTrait ProjectsSessionCrud
 

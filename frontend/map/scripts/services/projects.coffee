@@ -140,6 +140,12 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
         _mockData project
         project
 
+    saveProject: (project) ->
+      _update project
+
+    createProject: (project) ->
+      $http.post backendRoutes.projectSession.root, project
+
     archive: (project) ->
       project.archived = !project.archived
       _update project

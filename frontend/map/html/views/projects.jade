@@ -9,7 +9,7 @@
           .tools
             input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
             span.divider
-            button.btn.btn-primary(ng-click="createProject()") Create
+              button.btn.btn-primary(ng-click="addProject()") Create
       .row
         .col-md-12
           table.table.table-hover
@@ -34,7 +34,7 @@
                 th.col-md-1
                   span
             tbody
-              tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
+              tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'" ui-sref="project({id: {{project.id}}})")
                 td.select
                   input(type="checkbox" name="selectGroup_{{$index}}")
                 td
@@ -53,4 +53,4 @@
                 td
                   span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                 td.col-md-1
-                  button.btn.btn-white(ui-sref="map({project: {{project.id}}})") View Map
+                  button.btn.btn-white(ui-sref="map({project: {{project.id}}})" ng-click="$event.stopPropagation()") View Map

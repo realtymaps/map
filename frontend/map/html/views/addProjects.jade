@@ -1,11 +1,11 @@
-form.add-project(name="newProject")
+form.add-project
   .modal-header
     h3.modal-title Add Project
     span.icon.icon-close(ng-click="cancelModal()")
   .modal-body
     .form-group
       label(for="proejct_name_input") Name your project
-      input.form-control(type="text" name="name" placeholder="Type project name here")
+      input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here")
     button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo") + Add Client Info
     div.add-client-info(ng-cloak ng-show="showAddClientInfo")
       .form-section
@@ -15,51 +15,51 @@ form.add-project(name="newProject")
           .row
             .col-sm-6
               label.required(for="client_first_name" ) First Name
-              input.form-control(name="client_first_name")
+              input.form-control(name="client_first_name" ng-model="newProject.client_first_name")
             .col-sm-6
               label(for="client_last_name") Last Name
-              input.form-control(name="client_last_name")
+              input.form-control(name="client_last_name" ng-model="newProject.client_last_name")
         .form-group
           .row
             .col-sm-6
               label(for="client_email") Email
-              input.form-control(name="client_email" placeholder="name@email.com")
+              input.form-control(name="client_email" ng-model="newProject.client_email" placeholder="name@email.com")
             .col-sm-6
-              label(for="client_phone_number") Phone Number
-              input.form-control(name="client_phone_number")
+              label(for="client_cell_phone") Phone Number
+              input.form-control(name="client_phone_number" ng-model="newProject.client_phone_number")
         .form-group
           .row
             .col-sm-6
               label(for="client_address_1" ) Address 1
-              input.form-control(name="client_address_1")
+              input.form-control(name="client_address_1" ng-model="newProject.client_address_1")
             .col-sm-6
               label(for="client_address_2") Address 2
-              input.form-control(name="client_address_2")
+              input.form-control(name="client_address_2" ng-model="newProject.client_address_2")
         .form-group
           .row
             .col-sm-6
               label(for="client_city") City
-              input.form-control(name="client_city")
+              input.form-control(name="client_city" ng-model="newProject.client_city")
             .col-sm-6
               label(for="client_state") State
-              select.form-control(name="client_state")
+              select.form-control(name="client_state" ng-model="newProject.client_state")
                 option FL
       .form-section
         h4.title Property Ask
         .form-group
           .row
             .col-sm-12
-              label(for="property_price_range") Price Range
+              label(for="minPrice") Price Range
               .row
                 .col-sm-6
-                  input.form-control(name="property_price_range_min" placeholder="$0")
+                  input.form-control(name="minPrice" ng-model="newProject.minPrice" placeholder="$0")
                 .col-sm-6.minus
-                  input.form-control(name="property_price_range_max" placeholder="$0")
+                  input.form-control(name="maxPrice" ng-model="newProject.maxPrice" placeholder="$0")
         .form-group
           .row
             .col-sm-4
-              label(for="property_beds") Beds
-              select.form-control(name="property_beds")
+              label(for="beds") Beds
+              select.form-control(name="beds" ng-model="newProject.beds")
                 option 1
                 option 2
                 option 3
@@ -67,16 +67,16 @@ form.add-project(name="newProject")
                 option 5
                 option 6
             .col-sm-4
-              label(for="property_bath") Bath
-              select.form-control(name="property_bath")
+              label(for="baths") Bath
+              select.form-control(name="baths" ng-model="newProject.baths")
                 option 1
                 option 2
                 option 3
                 option 4
                 option 5
             .col-sm-4
-              label(for="property_sq_ft") Sq Ft
-              input.form-control(name="property_sq_ft")
+              label(for="sqft") Sq Ft
+              input.form-control(name="sqft" ng-model="newProject.sqft")
   .modal-footer
     button.btn.btn-default(ng-click="cancelModal()") Cancel
     button.btn.btn-primary(type="submit" ng-click="saveProject()") Save
