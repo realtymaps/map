@@ -134,7 +134,6 @@ activateNewData = (subtask) ->
           active: false
           rm_property_id: dbs.get('main').raw("updater.rm_property_id")
           data_source_id: dbs.get('main').raw("updater.data_source_id")
-        .as('exister')
       .update(active: dbs.get('main').raw('NOT "active"'))
       
     activatePromise
