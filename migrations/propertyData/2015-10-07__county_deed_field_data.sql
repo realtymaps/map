@@ -122,7 +122,7 @@ INSERT INTO config_data_source_fields ("MetadataEntryID", "SystemName", "ShortNa
 -- Name: config_data_source_fields_MetadataEntryID_seq; Type: SEQUENCE SET; Schema: public; Owner: dev
 --
 
-SELECT pg_catalog.setval('"config_data_source_fields_MetadataEntryID_seq"', 388, true);
+-- SELECT pg_catalog.setval('"config_data_source_fields_MetadataEntryID_seq"', 388, true);
 
 
 --
