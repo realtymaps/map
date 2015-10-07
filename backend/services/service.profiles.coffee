@@ -74,15 +74,9 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
     logger.debug "withProject: #{withProject}"
 
     if withProject and hasAProject
-<<<<<<< HEAD
-      q =  auth_user_profile().select(cols...).leftJoin(project.tableName,
-      project.tableName + '.id', auth_user_profile.tableName + '.project_id')
-      .where("#{auth_user_profile.tableName}.auth_user_id": auth_user_id)
-=======
       q =  tables.user.profile().select(cols...).leftJoin(tables.user.project.tableName,
       tables.user.project.tableName + '.id', tables.user.profile.tableName + '.project_id')
-      .where(auth_user_id: auth_user_id)
->>>>>>> master
+      .where("#{tables.user.profile.tableName}.auth_user_id": auth_user_id)
       # logger.debug q.toString()
       return q
 

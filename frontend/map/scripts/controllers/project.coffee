@@ -28,7 +28,7 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     modalInstance = $modal.open
       animation: true
       scope: $scope
-      template: require('../../html/views/editProject.jade')()
+      template: require('../../html/views/templates/modals/editProject.jade')()
 
     $scope.cancelModal = () ->
       modalInstance.dismiss('cancel')
