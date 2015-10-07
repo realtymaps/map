@@ -9,7 +9,7 @@ gulp.task 'spec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'fronte
 
 gulp.task 'rebuildSpec', gulp.series(
   gulp.parallel('commonSpec', 'backendSpec'), 'gulpSpec'
-  , gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'frontendSpec')
+  , gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'frontendNoCoverageSpec')
 
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 

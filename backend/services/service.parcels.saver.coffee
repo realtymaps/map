@@ -1,4 +1,3 @@
-db = require('../config/dbs').properties
 parcelSvc = require './service.properties.parcels'
 Promise = require 'bluebird'
 logger = require '../config/logger'
@@ -6,12 +5,13 @@ JSONStream = require 'JSONStream'
 {geoJsonFormatter} = require '../utils/util.streams'
 parcelFetcher = require './service.parcels.fetcher.digimaps'
 parcelFetcher = parcelFetcher.getParcelZipFileStream
-{WGS84, UTM} = require '../../common/utils/enums/util.enums.map.coord_system'
+{WGS84, UTM, crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
 shp2json = require 'shp2jsonx'
 _ = require 'lodash'
 through = require 'through'
 {expectedSingleRow} =  require '../utils/util.sql.helpers'
 tables = require '../config/tables'
+dbs = require '../config/dbs'
 
 _parcelsTblName = 'parcels'
 _toReplace = 'REPLACE_ME'
@@ -23,10 +23,7 @@ _formatParcel = (feature) ->
     key.toLowerCase()
   obj.rm_property_id = obj.parcelapn + obj.fips + '_001'
   obj.geometry = feature.geometry
-  obj.geometry.crs =
-    type: 'name'
-    properties:
-      name: 'EPSG:26910'
+  obj.geometry.crs = crsFactory()
   obj
 
 _getParcelJSON = (fullPath, digimapsSetings) ->
@@ -51,7 +48,7 @@ _fixGeometrySql = (val, method = 'insert') ->
   key = if val.geometry.type == 'Point' then 'geom_point' else 'geom_polys'
   delete val.geometry
   val[key] = _toReplace
-  q = tables.propertyData.rootParcel()[method](val)
+  q = tables.property.rootParcel()[method](val)
   .where(rm_property_id: val.rm_property_id) if method == 'update'
   raw = q.toString()
   raw.replace("'#{_toReplace}'", toReplaceWith)
@@ -60,7 +57,7 @@ _fixGeometrySql = (val, method = 'insert') ->
 _execRawQuery = (val, method = 'insert') ->
   raw = _fixGeometrySql(val, method)
   # logger.debug raw
-  db.knex.transaction (trx) ->
+  dbs.get('main').transaction (trx) ->
     q = trx.raw(raw)
     # if method == 'update'
     # logger.debug "\n\n"
@@ -82,7 +79,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
         polysUpdated = (_.filter _.values(updates) , (v) -> v == 'Polygon').length
         #verify Points inserted matches what the DB has
         #should we reject?
-        expectedSingleRow(tables.propertyData.rootParcel().count()
+        expectedSingleRow(tables.property.rootParcel().count()
         .where(fips: fipsCode)
         .whereNotNull('geom_point'))
         .then (row) ->
@@ -91,7 +88,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
             logger.warn "Point Count MisMatch: Db Count #{row.count} vs pointsInserted: #{pointsInserted}"
         #verify Polys updated matches what the DB has
         #should we reject?
-        expectedSingleRow(tables.propertyData.rootParcel().count()
+        expectedSingleRow(tables.property.rootParcel().count()
         .where(fips: fipsCode)
         .whereNotNull('geom_point')
         .whereNotNull('geom_polys'))
@@ -101,7 +98,7 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
             logger.warn "Poly Count MisMatch: Db Count #{row.count} vs polysUpdated: #{polysUpdated}"
 
         logger.debug "done kicking off insert/updates for parcels fipsCode: #{fipsCode}"
-        db.knex.raw("SELECT dirty_materialized_view('parcels', FALSE);")
+        dbs.get('main').raw("SELECT dirty_materialized_view('parcels', FALSE);")
         .catch reject
         .then ->
           resolve

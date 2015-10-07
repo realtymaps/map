@@ -1,9 +1,9 @@
 auth = require '../utils/util.auth'
-{auth_user_profile} = require '../services/services.user'
+{profile} = require '../services/services.user'
 {routeCrud} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 
-module.exports = mergeHandles routeCrud(auth_user_profile),
+module.exports = mergeHandles routeCrud(profile),
   #STRICTLY FOR ADMIN, otherwise profiles are used by session
   root:
     methods: ['get', 'post']

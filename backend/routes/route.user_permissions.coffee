@@ -1,9 +1,9 @@
 auth = require '../utils/util.auth'
-{auth_permission} = require '../services/services.user'
+{permission} = require '../services/services.user'
 {routeCrud} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 
-module.exports = mergeHandles routeCrud(auth_permission),
+module.exports = mergeHandles routeCrud(permission),
   root:
     methods: ['get', 'post']
     middleware: [

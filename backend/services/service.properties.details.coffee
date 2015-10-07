@@ -22,7 +22,7 @@ module.exports =
     validation.validateAndTransform(request, transforms)
     .then (parameters) ->
 
-      query = sqlHelpers.select(tables.propertyData.propertyDetails(), parameters.columns)
+      query = sqlHelpers.select(tables.property.propertyDetails(), parameters.columns)
       .where(rm_property_id: parameters.rm_property_id)
       .limit(1)
 

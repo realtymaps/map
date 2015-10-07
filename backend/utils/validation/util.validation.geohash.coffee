@@ -8,4 +8,5 @@ module.exports = (param, boundsStr) ->
     return null if !boundsStr? or boundsStr == ''
     geohash64.decode(boundsStr)
   .catch (err) ->
-    Promise.reject new DataValidationError('error decoding geohash string', param, boundsStr)
+    logger.error err, true
+    Promise.reject new DataValidationError('error decoding geohash string: ', param, boundsStr)

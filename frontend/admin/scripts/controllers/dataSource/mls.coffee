@@ -5,8 +5,9 @@ adminRoutes = require '../../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
-app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '$timeout', 'rmapsMlsService', '$modal', 'Restangular', '$q', 'rmapsevents', 'adminConstants', 'rmapsprincipal', 'rmapsJobsService'
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, Restangular, $q, rmapsevents, adminConstants, rmapsprincipal, rmapsJobsService) ->
+app.controller 'rmapsMlsCtrl',
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, $q, rmapsevents, adminConstants, rmapsprincipal,
+  rmapsJobsService) ->
 
     # return new object with base defaults
     getDefaultBase = () ->
@@ -322,9 +323,8 @@ app.controller 'rmapsMlsCtrl', ['$rootScope', '$scope', '$location', '$state', '
         , () ->
           console.log 'password modal closed'
       )
-]
 
-app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData', 'adminConstants',
+app.controller 'ModalInstanceCtrl',
   ($scope, $modalInstance, mlsModalData, adminConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
@@ -336,9 +336,8 @@ app.controller 'ModalInstanceCtrl', ['$scope', '$modalInstance', 'mlsModalData',
     $scope.cancel = () ->
       $modalInstance.dismiss('cancel')
 
-]
 
-app.controller 'ModalPasswordCtrl', ['$scope', '$modalInstance'
+app.controller 'ModalPasswordCtrl',
   ($scope, $modalInstance) ->
     $scope.newpassword = ''
 
@@ -347,5 +346,3 @@ app.controller 'ModalPasswordCtrl', ['$scope', '$modalInstance'
 
     $scope.cancel = () ->
       $modalInstance.dismiss('cancel')
-
-]

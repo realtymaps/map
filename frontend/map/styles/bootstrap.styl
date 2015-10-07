@@ -1,3 +1,23 @@
+.page-header
+  color $textColor
+
+input.btn.btn-primary
+  color $textColor
+/*
+set all page h tag overrides
+*/
+for num in (1...7)
+  h{num}
+    color $textColor
+
+main
+  for num in (1...7)
+    h{num}
+      color $black
+
+  div, p, span
+    color $black
+
 .navbar-brand
   padding 5px 10px;
   img
@@ -63,9 +83,9 @@
       &:before
         border-style solid
         border-width 0 10px 10px 10px
-        border-color transparent transparent $light_blue transparent
+        border-color transparent transparent $dark_blue transparent
       h4.title
-        background $light_blue
+        background $dark_blue
         color $white
         font-size 14px
         padding 10px
@@ -77,7 +97,7 @@
       border none
     a
       padding 5px 20px
-      color $white_60
+      color $gray
       text-transform capitalize
       @extends .global-transition
       &:hover
@@ -177,6 +197,7 @@ button
     background-color $white_90
     border-radius 3px;
     box-shadow 0px 1px 2px $black_70
+    color $dark_blue
 
     &:hover
     &:active
@@ -330,7 +351,7 @@ button
     &:before
       content ''
       position absolute
-      background-color $light_blue
+      background-color $dark_blue
       left 3px
       top 3px
       right 3px
@@ -524,6 +545,10 @@ label
       transform translateY(-50%) !important
       top 50%
 
+.modal-title, .modal-content, .modal-body, .modal-footer
+  h1, h2, h3, h4, h5, h6, h7, span, p, div
+    color: $black
+  color $black
 .modal
   .modal-dialog
     .modal-content
@@ -715,15 +740,3 @@ Place for our custom Theming of bootstrap
       &:after
         color $rm-notsale-hover
         border-top-color $rm-notsale-hover !important
-
-.page-header
-  color $textColor
-
-input.btn.btn-primary
-  color $textColor
-/*
-set all page h tag overrides
-*/
-for num in (1...7)
-  h{num}
-    color $textColor

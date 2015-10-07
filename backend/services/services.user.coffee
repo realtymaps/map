@@ -1,31 +1,34 @@
 _ = require 'lodash'
 logger = require '../config/logger'
-{userData} = require '../config/tables'
-userModel = require '../models/model.user'
+tables = require '../config/tables'
 
-toInit = _.pick userData, [
-  'auth_group'
-  'auth_user_groups'
-  'auth_permission'
-  'auth_group_permissions'
-  'auth_user_profile'
+toInit = {}
+_.extend toInit, _.pick tables.lookup, [
+  'usStates'
+  'accountUseTypes'
+]
+_.extend toInit, _.pick tables.auth, [
+  'group'
+  'permission'
+  'm2m_group_permission'
+  'm2m_user_permission'
+  'm2m_user_group'
+]
+_.extend toInit, _.pick tables.user, [
+  'profile'
   'project'
-  'auth_user_user_permissions'
-  'us_states'
   'company'
-  'account_images'
-  'account_use_types'
-  'website_url'
+  'accountImages'
   'notes'
 ]
 
-{crud,ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
+{crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 
 for key, val of toInit
   module.exports[key] = crud(val)
 
 permissionCols = [
-  "#{userData.auth_user_user_permissions.tableName}.id as id"
+  "#{tables.auth.m2m_user_permission.tableName}.id as id"
   'user_id'
   'permission_id'
   'content_type_id'
@@ -34,16 +37,16 @@ permissionCols = [
 ]
 
 groupsCols = [
-  "#{userData.auth_user_groups.tableName}.id as id"
+  "#{tables.auth.m2m_user_group.tableName}.id as id"
   'user_id'
   'group_id'
   'name'
 ]
 
 profileCols = [
-  "#{userData.auth_user_profile.tableName}.id as id"
-  "#{userData.auth_user_profile.tableName}.name as #{userData.auth_user_profile.tableName}_name"
-  "#{userData.project.tableName}.name as #{userData.project.tableName}_name"
+  "#{tables.user.profile.tableName}.id as id"
+  "#{tables.user.profile.tableName}.name as #{tables.user.profile.tableName}_name"
+  "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name"
   'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
   'parent_auth_user_id', 'auth_user_id as user_id'
 ]
@@ -52,14 +55,15 @@ class UserCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
-  permissions: thenableHasManyCrud(userData.auth_permission, permissionCols,
-    module.exports.auth_user_user_permissions, 'permission_id', undefined, 'auth_user_user_permissions.id')
+  permissions: thenableHasManyCrud(tables.auth.permission, permissionCols,
+    module.exports.m2m_user_permission, 'permission_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id")
     .init(false)
 
-  groups: thenableHasManyCrud(userData.auth_group, groupsCols,
-    module.exports.auth_user_groups, 'group_id', undefined, 'auth_user_groups.id').init(false)
+  groups: thenableHasManyCrud(tables.auth.group, groupsCols,
+    module.exports.m2m_user_group, 'group_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id").init(false)
 
-  profiles: thenableHasManyCrud(userData.project, profileCols,
-    module.exports.auth_user_profile, undefined, undefined, 'auth_user_profile.id').init(false)
+  profiles: thenableHasManyCrud(tables.user.project, profileCols,
+    module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(false)
 
-module.exports.user = new UserCrud(userData.user)
+
+module.exports.user = new UserCrud(tables.auth.user)

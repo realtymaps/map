@@ -3,10 +3,9 @@ Promise = require 'bluebird'
 twilio = require 'twilio'
 config = require '../config/config'
 logger = require '../config/logger'
-dbs = require '../config/dbs'
 {mailer} = require '../config/email'
+tables = require '../config/tables'
 
-knex = dbs.users.knex
 if config.TWILIO.ACCOUNT and config.TWILIO.API_KEY
   tClient = twilio(config.TWILIO.ACCOUNT, config.TWILIO.API_KEY)
 else
@@ -37,9 +36,9 @@ notification = (type) ->
   (options) ->
 
     # query
-    query = knex.table('notification')
-    .select('notification.user_id', 'notification.method', 'auth_user.email', 'auth_user.cell_phone')
-    .innerJoin('auth_user', 'notification.user_id', 'auth_user.id')
+    query = tables.config.notification()
+    .select("user_id", "method", "email", "cell_phone")
+    .innerJoin(tables.auth.user.tableName, "#{tables.config.notification.tableName}.user_id", "#{tables.auth.user.tableName}.id")
     .where
       type: type
 

@@ -43,7 +43,7 @@ class TaskImplementation
       jobQueue.queueSubtasks(transaction, batchId, subtasks)
 
 
-TaskImplementation.getTaskCode = memoize.promise(_getTaskCode)
+TaskImplementation.getTaskCode = memoize.promise(_getTaskCode, primitive: true)
 
 
 module.exports = TaskImplementation

@@ -1,27 +1,27 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require './util.error.dataValidation'
-stringValidation = require './util.validation.string'
 dbs = require '../../config/dbs'
 sqlHelpers = require '../util.sql.helpers'
 require '../../../common/extensions/strings'
-logger = require '../../config/logger'
+tables = require '../../config/tables'
+dbs = require '../../config/dbs'
+memoize = require 'memoizee'
 
 
-knex = dbs.users.knex
+cached = {}
 
 
 module.exports = (options = {}) ->
   minSimilarity = options.minSimilarity ? 0.4
-  (param, value) -> Promise.try () ->
-    if !value || (!value.stateCode and value.county) || (value.stateCode and !value.county)
-      throw new DataValidationError('invalid value provided', param, value)
-    # force correct caps
-    if value.stateCode && value.county
-      county = value.county.toInitCaps()
-      state = value.stateCode.toUpperCase()
-      knex.select('*', knex.raw("similarity(county, '#{county}') AS similarity"))
-      .from('fips_lookup')
+  if !cached[minSimilarity]
+    # prepend the state and county as params for primitive memoizing purposes
+    tmp = (stateCodeRaw, countyRaw, value, param) -> Promise.try () ->
+      # force correct caps
+      county = countyRaw.toInitCaps()
+      state = stateCodeRaw.toUpperCase()
+      tables.lookup.fipsCodes()
+      .select('*', dbs.get('main').raw("similarity(county, '#{county}') AS similarity"))
       .where(state: state)
       .orderByRaw("similarity(county, '#{county}') DESC")
       .limit(1)
@@ -31,5 +31,18 @@ module.exports = (options = {}) ->
         if results[0].similarity < minSimilarity
           return Promise.reject new DataValidationError("acceptable county match not found: closest match is #{results[0].county}, #{results[0].state} with similarity #{results[0].similarity}, needed at least #{minSimilarity}", param, value)
         return results[0].code
-    else
+    # shouldn't change hardly ever, so don't put a maxAge on it -- if we ever need to deal with new values, we
+    # can force a refresh by rebooting the servers
+    cached[minSimilarity] = memoize.promise(tmp, primitive: true, length: 2)
+  
+  # fix the parameter order
+  return (param, value) -> Promise.try () ->
+    if !value
+      throw new DataValidationError('invalid value provided', param, value)
+    if !value.stateCode && !value.county
+      # pass through a bare fips code...  might be able to just skip the fips validator in rule generation?
       return value
+    if !value.stateCode || !value.county
+      throw new DataValidationError('invalid value provided', param, value)
+      
+    cached[minSimilarity](value.stateCode, value.county, value, param)

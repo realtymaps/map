@@ -9,8 +9,8 @@ _baseLayers = require '../utils/util.layers.base.coffee'
 ###
 _mapClassContainerName = 'angular-leaflet-map'
 
-module.exports = app.factory 'rmapsBaseMap', (rmapsBaseMapFactoryLogger, $timeout, leafletData) ->
-  $log = rmapsBaseMapFactoryLogger
+module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leafletData) ->
+  $log = nemSimpleLogger.spawn("map:baseFactory")
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
       settings =
@@ -101,7 +101,7 @@ module.exports = app.factory 'rmapsBaseMap', (rmapsBaseMapFactoryLogger, $timeou
           if e.keyCode == 27 #esc
             self.zoomBoxActive = false
             @zoomBox.deactivate()
-          if e.altKey
+          if e.altKey && !e.metaKey && !e.shiftKey && !e.ctrlKey
             self.zoomBoxActive = true
             @zoomBox.activate()
 

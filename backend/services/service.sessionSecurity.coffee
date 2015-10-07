@@ -3,14 +3,10 @@ bcrypt = require 'bcrypt'
 _ = require 'lodash'
 
 logger = require '../config/logger'
-SessionSecurity = require '../models/model.sessionSecurity'
 keystore = require '../services/service.keystore'
 uuid = require '../utils/util.uuid'
 config = require '../config/config'
-dbs = require '../config/dbs'
-
-
-CLEAN_SESSION_SECURITY = "DELETE FROM session_security WHERE app = '#{config.SESSION_SECURITY.app}' AND session_id IN (SELECT session_id FROM session_security LEFT JOIN session ON session.sid=session_security.session_id WHERE sid IS NULL);"
+tables = require '../config/tables'
 
 
 # creates a bcrypt hash, without the built-in salt
@@ -34,25 +30,22 @@ setSecurityCookie = (req, res, token, rememberMe) ->
 # this is for when new logins occur, or when we want to create a session based on rememberMe
 createNewSeries = (req, res, rememberMe) ->
   token = uuid.genToken()
-  keystore.cache.getValues('hashing cost factors')
-  .then (hashCosts) ->
-    bcrypt.genSaltAsync(hashCosts.token)
+  keystore.cache.getValue('token', namespace: 'hashing cost factors')
+  .then (tokenCostFactor) ->
+    bcrypt.genSaltAsync(tokenCostFactor)
   .then (salt) ->
     hashToken(token, salt)
     .then (tokenHash) ->
-      security =
+      tables.auth.sessionSecurity()
+      .insert
         user_id: req.user.id
         session_id: req.sessionID
         remember_me: rememberMe
         series_salt: salt
-        app: config.SESSION_SECURITY.app
         # here we store the hash, not the token, for the same reason you do
         # that with passwords -- someone who gets some db data they shouldn't
         # won't be able to use it to log in as someone else (easily)
         token: tokenHash
-      return security
-  .then (security) ->
-    SessionSecurity.forge(security).save()
   .then () ->
     setSecurityCookie(req, res, token, req.body.remember_me)
 
@@ -66,7 +59,7 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = keystore.cache.getValues('max logins')
+  maxLoginsPromise = keystore.cache.getValuesMap('max logins')
   .then (maxLogins) ->
     if req.session.groups['Premium Tier']
       return maxLogins.premium
@@ -77,28 +70,38 @@ ensureSessionCount = (req) -> Promise.try () ->
     if req.session.groups['Free Tier']
       return maxLogins.free
 
-  sessionSecuritiesPromise = dbs.users.raw(CLEAN_SESSION_SECURITY)
+  sessionSecuritiesPromise = tables.auth.sessionSecurity()
+  .whereNotExists () ->
+    tables.auth.session()
+    .select(1)
+    .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
+  .delete()
   .then () ->
-    SessionSecurity.where(user_id: req.user.id, app: config.SESSION_SECURITY.app).fetchAll()
-  .then (sessionSecurities) ->
-    return sessionSecurities.toJSON()
+    tables.auth.sessionSecurity()
+    .where(user_id: req.user.id)
+  .then (sessionSecurities=[]) ->
+    sessionSecurities
 
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
-    #logger.debug "ensureSessionCount for #{req.user.username}: #{maxLogins} logins allowed, #{sessionSecurities.length} existing logins found"
     if maxLogins <= sessionSecurities.length
       logger.debug "ensureSessionCount for #{req.user.username}: invalidating #{sessionSecurities.length-maxLogins+1} existing logins"
-      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'updated_at').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
-      SessionSecurity.knex().whereIn('session_id', sessionIdsToDelete).where(app: config.SESSION_SECURITY.app).del()
+      sessionIdsToDelete = _.pluck(_.sortBy(sessionSecurities, 'rm_modified_time').slice(0, sessionSecurities.length-maxLogins+1), 'session_id')
+      tables.auth.sessionSecurity()
+      .whereIn('session_id', sessionIdsToDelete)
+      .delete()
 
 
 deleteSecurities = (criteria) ->
-  SessionSecurity.knex().where(criteria).where(app: config.SESSION_SECURITY.app).del()
+  tables.auth.sessionSecurity()
+  .where(criteria)
+  .delete()
 
 
 getSecuritiesForSession = (sessionId) ->
-  SessionSecurity.where(session_id: sessionId).where(app: config.SESSION_SECURITY.app).fetchAll()
-  .then (securities) ->
-    return securities.toJSON()
+  tables.auth.sessionSecurity()
+  .where(session_id: sessionId)
+  .then (securities=[]) ->
+    securities
 
 
 module.exports =

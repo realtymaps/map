@@ -7,7 +7,7 @@ require '../config/promisify'
 
 
 getColumnList = (dataSourceId, dataSourceType, dataListType) ->
-  query = tables.config.dataSource()
+  query = tables.config.dataSourceFields()
   .select(
     'MetadataEntryID',
     'SystemName',

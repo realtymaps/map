@@ -29,6 +29,6 @@ describe 'gulp styles', ->
 
           setTimeout ->
             called.should.equal(false)
-            watcher.end()
+            watcher.close()
             done()
           , 200

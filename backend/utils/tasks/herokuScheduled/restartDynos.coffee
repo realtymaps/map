@@ -1,5 +1,4 @@
-{userData} = require '../../../config/tables'
-{externalAccounts} = userData
+tables = require '../../../config/tables'
 logger = require '../../../config/logger'
 Heroku = require 'heroku-client'
 {singleRow} = require '../../util.sql.helpers'
@@ -7,7 +6,7 @@ encryptor = require '../../../config/encryptor'
 _ = require 'lodash'
 
 getHerokuCreds = () ->
-  q = externalAccounts().where(name:'heroku')
+  q = tables.config.externalAccounts().where(name:'heroku')
   singleRow q
 
 restart = (appName = 'realtymaps-map') ->

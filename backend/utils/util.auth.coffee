@@ -11,6 +11,7 @@ permissionsUtil = require '../../common/utils/permissions'
 userUtils = require '../utils/util.user'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require './util.expressResponse'
+tables = require '../config/tables'
 
 
 class SessionSecurityError extends Error
@@ -26,7 +27,10 @@ class SessionSecurityError extends Error
 getSessionUser = (req) -> Promise.try () ->
   if not req.session.userid
     return Promise.resolve(false)
-  return userSessionService.getUser(id: req.session.userid)
+  tables.auth.user()
+  .where(id: req.session.userid)
+  .then (user=[]) ->
+    user?[0] ? false
   .catch (err) ->
     return false
 

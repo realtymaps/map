@@ -22,6 +22,7 @@ apiBaseCompanies = "#{apiBase}/companies"
 apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
+apiBaseNotes = "#{apiBaseSession}/notes"
 
 module.exports =
   views:
@@ -48,8 +49,9 @@ module.exports =
     updatePassword: "#{apiBaseSession}/password"
     emailIsUnique: "#{apiBaseSession}/emailIsUnique"
   notesSession:
-    root: "#{apiBaseSession}/notes"
-    byId: "#{apiBaseSession}/notes/:id"
+    apiBase: apiBaseNotes
+    root: apiBaseNotes
+    byId: "#{apiBaseNotes}/:id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers

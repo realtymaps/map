@@ -10,6 +10,7 @@ PromiseFtp = require '../util.promiseFtp'
 _ = require 'lodash'
 keystore = require '../../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
+dbs = require '../../config/dbs'
 
 
 NUM_ROWS_TO_PAGINATE = 500
@@ -29,7 +30,7 @@ checkFtpDrop = (subtask) ->
   defaultValues = {}
   defaultValues[TAX] = '19700101'
   defaultValues[DEED] = '19700101'
-  processDatesPromise = keystore.propertyDb.getValuesMap CORELOGIC_PROCESS_DATES, defaultValues: defaultValues
+  processDatesPromise = keystore.getValuesMap CORELOGIC_PROCESS_DATES, defaultValues: defaultValues
   Promise.join connectPromise, processDatesPromise, (rootListing, processDates) ->
     todo = {}
     for dir in _.sortBy(rootListing, 'name') when dir.type == 'd' then do (dir) ->
@@ -77,7 +78,7 @@ checkFtpDrop = (subtask) ->
       # until the current subtask finishes, but the checkFtpDrop subtask is on a different queue than those being
       # enqueued, and that messes with it.  We could probably fix that edge case, but it would have a steep performance
       # cost, so instead I left it as a caveat to be handled manually (like this) the few times it arises
-      jobQueue.transaction (transaction) ->
+      dbs.get('main').transaction (transaction) ->
         taxSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[TAX], TAX, taxFiles)
         deedSubtasks = _queuePerFileSubtasks(transaction, subtask, todo[DEED], DEED, deedFiles)
         finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "corelogic_finalizeDataPrep", {sources: _.keys(todo)}, true)
@@ -115,7 +116,7 @@ loadRawData = (subtask) ->
       dataType: subtask.data.dataType
 
 saveProcessedDates = (subtask) ->
-  keystore.propertyDb.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
+  keystore.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
     
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
@@ -125,7 +126,7 @@ normalizeData = (subtask) ->
 
 finalizeDataPrep = (subtask) ->
   Promise.map subtask.data.sources, (source) ->
-    tables.propertyData[source]()
+    tables.property[source]()
     .select('rm_property_id')
     .where(batch_id: subtask.batch_id)
     .then (ids) ->
