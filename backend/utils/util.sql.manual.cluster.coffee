@@ -1,22 +1,22 @@
-db = require('../config/dbs').properties
 config = require '../config/config'
 zoomThresh = config.MAP.options.zoomThresh
 sqlHelpers = require './../utils/util.sql.helpers'
 tables = require '../config/tables'
 logger = require '../config/logger'
+dbs = require '../config/dbs'
 
 _roundCoordCol = (roundTo = 0, scale = 1, xy = 'X') ->
   "round(ST_#{xy}(geom_point_raw)::decimal * #{scale},#{roundTo}) / #{scale}"
 
 _makeClusterQuery = (roundTo, scale) ->
-  query = tables.propertyData.propertyDetails().select(
-    db.knex.raw('count(*)'),
-    db.knex.raw("count(case when rm_status='not for sale' then 1 end) as notforsale"),
-    db.knex.raw("count(case when rm_status='pending' then 1 end) as pending"),
-    db.knex.raw("count(case when rm_status='recently sold' then 1 end) as recentlysold"),
-    db.knex.raw("count(case when rm_status='for sale' then 1 end) as forsale"),
-    db.knex.raw("#{_roundCoordCol(roundTo,scale)} as lng"),
-    db.knex.raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
+  query = tables.property.propertyDetails().select(
+    dbs.get('main').raw('count(*)'),
+    dbs.get('main').raw("count(case when rm_status='not for sale' then 1 end) as notforsale"),
+    dbs.get('main').raw("count(case when rm_status='pending' then 1 end) as pending"),
+    dbs.get('main').raw("count(case when rm_status='recently sold' then 1 end) as recentlysold"),
+    dbs.get('main').raw("count(case when rm_status='for sale' then 1 end) as forsale"),
+    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale)} as lng"),
+    dbs.get('main').raw("#{_roundCoordCol(roundTo,scale,'Y')} as lat"))
   .whereNotNull('city')
   .groupByRaw(_roundCoordCol(roundTo,scale))
   .groupByRaw(_roundCoordCol(roundTo,scale,'Y'))

@@ -6,8 +6,10 @@ mixin propertyButtons(resultName)
     button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
       span.icon.icon-send_email
       span Mail
+    button.note(ng-controller="rmapsNotesCtrl" ng-click="createFromProperty(#{resultName}); $event.stopPropagation()")
+      i.fa.fa-sticky-note &nbsp;
+      span Note
 
-    button.snail.btn.btn-primary-outline.btn-xs(
-    ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
-        i.fa.fa-map-marker &nbsp;
-        | Zoom To
+    button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
+      i.fa.fa-map-marker &nbsp;
+      span Zoom To

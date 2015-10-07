@@ -47,6 +47,8 @@ commonConfig =
             please let us know by emailing #{commonConfig.SUPPORT_EMAIL}, and giving us the following error
             message: "+(if troubleshooting then "<br/><code>#{troubleshooting}</code>" else '')
 
+  modals:
+    animationsEnabled: true
   map:
     options:
       zoomThresh:

@@ -10,7 +10,7 @@ require './routes/route.hirefire'
 
 # catch all uncaught exceptions
 process.on 'uncaughtException', (err) ->
-  logger.error 'Something very bad happened: ', err.message
+  logger.error 'Something very bad happened!!!'
   logger.error err.stack || err
   process.exit 1  # because now, you are in unpredictable state!
 
@@ -28,6 +28,7 @@ workers = for queueName in queueNames then do (queueName) ->
       logger.error "Queue shouldn't be active: #{queueName}"
       process.exit(3)
     
+    config.SUBTASKS_PER_PROCESS = queue.subtasks_per_process
     cluster queueName, queue.processes_per_dyno, () ->
       workers = for i in [1..queue.subtasks_per_process]
         jobQueue.runWorker(queueName, i)

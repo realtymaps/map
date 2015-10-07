@@ -1,7 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 logger = require '../config/logger'
-dbs = require '../config/dbs'
 config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
 tables = require '../config/tables'
@@ -9,7 +8,7 @@ encryptor = require '../config/encryptor'
 crudService = require '../utils/crud/util.crud.service.helpers'
 jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
-mainDb = tables.config.mls
+
 
 class MlsConfigCrud extends crudService.ThenableCrud
 
@@ -102,5 +101,5 @@ class MlsConfigCrud extends crudService.ThenableCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
 
 
-instance = new MlsConfigCrud(mainDb)
+instance = new MlsConfigCrud(tables.config.mls)
 module.exports = instance

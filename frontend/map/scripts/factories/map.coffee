@@ -21,12 +21,12 @@ _wrapGeomPointJson = (obj) ->
   Our Main Map Implementation
 ###
 app.factory 'rmapsMap',
-  (rmapsMapFactoryLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
+  (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
   rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger) ->
 
-    $log = rmapsMapFactoryLogger
+    $log = nemSimpleLogger.spawn("map:factory")
     testLogger = rmapsMapTestLogger
 
     _initToggles = ($scope, toggles) ->

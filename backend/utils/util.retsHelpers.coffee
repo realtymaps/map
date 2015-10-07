@@ -30,6 +30,7 @@ _getRetsClientInternal = (loginUrl, username, password, static_ip) ->
 # reference counting memoize
 _getRetsClientInternal = memoize _getRetsClientInternal,
   refCounter: true
+  primitive: true
   dispose: (promise) ->
     promise.then (retsClient) ->
       logger.debug 'Logging out client', retsClient?.urls?.Logout

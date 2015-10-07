@@ -12,6 +12,14 @@ execQ = (q, doLogQuery) ->
   logQuery q, doLogQuery
   q
 
+withSafeEntity = (entity, safe, cb, skipSafeError) ->
+  if entity? and !safe
+    throw new Error('safe must be defined if entity is defined') unless skipSafeError
+  if entity? and safe?.length
+    throw new Error('safe must be Array type') unless _.isArray safe
+    entity = _.pick(entity, safe)
+  cb(entity or {}, safe)
+
 class Crud extends BaseObject
   constructor: (@dbFn, @idKey = 'id') ->
     super()
@@ -22,40 +30,32 @@ class Crud extends BaseObject
     obj[@idKey] = val
     obj
 
-  withSafeEntity = (entity, safe, cb, skipSafeError) ->
-    if entity? and !safe
-      throw new Error('safe must be defined if entity is defined') unless skipSafeError
-    if entity? and safe?.length
-      throw new Error('safe must be Array type') unless _.isArray safe
-      entity = _.pick(entity, safe)
-    cb(entity or {}, safe)
+  getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
+    fnExec @dbFn().where(query), doLogQuery
 
-  getAll: (query = {}, doLogQuery = false) ->
-    execQ @dbFn().where(query), doLogQuery
-
-  getById: (id, doLogQuery = false, entity, safe) ->
+  getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      execQ @dbFn().where(_.extend @idObj(id), entity), doLogQuery
+      fnExec @dbFn().where(_.extend @idObj(id), entity), doLogQuery
 
-  update: (id, entity, safe, doLogQuery = false) ->
+  update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      execQ @dbFn().where(@idObj(id)).update(entity), doLogQuery
+      fnExec @dbFn().where(@idObj(id)).update(entity), doLogQuery
     , true
 
-  create: (entity, id, doLogQuery = false, safe) ->
+  create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       # support entity or array of entities
       if _.isArray entity
-        execQ @dbFn().insert(entity), doLogQuery
+        fnExec @dbFn().insert(entity), doLogQuery
       else
         obj = {}
         obj = @idObj id if id?
-        execQ @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+        fnExec @dbFn().insert(_.extend {}, entity, obj), doLogQuery
     , true
 
-  delete: (id, doLogQuery = false, entity, safe) ->
+  delete: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      execQ @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
+      fnExec @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
@@ -158,3 +158,4 @@ module.exports =
   hasManyCrud: factory HasManyCrud
   ThenableHasManyCrud: ThenableHasManyCrud
   thenableHasManyCrud: factory ThenableHasManyCrud
+  withSafeEntity:withSafeEntity
