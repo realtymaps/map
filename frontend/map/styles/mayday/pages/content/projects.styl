@@ -1,16 +1,39 @@
+#projects
+  @extends .font-regular
+  @extends .table-view
+
 #projects-list
+  @extends .font-regular
+
+  *
+    transition none
+
+  h3, .fa
+    color $black
+
+  .back-button
+    position absolute
+    left -10px
+    top 25px
+    color $light_blue
+
+  .fa, .icon, .btn
+    margin .25em
 
   .collapse-header
     overflow hidden
-    border-bottom 1px solid $gray_ligther
     cursor pointer
     &:hover
     &:active
       background $light_blue_select
 
+  .projects-list
+    .collapse-header
+      border-bottom 1px solid $gray_ligther
+
   .data
     overflow hidden
-    border-bottom 4px solid $gray_ligther
+    // border-bottom 4px solid $gray_ligther
 
     .property
       margin-bottom 10px
@@ -40,6 +63,12 @@
       .tools
         text-align right
         padding 5px 0
+
+  .project-tools
+    position absolute
+    right 15px
+    top .5em
+    padding 5px 0
 
   ul
     li.client

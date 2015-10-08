@@ -183,11 +183,12 @@ button
     border 1px solid $black_20
     &.active
     &:hover
-    &:active
+    &:active, &:active > *
       box-shadow 0 0 0 $black_0
       background $light_blue
       color $white
       border-color $blue
+
 
   &.btn-transparent
     background-color $white_90

@@ -10,9 +10,6 @@ module.exports = (app) ->
       $scope.JSONData = data
       $scope.singleProperty = $scope.JSONData[$routeParams.id]
 
-  .controller 'rmapsProjectsCtrl', ($scope, $http, $routeParams) ->
-    $scope.activeView = 'projects'
-
   .controller 'rmapsNeighbourhoodsCtrl', ($scope, $http, $routeParams) ->
     $scope.activeView = 'neighbourhoods'
 
