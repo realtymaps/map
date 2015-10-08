@@ -74,8 +74,8 @@ fi
 START_TIME=`date '+%s'`
 echo "CLONE: cloning from $SRC_DB to $DST_DB"
 
-echo $DUMP_COMMAND
-echo $RESTORE_COMMAND
+# echo $DUMP_COMMAND
+# echo $RESTORE_COMMAND
 
 $DUMP_COMMAND | $RESTORE_COMMAND
 END_TIME=`date '+%s'`
