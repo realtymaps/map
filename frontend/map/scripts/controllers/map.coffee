@@ -22,8 +22,8 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal, $q, rmapsMap,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects, rmapsProfilesService,
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
@@ -37,10 +37,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   #end inits
 
   rmapssearchbox('mainMap')
-
-  $rootScope.registerScopeData () ->
-    rmapsprincipal.getIdentity()
-    .then $scope.loadIdentity
 
   $scope.loadIdentity = (identity) ->
     $scope.projects = identity.profiles
@@ -69,13 +65,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      $http.put(backendRoutes.userSession.profiles, _.pick($scope.selectedProfile, ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']))
-      .then () ->
-        # Set the current profile
-        $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
-      .then () ->
-        # Set the current profile
-        rmapsprincipal.getCurrentProfile(profile.id)
+      rmapsProfilesService.setCurrent($scope.selectedProfile)
       .then () ->
         deferred.resolve()
     else
@@ -158,6 +148,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     rmapsProjects.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
+
+  #this kicks off eveything and should be called last
+  $rootScope.registerScopeData () ->
+    rmapsprincipal.getIdentity()
+    .then $scope.loadIdentity
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
