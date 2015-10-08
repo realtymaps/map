@@ -2,7 +2,11 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 
 app.controller 'rmapsJobsHistoryCtrl',
-($window, $scope, $rootScope, rmapsJobsService, uiGridConstants, $state) ->
+($window, $scope, $rootScope, $log, rmapsJobsService, uiGridConstants, $state) ->
+
+  $scope.currentTaskData =
+    task: null
+  $scope.currentJobList = []
 
   numericDefaults =
     type: 'number'
@@ -100,11 +104,27 @@ app.controller 'rmapsJobsHistoryCtrl',
     ], (num) ->
       _.extend num, numericDefaults
 
+  $scope.selectJob = () ->
+    $state.go($state.current, { task: $scope.currentTaskData.task }, { reload: true })
+
   $scope.loadHistory = (task) ->
     $scope.jobsBusy = rmapsJobsService.getHistory(task)
     .then (history) ->
       $scope.jobsGrid.data = history.plain()
 
+  $scope.getHistoryList = () ->
+    $scope.jobsBusy = rmapsJobsService.getCurrent()
+    .then (currentJobList) ->
+      $scope.currentJobList = currentJobList
+      $log.debug "#### tasklist:"
+      $log.debug $scope.currentJobList.plain()
+
+  $scope.loadReadyHistory = () ->
+    $scope.getHistoryList()
+    .then () ->
+      if $state.params.task
+        $scope.currentTaskData.task = _.find $scope.currentJobList, { task: $state.params.task }
+        $scope.loadHistory($state.params.task)
+
   $rootScope.registerScopeData () ->
-    if $state.params.task
-      $scope.loadHistory($state.params.task)
+    $scope.loadReadyHistory()

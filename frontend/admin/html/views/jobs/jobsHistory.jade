@@ -1,2 +1,7 @@
+.row.form-group
+  .col-md-4
+    select(ng-model="currentTaskData.id" ng-options="label for value in currentJobList" ng-change="selectJob()")
+      option(value="all") All
+  .col-md-8
 .jobs-grid(cg-busy="jobsBusy" ng-show="$state.params.task" ui-grid="jobsGrid" ui-grid-resize-columns ui-grid-pinning)
 .warn(ng-show="!$state.params.task") No task selected.
