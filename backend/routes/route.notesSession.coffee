@@ -7,6 +7,7 @@ notesSvc = (require '../services/services.user').notes
 auth = require '../utils/util.auth.coffee'
 _ = require 'lodash'
 {crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
+userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 
 safeQuery = ['id', 'auth_user_id', 'text', 'geom_point_json', 'title', 'project_id', 'rm_property_id']
 
@@ -14,18 +15,11 @@ safeQuery = ['id', 'auth_user_id', 'text', 'geom_point_json', 'title', 'project_
 TODO: Add double security to make sure that users can not cross edit notes they do not own or do not have perms too
 ###
 class NotesSessionCrud extends Crud
+  @include userExtensions.route
   init: ->
     super()
     @safe = safeQuery
-
-  withUser: (req, toExtend, cb) =>
-    return @onError('User not logged in') unless req.user
-    unless toExtend
-      toExtend = req.query or {}
-    cb = toExtend if _.isFunction toExtend
-
-    _.extend toExtend, auth_user_id: req.user.id
-    cb(toExtend)
+    @doLogQuery = true
 
   rootGET: (req, res, next) =>
     logger.debug "rootGet of notes"
@@ -35,7 +29,6 @@ class NotesSessionCrud extends Crud
       super(req, res, next)
 
   rootPOST: (req, res, next) =>
-    @doLogQuery = true
     @withUser req, req.body, =>
       if req.body?.geom_point_json?
         req.body.geom_point_json.crs = crsFactory()
@@ -58,7 +51,6 @@ class NotesSessionCrud extends Crud
       .catch _.partial(@onError, next)
 
   byIdPUT: (req, res, next) =>
-    @doLogQuery = true
     @withUser req, req.body, =>
       if req.body?.geom_point_json?
         req.body.geom_point_json.crs = crsFactory()

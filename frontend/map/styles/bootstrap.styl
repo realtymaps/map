@@ -6,14 +6,10 @@ input.btn.btn-primary
 /*
 set all page h tag overrides
 */
-for num in (1...7)
-  h{num}
-    color $textColor
+$fnSetHeaders($textColor)
 
 main
-  for num in (1...7)
-    h{num}
-      color $black
+  $fnSetHeaders($black)
 
   div, p, span
     color $black

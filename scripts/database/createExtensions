@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+#https://realtymaps.atlassian.net/wiki/display/NDS/Database+Setup
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis;"
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_topology;"
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION fuzzystrmatch;"
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION postgis_tiger_geocoder;"
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION pg_trgm;"
+psql -d realtymaps_property_dev -U superdev -c "CREATE EXTENSION tablefunc;"
