@@ -6,6 +6,7 @@ mod.service 'rmapsRunnerHelpers', ($rootScope, $timeout, rmapsprincipal, rmapsev
       $timeout () ->
         while $rootScope.stateData.length
           $rootScope.stateData.pop()()
+      , 100
 
     # Since controller logic is evaluated when accessing the respective states (like via navbar)
     #   we need to register any controller logic that involves things like API calls that require auth.
