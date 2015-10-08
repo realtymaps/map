@@ -1,16 +1,21 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']
 
-app.service 'rmapsProjectsService', ($http, rmapsprincipal) ->
-  save: (projectName) ->
-    $http.post backendRoutes.userSession.newProject, projectName: projectName
-    .then ({data}) ->
-      rmapsprincipal.setIdentity data.identity
-      data
 
-  archive: (project) ->
-    project.project_archived = !project.project_archived
-    $http.put backendRoutes.user_projects.root + "/#{project.project_id}",
-      id: project.project_id
-      name: project.project_name
-      archived: project.project_archived
+app.service 'rmapsCurrentProfilesService', ($http) ->
+  setCurrent: (id) ->
+    $http.post(backendRoutes.userSession.currentProfile, currentProfileId: id)
+
+app.service 'rmapsProfilesService', ($http, rmapsprincipal, rmapsCurrentProfilesService) ->
+  _currentProfSvc = rmapsCurrentProfilesService
+
+  _update = (selectedProfile) ->
+    $http.put(backendRoutes.userSession.profiles,_.pick(selectedProfile, _updateProfileAttrs))
+
+  setCurrent: (selectedProfile) ->
+    _update(selectedProfile)
+    .then () ->
+      _currentProfSvc.setCurrent(selectedProfile.id)
+    .then () ->
+      rmapsprincipal.getCurrentProfile(selectedProfile.id)

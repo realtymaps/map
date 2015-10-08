@@ -23,7 +23,7 @@ module.exports = app
 #])
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProfilesService, rmapsProjectsService,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects, rmapsProfilesService,
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
@@ -40,14 +40,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
 
   $scope.loadIdentity = (identity) ->
     $scope.projects = identity.profiles
-    $scope.projectsTotal = (_.keys $scope.projects).length
-    _.each $scope.projects, (project) ->
-      project.totalProperties = (_.keys project.properties_selected).length
 
     rmapsprincipal.getCurrentProfile()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->
+      $scope.totalProfiles = (_.keys identity.profiles).length
+      _.each $scope.projects, (project) ->
+        project.totalProperties = (_.keys project.properties_selected).length
       $scope.loadProfile uiProfile(identity)
 
     if not identity?.currentProfileId
@@ -125,6 +125,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
   $scope.projectDropdown = isOpen: false
 
   $scope.addProject = () ->
+    $scope.newProject = {}
+
     modalInstance = $modal.open
       animation: true
       scope: $scope
@@ -137,12 +139,13 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      rmapsProjectsService.save newProject.name.value
-      .then (data) ->
-        $scope.loadIdentity data.identity
+      rmapsProjects.createProject newProject
+      .then (response) ->
+        rmapsprincipal.setIdentity response.data.identity
+        $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    rmapsProjectsService.archive project
+    rmapsProjects.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
 

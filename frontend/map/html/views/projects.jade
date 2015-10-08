@@ -1,77 +1,56 @@
-#projects-list.content-section-container(ng-class="{active:isActive('projects')}")
-    .desktop-view
-        header
-            a(class="btn btn-default back" href="#map")
-                span.icon.icon-remove
-        .inner
-            .container
-                .row
-                    .col-md-3.navbar
-                        include ../includes/_sidebar.jade
-                    .col-md-9.content
-                        h2.title My Projects ({{projectsArray.length}})
-                        .row
-                            div.col-md-12
-                                ul.projects-list(ng-controller="CollapseCtrl")
-                                    li(ng-repeat="enity in projectsArray" ng-click="selectProject($index)")
-                                        div.collapse-header(ng-click="isCollapsed = !isCollapsed")
-                                            h2.title {{enity.title}}
-                                            div.tools
-                                                button(class="btn btn-white") Add Client
-                                                button(class="btn btn-white") Archive Project
-                                        div.data(collapse="isCollapsed")
-                                            ul.clients
-                                                li(class="client" ng-repeat="client in enity.clients")
-                                                    h3 Client
-                                                    div.tools
-                                                        button(class="btn btn-link") Edit
-                                                        button(class="btn btn-link") Remove
-                                                    div.row
-                                                        div.col-md-6
-                                                            span.label Name
-                                                            span {{client.name}}
-                                                            span.label Phone (Cell)
-                                                            span {{client.phonecell}}
-                                                            span.label Email
-                                                            span {{client.email}}
-                                                        div.col-md-6
-                                                            span.label Address
-                                                            span {{client.address}}
-                                                            span.label Phone (Work)
-                                                            span {{client.phonework}}
-
-                                            h3 Property Info
-                                            div.row.property
-                                                .col-md-6.price
-                                                    span.value $80,0000 - $100,000
-                                                    span.small Price
-                                                .col-md-2
-                                                    span.value 3
-                                                    span.small Beds
-                                                .col-md-2
-                                                    span.value 3+
-                                                    span.small Bath
-                                                .col-md-2
-                                                    span.value 1334
-                                                    span.small Sq Ft
-    .mobile-view
-        header
-            | mobile
-        .inner
-            .container
-                .row
-                    .col-md-12
-                        ul.projects-list
-                            li(ng-repeat="enity in projectsArray" ng-click="selectProject($index)")
-                                h2.title {{enity.title}}
-                                div.tools
-                                    a(href="#/project/{{enity.id}}") Next
-                                ul.data
-                                    li
-                                        a(href="#neighbourhoods") {{enity.neighborhoods.length}} Neighborhoods
-                                    li
-                                        a(href="#properties") {{enity.properties.length}} Properties
-                                    li
-                                        a(href="#clients") {{enity.clients.length}} Clients
-                                    li
-                                        a(href="#notes") {{enity.notes.length}} Notes
+#projects
+  .inner
+    .container
+      header.row
+        .col-md-8
+          h1.pageTitle Projects
+          p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighborhoods, and clients.
+        .col-md-4.text-right
+          .tools
+            input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
+            span.divider
+              button.btn.btn-primary(ng-click="addProject()") Create
+      .row
+        .col-md-12
+          table.table.table-hover
+            thead
+              tr
+                th.select
+                  input(type="checkbox" name="selectAll")
+                th
+                  span Title
+                th
+                  span Pins
+                th
+                  span Neighborhoods
+                th
+                  span Favorites
+                th
+                  span Notes
+                th
+                  span Clients
+                th
+                  span Created
+                th.col-md-1
+                  span
+            tbody
+              tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'" ui-sref="project({id: {{project.id}}})")
+                td.select
+                  input(type="checkbox" name="selectGroup_{{$index}}")
+                td
+                  h4 {{project.name}}
+                  a.details(ui-sref="project({id: {{project.id}}})" title="View details") View Details
+                td
+                  span {{project.pins.length}}
+                td
+                  span {{project.neighborhoods.length}}
+                td
+                  span {{project.favorites.length}}
+                td
+                  span {{project.notes.length}}
+                td
+                  span {{project.clients.length}}
+                td
+                  span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
+                td.col-md-1
+                  button.btn.btn-white(ui-sref="map({project: {{project.id}}})" ng-click="$event.stopPropagation()") View Map
