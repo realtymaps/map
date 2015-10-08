@@ -37,10 +37,6 @@ app.controller 'rmapsCountyCtrl',
     name: 'Deed'
   ]
 
-  $scope.statusOptions = _.values rmapsParcelEnums.status
-
-  $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
-
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
     $scope.targetCategories = _.map rmapsParcelEnums.categories[dataSourceType][dataListType], (label, list) ->
@@ -86,7 +82,8 @@ app.controller 'rmapsCountyCtrl',
         addBaseRule rule
 
     # Save base rules
-    $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base
+    if 'base' of $scope.categories
+      $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base
 
   # Handles parsing RETS fields for display
   parseFields = (fields) ->
@@ -103,8 +100,8 @@ app.controller 'rmapsCountyCtrl',
       rule.config = _.defaults rule.config ? {}, DataType: field.DataType
       validatorBuilder.buildDataRule rule
       true
-
-    _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
+    if 'base' of $scope.categories
+      _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
 
   # Show field options
   $scope.selectField = (field) ->
@@ -184,7 +181,7 @@ app.controller 'rmapsCountyCtrl',
     saveRule(field)
 
   updateAssigned = (rule, removed) ->
-    if $scope.baseRules[rule.output].group
+    if rule.output of $scope.baseRules && $scope.baseRules[rule.output].group
       delete allRules[removed]?.assigned
       if _.isString rule.input
         allRules[rule.input]?.assigned = true
