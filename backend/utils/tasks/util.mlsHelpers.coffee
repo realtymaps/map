@@ -16,20 +16,22 @@ retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 
 
-_arrayToDbStreamer = (objects, fields) ->
+_arrayToDbIterativeStreamer = (iterations, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-  # first.  Eventually, we can rewrite the rets-promise client to use a streaming xml parser
+  # first.  Eventually, we can rewrite rets-client to use a streaming xml parser
   # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
+  fieldNames = Object.keys(fields)
+  pgTextStreamer = utilStreams.objectsToPgText(fields)
   (tableName, promiseQuery, streamQuery) ->
-    promiseQuery dataLoadHelpers.createRawTempTable(tableName, Object.keys(fields))
+    copyStart = "COPY \"#{tableName}\" (\"#{fieldNames.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+    promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fieldNames))
     .then () -> new Promise (resolve, reject) ->
-      copyStart = "COPY \"#{tableName}\" (\"#{Object.keys(fields).join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
       rawDataStream = streamQuery(copyStream.from(copyStart))
       rawDataStream.on('finish', resolve)
       rawDataStream.on('error', reject)
       # stream from array to object serializer stream to COPY FROM
       from(objects)
-      .pipe utilStreams.objectsToPgText(_.mapValues(fields, 'SystemName'))
+      .pipe(pgTextStreamer)
       .pipe(rawDataStream)
     .then () ->
       objects.length
@@ -53,22 +55,23 @@ loadUpdates = (subtask, options) ->
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsHelpers.getDataDump(mlsInfo, null, refreshThreshold)
-      .then (results) ->
-        if !results?.length
-          # nothing to do, GTFO
-          logger.info("No data updates for #{subtask.task_name}.")
-          return
-        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-        # on whether this is a dump or an update)
-        deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
-        finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
-
-        handleDataPromise = retsHelpers.getColumnList(mlsInfo, mlsInfo.listing_data.db, mlsInfo.listing_data.table)
-        .then (fieldInfo) ->
-          fields = _.indexBy(fieldInfo, 'LongName')
+      retsHelpers.getIterativeDataDump(mlsInfo, null, refreshThreshold)
+      .then (dump) ->
+        # go ahead and wait on the first so we can know if there's anything to process
+        dump.iterations[0]
+        .then (initialResults) ->
+          if !initialResults.length
+            # nothing to do, GTFO
+            logger.info("No data updates for #{subtask.task_name}.")
+            return
+          # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
+          # on whether this is a dump or an update)
+          deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+          recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
+          finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
+          activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
+  
+          fields = _.indexBy(dump.columns, 'LongName')
           rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
           dataLoadHistory =
             data_source_id: options.dataSourceId
@@ -76,11 +79,11 @@ loadUpdates = (subtask, options) ->
             data_type: 'listing'
             batch_id: subtask.batch_id
             raw_table_name: rawTableName
-          dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbStreamer(results, fields))
+          handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbIterativeStreamer(dump.iterations, fields))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-        Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
-          return numRawRows
+          Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
+            return numRawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 

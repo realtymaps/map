@@ -157,7 +157,7 @@
     "readable-stream": "^1.0.32",
     "require-dir": "^0.1.0",
     "require-directory": "^2.1.1",
-    "rets-client": "git://github.com/sbruno81/rets-client.git#2.0.0-unstable",
+    "rets-client": "^2.0.0",
     "rework-plugin-url": "^1.0.1",
     "rimraf": "^2.4.3",
     "serve-favicon": "2.1.x",

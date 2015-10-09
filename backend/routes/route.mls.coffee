@@ -89,23 +89,18 @@ module.exports =
           validation.validateAndTransform(req.query, validations)
           .then (result) ->
             limit = result.limit
-            retsHelpers.getDataDump mlsConfig, limit
-            .then (rawList) ->
+            retsHelpers.getDataDump(mlsConfig, limit, 0, true)
+            .then (dump) ->
               # incoming column names can be arcane and technical, let's humanize them
-              humanList = []
-              retsHelpers.getColumnList mlsConfig, mlsConfig.listing_data.db, mlsConfig.listing_data.table
-              .then (fields) ->
-                # map the arcane (system) field names to human readable (longname) names
-                readableMap = {}
-                for field in fields
-                  readableMap[field.SystemName] = field.LongName
-                # populate human list with mapped names
-                humanList = ((_.mapKeys row, (v, k) -> return readableMap[k]) for row in rawList)
-
-              .then (humanList) ->
-                resObj = new ExpressResponse(humanList)
-                resObj.format = 'csv'
-                next resObj
+              # map the arcane (system) field names to human readable (longname) names
+              readableMap = {}
+              for field in dump.columns
+                readableMap[field.SystemName] = field.LongName
+              # populate human list with mapped names
+              humanList = ((_.mapKeys row, (v, k) -> return readableMap[k]) for row in dump.results)
+              resObj = new ExpressResponse(humanList)
+              resObj.format = 'csv'
+              next resObj
           .catch (error) ->
             next new ExpressResponse
               alert:

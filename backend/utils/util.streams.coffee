@@ -27,8 +27,9 @@ objectsToPgText = (fields, _options={}) ->
     encoding: 'utf-8'
   options = _.extend({}, defaults, _options)
   write = (obj) ->
-    parts = _.map fields, (systemKey) ->
-      val = obj[systemKey]
+    parts = []
+    for field in fields
+      val = obj[field.SystemName]
       if !val?
         return options.null
       else
