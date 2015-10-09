@@ -1,8 +1,0 @@
-div()
-  span
-    section center: {{$parent.$parent.$parent.center}}
-    section zoom: {{$parent.$parent.$parent.zoom}}
-    section zoomLevel: {{$parent.$parent.$parent.zoomLevel}}
-    section disableDoubleClickZoom: {{$parent.$parent.$parent.$parent.options.disableDoubleClickZoom}}
-    section Saved Properties:
-      div(ng-repeat="prop in $parent.$parent.$parent.savedProperties") {{prop.rm_property_id}}

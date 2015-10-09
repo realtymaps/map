@@ -10,7 +10,7 @@ tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 cols =  [
-  "#{tables.user.profile.tableName}.id as id", 'auth_user_id',
+  "#{tables.user.profile.tableName}.id as id", "#{tables.user.profile.tableName}.auth_user_id as auth_user_id",
   'filters', 'properties_selected', 'map_toggles',
   'map_position', 'map_results','parent_auth_user_id',
   "#{tables.user.profile.tableName}.rm_modified_time as rm_modified_time",
@@ -76,7 +76,7 @@ getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
     if withProject and hasAProject
       q =  tables.user.profile().select(cols...).leftJoin(tables.user.project.tableName,
       tables.user.project.tableName + '.id', tables.user.profile.tableName + '.project_id')
-      .where(auth_user_id: auth_user_id)
+      .where("#{tables.user.profile.tableName}.auth_user_id": auth_user_id)
       # logger.debug q.toString()
       return q
 

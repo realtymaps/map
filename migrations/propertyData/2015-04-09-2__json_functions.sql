@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS geojson_query(text,text,text);
+
 CREATE OR REPLACE FUNCTION geojson_query(tableName TEXT,columnName TEXT, limitVal TEXT) RETURNS TEXT AS
   $$
   DECLARE

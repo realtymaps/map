@@ -1,14 +1,14 @@
 .normalize-container
 
   .row.mls-select
-    .col-md-3 Select {{countyData.dataSourceType.name}} Source
+    .col-md-4 Select {{countyData.dataSourceType.name}} Source
       select(ng-model="countyData.current" ng-options="value.name + ' (' + value.id + ')' for value in countyConfigs" ng-change="selectCounty()")
         option(value="" disabled)
       .btn.btn-primary.reload(ng-click="getCountyList()")
         img(src="../../assets/reload-arrow.png" width="10" height="10")
     .col-md-3 Select List Type
       select(ng-model="countyData.dataListType" ng-options="value.name for value in dataListTypes" ng-change="selectCounty()")
-    .col-md-6
+    .col-md-5
 
   .row.panel(cg-busy="countyLoading" ng-show="countyData.current && countyData.dataListType")
 
@@ -17,6 +17,8 @@
     .col-md-2.list-container
       h4 Filters
       .field-container(cg-busy="baseLoading")
+        .placeholder-field(ng-hide="categories.base")
+          span No Base Filters
         .field.base(
         ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
         ng-click="selectField(item)"
