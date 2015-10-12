@@ -1,3 +1,4 @@
+_ = require 'lodash'
 logger = require '../config/logger'
 auth = require '../utils/util.auth'
 rulesService = require '../services/service.dataSourceRules'
@@ -6,50 +7,66 @@ crudHelpers = require '../utils/crud/util.crud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 
 
-class RuleCrud extends crudHelpers.Crud
+class RuleRouteCrud extends crudHelpers.Crud
   getRules: (req, res, next) =>
     logger.debug "#### getRules()"
     logger.debug "req.params:"
     logger.debug JSON.stringify(req.params)
     @svc.getRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
+    .then (d) ->
+      logger.debug "#### then(), d:"
+      logger.debug JSON.stringify(d)
+      d
+    .catch _.partial(@onError, next)
 
   createRules: (req, res, next) =>
     @svc.createRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
+    .catch _.partial(@onError, next)
 
   putRules: (req, res, next) =>
     @svc.putRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
+    .catch _.partial(@onError, next)
 
   deleteRules: (req, res, next) =>
     @svc.deleteRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
+    .catch _.partial(@onError, next)
+
 
   getListRules: (req, res, next) =>
     @svc.getListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
+    .catch _.partial(@onError, next)
 
   createListRules: (req, res, next) =>
     @svc.createListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
+    .catch _.partial(@onError, next)
 
   putListRules: (req, res, next) =>
     @svc.putListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
+    .catch _.partial(@onError, next)
 
   deleteListRules: (req, res, next) =>
     @svc.deleteListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
+    .catch _.partial(@onError, next)
 
 
   getRule: (req, res, next) =>
     @svc.getRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
+    .catch _.partial(@onError, next)
 
   updateRule: (req, res, next) =>
     @svc.updateRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering, req.body
+    .catch _.partial(@onError, next)
 
   deleteRule: (req, res, next) =>
     @svc.deleteRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
+    .catch _.partial(@onError, next)
 
 
 
+#RuleRouteCrud = crudHelpers.wrapRoutesTrait RuleCrud
 
 
-
-module.exports = routeHelpers.mergeHandles new RuleCrud(rulesService),
+module.exports = routeHelpers.mergeHandles new RuleRouteCrud(rulesService),
   getRules:
     methods: ['get']
     middleware: [
