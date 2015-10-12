@@ -6,6 +6,7 @@ app.controller 'rmapsJobsHistoryCtrl',
 
   $scope.currentTaskData =
     task: null
+
   $scope.currentJobList = []
 
   numericDefaults =
@@ -105,7 +106,9 @@ app.controller 'rmapsJobsHistoryCtrl',
       _.extend num, numericDefaults
 
   $scope.selectJob = () ->
-    $state.go($state.current, { task: $scope.currentTaskData.task }, { reload: true })
+    $log.debug "#### selectJob(), currentTaskData"
+    $log.debug $scope.currentTaskData
+    $state.go($state.current, { task: $scope.currentTaskData.task.name }, { reload: true })
 
   $scope.loadHistory = (task) ->
     $scope.jobsBusy = rmapsJobsService.getHistory(task)
@@ -122,6 +125,8 @@ app.controller 'rmapsJobsHistoryCtrl',
   $scope.loadReadyHistory = () ->
     $scope.getHistoryList()
     .then () ->
+      $log.debug "#### $state.params:"
+      $log.debug $state.params
       if $state.params.task
         $scope.currentTaskData.task = _.find $scope.currentJobList, { task: $state.params.task }
         $scope.loadHistory($state.params.task)

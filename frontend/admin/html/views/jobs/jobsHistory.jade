@@ -1,6 +1,6 @@
 .row.form-group
   .col-md-4
-    select(ng-model="currentTaskData.id" ng-options="label for value in currentJobList" ng-change="selectJob()")
+    select(ng-model="currentTaskData.task" ng-options="value.name for value in currentJobList track by value.name" ng-change="selectJob()")
       option(value="all") All
   .col-md-8
 .jobs-grid(cg-busy="jobsBusy" ng-show="$state.params.task" ui-grid="jobsGrid" ui-grid-resize-columns ui-grid-pinning)
