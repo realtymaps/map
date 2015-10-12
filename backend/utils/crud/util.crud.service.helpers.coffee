@@ -1,5 +1,5 @@
 logger = require '../../config/logger'
-{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
 factory = require '../util.factory'

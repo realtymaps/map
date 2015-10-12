@@ -9,6 +9,7 @@ _ = require 'lodash'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 dbs = require '../../config/dbs'
+{HardFail, SoftFail} = require '../errors/util.error.jobQueue'
 
 
 DELETE =
@@ -62,7 +63,7 @@ recordChangeCounts = (subtask) ->
       .limit(1)
       .then (row) ->
         if !row?[0]?
-          throw new jobQueue.HardFail("operation would delete all active rows for #{subtask.task_name}")
+          throw new HardFail("operation would delete all active rows for #{subtask.task_name}")
       .then () ->
         # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
         # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update

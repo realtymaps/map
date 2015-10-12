@@ -4,7 +4,7 @@ logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
 ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
-{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = '') ->

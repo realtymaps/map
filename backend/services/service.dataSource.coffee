@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-errorLib = require '../utils/util.partiallyHandledError'
+errorLib = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 logger = require '../config/logger'
 require '../config/promisify'

@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 dbs = require '../../config/dbs'
 sqlHelpers = require '../util.sql.helpers'
 require '../../../common/extensions/strings'

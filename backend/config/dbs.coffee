@@ -3,7 +3,7 @@ pg = require 'pg'
 Promise = require 'bluebird'
 config = require './config'
 logger = require './logger'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 do require '../../common/config/dbChecker.coffee'
 
 

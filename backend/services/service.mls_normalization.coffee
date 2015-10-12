@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 

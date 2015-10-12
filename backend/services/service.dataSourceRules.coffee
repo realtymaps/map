@@ -1,6 +1,6 @@
 _ = require 'lodash'
 dbs = require '../config/dbs'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 
 

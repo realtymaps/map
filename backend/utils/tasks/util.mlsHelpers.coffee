@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled, isCausedBy} = require '../errors/util.error.partiallyHandledError'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
 utilStreams = require '../util.streams'
@@ -14,6 +14,8 @@ tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
+rets = require 'rets-client'
+{SoftFail} = require '../errors/util.error.jobQueue'
 
 
 _arrayToDbIterativeStreamer = (iterations, fields) ->
@@ -24,17 +26,27 @@ _arrayToDbIterativeStreamer = (iterations, fields) ->
   pgTextStreamer = utilStreams.objectsToPgText(fields)
   (tableName, promiseQuery, streamQuery) ->
     copyStart = "COPY \"#{tableName}\" (\"#{fieldNames.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+    total=0
+    doIterations = (index) ->
+      iterations[index]
+      .then (objects) ->
+        new Promise (resolve, reject) ->
+          rawDataStream = streamQuery(copyStream.from(copyStart))
+          rawDataStream.on('finish', resolve)
+          rawDataStream.on('error', reject)
+          # stream from array to object serializer stream to COPY FROM
+          from(objects)
+          .pipe(pgTextStreamer)
+          .pipe(rawDataStream)
+        .then () ->
+          total += objects.length
+          if index+1 >= iterations.length
+            total
+          else
+            doIterations(index+1)
     promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fieldNames))
-    .then () -> new Promise (resolve, reject) ->
-      rawDataStream = streamQuery(copyStream.from(copyStart))
-      rawDataStream.on('finish', resolve)
-      rawDataStream.on('error', reject)
-      # stream from array to object serializer stream to COPY FROM
-      from(objects)
-      .pipe(pgTextStreamer)
-      .pipe(rawDataStream)
     .then () ->
-      objects.length
+      doIterations(0)
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -56,9 +68,17 @@ loadUpdates = (subtask, options) ->
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
       retsHelpers.getIterativeDataDump(mlsInfo, null, refreshThreshold)
+      .catch isCausedBy(rets.RetsReplyError), (error) ->
+        if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
+          throw SoftFail(error, "Transient RETS error; try again later")
       .then (dump) ->
+        errorsPromise = dump.errors
+        .catch isCausedBy(rets.RetsReplyError), (error) ->
+          if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
+            throw new SoftFail(error, "Transient RETS error; try again later")
+
         # go ahead and wait on the first so we can know if there's anything to process
-        dump.iterations[0]
+        iterationsPromise = dump.iterations[0]
         .then (initialResults) ->
           if !initialResults.length
             # nothing to do, GTFO
@@ -82,8 +102,8 @@ loadUpdates = (subtask, options) ->
           handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbIterativeStreamer(dump.iterations, fields))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-          Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) ->
-            return numRawRows
+          Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) -> numRawRows
+        Promise.join iterationsPromise, errorsPromise, (rowCount) -> rowCount
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 

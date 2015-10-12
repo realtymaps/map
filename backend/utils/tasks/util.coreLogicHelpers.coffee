@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
 utilStreams = require '../util.streams'

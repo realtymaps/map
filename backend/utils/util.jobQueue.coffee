@@ -12,9 +12,10 @@ cluster = require 'cluster'
 memoize = require 'memoizee'
 config = require '../config/config'
 keystore = require '../services/service.keystore'
-{PartiallyHandledError, isUnhandled} = require './util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 TaskImplementation = require './tasks/util.taskImplementation'
 dbs = require '../config/dbs'
+{HardFail, SoftFail} = require './errors/util.error.jobQueue'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -22,14 +23,6 @@ dbs = require '../config/dbs'
 
 MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 sendNotification = notification('jobQueue')
-
-class SoftFail extends Error
-  constructor: (@message) ->
-    @name = 'SoftFail'
-
-class HardFail extends Error
-  constructor: (@message) ->
-    @name = 'HardFail'
 
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
@@ -302,7 +295,10 @@ executeSubtask = (subtask) ->
       subtaskPromise = subtaskPromise
       .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
       .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
-      .catch _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
+      .catch PartiallyHandledError, _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
+      .catch isUnhandled, (err) ->
+        logger.error("Unexpected error caught during job execution: #{err.stack||err}")
+        _handleSubtaskError(subtask, 'infrastructure fail', true, err)
       .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
         sendNotification
           subject: 'major db interaction problem'
@@ -323,16 +319,16 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+      logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
     else
       if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
         if subtask.hard_fail_after_retries
           hard = true
           status = 'hard fail'
-          error = "max retries exceeded: #{error}"
-          logger.error("Error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+          error = "max retries exceeded due to: #{error}"
+          logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
         else
-          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error.stack||error}")
+          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
@@ -341,9 +337,9 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         .then (taskData) ->
           # need to make sure we don't continue to retry subtasks if the task has errored in some way
           if taskData == undefined
-            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
             return
-          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error.stack||error}")
+          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
@@ -647,6 +643,4 @@ module.exports =
   queueSubsequentPaginatedSubtask: queueSubsequentPaginatedSubtask
   getSubtaskConfig: getSubtaskConfig
   runWorker: runWorker
-  SoftFail: SoftFail
-  HardFail: HardFail
   getLastTaskStartTime: getLastTaskStartTime
