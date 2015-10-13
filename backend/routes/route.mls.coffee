@@ -89,7 +89,7 @@ module.exports =
           validation.validateAndTransform(req.query, validations)
           .then (result) ->
             limit = result.limit
-            retsHelpers.getDataDump(mlsConfig, limit, 0, true)
+            retsHelpers.getDataDump(mlsConfig, limit, 0)
             .then (dump) ->
               # incoming column names can be arcane and technical, let's humanize them
               # map the arcane (system) field names to human readable (longname) names

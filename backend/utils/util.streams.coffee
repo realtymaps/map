@@ -29,7 +29,7 @@ objectsToPgText = (fields, _options={}) ->
   write = (obj) ->
     parts = []
     for field in fields
-      val = obj[field.SystemName]
+      val = obj[field]
       if !val?
         return options.null
       else

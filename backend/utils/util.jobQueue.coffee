@@ -608,7 +608,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       logger.debug "#{prefix} No subtask ready for execution; quiting."
       Promise.resolve()
     else
-      logger.debug "#{prefix} No subtask ready for execution; waiting..."
+      logger.debug "#{prefix} No subtask ready for execution; waiting...    #{JSON.stringify(require('util').inspect(process.memoryUsage()))}"
       Promise.delay(30000) # poll again in 30 seconds
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 

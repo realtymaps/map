@@ -22,31 +22,39 @@ _arrayToDbIterativeStreamer = (iterations, fields) ->
   # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
   # first.  Eventually, we can rewrite rets-client to use a streaming xml parser
   # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
-  fieldNames = Object.keys(fields)
-  pgTextStreamer = utilStreams.objectsToPgText(fields)
   (tableName, promiseQuery, streamQuery) ->
-    copyStart = "COPY \"#{tableName}\" (\"#{fieldNames.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
+    copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
     total=0
-    doIterations = (index) ->
-      iterations[index]
+    doIteration = () ->
+      iterations.shift()
       .then (objects) ->
+        logger.debug "@@@@@@@@@@@@@@@@ streaming #{objects.length} more rows (#{total} total)"
         new Promise (resolve, reject) ->
-          rawDataStream = streamQuery(copyStream.from(copyStart))
-          rawDataStream.on('finish', resolve)
-          rawDataStream.on('error', reject)
           # stream from array to object serializer stream to COPY FROM
           from(objects)
-          .pipe(pgTextStreamer)
-          .pipe(rawDataStream)
+          .pipe(utilStreams.objectsToPgText(fields))
+          .pipe(streamQuery(copyStream.from(copyStart)))
+          .on('finish', resolve)
+          .on('error', reject)
         .then () ->
           total += objects.length
-          if index+1 >= iterations.length
-            total
+    promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fields))
+    .then () -> new Promise (resolve, reject) ->
+      recurseIterations = () ->
+        doIteration()
+        .nodeify (err, result) ->
+          if err
+            logger.debug "----------------------- error: #{err}"
+            reject(err)
+          else if iterations.length
+            logger.debug "----------------------- continuing"
+            recurseIterations()
           else
-            doIterations(index+1)
-    promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fieldNames))
-    .then () ->
-      doIterations(0)
+            logger.debug "----------------------- result: #{total}"
+            resolve(total)
+        .catch () -> # noop
+        return undefined
+      recurseIterations()
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -91,7 +99,6 @@ loadUpdates = (subtask, options) ->
           finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
           activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
   
-          fields = _.indexBy(dump.columns, 'LongName')
           rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
           dataLoadHistory =
             data_source_id: options.dataSourceId
@@ -99,11 +106,13 @@ loadUpdates = (subtask, options) ->
             data_type: 'listing'
             batch_id: subtask.batch_id
             raw_table_name: rawTableName
-          handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbIterativeStreamer(dump.iterations, fields))
+          handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbIterativeStreamer(dump.iterations, dump.columns))
           .catch isUnhandled, (error) ->
             throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
           Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) -> numRawRows
-        Promise.join iterationsPromise, errorsPromise, (rowCount) -> rowCount
+        Promise.join iterationsPromise, errorsPromise, (rowCount) ->
+          console.log("^^^^^^^^ FINAL: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
+          rowCount
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 
