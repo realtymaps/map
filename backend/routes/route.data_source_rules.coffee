@@ -7,7 +7,7 @@ crudHelpers = require '../utils/crud/util.crud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 
 
-class RuleRouteCrud extends crudHelpers.Crud
+class RuleCrud extends crudHelpers.Crud
   getRules: (req, res, next) =>
     logger.debug "#### getRules()"
     logger.debug "req.params:"
@@ -63,7 +63,7 @@ class RuleRouteCrud extends crudHelpers.Crud
 
 
 
-#RuleRouteCrud = crudHelpers.wrapRoutesTrait RuleCrud
+RuleRouteCrud = crudHelpers.wrapRoutesTrait RuleCrud
 
 
 module.exports = routeHelpers.mergeHandles new RuleRouteCrud(rulesService),
