@@ -12,7 +12,7 @@ module.exports =
 
   jobs: 'jobs'
   jobsCurrent: '/current'
-  jobsHistory: '/history?task'
+  jobsHistory: '/history?task=&current=&timerange='
   jobsHealth: '/health'
   jobsQueue: '/queue'
   jobsTask: '/task'

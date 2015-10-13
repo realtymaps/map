@@ -125,44 +125,51 @@ healthDbFn = () ->
 
 historyDbFn = () ->
   _queryFn = (query = {}) ->
-    logger.debug "#### historyDbFn():"
-    logger.debug "query:"
-    logger.debug query
     dbquery = tables.jobQueue.taskHistory()
-    logger.debug "dbquery (initial):"
-    logger.debug dbquery.toString()
 
     _interval = '30 days'
     if query.timerange?
       if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
-        _interval = query.timerange
+        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
       delete query.timerange
 
-    logger.debug "_interval:"
-    logger.debug _interval
+    whereInterval = "now_utc() - started <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
 
-    if _interval != 'all'
-      whereInterval = "now_utc() - started <= interval '#{_interval}'"
-      logger.debug "dbquery (_interval):"
-      logger.debug dbquery.toString()
-
-      dbquery = dbquery.whereRaw(whereInterval)
-
-    logger.debug "dbquery 1:"
-    logger.debug dbquery.toString()
+    if query.name == 'All'
+      delete query.name
+      delete query.current # 'all' implies both current and non-current sets, so remove from query totally
 
     if query.list?
       if query.list == 'true'
         dbquery = dbquery.select('name', 'current').groupBy('name', 'current')
       delete query.list
 
-    logger.debug "dbquery 2:"
-    logger.debug dbquery.toString()
+    dbquery.where(query)
+
+  # "where" adaptor call for the above
+  _queryFn.where = (query = {}) ->
+    return _queryFn(query)
+
+  return _queryFn
+
+errorHistoryDbFn = () ->
+  _queryFn = (query = {}) ->
+    dbquery = tables.jobQueue.subtaskErrorHistory()
+
+    _interval = '30 days'
+    if query.timerange?
+      if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
+        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
+      delete query.timerange
+
+    whereInterval = "now_utc() - enqueued <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
+
+    if query.task_name == 'All'
+      delete query.task_name
 
     dbquery.where(query)
-    logger.debug "dbquery 3:"
-    logger.debug dbquery.toString()
-    dbquery
 
   # "where" adaptor call for the above
   _queryFn.where = (query = {}) ->
@@ -172,12 +179,14 @@ historyDbFn = () ->
 
 _summary = new JobService(tables.jobQueue.summary)
 _taskHistory = new JobService(historyDbFn, 'name')
+_subtaskErrorHistory = new JobService(errorHistoryDbFn, 'id')
 _queues = new TaskService(tables.jobQueue.queueConfig, 'name')
 _tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
 _subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
 
 module.exports =
   taskHistory: _taskHistory
+  subtaskErrorHistory: _subtaskErrorHistory
   queues: _queues
   tasks: _tasks
   subtasks: _subtasks
