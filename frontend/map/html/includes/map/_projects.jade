@@ -7,15 +7,15 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
     span.caret
   ul(class="dropdown-menu whiteblock no-margin")
     li.count
-      a(ng-show="projectsTotal == 1" href="{{frontendRoutes.projects}}") {{projectsTotal}} Project
-      a(ng-show="projectsTotal != 1" href="{{frontendRoutes.projects}}") {{projectsTotal}} Projects
+      a(ng-show="totalProfiles == 1" href="{{frontendRoutes.projects}}") {{totalProfiles}} Project
+      a(ng-show="totalProfiles != 1" href="{{frontendRoutes.projects}}") {{totalProfiles}} Projects
     li(ng-repeat="profile in projects| orderBy: '-project_archived'" ng-click="loadProfile(profile)" )
       a
         span.enity
           span.icon.icon-project
           span.title
             h3(ng-show="profile.project_name") {{profile.project_name}}
-            h3(ng-show="!profile.project_name") Sandbox ({{profile.name}})
+            h3(ng-show="!profile.project_name") Sandbox
             span.count {{profile.totalProperties}}
               span(ng-show="profile.totalProperties == 1")  Property
               span(ng-show="profile.totalProperties != 1")  Properties

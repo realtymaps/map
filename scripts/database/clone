@@ -11,6 +11,9 @@ cd "$DIR/.."
 # use "custom" pg_dump/pg_restore format, probably the most efficient and flexible
 DUMP_COMMAND="pg_dump -F c"
 
+# only dump from the public schema
+DUMP_COMMAND="$DUMP_COMMAND -n public"
+
 # dump from the source db
 SRC_URL=`./database/getDbUrl $1`
 SRC_DB=`./database/getDbName $1`
@@ -54,6 +57,12 @@ then
     RESTORE_COMMAND="$RESTORE_COMMAND -c"
     shift
 fi
+if [[ "$1" == "--manual" ]]
+then
+    # only echo the commands for manual execution
+    MANUAL="true"
+    shift
+fi
 
 
 ################################
@@ -67,12 +76,27 @@ fi
 
 
 
+if [[ "$MANUAL" == "true" ]]
+then
+    # echo and quit
+    echo "CLONE: dump: $DUMP_COMMAND > /var/tmp/rm_dump.db"
+    echo "CLONE: restore: $RESTORE_COMMAND < /var/tmp/rm_dump.db"
+    exit 0
+fi
+
+
 ######################
 ####### DO IT! #######
 ######################
 
 START_TIME=`date '+%s'`
 echo "CLONE: cloning from $SRC_DB to $DST_DB"
-$DUMP_COMMAND | $RESTORE_COMMAND
+
+echo "CLONE: doing dump: $DUMP_COMMAND > /var/tmp/rm_dump.db"
+$DUMP_COMMAND > /var/tmp/rm_dump.db
+MID_TIME=`date '+%s'`
+echo "CLONE: doing restore: $RESTORE_COMMAND < /var/tmp/rm_dump.db"
+$RESTORE_COMMAND < /var/tmp/rm_dump.db
 END_TIME=`date '+%s'`
-echo "CLONE: completed in $(( END_TIME - START_TIME ))s"
+echo "CLONE: time taken for dump: $(( MID_TIME - START_TIME ))s"
+echo "CLONE: time taken for restore: $(( END_TIME - MID_TIME ))s"

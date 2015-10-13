@@ -22,11 +22,13 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal, $q, rmapsMap,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects, rmapsProfilesService,
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
+
+  $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
   #ng-inits or inits
   #must be defined pronto as they will be skipped if you try to hook them to factories
   $scope.resultsInit = (resultsListId) ->
@@ -38,20 +40,16 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapssearchbox('mainMap')
 
-  $rootScope.registerScopeData () ->
-    rmapsprincipal.getIdentity()
-    .then $scope.loadIdentity
-
   $scope.loadIdentity = (identity) ->
     $scope.projects = identity.profiles
-    $scope.projectsTotal = (_.keys $scope.projects).length
-    _.each $scope.projects, (project) ->
-      project.totalProperties = (_.keys project.properties_selected).length
 
     rmapsprincipal.getCurrentProfile()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->
+      $scope.totalProfiles = (_.keys identity.profiles).length
+      _.each $scope.projects, (project) ->
+        project.totalProperties = (_.keys project.properties_selected).length
       $scope.loadProfile uiProfile(identity)
 
     if not identity?.currentProfileId
@@ -69,13 +67,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      $http.put(backendRoutes.userSession.profiles, _.pick($scope.selectedProfile, ['id', 'filters', 'map_position', 'map_results', 'map_toggles', 'properties_selected']))
-      .then () ->
-        # Set the current profile
-        $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
-      .then () ->
-        # Set the current profile
-        rmapsprincipal.getCurrentProfile(profile.id)
+      rmapsProfilesService.setCurrent($scope.selectedProfile)
       .then () ->
         deferred.resolve()
     else
@@ -123,7 +115,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
         rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
-        map = new rmapsMap($scope, rmapsMainOptions.map)
+        map = new rmapsMap($scope)
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
@@ -134,7 +126,12 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   $scope.projectDropdown = isOpen: false
 
+  $scope.enableNoteTap = ->
+    $scope.Toggles.enableNoteTap()
+
   $scope.addProject = () ->
+    $scope.newProject = {}
+
     modalInstance = $modal.open
       animation: true
       scope: $scope
@@ -147,19 +144,20 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      $http.post backendRoutes.userSession.newProject, projectName: newProject.name.value
+      rmapsProjects.createProject newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    project.project_archived = !project.project_archived
-    $http.put backendRoutes.user_projects.root + "/#{project.project_id}",
-      id: project.project_id
-      name: project.project_name
-      archived: project.project_archived
+    rmapsProjects.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
+
+  #this kicks off eveything and should be called last
+  $rootScope.registerScopeData () ->
+    rmapsprincipal.getIdentity()
+    .then $scope.loadIdentity
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

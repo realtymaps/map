@@ -7,6 +7,10 @@
 @import "./header/userblock"
 @import "./mobile-nav"
 
+#toast-container
+  position absolute
+  color $textColor
+
 html, body
   position absolute
   min-height: 100% !important
@@ -392,3 +396,8 @@ $fnFooterClose()
 
 $fnRevertToolbarPadding()
   padding: 0px 0px 0px 0px
+
+$fnSetHeaders(someColor)
+  for num in (1...7)
+    h{num}
+      color comeColor

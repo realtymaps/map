@@ -6,6 +6,11 @@ export GULP_COLOR="--color"
 for ((i=1; i<=$#; i++))
 do
     case "${!i}" in
+        --really-clean)
+            export DO_CACHE_CLEAN=true
+            DO_CLEAN=true
+            DO_INSTALL=true
+            ;;
         --clean)
             DO_CLEAN=true
             DO_INSTALL=true

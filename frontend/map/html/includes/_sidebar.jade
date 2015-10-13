@@ -1,13 +1,18 @@
 ul.nav
-  li(ng-class="{active:isActive('projects')}")
-    a(href="{{frontendRoutes.projects}}") Projects
-    span ({{projectsArray.length}})
-  li(ng-class="{active:isActive('neighbourhoods')}")
-    a(href="{{frontendRoutes.neighbourhoods}}") Neighbourhoods
-    span ({{neighbourhoodList.length}})
-  li(ng-class="{active:isActive('favorites')}")
-    a(href="{{frontendRoutes.favorites}}") Favorites
-    span ({{favorites.length}})
-  li(ng-class="{active:isActive('notes')}")
-    a(href="{{frontendRoutes.notes}}") Notes
-    span ({{notesList.length}})
+  li(ng-class="{active: selected == 'project'}")
+    a(ng-click="selected = 'project'") Project
+  li(ng-class="{active: selected == 'clients'}")
+    a(ng-click="selected = 'clients'") Clients
+    span ({{project.clients.length}})
+  li(ng-class="{active: selected == 'neighborhoods'}")
+    a(ng-click="selected = 'neighborhoods'") Neighborhoods
+    span ({{project.neighborhoods.length}})
+  li(ng-class="{active: selected == 'pins'}")
+    a(ng-click="selected = 'pins'") Pins
+    span ({{project.favorites.length}})
+  li(ng-class="{active: selected == 'notes'}")
+    a(ng-click="selected = 'notes'") Notes
+    span ({{project.notes.length}})
+  li(ng-class="{active: selected == 'favorites'}")
+    a(ng-click="selected = 'favorites'") Favorites
+    span ({{project.favorites.length}})
