@@ -1,7 +1,7 @@
 _ = require 'lodash'
 through = require 'through'
 logger = require '../config/logger'
-{parcelFeature} = require './util.featureCollectionWrap'
+{parcelFeature} = require './util.geomToGeoJson'
 {Readable} = require 'stream'
 
 class StringStream extends Readable

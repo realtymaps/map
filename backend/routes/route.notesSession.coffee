@@ -4,12 +4,13 @@ httpStatus = require '../../common/utils/httpStatus'
 notesSvc = (require '../services/services.user').notes
 {Crud, wrapRoutesTrait} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
-auth = require '../utils/util.auth.coffee'
+auth = require '../utils/util.auth'
 _ = require 'lodash'
 {crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
-userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
+userExtensions = require('../utils/crud/extensions/util.crud.extension.user')
+sqlHelpers = require '../utils/util.sql.helpers'
 
-safeQuery = ['id', 'auth_user_id', 'text', 'geom_point_json', 'title', 'project_id', 'rm_property_id']
+safeQuery = sqlHelpers.columns.notes
 
 ###
 TODO: Add double security to make sure that users can not cross edit notes they do not own or do not have perms too
@@ -24,9 +25,10 @@ class NotesSessionCrud extends Crud
   rootGET: (req, res, next) =>
     logger.debug "rootGet of notes"
     #since we have middleware that requires login going into this unless statement is a server error
-    @withUser req, =>
+    @toLeafletMarker @withUser req, =>
       logger.debug "rootGet has user"
       super(req, res, next)
+    ,
 
   rootPOST: (req, res, next) =>
     @withUser req, req.body, =>
@@ -36,7 +38,7 @@ class NotesSessionCrud extends Crud
       .catch _.partial(@onError, next)
 
   byIdGET: (req, res, next) =>
-    @withUser req, =>
+    @toLeafletMarker @withUser req, =>
       @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
       .catch _.partial(@onError, next)
 
