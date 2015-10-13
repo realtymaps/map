@@ -17,11 +17,14 @@ app.service 'rmapsJobsService', (Restangular) ->
       element.data = JSON.stringify(element.data)
     element
 
-  getCurrent = () ->
-    Restangular.all(jobsAPI).all('history').getList( current: true )
+  # getCurrent = () ->
+  #   Restangular.all(jobsAPI).all('history').getList( current: true )
 
-  getHistory = (taskName) ->
-    Restangular.all(jobsAPI).all('history').getList( name: taskName )
+  # getHistory = (taskName) ->
+  #   Restangular.all(jobsAPI).all('history').getList( name: taskName )
+
+  getHistory = (filters = {}) ->
+    Restangular.all(jobsAPI).all('history').getList(filters)
 
   getHealth = (timerange) ->
     Restangular.all(jobsAPI).all('health').getList(timerange: timerange)
@@ -61,7 +64,7 @@ app.service 'rmapsJobsService', (Restangular) ->
     task.post('cancel')
 
   service =
-    getCurrent: getCurrent
+    #getCurrent: getCurrent
     getHistory: getHistory
     getHealth: getHealth
     getQueue: getQueue

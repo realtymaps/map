@@ -9,6 +9,8 @@ app.controller 'rmapsJobsHistoryCtrl',
 
   $scope.currentJobList = []
 
+  $scope.historyTimerange = '30 days'
+
   numericDefaults =
     type: 'number'
     width: 75
@@ -105,22 +107,39 @@ app.controller 'rmapsJobsHistoryCtrl',
     ], (num) ->
       _.extend num, numericDefaults
 
+  $scope.updateTimeframe = () ->
+    if $scope.currentTaskData.task?
+      $scope.jobsGrid.data = []
+      $scope.currentTaskData.task = null
+    $scope.getHistoryList()
+
   $scope.selectJob = () ->
     $log.debug "#### selectJob(), currentTaskData"
     $log.debug $scope.currentTaskData
     $state.go($state.current, { task: $scope.currentTaskData.task.name }, { reload: true })
 
   $scope.loadHistory = (task) ->
-    $scope.jobsBusy = rmapsJobsService.getHistory(task)
+    $log.debug "#### loadHistory(), task:"
+    $log.debug task
+    filters =
+      timerange: $scope.historyTimerange
+    if task.name == 'all'
+      filters['current'] = true
+    else
+      filters['name'] = task.name
+    $scope.jobsBusy = rmapsJobsService.getHistory(filters)
     .then (history) ->
       $scope.jobsGrid.data = history.plain()
 
   $scope.getHistoryList = () ->
-    $scope.jobsBusy = rmapsJobsService.getCurrent()
+    filters =
+      list: true
+      timerange: $scope.historyTimerange
+    $scope.jobsBusy = rmapsJobsService.getHistory(filters)
     .then (currentJobList) ->
-      $scope.currentJobList = currentJobList
+      $scope.currentJobList = [{name: 'All', current: 'all'}].concat currentJobList.plain()
       $log.debug "#### tasklist:"
-      $log.debug $scope.currentJobList.plain()
+      $log.debug $scope.currentJobList
 
   $scope.loadReadyHistory = () ->
     $scope.getHistoryList()

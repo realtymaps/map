@@ -1,7 +1,16 @@
 .row.form-group
   .col-md-4
-    select(ng-model="currentTaskData.task" ng-options="value.name for value in currentJobList track by value.name" ng-change="selectJob()")
-      option(value="all") All
+    select(ng-model="currentTaskData.task" ng-options="value.name group by value.current for value in currentJobList track by value.name" ng-change="selectJob()")
+      option(value="" disabled) Select a task
+      option(value="") All
+  .col-md-4
+    select(type="text" ng-model="historyTimerange" ng-change="updateTimeframe()").form-control
+      option(value="1 hour") 1 Hour
+      option(value="1 day") 1 Day
+      option(value="7 days") 7 Days
+      option(value="30 days") 30 Days
+      option(value="90 days") 90 Days
+      option(value="all") All Time
   .col-md-8
 .jobs-grid(cg-busy="jobsBusy" ng-show="$state.params.task" ui-grid="jobsGrid" ui-grid-resize-columns ui-grid-pinning)
 .warn(ng-show="!$state.params.task") No task selected.
