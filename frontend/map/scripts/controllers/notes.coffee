@@ -46,6 +46,50 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
     removeNote: (note) ->
       _signalUpdate rmapsNotesService.remove note.id
 
+#this should be nested under rmapsNotesCtrl to be able to create modals
+.controller 'rmapsMapNotesTapCtrl', ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
+  $log = rmapsMapNotesTapCtrlLogger
+
+  mapId = 'mainMap'
+  originator = 'map'
+
+  $scope.$on '$destroy', ->
+    $log.debug('destroyed')
+
+  _destroy = () ->
+    toastr.clear noteToast
+    rmapsNgLeafletEventGate.enableEvent(mapId, 'click')
+    leafletIterators.each unsubscribes, (unsub) ->
+      unsub()
+    $scope.Toggles.showNoteTap = false
+
+  noteToast = toastr.info 'Click on the Map to Assign a Note to a location or property', 'Create a Note',
+    closeButton: true
+    timeOut: 0
+    onHidden: (hidden) ->
+      _destroy()
+
+  rmapsNgLeafletEventGate.disableEvent(mapId, 'click')#disable click events temporarily for rmapsMapEventsHandler
+
+  _mapHandle =
+    click: (event) ->
+      $log.debug "note from map"
+      $log.debug event.latlng
+      #TODO: convert LatLong to geoJson Point and save to geom_point_json
+      $scope.createModal().finally ->
+        _destroy()
+
+  _markerGeoJsonHandle =
+    click: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+      $log.debug "note for model: #{model.rm_property_id}"
+      $scope.createFromProperty(model).finally ->
+        _destroy()
+
+  mapUnSubs = rmapsMapEventsLinkerService.hookMap(mapId, _mapHandle, originator, ['click'])
+  markersUnSubs = rmapsMapEventsLinkerService.hookMarkers(mapId, _markerGeoJsonHandle, originator)
+  geoJsonUnSubs = rmapsMapEventsLinkerService.hookGeoJson(mapId, _markerGeoJsonHandle, originator)
+
+  unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
 .controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService, rmapsevents) ->
   $log = $log.spawn("map:notes")
