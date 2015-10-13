@@ -19,11 +19,11 @@ else
       mkdir -p $BUILDPACK_DIR
       mkdir -p ${BUILDPACK_DIR}-env
       cd $BUILDPACK_DIR
-      #git clone `fgrep nginx $APP_DIR/.buildpacks` .
+      git clone `fgrep nginx $APP_DIR/.buildpacks` .
     else
       echo -n "Updating nginx buildpack...  "
       cd $BUILDPACK_DIR
-      #git pull
+      git pull
     fi
     export STATIC_ROOT="$APP_DIR/_public"
     ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
