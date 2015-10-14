@@ -9,12 +9,16 @@ module.exports = ($log, options) ->
       return time < options.throttle.eventPeriods.mousewheel
     distance * time < options.throttle.space * options.throttle.eventPeriods.mousemove
 
+  _debouncedDebug = _.debounce (msg) ->
+    $log.debug msg
+  , 1000
+
   @throttle_events = (event) ->
     now = new Date()
     distance = Math.sqrt(Math.pow(event.clientX - last.x, 2) + Math.pow(event.clientY - last.y, 2))
     time = now.getTime() - last.time.getTime()
     if _doThrottle(event, distance, time)  #event arrived too soon or mouse moved too little or both
-      $log.debug 'event stopped'
+      _debouncedDebug 'event stopped'
       if event.stopPropagation # W3C/addEventListener()
         event.stopPropagation()
       else # Older IE.

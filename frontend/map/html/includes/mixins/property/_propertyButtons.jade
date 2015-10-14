@@ -6,7 +6,7 @@ mixin propertyButtons(resultName)
     button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
       span.icon.icon-send_email
       span Mail
-    button.note(ng-controller="rmapsNotesCtrl" ng-click="createFromProperty(#{resultName}); $event.stopPropagation()")
+    button.note(ng-controller="rmapsNotesCtrl" ng-click="createGeoNote(#{resultName}); $event.stopPropagation()")
       i.fa.fa-sticky-note &nbsp;
       span Note
 

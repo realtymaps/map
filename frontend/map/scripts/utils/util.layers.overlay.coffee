@@ -17,6 +17,11 @@ _overlays =
     type: 'group'
     visible: true
 
+  notes:
+    name: 'Notes'
+    type: 'group'
+    visible: true
+
 module.exports = ($log) ->
   _cartodb = do require './util.cartodb.coffee'
   #only call function post login

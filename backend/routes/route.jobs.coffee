@@ -10,6 +10,7 @@ ExpressResponse = require '../utils/util.expressResponse'
 class JobCrud extends RouteCrud
   init: () ->
     @taskHistoryCrud = routeCrud(@svc.taskHistory, 'name')
+    @subtaskErrorHistoryCrud = routeCrud(@svc.subtaskErrorHistory, 'name')
     @queueCrud = routeCrud(@svc.queues, 'name')
     @taskCrud = routeCrud(@svc.tasks, 'name')
     @subtaskCrud = routeCrud(@svc.subtasks, 'name')
@@ -17,6 +18,7 @@ class JobCrud extends RouteCrud
     @healthCrud = routeCrud(@svc.health)
 
     @taskHistory = @taskHistoryCrud.root
+    @subtaskErrorHistory = @subtaskErrorHistoryCrud.root
 
     @queues = @queueCrud.root
     @queuesById = @queueCrud.byId
@@ -48,6 +50,11 @@ class JobCrud extends RouteCrud
 
 module.exports = mergeHandles new JobCrud(jobs),
   taskHistory:
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  subtaskErrorHistory:
     methods: ['get']
     middleware: [
       auth.requireLogin(redirectOnFail: true)

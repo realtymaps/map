@@ -5,7 +5,7 @@ _parcelPropertiesMove = [
   'passedFilters'
 ]
 
-_parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
+parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
   deletes.forEach (prop) ->
     delete row[prop]
 
@@ -16,11 +16,11 @@ _parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
   row
 
 module.exports =
-  parcelFeature: _parcelFeature
+  parcelFeature: parcelFeature
 
   parcelFeatureCollection: (rows) ->
     rows = _.uniq rows, (r) ->
       r.rm_property_id
     rows.forEach (row) ->
-      row = _parcelFeature(row)
+      row = parcelFeature(row)
     type: 'FeatureCollection', features: rows

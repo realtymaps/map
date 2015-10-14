@@ -27,6 +27,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
+
+  $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
   #ng-inits or inits
   #must be defined pronto as they will be skipped if you try to hook them to factories
   $scope.resultsInit = (resultsListId) ->
@@ -113,7 +115,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
         rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
-        map = new rmapsMap($scope, rmapsMainOptions.map)
+        map = new rmapsMap($scope)
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
@@ -123,6 +125,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
   $scope.projectDropdown = isOpen: false
+
+  $scope.enableNoteTap = ->
+    $scope.Toggles.enableNoteTap()
 
   $scope.addProject = () ->
     $scope.newProject = {}
