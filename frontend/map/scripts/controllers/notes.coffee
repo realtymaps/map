@@ -91,10 +91,14 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService, rmapsevents, rmapsLayerFormatters) ->
+.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService, rmapsevents, rmapsLayerFormatters, leafletData) ->
 
   setMarkerNotesOptions = rmapsLayerFormatters.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormatters.setDataOptions
+  directiveControls = null
+
+  leafletData.getDirectiveControls('mainMap').then (controls) ->
+    directiveControls = controls
 
   $log = $log.spawn("map:notes")
 
@@ -103,19 +107,23 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
       markers:
         notes:[]
 
-  promiseCacheIsDisabled = false
-
-  getNotesPromise = () ->
-    rmapsNotesService.getList()
-
   getNotes = () ->
-    getNotesPromise().then (data) ->
+    rmapsNotesService.getList().then (data) ->
       $log.debug "received note data #{data.length} " if data?.length
       $scope.map.markers.notes = setDataOptions data, setMarkerNotesOptions
 
-  $scope.getNotes = getNotes
+  $scope.map.getNotes = getNotes
+
+  $scope.$watch 'Toggles.showNotes', (newVal) ->
+    $scope.map.layers.overlays.notes.visible = newVal
 
   $rootScope.$onRootScope rmapsevents.notes, ->
-    getNotes()
+    getNotes().then ->
+      ###
+        NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
+        in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
+        #https://github.com/tombatossals/angular-leaflet-directive/issues/820
+      ###
+      directiveControls.markers.create($scope.map.markers)#<-- me dangerous
 
   getNotes()

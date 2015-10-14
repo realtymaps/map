@@ -20,7 +20,7 @@ _overlays =
   notes:
     name: 'Notes'
     type: 'group'
-    visible: true
+    visible: false
 
 module.exports = ($log) ->
   _cartodb = do require './util.cartodb.coffee'
