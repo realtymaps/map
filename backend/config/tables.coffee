@@ -77,8 +77,8 @@ module.exports =
     subtaskConfig: 'jq_subtask_config'
     queueConfig: 'jq_queue_config'
     taskHistory: 'jq_task_history'
-    currentSubtasks: 'jq_current_subtasks'
     subtaskErrorHistory: 'jq_subtask_error_history'
+    currentSubtasks: 'jq_current_subtasks'
     summary: 'jq_summary'
   auth:
     session: config.SESSION_STORE.tableName  #auth_session
