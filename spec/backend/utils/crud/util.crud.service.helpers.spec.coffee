@@ -43,10 +43,10 @@ describe 'util.crud.service.helpers', ->
 
       describe 'create', ->
         it 'default', ->
-          @instance.create({id:1, test:'test'}).toString()
+          @instance.create(1, {test:'test'}).toString()
           .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test')"""
         it 'id', ->
-          @instance.create({id:1, test:'test'}, 2).toString()
+          @instance.create(2, {id: 1, test:'test'}).toString()
           .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test')"""
 
       it 'delete', ->
@@ -79,10 +79,10 @@ describe 'util.crud.service.helpers', ->
 
       describe 'create', ->
         it 'default', ->
-          @instance.create({project_id:1, test:'test'}).toString()
+          @instance.create(undefined, {project_id:1, test:'test'}).toString()
           .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test')""".replace('id', @instance.idKey)
         it 'id', ->
-          @instance.create({test:'test'}, 2).toString()
+          @instance.create(2, {test:'test'}).toString()
           .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test')""".replace('id', @instance.idKey)
 
       it 'delete', ->
@@ -130,10 +130,10 @@ describe 'util.crud.service.helpers', ->
 
         describe 'create', ->
           it 'default', ->
-            @instance.create({id:1, test:'test'}).toString()
+            @instance.create(1, {test:'test'}).toString()
             .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('1', 'test')"""
           it 'id', ->
-            @instance.create({id:1, test:'test'}, 2).toString()
+            @instance.create(2, {id: 1, test:'test'}).toString()
             .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('2', 'test')"""
 
         it 'delete', ->
