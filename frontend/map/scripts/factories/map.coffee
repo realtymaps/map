@@ -102,6 +102,9 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
+            getNotes: () ->
+              $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
+
             layers:
               overlays: _overlays($log)
 
@@ -150,6 +153,7 @@ app.factory 'rmapsMap',
       clearBurdenLayers: =>
         if @map? and not rmapsZoomLevel.isParcel(@scope.map.center.zoom)
           @scope.map.markers.addresses = {}
+          @scope.map.markers.notes = []
           _.each @scope.map.geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -247,10 +251,14 @@ app.factory 'rmapsMap',
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        promises = promises.concat @drawFilterSummary(cache)
+        promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes()]
 
         $q.all(promises).then =>
           #every thing is setup, only draw once
+          ###
+          Not only is this efficent but it avoids (worksaround) ng-leaflet race
+          https://github.com/tombatossals/angular-leaflet-directive/issues/820
+          ###
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
