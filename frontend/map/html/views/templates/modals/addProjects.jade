@@ -6,8 +6,42 @@ form.add-project
     .form-group
       label(for="proejct_name_input") Name your project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here")
+    .add-client-info
+      .form-section
+        h4.title Property Ask
+        .form-group
+          .row
+            .col-sm-12
+              label(for="minPrice") Price Range
+              .row
+                .col-sm-6
+                  input.form-control(name="minPrice" ng-model="newProject.minPrice" placeholder="$0")
+                .col-sm-6.minus
+                  input.form-control(name="maxPrice" ng-model="newProject.maxPrice" placeholder="$0")
+        .form-group
+          .row
+            .col-sm-4
+              label(for="beds") Beds
+              select.form-control(name="beds" ng-model="newProject.beds")
+                option 1
+                option 2
+                option 3
+                option 4
+                option 5
+                option 6
+            .col-sm-4
+              label(for="baths") Bath
+              select.form-control(name="baths" ng-model="newProject.baths")
+                option 1
+                option 2
+                option 3
+                option 4
+                option 5
+            .col-sm-4
+              label(for="sqft") Sq Ft
+              input.form-control(name="sqft" ng-model="newProject.sqft")
     button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo") + Add Client Info
-    div.add-client-info(ng-cloak ng-show="showAddClientInfo")
+    .add-client-info(ng-cloak ng-show="showAddClientInfo")
       .form-section
         h4.title Client Info
         p.required.text-right Required
