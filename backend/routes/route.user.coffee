@@ -3,6 +3,8 @@ auth = require '../utils/util.auth'
 {RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 logger = require '../config/logger'
 {mergeHandles} = require '../utils/util.route.helpers'
+userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
+{Crud, wrapRoutesTrait} = require '../utils/crud/util.crud.route.helpers'
 
 class UserCrud extends RouteCrud
   init: () ->

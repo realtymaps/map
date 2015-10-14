@@ -51,6 +51,22 @@ profileCols = [
   'parent_auth_user_id', 'auth_user_id as user_id'
 ]
 
+clientCols = [
+  "#{tables.auth.user.tableName}.id as id"
+  "#{tables.auth.user.tableName}.email as email"
+  "#{tables.auth.user.tableName}.first_name as first_name"
+  "#{tables.auth.user.tableName}.last_name as last_name"
+  "#{tables.auth.user.tableName}.username as username"
+  "#{tables.auth.user.tableName}.address_1 as address_1"
+  "#{tables.auth.user.tableName}.address_2 as address_2"
+  "#{tables.auth.user.tableName}.city as city"
+  "#{tables.auth.user.tableName}.us_state_id as us_state_id"
+
+  "#{tables.user.profile.tableName}.name as #{tables.user.profile.tableName}_name"
+  'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
+  'parent_auth_user_id'
+]
+
 class UserCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
@@ -65,5 +81,7 @@ class UserCrud extends ThenableCrud
   profiles: thenableHasManyCrud(tables.user.project, profileCols,
     module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(false)
 
+  clients: thenableHasManyCrud(tables.auth.user, clientCols,
+    module.exports.profile, 'auth_user_id', "#{tables.auth.user.tableName}.id", "#{tables.auth.user.tableName}.id").init(true)
 
 module.exports.user = new UserCrud(tables.auth.user)

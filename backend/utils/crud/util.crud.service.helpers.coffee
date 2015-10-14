@@ -30,19 +30,21 @@ class Crud extends BaseObject
     obj[@idKey] = val
     obj
 
-  getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
-    fnExec @dbFn().where(query), doLogQuery
+  getAll: (query = {}, safe, doLogQuery = false, fnExec = execQ) ->
+    withSafeEntity query, safe, (query, safe) =>
+      fnExec @dbFn().where(query), doLogQuery
+    , true
 
-  getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-    withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(_.extend @idObj(id), entity), doLogQuery
+  getById: (id, doLogQuery = false, fnExec = execQ) ->
+    throw new Error('id is required') unless id?
+    fnExec @dbFn().where(@idObj(id)), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       fnExec @dbFn().where(@idObj(id)).update(entity), doLogQuery
     , true
 
-  create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->
+  create: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       # support entity or array of entities
       if _.isArray entity
@@ -53,9 +55,9 @@ class Crud extends BaseObject
         fnExec @dbFn().insert(_.extend {}, entity, obj), doLogQuery
     , true
 
-  delete: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-    withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
+  delete: (id, doLogQuery = false, fnExec = execQ) ->
+    throw new Error('id is required') unless id?
+    fnExec @dbFn().where(@idObj(id)).delete(), doLogQuery
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
@@ -72,20 +74,21 @@ class HasManyCrud extends Crud
     .select(@rootCols...)
     .innerJoin(@dbFn.tableName, @rootIdStr, @joinIdStr)
 
-  setIdStrs: (rootIdStr,joinIdStr) ->
+  setIdStrs: (rootIdStr, joinIdStr) ->
     @rootIdStr = rootIdStr or @dbFn.tableName + '.id'
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
 
-  getAll: (entity, doLogQuery = false) ->
-    if !_.isObject(entity) or !entity?
-      throw new Error('entity must be defined or an Object.')
-    execQ @joinQuery().where(entity), doLogQuery
+  getAll: (query, safe, doLogQuery = false) ->
+    withSafeEntity query, safe, (query, safe) =>
+      execQ @joinQuery().where(query), doLogQuery
+    , true
 
   getById: (id, doLogQuery = false) ->
+    throw new Error('id is required') unless id?
     execQ @joinQuery().where(@idObj(id)), doLogQuery
 
-  create: (entity, id, doLogQuery = false) ->
-    @joinCrud.create(entity, id, doLogQuery)
+  create: (id, entity, safe, doLogQuery = false) ->
+    @joinCrud.create(id, entity, safe, doLogQuery)
 
   update: (id, entity, safe, doLogQuery = false) ->
     @joinCrud.update(id, entity, safe, doLogQuery)

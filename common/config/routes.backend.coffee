@@ -23,6 +23,7 @@ apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
+apiBaseClients = "#{apiBaseSession}/clients"
 
 module.exports =
   views:
@@ -55,6 +56,8 @@ module.exports =
   projectSession:
     root: "#{apiBaseSession}/projects"
     byId: "#{apiBaseSession}/projects/:id"
+    clients: "#{apiBaseSession}/projects/:id/clients"
+    clientsById: "#{apiBaseSession}/projects/:id/clients/:client_id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
