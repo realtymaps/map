@@ -28,7 +28,7 @@ class ClientsCrud extends HasManyRouteCrud
       userSvc.getAll email: req.body.email
     .then (maybeUser) ->
       if maybeUser?[0]
-        maybeUser[0]
+        maybeUser[0].id
       else
         tables.auth.user()
         .returning('id')
