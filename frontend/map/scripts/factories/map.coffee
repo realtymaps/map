@@ -111,6 +111,7 @@ app.factory 'rmapsMap',
               filterSummary:{}
               backendPriceCluster:{}
               addresses:{}
+              notes: []
 
             geojson: {}
 
