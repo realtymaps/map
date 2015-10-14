@@ -61,14 +61,6 @@ _deleteRules = (query) ->
 module.exports =
 
   getRules: (dataSourceId, dataSourceType, dataListType) ->
-    logger.debug "#### service.getRules():"
-    logger.debug "dataSourceId:"
-    logger.debug dataSourceId
-    logger.debug "dataSourceType:"
-    logger.debug dataSourceType
-    logger.debug "dataListType:"
-    logger.debug dataListType
-
     _getRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType
 
   createRules: (dataSourceId, dataSourceType, dataListType, rules) ->
