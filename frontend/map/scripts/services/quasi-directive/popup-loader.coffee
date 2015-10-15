@@ -1,9 +1,10 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
+_defaultTemplate = do require '../../../html/includes/map/_smallDetailsPopup.jade'
 
-app.service 'rmapsPopupLoader', ($rootScope, $templateCache, $http, $compile, rmapspopupVariables, rmapsRendering) ->
-  _map = null
+app.service 'rmapsPopupLoader', ($rootScope, $compile, rmapspopupVariables, rmapsRendering, $timeout) ->
+  _map = null #TODO this ref shouldn't be global if so this should become a factory
   _templateScope = null
   _renderPromises =
     loadPromise: false
@@ -33,25 +34,22 @@ app.service 'rmapsPopupLoader', ($rootScope, $templateCache, $http, $compile, rm
       else new L.Point offsets.left, offsets.bottom
 
 
-  load: ($scope, map, model, lTriggerObject, opts = _defaultOptions, templateUrl = './views/templates/map-smallDetails.tpl.jade') ->
-    _map = map
-    return if model?.markerType == 'cluster'
+  load: ($scope, map, model, lTriggerObject, opts = _defaultOptions, template = _defaultTemplate, needToCompile = true) ->
+    $timeout -> #hack to deal with close happening at the same time (already tried boolean gates)
+      _map = map
+      return if model?.markerType == 'cluster'
+      content = null
 
-    # redundant but forces out window to not have a close buttons since we always hide on mouseoff
-    $http.get(templateUrl, { cache: $templateCache })
-    .then (content) ->
-      ###
-      AS a side note/ WARNING if the templateUrl is incorrect it will resolve the root page
-      And on compile will re-initiate all controllers and cause strange behaviors
-      ###
-      angular.extend opts,
-        closeButton: false
+      coords = model.coordinates or model.geom_point_json?.coordinates
 
       # template for the popup box
-      _templateScope = $scope.$new() unless _templateScope?
-      _templateScope.model = model
-      compiled = $compile(content.data)(_templateScope)
-      coords = model.coordinates or model.geom_point_json?.coordinates
+      if needToCompile
+        _templateScope = $scope.$new() unless _templateScope?
+        _templateScope.model = model
+        compiled = $compile(template)(_templateScope)
+        content = compiled[0]
+      else
+        content = template
 
       # set the offset
       opts.offset = _getOffset map, model
@@ -66,9 +64,9 @@ app.service 'rmapsPopupLoader', ($rootScope, $templateCache, $http, $compile, rm
         lat: coords[1]
         lng: coords[0]
       .openOn map
-      _lObj.setContent compiled[0]
+      _lObj.setContent content
       _lObj
-
+    , 100
   close: _close
 
   getCurrent: -> _lObj

@@ -1,9 +1,9 @@
-include ../mixins/_avatar
+include ../mixins/_avatarMixin.jade
 
 #userblock(ng-controller="DropdownCtrl")
   span(class="dropdown" dropdown on-toggle="toggled(open)")
     button(class="dropdown-toggle avtr" dropdown-toggle)
-      +avatar()(class='tiny-avatar')
+      +avatarMixin()(class='tiny-avatar')
     ul(class="dropdown-menu right arrow")
       li(ng-show="principal.isAuthenticated()", ng-cloak)
         a(href="{{frontendRoutes.logout}}") log out

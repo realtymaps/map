@@ -1,4 +1,4 @@
-include ../mixins/_circleNr.jade
+include ../mixins/_noteMixin.jade
 
 span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
   button(class="dropdown-toggle btn btn-transparent notes" dropdown-toggle)
@@ -12,11 +12,8 @@ span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dro
         li(ng-repeat="note in map.markers.notes" ng-cloak)
           div(ng-controller="rmapsNotesCtrl")
             span.enity
-              +circleNr('{{$index+1}}')
-              span.content
-                h3.title {{note.title}}
-                p.text {{note.text}}
-
+              +noteMixin('{{note.title}}','{{note.text}}','{{$index+1}}')
+              
               // TODO - add sketch feature in
                 span.sketch
                   span.icon.icon-pen
