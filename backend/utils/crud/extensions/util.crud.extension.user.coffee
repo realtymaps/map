@@ -1,5 +1,15 @@
 _ = require 'lodash'
 
+toLeafletMarker = (rows, deletes, deafaultCoordLocation) ->
+  for row in rows
+    row.coordinates = row[deafaultCoordLocation].coordinates
+    row.type = row[deafaultCoordLocation].type
+
+    for del in deletes
+      delete row[del]
+
+  rows
+
 module.exports =
   route:
     ###
@@ -17,3 +27,10 @@ module.exports =
 
       _.extend toBeQueryClause, auth_user_id: req.user.id
       cb(toBeQueryClause) if cb?
+
+    toLeafletMarker: (maybePromise, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+      if maybePromise.then?
+        return maybePromise.then (rows) ->
+          toLeafletMarker(rows, deletes, deafaultCoordLocation)
+
+      toLeafletMarker(maybePromise, deletes, deafaultCoordLocation)

@@ -4,8 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 _encode = require('geohash64').encode
-
-_eventReg = require '../utils/util.events.coffee'
 _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
@@ -24,7 +22,9 @@ app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger) ->
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService) ->
+
+    limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("map:factory")
     testLogger = rmapsMapTestLogger
@@ -48,7 +48,7 @@ app.factory 'rmapsMap',
     class Map extends rmapsBaseMap
       baseIsLoaded = false
 
-      constructor: ($scope, limits) ->
+      constructor: ($scope) ->
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
 
@@ -69,9 +69,6 @@ app.factory 'rmapsMap',
               @scope.Toggles.hasPreviousLocation = true
             else
               @scope.Toggles.hasPreviousLocation = false
-
-          @scope.satMap =
-            limits: limits
 
         @singleClickCtrForDouble = 0
 
@@ -94,7 +91,7 @@ app.factory 'rmapsMap',
               saved.then (savedDetails) =>
                 @redraw(false)
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @eventHandle = _eventReg($timeout,$scope, @, limits, $log)
+        @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
           streetViewPanorama:
             status: 'OK'
@@ -105,6 +102,9 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
+            getNotes: () ->
+              $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
+
             layers:
               overlays: _overlays($log)
 
@@ -114,6 +114,7 @@ app.factory 'rmapsMap',
               filterSummary:{}
               backendPriceCluster:{}
               addresses:{}
+              notes: []
 
             geojson: {}
 
@@ -152,6 +153,7 @@ app.factory 'rmapsMap',
       clearBurdenLayers: =>
         if @map? and not rmapsZoomLevel.isParcel(@scope.map.center.zoom)
           @scope.map.markers.addresses = {}
+          @scope.map.markers.notes = []
           _.each @scope.map.geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -249,10 +251,14 @@ app.factory 'rmapsMap',
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        promises = promises.concat @drawFilterSummary(cache)
+        promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes()]
 
         $q.all(promises).then =>
           #every thing is setup, only draw once
+          ###
+          Not only is this efficent but it avoids (worksaround) ng-leaflet race
+          https://github.com/tombatossals/angular-leaflet-directive/issues/820
+          ###
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)

@@ -8,8 +8,9 @@ _baseLayers = require '../utils/util.layers.base.coffee'
   For example if only update markers if dragging has really changed. Also checking for zoom deltas (tooManyZoomChanges)
 ###
 _mapClassContainerName = 'angular-leaflet-map'
+_mapDrawEvents = ['resize','moveend', 'zoomend']
 
-module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leafletData) ->
+module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leafletData, rmapsNgLeafletHelpers) ->
   $log = nemSimpleLogger.spawn("map:baseFactory")
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
@@ -52,7 +53,7 @@ module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leaflet
 
       angular.extend @scope, settings
 
-    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers = _baseLayers(), mapEvents = ['resize','moveend', 'zoomend'])->
+    constructor: (@scope, options, redrawDebounceMilliSeconds, mapPath = 'map', @mapId,  baseLayers = _baseLayers(), mapEvents = _mapDrawEvents.concat ['click'])->
       _throttler =  _eventThrottler($log, options)
       @initScopeSettings(options, mapPath, baseLayers, mapEvents)
 
@@ -110,8 +111,8 @@ module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leaflet
         #however this might be easier making our own directive instead of factories
         $timeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
-          leafletPreNamespace = 'leafletDirectiveMap.'
-          mapEvents.forEach (eventName) =>
+          leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpers.events.getMapIdEventStr(@mapId)}"
+          _mapDrawEvents.forEach (eventName) =>
             eventName =  leafletPreNamespace + eventName
             return @scope.$on eventName, _maybeDraw
 
