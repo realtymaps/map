@@ -44,7 +44,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                         .collapse-header
                           h2.title Clients ({{project.clients.length}})
                           .tools
-                            button(class="btn btn-white" ng-click="")
+                            button(class="btn btn-white" ng-click="addClient()")
                               span Add Client
                         li(class="client" ng-repeat="client in project.clients")
                           h3 Client {{$index + 1}}
