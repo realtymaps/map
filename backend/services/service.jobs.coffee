@@ -56,7 +56,7 @@ class TaskService extends crudService.Crud
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
-    super(entity, doLogQuery)
+    super(entity, id, doLogQuery)
 
   delete: (id, doLogQuery = false) ->
     super(id, doLogQuery)
