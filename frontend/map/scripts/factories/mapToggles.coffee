@@ -14,9 +14,13 @@ app.factory 'rmapsMapToggles', ->
     @showAddresses = true
     @showPrices = true
     @showNoteTap = false
+    @showNotes = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
+
+    @toggleNotes = () =>
+      @showNotes = !@showNotes
 
     @toggleNoteTap = =>
       @showNoteTap = !@showNoteTap
