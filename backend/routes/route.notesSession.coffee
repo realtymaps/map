@@ -21,13 +21,14 @@ class NotesSessionCrud extends Crud
     @restrictAll(@withUser)
     super()
 
+  rootGET: (req, res, next) =>
+    @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
+    .then (notes) ->
+      @toLeafletMarker notes
+
   rootPOST: (req, res, next) =>
     if req.body?.geom_point_json?
       req.body.geom_point_json.crs = crsFactory()
-    super(req, res, next)
-
-  rootGET: (req, res, next) =>
-    @toLeafletMarker req.query
     super(req, res, next)
 
   byIdPUT: (req, res, next) ->
