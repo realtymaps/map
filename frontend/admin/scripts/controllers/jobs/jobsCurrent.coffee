@@ -139,7 +139,7 @@ app.controller 'rmapsJobsCurrentCtrl',
     return init
 
   $scope.loadCurrent = () ->
-    $scope.jobsBusy = rmapsJobsService.getCurrent()
+    $scope.jobsBusy = rmapsJobsService.getHistory(current: true)
     .then (jobs) ->
       _.each jobs, (job) ->
         job.started = new Date(job.started)

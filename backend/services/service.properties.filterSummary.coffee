@@ -7,6 +7,7 @@ sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
 logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
+{toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
 
 _getZoom = (position) ->
@@ -31,11 +32,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
 
     # more data arranging
     .then (properties) ->
-      _.each properties, (prop) ->
-        prop.type = prop.geom_point_json.type
-        prop.coordinates = prop.geom_point_json.coordinates
-        delete prop.geom_point_json
-        delete prop.geometry
+      properties = toLeafletMarker properties, ['geom_point_json', 'geometry']
       props = indexBy(properties, false)
       props
 

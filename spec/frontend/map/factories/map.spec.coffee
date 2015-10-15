@@ -65,7 +65,9 @@ describe "rmapsMap factory", ->
             # showResults: true
           promises = @subject.drawFilterSummary(true)
           @digestor.digest()
-          console.log promises[0]
+
+          # console.log promises
+
           promises[0].then ({data}) ->
             angular.equals(data,mockRoutes.geojsonPolys.response).should.equal true
             done()
