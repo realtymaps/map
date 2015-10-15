@@ -8,39 +8,120 @@ routeHelpers = require '../utils/util.route.helpers'
 
 class RuleCrud extends crudHelpers.RouteCrud
   getRules: (req, res, next) =>
-    @handleQuery @svc.getRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.getRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType)
+      .catch _.partial(@onError, next)
+      res)
 
   createRules: (req, res, next) =>
-    @handleQuery @svc.createRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.createRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
 
   putRules: (req, res, next) =>
-    @handleQuery @svc.putRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.putRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
 
   deleteRules: (req, res, next) =>
-    @handleQuery @svc.deleteRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.deleteRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType)
+      .catch _.partial(@onError, next)
+      res)
 
 
   getListRules: (req, res, next) =>
-    @handleQuery @svc.getListRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.getListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list)
+      .catch _.partial(@onError, next)
+      res)
 
   createListRules: (req, res, next) =>
-    @handleQuery @svc.createListRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.createListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
 
   putListRules: (req, res, next) =>
-    @handleQuery @svc.putListRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.putListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
 
   deleteListRules: (req, res, next) =>
-    @handleQuery @svc.deleteListRules(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.deleteListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list)
+      .catch _.partial(@onError, next)
+      res)
 
 
   getRule: (req, res, next) =>
-    @handleQuery @svc.getRule(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.getRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering)
+      .catch _.partial(@onError, next)
+      res)
 
   updateRule: (req, res, next) =>
-    @handleQuery @svc.updateRule(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.updateRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
 
   deleteRule: (req, res, next) =>
-    @handleQuery @svc.deleteRule(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering).catch(_.partial(@onError, next)), res
+    @handleQuery(
+      @svc.deleteRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering)
+      .catch _.partial(@onError, next)
+      res)
 
 
 module.exports = routeHelpers.mergeHandles new RuleCrud(rulesService),
