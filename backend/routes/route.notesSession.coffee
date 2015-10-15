@@ -17,50 +17,28 @@ TODO: Add double security to make sure that users can not cross edit notes they 
 ###
 class NotesSessionCrud extends Crud
   @include userExtensions.route
-  init: ->
+  init: () ->
+    @restrictAll(@withUser)
     super()
-    @safe = safeQuery
-    @doLogQuery = true
 
   rootGET: (req, res, next) =>
-    logger.debug "rootGet of notes"
-    #since we have middleware that requires login going into this unless statement is a server error
-    @toLeafletMarker @withUser req, =>
-      logger.debug "rootGet has user"
-      super(req, res, next)
-    ,
+    @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
+    .then (notes) ->
+      @toLeafletMarker notes
 
   rootPOST: (req, res, next) =>
-    @withUser req, req.body, =>
-      if req.body?.geom_point_json?
-        req.body.geom_point_json.crs = crsFactory()
-      @svc.create(req.body, undefined, @doLogQuery, safeQuery)
-      .catch _.partial(@onError, next)
+    if req.body?.geom_point_json?
+      req.body.geom_point_json.crs = crsFactory()
+    super(req, res, next)
 
-  byIdGET: (req, res, next) =>
-    @toLeafletMarker @withUser req, =>
-      @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdPOST: (req, res, next) =>
-    @withUser req, =>
-      @svc.create(req.body, req.params[@paramIdKey], undefined, @doLogQuery, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdDELETE: (req, res, next) =>
-    @withUser req, (restrict) =>
-      @svc.delete(req.params[@paramIdKey], @doLogQuery, restrict, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdPUT: (req, res, next) =>
-    @withUser req, req.body, =>
-      if req.body?.geom_point_json?
-        req.body.geom_point_json.crs = crsFactory()
-      super(req, res, next)
+  byIdPUT: (req, res, next) ->
+    if req.body?.geom_point_json?
+      req.body.geom_point_json.crs = crsFactory()
+    super(req, res, next)
 
 NotesSessionRouteCrud = wrapRoutesTrait NotesSessionCrud
 
-module.exports = mergeHandles new NotesSessionRouteCrud(notesSvc),
+module.exports = mergeHandles new NotesSessionRouteCrud(notesSvc).init(true, safeQuery),
   root:
     methods: ['get', 'post']
     middleware: [

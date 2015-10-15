@@ -1,0 +1,47 @@
+form.add-project
+  .modal-header
+    h3.modal-title Add Client
+    span.icon.icon-close(ng-click="cancelModal()")
+  .modal-body
+    .add-client-info
+      .form-section
+        p.required.text-right Required
+        .form-group
+          .row
+            .col-sm-6
+              label.required(for="first_name" ) First Name
+              input.form-control(name="first_name" ng-model="newClient.first_name")
+            .col-sm-6
+              label(for="last_name") Last Name
+              input.form-control(name="last_name" ng-model="newClient.last_name")
+        .form-group
+          .row
+            .col-sm-6
+              label(for="email") Email
+              input.form-control(name="email" ng-model="newClient.email" placeholder="name@email.com")
+            .col-sm-6
+              label(for="cell_phone") Phone Number
+              input.form-control(name="phone_number" ng-model="newClient.phone_number")
+        .form-group
+          .row
+            .col-sm-6
+              label(for="address_1" ) Address 1
+              input.form-control(name="address_1" ng-model="newClient.address_1")
+            .col-sm-6
+              label(for="address_2") Address 2
+              input.form-control(name="address_2" ng-model="newClient.address_2")
+        .form-group
+          .row
+            .col-sm-4
+              label(for="city") City
+              input.form-control(name="city" ng-model="newClient.city")
+            .col-sm-4
+              label(for="state") State
+              select.form-control(name="state" ng-model="newClient.state")
+                option FL
+            .col-sm-4
+              label(for="state") Zip
+              input.form-control(name="zip" ng-model="newClient.zip")
+  .modal-footer
+    button.btn.btn-default(ng-click="cancelModal()") Cancel
+    button.btn.btn-primary(type="submit" ng-click="saveClient()") Save
