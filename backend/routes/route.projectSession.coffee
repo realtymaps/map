@@ -42,7 +42,7 @@ class ClientsCrud extends HasManyRouteCrud
         parent_auth_user_id: req.user.id
         project_id: req.params.id
 
-      @svc.create(undefined, newProfile, safeProfile, @doLogQuery)
+      @svc.create(newProfile, undefined, @doLogQuery)
     .catch _.partial(@onError, next)
 
 class ProjectsSessionCrud extends Crud

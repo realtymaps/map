@@ -12,7 +12,7 @@ class JobService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
     jobQueue.doMaintenance()
     .then () =>
-      return super(query, undefined, doLogQuery)
+      return super(query, doLogQuery)
 
 class TaskService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
@@ -51,12 +51,12 @@ class TaskService extends crudService.Crud
         @dbFn = old_dbFn
         ret
       @dbFn.tableName = tableName
-    super(query, undefined, doLogQuery)
+    super(query, doLogQuery)
 
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
-    super(id, entity, undefined, doLogQuery)
+    super(entity, doLogQuery)
 
   delete: (id, doLogQuery = false) ->
     super(id, doLogQuery)

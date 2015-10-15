@@ -5,7 +5,6 @@ BaseObject = require '../../../common/utils/util.baseObject'
 ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
 {PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
-userExtensions = require './extensions/util.crud.extension.user.coffee'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = '') ->
@@ -28,11 +27,11 @@ class Crud extends BaseObject
     @
 
   rootGET: (req, res, next) =>
-    @svc.getAll(req.query, @safe, @doLogQuery)
+    @svc.getAll(req.query, @doLogQuery)
     .catch _.partial(@onError, next)
 
   rootPOST: (req, res, next) =>
-    @svc.create(req.body[@paramIdKey], req.body, @safe, @doLogQuery)
+    @svc.create(req.body, undefined, @doLogQuery)
     .catch _.partial(@onError, next)
 
   byIdGET: (req, res, next) =>
@@ -40,7 +39,7 @@ class Crud extends BaseObject
     .catch _.partial(@onError, next)
 
   byIdPOST: (req, res, next) =>
-    @svc.create(req.params[@paramIdKey], req.body, @safe, @doLogQuery)
+    @svc.create(req.body, req.params[@paramIdKey], undefined, @doLogQuery)
     .catch _.partial(@onError, next)
 
   byIdDELETE: (req, res, next) =>
@@ -86,7 +85,7 @@ class HasManyCrud extends Crud
       throw new Error('@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
-    @svc.getAll(_.set({}, @rootGETKey, req.params.id), @safe, @doLogQuery)
+    @svc.getAll(_.set({}, @rootGETKey, req.params.id), @doLogQuery)
 
 ###
 TODO:
@@ -117,7 +116,7 @@ RouteCrud = routeCruds[0]
 HasManyRouteCrud = routeCruds[1]
 
 module.exports =
-  Crud: Crud
+  Crud:Crud
   crud: factory(Crud)
   RouteCrud: RouteCrud
   routeCrud: factory(RouteCrud)
