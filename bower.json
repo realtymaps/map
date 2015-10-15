@@ -34,7 +34,7 @@
     "restangular": "1.5.1",
     "rmaps-angular-utils": "1.0.1",
     "spinkit": "~1.0.0",
-    "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#master",
+    "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#0.0.14",
     "angular-toastr": "~1.5.0"
   },
   "overrides": {

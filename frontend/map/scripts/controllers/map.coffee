@@ -22,8 +22,8 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects, rmapsProfilesService,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService,
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
@@ -144,13 +144,13 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      rmapsProjects.createProject newProject
+      rmapsProjectsService.createProject newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    rmapsProjects.archive project
+    rmapsProjectsService.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
 

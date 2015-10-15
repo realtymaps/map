@@ -82,6 +82,7 @@ class HasManyCrud extends Crud
     execQ @joinQuery().where(entity), doLogQuery
 
   getById: (id, doLogQuery = false) ->
+    throw new Error('id is required') unless id?
     execQ @joinQuery().where(@idObj(id)), doLogQuery
 
   create: (entity, id, doLogQuery = false) ->
