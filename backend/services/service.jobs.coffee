@@ -12,7 +12,7 @@ class JobService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
     jobQueue.doMaintenance()
     .then () =>
-      return super(query, doLogQuery)
+      return super(query, undefined, doLogQuery)
 
 class TaskService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->
@@ -51,25 +51,18 @@ class TaskService extends crudService.Crud
         @dbFn = old_dbFn
         ret
       @dbFn.tableName = tableName
-    super(query, doLogQuery)
+    super(query, undefined, doLogQuery)
 
   create: (entity, id, doLogQuery = false) ->
     if _.isArray entity
       throw new Error 'All objects must already include unique identifiers' unless _.every entity, @idKey
-    super(entity, id, doLogQuery)
+    super(id, entity, undefined, doLogQuery)
 
   delete: (id, doLogQuery = false) ->
     super(id, doLogQuery)
     .then () =>
       if @dbFn.tableName == 'jq_task_config'
         tables.jobQueue.subtaskConfig().where('task_name', id).delete()
-
-
-_summary = new JobService(tables.jobQueue.summary)
-_taskHistory = new JobService(tables.jobQueue.taskHistory, 'name')
-_queues = new TaskService(tables.jobQueue.queueConfig, 'name')
-_tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
-_subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
 
 
 # provide a contrived "query" that meets requirements for our Crud object
@@ -130,9 +123,70 @@ healthDbFn = () ->
 
   return _queryFn
 
+historyDbFn = () ->
+  _queryFn = (query = {}) ->
+    dbquery = tables.jobQueue.taskHistory()
+
+    _interval = '30 days'
+    if query.timerange?
+      if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
+        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
+      delete query.timerange
+
+    whereInterval = "now_utc() - started <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
+
+    if query.name == 'All'
+      delete query.name
+      delete query.current # 'all' implies both current and non-current sets, so remove from query totally
+
+    if query.list?
+      if query.list == 'true'
+        dbquery = dbquery.select('name', 'current').groupBy('name', 'current')
+      delete query.list
+
+    dbquery.where(query)
+
+  # "where" adaptor call for the above
+  _queryFn.where = (query = {}) ->
+    return _queryFn(query)
+
+  return _queryFn
+
+errorHistoryDbFn = () ->
+  _queryFn = (query = {}) ->
+    dbquery = tables.jobQueue.subtaskErrorHistory()
+
+    _interval = '30 days'
+    if query.timerange?
+      if query.timerange in ['1 hour', '1 day', '7 days', '30 days', '90 days', 'all']
+        _interval = if query.timerange == 'all' then '120 days' else query.timerange # account for some sort of upper bound
+      delete query.timerange
+
+    whereInterval = "now_utc() - enqueued <= interval '#{_interval}'"
+    dbquery = dbquery.whereRaw(whereInterval)
+
+    if query.task_name == 'All'
+      delete query.task_name
+
+    dbquery.where(query)
+
+  # "where" adaptor call for the above
+  _queryFn.where = (query = {}) ->
+    return _queryFn(query)
+
+  return _queryFn
+
+_summary = new JobService(tables.jobQueue.summary)
+_taskHistory = new JobService(historyDbFn, 'name')
+_subtaskErrorHistory = new JobService(errorHistoryDbFn, 'id')
+_queues = new TaskService(tables.jobQueue.queueConfig, 'name')
+_tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
+_subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
 
 module.exports =
   taskHistory: _taskHistory
+  subtaskErrorHistory: _subtaskErrorHistory
   queues: _queues
   tasks: _tasks
   subtasks: _subtasks

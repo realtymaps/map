@@ -169,6 +169,7 @@ module.exports =
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"
+    subtaskErrorHistory: "#{apiBaseJobs}/subtaskerrorhistory"
     queues: "#{apiBaseJobs}/queues/"
     queuesById: "#{apiBaseJobs}/queues/:name"
     tasks: "#{apiBaseJobs}/tasks"

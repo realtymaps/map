@@ -6,6 +6,8 @@ pieUtil = require '../utils/util.piechart.coffee'
 
 app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
 
+  $log = $log.spawn('map:layerFormatter')
+
   renderCounters =
     fill:
       directive: 0
@@ -118,6 +120,14 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
           iconSize: [60, 30]
           html: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
 
+    setMarkerNotesOptions: (model, number) ->
+      _.extend model,
+        markerType: 'note'
+        icon:
+          type: 'div'
+          iconSize: [30, 30]
+          html: require('../../html/includes/_circleNr.jade')(number+1)
+
     setMarkerManualClusterOptions: (model) ->
       return {} unless model
       #important for the clusterer css a div must have child span
@@ -133,5 +143,5 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
   isVisible: _isVisible
   setDataOptions: (data, optionsFormatter) ->
     _.each data, (model,k) ->
-      optionsFormatter(model)
+      optionsFormatter(model, k)
     data

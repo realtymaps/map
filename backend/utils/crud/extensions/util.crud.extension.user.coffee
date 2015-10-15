@@ -3,7 +3,6 @@ _ = require 'lodash'
 withRestriction = (req, toBeQueryClause, restrict, cb) ->
   unless toBeQueryClause
     toBeQueryClause = req.query or {}
-
   _.extend toBeQueryClause, restrict
   cb(toBeQueryClause) if cb?
 
@@ -36,5 +35,15 @@ route =
               toBeQueryClause = if method == 'POST' || method == 'PUT' then req.body else req.query
               restrictFn req, toBeQueryClause, =>
                 wrapped.call @, req, res, next
+
+  toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+    for row in rows
+      row.coordinates = row[deafaultCoordLocation].coordinates
+      row.type = row[deafaultCoordLocation].type
+
+      for del in deletes
+        delete row[del]
+
+    rows
 
 module.exports.route = route

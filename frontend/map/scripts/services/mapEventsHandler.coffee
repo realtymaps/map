@@ -18,7 +18,7 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @type = type
   @
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions, rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService) ->
+app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions, rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters) ->
   _gate = rmapsNgLeafletEventGate
   limits = rmapsMainOptions.map
   _markerEvents = rmapsNgLeafletHelpers.events.markerEvents
@@ -37,13 +37,13 @@ app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMai
 
     _handleHover = (model, lObject, type, layerName, eventName) ->
       return if !layerName or !type or !lObject
-      if type == 'marker' and layerName != 'addresses'
-        mapCtrl.layerFormatter.MLS.setMarkerPriceOptions(model)
+      if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
+        rmapsLayerFormatters.MLS.setMarkerPriceOptions(model)
         lObject.setIcon(new L.divIcon(model.icon))
       if type == 'geojson'
         if eventName == 'mouseout'
           s = 's'
-        opts = mapCtrl.layerFormatter.Parcels.getStyle(model, layerName)
+        opts = rmapsLayerFormatters.Parcels.getStyle(model, layerName)
         lObject.setStyle(opts)
 
       #seems to be a google bug where mouse out is not always called
@@ -90,7 +90,8 @@ app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMai
         # $log.debug mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}
 
         #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-        mapCtrl.openWindow(model, lObject) if !maybeCaller && mapCtrl.openWindow?
+        if model.markerType != 'note'
+          mapCtrl.openWindow(model, lObject) if !maybeCaller && mapCtrl.openWindow?
 
         model.isMousedOver = true
 

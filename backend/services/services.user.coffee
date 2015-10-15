@@ -1,6 +1,7 @@
 _ = require 'lodash'
 logger = require '../config/logger'
 tables = require '../config/tables'
+sqlHelpers = require '../utils/util.sql.helpers'
 
 toInit = {}
 _.extend toInit, _.pick tables.lookup, [
@@ -19,8 +20,15 @@ _.extend toInit, _.pick tables.user, [
   'project'
   'company'
   'accountImages'
-  'notes'
 ]
+
+manualInits = {
+  notes: tables.user
+}
+
+for tableName, tableVal of manualInits
+  toInit[tableName] = () ->
+    sqlHelpers.select(tableVal[tableName](), tableName)
 
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 
