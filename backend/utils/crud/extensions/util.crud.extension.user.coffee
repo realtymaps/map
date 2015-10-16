@@ -5,8 +5,8 @@ withRestriction = (req, toBeQueryClause, restrict, cb) ->
   unless toBeQueryClause
     toBeQueryClause = req.query or {}
   _.extend toBeQueryClause, restrict
-  logger.debug toBeQueryClause, true
-  logger.debug req.query, true
+  # logger.debug toBeQueryClause, true
+  # logger.debug req.query, true
   cb(toBeQueryClause) if cb?
 
 route =
