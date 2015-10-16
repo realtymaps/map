@@ -1,22 +1,24 @@
 include ../mixins/property/_propertyAttributes.jade
 include ../mixins/_circleNr.jade
 
-span(ng-controller="rmapsFavoritesCtrl" ng-click="clickToggle()" class="favorites dropdown btn-group" 
-dropdown on-toggle="toggled(open)" auto-close="disabled" dropdown-append-to-body)
-
-    button(class="dropdown-toggle btn btn-transparent pinned-projects" dropdown-toggle)
-        span.icon.icon-pin
-    ul(class="favorites dropdown-menu whiteblock no-margin")
-        li.count
-            a(href="#favorites") {{favorites.length}} Favorities
-        li(ng-repeat="(id, fav) in favorites")
-            div(ng-click="formatters.results.click(fav,fav);showDetails = !showDetails")
-                span.enity
-                    +circleNr('{{$index+1}}')
-                    span.content
-                        span(class="status" ng-class="fav.status") {{fav.status}}
-                        +propertyAttributes('fav')
-                span.actions
-                    span.unpin
-                        span.action Unpin
-                        span.icon.icon-pin
+span(ng-controller="rmapsFavoritesCtrl" class="dropdown btn-group pinned-list" dropdown on-toggle="toggled(open)")
+    button(class="dropdown-toggle btn btn-transparent pinned" dropdown-toggle)
+      span.icon.icon-pin
+    
+    .dropdown-menu.whiteblock.no-margin
+        .fixed-header
+            span
+                a(href="#favorites") {{favoritesList.length}} Pinned Properties
+        .inner
+            ul              
+                li(ng-repeat="(id, fav) in favorites")
+                    a(href="#favorites") {{favorites.length}}
+                        span.enity
+                            +circleNr('{{$index+1}}')
+                            span.content
+                                span(class="status" ng-class="formatters.results.getStatusLabelClass(fav,true)") {{fav.rm_status}}
+                                +propertyAttributes('fav')
+                        span.actions
+                            span.unpin
+                                span.action Unpin
+                                span.icon.icon-pin
