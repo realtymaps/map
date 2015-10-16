@@ -35,26 +35,25 @@ safe = [
   'project_id'
 ]
 
+safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft']
+
 toReturn = safe.concat ['id']
 
 get = (id, withProject = true) ->
   return tables.user.profile().where(id: id) unless withProject
 
-create = (newProfile, projectName) ->
+create = (newProfile, project) ->
   logger.debug 'PROFILE SVC: creating a profile'
   Promise.try () ->
-    if projectName
-      tables.user.project()
-      .returning('id')
-      .insert(name: projectName)
-      .then (inserted) ->
-        inserted?[0]
+    tables.user.project()
+    .returning('id')
+    .insert(_.pick project, safeProject)
+    .then (inserted) ->
+      inserted?[0]
   .then (maybeProjectId) ->
     if maybeProjectId
       newProfile.project_id = maybeProjectId
-      newProfile.name = projectName
-    else
-      newProfile.name = 'New Project'
+      newProfile.name = project.name
     tables.user.profile()
     .returning(toReturn)
     .insert(_.pick newProfile, safe)
