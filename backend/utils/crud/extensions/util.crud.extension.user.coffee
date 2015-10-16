@@ -26,9 +26,9 @@ route =
   ###
   restrictAll: (restrictFn) ->
     for prefix in ['root', 'byId']
-      do (prefix) ->
+      do (prefix) =>
         for method in ['GET', 'POST', 'DELETE', 'PUT']
-          do (method) ->
+          do (method) =>
             name = "#{prefix}#{method}"
             wrapped = @[name]
             @[name] = (req, res, next) =>
