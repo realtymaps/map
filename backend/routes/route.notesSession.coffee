@@ -13,17 +13,18 @@ sqlHelpers = require '../utils/util.sql.helpers'
 safeQuery = sqlHelpers.columns.notes
 
 ###
-TODO: Add double security to make sure that users can not cross edit notes they do not own or do not have perms too
+TODO: SPECS to double check security for notes permissions to notes owners
+TODO: Validate query and body params.
 ###
 class NotesSessionCrud extends Crud
   @include userExtensions.route
   init: () ->
     @restrictAll(@withUser)
-    super()
+    super(true)
 
   rootGET: (req, res, next) =>
-    @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
-    .then (notes) ->
+    super(req, res, next)
+    .then (notes) =>
       @toLeafletMarker notes
 
   rootPOST: (req, res, next) =>
