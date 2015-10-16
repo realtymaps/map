@@ -144,7 +144,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      rmapsProjectsService.createProject newProject
+      rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
