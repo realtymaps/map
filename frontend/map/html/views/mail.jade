@@ -9,7 +9,7 @@
                     .tools
                         input.search-box(type="search" ng-model="emailSearchQuery" placeholder="Search mailings")
                         span.divider
-                        button(class="btn btn-primary" ng-click="createNewEmail()") Create
+                        button(class="btn btn-primary" ng-click="$state.go('editTemplate')") Create
             .row
                 .col-md-12
                     table(class="table table-hover")
