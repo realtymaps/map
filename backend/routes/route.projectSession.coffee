@@ -20,7 +20,7 @@ class ClientsCrud extends HasManyRouteCrud
   @include userExtensions.route
   init: () ->
     @restrictAll @withParent
-    super()
+    super arguments...
 
   ###
     Create the user for this email if it doesn't alreayd exist, and then give them a profile for current project
@@ -56,7 +56,6 @@ class ClientsCrud extends HasManyRouteCrud
   byIdPUT: (req, res, next) ->
     @svc.getById req.params[@paramIdKey], @doLogQuery, parent_id: req.user.id, [ 'parent_id' ]
     .then (profile) =>
-      logger.info profile
       throw new Error 'Client info cannot be modified' unless profile?
       userSvc.update profile.auth_user_id, req.body, safeUser, @doLogQuery
     .catch _.partial(@onError, next)
@@ -69,7 +68,7 @@ class ProjectsSessionCrud extends Crud
     @clientsById = @clientsCrud.byId
 
     @restrictAll @withUser
-    super()
+    super arguments...
 
 ProjectsSessionRouteCrud = wrapRoutesTrait ProjectsSessionCrud
 
