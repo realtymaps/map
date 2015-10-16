@@ -35,10 +35,10 @@ route =
             name = "#{prefix}#{method}"
             wrapped = @[name]
             @[name] = (req, res, next) =>
-              logger.debug "restrictFn: calling handle #{name}" if doLog
+              logger.info "restrictFn: calling handle #{name}" if doLog
               toBeQueryClause = if method == 'POST' || method == 'PUT' then req.body else req.query
               restrictFn req, toBeQueryClause, =>
-                logger.debug "restrictFn: handle #{name}: calling wrapped.call" if doLog
+                logger.info "restrictFn: handle #{name}: calling wrapped.call" if doLog
                 wrapped.call @, req, res, next
 
   toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->

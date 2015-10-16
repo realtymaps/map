@@ -30,32 +30,61 @@ class Crud extends BaseObject
     obj[@idKey] = val
     obj
 
+  count: (query = {}, doLogQuery = false, fnExec = execQ) ->
+    fnExec @dbFn().where(query).count('*'), doLogQuery
+
   getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @dbFn().where(query), doLogQuery
 
   getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
+    throw new Error('id is required') unless id?
     withSafeEntity entity, safe, (entity, safe) =>
       fnExec @dbFn().where(_.extend @idObj(id), entity), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(@idObj(id)).update(entity), doLogQuery
+      fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery
     , true
 
   create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       # support entity or array of entities
       if _.isArray entity
-        fnExec @dbFn().insert(entity), doLogQuery
+        fnExec @dbFn().returning(@idKey).insert(entity), doLogQuery
       else
         obj = {}
         obj = @idObj id if id?
-        fnExec @dbFn().insert(_.extend {}, entity, obj), doLogQuery
+        fnExec @dbFn().returning(@idKey).insert(_.extend {}, entity, obj), doLogQuery
     , true
+
+  upsert: (entity, unique, doUpdate = true, safe, doLogQuery = false, fnExec = execQ) ->
+    query = _.pick entity, unique
+    logger.info query
+    throw new Error('unique field(s) must be provided') unless !_.isEmpty query
+
+    @getAll query, doLogQuery, fnExec
+    .then (found) =>
+      throw new Error('must match exactly one or zero records') unless found.length <= 1
+
+      if found.length == 0
+        Crud::create.call @, entity, entity[@idKey], doLogQuery, safe, fnExec
+        .then (inserted) ->
+          logger.info inserted
+          throw new Error('exactly one record should have been inserted') unless inserted.length == 1
+          inserted
+
+      else if found.length == 1
+        return [ found[0][@idKey] ] unless doUpdate
+        Crud::update.call @, found[0][@idKey], entity, safe, doLogQuery, fnExec
+        .then (updated) ->
+          logger.info updated
+          throw new Error('exactly one record should have been updated') unless updated.length == 1
+          updated
 
   delete: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       fnExec @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
+    , true
 
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
@@ -76,23 +105,28 @@ class HasManyCrud extends Crud
     @rootIdStr = rootIdStr or @dbFn.tableName + '.id'
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
 
-  getAll: (entity, doLogQuery = false) ->
-    if !_.isObject(entity) or !entity?
-      throw new Error('entity must be defined or an Object.')
-    execQ @joinQuery().where(entity), doLogQuery
+  count: (query = {}, doLogQuery = false, fnExec = execQ) ->
+    fnExec @joinQuery().where(query).count('*'), doLogQuery
 
-  getById: (id, doLogQuery = false) ->
+  getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
+    fnExec @joinQuery().where(query), doLogQuery
+
+  getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     throw new Error('id is required') unless id?
-    execQ @joinQuery().where(@idObj(id)), doLogQuery
+    withSafeEntity entity, safe, (entity, safe) =>
+      fnExec @joinQuery().where(_.extend @idObj(id), entity), doLogQuery
 
-  create: (entity, id, doLogQuery = false) ->
-    @joinCrud.create(entity, id, doLogQuery)
+  create: () ->
+    @joinCrud.create(arguments...)
 
-  update: (id, entity, safe, doLogQuery = false) ->
-    @joinCrud.update(id, entity, safe, doLogQuery)
+  upsert: () ->
+    throw new Error 'Upsert not supported for multiple tables'
 
-  delete: (id, doLogQuery = false) ->
-    @joinCrud.delete(id, doLogQuery)
+  update: () ->
+    @joinCrud.update(arguments...)
+
+  delete: () ->
+    @joinCrud.delete(arguments...)
 
   base: () ->
     super([HasManyCrud,@].concat(_.toArray arguments)...)
@@ -118,8 +152,9 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
       super(arguments...)
       @init()
 
-    init:(@doWrapGetAllThen = true, @doWrapGetThen = true) =>
+    init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) =>
       @
+
     #Majority of the time GETS are the main functions you might want to stream
     getAll: () =>
       q = super(arguments...)
@@ -137,13 +172,24 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
 
     #here down return thenables to be consistent on service returns for single items
     update: () ->
-      singleResultBoolean super(arguments...)
+      q = super(arguments...)
+      return q unless @doWrapSingleThen
+      singleResultBoolean q
 
     create: () ->
-      singleResultBoolean super(arguments...), true
+      q = super(arguments...)
+      return q unless @doWrapSingleThen
+      singleResultBoolean q, true
+
+    upsert: () ->
+      q = super(arguments...)
+      return q unless @doWrapSingleThen
+      singleResultBoolean q, true
 
     delete: () ->
-      singleResultBoolean super(arguments...)
+      q = super(arguments...)
+      return q unless @doWrapSingleThen
+      singleResultBoolean q
 
 
 ThenableCrud = thenables[0]

@@ -35,19 +35,19 @@ describe 'util.crud.service.helpers', ->
       describe 'update', ->
         it 'no safe', ->
           @instance.update(1, {test:'test'}).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1'"""
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
 
         it 'safe', ->
           @instance.update(1, {test:'test', crap: 2}, ['test']).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1'"""
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
 
       describe 'create', ->
         it 'default', ->
           @instance.create({id:1, test:'test'}).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test')"""
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim()
         it 'id', ->
           @instance.create({id:1, test:'test'}, 2).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test')"""
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim()
 
       it 'delete', ->
         @instance.delete(1).toString()
@@ -66,28 +66,28 @@ describe 'util.crud.service.helpers', ->
 
       it 'getById', ->
         @instance.getById(1).toString()
-        .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = '1'""".replace('id', @instance.idKey)
+        .should.equal """select * from "#{tables.auth.user.tableName}" where "id" = '1'""".replace(/id/g, @instance.idKey)
 
       describe 'update', ->
         it 'no safe', ->
           @instance.update(1, {test:'test'}).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1'""".replace('id', @instance.idKey)
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim().replace(/id/g, @instance.idKey)
 
         it 'safe', ->
           @instance.update(1, {test:'test', crap: 2}, ['test']).toString()
-          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1'""".replace('id', @instance.idKey)
+          .should.equal """update "#{tables.auth.user.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim().replace(/id/g, @instance.idKey)
 
       describe 'create', ->
         it 'default', ->
           @instance.create({project_id:1, test:'test'}).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test')""".replace('id', @instance.idKey)
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
         it 'id', ->
           @instance.create({test:'test'}, 2).toString()
-          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test')""".replace('id', @instance.idKey)
+          .should.equal """insert into "#{tables.auth.user.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim().replace(/id/g, @instance.idKey)
 
       it 'delete', ->
         @instance.delete(1).toString()
-        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = '1'""".replace('id', @instance.idKey)
+        .should.equal """delete from "#{tables.auth.user.tableName}" where "id" = '1'""".replace(/id/g, @instance.idKey)
 
 
     describe 'HasManyCrud', ->
@@ -121,20 +121,20 @@ describe 'util.crud.service.helpers', ->
         describe 'update', ->
           it 'no safe', ->
             @instance.update(1, test:'test').toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1'"""
+            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
 
           it 'safe', ->
             @instance.update(1, {test:'test', crap:2}, ['test']).toString()
-            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1'"""
+            .should.equal """update "#{tables.auth.m2m_user_permission.tableName}" set "test" = 'test' where "id" = '1' returning "id" """.trim()
 
 
         describe 'create', ->
           it 'default', ->
             @instance.create({id:1, test:'test'}).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('1', 'test')"""
+            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('1', 'test') returning "id" """.trim()
           it 'id', ->
             @instance.create({id:1, test:'test'}, 2).toString()
-            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('2', 'test')"""
+            .should.equal """insert into "#{tables.auth.m2m_user_permission.tableName}" ("id", "test") values ('2', 'test') returning "id" """.trim()
 
         it 'delete', ->
           @instance.delete(1).toString()
