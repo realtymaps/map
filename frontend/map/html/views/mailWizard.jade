@@ -1,0 +1,21 @@
+#mail
+  header.send-progress
+    button(class="btn btn-default pull-left" ng-click="setActiveStep('select-template')") Back
+    button(class="btn btn-primary pull-right" ng-click="setActiveStep('confirm')") Next
+    div.pathway
+      ul
+        li(ng-class="{ active: step == 'recipient' }")
+          span Recipient
+        li(ng-class="{ active: step == 'senderInfo' }")
+          span Sender Info
+        li(ng-class="{ active: step == 'selectTemplate' }")
+          span Select Template
+        li(ng-class="{ active: step == 'editTemplate' }")
+          span Edit Template
+        li(ng-class="{ active: step == 'confirm' }")
+          span Confirm
+
+  div.inner
+    div.container
+      div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
+

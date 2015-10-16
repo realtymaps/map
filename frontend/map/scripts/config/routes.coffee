@@ -16,14 +16,17 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
       name:         name
       parent:       'main'
       url:          frontendRoutes[name],
-      controller:   "rmaps#{name.toInitCaps()}Ctrl"
+      #controller:   "rmaps#{name.toInitCaps()}Ctrl"
+      controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl" # we can have CamelCase yay!
     _.extend(state, overrides)
     _.defaults(state, stateDefaults)
 
     if !state.template
       state.templateProvider = ($templateCache) ->
+        templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         console.debug 'loading template:', name
-        $templateCache.get "./views/#{name}.jade"
+        #$templateCache.get "./views/#{name}.jade"
+        $templateCache.get templateName
 
     if state.parent
       state.views = {}
@@ -43,7 +46,6 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'user'
   buildState 'profiles'
   buildState 'history'
-  buildState 'mail'
   buildState 'properties'
   buildState 'projects'
   buildState 'project'
@@ -52,6 +54,10 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'favorites'
   buildState 'sendEmailModal'
   buildState 'newEmail'
+
+  buildState 'mail'
+  buildState 'mailWizard'
+  buildState 'editTemplate', parent: 'mailWizard'
 
   buildState 'login', template: loginTemplate, sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false

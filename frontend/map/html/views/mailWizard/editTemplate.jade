@@ -1,0 +1,47 @@
+#edit-template
+  form
+    div.row.equal-height
+      div.col-md-6
+        div.template-view
+          p here is template view
+
+
+
+          
+      div.col-md-6
+        tabset(justified="true")
+          tab(heading="Design")
+            div.edit-template-design
+              div.form-section
+                  h4
+                      | Font Family
+
+                  div
+                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'helvetica'") Helvetica
+                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'times'") Times New Roman
+                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'gill'") Gill Sans
+                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'georgia'") Georgia
+              div.form-section
+                  h4
+                      | Font Size
+
+                  div(class="row")
+                      div.col-md-8
+                          div.btn-group
+                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'12'") 12pt
+                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'13'") 13pt
+                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'14'") 14pt
+                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'16'") 16pt
+                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'18'") 18pt
+
+              div.form-section
+                  h4
+                      | Font Color
+
+                  div
+                      label(class="btn btn-circle color-black" ng-model="radioFontColorModel" btn-radio="'black'") Black
+                      label(class="btn btn-circle color-blue" ng-model="radioFontColorModel" btn-radio="'blue'") Blue
+                      label(class="btn btn-circle color-green" ng-model="radioFontColorModel" btn-radio="'green'") Green
+                      label(class="btn btn-circle color-red" ng-model="radioFontColorModel" btn-radio="'red'") Red
+                      label(class="btn btn-circle color-yellow" ng-model="radioFontColorModel" btn-radio="'yellow'") Yellow
+                      label(class="btn btn-circle color-white" ng-model="radioFontColorModel" btn-radio="'white'") White
