@@ -1,136 +1,40 @@
+_ = require 'lodash'
 mlsConfigService = require '../services/service.mls_config'
-ExpressResponse = require '../utils/util.expressResponse'
 auth = require '../utils/util.auth'
+crudHelpers = require '../utils/crud/util.crud.route.helpers'
+routeHelpers = require '../utils/util.route.helpers'
 
-module.exports =
-  getAll:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      mlsConfigService.getAll req.query
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
 
-  getById:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      mlsConfigService.getById req.params.id
-      .then (result) ->
-        if result
-          next new ExpressResponse result
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown config #{req.params.id}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+class MlsConfigCrud extends crudHelpers.RouteCrud
+  updatePropertyData: (req, res, next) =>
+    @handleQuery @svc.updatePropertyData(req.params.id, req.body).catch(_.partial(@onError, next)), res
 
-  update:
-    method: 'put'
+  updateServerInfo: (req, res, next) =>
+    @handleQuery @svc.updateServerInfo(req.params.id, req.body).catch(_.partial(@onError, next)), res
+
+
+module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),
+  root:
+    methods: ['get', 'post']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      auth.requirePermissions({all:['change_mlsconfig']}, logoutOnFail:false)
+      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig']}, logoutOnFail:true)
     ]
-    handle: (req, res, next) ->
-      mlsConfigService.update req.params.id, req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+  byId:
+    methods: ['get', 'post', 'put', 'delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      auth.requirePermissions({all:['add_mlsconfig','change_mlsconfig', 'delete_mlsconfig']}, logoutOnFail:true)
+    ]
   updatePropertyData:
     methods: ['patch', 'put']
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       auth.requirePermissions({all:['change_mlsconfig_mainpropertydata']}, logoutOnFail:false)
     ]
-    handle: (req, res, next) ->
-      mlsConfigService.updatePropertyData req.params.id, req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
-  # Privileged
   updateServerInfo:
     methods: ['patch', 'put']
     middleware: [
-      auth.requireLogin(redirectOnFail: true) # privileged
+      auth.requireLogin(redirectOnFail: true)
       auth.requirePermissions({all:['change_mlsconfig_serverdata']}, logoutOnFail:false)
     ]
-    handle: (req, res, next) ->
-      mlsConfigService.updateServerInfo req.params.id, req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
-  # Privileged
-  create:
-    method: 'post'
-    middleware: [
-      auth.requireLogin(redirectOnFail: true) # privileged
-      auth.requirePermissions({all:['add_mlsconfig']}, logoutOnFail:false)
-    ]
-    handle: (req, res, next) ->
-      mlsConfigService.create req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
-  # Privileged
-  createById:
-    method: 'post'
-    middleware: [
-      auth.requireLogin(redirectOnFail: true) # privileged
-      auth.requirePermissions({all:['add_mlsconfig']}, logoutOnFail:false)
-    ]
-    handle: (req, res, next) ->
-      mlsConfigService.create req.body, req.params.id
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
-  # Privileged
-  delete:
-    method: 'delete'
-    middleware: [
-      auth.requireLogin(redirectOnFail: true) # privileged
-      auth.requirePermissions({all:['delete_mlsconfig']}, logoutOnFail:false)
-    ]
-    handle: (req, res, next) ->
-      mlsConfigService.delete req.params.id
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500

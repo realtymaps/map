@@ -133,12 +133,8 @@ module.exports =
     defineImports: "#{apiBase}/parcel/defineimports"
   mls_config:
     apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
-    getAll: "#{apiBaseMlsConfig}"
-    create: "#{apiBaseMlsConfig}"
-    getById: "#{apiBaseMlsConfig}/:id"
-    update: "#{apiBaseMlsConfig}/:id"
-    createById: "#{apiBaseMlsConfig}/:id"
-    delete: "#{apiBaseMlsConfig}/:id"
+    root: apiBaseMlsConfig
+    byId: "#{apiBaseMlsConfig}/:id"
     updatePropertyData: "#{apiBaseMlsConfig}/:id/propertyData"
     updateServerInfo: "#{apiBaseMlsConfig}/:id/serverInfo"
 
