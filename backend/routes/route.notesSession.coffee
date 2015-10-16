@@ -19,11 +19,11 @@ class NotesSessionCrud extends Crud
   @include userExtensions.route
   init: () ->
     @restrictAll(@withUser)
-    super()
+    super(true)
 
   rootGET: (req, res, next) =>
-    @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
-    .then (notes) ->
+    super(req, res, next)
+    .then (notes) =>
       @toLeafletMarker notes
 
   rootPOST: (req, res, next) =>

@@ -1,9 +1,12 @@
 _ = require 'lodash'
+logger = require '../../../config/logger'
 
 withRestriction = (req, toBeQueryClause, restrict, cb) ->
   unless toBeQueryClause
     toBeQueryClause = req.query or {}
   _.extend toBeQueryClause, restrict
+  logger.debug toBeQueryClause, true
+  logger.debug req.query, true
   cb(toBeQueryClause) if cb?
 
 route =
@@ -24,7 +27,7 @@ route =
   ###
     Add query/post-data restrictions across all methods
   ###
-  restrictAll: (restrictFn) ->
+  restrictAll: (restrictFn, doLog = false) ->
     for prefix in ['root', 'byId']
       do (prefix) =>
         for method in ['GET', 'POST', 'DELETE', 'PUT']
@@ -32,14 +35,17 @@ route =
             name = "#{prefix}#{method}"
             wrapped = @[name]
             @[name] = (req, res, next) =>
+              logger.debug "restrictFn: calling handle #{name}" if doLog
               toBeQueryClause = if method == 'POST' || method == 'PUT' then req.body else req.query
               restrictFn req, toBeQueryClause, =>
+                logger.debug "restrictFn: handle #{name}: calling wrapped.call" if doLog
                 wrapped.call @, req, res, next
 
   toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
     for row in rows
-      row.coordinates = row[deafaultCoordLocation].coordinates
-      row.type = row[deafaultCoordLocation].type
+      # logger.debug row, true
+      row.coordinates = row[deafaultCoordLocation]?.coordinates
+      row.type = row[deafaultCoordLocation]?.type
 
       for del in deletes
         delete row[del]
