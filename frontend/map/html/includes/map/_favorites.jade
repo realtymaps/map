@@ -14,8 +14,7 @@ span(ng-controller="rmapsFavoritesCtrl" class="dropdown btn-group pinned-list" d
                 li(ng-repeat="(id, fav) in favorites")
                     a(href="#favorites") {{favorites.length}}
                         span.enity
-                            span.circle-nr
-                                span {{$index+1}}
+                            +circleNr('{{$index+1}}')
                             span.content
                                 span(class="status" ng-class="formatters.results.getStatusLabelClass(fav,true)") {{fav.rm_status}}
                                 +propertyAttributes('fav')

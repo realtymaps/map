@@ -45,47 +45,47 @@ $fnPropertyStatus(colorProp)
 
 
 basicTitle()
-  display: block
-  color: #6B6B6B
+  display block
+  color #6B6B6B
 
 data()
   .sqft .data, .year .data
-    font-size: .7em
+    font-size .7em
 
 $fnOverrideSliderBackgroundColor()
-  background-color: $rm-translucent-white
+  background-color $rm-translucent-white
 
 #results-slide.results-container
   @extends .slide-out-container
 
-  width: $listNormalWidth
-  height: 85%
-  top: 60px
-  transition: 0.15s height ease-in-out
-  right: 20px
-  overflow: hidden
-  box-shadow: 0 2px 2px rgba(0,0,0,0.3)
-  border-radius: 0 0 3px 3px
-  background: $white
+  width $listNormalWidth
+  height 85%
+  top 60px
+  transition 0.15s height ease-in-out
+  right 20px
+  overflow hidden
+  box-shadow 0 2px 2px rgba(0,0,0,0.3)
+  border-radius 0 0 3px 3px
+  background $white
   padding-bottom 5px
   @media (min-width: s)
-    right:30px
+    right 30px
 
   #results-list
-    width: 100%
+    width 100%
     background-color $white
     min-height 200px
 
   &.ng-hide-add, #results-slide.ng-hide-remove
-    display: block !important
+    display block !important
 
   &.ng-hide-remove, #results-slide.ng-hide-add.ng-hide-add-active
-    margin-right: -500px
-    opacity: 1
+    margin-right -500px
+    opacity 1
 
   &.ng-hide-remove.ng-hide-remove-active, #results-slide.ng-hide-add
-    margin-right: 0
-    opacity: 1
+    margin-right 0
+    opacity 1
 
   button
     height 50px

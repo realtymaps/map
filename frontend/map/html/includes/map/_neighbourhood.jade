@@ -1,21 +1,24 @@
 span(class="dropdown btn-group neighbourhood-list" dropdown on-toggle="toggled(open)")
     button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
         span.icon.icon-neighbourhood
-    ul(class="dropdown-menu whiteblock no-margin")
-        li.count
-            a(href="{{frontendRoutes.neighbourhoods}}") {{neighbourArray.length}} Neighbourhoods
-        li(ng-repeat="neighbourhood in neighbourArray")
-            div
-                span.enity
-                    span.count {{$index+1}}.
+    .dropdown-menu.whiteblock.no-margin
+        .fixed-header
+            span
+                a(href="{{frontendRoutes.neighbourhoods}}") {{neighbourArray.length}} Neighborhoods
+        .inner
+            ul
+                li(ng-repeat="neighbourhood in neighbourArray")
+                    div
+                        span.enity
+                            span.count {{$index+1}}.
 
-                    span.map
-                        img(src="/assets/test_map.jpg" title="Map preview")
+                            span.map
+                                img(src="/assets/test_map.jpg" title="Map preview")
 
-                    span.content
-                        a(href="#/neighbourhoods/{{neighbourhood.id}}")
-                            h3.title {{neighbourhood.title}}
-                        p.properties {{neighbourhood.properties}} Properties
+                            span.content
+                                a(href="#/neighbourhoods/{{neighbourhood.id}}")
+                                    h3.title {{neighbourhood.title}}
+                                p.properties {{neighbourhood.properties}} Properties
 
-                span.actions
-                    span.icon.icon-remove
+                        span.actions
+                            span.icon.icon-remove
