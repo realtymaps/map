@@ -12,11 +12,3 @@ CREATE TABLE user_mail_campaigns (
   created TIMESTAMP NOT NULL,
   submitted TIMESTAMP
 );
-
-DROP TABLE IF EXISTS mail_templates;
-CREATE TABLE mail_templates (
-  id SERIAL PRIMARY KEY,
-  type TEXT, -- letter | postcard | ...
-  style JSON NOT NULL DEFAULT '{}',
-  body TEXT
-);
