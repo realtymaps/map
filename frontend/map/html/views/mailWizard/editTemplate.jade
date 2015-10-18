@@ -3,14 +3,15 @@
     div.row.equal-height
       div.col-md-6
         div.template-view
-          p here is template view
+          .clear-template
+            div(text-angular ng-model="data.htmlcontent" ta-target-toolbars='testToolbar01')
 
 
 
-          
+      
       div.col-md-6
         tabset(justified="true")
-          tab(heading="Design")
+          tab(heading="Text")
             div.edit-template-design
               div.form-section
                   h4
@@ -45,3 +46,30 @@
                       label(class="btn btn-circle color-red" ng-model="radioFontColorModel" btn-radio="'red'") Red
                       label(class="btn btn-circle color-yellow" ng-model="radioFontColorModel" btn-radio="'yellow'") Yellow
                       label(class="btn btn-circle color-white" ng-model="radioFontColorModel" btn-radio="'white'") White
+
+          tab(heading="Images")
+            div.edit-template-design
+              div.form-section
+                  h4
+                    | Insert Image
+
+                  div
+                    label Insert Image
+
+          tab(heading="Macros")
+            div.edit-template-design
+              div.form-section
+                  h4
+                    | Insert Macro
+
+                  div
+                    label Macro 1
+                    label Macro 2
+
+          tab(heading="Tools")
+            div.edit-template-design
+              button.btn.btn-text(ng-click="preview()") Preview
+
+          tab(heading="Test" active="true" disable="false")
+            div.edit-template-design
+              text-angular-toolbar(name="testToolbar01")

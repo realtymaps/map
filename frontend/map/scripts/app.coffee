@@ -5,6 +5,15 @@ require '../../../common/extensions/angular.coffee'
 
 appName = 'rmapsMapApp'
 
+# ((orig) ->
+#   window.angular.modules = []
+#   window.angular.module = () ->
+#     if (arguments.length > 1)
+#       angular.modules.push(arguments[0])
+#     return orig.apply(null, arguments)
+# )(angular.module)
+
+
 app = window.angular.module appName, [
   'rmapsCommon'
   'nemLogging'
@@ -26,6 +35,7 @@ app = window.angular.module appName, [
   'validation.rule'
   'ngImgCrop'
   'toastr'
+  'textAngular'
 ]
 
 app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->
