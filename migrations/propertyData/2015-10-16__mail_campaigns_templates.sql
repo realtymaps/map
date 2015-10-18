@@ -1,5 +1,5 @@
-DROP TABLE IF EXISTS mail_campaigns;
-CREATE TABLE mail_campaigns (
+DROP TABLE IF EXISTS user_mail_campaigns;
+CREATE TABLE user_mail_campaigns (
   id SERIAL PRIMARY KEY,
   auth_user_id INTEGER NOT NULL,
   project_id INTEGER NOT NULL,
