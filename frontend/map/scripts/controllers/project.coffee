@@ -16,8 +16,15 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     evt.stopPropagation()
     rmapsProjectsService.archive project
 
-  $scope.addClient = () ->
-    $scope.newClient = {}
+  $scope.removeClient = (client) ->
+    clientsService.remove client
+    .then $scope.loadClients
+
+  $scope.editClient = (client) ->
+    $log.debug 'add/edit client'
+    $log.debug client
+
+    $scope.clientCopy = _.clone client || {}
     modalInstance = $modal.open
       scope: $scope
       template: require('../../html/views/templates/modals/addClient.jade')()
@@ -27,12 +34,12 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
 
     $scope.saveClient = () ->
       modalInstance.dismiss('save')
-      clientsService.create $scope.newClient
-      .then (response) ->
-        $scope.loadProject()
+      method = if $scope.clientCopy.id? then 'update' else 'create'
+      clientsService[method] $scope.clientCopy
+      .then $scope.loadClients
 
   $scope.editProject = (project) ->
-    $scope.projectCopy = _.clone project
+    $scope.projectCopy = _.clone project || {}
 
     modalInstance = $modal.open
       animation: true
@@ -45,15 +52,18 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.saveProject $scope.projectCopy
-      .then (response) ->
-        _.extend $scope.project, $scope.projectCopy
+      .then () ->
+        _.assign $scope.project, $scope.projectCopy
 
   $scope.loadProject = () ->
     rmapsProjectsService.getProject $state.params.id
     .then (project) ->
       $scope.project = project
       clientsService = new rmapsClientsService project.id unless clientsService
-      clientsService.getAll()
+      $scope.loadClients()
+
+  $scope.loadClients = () ->
+    clientsService.getAll()
     .then (clients) ->
       $scope.project.clients = clients
 

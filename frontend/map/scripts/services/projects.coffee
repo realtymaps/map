@@ -124,7 +124,7 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       _update project
 
     createProject: (project) ->
-      $http.post backendRoutes.projectSession.root, project
+      $http.post backendRoutes.userSession.newProject, project
 
     archive: (project) ->
       project.archived = !project.archived

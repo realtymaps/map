@@ -23,7 +23,7 @@ module.exports = app
 #])
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
@@ -41,12 +41,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapssearchbox('mainMap')
 
   $scope.loadIdentity = (identity) ->
-    $scope.projects = identity.profiles
-
     rmapsprincipal.getCurrentProfile()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->
+      $scope.projects = identity.profiles
       $scope.totalProfiles = (_.keys identity.profiles).length
       _.each $scope.projects, (project) ->
         project.totalProperties = (_.keys project.properties_selected).length
@@ -144,7 +143,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      rmapsProjectsService.createProject newProject
+      rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
