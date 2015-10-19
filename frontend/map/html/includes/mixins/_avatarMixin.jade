@@ -1,4 +1,4 @@
-mixin avatar()
+mixin avatarMixin()
   div()&attributes(attributes)
     span(ng-cloak ng-if="!!user.account_image_id")
         img(ng-src="{{backendRoutes.userSession.image}}" title="{{user.username}}")

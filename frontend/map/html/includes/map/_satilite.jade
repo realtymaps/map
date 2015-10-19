@@ -1,4 +1,4 @@
-include ../mixins/leaflet.jade
+include ../mixins/_leafletMixin.jade
 //Currently this is sharing data with the main map
 div(class="sat-map" ng-controller="rmapsSatMapCtrl" ng-init="satMap.init()" ng-if="streetViewPanorama.status != 'OK' && Toggles.showDetails")
-  +leaflet('satMap', 'detailSatMap')
+  +leafletMixin('satMap', 'detailSatMap')

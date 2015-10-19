@@ -1,4 +1,4 @@
-include mixins/_avatar
+include mixins/_avatarMixin.jade
 
 #mobile-nav
     .inner
@@ -35,5 +35,5 @@ include mixins/_avatar
                     span.conut {{neighbourhoodList.length}}
         .bottom
             a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                +avatar()(class='tiny-avatar')
+                +avatarMixin()(class='tiny-avatar')
             a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings

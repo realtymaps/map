@@ -1,4 +1,4 @@
-include ./mixins/spinner.jade
+include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
   .full-width.container
@@ -15,7 +15,7 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         li.navbar-hide(ng-hide="$state.is('main')")
           a(href="{{frontendRoutes.map}}") Map
         li(ng-hide="$state.is('main')")
-          +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+          +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
       ul.nav.navbar-nav.navbar-right
         li.navbar-float-right(ng-hide="principal.isAuthenticated()", ng-cloak)
           a(href="{{frontendRoutes.login}}") Sign In
