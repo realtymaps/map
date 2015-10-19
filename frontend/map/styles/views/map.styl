@@ -89,34 +89,45 @@ img.manual-cluster{
   clip: rect(0px, 041px, 040px, 0px);
 }
 
-/*
-Before and afters are responsible for the label tick/pointer
-*/
 .leaflet-marker-icon
   height 0
   overflow: visible !important
-  .label
-    position relative
+
+  .price-marker
+    position: absolute;
     font-size 12px
     font-weight bold
     color $rmMainDarkBlue
-    border  1px solid $rm-marker-border
+    // border  1px solid $rm-marker-border
     box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
-    &:after, &:before
-      top 20px
-      left 50%
-      border solid transparent
-      content " "
+    //offset for centering pin on property
+    bottom 20px
+    left 25px
+    min-width 60px
+
+    &:before
+      position absolute
+      bottom:-15px;
+      left 0px
+      // border solid transparent
+      border:8px solid;
+      content ' '
       height 0
       width 0
-      position absolute
-      pointer-events none
+      // pointer-events none
     &:before
-      border-color transparent
-      border-top-color $rm-marker-border
+      border-color  $rm-marker-border transparent transparent $rm-marker-border
       border-width 11px
-      margin-left -11px
-    &:after
-      border-color transparent
-      border-width 10px
-      margin-left -10px
+
+    .price
+      padding 5px
+      text-align center
+
+    .icons
+      border-bottom 1px solid rgba(0, 0, 0, .3)
+      padding 2px
+      .icon
+        height 16px
+        width 50%
+        padding-left 10px
+        display inline-block

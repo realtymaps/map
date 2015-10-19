@@ -3,6 +3,7 @@ sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
+priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
 
 app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
 
@@ -95,7 +96,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
     setMarkerPriceOptions: (model) ->
       return {} unless model
       if not model.price
-        formattedPrice = ' &nbsp; &nbsp; &nbsp;'
+        formattedPrice = '-'
       else if model.price >= 1000000
         formattedPrice = '$'+casing.upper numeral(model.price).format('0.00a'), '.'
       else
@@ -118,7 +119,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
         icon:
           type: 'div'
           iconSize: [60, 30]
-          html: "<h4><span class='label label-#{markersBSLabel[status]}#{hovered}'>#{formattedPrice}</span></h4>"
+          html: priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{markersBSLabel[status]}#{hovered}")
 
     setMarkerNotesOptions: (model, number) ->
       _.extend model,
