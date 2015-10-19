@@ -1,0 +1,7 @@
+include _circleNrMixin.jade
+
+mixin noteMixin(title, text, circleNrArg)
+  +circleNrMixin(circleNrArg)
+  span.content
+    h3.title #{title}
+    p.text #{text}

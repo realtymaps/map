@@ -122,6 +122,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
 
     setMarkerNotesOptions: (model, number) ->
       _.extend model,
+        $index: number
         markerType: 'note'
         icon:
           type: 'div'

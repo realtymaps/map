@@ -1,6 +1,9 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
+mapId = 'mainMap'
+originator = 'map'
+popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
 app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $location) ->
   _.extend $scope,
@@ -47,11 +50,12 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
       _signalUpdate rmapsNotesService.remove note.id
 
 #this should be nested under rmapsNotesCtrl to be able to create modals
-.controller 'rmapsMapNotesTapCtrl', ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
-  $log = rmapsMapNotesTapCtrlLogger
+.controller 'rmapsMapNotesTapCtrl',
+($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
 
-  mapId = 'mainMap'
-  originator = 'map'
+  linker = rmapsMapEventsLinkerService
+  $log = rmapsMapNotesTapCtrlLogger
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -85,17 +89,21 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
       $scope.createGeoNote(model).finally ->
         _destroy()
 
-  mapUnSubs = rmapsMapEventsLinkerService.hookMap(mapId, _mapHandle, originator, ['click'])
-  markersUnSubs = rmapsMapEventsLinkerService.hookMarkers(mapId, _markerGeoJsonHandle, originator)
-  geoJsonUnSubs = rmapsMapEventsLinkerService.hookGeoJson(mapId, _markerGeoJsonHandle, originator)
+  mapUnSubs = linker.hookMap(mapId, _mapHandle, originator, ['click'])
+  markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
+  geoJsonUnSubs = linker.hookGeoJson(mapId, _markerGeoJsonHandle, originator)
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService, rmapsevents, rmapsLayerFormatters, leafletData) ->
+.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
+rmapsevents, rmapsLayerFormatters, leafletData, rmapsPopupLoader, rmapsMapEventsLinkerService) ->
 
   setMarkerNotesOptions = rmapsLayerFormatters.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormatters.setDataOptions
+  linker = rmapsMapEventsLinkerService
   directiveControls = null
+  popup = rmapsPopupLoader
+  markersUnSubs = null
 
   leafletData.getDirectiveControls('mainMap').then (controls) ->
     directiveControls = controls
@@ -106,6 +114,22 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
     map:
       markers:
         notes:[]
+
+  leafletData.getMap(@mapId).then (lMap) ->
+    _markerGeoJsonHandle =
+      mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+        return if model.markerType != 'note'
+        popup.close()
+
+      mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+        return if model.markerType != 'note'
+        popup.load($scope, lMap, model, undefined, undefined,
+          popupTemplate({title:model.title, text: model.text, circleNrArg: model.$index + 1}), false)
+
+    markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
+
+  $scope.$on '$destroy', ->
+    markersUnSubs() if markersUnSubs?
 
   getNotes = () ->
     rmapsNotesService.getList().then (data) ->
