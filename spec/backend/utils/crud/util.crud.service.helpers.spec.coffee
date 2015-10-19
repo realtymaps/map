@@ -58,8 +58,8 @@ describe 'util.crud.service.helpers', ->
         describe 'record exists', ->
           before ->
             sinon.stub(@instance, 'getAll').returns Promise.try () -> [1]
-            sinon.stub Crud::, 'update'
-            sinon.stub Crud::, 'create'
+            sinon.stub(Crud::, 'update').returns Promise.try () -> [1]
+            sinon.stub(Crud::, 'create').returns Promise.try () -> [1]
 
           after ->
             @instance.getAll.restore()
@@ -83,8 +83,8 @@ describe 'util.crud.service.helpers', ->
         describe 'record does not exist', ->
           before ->
             sinon.stub(@instance, 'getAll').returns Promise.try () -> []
-            sinon.stub Crud::, 'update'
-            sinon.stub Crud::, 'create'
+            sinon.stub(Crud::, 'update').returns Promise.try () -> [1]
+            sinon.stub(Crud::, 'create').returns Promise.try () -> [1]
 
           after ->
             @instance.getAll.restore()
