@@ -4,18 +4,18 @@ _updateProfileAttrs = ['id', 'filters', 'map_position', 'map_results', 'map_togg
 
 
 app.service 'rmapsCurrentProfilesService', ($http) ->
-  setCurrent: (id) ->
-    $http.post(backendRoutes.userSession.currentProfile, currentProfileId: id)
+  setCurrent: (profile) ->
+    $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
 
 app.service 'rmapsProfilesService', ($http, rmapsprincipal, rmapsCurrentProfilesService) ->
   _currentProfSvc = rmapsCurrentProfilesService
 
-  _update = (selectedProfile) ->
-    $http.put(backendRoutes.userSession.profiles,_.pick(selectedProfile, _updateProfileAttrs))
+  _update = (profile) ->
+    $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
-  setCurrent: (selectedProfile) ->
-    _update(selectedProfile)
+  setCurrent: (oldProfile, newProfile) ->
+    _update(oldProfile)
     .then () ->
-      _currentProfSvc.setCurrent(selectedProfile.id)
+      _currentProfSvc.setCurrent(newProfile)
     .then () ->
-      rmapsprincipal.getCurrentProfile(selectedProfile.id)
+      rmapsprincipal.getCurrentProfile(newProfile.id)

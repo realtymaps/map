@@ -154,8 +154,16 @@ newProject = (req, res, next) ->
     profileService.getCurrent(req.session)
   .then (profile) ->
     req.body.auth_user_id = req.user.id
+
+    newProfile =
+      auth_user_id: req.user.id
+      map_toggles: {}
+      map_result: {}
+
     # If current profile is sandbox, save the map state, otherwise create a clean profile
-    newProfile = if profile.project_id then _.clone(profile) else {}
+    if !profile.project_id?
+      _.extend newProfile, _.pick(profile, ['filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results'])
+
     profileService.create newProfile, req.body
   .then (newProfile) ->
     req.session.current_profile_id = newProfile.id
