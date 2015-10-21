@@ -7,6 +7,7 @@ moment = require('moment')
 logger = require '../config/logger'
 require '../config/promisify'
 memoize = require 'memoizee'
+through2 = require 'through2'
 
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
@@ -50,6 +51,8 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
         referenceId = [loginUrl, username, password, static_ip].join('__')
         referenceBuster[referenceId] = (referenceBuster[referenceId] || 0) + 1
       throw error
+    .catch (error) ->
+      throw error
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
 
@@ -82,7 +85,7 @@ getDatabaseList = (serverInfo) ->
     .catch (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS databases')
     .then (response) ->
-      _.map response.results, (r) ->
+      _.map response.results[0].metadata, (r) ->
         _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
 
 getTableList = (serverInfo, databaseName) ->
@@ -91,7 +94,7 @@ getTableList = (serverInfo, databaseName) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS tables')
     .then (response) ->
-      _.map response.results, (r) ->
+      _.map response.results[0].metadata, (r) ->
         _.pick r, ['ClassName', 'StandardName', 'VisibleName', 'TableVersion']
 
 getColumnList = (serverInfo, databaseName, tableName) ->
@@ -100,13 +103,24 @@ getColumnList = (serverInfo, databaseName, tableName) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS columns')
     .then (response) ->
-      _.map response.results, (r) ->
+      _.map response.results[0].metadata, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
     .then (fields) ->
+      reverseMappings =
+        dummy1: "dummy1"
+        dummy2: "dummy2"
       for field in fields
-        field.LongName = field.LongName.replace(/[^a-zA-Z0-9]+/g, ' ').trim()
+        field.LongName = field.LongName.replace(/\./g, '').trim()
+        # handle LongName collisions
+        if reverseMappings[field.LongName]?
+          i=2
+          baseName = field.LongName
+          while reverseMappings["#{baseName} (#{i})"]?
+            i++
+          field.LongName = "#{baseName} (#{i})"
+        reverseMappings[field.LongName] = field.SystemName
       fields
-        
+
 
 getLookupTypes = (serverInfo, databaseName, lookupId) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
@@ -114,10 +128,10 @@ getLookupTypes = (serverInfo, databaseName, lookupId) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS types')
     .then (response) ->
-      response.results
+      response.results[0].metadata
 
 
-getIterativeDataDump = (mlsInfo, limit, minDate=0) ->
+getDataStream = (mlsInfo, limit, minDate=0) ->
   _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClient) ->
     if !mlsInfo.listing_data.queryTemplate || !mlsInfo.listing_data.field
       throw new PartiallyHandledError('Cannot query without a datetime format to filter (check MLS config fields "Update Timestamp Column" and "Formatting")')
@@ -125,50 +139,112 @@ getIterativeDataDump = (mlsInfo, limit, minDate=0) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS columns')
     .then (columnData) ->
-      fieldMappings = {}
-      columns = []
-      for field in columnData.results
-        fieldMappings[field.SystemName] = field.LongName.replace(/[^a-zA-Z0-9]+/g, ' ').trim()
-        columns.push(fieldMappings[field.SystemName])
+      fieldMappings =
+        dummy1: "dummy1"
+        dummy2: "dummy2"
+      reverseMappings =
+        dummy1: "dummy1"
+        dummy2: "dummy2"
+      for field in columnData.results[0].metadata
+        fieldMappings[field.SystemName] = field.LongName.replace(/\./g, '').trim()
+        # handle LongName collisions
+        if reverseMappings[fieldMappings[field.SystemName]]?
+          i=2
+          baseName = fieldMappings[field.SystemName]
+          while reverseMappings["#{baseName} (#{i})"]?
+            i++
+          fieldMappings[field.SystemName] = "#{baseName} (#{i})"
+        reverseMappings[fieldMappings[field.SystemName]] = field.SystemName
       momentThreshold = moment.utc(new Date(minDate)).format(mlsInfo.listing_data.queryTemplate.replace("__FIELD_NAME__", mlsInfo.listing_data.field))
       options =
         limit: limit
         count: 0
-      iterations = []
       total = 0
-      timestamp = Date.now()
-      errors = new Promise (resolve, reject) ->
-        console.log("^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
-        require('heapdump').writeSnapshot("/Users/joe/work/realtymaps/tmp/#{timestamp}.0.heapsnapshot")
-        doIteration = () ->
+      subcount = 0
+      columns = null
+      delimiter = null
+      done = false
+      retsStream = null
+      finish = (that, error) ->
+        retsStream.unpipe(resultStream)
+        done = true
+        if error
+          that.push(type: 'error', payload: error)
+        resultStream.end()
+      streamIteration = () ->
+        new Promise (resolve, reject) ->
+          resolved = false
           _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClientIteration) ->
-            retsClientIteration.search.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, options, fieldMappings)
-            .catch rets.RetsReplyError, (error) ->
-              if error.replyTag == "NO_RECORDS_FOUND"
-                # code for 0 results, not really an error (DMQL is a clunky language)
-                return {results: []}
-              throw error
-            .then (searchResult) ->
-              total += searchResult.results.length
-              if total % 10000 == 0
-                console.log("^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
-                require('heapdump').writeSnapshot("/Users/joe/work/realtymaps/tmp/#{timestamp}.#{total}.heapsnapshot")
-              if searchResult.maxRowsExceeded && (!limit || total < limit) 
-                logger.debug "Partial results obtained (count: #{searchResult.results.length}, cumulative: #{total}), asking for more"
-                options.offset = total
-                if limit
-                  options.limit = Math.min(limit, limit-total)
-                iterations.push(doIteration())
-              else
-                logger.debug "Final result set obtained (count: #{searchResult.results.length}, cumulative: #{total})"
-                resolve()
-              return searchResult.results
-            .catch (error) ->
+            new Promise (resolve2, reject2) ->
+              retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, options, true)
+              retsStream.pipe(resultStream, end: false)
+              retsStream.on 'end', resolve2
+              resolved = true
+              resolve(retsStream)
+          .catch (error) ->
+            if !resolved
+              resolved = true
               reject(error)
-        iterations.push(doIteration())
-      iterations: iterations
-      columns: columns
-      errors: errors
+      resultStream = through2.obj (event, encoding, callback) ->
+        if done
+          return
+        switch event.type
+          when 'delimiter'
+            if !delimiter
+              delimiter = event.payload
+              @push(event)
+            else if event.payload != delimiter
+              finish(this, new Error('rets delimiter changed during iteration'))
+            callback()
+          when 'columns'
+            if !columns
+              columns = event.payload
+              columnList = ['dummy1']
+              for column in event.payload.split(delimiter)
+                if fieldMappings[column]?
+                  columnList.push(fieldMappings[column])
+              columnList.push('dummy2')
+              @push(type: 'columns', payload: columnList)
+            else if event.payload != columns
+              finish(this, new Error('rets columns changed during iteration'))
+            callback()
+          when 'data'
+            @push(event)
+            callback()
+          when 'done'
+            total += event.payload.rowsReceived
+            if total % 10000 == 0
+              logger.debug("^^^^^^^^^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
+            if event.payload.maxRowsExceeded && (!limit || total < limit)
+              logger.debug "Partial results obtained (count: #{event.payload.rowsReceived}, cumulative: #{total}), asking for more"
+              options.offset = total
+              if limit
+                options.limit = limit-total
+              streamIteration()
+              .catch (err) =>
+                finish(this, err)
+              .then () ->
+                callback()
+            else
+              logger.debug "Final result set obtained (count: #{event.payload.rowsReceived}, cumulative: #{total})"
+              @push(type: 'done', payload: total)
+              resultStream.end()
+              callback()
+          when 'error'
+            if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
+              # code for 0 results, not really an error (DMQL is a clunky language)
+              @push(type: 'done', payload: total)
+              resultStream.end()
+            else
+              finish(this, event.payload)
+            callback()
+          else
+            callback()
+      logger.debug("^^^^^^^^^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
+      logger.debug "Initial request for RETS data (limit: #{limit})"
+      streamIteration()
+      .then () ->
+        resultStream
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to query RETS system')
 
@@ -179,4 +255,4 @@ module.exports =
   getColumnList: getColumnList
   getLookupTypes: getLookupTypes
   getDataDump: getDataDump
-  getIterativeDataDump: getIterativeDataDump
+  getDataStream: getDataStream

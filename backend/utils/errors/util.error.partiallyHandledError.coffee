@@ -19,8 +19,6 @@ module.exports =
     !(err instanceof PartiallyHandledError)
   isCausedBy: (errorType) ->
     (err) ->
-      if err instanceof errorType
-        return true
       cause = err
       while cause instanceof PartiallyHandledError
         cause = cause.jse_cause

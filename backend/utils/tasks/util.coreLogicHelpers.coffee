@@ -62,7 +62,7 @@ _fileToDbStreamer = (filePath) ->
           transform = (chunk, enc, callback) ->
             if chunk.length > 0
               count += 1
-              this.push(chunk)
+              this.push(utilStreams.pgStreamEscape(chunk))
               this.push('\n')
             callback()
           flush = (callback) ->

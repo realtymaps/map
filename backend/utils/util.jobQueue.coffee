@@ -95,8 +95,8 @@ queueReadyTasks = () -> Promise.try () ->
         Promise.map readyTasks, (task) ->
           queueTask(transaction, batchId, task, '<scheduler>')
 
-queueManualTask = (name, initiator) ->
-  if !name
+queueManualTask = (taskName, initiator) ->
+  if !taskName
     throw new Error('Task name required!')
   dbs.get('main').transaction (transaction) ->
     # need to be sure it's not already running
@@ -104,20 +104,20 @@ queueManualTask = (name, initiator) ->
     .select()
     .where
       current: true
-      name: name
+      name: taskName
     .then (task) ->
       if task?.length && !task[0].finished
-        Promise.reject(new Error("Refusing to queue task #{name}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}"))
+        Promise.reject(new Error("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}"))
     .then () ->
       tables.jobQueue.taskConfig(transaction)
       .select()
-      .where(name: name)
+      .where(name: taskName)
       .then (result) ->
         if result.length == 0
-          throw new Error("Task not found: #{name}")
+          throw new Error("Task not found: #{taskName}")
         else if result.length == 1
           batchId = (Date.now()).toString(36)
-          logger.info "Queueing #{name} for #{initiator} using batchId #{batchId}"
+          logger.info "Queueing #{taskName} for #{initiator} using batchId #{batchId}"
           queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
@@ -245,7 +245,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         .then () ->
           return 1
 
-cancelTask = (taskName, status, withPrejudice=false) ->
+cancelTask = (taskName, status='canceled', withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   dbs.get('main').transaction (transaction) ->
@@ -271,7 +271,15 @@ cancelTask = (taskName, status, withPrejudice=false) ->
       .update
         status: 'canceled'
         finished: dbs.get('main').raw('NOW()')
+      .then (count) ->
+        logger.debug("Canceled #{count} subtasks of #{taskName}.")
 
+# convenience helper for dev/troubleshooting
+requeueManualTask = (taskName, initiator) ->
+  cancelTask(taskName)
+  .then () ->
+    queueManualTask(taskName, initiator)
+        
 executeSubtask = (subtask) ->
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
@@ -608,7 +616,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       logger.debug "#{prefix} No subtask ready for execution; quiting."
       Promise.resolve()
     else
-      logger.debug "#{prefix} No subtask ready for execution; waiting...    #{JSON.stringify(require('util').inspect(process.memoryUsage()))}"
+      logger.debug "#{prefix} No subtask ready for execution; waiting..."
       Promise.delay(30000) # poll again in 30 seconds
       .then _runWorkerImpl.bind(null, queueName, prefix, quit)
 
@@ -630,6 +638,7 @@ module.exports =
   queueReadyTasks: queueReadyTasks
   queueTask: queueTask
   queueManualTask: queueManualTask
+  requeueManualTask: requeueManualTask
   queueSubtasks: queueSubtasks
   queueSubtask: queueSubtask
   queueSubsequentSubtask: queueSubsequentSubtask

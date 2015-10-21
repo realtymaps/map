@@ -23817,45 +23817,6 @@
       "from": "https://registry.npmjs.org/through/-/through-2.3.8.tgz",
       "resolved": "https://registry.npmjs.org/through/-/through-2.3.8.tgz"
     },
-    "through2": {
-      "version": "0.6.5",
-      "from": "https://registry.npmjs.org/through2/-/through2-0.6.5.tgz",
-      "resolved": "https://registry.npmjs.org/through2/-/through2-0.6.5.tgz",
-      "dependencies": {
-        "readable-stream": {
-          "version": "1.0.33",
-          "from": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.0.33.tgz",
-          "resolved": "https://registry.npmjs.org/readable-stream/-/readable-stream-1.0.33.tgz",
-          "dependencies": {
-            "core-util-is": {
-              "version": "1.0.1",
-              "from": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.1.tgz",
-              "resolved": "https://registry.npmjs.org/core-util-is/-/core-util-is-1.0.1.tgz"
-            },
-            "isarray": {
-              "version": "0.0.1",
-              "from": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz",
-              "resolved": "https://registry.npmjs.org/isarray/-/isarray-0.0.1.tgz"
-            },
-            "string_decoder": {
-              "version": "0.10.31",
-              "from": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.31.tgz",
-              "resolved": "https://registry.npmjs.org/string_decoder/-/string_decoder-0.10.31.tgz"
-            },
-            "inherits": {
-              "version": "2.0.1",
-              "from": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz",
-              "resolved": "https://registry.npmjs.org/inherits/-/inherits-2.0.1.tgz"
-            }
-          }
-        },
-        "xtend": {
-          "version": "4.0.0",
-          "from": "https://registry.npmjs.org/xtend/-/xtend-4.0.0.tgz",
-          "resolved": "https://registry.npmjs.org/xtend/-/xtend-4.0.0.tgz"
-        }
-      }
-    },
     "touch": {
       "version": "0.0.3",
       "from": "https://registry.npmjs.org/touch/-/touch-0.0.3.tgz",

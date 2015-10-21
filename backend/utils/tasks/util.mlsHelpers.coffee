@@ -16,45 +16,49 @@ retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
 {SoftFail} = require '../errors/util.error.jobQueue'
+through2 = require 'through2'
 
 
-_arrayToDbIterativeStreamer = (iterations, fields) ->
-  # stream the results into a COPY FROM query; too bad we currently have to load the whole response into memory
-  # first.  Eventually, we can rewrite rets-client to use a streaming xml parser
-  # like xml-stream or xml-object-stream, and then we can make this fully streaming (more performant)
-  (tableName, promiseQuery, streamQuery) ->
-    copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8')"
-    total=0
-    doIteration = () ->
-      iterations.shift()
-      .then (objects) ->
-        logger.debug "@@@@@@@@@@@@@@@@ streaming #{objects.length} more rows (#{total} total)"
-        new Promise (resolve, reject) ->
-          # stream from array to object serializer stream to COPY FROM
-          from(objects)
-          .pipe(utilStreams.objectsToPgText(fields))
-          .pipe(streamQuery(copyStream.from(copyStart)))
-          .on('finish', resolve)
-          .on('error', reject)
-        .then () ->
-          total += objects.length
-    promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fields))
-    .then () -> new Promise (resolve, reject) ->
-      recurseIterations = () ->
-        doIteration()
-        .nodeify (err, result) ->
-          if err
-            logger.debug "----------------------- error: #{err}"
-            reject(err)
-          else if iterations.length
-            logger.debug "----------------------- continuing"
-            recurseIterations()
-          else
-            logger.debug "----------------------- result: #{total}"
-            resolve(total)
-        .catch () -> # noop
-        return undefined
-      recurseIterations()
+_retsToDbStreamer = (retsStream) ->
+  # stream the results into a COPY FROM query
+  (tableName, promiseQuery, streamQuery) -> new Promise (resolve, reject) ->
+    delimiter = null
+    columns = null
+    dbStream = null
+    dbStreamer = through2.obj (event, encoding, callback) ->
+      switch event.type
+        when 'data'
+          dbStream.write(utilStreams.pgStreamEscape(event.payload))
+          dbStream.write('\n')
+          callback()
+        when 'delimiter'
+          delimiter = event.payload
+          callback()
+        when 'columns'
+          promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+          .then () ->
+            promiseQuery(dataLoadHelpers.createRawTempTable(tableName, event.payload))
+          .then () ->
+            copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+            dbStream = streamQuery(copyStream.from(copyStart))
+            callback()
+        when 'done'
+          logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DONE!")
+          resolve(event.payload)
+          retsStream.unpipe(dbStreamer)
+          dbStream.write('\\.\n')
+          dbStreamer.end()
+          callback()
+        when 'error'
+          logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ERROR!  #{event.payload.stack||event.payload}")
+          reject(event.payload)
+          retsStream.unpipe(dbStreamer)
+          dbStream.write('\\.\n')
+          dbStreamer.end()
+          callback()
+        else
+          callback()
+    retsStream.pipe(dbStreamer)
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -75,44 +79,32 @@ loadUpdates = (subtask, options) ->
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsHelpers.getIterativeDataDump(mlsInfo, null, refreshThreshold)
+      retsHelpers.getDataStream(mlsInfo, null, refreshThreshold)
       .catch isCausedBy(rets.RetsReplyError), (error) ->
         if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
           throw SoftFail(error, "Transient RETS error; try again later")
-      .then (dump) ->
-        errorsPromise = dump.errors
-        .catch isCausedBy(rets.RetsReplyError), (error) ->
-          if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
-            throw new SoftFail(error, "Transient RETS error; try again later")
-
-        # go ahead and wait on the first so we can know if there's anything to process
-        iterationsPromise = dump.iterations[0]
-        .then (initialResults) ->
-          if !initialResults.length
-            # nothing to do, GTFO
-            logger.info("No data updates for #{subtask.task_name}.")
-            return
-          # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-          # on whether this is a dump or an update)
-          deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-          recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
-          finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-          activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
-  
-          rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
-          dataLoadHistory =
-            data_source_id: options.dataSourceId
-            data_source_type: 'mls'
-            data_type: 'listing'
-            batch_id: subtask.batch_id
-            raw_table_name: rawTableName
-          handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _arrayToDbIterativeStreamer(dump.iterations, dump.columns))
-          .catch isUnhandled, (error) ->
-            throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-          Promise.join handleDataPromise, recordCountsPromise, finalizePrepPromise, activatePromise, (numRawRows) -> numRawRows
-        Promise.join iterationsPromise, errorsPromise, (rowCount) ->
-          console.log("^^^^^^^^ FINAL: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
-          rowCount
+        throw error
+    .then (retsStream) ->
+      rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+      dataLoadHistory =
+        data_source_id: options.dataSourceId
+        data_source_type: 'mls'
+        data_type: 'listing'
+        batch_id: subtask.batch_id
+        raw_table_name: rawTableName
+      handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _retsToDbStreamer(retsStream))
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
+      .then (numRawRows) ->
+        logger.debug("^^^^^^^^^^^^^^^^ FINAL: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
+        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
+        # on whether this is a dump or an update)
+        deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
+        finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
+        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
+        Promise.join recordCountsPromise, finalizePrepPromise, activatePromise, () ->
+          numRawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 

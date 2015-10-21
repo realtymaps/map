@@ -362,11 +362,21 @@ manageRawDataStream = (tableName, dataLoadHistory, doStream) ->
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
     .then () ->
-      promiseQuery('BEGIN')
+      promiseQuery('BEGIN TRANSACTION')
     .then () ->
       doStream(tableName, promiseQuery, streamQuery)
+    .catch (err) ->
+      promiseQuery('ROLLBACK TRANSACTION')
+      .then () ->
+        tables.jobQueue.dataLoadHistory()
+        .where(raw_table_name: tableName)
+        .delete()
+      .catch (err2) ->
+        throw err
+      .then () ->
+        throw err
     .then (count) ->
-      promiseQuery('COMMIT')
+      promiseQuery('COMMIT TRANSACTION')
       .then () ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: tableName)
