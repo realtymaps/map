@@ -15,7 +15,6 @@ cols =  [
   'map_position', 'map_results','parent_auth_user_id',
   "#{tables.user.profile.tableName}.rm_modified_time as rm_modified_time",
   "#{tables.user.profile.tableName}.rm_inserted_time as rm_inserted_time",
-  "#{tables.user.profile.tableName}.name as name",
   'project_id',
   "#{tables.user.project.tableName}.rm_modified_time as #{tables.user.project.tableName}_rm_modified_time",
   "#{tables.user.project.tableName}.rm_inserted_time as #{tables.user.project.tableName}_rm_inserted_time",
@@ -31,7 +30,6 @@ safe = [
   'map_results'
   'parent_auth_user_id'
   'auth_user_id'
-  'name'
   'project_id'
 ]
 
@@ -53,7 +51,6 @@ create = (newProfile, project) ->
   .then (maybeProjectId) ->
     if maybeProjectId
       newProfile.project_id = maybeProjectId
-      newProfile.name = project.name
     tables.user.profile()
     .returning(toReturn)
     .insert(_.pick newProfile, safe)

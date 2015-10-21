@@ -66,7 +66,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      rmapsProfilesService.setCurrent($scope.selectedProfile)
+      rmapsProfilesService.setCurrent($scope.selectedProfile, profile)
       .then () ->
         deferred.resolve()
     else

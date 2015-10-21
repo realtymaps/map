@@ -53,7 +53,6 @@ groupsCols = [
 
 profileCols = [
   "#{tables.user.profile.tableName}.id as id"
-  "#{tables.user.profile.tableName}.name as #{tables.user.profile.tableName}_name"
   "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name"
   'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
   'parent_auth_user_id', 'auth_user_id as user_id'
@@ -61,7 +60,6 @@ profileCols = [
 
 clientCols = [
   "#{tables.user.profile.tableName}.id as id"
-  "#{tables.user.profile.tableName}.name as #{tables.user.profile.tableName}_name"
   "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
   "#{tables.user.profile.tableName}.parent_auth_user_id as parent_auth_user_id"
 
