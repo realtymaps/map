@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal,
+app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
   #HASH to properties by rm_property_id
@@ -18,12 +18,16 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
 
   $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
     rmapsprincipal.getIdentity().then (identity) ->
-      _savedPropertie = []
       if identity.currentProfileId and identity.profiles?.length
         currentProfile = identity.profiles[identity.currentProfileId]
 
       if currentProfile
-        _savedProperties = _.extend {}, currentProfile.properties_selected
+        loadPropertiesFromProfile currentProfile
+
+  $rootScope.$onRootScope 'profileSelected', loadPropertiesFromProfile
+
+  loadPropertiesFromProfile = (profile) ->
+    _savedProperties = _.extend {}, profile.properties_selected
 
   # this convention for a combined service call helps elsewhere because we know how to get the path used
   # by this call, which means we can do things with alerts related to it
@@ -98,6 +102,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       _saveThrottler.invokePromise statePromise
       statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
       statePromise.then () ->
+        $rootScope.$emit(rmapsevents.pinned, _savedProperties)
         prop
 
     getSavedProperties: ->

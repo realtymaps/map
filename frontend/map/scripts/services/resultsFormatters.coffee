@@ -5,7 +5,7 @@ sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmapsParcelEnums,
-  rmapsGoogleService, rmapsProperties, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
   rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
 
   leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
@@ -268,7 +268,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       maybeFetchCb = (showDetails) =>
         #start getting more data
         if showDetails
-          rmapsProperties.getPropertyDetail(@mapCtrl.refreshState(
+          rmapsPropertiesService.getPropertyDetail(@mapCtrl.refreshState(
             map_results:
               selectedResultId: result.rm_property_id)
           , result.rm_property_id, if result.rm_status then 'detail' else 'all')

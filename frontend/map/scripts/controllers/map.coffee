@@ -24,7 +24,7 @@ module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
-  rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
+  rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
 
@@ -118,7 +118,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
-        rmapsProperties.getPropertyDetail(null,
+        rmapsPropertiesService.getPropertyDetail(null,
           profile.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
