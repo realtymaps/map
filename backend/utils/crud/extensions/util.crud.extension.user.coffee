@@ -42,6 +42,10 @@ route =
                 wrapped.call @, req, res, next
 
   toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+    if !_.isArray rows
+      originallyObject = true
+      rows = [rows]
+
     for row in rows
       # logger.debug row, true
       row.coordinates = row[deafaultCoordLocation]?.coordinates
@@ -50,6 +54,8 @@ route =
       for del in deletes
         delete row[del]
 
+    if originallyObject
+      return rows[0]
     rows
 
 module.exports.route = route

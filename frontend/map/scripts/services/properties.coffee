@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+qs = require 'qs'
 
 app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
@@ -69,9 +70,10 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
         'addresses', hash, mapState, undefined, filters = '', cache)
       , http: {route: backendRoutes.properties.parcelBase }
 
-    getPropertyDetail: (mapState, rm_property_id, column_set, cache = true) ->
+    getPropertyDetail: (mapState, queryObj, column_set, cache = true) ->
+      queryStr = qs.stringify queryObj
       mapStateStr = if mapState? then "&#{mapState}" else ''
-      url = "#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}#{mapStateStr}"
+      url = "#{backendRoutes.properties.detail}?#{queryStr}&columns=#{column_set}#{mapStateStr}"
       _detailThrottler.invokePromise $http.get(url, cache: cache)
       , http: {route: backendRoutes.properties.detail }
 
@@ -89,7 +91,7 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       model.savedDetails = prop
 
       if !model.rm_status
-        service.getPropertyDetail('', rm_property_id, 'filter')
+        service.getPropertyDetail('', rm_property_id: rm_property_id, 'filter')
         .then (data) ->
           _.extend model, data
 

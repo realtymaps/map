@@ -62,8 +62,10 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        detailService.getDetail(req.query)
-        .then (property) ->
-          if property
-            return property
-          return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND
+        promise = detailService.getDetail(req.query)
+        if req.query.rm_property_id?
+          promise.then (property) ->
+            if property
+              return property
+            return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND
+        return promise

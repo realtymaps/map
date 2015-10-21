@@ -12,6 +12,7 @@ module.exports = (options = {}) ->
     Promise.try () ->
       arrayValidation()(param,values)
     .then (arrayValues) ->
+      logger.debug arrayValues
       if arrayValues == null
         return null
       if !options.criteria

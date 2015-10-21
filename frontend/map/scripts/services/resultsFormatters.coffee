@@ -271,7 +271,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
           rmapsProperties.getPropertyDetail(@mapCtrl.refreshState(
             map_results:
               selectedResultId: result.rm_property_id)
-          , result.rm_property_id, if result.rm_status then 'detail' else 'all')
+          , {rm_property_id: result.rm_property_id}, if result.rm_status then 'detail' else 'all')
           .then (data) =>
             return unless data
             $timeout () =>
