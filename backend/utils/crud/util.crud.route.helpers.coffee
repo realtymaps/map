@@ -5,14 +5,12 @@ BaseObject = require '../../../common/utils/util.baseObject'
 ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
-
+NamedError = require '../errors/util.error.named'
 
 class Crud extends BaseObject
-  constructor: (@svc, @paramIdKey = 'id', @name = '') ->
+  constructor: (@svc, @paramIdKey = 'id', @name = 'Crud') ->
     unless @svc?
-      throw new Error("#{@name} @svc must be defined.")
-    unless @paramIdKey?
-      throw new Error("#{@name} @paramIdKey must be defined")
+      throw new NamedError(name, "#@svc must be defined.")
     @init()
 
   #intended available overrides
@@ -46,6 +44,7 @@ class Crud extends BaseObject
         self.rootGET(req, res, next)
       POST: () ->
         self.rootPOST(req, res, next)
+    , next
 
   #sugar interface
   byId: (req, res, next) =>
@@ -59,6 +58,7 @@ class Crud extends BaseObject
         self.byIdDELETE(req, res, next)
       PUT: () ->
         self.byIdPUT(req, res, next)
+    , next
 
   methodExec: methodExec
 
@@ -66,10 +66,10 @@ class Crud extends BaseObject
     super([Crud,@].concat(_.toArray arguments)...)
 
 class HasManyCrud extends Crud
-  constructor: (svc, paramIdKey, @rootGETKey, name) ->
+  constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyCrud') ->
     super(svc, paramIdKey, name)
     unless @rootGETKey?
-      throw new Error('@rootGETKey must be defined')
+      throw new NamedError(@name,'@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
     @svc.getAll(_.set(req.query, @rootGETKey, req.params.id), @doLogQuery)

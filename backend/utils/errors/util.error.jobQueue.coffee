@@ -1,16 +1,12 @@
-PartiallyHandledError = require('./util.error.partiallyHandledError').PartiallyHandledError
+NamedError = require('./util.error.named')
 
-
-class SoftFail extends PartiallyHandledError
+class SoftFail extends NamedError
   constructor: (args...) ->
-    super(args...)
-    @name = 'SoftFail'
+    super('SoftFail', args...)
 
-class HardFail extends PartiallyHandledError
+class HardFail extends NamedError
   constructor: (args...) ->
-    super(args...)
-    @name = 'HardFail'
-
+    super('HardFail', args...)
 
 module.exports =
   SoftFail: SoftFail
