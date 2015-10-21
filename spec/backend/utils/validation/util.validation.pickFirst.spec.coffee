@@ -8,12 +8,14 @@ basePath = require '../../basePath'
 describe 'utils/validation.validators.pickFirst()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  promiseIt 'should resolve to the first element of the array when there are no criteria', () ->
+  promiseIt "should resolve to the first element of the array that isn't null or undefined when there are no criteria", () ->
     [
       expectResolve(validators.pickFirst()(param, [5, 10])).then (value) ->
         value.should.equal(5)
       expectResolve(validators.pickFirst()(param, ['abc', 'defghij'])).then (value) ->
         value.should.equal('abc')
+      expectResolve(validators.pickFirst()(param, [null, undefined , 10])).then (value) ->
+        value.should.equal(10)
     ]
 
   promiseIt 'should resolve to the first non-rejecting element of the array with a defined value when there are criteria', () ->

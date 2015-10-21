@@ -16,7 +16,7 @@ columnSets = ['filter', 'address', 'detail', 'all']
 _transforms =
   rm_prop_id_or_geom_json:
     input: ["rm_property_id", "geom_point_json"]
-    transform: validators.pickFirst(criteria: validators.notNull())
+    transform: validators.pickFirst()
     required: true
 
   columns:
