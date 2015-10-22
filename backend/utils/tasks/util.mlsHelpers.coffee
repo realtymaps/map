@@ -23,41 +23,56 @@ _retsToDbStreamer = (retsStream) ->
   # stream the results into a COPY FROM query
   (tableName, promiseQuery, streamQuery) -> new Promise (resolve, reject) ->
     delimiter = null
-    columns = null
     dbStream = null
+    started = false
     dbStreamer = through2.obj (event, encoding, callback) ->
-      switch event.type
-        when 'data'
-          dbStream.write(utilStreams.pgStreamEscape(event.payload))
-          dbStream.write('\n')
-          callback()
-        when 'delimiter'
-          delimiter = event.payload
-          callback()
-        when 'columns'
-          promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
-          .then () ->
-            promiseQuery(dataLoadHelpers.createRawTempTable(tableName, event.payload))
-          .then () ->
-            copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
-            dbStream = streamQuery(copyStream.from(copyStart))
+      try
+        if !started
+          started = true
+        switch event.type
+          when 'data'
+            dbStream.write(utilStreams.pgStreamEscape(event.payload))
+            dbStream.write('\n')
             callback()
-        when 'done'
-          logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ DONE!")
-          resolve(event.payload)
-          retsStream.unpipe(dbStreamer)
-          dbStream.write('\\.\n')
-          dbStreamer.end()
-          callback()
-        when 'error'
-          logger.debug("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ERROR!  #{event.payload.stack||event.payload}")
-          reject(event.payload)
-          retsStream.unpipe(dbStreamer)
-          dbStream.write('\\.\n')
-          dbStreamer.end()
-          callback()
-        else
-          callback()
+          when 'delimiter'
+            delimiter = event.payload
+            callback()
+          when 'columns'
+            promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+            .then () ->
+              tables.jobQueue.dataLoadHistory()
+              .where(raw_table_name: tableName)
+              .delete()
+            .then () ->
+              promiseQuery(dataLoadHelpers.createRawTempTable(tableName, event.payload))
+            .then () ->
+              copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+              dbStream = streamQuery(copyStream.from(copyStart))
+              callback()
+          when 'done'
+            resolve(event.payload)
+            retsStream.unpipe(dbStreamer)
+            dbStream.write('\\.\n')
+            dbStream.end()
+            dbStreamer.end()
+            callback()
+          when 'error'
+            reject(event.payload)
+            retsStream.unpipe(dbStreamer)
+            dbStream.write('\\.\n')
+            dbStream.end()
+            dbStreamer.end()
+            callback()
+          else
+            callback()
+      catch err
+        reject(event.payload)
+        retsStream.unpipe(dbStreamer)
+        dbStream.write('\\.\n')
+        dbStream.end()
+        dbStreamer.end()
+        callback()
+        
     retsStream.pipe(dbStreamer)
 
 
@@ -92,19 +107,18 @@ loadUpdates = (subtask, options) ->
         data_type: 'listing'
         batch_id: subtask.batch_id
         raw_table_name: rawTableName
-      handleDataPromise = dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _retsToDbStreamer(retsStream))
+      dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _retsToDbStreamer(retsStream))
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
-      .then (numRawRows) ->
-        logger.debug("^^^^^^^^^^^^^^^^ FINAL: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
-        # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-        # on whether this is a dump or an update)
-        deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-        recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
-        finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-        activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
-        Promise.join recordCountsPromise, finalizePrepPromise, activatePromise, () ->
-          numRawRows
+    .then (numRawRows) ->
+      # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
+      # on whether this is a dump or an update)
+      deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
+      recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
+      finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
+      activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
+      Promise.join recordCountsPromise, finalizePrepPromise, activatePromise, () ->
+        numRawRows
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 

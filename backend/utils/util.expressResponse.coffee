@@ -1,4 +1,3 @@
-csv = require 'csv'
 escape = require 'escape-html'
 Promise = require 'bluebird'
 logger = require '../config/logger'
@@ -25,15 +24,7 @@ class ExpressResponse
       # set headers for download
       res.set('Content-disposition', 'attachment; filename=mlsdata.csv')
       res.set('Content-Type', 'text/csv')
-
-      # stringify payload and send
-      stringifier = Promise.promisify(csv.stringify)
-      stringifier(@payload, header: true)
-      .then (data) ->
-        res.send data
-      .catch (err) ->
-        logger.error 'Error while sending csv attachment:'
-        logger.error err
+      res.send @payload
     else
       content = if @payload? then JSON.stringify(@payload) else ''
       res.status(@status).send content

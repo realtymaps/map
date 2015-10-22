@@ -55,29 +55,6 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
       throw error
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
-
-getDataDump = (mlsInfo, limit, minDate=0) ->
-  # this is now just a helper function that can ensure we get all results concatenated together
-  getIterativeDataDump(mlsInfo, limit, minDate)
-  .then (dumper) ->
-    fullResults = null
-    doIterations = () ->
-      dumper.iterations.shift()
-      .then (results) ->
-        # takes the current set of results and saves them, iterates, and then waits on the promise for the next set
-        if fullResults
-          fullResults.concat(results)
-        else
-          fullResults = results
-        if !dumper.iterations.length
-          # nothing else is queued, so we're done
-          results: fullResults
-          columns: dumper.columns
-        else
-          # wait on the next item
-          doIterations()
-    # kick off the iterations
-    doIterations()
     
 getDatabaseList = (serverInfo) ->
   _getRetsClient serverInfo.url, serverInfo.username, serverInfo.password, serverInfo.static_ip, (retsClient) ->
@@ -139,12 +116,8 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
     .catch isUnhandled, (error) ->
       throw new PartiallyHandledError(error, 'Failed to retrieve RETS columns')
     .then (columnData) ->
-      fieldMappings =
-        dummy1: "dummy1"
-        dummy2: "dummy2"
-      reverseMappings =
-        dummy1: "dummy1"
-        dummy2: "dummy2"
+      fieldMappings = {}
+      reverseMappings = {}
       for field in columnData.results[0].metadata
         fieldMappings[field.SystemName] = field.LongName.replace(/\./g, '').trim()
         # handle LongName collisions
@@ -185,7 +158,10 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             if !resolved
               resolved = true
               reject(error)
+      started = false
       resultStream = through2.obj (event, encoding, callback) ->
+        if !started
+          started = true
         if done
           return
         switch event.type
@@ -199,22 +175,20 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
           when 'columns'
             if !columns
               columns = event.payload
-              columnList = ['dummy1']
-              for column in event.payload.split(delimiter)
+              columnList = event.payload.split(delimiter)[1..-2]
+              for column,i in columnList
                 if fieldMappings[column]?
-                  columnList.push(fieldMappings[column])
-              columnList.push('dummy2')
+                  columnList[i] = fieldMappings[column]
               @push(type: 'columns', payload: columnList)
             else if event.payload != columns
               finish(this, new Error('rets columns changed during iteration'))
             callback()
           when 'data'
+            event.payload = event.payload[1..event.payload.lastIndexOf(delimiter)-1]
             @push(event)
             callback()
           when 'done'
             total += event.payload.rowsReceived
-            if total % 10000 == 0
-              logger.debug("^^^^^^^^^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
             if event.payload.maxRowsExceeded && (!limit || total < limit)
               logger.debug "Partial results obtained (count: #{event.payload.rowsReceived}, cumulative: #{total}), asking for more"
               options.offset = total
@@ -240,7 +214,6 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             callback()
           else
             callback()
-      logger.debug("^^^^^^^^^^^^^^^^ #{total}: "+JSON.stringify(require('util').inspect(process.memoryUsage())))
       logger.debug "Initial request for RETS data (limit: #{limit})"
       streamIteration()
       .then () ->
@@ -254,5 +227,4 @@ module.exports =
   getTableList: getTableList
   getColumnList: getColumnList
   getLookupTypes: getLookupTypes
-  getDataDump: getDataDump
   getDataStream: getDataStream

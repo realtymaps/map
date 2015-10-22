@@ -5,6 +5,7 @@ logger = require '../config/logger'
 mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
+csvStringify = Promise.promisify(require 'csv-stringify')
 
 
 module.exports =
@@ -83,24 +84,40 @@ module.exports =
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
-          #limit = if req.query.limit? and !isNaN req.query.limit then req.query.limit else 1000
           validations =
             limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
           validation.validateAndTransform(req.query, validations)
           .then (result) ->
-            limit = result.limit
-            retsHelpers.getDataDump(mlsConfig, limit, 0)
-            .then (dump) ->
-              # incoming column names can be arcane and technical, let's humanize them
-              # map the arcane (system) field names to human readable (longname) names
-              readableMap = {}
-              for field in dump.columns
-                readableMap[field.SystemName] = field.LongName
-              # populate human list with mapped names
-              humanList = ((_.mapKeys row, (v, k) -> return readableMap[k]) for row in dump.results)
-              resObj = new ExpressResponse(humanList)
-              resObj.format = 'csv'
-              next resObj
+            retsHelpers.getDataStream(mlsConfig, result.limit)
+          .then (retsStream) ->
+            columns = null
+            data = []
+            new Promise (resolve, reject) ->
+              delimiter = null
+              csvStreamer = through2.obj (event, encoding, callback) ->
+                switch event.type
+                  when 'data'
+                    data.push(event.payload[1..-1].split(delimiter))
+                  when 'delimiter'
+                    delimiter = event.payload
+                  when 'columns'
+                    columns = event.payload
+                  when 'done'
+                    resolve(data)
+                    retsStream.unpipe(csvStreamer)
+                    csvStreamer.end()
+                  when 'error'
+                    reject(event.payload)
+                    retsStream.unpipe(csvStreamer)
+                    csvStreamer.end()
+                callback()
+              retsStream.pipe(csvStreamer)
+            .then () ->
+              csvStringify(data, columns: columns, header: true)
+          .then (csvText) ->
+            resObj = new ExpressResponse(csvText)
+            resObj.format = 'csv'
+            next(resObj)
           .catch (error) ->
             next new ExpressResponse
               alert:
