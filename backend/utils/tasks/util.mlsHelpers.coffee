@@ -25,13 +25,13 @@ _retsToDbStreamer = (retsStream) ->
     delimiter = null
     dbStream = null
     started = false
-    handleError = (err, callback) ->
-      reject(err)
+    finish = (promiseValue, promiseCallback, streamCallback) ->
+      promiseCallback(promiseValue)
       retsStream.unpipe(dbStreamer)
       dbStream.write('\\.\n')
       dbStream.end()
       dbStreamer.end()
-      callback()
+      streamCallback()
     dbStreamer = through2.obj (event, encoding, callback) ->
       try
         if !started
@@ -57,18 +57,13 @@ _retsToDbStreamer = (retsStream) ->
               dbStream = streamQuery(copyStream.from(copyStart))
               callback()
           when 'done'
-            resolve(event.payload)
-            retsStream.unpipe(dbStreamer)
-            dbStream.write('\\.\n')
-            dbStream.end()
-            dbStreamer.end()
-            callback()
+            finish(event.payload, resolve, callback)
           when 'error'
-            handleError(event.payload, callback)
+            finish(event.payload, reject, callback)
           else
             callback()
       catch err
-        handleError(err, callback)
+        finish(err, reject, callback)
         
     retsStream.pipe(dbStreamer)
 
