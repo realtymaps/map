@@ -1,18 +1,11 @@
 app = require '../app.coffee'
 app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, rmapsevents, rmapsprincipal, rmapsPropertiesService) ->
 
-  $scope.pinned = {}
+  $scope.pinnedProperties = {}
 
-  getPinned = () ->
-    rmapsprincipal.getIdentity()
-    .then (identity) ->
-      currentProfile = identity.profiles[identity.currentProfileId]
-      $scope.pinned = _.extend {}, currentProfile.properties_selected
-      for id, property of $scope.pinned
-        rmapsPropertiesService.getPropertyDetail undefined, id, 'filter'
-        .then (detail) ->
-          _.extend property, detail
+  getPinned = (event, pinned) ->
+    $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
 
   $rootScope.registerScopeData getPinned
 
-  $rootScope.$onRootScope 'profileSelected', getPinned
+  $rootScope.$onRootScope rmapsevents.map.properties.updated, getPinned

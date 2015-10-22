@@ -58,21 +58,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     if profile == $scope.selectedProfile
       return
 
-    deferred = $q.defer()
-    # If switching profiles, ensure the old profile is saved
+    # If switching profiles, ensure the old profile is up-to-date
     if $scope.selectedProfile
-
       $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      rmapsProfilesService.setCurrent($scope.selectedProfile, profile)
-      .then () ->
-        deferred.resolve()
-    else
-      deferred.resolve()
-
-    deferred.promise.then () ->
+    rmapsProfilesService.setCurrent $scope.selectedProfile, profile
+    .then () ->
       $scope.selectedProfile = profile
 
       $rootScope.selectedFilters = {}

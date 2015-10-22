@@ -75,7 +75,6 @@ app.factory 'rmapsMap',
         $rootScope.$onRootScope rmapsevents.map.filters.updated, => #tried without the closure and bombs
           @redraw()
 
-        @scope.savedrmapsProperties = rmapsPropertiesService.getSavedProperties()
         @layerFormatter = rmapsLayerFormatters
 
         @saveProperty = (model, lObject) =>
@@ -170,14 +169,21 @@ app.factory 'rmapsMap',
       handleSummaryResults: (data) =>
         @scope.map.markers.backendPriceCluster = {}
         @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+
         for key, model of data
           _wrapGeomPointJson model
+          rmapsPropertiesService.updateProperty model
+
         @scope.map.markers.filterSummary = data
 
       handleGeoJsonResults: (filters, cache) =>
         rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
         .then (data) =>
           return if !data? or _.isString data
+
+          for key, model of data
+            rmapsPropertiesService.updateProperty model
+
           @scope.map.geojson.filterSummaryPoly =
             data: data
             style: @layerFormatter.Parcels.getStyle
