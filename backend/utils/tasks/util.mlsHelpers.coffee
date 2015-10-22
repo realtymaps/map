@@ -25,6 +25,13 @@ _retsToDbStreamer = (retsStream) ->
     delimiter = null
     dbStream = null
     started = false
+    handleError = (err, callback) ->
+      reject(err)
+      retsStream.unpipe(dbStreamer)
+      dbStream.write('\\.\n')
+      dbStream.end()
+      dbStreamer.end()
+      callback()
     dbStreamer = through2.obj (event, encoding, callback) ->
       try
         if !started
@@ -57,21 +64,11 @@ _retsToDbStreamer = (retsStream) ->
             dbStreamer.end()
             callback()
           when 'error'
-            reject(event.payload)
-            retsStream.unpipe(dbStreamer)
-            dbStream.write('\\.\n')
-            dbStream.end()
-            dbStreamer.end()
-            callback()
+            handleError(event.payload, callback)
           else
             callback()
       catch err
-        reject(event.payload)
-        retsStream.unpipe(dbStreamer)
-        dbStream.write('\\.\n')
-        dbStream.end()
-        dbStreamer.end()
-        callback()
+        handleError(err, callback)
         
     retsStream.pipe(dbStreamer)
 
