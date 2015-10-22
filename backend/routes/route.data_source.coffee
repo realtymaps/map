@@ -8,10 +8,10 @@ routeHelpers = require '../utils/util.route.helpers'
 
 class DataSourceCrud extends crudHelpers.RouteCrud
   getColumnList: (req, res, next) =>
-    @handleQuery @svc.getColumnList(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType).catch(_.partial(@onError, next)), res
+    @handleQuery @svc.getColumnList(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType), res
 
   getLookupTypes: (req, res, next) =>
-    @handleQuery @svc.getLookupTypes(req.params.lookupId).catch(_.partial(@onError, next)), res
+    @handleQuery @svc.getLookupTypes(req.params.lookupId), res
 
 
 module.exports = routeHelpers.mergeHandles new DataSourceCrud(dataSourceService),

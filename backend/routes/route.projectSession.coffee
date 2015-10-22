@@ -48,8 +48,6 @@ class ClientsCrud extends HasManyRouteCrud
 
       CrudSvc::upsert.call profileSvc, newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
 
-    .catch _.partial(@onError, next)
-
   ###
     Update user contact info - but only if the request came from the parent user
   ###
@@ -58,7 +56,6 @@ class ClientsCrud extends HasManyRouteCrud
     .then (profile) =>
       throw new Error 'Client info cannot be modified' unless profile?
       userSvc.update profile.auth_user_id, req.body, safeUser, @doLogQuery
-    .catch _.partial(@onError, next)
 
 class ProjectsSessionCrud extends Crud
   @include userExtensions.route

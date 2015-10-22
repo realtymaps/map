@@ -13,7 +13,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceId
         req.params.dataSourceType
         req.params.dataListType)
-      .catch _.partial(@onError, next)
       res)
 
   createRules: (req, res, next) =>
@@ -23,7 +22,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceType
         req.params.dataListType
         req.body)
-      .catch _.partial(@onError, next)
       res)
 
   putRules: (req, res, next) =>
@@ -33,7 +31,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceType
         req.params.dataListType
         req.body)
-      .catch _.partial(@onError, next)
       res)
 
   deleteRules: (req, res, next) =>
@@ -42,7 +39,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceId
         req.params.dataSourceType
         req.params.dataListType)
-      .catch _.partial(@onError, next)
       res)
 
 
@@ -53,7 +49,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceType
         req.params.dataListType
         req.params.list)
-      .catch _.partial(@onError, next)
       res)
 
   createListRules: (req, res, next) =>
@@ -64,7 +59,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataListType
         req.params.list
         req.body)
-      .catch _.partial(@onError, next)
       res)
 
   putListRules: (req, res, next) =>
@@ -75,7 +69,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataListType
         req.params.list
         req.body)
-      .catch _.partial(@onError, next)
       res)
 
   deleteListRules: (req, res, next) =>
@@ -85,7 +78,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataSourceType
         req.params.dataListType
         req.params.list)
-      .catch _.partial(@onError, next)
       res)
 
 
@@ -97,7 +89,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataListType
         req.params.list
         req.params.ordering)
-      .catch _.partial(@onError, next)
       res)
 
   updateRule: (req, res, next) =>
@@ -109,7 +100,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.list
         req.params.ordering
         req.body)
-      .catch _.partial(@onError, next)
       res)
 
   deleteRule: (req, res, next) =>
@@ -120,7 +110,6 @@ class RuleCrud extends crudHelpers.RouteCrud
         req.params.dataListType
         req.params.list
         req.params.ordering)
-      .catch _.partial(@onError, next)
       res)
 
 
