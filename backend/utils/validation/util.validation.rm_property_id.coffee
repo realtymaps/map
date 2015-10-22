@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 logger = require '../../config/logger'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 arrayValidation = require './util.validation.array'
 fipsValidation = require './util.validation.fips'
 stringValidation = require './util.validation.string'

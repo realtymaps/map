@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 geohash64 = require 'geohash64'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 logger = require '../../config/logger'
 
 module.exports = (param, boundsStr) ->

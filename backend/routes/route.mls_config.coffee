@@ -7,10 +7,10 @@ routeHelpers = require '../utils/util.route.helpers'
 
 class MlsConfigCrud extends crudHelpers.RouteCrud
   updatePropertyData: (req, res, next) =>
-    @handleQuery @svc.updatePropertyData(req.params.id, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery @svc.updatePropertyData(req.params.id, req.body), res
 
   updateServerInfo: (req, res, next) =>
-    @handleQuery @svc.updateServerInfo(req.params.id, req.body).catch(_.partial(@onError, next)), res
+    @handleQuery @svc.updateServerInfo(req.params.id, req.body), res
 
 
 module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),

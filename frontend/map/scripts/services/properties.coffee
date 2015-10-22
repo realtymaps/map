@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+qs = require 'qs'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
@@ -33,7 +34,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
 
     returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
     route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
-    $log.debug(route) if window.isTest
+    $log.log(route) if window.isTest
     $http.get(route, cache: cache)
 
   _getFilterSummary = (hash, mapState, returnType, filters='', cache = true, throttler = _filterThrottler) ->
@@ -87,9 +88,10 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
         'addresses', hash, mapState, undefined, filters = '', cache)
       , http: {route: backendRoutes.properties.parcelBase }
 
-    getPropertyDetail: (mapState, rm_property_id, column_set, cache = true) ->
+    getPropertyDetail: (mapState, queryObj, column_set, cache = true) ->
+      queryStr = qs.stringify queryObj
       mapStateStr = if mapState? then "&#{mapState}" else ''
-      url = "#{backendRoutes.properties.detail}?rm_property_id=#{rm_property_id}&columns=#{column_set}#{mapStateStr}"
+      url = "#{backendRoutes.properties.detail}?#{queryStr}&columns=#{column_set}#{mapStateStr}"
       _detailThrottler.invokePromise $http.get(url, cache: cache)
       , http: {route: backendRoutes.properties.detail }
 

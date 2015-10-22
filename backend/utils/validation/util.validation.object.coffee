@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 doValidationSteps = require './util.impl.doValidationSteps'
 logger = require '../../config/logger'
 
@@ -8,6 +8,8 @@ module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
     if !values
       return null
+    if options.json
+      values = JSON.parse values
     if options.pluck
       return values[options.pluck]
     if !_.isPlainObject values

@@ -18,7 +18,10 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @type = type
   @
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions, rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters) ->
+app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
+rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters,
+rmapsProperties) ->
+
   _gate = rmapsNgLeafletEventGate
   limits = rmapsMainOptions.map
   _markerEvents = rmapsNgLeafletHelpers.events.markerEvents
@@ -122,7 +125,7 @@ app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMai
         _handleHover(model, lObject, type, layerName, 'mouseout')
 
       click: (event, lObject, model, modelName, layerName, type) ->
-        _gate.isDisabledEvent(mapCtrl.mapId, 'click')
+        return if _gate.isDisabledEvent(mapCtrl.mapId, 'click')
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
@@ -157,6 +160,21 @@ app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMai
           enable: _geojsonEvents
 
     _.merge $scope,obj
+
     rmapsMapEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
     rmapsMapEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
+
+    rmapsMapEventsLinkerService.hookMap mapCtrl.mapId,
+      click: (event) ->
+        return if _gate.isDisabledEvent(mapCtrl.mapId, 'click')
+
+        geojson = (new L.Marker(event.latlng)).toGeoJSON()
+
+        rmapsProperties.getPropertyDetail(null, geom_point_json: JSON.stringify(geojson.geometry), 'all')
+        .then (data) ->
+          return if !data?.rm_property_id
+          $scope.formatters.results.showModel(data)
+
+    , thisOriginator, ['click']
+
     return _eventHandler

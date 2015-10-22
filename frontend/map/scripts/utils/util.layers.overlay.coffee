@@ -6,7 +6,7 @@ _overlays =
     type: 'markercluster'
     visible: true
     layerOptions:
-      maxClusterRadius: 100
+      maxClusterRadius: 60
       chunkedLoading: true
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true

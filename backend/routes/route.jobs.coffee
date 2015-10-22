@@ -37,13 +37,11 @@ class JobCrud extends RouteCrud
       jobQueue.queueManualTask(req.params.name, req.user.username)
       .then () ->
         next new ExpressResponse alert: msg: "Started #{req.params.name}"
-      .catch _.partial(@onError, next)
 
     @cancelTask = (req, res, next) =>
-      jobQueue.cancelTask(req.params.name, 'canceled')
+      jobQueue.cancelTask(req.params.name)
       .then () ->
         next new ExpressResponse alert: msg: "Canceled #{req.params.name}"
-      .catch _.partial(@onError, next)
 
     super()
 
