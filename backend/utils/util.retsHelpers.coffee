@@ -190,7 +190,6 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
           when 'done'
             total += event.payload.rowsReceived
             if event.payload.maxRowsExceeded && (!limit || total < limit)
-              logger.debug "Partial results obtained (count: #{event.payload.rowsReceived}, cumulative: #{total}), asking for more"
               options.offset = total
               if limit
                 options.limit = limit-total
@@ -200,7 +199,6 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
               .then () ->
                 callback()
             else
-              logger.debug "Final result set obtained (count: #{event.payload.rowsReceived}, cumulative: #{total})"
               @push(type: 'done', payload: total)
               resultStream.end()
               callback()
@@ -214,7 +212,6 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             callback()
           else
             callback()
-      logger.debug "Initial request for RETS data (limit: #{limit})"
       streamIteration()
       .then () ->
         resultStream

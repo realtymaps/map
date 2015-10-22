@@ -16,7 +16,7 @@ class Crud extends BaseObject
 
   onError: (next, error) ->
     if isUnhandled(error)
-      logger.error("Crud error: #{error.stack||error}")
+      error = new PartiallyHandledError(error, "Crud error")
     next new ExpressResponse
       alert:
         msg: error.message

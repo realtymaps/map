@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 gjv = require 'geojson-validation'
 
 module.exports = (options = {}) ->

@@ -5,7 +5,10 @@ logger = require '../config/logger'
 mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
-csvStringify = Promise.promisify(require 'csv-stringify')
+Promise = require 'bluebird'
+through2 = require 'through2'
+csvStringify = Promise.promisify(require('csv-stringify'))
+{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 module.exports =
@@ -16,19 +19,23 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          next new ExpressResponse
+          new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getDatabaseList mlsConfig
           .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+            new ExpressResponse(list)
+      .then (expressResponse) ->
+        next(expressResponse)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
 
   getTableList:
     method: 'get'
@@ -37,19 +44,23 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          next new ExpressResponse
+          new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getTableList mlsConfig, req.params.databaseId
           .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+            new ExpressResponse(list)
+      .then (expressResponse) ->
+        next(expressResponse)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
 
   getColumnList:
     method: 'get'
@@ -58,19 +69,23 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          next new ExpressResponse
+          new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
           .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+            new ExpressResponse(list)
+      .then (expressResponse) ->
+        next(expressResponse)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
 
   getDataDump:
     method: 'get'
@@ -79,7 +94,7 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          next new ExpressResponse
+          new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
@@ -117,12 +132,16 @@ module.exports =
           .then (csvText) ->
             resObj = new ExpressResponse(csvText)
             resObj.format = 'csv'
-            next(resObj)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+            resObj
+      .then (expressResponse) ->
+        next(expressResponse)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
 
   getLookupTypes:
     method: 'get'
@@ -131,16 +150,20 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          next new ExpressResponse
+          new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
           .then (list) ->
-            next new ExpressResponse(list)
-          .catch (error) ->
-            next new ExpressResponse
-              alert:
-                msg: error.message
-              500
+            new ExpressResponse(list)
+      .then (expressResponse) ->
+        next(expressResponse)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          500
