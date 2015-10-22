@@ -1,24 +1,27 @@
+include ../mixins/_noteMixin.jade
+
 span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
   button(class="dropdown-toggle btn btn-transparent notes" dropdown-toggle)
     span.icon.icon-note
-  ul(class="dropdown-menu whiteblock no-margin" ng-cloak)
-    li.count
-      a(href="#notes") {{notes.length}} Notes
-    li(ng-repeat="note in notes" ng-cloak)
-      div(ng-controller="rmapsNotesCtrl")
-        span.enity
-          span.circle-nr
-            span {{$index+1}}
-          span.content
-            h3.title {{note.title}}
-            p.text {{note.text}}
-
-            span.sketch
-              span.icon.icon-pen
-              span.action View attached sketch
-
-            span.comment
-              a(href="#comment") Leave a comment
-        span.actions
-          span.icon.icon-remove(ng-click="removeNote(note); $event.stopPropagation()")
-          span.fa.fa-edit(ng-click="updateNote(note); $event.stopPropagation()")
+  .dropdown-menu.whiteblock.no-margin(ng-cloak)
+    .fixed-header
+      span
+        a(href="#notes") {{notes.length}} Notes
+    .inner
+      ul
+        li(ng-repeat="note in map.markers.notes" ng-cloak)
+          div(ng-controller="rmapsNotesCtrl")
+            span.enity
+              +noteMixin('{{note.title}}','{{note.text}}','{{$index+1}}')
+              
+              // TODO - add sketch feature in
+                span.sketch
+                  span.icon.icon-pen
+                  span.action View attached sketch
+              // TODO - add comment feature in
+                span.comment
+                  a(href="#comment") Leave a comment
+            
+            span.actions
+              span.icon.icon-remove(ng-click="removeNote(note); $event.stopPropagation()")
+              span.fa.fa-edit(ng-click="updateNote(note); $event.stopPropagation()")

@@ -1,4 +1,4 @@
-include ../mixins/spinner.jade
+include ../../../../common/html/includes/mixins/_spinnerMixin.jade
 
 nav.navigation.pull-left(role="navigation")
   .nav-toggle
@@ -17,4 +17,4 @@ nav.navigation.pull-left(role="navigation")
       a(href="{{frontendRoutes.projects}}")
         span projects
     li(ng-cloak ng-hide="$state.is('main')")
-      +spinner()(ng-if="Spinner.getLoadingCount() > 0")
+      +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")

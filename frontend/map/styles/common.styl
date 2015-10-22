@@ -7,6 +7,10 @@
 @import "./header/userblock"
 @import "./mobile-nav"
 
+#toast-container
+  position absolute
+  color $textColor
+
 html, body
   position absolute
   min-height: 100% !important
@@ -96,10 +100,10 @@ header.site-header
   background-color $white
   height calc(100% - $navbarHeight)
   overflow auto
-  color $black
+  color $text_gray
 
   label, input, .page-header
-    color $black
+    color $white
 
   /*when properties details*/
   &.show-properties

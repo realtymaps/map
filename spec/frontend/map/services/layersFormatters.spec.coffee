@@ -1,3 +1,4 @@
+priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/_priceMarker.jade'
 
 describe "rmapsLayerFormatters", ->
   beforeEach ->
@@ -91,12 +92,12 @@ describe "rmapsLayerFormatters", ->
             model = @testObj = @subject.setMarkerPriceOptions {}
             status = 'undefined'
             hovered = ''
-            formattedPrice = ' &nbsp; &nbsp; &nbsp;'
+            formattedPrice = '-'
 
             expect(model.markerType).to.be.equal 'price'
             expect(model.icon.type).to.be.equal 'div'
             expect(model.icon.iconSize).to.include.members [60, 30]
-            expect(model.icon.html).to.be.equal "<h4><span class='label label-#{status}#{hovered}'>#{formattedPrice}</span></h4>"
+            expect(model.icon.html).to.be.equal priceMarkerTemplate(price:formattedPrice, priceClasses: "label-#{status}#{hovered}")
 
       describe 'setMarkerManualClusterOptions extends the model', ->
         beforeEach ->

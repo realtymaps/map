@@ -4,10 +4,10 @@ form.add-project
     span.icon.icon-close(ng-click="cancelModal()")
   .modal-body
     .form-group
-      label(for="proejct_name_input") Name your project
+      label(for="name") Name your project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here")
-    button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo") + Add Client Info
-    div.add-client-info(ng-cloak ng-show="showAddClientInfo")
+    button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo" disabled) + Add Client Info
+    .add-client-info(ng-cloak ng-show="showAddClientInfo")
       .form-section
         h4.title Client Info
         p.required.text-right Required

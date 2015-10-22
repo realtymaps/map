@@ -1,4 +1,5 @@
 _ = require 'lodash'
+logger = require '../config/logger'
 sessionHelper = require './util.session.helpers'
 
 class CurrentProfileError extends Error
@@ -20,7 +21,6 @@ mergeHandles = (handles, config) ->
   for key of config
     _.extend config[key],
       handle: unless config[key].handle? then handles[key] else handles[config[key].handle]
-  # console.debug config
   config
 
 module.exports =

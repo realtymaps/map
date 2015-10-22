@@ -22,11 +22,13 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal, $q, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjects, rmapsProfilesService,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
+  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
+
+  $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
   #ng-inits or inits
   #must be defined pronto as they will be skipped if you try to hook them to factories
   $scope.resultsInit = (resultsListId) ->
@@ -39,12 +41,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
   rmapssearchbox('mainMap')
 
   $scope.loadIdentity = (identity) ->
-    $scope.projects = identity.profiles
-
     rmapsprincipal.getCurrentProfile()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->
+      $scope.projects = identity.profiles
       $scope.totalProfiles = (_.keys identity.profiles).length
       _.each $scope.projects, (project) ->
         project.totalProperties = (_.keys project.properties_selected).length
@@ -65,7 +66,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      rmapsProfilesService.setCurrent($scope.selectedProfile)
+      rmapsProfilesService.setCurrent($scope.selectedProfile, profile)
       .then () ->
         deferred.resolve()
     else
@@ -113,16 +114,19 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
         rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
-        map = new rmapsMap($scope, rmapsMainOptions.map)
+        map = new rmapsMap($scope)
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
         rmapsProperties.getPropertyDetail(null,
-          profile.map_results.selectedResultId, 'all')
+          rm_property_id: profile.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
   $scope.projectDropdown = isOpen: false
+
+  $scope.enableNoteTap = ->
+    $scope.Toggles.enableNoteTap()
 
   $scope.addProject = () ->
     $scope.newProject = {}
@@ -139,13 +143,13 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $modal,
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
-      rmapsProjects.createProject newProject
+      rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    rmapsProjects.archive project
+    rmapsProjectsService.archive project
     .then () ->
       $scope.projectDropdown.isOpen = false
 

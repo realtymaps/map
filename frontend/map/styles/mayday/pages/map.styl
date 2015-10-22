@@ -1,4 +1,4 @@
-@import './map/mapFavorites.styl'
+@import './map/mapPinned.styl'
 @import './map/mapProjects.styl'
 @import './map/mapProperties.styl'
 @import './map/mapUlDropdown.styl'
@@ -7,12 +7,12 @@
 @import './map/mapSettings.styl'
 @import './map/mapLayerTools.styl'
 @import './map/mapZoomLocTools.styl'
+@import './map/mapNotesTap.styl'
 
 .leaflet-control-layers
   display none
 
 body
-  $fnMakeMapFavorites()
 
 #map
   .old-controls
@@ -20,10 +20,7 @@ body
 
   .map-navigation
     // override some default bootstrap stuff for all dropdown controls
-    .dropdown.btn-group
-      h1, h2, h3, h4, span, div, p
-        color $black
-
+    
     $fnMakeMapProjects()
     $fnMakeMapProperties()
     $fnMakeMapUlDropdown()
@@ -31,10 +28,12 @@ body
     $fnMakeMapNotes()
     $fnMakeMapNeighborhoods()
     $fnMakeMapSettings()
+    $fnMakeMapPinned()
 
     .favorites
     .notes-list
     .neighbourhood-list
+    .pinned-list
       button
         span
           font-size 18px
@@ -42,7 +41,6 @@ body
           vertical-align top
           position relative
           top -3px
-
 
     button
       height 50px
@@ -52,7 +50,7 @@ body
         margin-right 20px
 
       &.add-button
-      &.pinned-projects
+      &.pinned
       &.notes
       &.neighbour
       &.settings
@@ -63,7 +61,6 @@ body
         width 50px
         background-position left top
         background-repeat no-repeat
-        color $dark_blue
         font-size 28px
 
     .btn-group
@@ -77,6 +74,8 @@ body
       button
         margin 0
 
+
+
   $fnMakeMapLayerTools()
   $fnMakeMapZoomLocTools()
 
@@ -88,6 +87,7 @@ body
   .favorites
   .notes-list
   .neighbourhood-list
+  .pinned-list
     button
       span
         top 0px !important

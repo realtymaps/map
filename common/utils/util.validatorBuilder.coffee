@@ -53,10 +53,6 @@ ruleDefaults =
 # Base/filter rule definitions
 _rules =
   common:
-    acres:
-      alias: 'Acres'
-      type: 'float'
-
     address:
       alias: 'Address'
       required: true
@@ -66,14 +62,6 @@ _rules =
       valid: () ->
         @input.city && @input.state && (@input.zip || @input.zip9) &&
         ((@input.streetName && @input.streetNum) || @input.streetFull)
-
-    baths_full:
-      alias: 'Baths Full'
-      type: 'integer'
-
-    bedrooms:
-      alias: 'Bedrooms'
-      type: 'integer'
 
     parcel_id:
       alias: 'Parcel ID'
@@ -85,10 +73,6 @@ _rules =
       alias: 'Price'
       type: 'currency'
       required: true
-
-    sqft_finished:
-      alias: 'Finished Sq Ft'
-      type: 'integer'
 
     close_date:
       alias: 'Close Date'
@@ -113,6 +97,22 @@ _rules =
         type: 'fips'
         valid: () ->
           @input.stateCode && @input.county
+
+      bedrooms:
+        alias: 'Bedrooms'
+        type: 'integer'
+
+      baths_full:
+        alias: 'Baths Full'
+        type: 'integer'
+
+      acres:
+        alias: 'Acres'
+        type: 'float'
+
+      sqft_finished:
+        alias: 'Finished Sq Ft'
+        type: 'integer'
 
       days_on_market:
         alias: 'Days on Market'
@@ -175,6 +175,22 @@ _rules =
         alias: 'FIPS code'
         type: 'fips'
         required: true
+
+      bedrooms:
+        alias: 'Bedrooms'
+        type: 'integer'
+
+      baths_full:
+        alias: 'Baths Full'
+        type: 'integer'
+
+      acres:
+        alias: 'Acres'
+        type: 'float'
+
+      sqft_finished:
+        alias: 'Finished Sq Ft'
+        type: 'integer'
 
       owner_name:
         alias: 'Owner 1'

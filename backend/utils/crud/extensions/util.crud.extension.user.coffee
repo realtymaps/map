@@ -1,19 +1,61 @@
 _ = require 'lodash'
+logger = require '../../../config/logger'
 
-module.exports =
-  route:
-    ###
-      Purpose is to extend some object to be used as the query clause of a query by a service.
-      Most of the time this will be req.query to be used, However sometimes it could be req.body.
-    ###
-    withUser: (req, toBeQueryClause, cb) ->
-      return @onError('User not logged in') unless req.user
-      if _.isFunction toBeQueryClause
-        cb = toBeQueryClause
-        toBeQueryClause = undefined
+withRestriction = (req, toBeQueryClause, restrict, cb) ->
+  unless toBeQueryClause
+    toBeQueryClause = req.query or {}
+  _.extend toBeQueryClause, restrict
+  # logger.debug toBeQueryClause, true
+  # logger.debug req.query, true
+  cb(toBeQueryClause) if cb?
 
-      unless toBeQueryClause
-        toBeQueryClause = req.query or {}
+route =
+  ###
+    Purpose is to extend some object to be used as the query clause of a query by a service.
+    Most of the time this will be req.query to be used, However sometimes it could be req.body.
+  ###
+  withRestriction: withRestriction
 
-      _.extend toBeQueryClause, auth_user_id: req.user.id
-      cb(toBeQueryClause) if cb?
+  withUser: (req, toBeQueryClause, cb) ->
+    return @onError('User not logged in') unless req.user
+    withRestriction req, toBeQueryClause, auth_user_id: req.user.id, cb
+
+  withParent: (req, toBeQueryClause, cb) ->
+    return @onError('User not logged in') unless req.user
+    withRestriction req, toBeQueryClause, parent_auth_user_id: req.user.id, cb
+
+  ###
+    Add query/post-data restrictions across all methods
+  ###
+  restrictAll: (restrictFn, doLog = false) ->
+    for prefix in ['root', 'byId']
+      do (prefix) =>
+        for method in ['GET', 'POST', 'DELETE', 'PUT']
+          do (method) =>
+            name = "#{prefix}#{method}"
+            wrapped = @[name]
+            @[name] = (req, res, next) =>
+              logger.debug "restrictFn: calling handle #{name}" if doLog
+              toBeQueryClause = if method == 'POST' || method == 'PUT' then req.body else req.query
+              restrictFn req, toBeQueryClause, =>
+                logger.debug "restrictFn: handle #{name}: calling wrapped.call" if doLog
+                wrapped.call @, req, res, next
+
+  toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+    if !_.isArray rows
+      originallyObject = true
+      rows = [rows]
+
+    for row in rows
+      # logger.debug row, true
+      row.coordinates = row[deafaultCoordLocation]?.coordinates
+      row.type = row[deafaultCoordLocation]?.type
+
+      for del in deletes
+        delete row[del]
+
+    if originallyObject
+      return rows[0]
+    rows
+
+module.exports.route = route

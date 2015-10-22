@@ -4,61 +4,42 @@ httpStatus = require '../../common/utils/httpStatus'
 notesSvc = (require '../services/services.user').notes
 {Crud, wrapRoutesTrait} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
-auth = require '../utils/util.auth.coffee'
+auth = require '../utils/util.auth'
 _ = require 'lodash'
 {crsFactory} = require '../../common/utils/enums/util.enums.map.coord_system'
-userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
+userExtensions = require('../utils/crud/extensions/util.crud.extension.user')
+sqlHelpers = require '../utils/util.sql.helpers'
 
-safeQuery = ['id', 'auth_user_id', 'text', 'geom_point_json', 'title', 'project_id', 'rm_property_id']
+safeQuery = sqlHelpers.columns.notes
 
 ###
-TODO: Add double security to make sure that users can not cross edit notes they do not own or do not have perms too
+TODO: SPECS to double check security for notes permissions to notes owners
+TODO: Validate query and body params.
 ###
 class NotesSessionCrud extends Crud
   @include userExtensions.route
-  init: ->
+  init: () ->
+    @restrictAll(@withUser)
     super()
-    @safe = safeQuery
-    @doLogQuery = true
 
   rootGET: (req, res, next) =>
-    logger.debug "rootGet of notes"
-    #since we have middleware that requires login going into this unless statement is a server error
-    @withUser req, =>
-      logger.debug "rootGet has user"
-      super(req, res, next)
+    super(req, res, next)
+    .then (notes) =>
+      @toLeafletMarker notes
 
   rootPOST: (req, res, next) =>
-    @withUser req, req.body, =>
-      if req.body?.geom_point_json?
-        req.body.geom_point_json.crs = crsFactory()
-      @svc.create(req.body, undefined, @doLogQuery, safeQuery)
-      .catch _.partial(@onError, next)
+    if req.body?.geom_point_json?
+      req.body.geom_point_json.crs = crsFactory()
+    super(req, res, next)
 
-  byIdGET: (req, res, next) =>
-    @withUser req, =>
-      @svc.getById(req.params[@paramIdKey], @doLogQuery, req.query, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdPOST: (req, res, next) =>
-    @withUser req, =>
-      @svc.create(req.body, req.params[@paramIdKey], undefined, @doLogQuery, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdDELETE: (req, res, next) =>
-    @withUser req, (restrict) =>
-      @svc.delete(req.params[@paramIdKey], @doLogQuery, restrict, safeQuery)
-      .catch _.partial(@onError, next)
-
-  byIdPUT: (req, res, next) =>
-    @withUser req, req.body, =>
-      if req.body?.geom_point_json?
-        req.body.geom_point_json.crs = crsFactory()
-      super(req, res, next)
+  byIdPUT: (req, res, next) ->
+    if req.body?.geom_point_json?
+      req.body.geom_point_json.crs = crsFactory()
+    super(req, res, next)
 
 NotesSessionRouteCrud = wrapRoutesTrait NotesSessionCrud
 
-module.exports = mergeHandles new NotesSessionRouteCrud(notesSvc),
+module.exports = mergeHandles new NotesSessionRouteCrud(notesSvc).init(true, safeQuery),
   root:
     methods: ['get', 'post']
     middleware: [

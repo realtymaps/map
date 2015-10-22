@@ -9,5 +9,7 @@ app.config ($provide, nemSimpleLoggerProvider) ->
   nemSimpleLogger.spawn("test:map")
 .service 'rmapsMapControlsLogger', (nemSimpleLogger) ->
   nemSimpleLogger.spawn("map:controls")
+.service 'rmapsMapNotesTapCtrlLogger', (nemSimpleLogger) ->
+  nemSimpleLogger.spawn('map:MapNotesTapCtrl')
 .run ($log, rmapsMainOptions) ->
   $log.currentLevel = $log.LEVELS[rmapsMainOptions.map.options.logLevel]

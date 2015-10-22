@@ -1,177 +1,183 @@
-rulesService = require '../services/service.dataSourceRules'
-ExpressResponse = require '../utils/util.expressResponse'
+_ = require 'lodash'
+logger = require '../config/logger'
 auth = require '../utils/util.auth'
+rulesService = require '../services/service.dataSourceRules'
+crudHelpers = require '../utils/crud/util.crud.route.helpers'
+routeHelpers = require '../utils/util.route.helpers'
 
-module.exports =
+
+class RuleCrud extends crudHelpers.RouteCrud
+  getRules: (req, res, next) =>
+    @handleQuery(
+      @svc.getRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType)
+      .catch _.partial(@onError, next)
+      res)
+
+  createRules: (req, res, next) =>
+    @handleQuery(
+      @svc.createRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
+
+  putRules: (req, res, next) =>
+    @handleQuery(
+      @svc.putRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
+
+  deleteRules: (req, res, next) =>
+    @handleQuery(
+      @svc.deleteRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType)
+      .catch _.partial(@onError, next)
+      res)
+
+
+  getListRules: (req, res, next) =>
+    @handleQuery(
+      @svc.getListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list)
+      .catch _.partial(@onError, next)
+      res)
+
+  createListRules: (req, res, next) =>
+    @handleQuery(
+      @svc.createListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
+
+  putListRules: (req, res, next) =>
+    @handleQuery(
+      @svc.putListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
+
+  deleteListRules: (req, res, next) =>
+    @handleQuery(
+      @svc.deleteListRules(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list)
+      .catch _.partial(@onError, next)
+      res)
+
+
+  getRule: (req, res, next) =>
+    @handleQuery(
+      @svc.getRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering)
+      .catch _.partial(@onError, next)
+      res)
+
+  updateRule: (req, res, next) =>
+    @handleQuery(
+      @svc.updateRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering
+        req.body)
+      .catch _.partial(@onError, next)
+      res)
+
+  deleteRule: (req, res, next) =>
+    @handleQuery(
+      @svc.deleteRule(
+        req.params.dataSourceId
+        req.params.dataSourceType
+        req.params.dataListType
+        req.params.list
+        req.params.ordering)
+      .catch _.partial(@onError, next)
+      res)
+
+
+module.exports = routeHelpers.mergeHandles new RuleCrud(rulesService),
   getRules:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.getRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
-      .then (result) ->
-        if result
-          next new ExpressResponse result
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown rules #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   createRules:
-    method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.createRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
-      .then (result) ->
-        next new ExpressResponse result
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   putRules:
-    method: 'put'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.putRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['put']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   deleteRules:
-    method: 'delete'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      mlsNormalizationService.deleteRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   getListRules:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.getListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
-      .then (result) ->
-        if result
-          next new ExpressResponse result
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown rules #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   createListRules:
-    method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.createListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
-      .then (result) ->
-        next new ExpressResponse result
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['post']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   putListRules:
-    method: 'put'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.putListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.body
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['put']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   deleteListRules:
-    method: 'delete'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.deleteListRules req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list
-      .then (result) ->
-        next new ExpressResponse(result)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+    methods: ['delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
 
   getRule:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.getRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
-      .then (result) ->
-        if result
-          next new ExpressResponse result
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.ordering}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   updateRule:
-    method: 'patch'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.updateRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering, req.body
-      .then (result) ->
-        if result
-          next new ExpressResponse(result)
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list} #{req.params.ordering}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
-
+    methods: ['patch']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
   deleteRule:
-    method: 'delete'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) ->
-      rulesService.deleteRule req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType, req.params.list, req.params.ordering
-      .then (result) ->
-        if result
-          next new ExpressResponse(result)
-        else
-          next new ExpressResponse
-            alert:
-              msg: "Unknown rule #{req.params.dataSourceId}, #{req.params.dataSourceType}, #{req.params.dataListType}, #{req.params.list} #{req.params.ordering}"
-            404
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+    methods: ['delete']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]

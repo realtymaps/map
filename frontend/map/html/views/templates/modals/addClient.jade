@@ -1,0 +1,51 @@
+form.add-project
+  .modal-header
+    h3.modal-title(ng-show="clientCopy.id") Edit Client
+    h3.modal-title(ng-show="!clientCopy.id") Add Client
+    span.icon.icon-close(ng-click="cancelModal()")
+  .modal-body
+    .add-client-info
+      .form-section
+        p.required.text-right Required
+        .form-group
+          .row
+            .col-sm-6
+              label.required(for="first_name" ) First Name
+              input.form-control(name="first_name" ng-model="clientCopy.first_name")
+            .col-sm-6
+              label(for="last_name") Last Name
+              input.form-control(name="last_name" ng-model="clientCopy.last_name")
+        .form-group
+          .row
+            .col-sm-6
+              label(for="email") Email
+              input.form-control(name="email" ng-model="clientCopy.email" placeholder="name@email.com")
+            .col-sm-3
+              label(for="cell_phone") Work #
+              input.form-control(name="cell_phone" ng-model="clientCopy.cell_phone")
+            .col-sm-3
+              label(for="work_phone") Cell #
+              input.form-control(name="work_phone" ng-model="clientCopy.work_phone")
+        .form-group
+          .row
+            .col-sm-6
+              label(for="address_1" ) Address 1
+              input.form-control(name="address_1" ng-model="clientCopy.address_1")
+            .col-sm-6
+              label(for="address_2") Address 2
+              input.form-control(name="address_2" ng-model="clientCopy.address_2")
+        .form-group
+          .row
+            .col-sm-4
+              label(for="city") City
+              input.form-control(name="city" ng-model="clientCopy.city")
+            .col-sm-4
+              label(for="us_state_id") State
+              select.form-control(name="us_state_id" ng-model="clientCopy.us_state_id")
+                option FL
+            .col-sm-4
+              label(for="zip") Zip
+              input.form-control(name="zip" ng-model="clientCopy.zip")
+  .modal-footer
+    button.btn.btn-default(ng-click="cancelModal()") Cancel
+    button.btn.btn-primary(type="submit" ng-click="saveClient()") Save

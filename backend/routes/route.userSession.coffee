@@ -147,13 +147,24 @@ profiles = (req, res, next) ->
     logger.error analyzeValue err
 
 newProject = (req, res, next) ->
-  logger.debug 'NEWPROJECT:', req.body.projectName
-  if !req.body.projectName
+  logger.debug 'NEWPROJECT:', req.body.name
+  if !req.body.name
     throw new Error('Error creating new project, name is required')
   Promise.try () ->
     profileService.getCurrent(req.session)
   .then (profile) ->
-    profileService.create _.clone(profile), req.body.projectName
+    req.body.auth_user_id = req.user.id
+
+    newProfile =
+      auth_user_id: req.user.id
+      map_toggles: {}
+      map_result: {}
+
+    # If current profile is sandbox, save the map state, otherwise create a clean profile
+    if !profile.project_id?
+      _.extend newProfile, _.pick(profile, ['filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results'])
+
+    profileService.create newProfile, req.body
   .then (newProfile) ->
     req.session.current_profile_id = newProfile.id
     logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"

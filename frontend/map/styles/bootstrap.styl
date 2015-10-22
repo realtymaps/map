@@ -6,13 +6,11 @@ input.btn.btn-primary
 /*
 set all page h tag overrides
 */
-$fnSetHeaders($textColor)
+color $textColor
 
 main
-  $fnSetHeaders($black)
 
-  div, p, span
-    color $black
+  $fnSetHeaders($black)
 
 .navbar-brand
   padding 5px 10px;
@@ -194,7 +192,7 @@ button
     background-color $white_90
     border-radius 3px;
     box-shadow 0px 1px 2px $black_70
-    color $dark_blue
+    color $rm-map-btn-icon
 
     &:hover
     &:active
@@ -544,8 +542,8 @@ label
 
 .modal-title, .modal-content, .modal-body, .modal-footer
   h1, h2, h3, h4, h5, h6, h7, span, p, div
-    color: $black
-  color $black
+    color: $text_gray
+  color $text_gray
 .modal
   .modal-dialog
     .modal-content
@@ -682,58 +680,58 @@ Place for our custom Theming of bootstrap
   /.label-saved-property
     background-color $rm-property-save-yello
     color $white
-    &:after
-      border-top-color $rm-property-save-yello !important
+    &:before
+      border-color $rm-property-save-yello transparent transparent $rm-property-save-yello !important
     &.label-hovered
       background-color $rm-saved-hover
-      &:after
+      &:before
         color $rm-saved-hover
-        border-top-color $rm-saved-hover !important
+        border-color $rm-saved-hover transparent transparent $rm-saved-hover !important
 
   &.label-sale-property
   /.label-sale-property
     background-color $rm-property-sale-green
     color $white
-    &:after
-      border-top-color $rm-property-sale-green !important
+    &:before
+      border-color $rm-property-sale-green transparent transparent $rm-property-sale-green !important
     &.label-hovered
       background-color $rm-sale-hover
-      &:after
+      &:before
         color $rm-sale-hover
-        border-top-color $rm-sale-hover !important
+        border-color $rm-sale-hover transparent transparent $rm-sale-hover !important
 
   &.label-sold-property
   /.label-sold-property
     background-color $rm-property-sold-red
     color #FFF !important
-    &:after
-      border-top-color $rm-property-sold-red !important
+    &:before
+      border-color $rm-property-sold-red transparent transparent $rm-property-sold-red !important
     &.label-hovered
       background-color $rm-sold-hover
-      &:after
+      &:before
         color $rm-sold-hover
-        border-top-color $rm-sold-hover !important
+        border-color $rm-sold-hover transparent transparent $rm-sold-hover !important
 
   &.label-pending-property
   /.label-pending-property
     background-color $rm-highlight-purple
     color #FFF !important
-    &:after
-      border-top-color $rm-highlight-purple !important
+    &:before
+      border-color $rm-highlight-purple transparent transparent $rm-highlight-purple !important
     &.label-hovered
       background-color $rm-pending-hover
-      &:after
+      &:before
         color $rm-pending-hover
-        border-top-color $rm-pending-hover !important
+        border-color  $rm-pending-hover transparent transparent $rm-pending-hover !important
 
   &.label-notsale-property
   /.label-notsale-property
     background-color $rm-highlight-blue
     color #FFF !important
-    &:after
-      border-top-color $rm-highlight-blue !important
+    &:before
+      border-color  $rm-highlight-blue transparent transparent $rm-highlight-blue !important
     &.label-hovered
       background-color $rm-notsale-hover
-      &:after
+      &:before
         color $rm-notsale-hover
-        border-top-color $rm-notsale-hover !important
+        border-color  $rm-notsale-hover transparent transparent $rm-notsale-hover !important

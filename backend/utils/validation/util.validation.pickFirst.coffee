@@ -18,7 +18,10 @@ module.exports = (options = {}) ->
         if arrayValues.length == 0
           throw new DataValidationError('no array elements given', param, values)
         else
-          return arrayValues[0]
+          for value in arrayValues
+            if value?
+              return value
+          return null
       Promise.settle(_.map(arrayValues, doValidationSteps.bind(null, options.criteria, param)))
       .then (validatedValues) ->
         fulfilledNull = false

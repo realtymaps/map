@@ -17,7 +17,7 @@ options =
   execMap:
     coffee: 'coffee'
   verbose: false
-  tasks: ['lint']
+  # tasks: ['lint'] # THIS IS KILLING THE RESTART SPEED OF NODEMON , this should be done in a gulp watch or not at all
 
 run_express = (done, nodeArgs) ->
   log 'ENV Port in gulp: ' + config.PORT
@@ -36,8 +36,8 @@ gulp.task 'lint', () ->
   .pipe coffeelint()
   .pipe coffeelint.reporter()
 
-gulp.task 'express', gulp.series 'lint', (done) ->
+gulp.task 'express', gulp.parallel 'lint', (done) ->
   run_express(done)
 
-gulp.task 'express_debug', gulp.series 'lint', (done) ->
+gulp.task 'express_debug', gulp.parallel 'lint', (done) ->
   run_express done, ['--debug=9999']

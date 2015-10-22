@@ -1,0 +1,103 @@
+@import '../../../components/propertiesAttr'
+
+$fnMakeMapPinned()
+  .pinned-list
+      .enity
+        display table
+        .circle-nr
+          display table-cell
+          padding 5px
+          span
+            background-color $black
+            border-radius 500px
+            color $white
+            display block
+            font-size 10px
+            font-weight bold
+            height 20px
+            line-height 20px
+            text-align center
+            width 20px
+        .content
+          display table-cell
+          padding 5px
+          .status
+            background $rm_forsale
+            color c_white
+            text-transform uppercase
+            display inline-block
+            padding 5px 10px
+            font-size 11px
+            margin-bottom 5px
+            &.label-pending-property
+              background $rm_pending
+
+            &.label-sold-property
+              background $rm_sold
+
+          .price
+            margin 0
+            font-size 18px
+            font-weight 400
+            color $rm_forsale
+            &.pending
+              color $rm_pending
+            &.sold
+              color $rm_sold
+
+          .property-attr
+            list-style none
+            display inline-block
+            ul.attr
+              padding 0
+              margin 0 -4px
+              li
+                list-style none
+                display inline-block
+                border-right 1px solid $black_0
+                border-bottom none
+                padding 0 4px
+                font-size 12px
+                &:last-child
+                  border none
+          .title
+            margin 0
+            font-size 16px
+            a
+              padding 0
+              text-decoration none
+              &:hover
+              &:focus
+                color $light_blue
+          .location
+            color c_gray
+            font-size 12px
+            font-weight bold
+      .actions
+        transform scale(1) !important
+        opacity 1 !important
+        text-align right
+        vertical-align middle
+        border 1px solid $transparent
+        border-radius 3px
+        @extends .global-transition
+        span.unpin
+          span.action
+            font-size 10px
+            line-height 30px
+            vertical-align top
+            opacity 0
+          span.icon
+            font-size 16px!important
+            color $black_30
+        &:hover
+        &:focus
+          border 1px solid $black_10
+          border-radius 3px
+          background-color $white_50
+          color $rm-map-btn-icon-hover
+          span.unpin
+            span.action
+              opacity 1
+            span.icon
+              color $rm-map-btn-icon-hover

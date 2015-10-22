@@ -1,10 +1,11 @@
 section.map(ng-cloak ng-init="init('page-map')")
-  include ../includes/mixins/leaflet
+  include ../includes/mixins/_leafletMixin.jade
 
   div(ng-if="map.isReady" id="map")
-    +leaflet('map', 'mainMap')
+    +leafletMixin('map', 'mainMap')
 
-  include ../includes/map/_detailsTray
-  include ../includes/map/_filtersTray
-  include ../includes/map/_properties
-  include ../includes/map/_searchbox
+  include ../includes/map/_detailsTray.jade
+  include ../includes/map/_filtersTray.jade
+  include ../includes/map/_properties.jade
+  include ../includes/map/_searchbox.jade
+  include ../includes/map/_notesTap.jade

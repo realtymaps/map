@@ -6,7 +6,7 @@ _overlays =
     type: 'markercluster'
     visible: true
     layerOptions:
-      maxClusterRadius: 100
+      maxClusterRadius: 60
       chunkedLoading: true
       showCoverageOnHover: false
       removeOutsideVisibleBounds: true
@@ -16,6 +16,11 @@ _overlays =
     name: 'Price Cluster'
     type: 'group'
     visible: true
+
+  notes:
+    name: 'Notes'
+    type: 'group'
+    visible: false
 
 module.exports = ($log) ->
   _cartodb = do require './util.cartodb.coffee'

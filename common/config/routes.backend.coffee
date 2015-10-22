@@ -23,6 +23,7 @@ apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
+apiBaseClients = "#{apiBaseSession}/clients"
 
 module.exports =
   views:
@@ -55,6 +56,8 @@ module.exports =
   projectSession:
     root: "#{apiBaseSession}/projects"
     byId: "#{apiBaseSession}/projects/:id"
+    clients: "#{apiBaseSession}/projects/:id/clients"
+    clientsById: "#{apiBaseSession}/projects/:id/clients/:client_id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -130,12 +133,8 @@ module.exports =
     defineImports: "#{apiBase}/parcel/defineimports"
   mls_config:
     apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
-    getAll: "#{apiBaseMlsConfig}"
-    create: "#{apiBaseMlsConfig}"
-    getById: "#{apiBaseMlsConfig}/:id"
-    update: "#{apiBaseMlsConfig}/:id"
-    createById: "#{apiBaseMlsConfig}/:id"
-    delete: "#{apiBaseMlsConfig}/:id"
+    root: apiBaseMlsConfig
+    byId: "#{apiBaseMlsConfig}/:id"
     updatePropertyData: "#{apiBaseMlsConfig}/:id/propertyData"
     updateServerInfo: "#{apiBaseMlsConfig}/:id/serverInfo"
 
@@ -166,6 +165,7 @@ module.exports =
   jobs:
     apiBase: apiBaseJobs
     taskHistory: "#{apiBaseJobs}/history"
+    subtaskErrorHistory: "#{apiBaseJobs}/subtaskerrorhistory"
     queues: "#{apiBaseJobs}/queues/"
     queuesById: "#{apiBaseJobs}/queues/:name"
     tasks: "#{apiBaseJobs}/tasks"

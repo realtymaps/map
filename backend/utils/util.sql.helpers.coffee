@@ -38,7 +38,7 @@ _parcel = [
   'fips_code', '\'{}\'::json AS properties'
 ]
 
-_columns =
+columns =
   # columns returned for filter requests
   filter: [
     'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json AS geometry',
@@ -84,7 +84,9 @@ _columns =
   #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
   cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
-_columns.all = "#{_columns.filter}, #{_columns.detail}"
+  notes: ['id', 'auth_user_id', 'rm_property_id', 'project_id', 'geom_point_json', 'comments', 'text', 'title']
+
+columns.all = "#{columns.filter}, #{columns.detail}"
 
 
 _getPartialPoint = (objOrArray, arrayDex, param) ->
@@ -121,6 +123,15 @@ whereInBounds = (query, column, bounds) ->
     results.sql = "#{column} && ST_MakeEnvelope(?, ?, ?, ?, #{coordSys.UTM})"
     results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
   _whereRawSafe query, results
+
+whereIntersects = (query, geoPointJson, column = 'geom_polys_raw') ->
+  results =
+    sql: "ST_INTERSECTS(ST_GeomFromGeoJSON(?::text), #{column})"
+    bindings: [geoPointJson]
+
+  _whereRawSafe query, results
+  query.raw = query.toString().replace(/\//g,'')#terrible hack for knex.. getting tired of doing this
+  query
 
 getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
@@ -184,7 +195,7 @@ select = (knex, which, passedFilters=null, prepend='') ->
   extra = ''
   if passedFilters
     extra = ", #{passedFilters} as \"passedFilters\""
-  knex.select(knex.raw(prepend + _columns[which] + extra))
+  knex.select(knex.raw(prepend + columns[which] + extra))
   knex
 
 selectCountDistinct = (knex, distinctField='rm_property_id') ->
@@ -240,3 +251,5 @@ module.exports =
   getClauseString: getClauseString
   safeJsonArray: safeJsonArray
   isUnique: isUnique
+  columns: columns
+  whereIntersects: whereIntersects

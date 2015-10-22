@@ -4,8 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 _encode = require('geohash64').encode
-
-_eventReg = require '../utils/util.events.coffee'
 _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
@@ -24,7 +22,9 @@ app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger) ->
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService) ->
+
+    limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("map:factory")
     testLogger = rmapsMapTestLogger
@@ -48,7 +48,7 @@ app.factory 'rmapsMap',
     class Map extends rmapsBaseMap
       baseIsLoaded = false
 
-      constructor: ($scope, limits) ->
+      constructor: ($scope) ->
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
 
@@ -58,6 +58,12 @@ app.factory 'rmapsMap',
         self = @
 
         leafletData.getMap('mainMap').then (map) =>
+
+          $scope.$watch 'Toggles.showPrices', (newVal) ->
+            $scope.map.layers.overlays.filterSummary.visible = newVal
+
+          $scope.$watch 'Toggles.showAddresses', (newVal) ->
+            $scope.map.layers.overlays.parcelsAddresses.visible = newVal
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
@@ -69,9 +75,6 @@ app.factory 'rmapsMap',
               @scope.Toggles.hasPreviousLocation = true
             else
               @scope.Toggles.hasPreviousLocation = false
-
-          @scope.satMap =
-            limits: limits
 
         @singleClickCtrForDouble = 0
 
@@ -94,7 +97,7 @@ app.factory 'rmapsMap',
               saved.then (savedDetails) =>
                 @redraw(false)
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @eventHandle = _eventReg($timeout,$scope, @, limits, $log)
+        @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
           streetViewPanorama:
             status: 'OK'
@@ -105,6 +108,9 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
+            getNotes: () ->
+              $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
+
             layers:
               overlays: _overlays($log)
 
@@ -114,6 +120,7 @@ app.factory 'rmapsMap',
               filterSummary:{}
               backendPriceCluster:{}
               addresses:{}
+              notes: []
 
             geojson: {}
 
@@ -152,6 +159,7 @@ app.factory 'rmapsMap',
       clearBurdenLayers: =>
         if @map? and not rmapsZoomLevel.isParcel(@scope.map.center.zoom)
           @scope.map.markers.addresses = {}
+          @scope.map.markers.notes = []
           _.each @scope.map.geojson, (val) ->
             val.data = _emptyGeoJsonData
 
@@ -188,6 +196,7 @@ app.factory 'rmapsMap',
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
+        Toggles = @scope.Toggles
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
@@ -200,7 +209,7 @@ app.factory 'rmapsMap',
         # $log.debug "hash: #{@hash}"
         # $log.debug "mapState: #{@mapState}"
         p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
-        .then (data) =>
+        p.then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
             @handleClusterResults(data)
@@ -216,17 +225,17 @@ app.factory 'rmapsMap',
             if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
               if overlays?.parcels?
                 overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
-              if overlays?.parcelsAddresses?
-                overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
 
-              overlays.filterSummary.visible = false
+              Toggles.showAddresses = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+
+              Toggles.showPrices = false
 
               @handleGeoJsonResults(filters, cache)
 
             else
-              overlays.parcels.visible = false
-              overlays.filterSummary.visible = true
-              overlays.parcelsAddresses.visible = false
+              overlays.parcels.visible = false if overlays?.parcels?
+              Toggles.showPrices = true
+              Toggles.showAddresses = false
         promises.push p
         promises
 
@@ -249,10 +258,14 @@ app.factory 'rmapsMap',
           rmapsZoomLevel.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
-        promises = promises.concat @drawFilterSummary(cache)
+        promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes()]
 
         $q.all(promises).then =>
           #every thing is setup, only draw once
+          ###
+          Not only is this efficent but it avoids (worksaround) ng-leaflet race
+          https://github.com/tombatossals/angular-leaflet-directive/issues/820
+          ###
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)

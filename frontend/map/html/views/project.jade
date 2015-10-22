@@ -44,13 +44,13 @@ include ../includes/mixins/property/_propertyAttributes.jade
                         .collapse-header
                           h2.title Clients ({{project.clients.length}})
                           .tools
-                            button(class="btn btn-white" ng-click="")
+                            button(class="btn btn-white" ng-click="editClient()")
                               span Add Client
                         li(class="client" ng-repeat="client in project.clients")
                           h3 Client {{$index + 1}}
                           .tools
-                            button(class="btn btn-link") Edit
-                            button(class="btn btn-link") Remove
+                            button(class="btn btn-link" ng-click="editClient(client)") Edit
+                            button(class="btn btn-link" ng-click="removeClient(client)") Remove
                           .row
                             .col-md-6
                               span.label Name

@@ -43,7 +43,7 @@ class Crud extends BaseObject
     .catch _.partial(@onError, next)
 
   byIdDELETE: (req, res, next) =>
-    @svc.delete(req.params[@paramIdKey], @doLogQuery)
+    @svc.delete(req.params[@paramIdKey], @doLogQuery, req.query, @safe)
     .catch _.partial(@onError, next)
 
   byIdPUT: (req, res, next) =>
@@ -85,7 +85,7 @@ class HasManyCrud extends Crud
       throw new Error('@rootGETKey must be defined')
 
   rootGET: (req, res, next) =>
-    @svc.getAll(_.set({}, @rootGETKey, req.params.id), @doLogQuery)
+    @svc.getAll(_.set(req.query, @rootGETKey, req.params.id), @doLogQuery)
 
 ###
 TODO:

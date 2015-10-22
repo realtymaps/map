@@ -1,29 +1,9 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rmapsPromiseThrottler, $log) ->
+app.service 'rmapsProjectsService', ($http, $log) ->
 
   _mockData = (project) ->
-    project.clients = []
-    project.clients.push
-      first_name: 'Buddy'
-      last_name: 'Holly'
-      email: 'buddyholly@some.domain'
-      address_1: '123 Main St'
-      address_2: 'New York, NY'
-      zip: '55555'
-      cell_phone: '1234567890'
-      work_phone: '5555555555'
-    project.clients.push
-      first_name: 'Will'
-      last_name: 'Farrell'
-      email: 'willfarrell@some.domain'
-      address_1: '555 Some St'
-      address_2: 'Springfield, IL'
-      zip: '55555'
-      cell_phone: '1234567890'
-      work_phone: '5555555555'
-
     project.notes = []
     project.notes.push
       title: 'Heads Up'
@@ -144,7 +124,7 @@ app.service 'rmapsProjects', ($rootScope, $http, rmapsprincipal, rmapsevents, rm
       _update project
 
     createProject: (project) ->
-      $http.post backendRoutes.projectSession.root, project
+      $http.post backendRoutes.userSession.newProject, project
 
     archive: (project) ->
       project.archived = !project.archived
