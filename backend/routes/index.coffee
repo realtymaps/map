@@ -15,20 +15,19 @@ module.exports = (app) ->
     logger.infoRoute "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
-      maybePromise = route.handle(req, res, next)
-      if maybePromise instanceof Promise
-        maybePromise
-        .catch isUnhandled, (error) ->
-          throw new PartiallyHandledError(error)
-        .catch (error) ->
-          if isCausedBy(validation.DataValidationError, error)
-            returnStatus = status.BAD_REQUEST
-          else
-            returnStatus = status.INTERNAL_SERVER_ERROR
-          next new ExpressResponse
-            alert:
-              msg: error.message
-            returnStatus
+      Promise.try () ->
+       route.handle(req, res, next)
+      .catch isUnhandled, (error) ->
+        throw new PartiallyHandledError(error)
+      .catch (error) ->
+        if isCausedBy(validation.DataValidationError, error)
+          returnStatus = status.BAD_REQUEST
+        else
+          returnStatus = status.INTERNAL_SERVER_ERROR
+        next new ExpressResponse
+          alert:
+            msg: error.message
+          returnStatus
     app[route.method](route.path, route.middleware..., wrappedHandle)
 
   logger.info '\n'
