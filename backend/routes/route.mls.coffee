@@ -7,7 +7,6 @@ validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 Promise = require 'bluebird'
 through2 = require 'through2'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 
 
 module.exports =
