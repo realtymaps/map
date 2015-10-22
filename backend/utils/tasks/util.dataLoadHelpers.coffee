@@ -383,10 +383,6 @@ manageRawDataStream = (tableName, dataLoadHistory, doStream) ->
         .update(raw_rows: count)
       .then () ->
         count
-  .then (count) ->
-    count
-  .catch (err) ->
-    throw err
     
 
 module.exports =
