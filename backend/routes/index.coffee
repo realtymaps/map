@@ -7,6 +7,8 @@ Promise = require 'bluebird'
 validation = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 status = require '../../common/utils/httpStatus'
+{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+
 
 module.exports = (app) ->
   _.forEach _.sortBy(loaders.loadRouteOptions(__dirname), 'order'), (route) ->
@@ -16,11 +18,17 @@ module.exports = (app) ->
       maybePromise = route.handle(req, res, next)
       if maybePromise instanceof Promise
         maybePromise
-        .catch validation.DataValidationError, (err) ->
-          next new ExpressResponse(alert: {msg: err.message}, status.BAD_REQUEST)
-        .catch (err) ->
-          next new ExpressResponse(alert: {msg: err}, status.BAD_REQUEST)
-
+        .catch isUnhandled, (error) ->
+          throw new PartiallyHandledError(error)
+        .catch (error) ->
+          if isCausedBy(validation.DataValidationError, error)
+            returnStatus = status.BAD_REQUEST
+          else
+            returnStatus = status.INTERNAL_SERVER_ERROR
+          next new ExpressResponse
+            alert:
+              msg: error.message
+            returnStatus
     app[route.method](route.path, route.middleware..., wrappedHandle)
 
   logger.info '\n'

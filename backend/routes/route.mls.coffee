@@ -18,23 +18,14 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          new ExpressResponse
+          next new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getDatabaseList mlsConfig
           .then (list) ->
-            new ExpressResponse(list)
-      .then (expressResponse) ->
-        next(expressResponse)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+            next new ExpressResponse(list)
 
   getTableList:
     method: 'get'
@@ -43,23 +34,14 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          new ExpressResponse
+          next new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getTableList mlsConfig, req.params.databaseId
           .then (list) ->
-            new ExpressResponse(list)
-      .then (expressResponse) ->
-        next(expressResponse)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+            next new ExpressResponse(list)
 
   getColumnList:
     method: 'get'
@@ -68,23 +50,14 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          new ExpressResponse
+          next new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getColumnList mlsConfig, req.params.databaseId, req.params.tableId
           .then (list) ->
-            new ExpressResponse(list)
-      .then (expressResponse) ->
-        next(expressResponse)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+            next new ExpressResponse(list)
 
   getDataDump:
     method: 'get'
@@ -93,7 +66,7 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          new ExpressResponse
+          next new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
@@ -134,16 +107,7 @@ module.exports =
           .then (csvPayload) ->
             resObj = new ExpressResponse(csvPayload)
             resObj.format = 'csv'
-            resObj
-      .then (expressResponse) ->
-        next(expressResponse)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+            next(resObj)
 
   getLookupTypes:
     method: 'get'
@@ -152,20 +116,11 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
         if !mlsConfig
-          new ExpressResponse
+          next new ExpressResponse
             alert:
               msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
             404
         else
           retsHelpers.getLookupTypes mlsConfig, req.params.databaseId, req.params.lookupId
           .then (list) ->
-            new ExpressResponse(list)
-      .then (expressResponse) ->
-        next(expressResponse)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          500
+            next new ExpressResponse(list)

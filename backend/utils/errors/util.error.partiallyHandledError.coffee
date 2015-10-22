@@ -17,9 +17,13 @@ module.exports =
   PartiallyHandledError: PartiallyHandledError
   isUnhandled: (err) ->
     !(err instanceof PartiallyHandledError)
-  isCausedBy: (errorType) ->
-    (err) ->
+  isCausedBy: (errorType, _err) ->
+    check = (err) ->
       cause = err
       while cause instanceof PartiallyHandledError
         cause = cause.jse_cause
       return cause instanceof errorType
+    if _err
+      return check(_err)
+    else
+      return check
