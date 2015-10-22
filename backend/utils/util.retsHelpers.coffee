@@ -81,9 +81,7 @@ getColumnList = (serverInfo, databaseName, tableName) ->
       _.map response.results[0].metadata, (r) ->
         _.pick r, ['MetadataEntryID', 'SystemName', 'ShortName', 'LongName', 'DataType', 'Interpretation', 'LookupName']
     .then (fields) ->
-      reverseMappings =
-        dummy1: "dummy1"
-        dummy2: "dummy2"
+      reverseMappings = {}
       for field in fields
         field.LongName = field.LongName.replace(/\./g, '').trim()
         # handle LongName collisions
