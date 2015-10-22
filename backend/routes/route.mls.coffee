@@ -7,7 +7,6 @@ validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 Promise = require 'bluebird'
 through2 = require 'through2'
-csvStringify = Promise.promisify(require('csv-stringify'))
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 
 
@@ -128,9 +127,12 @@ module.exports =
                 callback()
               retsStream.pipe(csvStreamer)
             .then () ->
-              csvStringify(data, columns: columns, header: true)
-          .then (csvText) ->
-            resObj = new ExpressResponse(csvText)
+              data: data
+              options:
+                columns: columns
+                header: true
+          .then (csvPayload) ->
+            resObj = new ExpressResponse(csvPayload)
             resObj.format = 'csv'
             resObj
       .then (expressResponse) ->
