@@ -1,5 +1,5 @@
 tables = require '../../config/tables'
-{PartiallyHandledError} = require '../util.partiallyHandledError'
+{PartiallyHandledError} = require '../errors/util.error.partiallyHandledError'
 Promise = require 'bluebird'
 memoize = require 'memoizee'
 

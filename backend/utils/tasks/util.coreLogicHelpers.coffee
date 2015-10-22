@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
 utilStreams = require '../util.streams'
@@ -62,7 +62,7 @@ _fileToDbStreamer = (filePath) ->
           transform = (chunk, enc, callback) ->
             if chunk.length > 0
               count += 1
-              this.push(chunk)
+              this.push(utilStreams.pgStreamEscape(chunk))
               this.push('\n')
             callback()
           flush = (callback) ->

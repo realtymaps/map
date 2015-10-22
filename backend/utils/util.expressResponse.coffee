@@ -1,7 +1,8 @@
-csv = require 'csv'
 escape = require 'escape-html'
 Promise = require 'bluebird'
 logger = require '../config/logger'
+csvStringify = Promise.promisify(require('csv-stringify'))
+{PartiallyHandledError} = require './errors/util.error.partiallyHandledError'
 
 class ExpressResponse
   constructor: (@payload, @status=200, allowHtml=false, @format='json') ->
@@ -27,13 +28,11 @@ class ExpressResponse
       res.set('Content-Type', 'text/csv')
 
       # stringify payload and send
-      stringifier = Promise.promisify(csv.stringify)
-      stringifier(@payload, header: true)
+      csvStringify(@payload.data, @payload.options)
       .then (data) ->
-        res.send data
+        res.send(data)
       .catch (err) ->
-        logger.error 'Error while sending csv attachment:'
-        logger.error err
+        new PartiallyHandledError(err, 'Error while sending csv attachment')
     else
       content = if @payload? then JSON.stringify(@payload) else ''
       res.status(@status).send content

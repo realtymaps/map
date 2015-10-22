@@ -1,7 +1,7 @@
 _ = require 'lodash'
 logger = require '../config/logger'
 dbs = require '../config/dbs'
-{PartiallyHandledError, isUnhandled} = require '../utils/util.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 
 

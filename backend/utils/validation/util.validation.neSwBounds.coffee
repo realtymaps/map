@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 logger = require '../../config/logger'
 _ = require 'lodash'
 
