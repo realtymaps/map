@@ -36,7 +36,7 @@
     "bower": "1.x.x",
     "brfs": "^1.4.0",
     "browserify": "^11.0.1",
-    "browserify-coffeelint": "git://github.com/realtymaps/browserify-coffeelint.git",
+    "browserify-coffeelint": "1.2.0",
     "browserify-istanbul": "^0.2.1",
     "browserify-ngannotate": "^1.0.1",
     "cartodb-api": "0.0.4",
