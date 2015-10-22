@@ -154,10 +154,7 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
             if !resolved
               resolved = true
               reject(error)
-      started = false
       resultStream = through2.obj (event, encoding, callback) ->
-        if !started
-          started = true
         if done
           return
         switch event.type

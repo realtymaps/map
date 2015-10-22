@@ -24,7 +24,6 @@ _retsToDbStreamer = (retsStream) ->
   (tableName, promiseQuery, streamQuery) -> new Promise (resolve, reject) ->
     delimiter = null
     dbStream = null
-    started = false
     finish = (promiseValue, promiseCallback, streamCallback) ->
       promiseCallback(promiseValue)
       retsStream.unpipe(dbStreamer)
@@ -34,8 +33,6 @@ _retsToDbStreamer = (retsStream) ->
       streamCallback()
     dbStreamer = through2.obj (event, encoding, callback) ->
       try
-        if !started
-          started = true
         switch event.type
           when 'data'
             dbStream.write(utilStreams.pgStreamEscape(event.payload))
