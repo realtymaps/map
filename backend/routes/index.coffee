@@ -38,4 +38,4 @@ module.exports = (app) ->
     paths[routerEntry.route.path] = methods.concat(_.keys(routerEntry.route.methods))
 
   for path,methods of paths
-    logger.info path, '(' + (if methods.length >= 25 then 'all' else methods.join(',')) + ')'
+    logger.info path, ' [' + (if methods.length >= 25 then 'all' else methods.join(',')).toUpperCase() + ']'
