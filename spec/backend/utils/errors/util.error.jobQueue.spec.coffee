@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 {SoftFail, HardFail} = require '../../../../backend/utils/errors/util.error.jobQueue'
 
-describe 'util.crud.route.helpers', ->
+describe 'util.error.jobQueue', ->
   for name, classz of {HardFail: HardFail,SoftFail: SoftFail}
     do (name, classz) ->
       describe name, ->
