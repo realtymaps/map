@@ -12,13 +12,13 @@ span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" drop
     .inner
       ul
         li(ng-repeat="property in pinnedProperties")
-          a {{pinnedTotal}}
+          a(ng-click="formatters.results.showModel(property)")
             span.enity
               +circleNrMixin('{{$index+1}}')
               span.content
                 span(class="status" ng-class="formatters.results.getStatusLabelClass(property, true)") {{property.rm_status}}
                 +propertyAttributes('property')
             span.actions
-              span.unpin(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()")
+              span.unpin(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")
                 span.action Unpin
                 span.icon.icon-pin
