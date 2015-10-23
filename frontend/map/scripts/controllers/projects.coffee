@@ -35,6 +35,8 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $log, $modal, rm
     rmapsProjectsService.getProjects()
     .then (projects) ->
       $scope.projects = projects
+      for project in projects
+        project.propertiesTotal = _.keys(project.properties_selected).length
     .catch (error) ->
       $log.error error
 

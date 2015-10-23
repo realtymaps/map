@@ -162,7 +162,7 @@ newProject = (req, res, next) ->
 
     # If current profile is sandbox, save the map state, otherwise create a clean profile
     if !profile.project_id?
-      _.extend newProfile, _.pick(profile, ['filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results'])
+      _.extend newProfile, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
 
     profileService.create newProfile, req.body
   .then (newProfile) ->

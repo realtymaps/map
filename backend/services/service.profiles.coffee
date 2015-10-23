@@ -6,6 +6,8 @@ logger = require '../config/logger'
 tables = require '../config/tables'
 {singleRow} = require '../utils/util.sql.helpers'
 {currentProfile} = require '../utils/util.session.helpers'
+profileSvc = (require './services.user').user.profiles
+projectSvc = (require './services.user').project
 
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
@@ -24,7 +26,6 @@ cols =  [
 
 safe = [
   'filters'
-  'properties_selected'
   'map_toggles'
   'map_position'
   'map_results'
@@ -33,7 +34,7 @@ safe = [
   'project_id'
 ]
 
-safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft']
+safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
 
 toReturn = safe.concat ['id']
 
@@ -104,11 +105,13 @@ getCurrent = (session) ->
   currentProfile(session)
 
 update = (profile) ->
-  q = tables.user.profile()
-  .where(_.pick profile, ['auth_user_id', 'id'])
-  .update(_.pick profile, safe)
-  # logger.debug q.toString()
-  singleRow(q)
+  profileSvc.getById profile.id
+  .then (profileProject) ->
+    logger.debug profileProject
+    if profileProject?
+      projectSvc.update profileProject.project_id, _.pick(profile, ['properties_selected'])
+  .then () ->
+    profileSvc.update profile.id, profile, safe
   .then (userState) ->
     if not userState
       return {}
