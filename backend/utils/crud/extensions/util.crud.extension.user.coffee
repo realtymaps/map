@@ -17,11 +17,13 @@ route =
   withRestriction: withRestriction
 
   withUser: (req, toBeQueryClause, cb) ->
-    return @onError('User not logged in') unless req.user
+    if !req.user
+      throw new Error('User not logged in')
     withRestriction req, toBeQueryClause, auth_user_id: req.user.id, cb
 
   withParent: (req, toBeQueryClause, cb) ->
-    return @onError('User not logged in') unless req.user
+    if !req.user
+      throw new Error('User not logged in')
     withRestriction req, toBeQueryClause, parent_auth_user_id: req.user.id, cb
 
   ###
@@ -42,6 +44,10 @@ route =
                 wrapped.call @, req, res, next
 
   toLeafletMarker: (rows, deletes = [], deafaultCoordLocation = 'geom_point_json') ->
+    if !_.isArray rows
+      originallyObject = true
+      rows = [rows]
+
     for row in rows
       # logger.debug row, true
       row.coordinates = row[deafaultCoordLocation]?.coordinates
@@ -50,6 +56,8 @@ route =
       for del in deletes
         delete row[del]
 
+    if originallyObject
+      return rows[0]
     rows
 
 module.exports.route = route

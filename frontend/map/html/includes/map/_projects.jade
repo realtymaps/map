@@ -2,8 +2,8 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
   button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
     span
       span.icon.icon-project
-      h4(ng-show="selectedProfile.project_name") {{selectedProfile.project_name}}
-      h4(ng-show="!selectedProfile.project_name") Sandbox ({{selectedProfile.name}})
+      h4(ng-show="selectedProfile.user_project_name") {{selectedProfile.user_project_name}}
+      h4(ng-show="!selectedProfile.user_project_name") Sandbox
     span.caret
   .dropdown-menu.whiteblock.no-margin
     .fixed-header
@@ -16,8 +16,8 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
             span.enity
               span.icon.icon-project
               span.title
-                h3(ng-show="profile.project_name") {{profile.project_name}}
-                h3(ng-show="!profile.project_name") Sandbox
+                h3(ng-show="profile.user_project_name") {{profile.user_project_name}}
+                h3(ng-show="!profile.user_project_name") Sandbox
                 span.count {{profile.totalProperties}}
                   span(ng-show="profile.totalProperties == 1")  Property
                   span(ng-show="profile.totalProperties != 1")  Properties

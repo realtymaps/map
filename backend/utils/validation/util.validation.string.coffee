@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-DataValidationError = require './util.error.dataValidation'
+DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
 
 
@@ -29,6 +29,8 @@ module.exports = (options = {}) ->
       transformedValue = transformedValue.replace(/[^a-zA-Z0-9]/g, '')
     if (options.forceInitCaps)
       transformedValue = transformedValue.toInitCaps()
+    if (options.toObject || options.parse)
+      transformedValue = JSON.parse transformedValue
     else if (options.forceLowerCase)
       transformedValue = transformedValue.toLowerCase()
     else if (options.forceUpperCase)

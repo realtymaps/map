@@ -59,6 +59,12 @@ app.factory 'rmapsMap',
 
         leafletData.getMap('mainMap').then (map) =>
 
+          $scope.$watch 'Toggles.showPrices', (newVal) ->
+            $scope.map.layers.overlays.filterSummary.visible = newVal
+
+          $scope.$watch 'Toggles.showAddresses', (newVal) ->
+            $scope.map.layers.overlays.parcelsAddresses.visible = newVal
+
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal
@@ -190,6 +196,7 @@ app.factory 'rmapsMap',
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
+        Toggles = @scope.Toggles
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
@@ -202,7 +209,7 @@ app.factory 'rmapsMap',
         # $log.debug "hash: #{@hash}"
         # $log.debug "mapState: #{@mapState}"
         p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
-        .then (data) =>
+        p.then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
             @handleClusterResults(data)
@@ -218,17 +225,17 @@ app.factory 'rmapsMap',
             if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
               if overlays?.parcels?
                 overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
-              if overlays?.parcelsAddresses?
-                overlays.parcelsAddresses.visible = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
 
-              overlays.filterSummary.visible = false
+              Toggles.showAddresses = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+
+              Toggles.showPrices = false
 
               @handleGeoJsonResults(filters, cache)
 
             else
-              overlays.parcels.visible = false
-              overlays.filterSummary.visible = true
-              overlays.parcelsAddresses.visible = false
+              overlays.parcels.visible = false if overlays?.parcels?
+              Toggles.showPrices = true
+              Toggles.showAddresses = false
         promises.push p
         promises
 

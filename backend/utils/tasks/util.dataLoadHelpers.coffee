@@ -9,6 +9,7 @@ _ = require 'lodash'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 dbs = require '../../config/dbs'
+{HardFail, SoftFail} = require '../errors/util.error.jobQueue'
 
 
 DELETE =
@@ -62,7 +63,7 @@ recordChangeCounts = (subtask) ->
       .limit(1)
       .then (row) ->
         if !row?[0]?
-          throw new jobQueue.HardFail("operation would delete all active rows for #{subtask.task_name}")
+          throw new HardFail("operation would delete all active rows for #{subtask.task_name}")
       .then () ->
         # mark any rows not updated by this task (and not already marked) as deleted -- we only do this when doing a full
         # refresh of all data, because this would be overzealous if we're just doing an incremental update; the update
@@ -361,18 +362,28 @@ manageRawDataStream = (tableName, dataLoadHistory, doStream) ->
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
     .then () ->
-      promiseQuery('BEGIN')
+      promiseQuery('BEGIN TRANSACTION')
     .then () ->
       doStream(tableName, promiseQuery, streamQuery)
+    .catch (err) ->
+      promiseQuery('ROLLBACK TRANSACTION')
+      .then () ->
+        tables.jobQueue.dataLoadHistory()
+        .where(raw_table_name: tableName)
+        .delete()
+      .catch (err2) ->
+        throw err
+      .then () ->
+        throw err
     .then (count) ->
-      promiseQuery('COMMIT')
+      promiseQuery('COMMIT TRANSACTION')
       .then () ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: tableName)
         .update(raw_rows: count)
       .then () ->
         count
-  
+    
 
 module.exports =
   buildUniqueSubtaskName: buildUniqueSubtaskName

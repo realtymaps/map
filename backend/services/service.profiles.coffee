@@ -15,7 +15,6 @@ cols =  [
   'map_position', 'map_results','parent_auth_user_id',
   "#{tables.user.profile.tableName}.rm_modified_time as rm_modified_time",
   "#{tables.user.profile.tableName}.rm_inserted_time as rm_inserted_time",
-  "#{tables.user.profile.tableName}.name as name",
   'project_id',
   "#{tables.user.project.tableName}.rm_modified_time as #{tables.user.project.tableName}_rm_modified_time",
   "#{tables.user.project.tableName}.rm_inserted_time as #{tables.user.project.tableName}_rm_inserted_time",
@@ -31,30 +30,27 @@ safe = [
   'map_results'
   'parent_auth_user_id'
   'auth_user_id'
-  'name'
   'project_id'
 ]
+
+safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft']
 
 toReturn = safe.concat ['id']
 
 get = (id, withProject = true) ->
   return tables.user.profile().where(id: id) unless withProject
 
-create = (newProfile, projectName) ->
+create = (newProfile, project) ->
   logger.debug 'PROFILE SVC: creating a profile'
   Promise.try () ->
-    if projectName
-      tables.user.project()
-      .returning('id')
-      .insert(name: projectName)
-      .then (inserted) ->
-        inserted?[0]
+    tables.user.project()
+    .returning('id')
+    .insert(_.pick project, safeProject)
+    .then (inserted) ->
+      inserted?[0]
   .then (maybeProjectId) ->
     if maybeProjectId
       newProfile.project_id = maybeProjectId
-      newProfile.name = projectName
-    else
-      newProfile.name = 'New Project'
     tables.user.profile()
     .returning(toReturn)
     .insert(_.pick newProfile, safe)

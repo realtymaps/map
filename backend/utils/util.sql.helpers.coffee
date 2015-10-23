@@ -124,6 +124,15 @@ whereInBounds = (query, column, bounds) ->
     results.bindings = [ minLon-marginLon, minLat-marginLat, maxLon+marginLon, maxLat+marginLat ]
   _whereRawSafe query, results
 
+whereIntersects = (query, geoPointJson, column = 'geom_polys_raw') ->
+  results =
+    sql: "ST_INTERSECTS(ST_GeomFromGeoJSON(?::text), #{column})"
+    bindings: [geoPointJson]
+
+  _whereRawSafe query, results
+  query.raw = query.toString().replace(/\//g,'')#terrible hack for knex.. getting tired of doing this
+  query
+
 getClauseString = (query, remove = /.*where/) ->
   'WHERE '+ query.toString().replace(remove,'')
 
@@ -243,3 +252,4 @@ module.exports =
   safeJsonArray: safeJsonArray
   isUnique: isUnique
   columns: columns
+  whereIntersects: whereIntersects

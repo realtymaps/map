@@ -20,7 +20,7 @@ class NotesSessionCrud extends Crud
   @include userExtensions.route
   init: () ->
     @restrictAll(@withUser)
-    super(true)
+    super()
 
   rootGET: (req, res, next) =>
     super(req, res, next)

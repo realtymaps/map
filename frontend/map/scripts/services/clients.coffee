@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
+_ = require 'lodash'
 
 app.factory 'rmapsClientsService', ($http) ->
 
@@ -15,6 +16,8 @@ app.factory 'rmapsClientsService', ($http) ->
     create: (entity) ->
       $http.post @endpoint, entity
 
-    update: (projectId, entity) ->
+    update: (entity) ->
       throw new Error('entity must have id') unless entity.id
-      $http.put("#{endpoint}/#{entity.id}", entity)
+      $http.put "#{@endpoint}/#{entity.id}", entity
+    remove: (entity) ->
+      $http.delete "#{@endpoint}/#{entity.id}"
