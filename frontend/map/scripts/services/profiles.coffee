@@ -7,15 +7,22 @@ app.service 'rmapsCurrentProfilesService', ($http) ->
   setCurrent: (profile) ->
     $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
 
-app.service 'rmapsProfilesService', ($http, rmapsprincipal, rmapsCurrentProfilesService) ->
+app.service 'rmapsProfilesService', ($http, $rootScope, rmapsprincipal, rmapsevents, rmapsCurrentProfilesService) ->
   _currentProfSvc = rmapsCurrentProfilesService
 
   _update = (profile) ->
     $http.put(backendRoutes.userSession.profiles,_.pick(profile, _updateProfileAttrs))
 
+  _current = (profile) ->
+    _currentProfSvc.setCurrent profile
+    .then () ->
+      $rootScope.$emit rmapsevents.principal.profile.updated, profile
+      rmapsprincipal.getCurrentProfile profile.id
+
   setCurrent: (oldProfile, newProfile) ->
-    _update(oldProfile)
-    .then () ->
-      _currentProfSvc.setCurrent(newProfile)
-    .then () ->
-      rmapsprincipal.getCurrentProfile(newProfile.id)
+    if oldProfile?
+      _update(oldProfile)
+      .then () ->
+        _current newProfile
+    else
+      _current newProfile

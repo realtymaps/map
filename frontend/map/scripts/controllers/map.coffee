@@ -24,7 +24,7 @@ module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
-  rmapsParcelEnums, rmapsProperties, nemSimpleLogger, rmapssearchbox) ->
+  rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
 
@@ -58,21 +58,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     if profile == $scope.selectedProfile
       return
 
-    deferred = $q.defer()
-    # If switching profiles, ensure the old profile is saved
+    # If switching profiles, ensure the old profile is up-to-date
     if $scope.selectedProfile
-
       $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
       $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
 
-      rmapsProfilesService.setCurrent($scope.selectedProfile, profile)
-      .then () ->
-        deferred.resolve()
-    else
-      deferred.resolve()
-
-    deferred.promise.then () ->
+    rmapsProfilesService.setCurrent $scope.selectedProfile, profile
+    .then () ->
       $scope.selectedProfile = profile
 
       $rootScope.selectedFilters = {}
@@ -118,7 +111,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       if profile.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
-        rmapsProperties.getPropertyDetail(null,
+        rmapsPropertiesService.getPropertyDetail(null,
           rm_property_id: profile.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data

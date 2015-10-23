@@ -20,7 +20,7 @@ _wrapGeomPointJson = (obj) ->
 ###
 app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
-  rmapsProperties, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
+  rmapsPropertiesService, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
   rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService) ->
 
@@ -81,21 +81,15 @@ app.factory 'rmapsMap',
         $rootScope.$onRootScope rmapsevents.map.filters.updated, => #tried without the closure and bombs
           @redraw()
 
-        @scope.savedrmapsProperties = rmapsProperties.getSavedProperties()
         @layerFormatter = rmapsLayerFormatters
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
-          saved = rmapsProperties.saveProperty(model)
+          saved = rmapsPropertiesService.saveProperty(model)
           return unless saved
           saved.then (savedDetails) =>
             @redraw(false)
-            (model, lObject) =>
-              #TODO: Need to debounce / throttle
-              saved = rmapsProperties.saveProperty(model)
-              return unless saved
-              saved.then (savedDetails) =>
-                @redraw(false)
+
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
@@ -181,14 +175,21 @@ app.factory 'rmapsMap',
       handleSummaryResults: (data) =>
         @scope.map.markers.backendPriceCluster = {}
         @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
+
         for key, model of data
           _wrapGeomPointJson model
+          rmapsPropertiesService.updateProperty model
+
         @scope.map.markers.filterSummary = data
 
       handleGeoJsonResults: (filters, cache) =>
-        rmapsProperties.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
+        rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
         .then (data) =>
           return if !data? or _.isString data
+
+          for key, model of data
+            rmapsPropertiesService.updateProperty model
+
           @scope.map.geojson.filterSummaryPoly =
             data: data
             style: @layerFormatter.Parcels.getStyle
@@ -208,7 +209,7 @@ app.factory 'rmapsMap',
 
         # $log.debug "hash: #{@hash}"
         # $log.debug "mapState: #{@mapState}"
-        p = rmapsProperties.getFilterResults(@hash, @mapState, filters, cache)
+        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         p.then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
@@ -245,7 +246,7 @@ app.factory 'rmapsMap',
         if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
              rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
           testLogger.debug 'isAddressParcel'
-          promises.push rmapsProperties.getParcelBase(@hash, @mapState, cache).then (data) =>
+          promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
               data: data

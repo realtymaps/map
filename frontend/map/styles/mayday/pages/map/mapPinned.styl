@@ -3,7 +3,7 @@
 $fnMakeMapPinned()
   .pinned-list
       .enity
-        display table
+        // display table
         .circle-nr
           display table-cell
           padding 5px
@@ -20,7 +20,7 @@ $fnMakeMapPinned()
             width 20px
         .content
           display table-cell
-          padding 5px
+          padding-left 10px
           .status
             background $rm_forsale
             color c_white
@@ -82,6 +82,7 @@ $fnMakeMapPinned()
         border-radius 3px
         @extends .global-transition
         span.unpin
+          cursor pointer
           span.action
             font-size 10px
             line-height 30px

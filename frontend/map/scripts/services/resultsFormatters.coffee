@@ -5,7 +5,7 @@ sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmapsParcelEnums,
-  rmapsGoogleService, rmapsProperties, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
   rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
 
   leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
@@ -268,7 +268,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       maybeFetchCb = (showDetails) =>
         #start getting more data
         if showDetails
-          rmapsProperties.getPropertyDetail(@mapCtrl.refreshState(
+          rmapsPropertiesService.getPropertyDetail(@mapCtrl.refreshState(
             map_results:
               selectedResultId: result.rm_property_id)
           , {rm_property_id: result.rm_property_id}, if result.rm_status then 'detail' else 'all')
@@ -304,7 +304,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       # @lastResultMouseLeave = result or model
       _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results, originator)
 
-    clickSaveResultFromList: (result, event) =>
+    clickSaveResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
       wasSaved = result?.savedDetails?.isSaved
       @mapCtrl.saveProperty(result).then =>

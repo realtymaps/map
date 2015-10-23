@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 qs = require 'qs'
 
-app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal,
+app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
   #HASH to properties by rm_property_id
@@ -17,14 +17,12 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
   _saveThrottler = new rmapsPromiseThrottler('saveThrottler')
   _addressThrottler = new rmapsPromiseThrottler('addressThrottler')
 
-  $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
-    rmapsprincipal.getIdentity().then (identity) ->
-      _savedPropertie = []
-      if identity.currentProfileId and identity.profiles?.length
-        currentProfile = identity.profiles[identity.currentProfileId]
-
-      if currentProfile
-        _savedProperties = _.extend {}, currentProfile.properties_selected
+  # Reset the properties hash when switching profiles
+  $rootScope.$onRootScope rmapsevents.principal.profile.updated, (event, profile) ->
+    _savedProperties = {}
+    for id, property of profile.properties_selected
+      _saveProperty property
+    $rootScope.$emit rmapsevents.map.properties.updated, _savedProperties
 
   # this convention for a combined service call helps elsewhere because we know how to get the path used
   # by this call, which means we can do things with alerts related to it
@@ -43,6 +41,26 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
     throttler.invokePromise(
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
+
+  _saveProperty = (model) ->
+    return if not model or not model.rm_property_id
+    rm_property_id = model.rm_property_id
+
+    if !model.savedDetails
+      model.savedDetails = new rmapsProperty(rm_property_id, true, false, undefined)
+
+    prop = _savedProperties[rm_property_id]
+    if not prop
+      _savedProperties[rm_property_id] = model
+      model.savedDetails.isSaved = true
+      if !model.rm_status
+        service.getPropertyDetail('', rm_property_id, 'filter')
+        .then (data) ->
+          _.extend model, data
+    else
+      delete _savedProperties[rm_property_id]
+      model.savedDetails.isSaved = false
+
 
   service =
 
@@ -78,35 +96,28 @@ app.service 'rmapsProperties', ($rootScope, $http, rmapsProperty, rmapsprincipal
       , http: {route: backendRoutes.properties.detail }
 
     saveProperty: (model) ->
-      return if not model or not model.rm_property_id
-      rm_property_id = model.rm_property_id
-      prop = _savedProperties[rm_property_id]
-      if not prop
-        prop = new rmapsProperty(rm_property_id, true, false, undefined)
-        _savedProperties[rm_property_id] = prop
-      else
-        prop.isSaved = !prop.isSaved
-        unless prop.notes
-          delete _savedProperties[rm_property_id]
-      model.savedDetails = prop
-
-      if !model.rm_status
-        service.getPropertyDetail('', rm_property_id: rm_property_id, 'filter')
-        .then (data) ->
-          _.extend model, data
+      _saveProperty model
+      $rootScope.$emit rmapsevents.map.properties.updated, _savedProperties
 
       #post state to database
-      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: _savedProperties)
+      toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
+      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
       _saveThrottler.invokePromise statePromise
       statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
-      statePromise.then () ->
-        prop
 
     getSavedProperties: ->
       _savedProperties
 
     setSavedProperties: (props) ->
       _savedProperties = props
+
+    # Map calls this to update property objects
+    updateProperty: (model) ->
+      prop = _savedProperties[model?.rm_property_id]
+      if prop
+        _savedProperties[model.rm_property_id] = model
+        if !model.savedDetails
+          model.savedDetails = prop.savedDetails
 
     savedProperties: _savedProperties
 

@@ -11,9 +11,13 @@ mod.constant 'rmapsevents',
         query:  1
       filters:
         updated: 1
+      properties:
+        updated: 1
     principal:
       login:
         success: 1
+      profile:
+        updated: 1
     alert:
       spawn: 1
       hide: 1

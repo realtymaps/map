@@ -20,7 +20,7 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
 rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters,
-rmapsProperties) ->
+rmapsPropertiesService) ->
 
   _gate = rmapsNgLeafletEventGate
   limits = rmapsMainOptions.map
@@ -170,7 +170,7 @@ rmapsProperties) ->
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 
-        rmapsProperties.getPropertyDetail(null, geom_point_json: JSON.stringify(geojson.geometry), 'all')
+        rmapsPropertiesService.getPropertyDetail(null, geom_point_json: JSON.stringify(geojson.geometry), 'all')
         .then (data) ->
           return if !data?.rm_property_id
           $scope.formatters.results.showModel(data)
