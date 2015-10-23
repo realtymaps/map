@@ -2,9 +2,17 @@
   form
     div.row.equal-height
       div.col-md-6
-        div.template-view
-          .clear-template
-            div(text-angular ng-model="data.htmlcontent" ta-target-toolbars='testToolbar01')
+        ul.nav.nav-tabs.nav-justified
+          li 
+            button.btn.btn-text undo
+            button.btn.btn-text redo
+            button.btn.btn-text(ng-click="doPreview()") Preview
+        .template-stage-container
+          .template-stage
+            //- .clear-template
+            //-   .template-view
+            div(ng-class="applyTemplateClass()")
+              div(text-angular ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,testToolbar02")
 
 
 
@@ -40,6 +48,8 @@
                       | Font Color
 
                   div
+                      text-angular-toolbar(name="testToolbar02" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textRed']]")
+                  div
                       label(class="btn btn-circle color-black" ng-model="radioFontColorModel" btn-radio="'black'") Black
                       label(class="btn btn-circle color-blue" ng-model="radioFontColorModel" btn-radio="'blue'") Blue
                       label(class="btn btn-circle color-green" ng-model="radioFontColorModel" btn-radio="'green'") Green
@@ -72,4 +82,4 @@
 
           tab(heading="Test" active="true" disable="false")
             div.edit-template-design
-              text-angular-toolbar(name="testToolbar01")
+              text-angular-toolbar(name="testToolbar01" ta-toolbar="[['bold','italics','underline'],['ul','ol','test']]")

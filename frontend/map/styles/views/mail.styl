@@ -1,3 +1,6 @@
+@import '../mailTemplates/init-editor.styl'
+@import '../mailTemplates/basic-letter-wysiwyg.styl'
+
 #mail
   @extends .font-regular
   @extends .table-view
@@ -22,10 +25,15 @@
             &:after
               line-height 32px
 
-  #mail-wizard
-    .clear-template
-      all initial
-      * all unset
+  #mail-wizard      
+    .nav-tabs li
+      margin-bottom 0
+      height 46px
+      padding 0
+      text-align center
+      
+    .nav-tabs li button
+      margin-top 7px
 
     #select-recipients
       ul.recipients-list
@@ -60,8 +68,6 @@
 
         li
           margin-bottom 20px
-
-
 
         .tmpl-item
           border 1px solid $darker_white
@@ -100,27 +106,26 @@
           &:hover
           &:active
             border-color $light_blue
+
     #edit-template
+      
+      // .nav-tabs .nav-justified ul li
+      //   height 46px
+        
+      ul .nav-tabs .nav-justified
+        height 46px
+        border-bottom 0
+
       label
         color #000
-      .template-view
-        position absolute
-        left 0
-        top 0
-        right 0
-        bottom 0
-        padding 20px
-        background-color $gray_ligther
-        border-right 1px solid $gray
-        height 7in
 
       .edit-template-content
         padding 20px
-        height 7in
+        // height 7in
         
       .edit-template-design
         padding 20px
-        height 7in
+        // height 7in
 
     #confirm
       .overview-template

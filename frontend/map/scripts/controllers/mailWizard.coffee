@@ -7,3 +7,4 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapspr
   $log.debug "#### state:"
   $log.debug $state
   $scope.step = $state.current.name
+  $scope.templateType = "basicLetter"
