@@ -1,0 +1,38 @@
+//- <div class="page">
+//-   <div class="page-content">
+//-     <div class="text" style="top: 3in">
+//-       The grey box is the safe area. Do not put text outside this box. If you are using the data argument, you can add variables like this: {{variable_name}}.
+//-     </div>
+//-   </div>
+//-   <div id="return-address-window">
+//-     <div id="return-address-text">
+//-       The Return Address will be printed here. The red area will be visible through the envelope window.
+//-     </div>
+//-   </div>
+//-   <div id="recipient-address-window">
+//-     <div id="recipient-address-text">
+//-       The Recipient's Address will be printed here. The red area will be visible through the envelope window.
+//-     </div>
+//-   </div>
+//- </div>
+//- <div class="page">
+//-   <div class="page-content">
+//-     <div class="text">
+//-       This is a second page.
+//-     </div>
+//-   </div>
+//- </div>
+
+.letter-page
+  .letter-page-content
+    .letter-page-content-text
+      p.editable
+        font(color="#000000") The grey box is the safe area. Do not put text outside this box. If you are using the data argument, you can add variables like this: {{variable_name}}.
+  #return-address-window
+    #return-address-text 
+      p.editable The Return Address will be printed here. The red area will be visible through the envelope window.
+  #recipient-address-window
+    #recipient-address-text 
+      p.editable The Recipient's Address will be printed here. The red area will be visible through the envelope window.
+
+

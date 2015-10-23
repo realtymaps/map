@@ -1,0 +1,156 @@
+*, *:before, *:after
+  -webkit-box-sizing border-box
+  -moz-box-sizing border-box
+  box-sizing border-box
+
+.basicLetter-body
+  width ($page-width / $scale-factor)
+  height ($page-height / $scale-factor)
+  margin 0
+  padding 0
+  border 2px solid black
+  color black
+  
+.letter-page
+  page-break-after always
+  background-color rgba(128,128,128,0)
+  width ($letter-page-width / $scale-factor)
+  height ($letter-page-height / $scale-factor)
+  left ($letter-page-offset-left / $scale-factor)
+  top ($letter-page-offset-top / $scale-factor)
+
+.letter-page-content
+  position relative
+  background-color rgba(0,0,0,0)
+  // width ($letter-page-content-width / $scale-factor)
+  // height ($letter-page-content-height / $scale-factor)
+  // left ($letter-page-content-offset-left / $scale-factor)
+  // top ($letter-page-content-offset-top / $scale-factor)
+
+.letter-page-content-text
+  position relative
+  left ($editable-text-offset-left / $scale-factor)
+  top ($editable-text-offset-top / $scale-factor)
+  width ($editable-text-width / $scale-factor)
+  font-size ($editable-text-font-size / $scale-factor)
+  //line-height: ($editable-text-line-height / $scale-factor)
+
+#return-address-window
+  position absolute
+  background-color rgba(255,0,0,0.5)
+  left ($return-address-window-offset-left / $scale-factor)
+  top ($return-address-window-offset-top / $scale-factor)
+  width ($return-address-window-width / $scale-factor)
+  height ($return-address-window-height / $scale-factor)
+
+#return-address-text
+  position absolute
+  background-color white
+  left ($return-address-text-offset-left / $scale-factor)
+  top ($return-address-text-offset-top / $scale-factor)
+  width ($return-address-text-width / $scale-factor)
+  height ($return-address-text-height / $scale-factor)
+  font-size ($return-address-text-font-size / $scale-factor)
+  //line-height: ($return-address-text-line-height / $scale-factor)
+
+#recipient-address-window
+  position absolute
+  background-color rgba(255,0,0,0.5)
+  left ($recipient-address-window-offset-left / $scale-factor)
+  top ($recipient-address-window-offset-top / $scale-factor)
+  width ($recipient-address-window-width / $scale-factor)
+  height ($recipient-address-window-height / $scale-factor)
+
+#recipient-address-text
+  position absolute
+  background-color white
+  left ($recipient-address-text-offset-left / $scale-factor)
+  top ($recipient-address-text-offset-top / $scale-factor)
+  width ($recipient-address-text-width / $scale-factor)
+  height ($recipient-address-text-height / $scale-factor)
+  font-size ($recipient-address-text-font-size / $scale-factor)
+  //line-height: ($recipient-address-text-line-height / $scale-factor)
+
+p, font
+  margin 0
+  padding 0
+  font-size inherit
+  font-style inherit
+  font-family inherit
+  line-height inherit
+
+
+
+// #mail-wizard
+//   #edit-template
+//     .basicLetter-mail-template-container
+//       width: 8.5in;
+//       height: 11in;
+//       margin: 0;
+//       padding: 0;
+
+
+//       *, *:before, *:after {
+//         -webkit-box-sizing: border-box;
+//         -moz-box-sizing: border-box;
+//         box-sizing: border-box;
+//       }
+
+//       .page {
+//         page-break-after: always;
+//       }
+
+//       .page-content {
+//         position: relative;
+//         width: 8.125in;
+//         height: 10.625in;
+//         left: 0.1875in;
+//         top: 0.1875in;
+//         background-color: rgba(0,0,0,0.2);
+//       }
+
+//       .text {
+//         position: relative;
+//         left: 20px;
+//         top: 20px;
+//         width: 6in;
+//         font-family: sans-serif;
+//         font-size: 30px;
+//       }
+
+//       #return-address-window {
+//         position: absolute;
+//         left: .625in;
+//         top: .5in;
+//         width: 3.25in;
+//         height: .875in;
+//         background-color: rgba(255,0,0,0.5);
+//       }
+
+//       #return-address-text {
+//         position: absolute;
+//         left: .07in;
+//         top: .34in;
+//         width: 2.05in;
+//         height: .44in;
+//         background-color: white;
+//         font-size: .11in;
+//       }
+
+//       #recipient-address-window {
+//         position: absolute;
+//         left: .625in;
+//         top: 1.75in;
+//         width: 4in;
+//         height: 1in;
+//         background-color: rgba(255,0,0,0.5);
+//       }
+
+//       #recipient-address-text {
+//         position: absolute;
+//         left: .07in;
+//         top: .05in;
+//         width: 2.92in;
+//         height: .9in;
+//         background-color: white;
+//       }

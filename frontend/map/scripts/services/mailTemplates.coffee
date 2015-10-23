@@ -1,0 +1,47 @@
+app = require '../app.coffee'
+basicLetterHtml = require '../../html/includes/mail/basic-letter-template.jade'
+basicLetterFinalStyle = require '../../styles/mailTemplates/basic-letter-lob.styl'
+#basicLetterTemplateStyle = require '../../styles/mailTemplates/basic-letter-final.styl'
+
+defaultHtml =
+  'basicLetter': basicLetterHtml()
+
+defaultFinalStyle =
+  'basicLetter': basicLetterFinalStyle
+
+# defaultTemplateStyle =
+#   'basicLetter': basicLetterTemplateStyle
+
+
+app.factory 'rmapsMailTemplate', ($window) ->
+
+  (templateType) ->
+    @type = templateType
+    @defaultContent = defaultHtml[@type]
+    @defaultFinalStyle = defaultFinalStyle[@type]
+    @content = @defaultContent
+    @style = @defaultFinalStyle
+    @title = "New Template"
+
+    # @defaultTemplateStyle = defaultTemplateStyle[@type]
+
+    @getDefaultContent = () =>
+      @defaultContent
+
+    @getDefaultFinalStyle = () =>
+      @defaultFinalStyle
+
+    # @getDefaultTemplateStyle = () =>
+    #   @getDefaultTemplateStyle
+
+    @_createPreviewHtml = () =>
+      "<html><head><title>#{@title}</title><style>#{@style}</style></head><body>#{@content}</body></html>"
+
+    @openPreview = () =>
+      preview = $window.open "", "_blank"
+      preview.document.write @_createPreviewHtml()
+
+    # @templateStyle = getDefaultTemplateStyle()
+
+    @
+
