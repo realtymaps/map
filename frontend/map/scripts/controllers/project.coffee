@@ -9,7 +9,8 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl'
 
-  $scope.formatters = new rmapsResultsFormatter scope: $watch: () ->
+  $scope.formatters = results: new rmapsResultsFormatter scope: $scope
+
   $scope.selected = 'project'
   $scope.project = null
   clientsService = null
@@ -23,9 +24,6 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     .then $scope.loadClients
 
   $scope.editClient = (client) ->
-    $log.debug 'add/edit client'
-    $log.debug client
-
     $scope.clientCopy = _.clone client || {}
     modalInstance = $modal.open
       scope: $scope
@@ -69,20 +67,25 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
   $scope.loadProject = () ->
     rmapsProjectsService.getProject $state.params.id
     .then (project) ->
-      $scope.project = project
+      # It is important to load property details before properties are added to scope to prevent template breaking
+      $scope.loadProperties project.properties_selected
+      .then (properties) ->
+        project.properties_selected = properties
+        project.propertiesTotal = _.keys(properties).length
 
-      $scope.loadProperties()
+      project.properties_selected = null
 
       clientsService = new rmapsClientsService project.id unless clientsService
       $scope.loadClients()
 
-  $scope.loadProperties = () ->
-    propertyIds = _.keys $scope.project.properties_selected
-    $scope.project.propertiesTotal = propertyIds.length
-    $http.get backendRoutes.properties.details, params: rm_property_id: propertyIds, columns: 'filter'
+      $scope.project = project
+
+  $scope.loadProperties = (properties) ->
+    $http.get backendRoutes.properties.details, params: rm_property_id: _.keys(properties), columns: 'filter'
     .then (result) ->
       for detail in result.data
-        _.extend $scope.project.properties_selected[detail.rm_property_id], detail
+        properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
+      properties
 
   $scope.loadClients = () ->
     clientsService.getAll()

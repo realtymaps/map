@@ -1,4 +1,6 @@
 include ../includes/mixins/property/_propertyAttributes.jade
+include ../includes/mixins/property/_propertyButtons.jade
+
 #projects-list.content-section-container
   .desktop-view
     .inner
@@ -85,26 +87,11 @@ include ../includes/mixins/property/_propertyAttributes.jade
                           li.col-md-6(ng-repeat="property in project.properties_selected")
                             .property-card
                               .property-img
-                                img(src="/assets/test_property.jpg")
-                                span.property-status(ng-class="property.rm_status")
-                                  | {{property.rm_status}}
+                                span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+                                img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 420, 280)}}" title="{{property.title}}")
                               .property-data
-                                p.price(ng-class="formatters.getForSaleClass(property, true)") {{formatters.getPrice(property.price)}}
-                                div.property-attr
-                                  ul.attr
-                                    li(ng-if="property.bedrooms") {{property.bedrooms}} beds
-                                    li(ng-if="property.baths_total") {{property.baths_total}} bath
-                                    li(ng-if="property.finished_sqft") {{property.finished_sqft}} Sq Ft
-                                    li(ng-if="property.year_built") {{formatters.getYear(property.year_built)}} built
-                                h4.title(ng-if="property.street_address_num || property.street_address_name || property.street_address_unit" ng-cloak) {{property.street_address_num}} {{property.street_address_name}} {{property.street_address_unit}}
-                                p.location(ng-if="property.owner_city || property.owner_state") {{formatters.getCityStateZip(property, true)}}
-                              .actions
-                                button.details(ng-click="getPropertyDetail(property)")
-                                  span.icon.icon-arrow
-                                  span See details
-                                button.pinto.disabled
-                                  span.icon.icon-pin
-                                  span Pin to
+                                +propertyAttributes('property')
+                                +propertyButtons('property')
 
                       ul.notes(ng-show="selected == 'notes'")
                         .collapse-header
