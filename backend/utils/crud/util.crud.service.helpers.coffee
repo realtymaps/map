@@ -4,6 +4,7 @@ logger = require '../../config/logger'
 _ = require 'lodash'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
+NamedError = require '../errors/util.error.named'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
