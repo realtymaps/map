@@ -2,7 +2,7 @@
 process.stdout.write """
 daemon off;
 worker_processes #{process.env.NGINX_WORKERS || 4};
-pid /tmp/nginx.pid;
+pid ./nginx.pid;
 
 events {
   use #{process.env.NGINX_CONNECTION_METHOD || "poll"};
