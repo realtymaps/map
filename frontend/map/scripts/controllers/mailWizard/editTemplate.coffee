@@ -60,7 +60,10 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
 
 
 app.config ($provide) ->
-  $provide.decorator 'taOptions', ['taRegisterTool', '$delegate', '$timeout', 'textAngularManager', (taRegisterTool, taOptions, $timeout, textAngularManager) ->
+  $provide.decorator 'taOptions', ['$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', ($document, taRegisterTool, taOptions, $timeout, textAngularManager) ->
+    console.log "document:"
+    console.log $document
+    $document[0].execCommand('styleWithCSS', false, true)
     # taOptions.toolbar = [
     #   ['bold', 'italics', 'underline'],
     #   ['ul', 'ol']
@@ -75,51 +78,87 @@ app.config ($provide) ->
         alert 'Test Pressed'
     # taOptions.toolbar[0].push 'test'
 
-    # for color in ['Black','Blue','Green','Red','Yellow','White']
+    # for color in [['Black','#000000'],['Blue','#0000ff'],['Green','#00ff00'],['Red', '#ff0000'],['Yellow','#ffff00'],['White','#ffffff']]
     #   console.log color
-    #   taRegisterTool "text#{color}",
-    #     #iconclass: "fa fa-square red",
-    #     #display: "<label class='btn btn-circle color-#{color.toLowerCase()}' ng-model='radioFontColorModel' btn-radio=\"'#{color.toLowerCase()}'\">#{color}</label>"
-    #     display: "<button type='button' class='btn btn-circle color-#{color.toLowerCase()}'>#{color}</button>"
+    #   taRegisterTool "text#{color[0]}",
+    #     buttontext: color[0]
+    #     class: "btn btn-circle color-#{color[0].toLowerCase()}"
     #     action: () ->
     #       console.debug "$editor:"
     #       console.debug this.$editor()
-    #       this.$editor().wrapSelection 'forecolor', color.toLowerCase()
+    #       this.$editor().wrapSelection 'forecolor', "#{color[0].toLowerCase()}"
+    #     activeState: (el) ->
+    #       return el[0].color == "#{color[1]}"
 
-
-    taRegisterTool "textBlack",
-      #iconclass: "fa fa-square red",
-      #display: "<label class='btn btn-circle color-#{color.toLowerCase()}' ng-model='radioFontColorModel' btn-radio=\"'#{color.toLowerCase()}'\">#{color}</label>"
-      #display: "<button type='button' class='btn btn-circle color-black'>Black</button>"
-      buttontext: 'Black'
-      class: "btn btn-circle color-black"
+    taRegisterTool 'fontHelvetica',
+      buttontext: 'Helvetica'
+      class: 'btn btn-text'
       action: () ->
-        console.debug "$editor:"
-        console.debug this.$editor()
+        this.$editor().wrapSelection 'fontName', 'Helvetica'
+      activeState: (el) ->
+        console.log "fontHelvetica, el:"
+        console.log el
+        return el[0].attributes.style?.textContent? && /font-family: Helvetica/.test(el[0].attributes.style.textContent)
+
+    taRegisterTool 'fontTimesNewRoman',
+      buttontext: 'Times New Roman'
+      class: 'btn btn-text'
+      action: () ->
+        this.$editor().wrapSelection 'fontName', 'TimesNewRoman'
+      activeState: (el) ->
+        console.log "fontTimesNewRoman, el:"
+        console.log el
+        return el[0].attributes.style?.textContent? && /font-family: TimesNewRoman/.test(el[0].attributes.style.textContent)
+
+
+    taRegisterTool 'textBlack',
+      buttontext: 'Black'
+      class: 'btn btn-circle color-black'
+      action: () ->
         this.$editor().wrapSelection 'forecolor', 'black'
       activeState: (el) ->
-        console.debug "el:"
-        console.debug el
-        console.debug "this:"
-        console.debug this
-        return el[0].color == "#000000"
+        return el[0].attributes.style?.textContent? && /color: black/.test(el[0].attributes.style.textContent)
 
+    taRegisterTool 'textBlue',
+      buttontext: 'Blue'
+      class: 'btn btn-circle color-blue'
+      action: () ->
+        this.$editor().wrapSelection 'forecolor', 'blue'
+      activeState: (el) ->
+        return el[0].attributes.style?.textContent? && /color: blue/.test(el[0].attributes.style.textContent)
+
+    taRegisterTool 'textGreen',
+      buttontext: 'Green'
+      class: 'btn btn-circle color-green'
+      action: () ->
+        this.$editor().wrapSelection 'forecolor', 'green'
+      activeState: (el) ->
+        return el[0].attributes.style?.textContent? && /color: green/.test(el[0].attributes.style.textContent)
 
     taRegisterTool 'textRed',
-      #iconclass: "fa fa-square red",
-      #display: "<button type='button' class='btn btn-circle color-red'>Red</button>"
       buttontext: 'Red'
-      class: "btn btn-circle color-red"
+      class: 'btn btn-circle color-red'
       action: () ->
-        console.debug "$editor:"
-        console.debug this.$editor()
         this.$editor().wrapSelection 'forecolor', 'red'
       activeState: (el) ->
-        console.debug "el:"
-        console.debug el
-        console.debug "this:"
-        console.debug this
-        return el[0].color == "#ff0000"
+        return el[0].attributes.style?.textContent? && /color: red/.test(el[0].attributes.style.textContent)
+
+    taRegisterTool 'textYellow',
+      buttontext: 'Yellow'
+      class: 'btn btn-circle color-yellow'
+      action: () ->
+        this.$editor().wrapSelection 'forecolor', 'yellow'
+      activeState: (el) ->
+        return el[0].attributes.style?.textContent? && /color: yellow/.test(el[0].attributes.style.textContent)
+
+    taRegisterTool 'textWhite',
+      buttontext: 'White'
+      class: 'btn btn-circle color-white'
+      action: () ->
+        this.$editor().wrapSelection 'forecolor', 'white'
+      activeState: (el) ->
+        return el[0].attributes.style?.textContent? && /color: white/.test(el[0].attributes.style.textContent)
+
 
     # taRegisterTool 'specialBackspace',
     #   buttontext: 'Special Backspace'

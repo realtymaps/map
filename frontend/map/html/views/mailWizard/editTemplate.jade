@@ -12,7 +12,7 @@
             //- .clear-template
             //-   .template-view
             div(ng-class="applyTemplateClass()")
-              div(text-angular name="wysiwyg" ta-readonly="true" focus="focusMe" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,testToolbar02")
+              div(text-angular name="wysiwyg" focus="focusMe" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,colorToolbar,fontTypeToolbar")
 
 
 
@@ -24,6 +24,9 @@
               div.form-section
                   h4
                       | Font Family
+
+                  div
+                      text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman']]")
 
                   div
                       label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'helvetica'") Helvetica
@@ -48,14 +51,14 @@
                       | Font Color
 
                   div
-                      text-angular-toolbar(name="testToolbar02" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textRed']]")
-                  div
-                      label(class="btn btn-circle color-black" ng-model="radioFontColorModel" btn-radio="'black'") Black
-                      label(class="btn btn-circle color-blue" ng-model="radioFontColorModel" btn-radio="'blue'") Blue
-                      label(class="btn btn-circle color-green" ng-model="radioFontColorModel" btn-radio="'green'") Green
-                      label(class="btn btn-circle color-red" ng-model="radioFontColorModel" btn-radio="'red'") Red
-                      label(class="btn btn-circle color-yellow" ng-model="radioFontColorModel" btn-radio="'yellow'") Yellow
-                      label(class="btn btn-circle color-white" ng-model="radioFontColorModel" btn-radio="'white'") White
+                      text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
+                  //- div
+                  //-     label(class="btn btn-circle color-black" ng-model="radioFontColorModel" btn-radio="'black'") Black
+                  //-     label(class="btn btn-circle color-blue" ng-model="radioFontColorModel" btn-radio="'blue'") Blue
+                  //-     label(class="btn btn-circle color-green" ng-model="radioFontColorModel" btn-radio="'green'") Green
+                  //-     label(class="btn btn-circle color-red" ng-model="radioFontColorModel" btn-radio="'red'") Red
+                  //-     label(class="btn btn-circle color-yellow" ng-model="radioFontColorModel" btn-radio="'yellow'") Yellow
+                  //-     label(class="btn btn-circle color-white" ng-model="radioFontColorModel" btn-radio="'white'") White
 
           tab(heading="Images")
             div.edit-template-design
@@ -73,7 +76,7 @@
                     | Insert Macro
 
                   div
-                    label Macro 1
+                    label.btn.btn-primary Macro 1
                     label Macro 2
 
           tab(heading="Tools")
