@@ -17,7 +17,7 @@ if config.MEM_WATCH.IS_ON
   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 
-rimraf.async(process.env.NGINX_SOCKET_LOCATION)
+rimraf.async(if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else '')
 .then () ->
   cluster 'web', config.PROC_COUNT, () ->
     # express configuration

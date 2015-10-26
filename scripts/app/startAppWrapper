@@ -6,7 +6,7 @@ APP_DIR="$SCRIPT_DIR/.."
 
 if [[ "$SKIP_NGINX" == "true" ]]
 then
-  export NGINX_SOCKET_LOCATION=""
+  export NGINX_SOCKET_FILENAME=""
   $SCRIPT_DIR/app/startApp
 else
   if [[ "$IS_HEROKU" == "" ]]
