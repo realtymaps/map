@@ -27,7 +27,7 @@ base =
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
-  PORT: process.env.PORT_GOD || process.env.NGINX_SOCKET_LOCATION || parseInt(process.env.PORT) || 4000
+  PORT: process.env.PORT_GOD || (if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else false) || parseInt(process.env.PORT) || 4000
   LOGGING:
     PATH: 'mean.coffee.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
