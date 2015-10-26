@@ -34,9 +34,6 @@ else
     ./bin/detect $APP_DIR && ./bin/compile $APP_DIR/nginx ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
-
-  
-  mkdir -p ./nginx
   
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
   # we give a bit of slack for heroku startup overhead, nginx startup, etc

@@ -2,10 +2,6 @@
 set -e
 
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
-ORIG_DIR=`pwd`
-
-# make sure we start in the app dir
-cd $SCRIPT_DIR/..
 
 
 $SCRIPT_DIR/app/stopServe
@@ -17,7 +13,3 @@ $SCRIPT_DIR/database/syncMainDb
 coffee $SCRIPT_DIR/misc/syncEncryptionKey.coffee
 
 $SCRIPT_DIR/app/serve
-
-
-# reset cwd
-cd $ORIG_DIR
