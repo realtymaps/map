@@ -8,6 +8,7 @@ logger = require './config/logger'
 cluster = require './config/cluster'
 touch = require 'touch'
 rimraf = require 'rimraf'
+mkdirp = require 'mkdirp'
 
 
 if config.MEM_WATCH.IS_ON
@@ -21,13 +22,14 @@ rimraf.async(process.env.NGINX_SOCKET_LOCATION)
   cluster 'web', config.PROC_COUNT, () ->
     # express configuration
     app = require './config/express'
-  
+
     try
       logger.info "Attempting to start backend on port #{config.PORT}"
       app.listen config.PORT, ->
         logger.info "Backend express server listening on port #{config.PORT} in #{config.ENV} mode"
-        touch.sync('./nginx/app-initialized', force: true)
-        logger.info 'App init broadcast'
+        mkdirp './nginx', ->
+          touch.sync('./nginx/app-initialized', force: true)
+          logger.info 'App init broadcast'
     catch e
       logger.error "backend failed to start with exception: #{e}"
       throw new Error(e)
