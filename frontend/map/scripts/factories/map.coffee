@@ -60,10 +60,12 @@ app.factory 'rmapsMap',
         leafletData.getMap('mainMap').then (map) =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
-            $scope.map.layers.overlays.filterSummary.visible = newVal
+            if $scope.map.layers.overlays?.filterSummary?
+              $scope.map.layers.overlays.filterSummary.visible = newVal
 
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
-            $scope.map.layers.overlays.parcelsAddresses.visible = newVal
+            if $scope.map.layers.overlays?.parcelsAddresses?
+              $scope.map.layers.overlays.parcelsAddresses.visible = newVal
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
@@ -209,8 +211,9 @@ app.factory 'rmapsMap',
 
         # $log.debug "hash: #{@hash}"
         # $log.debug "mapState: #{@mapState}"
-        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
-        p.then (data) =>
+        #NOTE THE PROMISE of getFilterResults being coupled with the mutated (.then) is important otherwise the workflow gets messed up
+        #mess up in that parcels are not always rendered when they should be
+        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache).then (data) =>
           if Object.prototype.toString.call(data) is '[object Array]'
             return if !data? or _.isString data
             @handleClusterResults(data)
@@ -225,9 +228,9 @@ app.factory 'rmapsMap',
 
             if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
               if overlays?.parcels?
-                overlays.parcels.visible = if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom) then false else true
+                overlays.parcels.visible = ! !!rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
 
-              Toggles.showAddresses = if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom) then true else false
+              Toggles.showAddresses = !!rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
 
               Toggles.showPrices = false
 
