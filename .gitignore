@@ -3,7 +3,6 @@
 .idea
 */log/*
 log/
-logs/
 tmp/
 *.log
 #OSX
@@ -30,15 +29,5 @@ TAGS
 .vagrant/
 vagrant_app.log
 
-config/
-!common/config/*
-!backend/config/*
-!frontend/**/config/*
-!spec/**/**/config/*
-bin/
-uwsgi_temp/
-client_body_temp/
-proxy_temp/
-scgi_temp/
-fastcgi_temp/
+nginx/
 dumps/
