@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, rmapsprincipal, rmapsMailTemplate, textAngularManager) ->
+app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, rmapsprincipal, rmapsMailTemplate, textAngularManager) ->
   #templateHtml = require "../../../html/includes/mail/#{$scope.$parent.templateName}-template.jade"
   # templateHtml = require '../../../html/includes/mail/basic-letter-template.jade'
   # templatePath = '../../../html/includes/mail/basic-letter-template.jade'
@@ -21,6 +21,21 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $log.debug templateObj.style
   $log.debug "textAngularManager:"
   $log.debug textAngularManager
+
+  # editorScope = textAngularManager.retrieveEditor('wysiwyg').scope
+
+  # console.log "#### editorScope:"
+  # console.log editorScope
+  # $timeout () ->
+  #   editorScope.displayElements.text.trigger 'focus'
+
+  $scope.focusMe = (scope) ->
+    $log.debug "#### focusMe(), scope:"
+    $log.debug scope
+
+  $scope.isreadonly = () ->
+    true
+
   $scope.makeToolbar01 = (args) ->
     $log.debug "making toolbar01..."
     $log.debug "args:"
@@ -45,7 +60,7 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
 
 
 app.config ($provide) ->
-  $provide.decorator 'taOptions', ['taRegisterTool', '$delegate', (taRegisterTool, taOptions) ->
+  $provide.decorator 'taOptions', ['taRegisterTool', '$delegate', '$timeout', 'textAngularManager', (taRegisterTool, taOptions, $timeout, textAngularManager) ->
     # taOptions.toolbar = [
     #   ['bold', 'italics', 'underline'],
     #   ['ul', 'ol']
@@ -106,8 +121,34 @@ app.config ($provide) ->
         console.debug this
         return el[0].color == "#ff0000"
 
+    # taRegisterTool 'specialBackspace',
+    #   buttontext: 'Special Backspace'
+    #   action: (a) ->
+    #     console.debug "#### specialBackspace action, a:"
+    #     console.debug a
+    #     console.debug "backspace action"
+    #   activeState: (el) ->
+    #     console.debug "backspace, el:"
+    #     console.debug el
+    #   commandKeyCode: "extendedBackspace"
 
+    # shouldBackspace = (element) ->
+    #   if 
 
+    # taOptions.keyMappings = [
+    #   commandKeyCode: "extendedBackspace"
+    #   testForKey: (event) ->
+    #     console.debug "#### backspace key test, event:"
+    #     console.debug event
+    #     editorScope = textAngularManager.retrieveEditor('wysiwyg').scope
+    #     console.log "#### editorScope:"
+    #     console.log editorScope
+
+    #     #if event.keyCode == 8
+          
+    #     return true
+
+    # ]
     # taOptions.toolbar[1].push 'colourRed'
 
     # taRegisterTool 'textBlue',
@@ -115,11 +156,30 @@ app.config ($provide) ->
     #   action: () ->
     #     this.$editor().wrapSelection 'forecolor', 'blue'
     # # taOptions.toolbar[1].push 'colourBlue'
+    # taOptions.setup.textEditorSetup = ($element) ->
+    #   console.log "#### element:"
+    #   console.log $element
+    #   $timeout -> $element.trigger('focus')
+
     console.debug "taOptions:"
     console.debug taOptions
 
     return taOptions
   ]
+
+# app.directive 'textAngular', ($parse, $timeout, textAngularManager) ->
+#   link: (scope, element, attributes) ->
+#     shouldFocus = $parse(attributes.focus)(scope)
+#     if !shouldFocus
+#       return
+#     $timeout () ->
+#       console.log "#### triggering focus"
+#       editorScope = textAngularManager.retrieveEditor(attributes.name).scope
+#       console.log "#### editorScope:"
+#       console.log editorScope
+#       editorScope.displayElements.text[0].trigger 'focus'
+#     , 0, false
+
 
 # app.config ($provide) ->
 #   $provide.decorator 'taOptions', ['taRegisterTool', '$delegate', (taRegisterTool, taOptions) ->
