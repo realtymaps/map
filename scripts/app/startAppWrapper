@@ -54,5 +54,5 @@ else
     fi
   ) &
   
-  ./bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
+  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
 fi
