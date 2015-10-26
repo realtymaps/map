@@ -14,7 +14,7 @@ else
     # not on heroku
     
     # first kill off nginx in case it's been lingering -- doing it here so it has time to die
-    pkill nginx
+    pkill nginx || true
     
     # next we need to bootstrap the nginx buildpack
     BUILDPACK_DIR=/var/tmp/nginx-buildpack
@@ -31,10 +31,12 @@ else
       git pull
     fi
     export STATIC_ROOT="$APP_DIR/_public"
-    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
+    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR/nginx ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
+
   
+  mkdir -p ./nginx
   
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
   # we give a bit of slack for heroku startup overhead, nginx startup, etc
@@ -52,5 +54,5 @@ else
     fi
   ) &
   
-  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
+  ./bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
 fi
