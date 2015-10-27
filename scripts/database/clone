@@ -14,6 +14,9 @@ DUMP_COMMAND="pg_dump -F c"
 # only dump from the public schema
 DUMP_COMMAND="$DUMP_COMMAND -n public"
 
+# skip the table created by the postgis extension, it's already in place
+DUMP_COMMAND="$DUMP_COMMAND -T spatial_ref_sys"
+
 # dump from the source db
 SRC_URL=`./database/getDbUrl $1`
 SRC_DB=`./database/getDbName $1`

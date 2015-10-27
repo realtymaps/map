@@ -29,6 +29,7 @@ manualInits = {
 for tableName, tableVal of manualInits
   toInit[tableName] = () ->
     sqlHelpers.select(tableVal[tableName](), tableName)
+  toInit[tableName].tableName = tableVal[tableName].tableName #keep same interface
 
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 

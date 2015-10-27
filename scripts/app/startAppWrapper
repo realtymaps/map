@@ -6,12 +6,17 @@ APP_DIR="$SCRIPT_DIR/.."
 
 if [[ "$SKIP_NGINX" == "true" ]]
 then
-  export NGINX_SOCKET_LOCATION=""
+  export NGINX_SOCKET_FILENAME=""
   $SCRIPT_DIR/app/startApp
 else
   if [[ "$IS_HEROKU" == "" ]]
   then
-    # not on heroku, so first we need to bootstrap the nginx buildpack
+    # not on heroku
+    
+    # first kill off nginx in case it's been lingering -- doing it here so it has time to die
+    pkill nginx || true
+    
+    # next we need to bootstrap the nginx buildpack
     BUILDPACK_DIR=/var/tmp/nginx-buildpack
     if [ ! -e $BUILDPACK_DIR/.git ]
     then
@@ -26,26 +31,25 @@ else
       git pull
     fi
     export STATIC_ROOT="$APP_DIR/_public"
-    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
+    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR/nginx ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
-  
   
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
   # we give a bit of slack for heroku startup overhead, nginx startup, etc
   
-  rm -f /tmp/app-initialized
-  rm -f /tmp/nginx-app-start
-  rm -f /tmp/nginx-app-end
+  rm -f ./nginx/app-initialized
+  rm -f ./nginx/nginx-app-start
+  rm -f ./nginx/nginx-app-end
   
   (
     sleep 50
-    if [ -e /tmp/nginx-app-start ] && [ ! -e /tmp/nginx-app-end ] && [ ! -e /tmp/app-initialized ]
+    if [ -e ./nginx/nginx-app-start ] && [ ! -e ./nginx/nginx-app-end ] && [ ! -e ./nginx/app-initialized ]
     then
       echo "forcing 50s init..."
-      touch /tmp/app-initialized
+      touch ./nginx/app-initialized
     fi
   ) &
   
-  ./bin/start-nginx $SCRIPT_DIR/app/startApp
+  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
 fi

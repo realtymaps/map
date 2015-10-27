@@ -69,14 +69,14 @@ describe 'util.crud.service.helpers', ->
           it 'with update', ->
             obj = id: 1
             @instance.upsert obj, ['id']
-            .then () =>
+            .then () ->
               Crud::update.called.should.be.true
               Crud::update.reset()
 
           it 'no update', ->
             obj = id: 1
             @instance.upsert obj, ['id'], false
-            .then () =>
+            .then () ->
               Crud::update.called.should.be.false
               Crud::update.reset()
 

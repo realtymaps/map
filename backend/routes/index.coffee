@@ -16,7 +16,7 @@ module.exports = (app) ->
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       Promise.try () ->
-       route.handle(req, res, next)
+        route.handle(req, res, next)
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error)
       .catch (error) ->

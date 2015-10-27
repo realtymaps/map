@@ -9,7 +9,15 @@ bowerPath = 'bower_components/'
 bower = bowerFilesLoader
   filter: /[.](jpg|jpeg|gif|png)$/
   checkExistence: true
-  # debugging:true
+  overrides:
+    "leaflet-search":
+      main: [
+        "dist/leaflet-search.src.js"
+        "dist/leaflet-search.src.css"
+        "images/search-icon.png"
+        "images/search-icon-mobile.png"
+      ]
+  #debugging: true
 
 #globDebug bower, 'bower'
 

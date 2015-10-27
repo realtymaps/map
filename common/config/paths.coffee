@@ -33,7 +33,8 @@ getAssetCollection = (name) ->
 module.exports =
   bower: 'bower_components'
   spec: 'spec/**'
-  common: 'common/**/*.*'
+  common: 'common/**/'
+  backend: 'backend/**/'
   webroot: 'common/webroot/**/*.*'
 
   frontendCommon: getAssetCollection('common')

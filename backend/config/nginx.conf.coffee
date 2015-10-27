@@ -2,7 +2,7 @@
 process.stdout.write """
 daemon off;
 worker_processes #{process.env.NGINX_WORKERS || 4};
-pid /tmp/nginx.pid;
+pid ./nginx.pid;
 
 events {
   use #{process.env.NGINX_CONNECTION_METHOD || "poll"};
@@ -33,7 +33,7 @@ http {
   client_max_body_size 10M;
 
   upstream app_server {
-    server unix:#{process.env.NGINX_SOCKET_LOCATION} fail_timeout=0;
+    server unix:./#{process.env.NGINX_SOCKET_FILENAME} fail_timeout=0;
   }
 
   server {
