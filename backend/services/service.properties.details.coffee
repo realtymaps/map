@@ -38,6 +38,14 @@ _getDetailByPropertyId = (request) ->
   # logger.debug query.toString()
   query
 
+_getDetailByPropertyIds = (request) ->
+
+  query = sqlHelpers.select(propertyDetails(), request.columns or 'detail')
+  sqlHelpers.orWhereIn(query, 'rm_property_id', request.rm_property_id)
+
+  # logger.debug query.toString()
+  query
+
 _getDetailByGeomPointJson = (request) ->
 
   request.geom_point_json.crs = crsFactory()
@@ -65,3 +73,9 @@ module.exports =
       if data?
         return toLeafletMarker data
       data
+
+  getDetails: (request) -> Promise.try () ->
+    if request.rm_property_id?
+      _getDetailByPropertyIds(request)
+    else
+      []

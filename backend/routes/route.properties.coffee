@@ -34,7 +34,6 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        logger.debug 'Current Profile is', currentProfile(req).name
         filterSummaryService.getFilterSummary(currentProfile(req), req.query)
 
   parcelBase:
@@ -69,3 +68,11 @@ module.exports =
               return property
             return Promise.reject new ExpressResponse(alert: {msg: "property with id #{req.query.rm_property_id} not found"}), httpStatus.NOT_FOUND
         return promise
+
+  details:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        detailService.getDetails(req.query)

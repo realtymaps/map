@@ -54,9 +54,10 @@ groupsCols = [
 
 profileCols = [
   "#{tables.user.profile.tableName}.id as id"
+  "#{tables.user.profile.tableName}.auth_user_id as user_id"
   "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name"
   'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
-  'parent_auth_user_id', 'auth_user_id as user_id'
+  'parent_auth_user_id',  'project_id'
 ]
 
 clientCols = [
@@ -90,7 +91,7 @@ class UserCrud extends ThenableCrud
     module.exports.m2m_user_group, 'group_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id").init(false)
 
   profiles: thenableHasManyCrud(tables.user.project, profileCols,
-    module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(false)
+    module.exports.profile, "#{tables.user.profile.tableName}.project_id", undefined, "#{tables.user.profile.tableName}.id").init(false)
 
   clients: thenableHasManyCrud(tables.auth.user, clientCols,
     module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(false)

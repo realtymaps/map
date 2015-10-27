@@ -12,8 +12,8 @@ userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coff
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
-safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft']
-safeProfile = ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results']
+safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+safeProfile = ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results']
 safeUser = ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
 
 class ClientsCrud extends HasManyRouteCrud

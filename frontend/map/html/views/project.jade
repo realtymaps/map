@@ -1,4 +1,6 @@
 include ../includes/mixins/property/_propertyAttributes.jade
+include ../includes/mixins/property/_propertyButtons.jade
+
 #projects-list.content-section-container
   .desktop-view
     .inner
@@ -80,23 +82,16 @@ include ../includes/mixins/property/_propertyAttributes.jade
 
                       ul.pinned(ng-show="selected == 'pins'")
                         .collapse-header
-                          h2.title Pinned ({{project.pins.length}})
+                          h2.title Pinned ({{project.propertiesTotal}})
                         .row
-                          li.col-md-6(ng-repeat="pin in project.pins")
+                          li.col-md-6(ng-repeat="property in project.properties_selected")
                             .property-card
                               .property-img
-                                img(src="/assets/test_property.jpg")
-                                span.property-status(ng-class="pin.status")
-                                  | {{pin.status}}
+                                span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+                                img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 420, 280)}}" title="{{property.title}}")
                               .property-data
-                                +propertyAttributes('pin')
-                              .actions
-                                button.details
-                                  span.icon.icon-arrow
-                                  span See details
-                                button.pinto
-                                  span.icon.icon-pin
-                                  span Pin to
+                                +propertyAttributes('property')
+                                +propertyButtons('property')
 
                       ul.notes(ng-show="selected == 'notes'")
                         .collapse-header

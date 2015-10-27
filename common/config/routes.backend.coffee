@@ -120,6 +120,7 @@ module.exports =
     parcelBase: "#{apiBase}/properties/parcel_base/"
     addresses: "#{apiBase}/properties/addresses/"
     detail: "#{apiBase}/properties/detail/"
+    details: "#{apiBase}/properties/details/"
   snail:
     quote: "#{apiBase}/snail/quote"
     send: "#{apiBase}/snail/send"

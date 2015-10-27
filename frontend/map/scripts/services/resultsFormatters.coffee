@@ -150,10 +150,10 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       sortClass = 'active-sort'
       return sortClass
 
-    getForSaleClass: (result) ->
+    getForSaleClass: (result, showSaved = true) ->
       return unless result
-      soldClass = _forSaleClass['saved'] if result.savedDetails?.isSaved
-      return soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
+      soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isSaved
+      soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
 
     getStatusLabelClass: (result, ignoreSavedStatus=false) ->
       return unless result

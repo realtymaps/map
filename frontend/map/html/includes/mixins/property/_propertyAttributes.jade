@@ -1,6 +1,5 @@
 mixin propertyAttributes(propName)
-  //TODO dollar sign should go bye bye out of the template especially if we start dealing with l18n
-  p.price(ng-class="formatters.results.getForSaleClass(property,true)") ${{#{propName}.price}}
+  p.price(ng-class="formatters.results.getForSaleClass(property, false)") {{formatters.results.getPrice(#{propName}.price)}}
   div.property-attr
     ul.attr
       li(ng-if="#{propName}.bedrooms") {{#{propName}.bedrooms}} beds
@@ -8,4 +7,4 @@ mixin propertyAttributes(propName)
       li(ng-if="#{propName}.finished_sqft") {{#{propName}.finished_sqft}} Sq Ft
       li(ng-if="#{propName}.year_built") {{formatters.results.getYear(#{propName}.year_built)}} built
   h4.title(ng-if="#{propName}.street_address_num || #{propName}.street_address_name || #{propName}.street_address_unit", ng-cloak) {{#{propName}.street_address_num}} {{#{propName}.street_address_name}} {{#{propName}.street_address_unit}}
-  p.location(ng-if="#{propName}.owner_city || #{propName}.owner_state") {{formatters.results.getCityStateZip(#{propName},true)}}
+  p.location(ng-if="#{propName}.city || #{propName}.state") {{formatters.results.getCityStateZip(#{propName})}}

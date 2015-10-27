@@ -9,7 +9,7 @@ ul.nav
     span ({{project.neighborhoods.length}})
   li(ng-class="{active: selected == 'pins'}")
     a(ng-click="selected = 'pins'") Pins
-    span ({{project.favorites.length}})
+    span ({{project.propertiesTotal}})
   li(ng-class="{active: selected == 'notes'}")
     a(ng-click="selected = 'notes'") Notes
     span ({{project.notes.length}})

@@ -1,8 +1,55 @@
+$fnPropertyStatus(colorProp)
+  &.property-status
+    {colorProp} $rmMainDarkBlue
+
+  &.sold
+    {colorProp} $rm-property-sold-red
+
+  &.forsale
+    {colorProp} $rm-property-sale-green
+
+  &.pending
+    {colorProp} $rm-property-pending-purple
+
+  &.saved
+    {colorProp} $rm-property-save-yello
+
+  &.notsale
+    {colorProp} $rm-property-notsale-blue
+
 $fnMakePropertyAttr()
+  .property-img
+    img
+      max-width 100%
+      display inline-block
+
+    width 100%
+    text-align center
+    margin-bottom 10px
+    position relative
+
+    .status
+      color $white
+      text-transform uppercase
+      bottom 0
+      left 0
+      display inline-block
+      padding 5px 10px
+      font-size 11px
+      position absolute
+      $fnPropertyStatus(background)
+
+  .price
+    margin 0
+    font-size 18px
+    font-weight bold
+    padding 0 10px
+    $fnPropertyStatus(color)
+
   .property-attr
     list-style none
     display inline-block
-    margin 0 -10px
+    margin 0
     ul.attr
       padding 0
       margin 5px -4px
@@ -15,6 +62,7 @@ $fnMakePropertyAttr()
         line-height 0
         &:last-child
           border none
+
   .title
     margin 0 0 5px 0
     font-weight bold
@@ -22,11 +70,13 @@ $fnMakePropertyAttr()
     &:hover
     &:focus
       color $light_blue
+
   .location
     padding 0 10px
     color $gray
     font-size 12px
     font-weight bold
+
   .btn-actions
     overflow hidden
     border-top 1px solid $darker_white

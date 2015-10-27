@@ -24,26 +24,6 @@ savedButton()
   .fa.fa-square.fa-lg.btn.btn-default.btn-xs
     padding 1px 1px
 
-$fnPropertyStatus(colorProp)
-  &.property-status
-    {colorProp} $rmMainDarkBlue
-
-  &.sold
-    {colorProp} $rm-property-sold-red
-
-  &.forsale
-    {colorProp} $rm-property-sale-green
-
-  &.pending
-    {colorProp} $rm-property-pending-purple
-
-  &.saved
-    {colorProp} $rm-property-save-yello
-
-  &.notsale
-    {colorProp} $rm-property-notsale-blue
-
-
 basicTitle()
   display block
   color #6B6B6B
@@ -136,34 +116,5 @@ $fnOverrideSliderBackgroundColor()
         list-style none
         box-shadow 0px 1px 3px $black_50
         margin-bottom 10px
-
-        .property-img
-          img
-            max-width 100%
-            display inline-block
-
-          width 100%
-          margin-bottom 10px
-          position relative
-
-          .status
-            color $white
-            text-transform uppercase
-            bottom 0
-            left 0
-            display inline-block
-            padding 5px 10px
-            font-size 11px
-            position absolute
-
-            $fnPropertyStatus(background)
-
-
-        .price
-          margin 0
-          font-size 18px
-          font-weight bold
-          padding 0 10px
-          $fnPropertyStatus(color)
 
         $fnMakePropertyAttr()
