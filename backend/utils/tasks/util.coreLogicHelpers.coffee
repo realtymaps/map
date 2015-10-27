@@ -13,7 +13,7 @@ tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
-PromiseFtp = require '../util.promiseFtp'
+PromiseFtp = require 'promise-ftp'
 encryptor = require '../../config/encryptor'
 unzip = require 'unzip2'
 split = require 'split'
@@ -90,6 +90,7 @@ loadRawData = (subtask, options) ->
     host: subtask.task_data.host
     user: subtask.task_data.user
     password: encryptor.decrypt(subtask.task_data.password)
+    autoReconnect: true
   .then () ->
     ftp.get(subtask.data.path)
   .then (zipFileStream) -> new Promise (resolve, reject) ->
