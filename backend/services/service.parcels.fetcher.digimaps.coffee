@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 logger = require '../config/logger'
 _ = require 'lodash'
 moment = require 'moment'
-PromiseFtp = require '../utils/util.promiseFtp'
+PromiseFtp = require 'promise-ftp'
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 
@@ -23,6 +23,7 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
     host: URL
     user: ACCOUNT
     password: PASSWORD
+    autoReconnect: true
 
 
 _numbersInString = (str) -> str.replace(/\D/g, '')

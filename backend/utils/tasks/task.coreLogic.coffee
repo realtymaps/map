@@ -6,7 +6,7 @@ logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 coreLogicHelpers = require './util.coreLogicHelpers'
 encryptor = require '../../config/encryptor'
-PromiseFtp = require '../util.promiseFtp'
+PromiseFtp = require 'promise-ftp'
 _ = require 'lodash'
 keystore = require '../../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
@@ -25,6 +25,7 @@ checkFtpDrop = (subtask) ->
     host: subtask.task_data.host
     user: subtask.task_data.user
     password: encryptor.decrypt(subtask.task_data.password)
+    autoReconnect: true
   .then () ->
     ftp.list('/')
   defaultValues = {}
