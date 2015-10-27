@@ -26,15 +26,21 @@
 .letter-page
   .letter-page-content
     .letter-page-content-text
-      p.editable
-        span(style="color: black; font-family: Helvetica;") The grey box is the safe area. Do not put text outside this box. If you are using the data argument, you can add variables like this: {{variable_name}}.
+      .editable
+        span(style="color: black") 
+          span(style="font-family: Helvetica")
+            span.fontSize18 The grey box is the safe area. Do not put text outside this box. If you are using the data argument, you can add variables like this: {{variable_name}}.
   #return-address-window
-    #return-address-text(ta-bind ta-readonly="true")
-      p.editable
-        span(style="color: black") The Return Address will be printed here. The red area will be visible through the envelope window.
+    #return-address-text
+      .editable
+        span(style="color: black")
+          span(style="font-family: Helvetica")
+            span.fontSize12 The Return Address will be printed here. The red area will be visible through the envelope window.
   #recipient-address-window
     #recipient-address-text 
-      p.editable
-        span(style="color: black") The Recipient's Address will be printed here. The red area will be visible through the envelope window.
+      .editable
+        span(style="color: black")
+          span(style="font-family: Helvetica")
+            span.fontSize12 The Recipient's Address will be printed here. The red area will be visible through the envelope window.
 
 

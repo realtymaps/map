@@ -1,11 +1,13 @@
 @import 'basic-letter-values'
 
+$template-stage-margin = 1in
 
 #mail-wizard
   #edit-template
     .template-stage-container
       position relative
       overflow scroll
+      left (-($template-stage-margin / 2) + 0.33in)
       // height ($page-height / $wysiwyg-scale-factor)
 
     // .clear-template
@@ -20,15 +22,18 @@
       top 0
       right 0
       bottom 0
-      padding 0.25in
+      padding ($template-stage-margin / 2)
       background-color $gray_ligther
-      border-right 1px solid $gray
-      width (($page-width / $wysiwyg-scale-factor) + 0.5in)
-      height (($page-height / $wysiwyg-scale-factor) + 0.5in)
+      // border-right 1px solid $gray
+      width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
+      height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
       //line-height initial
 
-      .form-control
-        line-height initial
+      .letter-editor
+        box-shadow 4px 4px 20px #888888
+
+      // .form-control
+      //   line-height inherit
 
       .ta-scroll-window > .ta-bind
         padding: 0

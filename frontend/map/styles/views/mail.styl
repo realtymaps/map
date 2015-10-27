@@ -111,21 +111,47 @@
       
       // .nav-tabs .nav-justified ul li
       //   height 46px
+      
+      ul.nav-tabs
+        margin-bottom 0
+
+        .nav-justified
+          height 46px
+          border-bottom 0
+
+      // .btn-toolbar .btn, .ta-toolbar .btn
+      //   .miscTools
+      //     float none
+      //     margin 0
+
+      .nav .ta-toolbar
+        margin-left 0 !important
+
+        button
+          float right
+          margin-right 5px
+          // color black
+          // background-color rgb(150, 150, 150)
         
-      ul .nav-tabs .nav-justified
-        height 46px
-        border-bottom 0
+
+      // .miscTools button
+      //   float none
+      //   margin 7
 
       label
         color #000
+      
+      .fontTypeTools label.btn:not(.active)
+        border 1px solid white
 
       .edit-template-content
         padding 20px
-        // height 7in
         
       .edit-template-design
         padding 20px
-        // height 7in
+        
+      .btn
+        min-width 0
 
     #confirm
       .overview-template

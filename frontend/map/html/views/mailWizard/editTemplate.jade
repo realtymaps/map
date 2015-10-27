@@ -4,47 +4,36 @@
       div.col-md-6
         ul.nav.nav-tabs.nav-justified
           li 
-            button.btn.btn-text undo
-            button.btn.btn-text redo
+            text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-text" ta-toolbar="[['undo','redo']]")
+            //- button.btn.btn-text undo
+            //- button.btn.btn-text redo
+          li(style="text-align: left;")
             button.btn.btn-text(ng-click="doPreview()") Preview
         .template-stage-container
           .template-stage
             //- .clear-template
             //-   .template-view
-            div(ng-class="applyTemplateClass()")
-              div(text-angular name="wysiwyg" focus="focusMe" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,colorToolbar,fontTypeToolbar")
+            div.letter-editor(ng-class="applyTemplateClass()")
+              div(text-angular name="wysiwyg" focus="focusMe" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
 
 
       
       div.col-md-6
         tabset(justified="true")
-          tab(heading="Text")
+          tab(heading="Text" active="true")
             div.edit-template-design
               div.form-section
-                  h4
-                      | Font Family
+                h4
+                  | Font Family
 
-                  div
-                      text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman']]")
+                div
+                  text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
 
-                  div
-                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'helvetica'") Helvetica
-                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'times'") Times New Roman
-                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'gill'") Gill Sans
-                      label(class="btn btn-text" ng-model="radioFontFamilyModel" btn-radio="'georgia'") Georgia
               div.form-section
-                  h4
-                      | Font Size
-
-                  div(class="row")
-                      div.col-md-8
-                          div.btn-group
-                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'12'") 12pt
-                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'13'") 13pt
-                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'14'") 14pt
-                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'16'") 16pt
-                              label(class="btn btn-white" ng-model="radioFontSizeModel" btn-radio="'18'") 18pt
+                h4
+                  | Font Size
+                text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
 
               div.form-section
                   h4
@@ -52,13 +41,6 @@
 
                   div
                       text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
-                  //- div
-                  //-     label(class="btn btn-circle color-black" ng-model="radioFontColorModel" btn-radio="'black'") Black
-                  //-     label(class="btn btn-circle color-blue" ng-model="radioFontColorModel" btn-radio="'blue'") Blue
-                  //-     label(class="btn btn-circle color-green" ng-model="radioFontColorModel" btn-radio="'green'") Green
-                  //-     label(class="btn btn-circle color-red" ng-model="radioFontColorModel" btn-radio="'red'") Red
-                  //-     label(class="btn btn-circle color-yellow" ng-model="radioFontColorModel" btn-radio="'yellow'") Yellow
-                  //-     label(class="btn btn-circle color-white" ng-model="radioFontColorModel" btn-radio="'white'") White
 
           tab(heading="Images")
             div.edit-template-design
@@ -83,6 +65,6 @@
             div.edit-template-design
               button.btn.btn-text(ng-click="preview()") Preview
 
-          tab(heading="Test" active="true" disable="false")
+          tab(heading="Test" disable="false")
             div.edit-template-design
               text-angular-toolbar(name="testToolbar01" ta-toolbar="[['bold','italics','underline'],['ul','ol','test']]")

@@ -35,7 +35,13 @@ app.factory 'rmapsMailTemplate', ($window) ->
     #   @getDefaultTemplateStyle
 
     @_createPreviewHtml = () =>
+      shadowStyle = ".letter-page {box-shadow: 4px 4px 20px #888888;}"
+      # bodyPadding = "body {margin: 20px;}"
+      "<html><head><title>#{@title}</title><style>#{@style}#{shadowStyle}</style></head><body>#{@content}</body></html>"
+
+    @_createLobHtml = () =>
       "<html><head><title>#{@title}</title><style>#{@style}</style></head><body>#{@content}</body></html>"
+
 
     @openPreview = () =>
       preview = $window.open "", "_blank"
