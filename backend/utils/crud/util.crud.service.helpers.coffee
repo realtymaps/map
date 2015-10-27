@@ -5,6 +5,7 @@ _ = require 'lodash'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
 NamedError = require '../errors/util.error.named'
+{IsIdObjError} = require '../errors/util.error.crud.coffee'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -26,10 +27,15 @@ class Crud extends BaseObject
     super()
     unless _.isFunction @dbFn
       throw new Error('dbFn must be a knex function')
+
   idObj: (val) ->
-    obj = {}
-    obj[@idKey] = val
-    obj
+    if _.isNumber(val) or _.isString(val)
+      obj = {}
+      obj[@idKey] = val
+      return obj
+    if !_.isObject(val) or _.isArray(val)
+      throw new IsIdObjError("val: #{val} typeof #{typeof(val)} must be an object, or Number but not an Array!")
+    return val
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @dbFn().where(query).count('*'), doLogQuery

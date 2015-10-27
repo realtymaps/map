@@ -9,6 +9,7 @@ cluster = require './config/cluster'
 touch = require 'touch'
 rimraf = require 'rimraf'
 mkdirp = require 'mkdirp'
+Promise = require 'bluebird'
 
 
 if config.MEM_WATCH.IS_ON
@@ -17,8 +18,11 @@ if config.MEM_WATCH.IS_ON
   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 
-rimraf.async(if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else '')
-.then () ->
+if process.env.NGINX_SOCKET_FILENAME
+  p = rimraf.async("./nginx/#{process.env.NGINX_SOCKET_FILENAME}")
+else
+  p = Promise.resolve()
+p.then () ->
   cluster 'web', config.PROC_COUNT, () ->
     # express configuration
     app = require './config/express'
