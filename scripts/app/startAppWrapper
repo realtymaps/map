@@ -31,7 +31,7 @@ else
       git pull
     fi
     export STATIC_ROOT="$APP_DIR/_public"
-    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR/nginx ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
+    ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
   
@@ -41,7 +41,6 @@ else
   rm -f ./nginx/app-initialized
   rm -f ./nginx/nginx-app-start
   rm -f ./nginx/nginx-app-end
-  
   (
     sleep 50
     if [ -e ./nginx/nginx-app-start ] && [ ! -e ./nginx/nginx-app-end ] && [ ! -e ./nginx/app-initialized ]
