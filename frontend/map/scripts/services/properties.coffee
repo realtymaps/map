@@ -95,6 +95,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       _detailThrottler.invokePromise $http.get(url, cache: cache)
       , http: {route: backendRoutes.properties.detail }
 
+    getProperties: (ids, columns) ->
+      $http.get backendRoutes.properties.details, params: rm_property_id: ids, columns: columns
+
     saveProperty: (model) ->
       _saveProperty model
       $rootScope.$emit rmapsevents.map.properties.updated, _savedProperties

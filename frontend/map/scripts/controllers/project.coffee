@@ -4,7 +4,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter) ->
+app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertiesService) ->
   $scope.activeView = 'project'
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl'
@@ -56,7 +56,7 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
         _.assign $scope.project, $scope.projectCopy
 
   $scope.getPropertyDetail = (property) ->
-    $http.get backendRoutes.properties.details, params: rm_property_id: property.rm_property_id, columns: 'detail'
+    rmapsPropertiesService.getProperties property.rm_property_id, 'detail'
     .then (result) ->
       $scope.propertyDetail = _.pairs result.data[0]
       modalInstance = $modal.open
@@ -81,7 +81,7 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
       $scope.project = project
 
   $scope.loadProperties = (properties) ->
-    $http.get backendRoutes.properties.details, params: rm_property_id: _.keys(properties), columns: 'filter'
+    rmapsPropertiesService.getProperties _.keys(properties), 'filter'
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
