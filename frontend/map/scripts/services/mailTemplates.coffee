@@ -13,7 +13,7 @@ defaultFinalStyle =
 #   'basicLetter': basicLetterTemplateStyle
 
 
-app.factory 'rmapsMailTemplate', ($window, rmapsMailCampaignService) ->
+app.factory 'rmapsMailTemplate', ($window, $log, rmapsMailCampaignService) ->
 
   (templateType) ->
     @type = templateType
@@ -51,9 +51,11 @@ app.factory 'rmapsMailTemplate', ($window, rmapsMailCampaignService) ->
 
     @save = (campaign) =>
       campaign.content = @content
-      rmapsMailCampaignService.post(campaign)
+      rmapsMailCampaignService.create(campaign)
       .then (d) ->
         $log.debug "#### data sent, d:"
         $log.debug d
+
+    @
 
 

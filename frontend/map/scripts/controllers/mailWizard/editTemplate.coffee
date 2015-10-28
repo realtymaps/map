@@ -236,6 +236,7 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     count: 1
     status: 'pending'
     content: ''
+    project_id: 1
 
   $scope.saveContent = () ->
     templateObj.content = $scope.mailCampaign.content
