@@ -1,0 +1,1 @@
+ALTER TABLE user_mail_campaigns ALTER COLUMN created SET DEFAULT now_utc();
