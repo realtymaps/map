@@ -9,12 +9,13 @@
             //- button.btn.btn-text redo
           li(style="text-align: left;")
             button.btn.btn-text(ng-click="doPreview()") Preview
+            button.btn.btn-text(ng-click="saveContent()") Save
         .template-stage-container
           .template-stage
             //- .clear-template
             //-   .template-view
             div.letter-editor(ng-class="applyTemplateClass()")
-              div(text-angular name="wysiwyg" focus="focusMe" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
+              div(text-angular name="wysiwyg" on-drop="macro" focus="focusMe" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
 
 
@@ -57,9 +58,8 @@
                   h4
                     | Insert Macro
 
-                  div
-                    label.btn.btn-primary Macro 1
-                    label Macro 2
+                  div(ng-repeat="macro in macros" rmaps-draggable="macro")
+                    label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
 
           tab(heading="Tools")
             div.edit-template-design
@@ -67,4 +67,4 @@
 
           tab(heading="Test" disable="false")
             div.edit-template-design
-              text-angular-toolbar(name="testToolbar01" ta-toolbar="[['bold','italics','underline'],['ul','ol','test']]")
+              text-angular-toolbar(name="testToolbar01" ta-toolbar="[['bold','italics','underline'],['ul','ol','test','macroTool']]")

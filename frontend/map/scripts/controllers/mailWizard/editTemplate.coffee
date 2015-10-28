@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, rmapsprincipal, rmapsMailTemplate, textAngularManager) ->
+app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
   #templateHtml = require "../../../html/includes/mail/#{$scope.$parent.templateName}-template.jade"
   # templateHtml = require '../../../html/includes/mail/basic-letter-template.jade'
   # templatePath = '../../../html/includes/mail/basic-letter-template.jade'
@@ -12,8 +12,9 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $log.debug templateHtml()
   # $log.debug "#### templateStyle:"
   # $log.debug templateStyle
-
+  # $scope.caret = 
   #template = rmapsMailTemplateService($scope.$parent.templateType)
+  
   templateObj = rmapsMailTemplate($scope.$parent.templateType)
   # $log.debug "#### templateObj.content:"
   # $log.debug templateObj.content
@@ -21,6 +22,142 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $log.debug templateObj.style
   $log.debug "textAngularManager:"
   $log.debug textAngularManager
+  editor = {}
+  $timeout () ->
+    $log.debug "#### taTools:"
+    $log.debug taTools
+    editor = textAngularManager.retrieveEditor('wysiwyg')
+    $log.debug "#### editor:"
+    $log.debug editor
+    editor.editorFunctions.focus()
+    editor.scope.$on 'rmaps-drag-end', (e, opts) ->
+      editor.editorFunctions.focus()
+      # editor.triggerElementSelect(e, )
+      console.log "#### EDITOR rmaps-drag-end, e:"
+      console.log e
+      console.log "#### EDITOR rmaps-drag-end, opts:"
+      console.log opts
+      console.log "#### EDITOR rmaps-drag-end, $scope.macro:"
+      console.log $scope.macro
+
+
+      sel = $window.getSelection()
+      # console.log "#### EDITOR rmaps-drag-end, sel:"
+      # console.log sel
+      # console.log "#### EDITOR rmaps-drag-end, event targetScope:"
+      # console.log e.targetScope.displayElements.text[0]
+      e.targetScope.displayElements.text[0].focus()
+      # $log.debug "mousex:"
+      # $log.debug $scope.mousex
+      # $log.debug "mousey:"
+      # $log.debug $scope.mousey
+      # $log.debug "$document:"
+      # $log.debug $document[0]
+      # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
+      if $document[0].caretPositionFromPoint
+        range = $document[0].caretPositionFromPoint $scope.mousex, $scope.mousey
+        textNode = range.offsetNode
+        offset = range.offset
+      else if $document[0].caretRangeFromPoint
+        range = $document[0].caretRangeFromPoint $scope.mousex, $scope.mousey
+        textNode = range.startContainer
+        offset = range.startOffset
+
+      # $log.debug "textNode:"
+      # $log.debug textNode
+      # $log.debug "offset:"
+      # $log.debug offset
+
+      range = rangy.createRange()
+      range.setStart textNode, offset
+      range.collapse true
+      sel = rangy.getSelection()
+      sel.setSingleRange range
+      $log.debug "range:"
+      $log.debug range
+      $log.debug "this sel:"
+      $log.debug sel
+      el = angular.element "<span class='macro-display'>#{$scope.macro}</span>"
+      range.insertNode el[0]
+
+      #editor.scope.wrapSelection('insertHTML', " #{$scope.macro} ")
+
+      #range.insertNode( $document.createTextNode("ABUNCHTEXT") )
+
+  # $scope.insertMacroCode = (textNode, offset) ->
+  #   if !offset?
+
+
+
+
+
+    # editor.scope.$on 'rmaps-drag-end', (e) ->
+    #   console.log "#### EDITOR rmaps-drag-end, e:"
+    #   console.log e
+    #   sel = $window.getSelection()
+    #   console.log "#### EDITOR rmaps-drag-end, sel:"
+    #   console.log sel
+  $scope.mousex
+  $scope.mousey
+
+  $scope.setMacro = (macro) ->
+    $log.debug "setMacro(), macro:"
+    $log.debug macro
+    $scope.macro = macro
+
+  $scope.dropMacro = (e) ->
+    $log.debug "#### dropMacro()"
+    $log.debug "#### e:"
+    $log.debug e
+
+  $scope.eventMacro = (type) ->
+    (e) ->
+      $scope.mousex = e.clientX
+      $scope.mousey = e.clientY
+      # $log.debug "#### eventMacro(), type:"
+      # $log.debug type
+      # $log.debug "#### eventMacro()"
+      # $log.debug "#### e:"
+      # $log.debug e
+      # editor.editorFunctions.focus()
+      # sel = $window.getSelection()
+      # console.log "#### eventMacro() , sel:"
+      # console.log sel
+
+
+  $scope.textEditorSetup = () ->
+    $log.debug "textEditorSetup"
+    (arg1) ->
+      $log.debug "textEditorSetup operation, arg1:"
+      $log.debug arg1
+      # arg1[0].ondragend = $scope.eventMacro('ondragend')
+      # arg1[0].ondrag = $scope.eventMacro('ondrag')
+      # arg1[0].onclick = $scope.eventMacro('onclick')
+      arg1[0].ondragover = $scope.eventMacro('ondragover')
+      # arg1[0].ondrop = $scope.eventMacro('ondrop')
+      # arg1[0].onmouseup = $scope.eventMacro('onmouseup')
+      # arg1[0].ondragend (e) ->
+      # # arg1[0].addEventListener 'rmaps-drag-end', (e) ->
+      #   $log.debug "#### textEditorSetup drag-end, e:"
+      #   $log.debug e
+
+
+  $scope.htmlEditorSetup = () ->
+    $log.debug "htmlEditorSetup"
+    (arg1) ->
+      $log.debug "htmlEditorSetup operation, arg1:"
+      $log.debug arg1
+      # arg1[0].ondragend = $scope.eventMacro('ondragend')
+      # arg1[0].ondrag = $scope.eventMacro('ondrag')
+      # arg1[0].onclick = $scope.eventMacro('onclick')
+      # arg1[0].ondragover = $scope.eventMacro('ondragover')
+      # arg1[0].ondrop = $scope.eventMacro('ondrop')
+      # arg1[0].onmouseup = $scope.eventMacro('onmouseup')
+      # arg1[0].ondragend (e) ->
+      # # arg1[0].addEventListener 'rmaps-drag-end', (e) ->
+      #   $log.debug "#### textEditorSetup drag-end, e:"
+      #   $log.debug e
+    
 
   # editorScope = textAngularManager.retrieveEditor('wysiwyg').scope
 
@@ -29,12 +166,85 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $timeout () ->
   #   editorScope.displayElements.text.trigger 'focus'
 
+  $scope.getCursorPosition = () ->
+    sel = $window.getSelection()
+    $log.debug "getCursorPosition, sel:"
+    $log.debug sel
+    range = {}
+    if sel.getRangeAt && sel.rangeCount
+      return sel.getRangeAt(0)
+
+  # function getCursorPosition() {
+  #     var sel, range;
+  #     sel = window.getSelection();
+  #     if (sel.getRangeAt && sel.rangeCount) {
+  #         return sel.getRangeAt(0);
+  #     }
+  # }
+  $scope.insertTextAtPosition = (text, range) ->
+    $log.debug "insertTextAtPosition, text:"
+    $log.debug text
+    $log.debug "insertTextAtPosition, range:"
+    $log.debug range
+    range.insertNode(document.createTextNode(text))
+
+  # function insertTextAtPosition(text, range) {
+  #     range.insertNode(document.createTextNode(text));
+  # }
+
+  $scope.mouseUpEvent = (e) ->
+    $log.debug "#### mouseUpEvent(), e:"
+    $log.debug e
+    sel = $window.getSelection()
+    $log.debug "#### mouseUpEvent, caret:"
+    $log.debug sel
+
+
+  $rootScope.$on 'rmaps-drag-end', (e) ->
+    $log.debug "#### rmaps-drag-end, e:"
+    $log.debug e
+    editor.editorFunctions.focus()
+    editor.scope.$broadcast 'rmaps-drag-end'
+    sel = $window.getSelection()
+    $log.debug "#### rmaps-drag-end, caret:"
+    $log.debug sel
+    $log.debug "rangy:"
+    $log.debug rangy
+
+  # $rootScope.$on 'mouseup', (e) ->
+  #   console.log "#### mouseup, e:"
+  #   console.log e
+  #   sel = $window.getSelection()
+  #   $log.debug "#### sel:"
+  #   $log.debug sel
+
+  $scope.macros =
+    rmapsMainOptions.mail.macros
+
+  $scope.macro = ""
+
   $scope.focusMe = (scope) ->
     $log.debug "#### focusMe(), scope:"
     $log.debug scope
 
   $scope.isreadonly = () ->
     true
+
+  $scope.mailCampaign =
+    auth_user_id: 7
+    name: 'testCampaign'
+    count: 1
+    status: 'pending'
+    content: ''
+
+  $scope.saveContent = () ->
+    templateObj.content = $scope.mailCampaign.content
+    templateObj.save($scope.mailCampaign)
+    #_createLobHtml
+    # rmapsMailCampaignService.post()
+    # .then (d) ->
+    #   $log.debug "#### data sent, d:"
+    #   $log.debug d
 
   $scope.makeToolbar01 = (args) ->
     $log.debug "making toolbar01..."
@@ -45,6 +255,37 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # textAngularManager.registerToolbar({name: 'testToolbar02'})
   $scope.data =
     htmlcontent: templateObj.content
+
+  $scope.$watch 'data.htmlcontent', (newC, oldC) ->
+    # $log.debug "watch, newC:"
+    # $log.debug newC
+    # $log.debug "watch, oldC:"
+    # $log.debug oldC
+    sel = rangy.getSelection()
+    $log.debug "sel:"
+    $log.debug sel
+
+
+
+    if /.*?{{.*?}}.*?/.test(newC)
+
+      i1 = newC.indexOf '{{'
+      i2 = newC.indexOf '}}'
+      # $log.debug "#### newC:"
+      # $log.debug newC
+      $log.debug "i1, i2:"
+      $log.debug "#{i1}, #{i2}"
+
+    if sel?.focusNode?.data? && /macro-display/.test(sel.focusNode.parentNode.className) && not _.contains(_.map($scope.macros), sel.focusNode.data)
+      $log.debug "#### DNE!"
+      parent = sel.focusNode.parentNode
+      $log.debug "#### parent:"
+      $log.debug parent
+      parent.remove()
+      # $timeout () ->
+        # sel.refresh()
+        # $scope.$apply()
+
 
   $scope.applyTemplateClass = () ->
     "#{$scope.$parent.templateType}-body"
@@ -72,7 +313,8 @@ app.config ($provide) ->
   ]
 
 app.config ($provide) ->
-  $provide.decorator 'taOptions', ['$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', ($document, taRegisterTool, taOptions, $timeout, textAngularManager) ->
+  $provide.decorator 'taOptions', ['$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', 'rmapsMainOptions',
+  ($document, taRegisterTool, taOptions, $timeout, textAngularManager, rmapsMainOptions) ->
     console.log "document:"
     console.log $document
     $document[0].execCommand('styleWithCSS', false, true)
@@ -125,6 +367,25 @@ app.config ($provide) ->
     #     console.log "fontSize10"
     #     console.log el
 
+    macros = rmapsMainOptions.mail.macros
+    taRegisterTool 'macroTool',
+      buttontext: "macro-tool",
+      class: "btn btn-white",
+      display: "<label> macro-tool"
+      action: () ->
+        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
+        classApplier = rangy.createClassApplier 'macro-display',
+          tagNames: ["*"],
+          normalize: true
+        classApplier.toggleSelection()
+      activeState: (el) ->
+        # console.log "#### macro-tool, el[0].innerText:"
+        # console.log el[0].innerText
+        # console.log "#### macro-tool, _.map(macros):"
+        # console.log _.map(macros)
+        return _.contains(_.map(macros), el[0].innerText)
+
+
     taRegisterTool 'fontSize10',
       buttontext: "10pt",
       class: "btn btn-white",
@@ -136,8 +397,7 @@ app.config ($provide) ->
           normalize: true
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize10"
-        console.log el
+        return el[0].className == "fontSize10"
 
     taRegisterTool 'fontSize12',
       buttontext: "12pt",
@@ -150,8 +410,7 @@ app.config ($provide) ->
           normalize: true
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize12"
-        console.log el
+        return el[0].className == "fontSize12"
 
     taRegisterTool 'fontSize13',
       buttontext: "13pt",
@@ -164,8 +423,7 @@ app.config ($provide) ->
           normalize: true
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize13"
-        console.log el
+        return el[0].className == "fontSize13"
 
     taRegisterTool 'fontSize14',
       buttontext: "14pt",
@@ -178,8 +436,7 @@ app.config ($provide) ->
           normalize: true
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize14"
-        console.log el
+        return el[0].className == "fontSize14"
 
     taRegisterTool 'fontSize16',
       buttontext: "16pt",
@@ -192,8 +449,7 @@ app.config ($provide) ->
           normalize: true
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize16"
-        console.log el
+        return el[0].className == "fontSize16"
 
     taRegisterTool 'fontSize18',
       buttontext: "18pt",
@@ -210,8 +466,7 @@ app.config ($provide) ->
         console.log classApplier
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize18"
-        console.log el
+        return el[0].className == "fontSize18"
 
     taRegisterTool 'fontSize20',
       buttontext: "20pt",
@@ -228,8 +483,7 @@ app.config ($provide) ->
         console.log classApplier
         classApplier.toggleSelection()
       activeState: (el) ->
-        console.log "fontSize20"
-        console.log el
+        return el[0].className == "fontSize20"
 
 
     taRegisterTool 'fontHelvetica',
@@ -239,8 +493,6 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'fontName', 'Helvetica'
       activeState: (el) ->
-        console.log "fontHelvetica, el:"
-        console.log el
         return el[0].attributes.style?.textContent? && /font-family: Helvetica/.test(el[0].attributes.style.textContent)
 
     taRegisterTool 'fontTimesNewRoman',
@@ -250,8 +502,6 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'fontName', 'TimesNewRoman'
       activeState: (el) ->
-        console.log "fontTimesNewRoman, el:"
-        console.log el
         return el[0].attributes.style?.textContent? && /font-family: TimesNewRoman/.test(el[0].attributes.style.textContent)
 
     taRegisterTool 'fontGillSans',
@@ -261,8 +511,6 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'fontName', 'Gill Sans'
       activeState: (el) ->
-        console.log "fontGillSans, el:"
-        console.log el
         return el[0].attributes.style?.textContent? && /font-family: 'Gill Sans'/.test(el[0].attributes.style.textContent)
 
     taRegisterTool 'fontGeorgia',
@@ -272,8 +520,6 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'fontName', 'Georgia'
       activeState: (el) ->
-        console.log "fontGeorgia, el:"
-        console.log el
         return el[0].attributes.style?.textContent? && /font-family: Georgia/.test(el[0].attributes.style.textContent)
 
 
@@ -283,7 +529,15 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'forecolor', 'black'
       activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /color: black/.test(el[0].attributes.style.textContent)
+        node = el[0]
+        while not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
+          # console.log "textBlack node:"
+          # console.log node
+
+          if node.attributes.style?.textContent? && /color: black/.test(node.attributes.style.textContent)
+            return true
+          node = node.parentNode
+        return false
 
     taRegisterTool 'textBlue',
       buttontext: 'Blue'
@@ -299,6 +553,7 @@ app.config ($provide) ->
       action: () ->
         this.$editor().wrapSelection 'forecolor', 'green'
       activeState: (el) ->
+        #node = el
         return el[0].attributes.style?.textContent? && /color: green/.test(el[0].attributes.style.textContent)
 
     taRegisterTool 'textRed',
@@ -380,8 +635,8 @@ app.config ($provide) ->
     #   buttontext: "Undo"
     #   display: "<label>"
 
-    console.debug "taOptions:"
-    console.debug taOptions
+    # console.debug "taOptions:"
+    # console.debug taOptions
 
     return taOptions
   ]
