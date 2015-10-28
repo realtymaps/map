@@ -4,6 +4,7 @@
   box-sizing border-box
 
 .basicLetter-body
+  position relative
   width ($page-width * $scale-factor)
   height ($page-height * $scale-factor)
   margin 0
@@ -12,12 +13,13 @@
   color black
   
 .letter-page
+  // need to use margin instead of relative positioning since child elements will use absolute positioning
   page-break-after always
   background-color rgba(128,128,128,0)
   width ($letter-page-width * $scale-factor)
   height ($letter-page-height * $scale-factor)
-  left ($letter-page-offset-left * $scale-factor)
-  top ($letter-page-offset-top * $scale-factor)
+  margin-left ($letter-page-offset-left * $scale-factor)
+  margin-top ($letter-page-offset-top * $scale-factor)
 
 .letter-page-content
   position relative

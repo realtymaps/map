@@ -2,12 +2,14 @@
 
 $template-stage-margin = 1in
 
+
 #mail-wizard
   #edit-template
     .template-stage-container
       position relative
       overflow scroll
-      left (-($template-stage-margin / 2) + 0.33in)
+      background-color $gray_ligther
+      // left (-($template-stage-margin / 2) + 0.33in)
       // height ($page-height / $wysiwyg-scale-factor)
 
     // .clear-template
@@ -22,14 +24,17 @@ $template-stage-margin = 1in
       top 0
       right 0
       bottom 0
-      padding ($template-stage-margin / 2)
+      padding-top ($template-stage-margin / 2)
       background-color $gray_ligther
       // border-right 1px solid $gray
-      width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
-      height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+      // width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
+      // height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+      text-align center
       //line-height initial
 
       .letter-editor
+        text-align left
+        margin auto
         box-shadow 4px 4px 20px #888888
         
       .macro-display
@@ -41,11 +46,28 @@ $template-stage-margin = 1in
       // .form-control
       //   line-height inherit
 
+      .ta-letter-wrapper
+        // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
+        height ($page-height * $wysiwyg-scale-factor)
+        display block
+        width 100%
+        overflow auto
+        font-size 100%
+        line-height unset
+        background-color #ffffff
+        
+      .letter-page:focus
+        border none
+        
+
+      // .ta-scroll-window .form-control
+      //   height ($page-height / $wysiwyg-scale-factor) !important
+
       .ta-scroll-window > .ta-bind
         padding: 0
       
       .ta-root 
-        height ($page-height / $wysiwyg-scale-factor)
+        height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
         
       #recipient-address-window, #return-address-window
         overflow hidden

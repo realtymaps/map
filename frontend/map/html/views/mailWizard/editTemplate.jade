@@ -2,20 +2,30 @@
   form
     div.row.equal-height
       div.col-md-6
-        ul.nav.nav-tabs.nav-justified
-          li 
-            text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-text" ta-toolbar="[['undo','redo']]")
-            //- button.btn.btn-text undo
-            //- button.btn.btn-text redo
-          li(style="text-align: left;")
-            button.btn.btn-text(ng-click="doPreview()") Preview
-            button.btn.btn-text(ng-click="saveContent()") Save
-        .template-stage-container
-          .template-stage
-            //- .clear-template
-            //-   .template-view
-            div.letter-editor(ng-class="applyTemplateClass()")
-              div(text-angular name="wysiwyg" on-drop="macro" focus="focusMe" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="testToolbar01,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
+        .row(style="text-align: center")
+          .toolGroup
+
+            //- input.form-control.name-input.miscTool(ng-model="templateObj.mailCampaign.name")
+
+            //- text-angular-toolbar(name="miscToolbar" ta-toolbar-button-class="btn btn-text miscTool" ta-toolbar="[['redo','undo']]")
+
+            //- button.btn.btn-text.miscTool(ng-click="doPreview()") Preview
+            //- button.btn.btn-text.miscTool(ng-click="saveContent()") Save
+            //- button.btn.btn-text.miscTool(ng-click="sendLetter()") Send!            
+            button.btn.btn-success.miscTool(ng-click="sendLetter()") Send!
+            button.btn.btn-success.miscTool(ng-click="saveContent()") Save
+            button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
+            text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool" ta-toolbar="[['redo','undo']]")
+
+        .row
+          input.form-control.name-input(ng-model="templateObj.mailCampaign.name")
+        .row
+          .template-stage-container
+            .template-stage
+              //- .clear-template
+              //-   .template-view
+              div.letter-editor(ng-class="applyTemplateClass()")
+                div(text-angular name="wysiwyg" ta-text-editor-class="ta-letter-wrapper" on-drop="macro" focus="focusMe" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
 
 
@@ -27,9 +37,7 @@
               div.form-section
                 h4
                   | Font Family
-
-                div
-                  text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
+                text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
 
               div.form-section
                 h4
@@ -37,34 +45,28 @@
                 text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
 
               div.form-section
-                  h4
-                      | Font Color
+                h4
+                  | Font Color
+                text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
 
-                  div
-                      text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
-
-          tab(heading="Images")
-            div.edit-template-design
               div.form-section
-                  h4
-                    | Insert Image
-
-                  div
-                    label Insert Image
+                h4
+                  | Text Features
+                text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['bold','italics','underline'],['ul','ol','test']]")
 
           tab(heading="Macros")
             div.edit-template-design
               div.form-section
-                  h4
-                    | Insert Macro
+                h4
+                  | Drag &amp; Drop Macro
+                div(ng-repeat="macro in macros" rmaps-draggable="macro")
+                  label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
 
-                  div(ng-repeat="macro in macros" rmaps-draggable="macro")
-                    label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
-
-          tab(heading="Tools")
+          tab(heading="Images")
             div.edit-template-design
-              button.btn.btn-text(ng-click="preview()") Preview
+              div.form-section
+                h4
+                  | Insert Image
+                div
+                  label Insert Image
 
-          tab(heading="Test" disable="false")
-            div.edit-template-design
-              text-angular-toolbar(name="testToolbar01" ta-toolbar="[['bold','italics','underline'],['ul','ol','test','macroTool']]")

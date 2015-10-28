@@ -14,18 +14,27 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $log.debug templateStyle
   # $scope.caret = 
   #template = rmapsMailTemplateService($scope.$parent.templateType)
-  
-  templateObj = rmapsMailTemplate($scope.$parent.templateType)
-  # $log.debug "#### templateObj.content:"
-  # $log.debug templateObj.content
-  # $log.debug "#### templateObj.style:"
-  # $log.debug templateObj.style
-  $log.debug "textAngularManager:"
-  $log.debug textAngularManager
+  # $timeout () ->
+  $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
+  # rmapsMailTemplate.setTemplateType($scope.$parent.templateType)
+  # .then (templateObj) ->
+  #   $scope.templateObj = templateObj
+  #   $log.debug "#### $scope.templateObj:"
+  #   $log.debug $scope.templateObj
+
+  # $log.debug "#### $scope.templateObj.content:"
+  # $log.debug $scope.templateObj.content
+  # $log.debug "#### $scope.templateObj.style:"
+  # $log.debug $scope.templateObj.style
+  # $log.debug "textAngularManager:"
+  # $log.debug textAngularManager
   editor = {}
   $timeout () ->
-    $log.debug "#### taTools:"
-    $log.debug taTools
+    # $log.debug "#### rmapsMailTemplate:"
+    # $log.debug rmapsMailTemplate
+    # $scope.templateObj = rmapsMailTemplate($scope.$parent.templateType)
+    # $log.debug "#### templateObj:"
+    # $log.debug $scope.templateObj
     editor = textAngularManager.retrieveEditor('wysiwyg')
     $log.debug "#### editor:"
     $log.debug editor
@@ -33,12 +42,12 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     editor.scope.$on 'rmaps-drag-end', (e, opts) ->
       editor.editorFunctions.focus()
       # editor.triggerElementSelect(e, )
-      console.log "#### EDITOR rmaps-drag-end, e:"
-      console.log e
-      console.log "#### EDITOR rmaps-drag-end, opts:"
-      console.log opts
-      console.log "#### EDITOR rmaps-drag-end, $scope.macro:"
-      console.log $scope.macro
+      # $log.debug "#### EDITOR rmaps-drag-end, e:"
+      # $log.debug e
+      # $log.debug "#### EDITOR rmaps-drag-end, opts:"
+      # $log.debug opts
+      # $log.debug "#### EDITOR rmaps-drag-end, $scope.macro:"
+      # $log.debug $scope.macro
 
 
       sel = $window.getSelection()
@@ -73,10 +82,10 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       range.collapse true
       sel = rangy.getSelection()
       sel.setSingleRange range
-      $log.debug "range:"
-      $log.debug range
-      $log.debug "this sel:"
-      $log.debug sel
+      # $log.debug "range:"
+      # $log.debug range
+      # $log.debug "this sel:"
+      # $log.debug sel
       el = angular.element "<span class='macro-display'>#{$scope.macro}</span>"
       range.insertNode el[0]
 
@@ -88,7 +97,9 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   #   if !offset?
 
 
-
+  $scope.sendLetter = () ->
+    $log.debug "sendLetter()"
+    $scope.templateObj.send()
 
 
     # editor.scope.$on 'rmaps-drag-end', (e) ->
@@ -133,7 +144,7 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       # arg1[0].ondragend = $scope.eventMacro('ondragend')
       # arg1[0].ondrag = $scope.eventMacro('ondrag')
       # arg1[0].onclick = $scope.eventMacro('onclick')
-      arg1[0].ondragover = $scope.eventMacro('ondragover')
+      arg1[0].ondragover = $scope.eventMacro('ondragover') # updates mouse coords for macro placement in window
       # arg1[0].ondrop = $scope.eventMacro('ondrop')
       # arg1[0].onmouseup = $scope.eventMacro('onmouseup')
       # arg1[0].ondragend (e) ->
@@ -166,50 +177,21 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $timeout () ->
   #   editorScope.displayElements.text.trigger 'focus'
 
-  $scope.getCursorPosition = () ->
-    sel = $window.getSelection()
-    $log.debug "getCursorPosition, sel:"
-    $log.debug sel
-    range = {}
-    if sel.getRangeAt && sel.rangeCount
-      return sel.getRangeAt(0)
-
-  # function getCursorPosition() {
-  #     var sel, range;
-  #     sel = window.getSelection();
-  #     if (sel.getRangeAt && sel.rangeCount) {
-  #         return sel.getRangeAt(0);
-  #     }
-  # }
-  $scope.insertTextAtPosition = (text, range) ->
-    $log.debug "insertTextAtPosition, text:"
-    $log.debug text
-    $log.debug "insertTextAtPosition, range:"
-    $log.debug range
-    range.insertNode(document.createTextNode(text))
 
   # function insertTextAtPosition(text, range) {
   #     range.insertNode(document.createTextNode(text));
   # }
 
-  $scope.mouseUpEvent = (e) ->
-    $log.debug "#### mouseUpEvent(), e:"
-    $log.debug e
-    sel = $window.getSelection()
-    $log.debug "#### mouseUpEvent, caret:"
-    $log.debug sel
-
-
   $rootScope.$on 'rmaps-drag-end', (e) ->
-    $log.debug "#### rmaps-drag-end, e:"
-    $log.debug e
+    # $log.debug "#### rmaps-drag-end, e:"
+    # $log.debug e
     editor.editorFunctions.focus()
     editor.scope.$broadcast 'rmaps-drag-end'
     sel = $window.getSelection()
-    $log.debug "#### rmaps-drag-end, caret:"
-    $log.debug sel
-    $log.debug "rangy:"
-    $log.debug rangy
+    # $log.debug "#### rmaps-drag-end, caret:"
+    # $log.debug sel
+    # $log.debug "rangy:"
+    # $log.debug rangy
 
   # $rootScope.$on 'mouseup', (e) ->
   #   console.log "#### mouseup, e:"
@@ -230,70 +212,63 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   $scope.isreadonly = () ->
     true
 
-  $scope.mailCampaign =
-    auth_user_id: 7
-    name: 'testCampaign'
-    count: 1
-    status: 'pending'
-    content: ''
-    project_id: 1
-
   $scope.saveContent = () ->
-    templateObj.content = $scope.mailCampaign.content
-    templateObj.save($scope.mailCampaign)
+    $scope.templateObj.save()
     #_createLobHtml
     # rmapsMailCampaignService.post()
     # .then (d) ->
     #   $log.debug "#### data sent, d:"
     #   $log.debug d
 
-  $scope.makeToolbar01 = (args) ->
-    $log.debug "making toolbar01..."
-    $log.debug "args:"
-    $log.debug args
-    return []
   # textAngularManager.registerToolbar({name: 'testToolbar01'})
   # textAngularManager.registerToolbar({name: 'testToolbar02'})
   $scope.data =
-    htmlcontent: templateObj.content
+    htmlcontent: $scope.templateObj.mailCampaign.content
 
   $scope.$watch 'data.htmlcontent', (newC, oldC) ->
+    # $scope.templateObj.content = newC
     # $log.debug "watch, newC:"
     # $log.debug newC
     # $log.debug "watch, oldC:"
     # $log.debug oldC
     sel = rangy.getSelection()
-    $log.debug "sel:"
-    $log.debug sel
+    # $log.debug "sel:"
+    # $log.debug sel
 
-
-
+    # process existing or typed macros (UNFINISHED)
     if /.*?{{.*?}}.*?/.test(newC)
 
       i1 = newC.indexOf '{{'
       i2 = newC.indexOf '}}'
       # $log.debug "#### newC:"
       # $log.debug newC
-      $log.debug "i1, i2:"
-      $log.debug "#{i1}, #{i2}"
+      # $log.debug "i1, i2:"
+      # $log.debug "#{i1}, #{i2}"
 
+    # if a macro-display element exists (which means it used to be valid macro) but 
+    # is not among valid macros anymore (because that means it's being deleted), remove it completely
     if sel?.focusNode?.data? && /macro-display/.test(sel.focusNode.parentNode.className) && not _.contains(_.map($scope.macros), sel.focusNode.data)
-      $log.debug "#### DNE!"
+      # $log.debug "#### DNE!"
       parent = sel.focusNode.parentNode
-      $log.debug "#### parent:"
-      $log.debug parent
+      # $log.debug "#### parent:"
+      # $log.debug parent
       parent.remove()
       # $timeout () ->
         # sel.refresh()
         # $scope.$apply()
+
+      #### reconnect text nodes?
+
+    # refresh content on $scope.templateObj
+    $scope.templateObj.mailCampaign.content = $scope.data.htmlcontent
 
 
   $scope.applyTemplateClass = () ->
     "#{$scope.$parent.templateType}-body"
 
   $scope.doPreview = () ->
-    templateObj.content = $scope.data.htmlcontent
-    templateObj.openPreview()
+    # $scope.templateObj.content = $scope.data.htmlcontent
+    $scope.templateObj.openPreview()
 
   # $scope.preview = () ->
   #   $log.debug "#### preview()"
@@ -368,23 +343,23 @@ app.config ($provide) ->
     #     console.log "fontSize10"
     #     console.log el
 
-    macros = rmapsMainOptions.mail.macros
-    taRegisterTool 'macroTool',
-      buttontext: "macro-tool",
-      class: "btn btn-white",
-      display: "<label> macro-tool"
-      action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
-        classApplier = rangy.createClassApplier 'macro-display',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        # console.log "#### macro-tool, el[0].innerText:"
-        # console.log el[0].innerText
-        # console.log "#### macro-tool, _.map(macros):"
-        # console.log _.map(macros)
-        return _.contains(_.map(macros), el[0].innerText)
+    # macros = rmapsMainOptions.mail.macros
+    # taRegisterTool 'macroTool',
+    #   buttontext: "macro-tool",
+    #   class: "btn btn-white",
+    #   display: "<label> macro-tool"
+    #   action: () ->
+    #     # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
+    #     classApplier = rangy.createClassApplier 'macro-display',
+    #       tagNames: ["*"],
+    #       normalize: true
+    #     classApplier.toggleSelection()
+    #   activeState: (el) ->
+    #     # console.log "#### macro-tool, el[0].innerText:"
+    #     # console.log el[0].innerText
+    #     # console.log "#### macro-tool, _.map(macros):"
+    #     # console.log _.map(macros)
+    #     return _.contains(_.map(macros), el[0].innerText)
 
 
     taRegisterTool 'fontSize10',
@@ -532,9 +507,6 @@ app.config ($provide) ->
       activeState: (el) ->
         node = el[0]
         while not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
-          # console.log "textBlack node:"
-          # console.log node
-
           if node.attributes.style?.textContent? && /color: black/.test(node.attributes.style.textContent)
             return true
           node = node.parentNode

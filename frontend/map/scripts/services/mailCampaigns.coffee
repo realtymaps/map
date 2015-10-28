@@ -1,24 +1,3 @@
-# app = require '../app.coffee'
-# backendRoutes = require '../../../../common/config/routes.backend.coffee'
-
-# app.service 'rmapsMailCampaignService', [ '$log', '$', ($log, Restangular) ->
-
-#   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
-
-#   getMailCampaigns = (params = {}) ->
-#     Restangular.all(mailAPI).getList(params)
-
-#   getMailCampaign = (id) ->
-#     Restangular.all(mailAPI).one(id).get()
-
-#   postMailCampaign = (id, data) ->
-#     Restangular.all(mlsConfigAPI).one(id).customPUT(data)
-
-
-
-
-
-
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
