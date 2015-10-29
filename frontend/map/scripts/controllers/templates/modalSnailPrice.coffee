@@ -54,7 +54,7 @@ app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $locati
   
   $scope.send = () ->
     $scope.modalControl.status = $scope.statuses.sending
-    handlePost(backendRoutes.snail.send, _.extend(rm_property_id: $scope.data.property.rm_property_id, $scope.form), alerts:false)
+    handlePost(backendRoutes.snail.send, $scope.lobData, alerts:false)
     .success () ->
       $scope.modalControl.status = $scope.statuses.sent
   

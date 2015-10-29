@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-
+logger = require './logger'
 module.exports = {}
 
 
@@ -56,12 +56,15 @@ rimraf.async = Promise.promisify(rimraf)
 
 # a function to properly promisify an instantiated Lob object, since we can't promisify the module
 module.exports.lob = (Lob) ->
+  logger.debug "#### promisify Lob ####"
   for name,submodule of Lob
     if typeof(submodule) != 'object'
       continue
+    logger.debug "#{name}"
     for key,val of submodule
       if typeof(val) != 'function'
         continue
+      logger.debug "\t#{key}"
       submodule[key+'Async'] = Promise.promisify(val, submodule)
 
 

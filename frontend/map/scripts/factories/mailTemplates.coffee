@@ -27,6 +27,8 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
       @defaultContent = defaultHtml[@type]
       @defaultFinalStyle = defaultFinalStyle[@type]
       @style = @defaultFinalStyle
+      @user =
+        userID: null
       @mailCampaign =
         auth_user_id: 7
         name: 'New Mailing'
@@ -36,16 +38,17 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
         project_id: 1
       rmapsprincipal.getIdentity()
       .then (identity) =>
+        @user.userId = identity.user.id
+        # should be populated from identity
         @senderData =
-          userId: identity.user.id
-          name: "Realtor's Name"
-          address_line1: 'Real Estate Brokerage'
-          address_line2: "Realtor's Street Address"
-          address_city: "Realtor's City"
-          address_state: 'ST'
-          address_zip: 'Zipcode'
-          phone: "Realtor's Phone Number"
-          email: "Realtor's Email Address"
+          name: "Justin Taylor"
+          address_line1: '2000 Bashford Manor Ln'
+          address_line2: ''
+          address_city: "Louisville"
+          address_state: 'KY'
+          address_zip: '40218'
+          phone: "502-293-8000"
+          email: "justin@realtymaps.com"
 
 
       @recipientData =
