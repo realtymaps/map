@@ -1,7 +1,11 @@
 app = require '../app.coffee'
 basicLetterHtml = require '../../html/includes/mail/basic-letter-template.jade'
 basicLetterFinalStyle = require '../../styles/mailTemplates/basic-letter-lob.styl'
+modalTemplate = require('../../html/views/templates/modal-snailPrice.tpl.jade')()
 #basicLetterTemplateStyle = require '../../styles/mailTemplates/basic-letter-final.styl'
+
+console.log "#### modalTemplate:"
+console.log modalTemplate
 
 defaultHtml =
   'basicLetter': basicLetterHtml()
@@ -13,7 +17,7 @@ defaultFinalStyle =
 #   'basicLetter': basicLetterTemplateStyle
 
 
-app.factory 'rmapsMailTemplate', ($window, $log, $timeout, $q, rmapsMailCampaignService) ->
+app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService, rmapsprincipal) ->
   class MailTemplate
     constructor: (@type) ->
       $log.debug "#### what is @?"
@@ -30,6 +34,33 @@ app.factory 'rmapsMailTemplate', ($window, $log, $timeout, $q, rmapsMailCampaign
         status: 'pending'
         content: @defaultContent
         project_id: 1
+      rmapsprincipal.getIdentity()
+      .then (identity) =>
+        @senderData =
+          userId: identity.user.id
+          name: "Realtor's Name"
+          address_line1: 'Real Estate Brokerage'
+          address_line2: "Realtor's Street Address"
+          address_city: "Realtor's City"
+          address_state: 'ST'
+          address_zip: 'Zipcode'
+          phone: "Realtor's Phone Number"
+          email: "Realtor's Email Address"
+
+
+      @recipientData =
+        property:
+          rm_property_id = ''
+        recipient:
+          name: 'Dan Sexton'
+          address_line1: 'Paradise Realty of Naples'
+          address_line2: '201 Goodlette Rd S'
+          address_city: 'Naples'
+          address_state: 'FL'
+          address_zip: '34102'
+          phone: '(239) 877-7853'
+          email: 'dan@mangrovebaynaples.com'
+
       $log.debug "#### returning @:"
       $log.debug @
 
@@ -51,8 +82,31 @@ app.factory 'rmapsMailTemplate', ($window, $log, $timeout, $q, rmapsMailCampaign
         $log.debug "#### data sent, d:"
         $log.debug d
 
-    send: () =>
-      $log.debug "#### send!!!!!"
+    quote: () =>
+      $log.debug "\n\n#### quote:"
+      rmapsprincipal.getIdentity()
+      .then (identity) ->
+        $log.debug "#### rmapsprincipal"
+        $log.debug identity
+      $log.debug "#### price quote"
+
+      $rootScope.lobData =
+        content: @mailCampaign.content
+        macros: {'name': 'Justin'}
+        recipient: @recipientData.recipient
+        sender: @senderData
+      $rootScope.modalControl = {}
+      $log.debug "#### body data:"
+      $log.debug $rootScope.lobData
+      $modal.open
+        # templateUrl: 'modal-snailPrice.tpl.html'
+        template: modalTemplate
+        controller: 'rmapsModalSnailPriceCtrl'
+        scope: $rootScope
+        keyboard: false
+        backdrop: 'static'
+        windowClass: 'snail-modal'
+
 
   # blankTemplate =
   #   mailCampaign:

@@ -1,4 +1,5 @@
 Promise = require 'bluebird'
+logger = require '../config/logger'
 ExpressResponse = require '../utils/util.expressResponse'
 commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
@@ -59,9 +60,14 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      getPropertyData(req.body.rm_property_id)
-      .then (property) ->
-        lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      logger.debug "#### quote handle, req.body:"
+      logger.debug req.body
+      logger.debug "#### quote handle, req.user:"
+      logger.debug req.user
+
+      # getPropertyData(req.body.rm_property_id)
+      # .then (property) ->
+      lobService.getPriceQuote req.user.id, req.body
       .then (price) ->
         new ExpressResponse(price: price)
       .catch generateErrorHandler('get a price quote for that mailing')

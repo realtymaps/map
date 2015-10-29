@@ -6,10 +6,9 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
 createRoute = (routeId, moduleId, backendRoutes, options) ->
-  logger.debug "moduleId: #{moduleId}"
-  logger.debug "routeId: #{routeId}"
-  logger.debug "options: #{_.keys options}"
-  logger.debug "backendRoutes: #{backendRoutes[moduleId]}"
+  # logger.debug "moduleId: #{moduleId}"
+  # logger.debug "routeId: #{routeId}"
+  # logger.debug "options: #{_.keys options}"
   route =
     moduleId: moduleId
     routeId: routeId
@@ -21,7 +20,6 @@ createRoute = (routeId, moduleId, backendRoutes, options) ->
   if route.path and not route.handle
     throw new Error "route: #{moduleId}.#{routeId} has no handle"
   if route.handle and not route.path
-
     throw new Error "route: #{moduleId}.#{routeId} has no path"
   if not route.handle and not route.path
     throw new Error "route: #{moduleId}.#{routeId} has no handle or path"

@@ -22,32 +22,50 @@ fileDisposer = (filename) ->
   .then () ->
     logger.debug "deleted pdf file: #{filename}"
 
-createNewPdfObject = (Lob, userId, templateId, data) -> Promise.try () ->
-  Promise.using renderPdfFile.toFile(templateId, data, partialId: userId).disposer(fileDisposer),
-  (filename) ->
-    logger.debug "created pdf file: #{filename}"
-    Lob.objects.createAsync
-      file: "@#{filename}"
-      setting: 100
-      template: renderPdfFile.getLobTemplateId(templateId)
+createNewLobObject = (Lob, userId, data) -> Promise.try () ->
+  lobInit = 
+    description: 'Realty Maps Mailing'
+    file: data.content
+    data: data.macros
+    to: data.recipient
+    from: data.sender
+    color: false
+  logger.debug "#### creating letter from data:"
+  logger.debug JSON.stringify(lobInit)
+  logger.debug "#### lob letters:"
+  logger.debug JSON.stringify(Lob.letters)
+  logger.debug "#### Lob keys:"
+  logger.debug Object.keys(Lob)
+  logger.debug "#### Lob.jobs keys:"
+  logger.debug Object.keys(Lob.jobs)
+  logger.debug "#### Lob.objects keys:"
+  logger.debug Object.keys(Lob.objects)
+  logger.debug "#### Lob.addresses keys:"
+  logger.debug Object.keys(Lob.addresses)
+  logger.debug "#### Lob.letters keys:"
+  logger.debug "N/A"
+
+  # Lob.objects.createAsync(lobInit)
+  # Lob.letters.createAsync(lobInit)
+  Lob.objects.create(lobInit)
   .then (lobResponse) ->
     logger.debug "created #{Lob.rm_type} LOB object: #{JSON.stringify(lobResponse, null, 2)}"
     lobResponse.id
 
-sendJob = (Lob, userId, templateId, data) -> Promise.try () ->
-  createNewPdfObject(Lob, userId, templateId, data)
+sendJob = (Lob, userId, data) -> Promise.try () ->
+  createNewLobObject(Lob, userId, data)
   .then (objectId) ->
     Lob.jobs.createAsync
-      to: data.to
-      from: data.from
+      to: data.recipient
+      from: data.sender
       object1: objectId
   .then (lobResponse) ->
     logger.debug "created #{Lob.rm_type} LOB job: #{JSON.stringify(lobResponse, null, 2)}"
     lobResponse
 
 module.exports =
-  getPriceQuote: (userId, templateId, data) -> Promise.try () ->
-    sendJob(testLob, userId, templateId, data)
+  getPriceQuote: (userId, data) -> Promise.try () ->
+    sendJob(testLob, userId, data)
     .then (lobResponse) ->
       lobResponse.price
-  sendSnailMail: (userId, templateId, data) -> sendJob(liveLob, userId, templateId, data)
+  sendSnailMail: (userId, templateId, data) -> sendJob(liveLob, userId, data)

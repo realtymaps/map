@@ -15,6 +15,8 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   # $scope.caret = 
   #template = rmapsMailTemplateService($scope.$parent.templateType)
   # $timeout () ->
+
+  # might move this object to the mailWizard (parent) scope to encapsulate the option choices throughout wizard steps
   $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
   # rmapsMailTemplate.setTemplateType($scope.$parent.templateType)
   # .then (templateObj) ->
@@ -97,9 +99,9 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   #   if !offset?
 
 
-  $scope.sendLetter = () ->
-    $log.debug "sendLetter()"
-    $scope.templateObj.send()
+  $scope.quoteAndSend = () ->
+    $log.debug "quoteAndSend()"
+    $scope.templateObj.quote()
 
 
     # editor.scope.$on 'rmaps-drag-end', (e) ->
