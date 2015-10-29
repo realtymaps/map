@@ -1,4 +1,5 @@
-.mobile-page(ng-class="{' ':!isOn,'on':isOn}" ng-controller="MobilePageCtrl")
+.mobile-page(ng-class="{' ':!isOn,'on':isOn}" ng-controller="MobilePageCtrl"
+ng-click="maybeToggleOn($event);")
   include ../includes/_header
   block content
 include ../includes/_mobilenavigation
