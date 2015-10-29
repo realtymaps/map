@@ -78,9 +78,9 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      getPropertyData(req.body.rm_property_id)
-      .then (property) ->
-        lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      # getPropertyData(req.body.rm_property_id)
+      # .then (property) ->
+      lobService.sendSnailMail req.user.id, req.body
       .then () ->
         new ExpressResponse({})
       .catch generateErrorHandler('send your mailing')
