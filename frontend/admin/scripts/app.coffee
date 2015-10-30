@@ -10,8 +10,6 @@ app = window.angular.module appName, [
   'rmapsCommon'
   'nemLogging'
   'angular-data.DSCacheFactory'
-  'leaflet-directive'
-  'uiGmapgoogle-maps'
   'rmaps-utils'
   'ngCookies'
   'ngResource'
