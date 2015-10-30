@@ -1,3 +1,2 @@
-#burgericon
-    div(ng-click="toggleIsOn($event)" ng-class="{'inner burger ':!isOn,'inner burger on':isOn}")
-        span
+a(id="burgericon")
+    i(class="fa fa-bars fa-2x" ng-class="{'on':isOn}" ng-click="toggleIsOn($event)")

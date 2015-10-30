@@ -1,8 +1,12 @@
 include mixins/_avatarMixin.jade
 
-#mobile-nav
+#mobile-nav(ng-show="isOn")
     .inner
         include ./header/_logo
+
+        a(id="closeicon")
+            i(class="fa fa-times fa-2x" ng-class="{'on':isOn}" ng-click="toggleIsOn($event)")
+
         ul.nav(ng-click="toggleIsOn()")
             li
                 a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
