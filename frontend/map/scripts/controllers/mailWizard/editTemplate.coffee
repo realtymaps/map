@@ -4,66 +4,18 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
-  #templateHtml = require "../../../html/includes/mail/#{$scope.$parent.templateName}-template.jade"
-  # templateHtml = require '../../../html/includes/mail/basic-letter-template.jade'
-  # templatePath = '../../../html/includes/mail/basic-letter-template.jade'
-  # templateHtml = require templatePath
-  # $log.debug "#### templateHtml:"
-  # $log.debug templateHtml()
-  # $log.debug "#### templateStyle:"
-  # $log.debug templateStyle
-  # $scope.caret = 
-  #template = rmapsMailTemplateService($scope.$parent.templateType)
-  # $timeout () ->
 
   # might move this object to the mailWizard (parent) scope to encapsulate the option choices throughout wizard steps
   $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
-  # rmapsMailTemplate.setTemplateType($scope.$parent.templateType)
-  # .then (templateObj) ->
-  #   $scope.templateObj = templateObj
-  #   $log.debug "#### $scope.templateObj:"
-  #   $log.debug $scope.templateObj
 
-  # $log.debug "#### $scope.templateObj.content:"
-  # $log.debug $scope.templateObj.content
-  # $log.debug "#### $scope.templateObj.style:"
-  # $log.debug $scope.templateObj.style
-  # $log.debug "textAngularManager:"
-  # $log.debug textAngularManager
   editor = {}
   $timeout () ->
-    # $log.debug "#### rmapsMailTemplate:"
-    # $log.debug rmapsMailTemplate
-    # $scope.templateObj = rmapsMailTemplate($scope.$parent.templateType)
-    # $log.debug "#### templateObj:"
-    # $log.debug $scope.templateObj
     editor = textAngularManager.retrieveEditor('wysiwyg')
-    $log.debug "#### editor:"
-    $log.debug editor
     editor.editorFunctions.focus()
     editor.scope.$on 'rmaps-drag-end', (e, opts) ->
-      editor.editorFunctions.focus()
-      # editor.triggerElementSelect(e, )
-      # $log.debug "#### EDITOR rmaps-drag-end, e:"
-      # $log.debug e
-      # $log.debug "#### EDITOR rmaps-drag-end, opts:"
-      # $log.debug opts
-      # $log.debug "#### EDITOR rmaps-drag-end, $scope.macro:"
-      # $log.debug $scope.macro
-
-
       sel = $window.getSelection()
-      # console.log "#### EDITOR rmaps-drag-end, sel:"
-      # console.log sel
-      # console.log "#### EDITOR rmaps-drag-end, event targetScope:"
-      # console.log e.targetScope.displayElements.text[0]
       e.targetScope.displayElements.text[0].focus()
-      # $log.debug "mousex:"
-      # $log.debug $scope.mousex
-      # $log.debug "mousey:"
-      # $log.debug $scope.mousey
-      # $log.debug "$document:"
-      # $log.debug $document[0]
+
       # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
       if $document[0].caretPositionFromPoint
         range = $document[0].caretPositionFromPoint $scope.mousex, $scope.mousey
@@ -84,34 +36,11 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       range.collapse true
       sel = rangy.getSelection()
       sel.setSingleRange range
-      # $log.debug "range:"
-      # $log.debug range
-      # $log.debug "this sel:"
-      # $log.debug sel
       el = angular.element "<span class='macro-display'>#{$scope.macro}</span>"
       range.insertNode el[0]
 
-      #editor.scope.wrapSelection('insertHTML', " #{$scope.macro} ")
-
-      #range.insertNode( $document.createTextNode("ABUNCHTEXT") )
-
-  # $scope.insertMacroCode = (textNode, offset) ->
-  #   if !offset?
-
-
   $scope.quoteAndSend = () ->
-    $log.debug "quoteAndSend()"
     $scope.templateObj.quote()
-
-
-    # editor.scope.$on 'rmaps-drag-end', (e) ->
-    #   console.log "#### EDITOR rmaps-drag-end, e:"
-    #   console.log e
-    #   sel = $window.getSelection()
-    #   console.log "#### EDITOR rmaps-drag-end, sel:"
-    #   console.log sel
-  $scope.mousex
-  $scope.mousey
 
   $scope.setMacro = (macro) ->
     $log.debug "setMacro(), macro:"
@@ -127,115 +56,50 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     (e) ->
       $scope.mousex = e.clientX
       $scope.mousey = e.clientY
-      # $log.debug "#### eventMacro(), type:"
-      # $log.debug type
-      # $log.debug "#### eventMacro()"
-      # $log.debug "#### e:"
-      # $log.debug e
-      # editor.editorFunctions.focus()
-      # sel = $window.getSelection()
-      # console.log "#### eventMacro() , sel:"
-      # console.log sel
-
 
   $scope.textEditorSetup = () ->
-    $log.debug "textEditorSetup"
-    (arg1) ->
-      $log.debug "textEditorSetup operation, arg1:"
-      $log.debug arg1
-      # arg1[0].ondragend = $scope.eventMacro('ondragend')
-      # arg1[0].ondrag = $scope.eventMacro('ondrag')
-      # arg1[0].onclick = $scope.eventMacro('onclick')
-      arg1[0].ondragover = $scope.eventMacro('ondragover') # updates mouse coords for macro placement in window
-      # arg1[0].ondrop = $scope.eventMacro('ondrop')
-      # arg1[0].onmouseup = $scope.eventMacro('onmouseup')
-      # arg1[0].ondragend (e) ->
-      # # arg1[0].addEventListener 'rmaps-drag-end', (e) ->
-      #   $log.debug "#### textEditorSetup drag-end, e:"
-      #   $log.debug e
+    (el) ->
+      $log.debug "textEditorSetup operation, el:"
+      $log.debug el
+      # el[0].ondragend = $scope.eventMacro('ondragend')
+      # el[0].ondrag = $scope.eventMacro('ondrag')
+      # el[0].onclick = $scope.eventMacro('onclick')
+      el[0].ondragover = $scope.eventMacro('ondragover') # updates mouse coords for macro placement in window
+      # el[0].ondrop = $scope.eventMacro('ondrop')
+      # el[0].onmouseup = $scope.eventMacro('onmouseup')
 
 
   $scope.htmlEditorSetup = () ->
-    $log.debug "htmlEditorSetup"
-    (arg1) ->
-      $log.debug "htmlEditorSetup operation, arg1:"
-      $log.debug arg1
-      # arg1[0].ondragend = $scope.eventMacro('ondragend')
-      # arg1[0].ondrag = $scope.eventMacro('ondrag')
-      # arg1[0].onclick = $scope.eventMacro('onclick')
-      # arg1[0].ondragover = $scope.eventMacro('ondragover')
-      # arg1[0].ondrop = $scope.eventMacro('ondrop')
-      # arg1[0].onmouseup = $scope.eventMacro('onmouseup')
-      # arg1[0].ondragend (e) ->
-      # # arg1[0].addEventListener 'rmaps-drag-end', (e) ->
-      #   $log.debug "#### textEditorSetup drag-end, e:"
-      #   $log.debug e
-    
+    (el) ->
+      $log.debug "htmlEditorSetup operation, el:"
+      $log.debug el
+      # el[0].ondragend = $scope.eventMacro('ondragend')
+      # el[0].ondrag = $scope.eventMacro('ondrag')
+      # el[0].onclick = $scope.eventMacro('onclick')
+      # el[0].ondragover = $scope.eventMacro('ondragover')
+      # el[0].ondrop = $scope.eventMacro('ondrop')
+      # el[0].onmouseup = $scope.eventMacro('onmouseup')
 
-  # editorScope = textAngularManager.retrieveEditor('wysiwyg').scope
-
-  # console.log "#### editorScope:"
-  # console.log editorScope
-  # $timeout () ->
-  #   editorScope.displayElements.text.trigger 'focus'
-
-
-  # function insertTextAtPosition(text, range) {
-  #     range.insertNode(document.createTextNode(text));
-  # }
 
   $rootScope.$on 'rmaps-drag-end', (e) ->
-    # $log.debug "#### rmaps-drag-end, e:"
-    # $log.debug e
     editor.editorFunctions.focus()
+    # percolate drag end event down so the editor hears it
     editor.scope.$broadcast 'rmaps-drag-end'
-    sel = $window.getSelection()
-    # $log.debug "#### rmaps-drag-end, caret:"
-    # $log.debug sel
-    # $log.debug "rangy:"
-    # $log.debug rangy
-
-  # $rootScope.$on 'mouseup', (e) ->
-  #   console.log "#### mouseup, e:"
-  #   console.log e
-  #   sel = $window.getSelection()
-  #   $log.debug "#### sel:"
-  #   $log.debug sel
 
   $scope.macros =
     rmapsMainOptions.mail.macros
 
   $scope.macro = ""
 
-  $scope.focusMe = (scope) ->
-    $log.debug "#### focusMe(), scope:"
-    $log.debug scope
-
-  $scope.isreadonly = () ->
-    true
-
   $scope.saveContent = () ->
     $scope.templateObj.save()
-    #_createLobHtml
-    # rmapsMailCampaignService.post()
-    # .then (d) ->
-    #   $log.debug "#### data sent, d:"
-    #   $log.debug d
 
-  # textAngularManager.registerToolbar({name: 'testToolbar01'})
-  # textAngularManager.registerToolbar({name: 'testToolbar02'})
   $scope.data =
     htmlcontent: $scope.templateObj.mailCampaign.content
 
+  # intercept html changes for updating things like removing macros, as well as save html data back to templateObj
   $scope.$watch 'data.htmlcontent', (newC, oldC) ->
-    # $scope.templateObj.content = newC
-    # $log.debug "watch, newC:"
-    # $log.debug newC
-    # $log.debug "watch, oldC:"
-    # $log.debug oldC
     sel = rangy.getSelection()
-    # $log.debug "sel:"
-    # $log.debug sel
 
     # process existing or typed macros (UNFINISHED)
     if /.*?{{.*?}}.*?/.test(newC)
@@ -250,71 +114,34 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     # if a macro-display element exists (which means it used to be valid macro) but 
     # is not among valid macros anymore (because that means it's being deleted), remove it completely
     if sel?.focusNode?.data? && /macro-display/.test(sel.focusNode.parentNode.className) && not _.contains(_.map($scope.macros), sel.focusNode.data)
-      # $log.debug "#### DNE!"
       parent = sel.focusNode.parentNode
-      # $log.debug "#### parent:"
-      # $log.debug parent
       parent.remove()
-      # $timeout () ->
-        # sel.refresh()
-        # $scope.$apply()
-
-      #### reconnect text nodes?
+      #### reconnect text nodes (sometimes they appear disjoint in the markup)?
 
     # refresh content on $scope.templateObj
     $scope.templateObj.mailCampaign.content = $scope.data.htmlcontent
-
 
   $scope.applyTemplateClass = () ->
     "#{$scope.$parent.templateType}-body"
 
   $scope.doPreview = () ->
-    # $scope.templateObj.content = $scope.data.htmlcontent
     $scope.templateObj.openPreview()
 
-  # $scope.preview = () ->
-  #   $log.debug "#### preview()"
-  #   preview = $window.open "", "_blank"
-  #   preview.document.write "<html><body>#{$scope.data.htmlcontent}</body></html>"
-
 app.config ($provide) ->
-  $provide.decorator 'taTools', ['$delegate', (taTools) ->
-    console.debug "taTools:"
-    console.debug taTools
-    # taTools.undo.iconclass = ''
-    # taTools.undo.buttontext = 'Undo'
-    # taTools.undo =
-    #   iconclass: ''
-    #   buttontext: 'Undo'
-
+  $provide.decorator 'taTools', ['$log', '$delegate', ($log, taTools) ->
+    $log.debug "taTools:"
+    $log.debug taTools
     return taTools
   ]
 
 app.config ($provide) ->
-  $provide.decorator 'taOptions', ['$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', 'rmapsMainOptions',
-  ($document, taRegisterTool, taOptions, $timeout, textAngularManager, rmapsMainOptions) ->
-    console.log "document:"
-    console.log $document
+  $provide.decorator 'taOptions', ['$log', '$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', 'rmapsMainOptions',
+  ($log, $document, taRegisterTool, taOptions, $timeout, textAngularManager, rmapsMainOptions) ->
+
+    # helps HTML5 compatibility, which uses css instead of deprecated tags like <font>
     $document[0].execCommand('styleWithCSS', false, true)
-    # taOptions.toolbar = [
-    #   ['bold', 'italics', 'underline'],
-    #   ['ul', 'ol']
-    # ]
-    console.debug "#### taOptions"
-    taRegisterTool 'test',
-      buttontext: 'Test',
-      action: () ->
-        console.debug "$editor:"
-        console.debug this.$editor()
-        #this.$editor().
-        alert 'Test Pressed'
 
-
-
-    # taOptions.classes =
-    #   toolbar: ''
-    # taOptions.toolbar[0].push 'test'
-
+    # looping like this doesn't work, i get 6 options for "white" instead.. some kind of reference issue since it leaves off with white
     # for color in [['Black','#000000'],['Blue','#0000ff'],['Green','#00ff00'],['Red', '#ff0000'],['Yellow','#ffff00'],['White','#ffffff']]
     #   console.log color
     #   taRegisterTool "text#{color[0]}",
@@ -327,49 +154,11 @@ app.config ($provide) ->
     #     activeState: (el) ->
     #       return el[0].color == "#{color[1]}"
 
-
-# .fontSize10
-#   font-size (10px / $scale-factor)
-
-    # taRegisterTool 'undo',
-    #   buttontext: "10pt",
-    #   class: "btn btn-white",
-    #   display: "<label> 10pt"
-    #   action: () ->
-    #     # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
-    #     classApplier = rangy.createClassApplier 'fontSize10',
-    #       tagNames: ["*"],
-    #       normalize: true
-    #     classApplier.toggleSelection()
-    #   activeState: (el) ->
-    #     console.log "fontSize10"
-    #     console.log el
-
-    # macros = rmapsMainOptions.mail.macros
-    # taRegisterTool 'macroTool',
-    #   buttontext: "macro-tool",
-    #   class: "btn btn-white",
-    #   display: "<label> macro-tool"
-    #   action: () ->
-    #     # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
-    #     classApplier = rangy.createClassApplier 'macro-display',
-    #       tagNames: ["*"],
-    #       normalize: true
-    #     classApplier.toggleSelection()
-    #   activeState: (el) ->
-    #     # console.log "#### macro-tool, el[0].innerText:"
-    #     # console.log el[0].innerText
-    #     # console.log "#### macro-tool, _.map(macros):"
-    #     # console.log _.map(macros)
-    #     return _.contains(_.map(macros), el[0].innerText)
-
-
     taRegisterTool 'fontSize10',
       buttontext: "10pt",
       class: "btn btn-white",
       display: "<label> 10pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
         classApplier = rangy.createClassApplier 'fontSize10',
           tagNames: ["*"],
           normalize: true
@@ -382,7 +171,6 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 12pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
         classApplier = rangy.createClassApplier 'fontSize12',
           tagNames: ["*"],
           normalize: true
@@ -395,7 +183,6 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 13pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
         classApplier = rangy.createClassApplier 'fontSize13',
           tagNames: ["*"],
           normalize: true
@@ -408,7 +195,6 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 14pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
         classApplier = rangy.createClassApplier 'fontSize14',
           tagNames: ["*"],
           normalize: true
@@ -421,7 +207,6 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 16pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
         classApplier = rangy.createClassApplier 'fontSize16',
           tagNames: ["*"],
           normalize: true
@@ -434,14 +219,9 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 18pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
-        console.log "#### tool 'this':"
-        console.log this
         classApplier = rangy.createClassApplier 'fontSize18',
           tagNames: ["*"],
           normalize: true
-        console.log "#### classApplier:"
-        console.log classApplier
         classApplier.toggleSelection()
       activeState: (el) ->
         return el[0].className == "fontSize18"
@@ -451,14 +231,9 @@ app.config ($provide) ->
       class: "btn btn-white",
       display: "<label> 20pt"
       action: () ->
-        # this.$editor().wrapSelection('formatBlock', '<span class="fontSize10">');
-        console.log "#### tool 'this':"
-        console.log this
         classApplier = rangy.createClassApplier 'fontSize20',
           tagNames: ["*"],
           normalize: true
-        console.log "#### classApplier:"
-        console.log classApplier
         classApplier.toggleSelection()
       activeState: (el) ->
         return el[0].className == "fontSize20"
@@ -508,7 +283,7 @@ app.config ($provide) ->
         this.$editor().wrapSelection 'forecolor', 'black'
       activeState: (el) ->
         node = el[0]
-        while not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
+        while node.parentNode? and not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
           if node.attributes.style?.textContent? && /color: black/.test(node.attributes.style.textContent)
             return true
           node = node.parentNode
@@ -555,86 +330,6 @@ app.config ($provide) ->
       activeState: (el) ->
         return el[0].attributes.style?.textContent? && /color: white/.test(el[0].attributes.style.textContent)
 
-    # taRegisterTool 'undo',
-    #   iconclass: ""
-    #   buttontext: 'Undo'
-    #   class: 'btn btn-text'
-      # action: () ->
-      #   this.$editor().wrapSelection 'forecolor', 'white'
-      # activeState: (el) ->
-      #   return el[0].attributes.style?.textContent? && /color: white/.test(el[0].attributes.style.textContent)
-
-
-
-    # taRegisterTool 'specialBackspace',
-    #   buttontext: 'Special Backspace'
-    #   action: (a) ->
-    #     console.debug "#### specialBackspace action, a:"
-    #     console.debug a
-    #     console.debug "backspace action"
-    #   activeState: (el) ->
-    #     console.debug "backspace, el:"
-    #     console.debug el
-    #   commandKeyCode: "extendedBackspace"
-
-    # shouldBackspace = (element) ->
-    #   if 
-
-    # taOptions.keyMappings = [
-    #   commandKeyCode: "extendedBackspace"
-    #   testForKey: (event) ->
-    #     console.debug "#### backspace key test, event:"
-    #     console.debug event
-    #     editorScope = textAngularManager.retrieveEditor('wysiwyg').scope
-    #     console.log "#### editorScope:"
-    #     console.log editorScope
-
-    #     #if event.keyCode == 8
-          
-    #     return true
-
-    # ]
-    # taOptions.toolbar[1].push 'colourRed'
-
-    # taRegisterTool 'textBlue',
-    #   iconclass: "fa fa-square blue",
-    #   action: () ->
-    #     this.$editor().wrapSelection 'forecolor', 'blue'
-    # # taOptions.toolbar[1].push 'colourBlue'
-    # taOptions.setup.textEditorSetup = ($element) ->
-    #   console.log "#### element:"
-    #   console.log $element
-    #   $timeout -> $element.trigger('focus')
-    # textAngularManager.updateToolDisplay 'undo',
-    #   iconclass: ""
-    #   buttontext: "Undo"
-    #   display: "<label>"
-
-    # console.debug "taOptions:"
-    # console.debug taOptions
 
     return taOptions
   ]
-
-
-# app.config ($provide) ->
-
-# app.directive 'textAngular', ($parse, $timeout, textAngularManager) ->
-#   link: (scope, element, attributes) ->
-#     shouldFocus = $parse(attributes.focus)(scope)
-#     if !shouldFocus
-#       return
-#     $timeout () ->
-#       console.log "#### triggering focus"
-#       editorScope = textAngularManager.retrieveEditor(attributes.name).scope
-#       console.log "#### editorScope:"
-#       console.log editorScope
-#       editorScope.displayElements.text[0].trigger 'focus'
-#     , 0, false
-
-
-# app.config ($provide) ->
-#   $provide.decorator 'taOptions', ['taRegisterTool', '$delegate', (taRegisterTool, taOptions) ->
-#     console.debug "taOptions:"
-#     console.debug taOptions
-#   ]

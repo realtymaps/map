@@ -60,13 +60,6 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      logger.debug "#### quote handle, req.body:"
-      logger.debug req.body
-      logger.debug "#### quote handle, req.user:"
-      logger.debug req.user
-
-      # getPropertyData(req.body.rm_property_id)
-      # .then (property) ->
       lobService.getPriceQuote req.user.id, req.body
       .then (price) ->
         new ExpressResponse(price: price)
@@ -78,8 +71,6 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      # getPropertyData(req.body.rm_property_id)
-      # .then (property) ->
       lobService.sendSnailMail req.user.id, req.body
       .then () ->
         new ExpressResponse({})

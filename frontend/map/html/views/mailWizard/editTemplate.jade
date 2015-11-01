@@ -4,14 +4,6 @@
       div.col-md-6
         .row(style="text-align: center")
           .toolGroup
-
-            //- input.form-control.name-input.miscTool(ng-model="templateObj.mailCampaign.name")
-
-            //- text-angular-toolbar(name="miscToolbar" ta-toolbar-button-class="btn btn-text miscTool" ta-toolbar="[['redo','undo']]")
-
-            //- button.btn.btn-text.miscTool(ng-click="doPreview()") Preview
-            //- button.btn.btn-text.miscTool(ng-click="saveContent()") Save
-            //- button.btn.btn-text.miscTool(ng-click="sendLetter()") Send!            
             button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
             button.btn.btn-success.miscTool(ng-click="saveContent()") Save
             button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
@@ -22,10 +14,8 @@
         .row
           .template-stage-container
             .template-stage
-              //- .clear-template
-              //-   .template-view
               div.letter-editor(ng-class="applyTemplateClass()")
-                div(text-angular name="wysiwyg" ta-text-editor-class="ta-letter-wrapper" on-drop="macro" focus="focusMe" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
+                div(text-angular name="wysiwyg" ta-text-editor-class="ta-letter-wrapper" on-drop="macro" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
 
 
@@ -52,7 +42,7 @@
               div.form-section
                 h4
                   | Text Features
-                text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['bold','italics','underline'],['ul','ol','test']]")
+                text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
 
           tab(heading="Macros")
             div.edit-template-design
