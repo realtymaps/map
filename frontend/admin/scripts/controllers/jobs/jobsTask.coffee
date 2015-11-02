@@ -21,6 +21,7 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       displayName: 'Description'
       defaultValue: ''
       width: 300
+      cellClass: 'clickable-cell'
     ,
       field: 'data'
       displayName: 'Data'
@@ -29,42 +30,49 @@ app.controller 'rmapsJobsTaskCtrl', ($scope, $rootScope, $injector, Restangular,
       editableCellTemplate: require '../../../html/views/templates/jsonInput.jade'
       defaultValue: "{}"
       width: 250
+      cellClass: 'clickable-cell'
     ,
       field: 'ignore_until'
       displayName: 'Ignore Until'
       type: 'date'
       width: 125
       cellFilter: 'date:"MM/dd/yy HH:mm"'
+      cellClass: 'clickable-cell'
     ,
       field: 'repeat_period_minutes'
       displayName: 'Repeat min'
       type: 'number'
       defaultValue: 60
       width: 125
+      cellClass: 'clickable-cell'
     ,
       field: 'warn_timeout_minutes'
       displayName: 'Warn TO min'
       type: 'number'
       defaultValue: 5
       width: 125
+      cellClass: 'clickable-cell'
     ,
       field: 'kill_timeout_minutes'
       displayName: 'Kill TO min'
       type: 'number'
       defaultValue: 5
       width: 125
+      cellClass: 'clickable-cell'
     ,
       field: 'fail_retry_minutes'
       displayName: 'Fail Retry min'
       type: 'number'
       defaultValue: 5
       width: 125
+      cellClass: 'clickable-cell'
     ,
       field: 'active'
       displayName: 'Active?'
       type: 'boolean'
       defaultValue: false
       width: 100
+      cellClass: 'clickable-cell'
     ,
       field: '_run'
       displayName: 'Run'

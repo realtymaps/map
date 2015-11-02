@@ -1,8 +1,7 @@
 .row.form-group
   .col-md-2
-    select(ng-model="currentTaskData.task" ng-options="value.name group by (value.name=='All'?'All':value.current?'Current':'Not Current') for value in currentJobList track by value.selectid" ng-change="selectJob()")
+    select(ng-model="currentTaskData.task" ng-options="value.name group by (value.name=='All Tasks'?'All':value.current?'Current':'Not Current') for value in currentJobList track by value.name" ng-change="selectJob()")
       option(value="" disabled) Select a task
-      option(value="") All
   .col-md-2
     select(type="text" ng-model="historyTimerange" ng-change="updateTimeframe()")
       option(value="1 hour") 1 Hour
@@ -24,10 +23,17 @@
 .row(ng-show="$state.params.task")
   .col-md-12
     h4 Error History
-    .jobs-grid(cg-busy="errorJobsBusy" ng-show="$state.params.task" ui-grid="jobsErrorGrid" ui-grid-edit ui-grid-cellNav ui-grid-resize-columns ui-grid-pinning)
+    .jobs-grid(cg-busy="errorJobsBusy" ng-show="$state.params.task" ui-grid="jobsErrorGrid" ui-grid-cellNav ui-grid-resize-columns ui-grid-pinning)
     .row
       .col-md-12.center(ng-show="$state.params.task")
         div Showing {{jobsErrorGrid.data.length}} Results
+
+.row(ng-show="$state.params.task && clickedCellInfo")
+  .col-md-12
+    h4 Full {{clickedCellInfo.name}} (selected cell)
+    .row
+      .col-md-12
+        pre {{clickedCellInfo.contents}}
 
 .warn(ng-show="!$state.params.task") No task selected.
 
