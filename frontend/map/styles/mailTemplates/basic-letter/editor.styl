@@ -2,8 +2,8 @@
 //  (which can depend on special values coming from the selected mailer-template values) without
 //  clobbering the styling of the content
 
-@import 'basic-letter-values'
-@import 'basic-letter-wysiwyg.styl'
+@import 'values'
+@import 'wysiwyg'
 $template-stage-margin = 1in
 
 
@@ -33,7 +33,7 @@ $template-stage-margin = 1in
         background-color $gray_ligther
         // border-right 1px solid $gray
         // width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
-        // height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+        height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
         text-align center
         //line-height initial
 
@@ -76,6 +76,7 @@ $template-stage-margin = 1in
           
         #recipient-address-window, #return-address-window
           overflow hidden
+          background-color rgba(100,100,100,0.5)
           
         // p
         //   margin 0

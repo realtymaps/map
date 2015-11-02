@@ -1,12 +1,11 @@
 app = require '../app.coffee'
-basicLetterHtml = require '../../html/includes/mail/basic-letter-template.jade'
-basicLetterFinalStyle = require '../../styles/mailTemplates/basic-letter-lob.styl'
+
 
 defaultHtml =
-  'basicLetter': basicLetterHtml()
+  'basicLetter': require('../../html/includes/mail/basic-letter-template.jade')()
 
 defaultFinalStyle =
-  'basicLetter': basicLetterFinalStyle
+  'basicLetter': require '../../styles/mailTemplates/basic-letter/lob.styl'
 
 app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService, rmapsprincipal, rmapsevents) ->
   class MailTemplate
@@ -55,10 +54,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
       shadowStyle = "body {box-shadow: 4px 4px 20px #888888;}"
       # bodyPadding = "body {margin: 20px;}"
       # "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}#{shadowStyle}</style></head><body>#{@mailCampaign.content}</body></html>"
-      c = @_createLobHtml()
-      $log.debug "##### html content: #####"
-      $log.debug c
-      c
+      @_createLobHtml()
 
     _createLobHtml: () =>
       "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{@mailCampaign.content}</body></html>"

@@ -36,9 +36,6 @@ createNewLobObject = (Lob, userId, data) -> Promise.try () ->
 sendJob = (Lob, userId, data) -> Promise.try () ->
   createNewLobObject(Lob, userId, data)
   .then (address) ->
-    logger.debug "##### html data: #####"
-    # logger.debug rawLetterContent2
-    logger.debug data.content
     Lob.letters.createAsync
       description: data.description
       #to: address.id
