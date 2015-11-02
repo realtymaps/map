@@ -15,4 +15,4 @@
 # TECHNOLOGY COLOPHON
 
     CSS3, HTML5
-    Bootstrap, Angular, Angualr-Leaflet-Directive, Angular-UI, Modernizr, Normalize.css
+    Bootstrap, Angular, UI-Leaflet, Angular-UI, Modernizr, Normalize.css
