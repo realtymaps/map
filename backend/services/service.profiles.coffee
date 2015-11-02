@@ -12,16 +12,21 @@ projectSvc = (require './services.user').project
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 cols =  [
-  "#{tables.user.profile.tableName}.id as id", "#{tables.user.profile.tableName}.auth_user_id as auth_user_id",
-  'filters', 'properties_selected', 'map_toggles',
-  'map_position', 'map_results','parent_auth_user_id',
-  "#{tables.user.profile.tableName}.rm_modified_time as rm_modified_time",
-  "#{tables.user.profile.tableName}.rm_inserted_time as rm_inserted_time",
-  'project_id',
-  "#{tables.user.project.tableName}.rm_modified_time as #{tables.user.project.tableName}_rm_modified_time",
-  "#{tables.user.project.tableName}.rm_inserted_time as #{tables.user.project.tableName}_rm_inserted_time",
-  "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name",
-  "#{tables.user.project.tableName}.archived as #{tables.user.project.tableName}_archived",
+  "#{tables.user.profile.tableName}.id as id"
+  "#{tables.user.profile.tableName}.filters"
+  "#{tables.user.profile.tableName}.map_toggles"
+  "#{tables.user.profile.tableName}.map_position"
+  "#{tables.user.profile.tableName}.map_results"
+  "#{tables.user.profile.tableName}.parent_auth_user_id"
+  
+  "#{tables.user.project.tableName}.id as project_id"
+  "#{tables.user.project.tableName}.auth_user_id"
+  "#{tables.user.project.tableName}.name"
+  "#{tables.user.project.tableName}.sandbox"
+  "#{tables.user.project.tableName}.archived"
+  "#{tables.user.project.tableName}.properties_selected"
+  "#{tables.user.project.tableName}.rm_modified_time"
+  "#{tables.user.project.tableName}.rm_inserted_time"
 ]
 
 safe = [
@@ -34,7 +39,7 @@ safe = [
   'project_id'
 ]
 
-safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+safeProject = ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
 
 toReturn = safe.concat ['id']
 
