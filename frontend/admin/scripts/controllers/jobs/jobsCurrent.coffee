@@ -12,6 +12,12 @@ app.controller 'rmapsJobsCurrentCtrl',
     footerCellTemplate: '<div class="numberCell">{{ col.getAggregationValue() }}</div>'
 
   dateFilter = 'date:"MM/dd HH:mm"'
+  timeframeFilterMap =
+    "Current": { current: true }
+    "Last Hour": { timerange: "1 hour" }
+    "Last Day": { timerange: "1 day" }
+    "Last 7 Days": { timerange: "7 days" }
+    "Last 30 Days": { timerange: "30 days" }
 
   $scope.jobsGrid =
     enableColumnMenus: false
@@ -21,10 +27,8 @@ app.controller 'rmapsJobsCurrentCtrl',
       field: 'name'
       displayName: 'Task'
       width: 100
-      cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: \'{{COL_FIELD}}\' })">{{COL_FIELD}}</a></div>'
+      cellTemplate: '<div class="ui-grid-cell-contents"><a ui-sref="jobsHistory({ task: COL_FIELD })">{{COL_FIELD}}</a></div>'
       footerCellTemplate: '<div>Totals</div>'
-      sort:
-        direction: uiGridConstants.ASC
       pinnedLeft: true
     ,
       field: 'status'
@@ -40,6 +44,8 @@ app.controller 'rmapsJobsCurrentCtrl',
       type: 'date'
       width: 100
       cellFilter: dateFilter
+      sort:
+        direction: uiGridConstants.DESC
     ,
       field: 'finished'
       displayName: 'Finished'
@@ -105,9 +111,29 @@ app.controller 'rmapsJobsCurrentCtrl',
       _.extend num, numericDefaults
 
 
+  $scope.currentFilters = null
   $scope.summaryGrid =
     enableColumnMenus: false
     enablePinning: true
+    enableRowSelection: true
+    enableRowHeaderSelection: false
+    multiSelect: false
+    modifierKeysToMultiSelect: false
+    noUnselect: true
+    enableSelectionBatchEvent: false
+    onRegisterApi: (gridApi) ->
+      gridApi.selection.on.rowSelectionChanged $scope, (row) ->
+        if !row.isSelected
+          return
+        $scope.currentFilters =
+          queryFilters: timeframeFilterMap[row.entity.timeframe]
+          timeframe: row.entity.timeframe
+        $scope.loadCurrent()
+      gridApi.core.on.rowsRendered $scope, () ->
+        if !$scope.currentFilters?
+          gridApi.selection.selectRowByVisibleIndex(0)
+        else
+          gridApi.selection.selectRow(_.find($scope.summaryGrid.data, timeframe: $scope.currentFilters.timeframe))
     columnDefs: [
       field: 'timeframe'
       pinnedLeft: true
@@ -124,7 +150,6 @@ app.controller 'rmapsJobsCurrentCtrl',
     ,
       field: 'canceled'
     ]
-    rowTemplate: '<div ng-class="{\'summary-current\': row.entity.timeframe==\'Current\'}" ng-click="grid.appScope.fnOne(row)" ng-repeat="col in colContainer.renderedColumns track by col.colDef.name" class="ui-grid-cell" ui-grid-cell></div>'
 
   # makes a map (object) of keys from list "grouping", values initialized to 'init'
   emptyDatum = (grouping, init=0) ->
@@ -138,15 +163,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       init = emptyDatum(dimensionValues, init)
     return init
 
-  $scope.loadCurrent = () ->
-    $scope.jobsBusy = rmapsJobsService.getHistory(current: true)
-    .then (jobs) ->
-      _.each jobs, (job) ->
-        job.started = new Date(job.started)
-        job.finished = new Date(job.finished)
-        job.status_changed = new Date(job.status_changed)
-      $scope.jobsGrid.data = jobs.plain()
-
+  $scope.loadSummary = () ->
     $scope.summaryBusy = rmapsJobsService.getSummary()
     .then (summary) ->
       data = summary.plain()
@@ -173,7 +190,7 @@ app.controller 'rmapsJobsCurrentCtrl',
       for d in data when d[dimension1] in showTimeframes and d[dimension2] in showStatus
         summaryObj[d[dimension1]][d[dimension2]] = d.count
 
-      # Not a terribly efficient cummulative sum implementation, but dataset isn't going to be large here.
+      # Not a terribly efficient cumulative sum implementation, but dataset isn't going to be large here.
       # At least order in dataObj shouldn't matter, and will simply return if no need to build sum
       cSum = (dataObj, timeframe, status) ->
         thisCount = parseInt(dataObj[timeframe][status])
@@ -198,5 +215,14 @@ app.controller 'rmapsJobsCurrentCtrl',
 
       $scope.summaryGrid.data = summaryTable
 
+  $scope.loadCurrent = () ->
+    $scope.jobsBusy = rmapsJobsService.getHistory($scope.currentFilters.queryFilters)
+    .then (jobs) ->
+      _.each jobs, (job) ->
+        job.started = new Date(job.started)
+        job.finished = new Date(job.finished)
+        job.status_changed = new Date(job.status_changed)
+      $scope.jobsGrid.data = jobs.plain()
+
   $rootScope.registerScopeData () ->
-    $scope.loadCurrent()
+    $scope.loadSummary()

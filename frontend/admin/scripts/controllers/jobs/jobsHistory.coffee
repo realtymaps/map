@@ -8,8 +8,8 @@ app.controller 'rmapsJobsHistoryCtrl',
     task: null
 
   $scope.currentJobList = []
-
   $scope.historyTimerange = '30 days'
+  $scope.clickedCellInfo = null
 
   numericDefaults =
     type: 'number'
@@ -110,69 +110,73 @@ app.controller 'rmapsJobsHistoryCtrl',
   $scope.jobsErrorGrid =
     enableColumnMenus: false
     enablePinning: true
-    enableCellEditOnFocus: true
+    appScopeProvider: $scope
+    onRegisterApi: (gridApi) ->
+      gridApi.cellNav.on.navigate $scope, (newRowCol, oldRowCol) ->
+        $scope.showFullCellContents(newRowCol)
     columnDefs: [
       field: 'task_name'
       displayName: 'Task'
       width: 100
       pinnedLeft: true
-      enableCellEdit: false
     ,
       field: 'name'
       displayName: 'Subtask'
       width: 150
       pinnedLeft: true
-      enableCellEdit: false
     ,
       field: 'status'
       displayName: 'Status'
       width: 75
-      enableCellEdit: false
     ,
       field: 'retry_num'
       displayName: 'Retries'
       width: 75
-      enableCellEdit: false
     ,
       field: 'batch_id'
       displayName: 'Batch'
       width: 75
-      enableCellEdit: false
     ,
       field: 'started'
       displayName: 'Started'
       type: 'date'
       width: 100
       cellFilter: dateFilter
-      enableCellEdit: false
+      sort:
+        direction: uiGridConstants.DESC
     ,
       field: 'finished'
       displayName: 'Finished'
       type: 'date'
       width: 100,
       cellFilter: dateFilter
-      enableCellEdit: false
     ,
       field: 'data'
       displayName: 'Data'
-      cellTemplate: '<div class="ui-grid-cell-contents">{{COL_FIELD | json}}</div>'
-      enableCellEdit: false
+      cellTemplate: '<div class="ui-grid-cell-contents clickable-cell">{{COL_FIELD | json}}</div>'
     ,
       field: 'error'
-      displayName: 'error'
+      displayName: 'Error'
+      cellClass: 'clickable-cell'
     ,
       field: 'stack'
       displayName: 'Stack'
+      cellClass: 'clickable-cell'
     ]
 
-  $scope.tooltip = (mouseEvent) ->
-    console.log mouseEvent
+  $scope.showFullCellContents = (rowCol) ->
+    if !rowCol? || rowCol.col.colDef.displayName not in ['Data', 'Error', 'Stack']
+      $scope.clickedCellInfo = null
+      return
+    $scope.clickedCellInfo =
+      name: rowCol.col.colDef.displayName
+      contents: rowCol.row.entity[rowCol.col.colDef.name]
+    if $scope.clickedCellInfo.name == 'Data'
+      $scope.clickedCellInfo.contents = JSON.stringify($scope.clickedCellInfo.contents, null, 2)
 
   $scope.updateTimeframe = () ->
     if $scope.currentTaskData.task?
-      $scope.jobsGrid.data = []
-      $scope.jobsErrorGrid.data = []
-      $scope.currentTaskData.task = null
+      $scope.selectJob()
     if $state.params.timerange # don't honor timerange parameter anymore
       delete $state.params.timerange
     $scope.loadReadyHistory()
@@ -184,7 +188,6 @@ app.controller 'rmapsJobsHistoryCtrl',
     filters =
       timerange: $scope.historyTimerange
     errorFilters = _.clone filters
-    filters.current = task.current
     if task.name != 'all'
       filters.name = errorFilters.task_name = task.name
       
@@ -211,8 +214,8 @@ app.controller 'rmapsJobsHistoryCtrl',
     .then () ->
       if $state.params.timerange
         $scope.historyTimerange = $state.params.timerange
-      if $state.params.task and $state.params.current
-        $scope.currentTaskData.task = _.find $scope.currentJobList, { name: $state.params.task, current: $state.params.current=='true' }
+      if $state.params.task
+        $scope.currentTaskData.task = _.find $scope.currentJobList, { name: $state.params.task }
         if $scope.currentTaskData.task? # load history only if it's in our currentJobList dropdown (wouldn't have history entries for given filters)
           $scope.loadHistory($scope.currentTaskData.task)
         else # account for a certain case where a previous search was done, but new timerange selected that invalidates it since dropdown is refreshed, but $state.params remain
