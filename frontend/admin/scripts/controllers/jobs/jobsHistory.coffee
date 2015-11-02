@@ -182,13 +182,16 @@ app.controller 'rmapsJobsHistoryCtrl',
     $scope.loadReadyHistory()
 
   $scope.selectJob = () ->
-    $state.go($state.current, { task: $scope.currentTaskData.task.name, current: $scope.currentTaskData.task.current, timerange: $scope.historyTimerange }, { reload: true })
+    filters =
+      timerange: $scope.historyTimerange
+      task: $scope.currentTaskData.task.name
+    $state.go($state.current, filters, { reload: true })
 
   $scope.loadHistory = (task) ->
     filters =
       timerange: $scope.historyTimerange
     errorFilters = _.clone filters
-    if task.name != 'all'
+    if task.name != 'All Tasks'
       filters.name = errorFilters.task_name = task.name
       
     $scope.jobsBusy = rmapsJobsService.getHistory(filters)
@@ -205,7 +208,7 @@ app.controller 'rmapsJobsHistoryCtrl',
       timerange: $scope.historyTimerange
     $scope.jobsBusy = rmapsJobsService.getHistory(filters)
     .then (currentJobList) ->
-      $scope.currentJobList = [{name: 'All', current: false}].concat currentJobList.plain()
+      $scope.currentJobList = [{name: 'All Tasks'}].concat currentJobList.plain()
       for e, i in $scope.currentJobList
         $scope.currentJobList[i].selectid = i
 

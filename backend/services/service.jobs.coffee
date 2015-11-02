@@ -136,9 +136,6 @@ historyDbFn = () ->
     whereInterval = "now_utc() - started <= interval '#{_interval}'"
     dbquery = dbquery.whereRaw(whereInterval)
 
-    if query.name == 'All'
-      delete query.name
-
     if query.list?
       if query.list == 'true'
         dbquery = dbquery
