@@ -3,81 +3,82 @@
 //  clobbering the styling of the content
 
 @import 'basic-letter-values'
-
+@import 'basic-letter-wysiwyg.styl'
 $template-stage-margin = 1in
 
 
 #mail-wizard
   #edit-template
-    .template-stage-container
-      position relative
-      overflow scroll
-      background-color $gray_ligther
-      // left (-($template-stage-margin / 2) + 0.33in)
-      // height ($page-height / $wysiwyg-scale-factor)
+    .basicLetter-wysiwyg
+      .template-stage-container
+        position relative
+        overflow scroll
+        background-color $gray_ligther
+        // left (-($template-stage-margin / 2) + 0.33in)
+        // height ($page-height / $wysiwyg-scale-factor)
 
-    // .clear-template
-    //   all initial
-    //   * 
-    //     all initial
+      // .clear-template
+      //   all initial
+      //   * 
+      //     all initial
 
-    .template-stage
-      // all initial
-      // position absolute
-      left 0
-      top 0
-      right 0
-      bottom 0
-      padding-top ($template-stage-margin / 2)
-      background-color $gray_ligther
-      // border-right 1px solid $gray
-      // width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
-      // height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
-      text-align center
-      //line-height initial
+      .template-stage
+        // all initial
+        // position absolute
+        left 0
+        top 0
+        right 0
+        bottom 0
+        padding-top ($template-stage-margin / 2)
+        background-color $gray_ligther
+        // border-right 1px solid $gray
+        // width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
+        // height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+        text-align center
+        //line-height initial
 
-      .letter-editor
-        text-align left
-        margin auto
-        box-shadow 4px 4px 20px #888888
+        .letter-editor
+          text-align left
+          margin auto
+          box-shadow 4px 4px 20px #888888
+          
+        .macro-display
+          background-color #46b8f1
+          border-radius 3px
+          margin-left 2px
+          margin-right 2px
+
+        // .form-control
+        //   line-height inherit
+
+        .ta-letter-wrapper
+          // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
+          height ($page-height * $wysiwyg-scale-factor)
+          display block
+          width 100%
+          overflow auto
+          font-size 100%
+          line-height unset
+          background-color #ffffff
+          
+        .letter-page:focus
+          border none
+          
+
+        // .ta-scroll-window .form-control
+        //   height ($page-height / $wysiwyg-scale-factor) !important
+
+        .ta-scroll-window > .ta-bind
+          padding: 0
         
-      .macro-display
-        background-color #46b8f1
-        border-radius 3px
-        margin-left 2px
-        margin-right 2px
-
-      // .form-control
-      //   line-height inherit
-
-      .ta-letter-wrapper
-        // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
-        height ($page-height * $wysiwyg-scale-factor)
-        display block
-        width 100%
-        overflow auto
-        font-size 100%
-        line-height unset
-        background-color #ffffff
-        
-      .letter-page:focus
-        border none
-        
-
-      // .ta-scroll-window .form-control
-      //   height ($page-height / $wysiwyg-scale-factor) !important
-
-      .ta-scroll-window > .ta-bind
-        padding: 0
-      
-      .ta-root 
-        height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
-        
-      #recipient-address-window, #return-address-window
-        overflow hidden
-        
-      // p
-      //   margin 0
-      //   padding 0
-      //   font-size inherit
-      //   line-height inherit
+        .ta-root 
+          height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+          
+        #recipient-address-window, #return-address-window
+          overflow hidden
+          
+        // p
+        //   margin 0
+        //   padding 0
+        //   font-size inherit
+        //   line-height inherit

@@ -13,9 +13,9 @@
         .row
           input.form-control.name-input(ng-model="templateObj.mailCampaign.name")
         .row
-          .template-stage-container
+          .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")
             .template-stage
-              div.letter-editor(ng-class="applyTemplateClass()")
+              div.letter-editor(ng-class="applyTemplateClass('-body')")
                 div(text-angular 
                   name="wysiwyg"
                   ta-text-editor-class="ta-letter-wrapper"

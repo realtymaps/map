@@ -120,8 +120,8 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     # refresh content on $scope.templateObj
     $scope.templateObj.mailCampaign.content = $scope.data.htmlcontent
 
-  $scope.applyTemplateClass = () ->
-    "#{$scope.$parent.templateType}-body"
+  $scope.applyTemplateClass = (qualifier = '') ->
+    "#{$scope.$parent.templateType}#{qualifier}"
 
   $scope.doPreview = () ->
     $scope.templateObj.openPreview()
