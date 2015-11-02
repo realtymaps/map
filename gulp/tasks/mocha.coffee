@@ -11,7 +11,7 @@ paths = require '../../common/config/paths'
 require 'chai'
 require 'should'
 
-runMocha = (files, reporter = 'spec') ->
+runMocha = (files, reporter = 'dot') ->
   gulp.src files, read: false
   .pipe plumber()
   .pipe(mocha(reporter: reporter))
