@@ -23,24 +23,28 @@ app.controller 'rmapsJobsQueueCtrl', ($scope, $log, $rootScope, $injector, Resta
       type: 'number'
       width: 175
       defaultValue: 1
+      cellClass: 'clickable-cell'
     ,
       field: 'subtasks_per_process'
       displayName: 'Subtasks Per Process'
       type: 'number'
       width: 175
       defaultValue: 1
+      cellClass: 'clickable-cell'
     ,
       field: 'priority_factor'
       displayName: 'Priority Factor'
       type: 'number'
       width: 150
       defaultValue: 1.0
+      cellClass: 'clickable-cell'
     ,
       field: 'active'
       displayName: 'Active'
       type: 'boolean'
       width: 150
       defaultValue: false
+      cellClass: 'clickable-cell'
   ]
 
   new rmapsGridFactory($scope)
