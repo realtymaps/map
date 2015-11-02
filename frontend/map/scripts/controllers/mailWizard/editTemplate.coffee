@@ -5,7 +5,7 @@ module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
 
-  # might move this object to the mailWizard (parent) scope to encapsulate the option choices throughout wizard steps
+  # might move this object to the mailWizard (parent) scope to expose the members to all wizard steps for building the object
   $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
 
   editor = {}
@@ -53,13 +53,14 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
     $log.debug e
 
   $scope.eventMacro = (type) ->
+    $log.debug "... listening for #{type}"
     (e) ->
       $scope.mousex = e.clientX
       $scope.mousey = e.clientY
 
   $scope.textEditorSetup = () ->
     (el) ->
-      $log.debug "textEditorSetup operation, el:"
+      $log.debug "#### textEditorSetup operation, el:"
       $log.debug el
       # el[0].ondragend = $scope.eventMacro('ondragend')
       # el[0].ondrag = $scope.eventMacro('ondrag')
@@ -68,10 +69,9 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       # el[0].ondrop = $scope.eventMacro('ondrop')
       # el[0].onmouseup = $scope.eventMacro('onmouseup')
 
-
   $scope.htmlEditorSetup = () ->
     (el) ->
-      $log.debug "htmlEditorSetup operation, el:"
+      $log.debug "#### htmlEditorSetup operation, el:"
       $log.debug el
       # el[0].ondragend = $scope.eventMacro('ondragend')
       # el[0].ondrag = $scope.eventMacro('ondrag')
@@ -79,7 +79,6 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       # el[0].ondragover = $scope.eventMacro('ondragover')
       # el[0].ondrop = $scope.eventMacro('ondrop')
       # el[0].onmouseup = $scope.eventMacro('onmouseup')
-
 
   $rootScope.$on 'rmaps-drag-end', (e) ->
     editor.editorFunctions.focus()

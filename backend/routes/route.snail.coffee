@@ -26,6 +26,7 @@ otherErrorMessage = (actionMsg) ->
   in a few minutes. If the problem continues, please let us know by emailing
   #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
+# to be used for ascertaining addresses for incoming rm-property-id's from 'quote' and 'send'
 getPropertyData = (rm_property_id) -> Promise.try () ->
   detailService.getDetail({rm_property_id: rm_property_id, columns: 'address'})
   .then (property) ->

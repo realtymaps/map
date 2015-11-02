@@ -7,7 +7,8 @@
             button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
             button.btn.btn-success.miscTool(ng-click="saveContent()") Save
             button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
-            text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool" ta-toolbar="[['redo','undo']]")
+            text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
+              ta-toolbar="[['redo','undo']]")
 
         .row
           input.form-control.name-input(ng-model="templateObj.mailCampaign.name")
@@ -15,7 +16,15 @@
           .template-stage-container
             .template-stage
               div.letter-editor(ng-class="applyTemplateClass()")
-                div(text-angular name="wysiwyg" ta-text-editor-class="ta-letter-wrapper" on-drop="macro" ondragend="dropMacro(e)" ta-html-editor-setup="htmlEditorSetup()" ta-text-editor-setup="textEditorSetup()" ng-model="data.htmlcontent" ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
+                div(text-angular 
+                  name="wysiwyg"
+                  ta-text-editor-class="ta-letter-wrapper"
+                  on-drop="macro"
+                  ondragend="dropMacro(e)"
+                  ta-html-editor-setup="htmlEditorSetup()"
+                  ta-text-editor-setup="textEditorSetup()"
+                  ng-model="data.htmlcontent"
+                  ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
 
 
@@ -27,22 +36,26 @@
               div.form-section
                 h4
                   | Font Family
-                text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools" ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
+                text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools"
+                  ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
 
               div.form-section
                 h4
                   | Font Size
-                text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
+                text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group"
+                  ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
 
               div.form-section
                 h4
                   | Font Color
-                text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
+                text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" 
+                  ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
 
               div.form-section
                 h4
                   | Text Features
-                text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group" ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
+                text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group"
+                  ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
 
           tab(heading="Macros")
             div.edit-template-design
