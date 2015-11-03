@@ -1,3 +1,0 @@
-DELETE FROM data_normalization_config WHERE data_source_id='swflmls' AND list='general' AND output IN ('status', 'address');
-UPDATE data_normalization_config set input='["State", "County Or Parish"]' WHERE data_source_id='swflmls' AND output='fips_code';
-UPDATE data_normalization_config set input='["State", "County Or Parish", "Parcel Number"]' WHERE data_source_id='swflmls' AND output='rm_property_id';
