@@ -3,7 +3,8 @@ extends ../_layout
 block customHead
   link(rel='stylesheet', href='styles/map.css')
   //- TODO: Move this to be loaded async loaded, and or use uiGmapGoogleMapsApi to load it
-  script(src='http://maps.google.com/maps/api/js?v=3.2&sensor=false')
+  // SERVICE SHOULD BE IN ui-leaflet, or ui-leaflet plugin, we can steal this from ui-gmap
+  script(src="#{google.mapsSdkUrl}")
   title RealtyMaps
   meta(name='description', content='RealtyMaps')
 
