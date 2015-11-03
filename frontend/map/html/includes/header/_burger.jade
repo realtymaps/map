@@ -1,2 +1,2 @@
-a(id="burgericon")
+a(id="burgericon" ng-if="principal.isAuthenticated()")
     i(class="fa fa-bars fa-2x" ng-class="{'on':isOn}" ng-click="toggleIsOn($event)")
