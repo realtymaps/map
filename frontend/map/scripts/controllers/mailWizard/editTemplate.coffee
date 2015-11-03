@@ -140,19 +140,6 @@ app.config ($provide) ->
     # helps HTML5 compatibility, which uses css instead of deprecated tags like <font>
     $document[0].execCommand('styleWithCSS', false, true)
 
-    # looping like this doesn't work, i get 6 options for "white" instead.. some kind of reference issue since it leaves off with white
-    # for color in [['Black','#000000'],['Blue','#0000ff'],['Green','#00ff00'],['Red', '#ff0000'],['Yellow','#ffff00'],['White','#ffffff']]
-    #   console.log color
-    #   taRegisterTool "text#{color[0]}",
-    #     buttontext: color[0]
-    #     class: "btn btn-circle color-#{color[0].toLowerCase()}"
-    #     action: () ->
-    #       console.debug "$editor:"
-    #       console.debug this.$editor()
-    #       this.$editor().wrapSelection 'forecolor', "#{color[0].toLowerCase()}"
-    #     activeState: (el) ->
-    #       return el[0].color == "#{color[1]}"
-
     taRegisterTool 'fontSize10',
       buttontext: "10pt",
       class: "btn btn-white",
@@ -237,98 +224,35 @@ app.config ($provide) ->
       activeState: (el) ->
         return el[0].className == "fontSize20"
 
+    for font in ['Georgia','Gill Sans','Times New Roman','Helvetica']
+      do (font) ->
+        nospace = font.replace(/ /g,'')
+        maybeQuoted = if / /.test(font) then "'#{font}'" else font
+        r = new RegExp "font-family: #{maybeQuoted}"
+        taRegisterTool "font#{nospace}",
+          buttontext: font
+          class: 'btn btn-text'
+          display: "<label> #{font}"
+          action: () ->
+            this.$editor().wrapSelection 'fontName', font
+          activeState: (el) ->
+            return el[0].attributes.style?.textContent? && r.test(el[0].attributes.style.textContent)
 
-    taRegisterTool 'fontHelvetica',
-      buttontext: 'Helvetica'
-      class: 'btn btn-text'
-      display: '<label> Helvetica'
-      action: () ->
-        this.$editor().wrapSelection 'fontName', 'Helvetica'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /font-family: Helvetica/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'fontTimesNewRoman',
-      buttontext: 'Times New Roman'
-      class: 'btn btn-text'
-      display: '<label> Times New Roman'
-      action: () ->
-        this.$editor().wrapSelection 'fontName', 'TimesNewRoman'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /font-family: TimesNewRoman/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'fontGillSans',
-      buttontext: 'Gill Sans'
-      class: 'btn btn-text'
-      display: '<label> Gill Sans'
-      action: () ->
-        this.$editor().wrapSelection 'fontName', 'Gill Sans'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /font-family: 'Gill Sans'/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'fontGeorgia',
-      buttontext: 'Georgia'
-      class: 'btn btn-text'
-      display: '<label> Georgia'
-      action: () ->
-        this.$editor().wrapSelection 'fontName', 'Georgia'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /font-family: Georgia/.test(el[0].attributes.style.textContent)
-
-
-    taRegisterTool 'textBlack',
-      buttontext: 'Black'
-      class: 'btn btn-circle color-black'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'black'
-      activeState: (el) ->
-        node = el[0]
-        while node.parentNode? and not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
-          if node.attributes.style?.textContent? && /color: black/.test(node.attributes.style.textContent)
-            return true
-          node = node.parentNode
-        return false
-
-    taRegisterTool 'textBlue',
-      buttontext: 'Blue'
-      class: 'btn btn-circle color-blue'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'blue'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /color: blue/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'textGreen',
-      buttontext: 'Green'
-      class: 'btn btn-circle color-green'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'green'
-      activeState: (el) ->
-        #node = el
-        return el[0].attributes.style?.textContent? && /color: green/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'textRed',
-      buttontext: 'Red'
-      class: 'btn btn-circle color-red'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'red'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /color: red/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'textYellow',
-      buttontext: 'Yellow'
-      class: 'btn btn-circle color-yellow'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'yellow'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /color: yellow/.test(el[0].attributes.style.textContent)
-
-    taRegisterTool 'textWhite',
-      buttontext: 'White'
-      class: 'btn btn-circle color-white'
-      action: () ->
-        this.$editor().wrapSelection 'forecolor', 'white'
-      activeState: (el) ->
-        return el[0].attributes.style?.textContent? && /color: white/.test(el[0].attributes.style.textContent)
-
+    for color in ['Black','Blue','Green','Red','Yellow','White']
+      do (color) ->
+        taRegisterTool "text#{color}",
+          buttontext: color
+          class: "btn btn-circle color-#{color.toLowerCase()}"
+          action: () ->
+            this.$editor().wrapSelection 'forecolor', color.toLowerCase()
+          activeState: (el) ->
+            node = el[0]
+            while node.parentNode? and not /.*?letter-page-content-text.*?/.test(node.parentNode.className)
+              r = new RegExp "color: #{color.toLowerCase()}"
+              if node.attributes.style?.textContent? && r.test(node.attributes.style.textContent)
+                return true
+              node = node.parentNode
+            return false
 
     return taOptions
   ]

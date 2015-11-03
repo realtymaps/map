@@ -1,5 +1,6 @@
 app = require '../app.coffee'
-
+# htmljade = require('../../html/includes/mail/basic-letter-template.jade')()
+# console.log htmljade
 
 defaultHtml =
   'basicLetter': require('../../html/includes/mail/basic-letter-template.jade')()
@@ -11,6 +12,8 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
   class MailTemplate
     constructor: (@type) ->
       @defaultContent = defaultHtml[@type]
+      console.log "default content:"
+      console.log @defaultContent
       @defaultFinalStyle = defaultFinalStyle[@type]
       @style = @defaultFinalStyle
       @user =
