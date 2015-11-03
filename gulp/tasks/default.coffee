@@ -12,7 +12,6 @@ gulp = require 'gulp'
   './watch'
   './angular'
 ].forEach (dep) ->
-  # console.log 'requiring', dep
   require dep
 
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used

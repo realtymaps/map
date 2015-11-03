@@ -18,10 +18,6 @@ describe "common.service.rendering", ->
       for x in [0..3]
         @ret = @subject.debounce @stateObj, 'tracker', (->)
         , 1000
-      # console.log 'ret'
-      # console.log _.functions @ret
-      # console.log 'stateObj'
-      # console.log @stateObj
 
     afterEach ->
       @ret = null

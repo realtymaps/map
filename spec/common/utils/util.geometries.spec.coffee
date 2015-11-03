@@ -2,9 +2,6 @@ hack = require '../../../common/utils/webpackHack.coffee'
 unless window?
   require '../../globals.coffee'
 
-#console.log 'pre-util.geometries'
-#['_', 'expect', 'should'].forEach (key) ->
-#  console.log "#{key}: #{window[key]}"
 
 describe "util.geometries", ->
   before ->
@@ -21,7 +18,6 @@ describe "util.geometries", ->
       it 'x y', ->
         testCoords = [45, 100]
         p = new @subject.Point(testCoords[0], testCoords[1])
-        console.log expect(p.lat).toBe
         expect(p.lat).to.equal testCoords[0]
         expect(p.lon).to.equal testCoords[1]
 

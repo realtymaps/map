@@ -1,5 +1,5 @@
 space = ' '
-#console.log "String obj: #{String}"
+
 String::contains = (value,fromIndex) ->
   @indexOf(value,fromIndex) != -1
 
