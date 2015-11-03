@@ -3,6 +3,7 @@ logger = require '../config/logger'
 userSvc = (require '../services/services.user').user
 profileSvc = (require '../services/services.user').profile
 projectSvc = (require '../services/services.user').project
+notesSvc = (require '../services/services.user').notes
 {Crud, wrapRoutesTrait, HasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 CrudSvc = (require '../utils/crud/util.crud.service.helpers').Crud
 {mergeHandles} = require '../utils/util.route.helpers'
@@ -11,10 +12,12 @@ _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+userUtils = require '../utils/util.user'
 
-safeProject = ['id', 'auth_user_id', 'archived', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+safeProject = ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
 safeProfile = ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results']
 safeUser = ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
+safeNotes = (require '../utils/util.sql.helpers').columns.notes
 
 class ClientsCrud extends HasManyRouteCrud
   @include userExtensions.route
@@ -66,6 +69,54 @@ class ProjectsSessionCrud extends Crud
 
     @restrictAll @withUser
     super arguments...
+
+  ###
+    Remove or reset (sandbox) project data, including saved properties, notes, etc
+  ###
+  byIdDELETE: (req, res, next) ->
+    @svc.getById req.params[@paramIdKey], @doLogQuery, req.query, safeProject
+
+    .then (projects) =>
+      project = projects[0]
+      throw new Error 'Project not found' unless project?
+
+      # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
+      if project.sandbox is true
+        @svc.update project.id, properties_selected: {}, safeProject, @doLogQuery
+
+        .then () =>
+          profileSvc.getAll project_id: project.id, auth_user_id: req.user.id
+
+        .then (profiles) =>
+          profileReset =
+            filters: {}
+            map_results: {}
+            map_position: {}
+            map_results: {}
+
+          profileSvc.update profiles[0].id, profileReset, safeProfile, @doLogQuery
+
+        .then () =>
+          notesSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
+
+        .then () =>
+          delete req.session.profiles #to force profiles refresh in cache
+          userUtils.cacheUserValues req
+
+        .then () =>
+          req.session.saveAsync()
+          true
+
+      # For non-sandbox projects, allow deletion
+      else
+        profileSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeProfile
+
+        .then () =>
+          notesSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
+
+        .then () =>
+          super req, res, next
+
 
 ProjectsSessionRouteCrud = wrapRoutesTrait ProjectsSessionCrud
 

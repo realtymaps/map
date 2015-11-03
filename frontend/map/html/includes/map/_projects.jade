@@ -23,6 +23,5 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
                   span(ng-show="project.totalProperties != 1")  Properties
                   span(ng-show="project.archived")  -- archived
             span.actions
-              //- span.icon.icon-remove
-              //- span.icon.icon-checked
-              span.icon.icon-save_on_disk(ng-show="project.project_id" ng-click="archiveProject(project); $event.stopPropagation()")
+              span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+              span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")

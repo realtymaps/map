@@ -98,6 +98,5 @@ app.service 'rmapsProjectsService', ($http, $log) ->
     createProject: (project) ->
       $http.post backendRoutes.userSession.newProject, project
 
-    archive: (project) ->
-      project.archived = !project.archived
-      _update project
+    delete: (project) ->
+      $http.delete backendRoutes.projectSession.root + "/#{project.id}"

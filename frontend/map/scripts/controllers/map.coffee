@@ -22,7 +22,7 @@ module.exports = app
 #    libraries: 'visualization,geometry,places'
 #])
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
 
@@ -142,9 +142,15 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    rmapsProjectsService.archive project
+    rmapsProjectsService.update id: project.project_id, archived: !project.archived
     .then () ->
       $scope.projectDropdown.isOpen = false
+
+  $scope.resetProject = (project) ->
+    if confirm 'Clear all filters, saved properties, and notes?'
+      rmapsProjectsService.delete id: project.project_id
+      .then () ->
+        $window.location.reload()
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->

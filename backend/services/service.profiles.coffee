@@ -6,7 +6,7 @@ logger = require '../config/logger'
 tables = require '../config/tables'
 {singleRow} = require '../utils/util.sql.helpers'
 {currentProfile} = require '../utils/util.session.helpers'
-profileSvc = (require './services.user').user.profiles
+userProfileSvc = (require './services.user').user.profiles
 projectSvc = (require './services.user').project
 
 analyzeValue = require '../../common/utils/util.analyzeValue'
@@ -18,7 +18,7 @@ cols =  [
   "#{tables.user.profile.tableName}.map_position"
   "#{tables.user.profile.tableName}.map_results"
   "#{tables.user.profile.tableName}.parent_auth_user_id"
-  
+
   "#{tables.user.project.tableName}.id as project_id"
   "#{tables.user.project.tableName}.auth_user_id"
   "#{tables.user.project.tableName}.name"
@@ -43,50 +43,31 @@ safeProject = ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 
 
 toReturn = safe.concat ['id']
 
-get = (id, withProject = true) ->
-  return tables.user.profile().where(id: id) unless withProject
-
-create = (newProfile, project) ->
-  logger.debug 'PROFILE SVC: creating a profile'
+create = (newProfile) ->
   Promise.try () ->
     tables.user.project()
     .returning('id')
-    .insert(_.pick project, safeProject)
-    .then (inserted) ->
-      inserted?[0]
-  .then (maybeProjectId) ->
-    if maybeProjectId
-      newProfile.project_id = maybeProjectId
+    .insert(_.pick newProfile, safeProject)
+  .then (projectIds) ->
+    newProfile.project_id = projectIds[0]
     tables.user.profile()
     .returning(toReturn)
     .insert(_.pick newProfile, safe)
   .then (inserted) ->
     inserted?[0]
-  .catch (error) ->
-    logger.error analyzeValue error
-    throw new Error('Error creating new project')
 
-getProfiles = (auth_user_id, withProject = true) -> Promise.try () ->
-  noProjQ = tables.user.profile().where(auth_user_id: auth_user_id)
-  logger.debug noProjQ.toString()
-  noProjQ.then (profilesNoProject) ->
-    hasAProject = _.some profilesNoProject, (p) -> p.project_id?
+getProfiles = (auth_user_id) -> Promise.try () ->
+  userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 
-    logger.debug "hasAProject: #{hasAProject}"
-    logger.debug "withProject: #{withProject}"
-
-    if withProject and hasAProject
-      q =  tables.user.profile().select(cols...).leftJoin(tables.user.project.tableName,
-      tables.user.project.tableName + '.id', tables.user.profile.tableName + '.project_id')
-      .where("#{tables.user.profile.tableName}.auth_user_id": auth_user_id)
-      # logger.debug q.toString()
-      return q
-
-    unless profilesNoProject?.length
-      logger.debug "no profiles exist for auth_user_id: #{auth_user_id}. Creating"
-      return create(auth_user_id: auth_user_id)
-    logger.debug "returning profilesNoProject: #{JSON.stringify profilesNoProject}"
-    profilesNoProject
+  .then (profiles) ->
+    sandbox = _.find profiles, (p) -> p.sandbox is true
+    if sandbox?
+      profiles
+    else
+      logger.debug "No sandbox exists for auth_user_id: #{auth_user_id}. Creating..."
+      create auth_user_id: auth_user_id, sandbox: true
+      .then () ->
+        userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 
   .then (profiles) ->
     logger.debug profiles
@@ -110,13 +91,13 @@ getCurrent = (session) ->
   currentProfile(session)
 
 update = (profile) ->
-  profileSvc.getById profile.id
+  userProfileSvc.getById profile.id
   .then (profileProject) ->
     logger.debug profileProject
     if profileProject?
       projectSvc.update profileProject.project_id, _.pick(profile, ['properties_selected'])
   .then () ->
-    profileSvc.update profile.id, profile, safe
+    userProfileSvc.update profile.id, profile, safe
   .then (userState) ->
     if not userState
       return {}
@@ -142,7 +123,6 @@ updateCurrent = (session, partialState) ->
   update(profile)
 
 module.exports =
-  get: get
   getProfiles: getProfiles
   getCurrent: getCurrent
   updateCurrent: updateCurrent
