@@ -111,9 +111,11 @@ captureMapFilterState = (req, res, next) -> Promise.try () ->
   .then () ->
     next()
 
-getImage = (entity) ->
-  return Promise.resolve(null) unless entity?.account_image_id?
-  singleRow accountImagesSvc.getById(entity.account_image_id)
+getImage = (entity) -> Promise.try () ->
+  if !entity?.account_image_id?
+    return null
+  accountImagesSvc.getById(entity.account_image_id)
+  .then singleRow
 
 upsertImage = (entity, blob, tableFn = userData.user) ->
   getImage(entity)
@@ -124,7 +126,9 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
       return accountImagesSvc.update(entity.account_image_id, blob:blob)
     #create
     logger.debug 'creating image'
-    singleRow accountImagesSvc.create(blob:blob).returning('id')
+    accountImagesSvc.create(blob:blob)
+    .returning('id')
+    .then singleRow
     .then (id) ->
       logger.debug "saving account_image_id: #{id}"
       tableFn().update(account_image_id: id)

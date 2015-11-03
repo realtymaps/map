@@ -18,7 +18,6 @@ describe 'service.user.notes', ->
 
       it 'ctor', ->
         @instance.dbFn.should.be.ok
-        console.log @instance.dbFn,true
       it 'getAll', ->
         @instance.getAll().toString().should.equal """select  #{notesCols} from "#{@instance.dbFn.tableName}" """.trim()
 

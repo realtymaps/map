@@ -66,8 +66,6 @@ describe "rmapsMap factory", ->
           promises = @subject.drawFilterSummary(true)
           @digestor.digest()
 
-          # console.log promises
-
           promises.length.should.be.equal 1
           # promises[0].then ({data}) ->
           #   angular.equals(data,mockRoutes.clusterOrDefault.response).should.equal true

@@ -1,5 +1,5 @@
 tables = require '../config/tables'
-{expectedSingleRow} = require '../utils/util.sql.helpers'
+{expectSingleRow} = require '../utils/util.sql.helpers'
 config = require '../config/config'
 encryptor = null
 logger = require '../config/logger'
@@ -14,8 +14,9 @@ catch err
 
 
 module.exports = -> Promise.try ->
-  expectedSingleRow(tables.jobQueue.taskConfig()
-  .where(name:'parcel_update'))
+  tables.jobQueue.taskConfig()
+  .where(name:'parcel_update')
+  .then expectSingleRow
   .then (row) ->
     # logger.debug row
     for k, val of row.data.DIGIMAPS
