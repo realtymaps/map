@@ -46,7 +46,8 @@ for control in directiveControls
 
 # Leaflet usage:
 #    rmapsControls.{Some}Control position: 'botomleft', scope: mapScope
-app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope) ->
+app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope, $log) ->
+  $log = $log.spawn('map:rmapsControls')
   svc = {}
   for control in directiveControls
     do (control) ->
@@ -60,15 +61,22 @@ app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope) ->
           rmapsMapControlsLogger.debug "#{control.dName} onAdd" unless $rootScope.silenceRmapsControls
           wrapper = L.DomUtil.create 'div', 'rmaps-control' + " rmaps-#{control.name}-control"
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
-          templateFn = $compile wrapper
-          templateFn @options.scope
-          L.DomEvent
-          .on wrapper, 'click', L.DomEvent.stopPropagation
-          .on wrapper, 'mousedown', L.DomEvent.stopPropagation
-          .on wrapper, 'dblclick', L.DomEvent.stopPropagation
-          .on wrapper, 'mousewheel', L.DomEvent.stopPropagation
-          wrapper
-
-      svc[control.dName] = (options) -> new control.class(options)
+          try
+            templateFn = $compile wrapper
+            templateFn @options.scope
+            L.DomEvent
+            .on wrapper, 'click', L.DomEvent.stopPropagation
+            .on wrapper, 'mousedown', L.DomEvent.stopPropagation
+            .on wrapper, 'dblclick', L.DomEvent.stopPropagation
+            .on wrapper, 'mousewheel', L.DomEvent.stopPropagation
+            wrapper
+          catch e
+            $log.error "rmapsControls: #{control.name}"
+            $log.error e
+      try
+        svc[control.dName] = (options) -> new control.class(options)
+      catch e
+        $log.error "rmapsControls: #{control.dName}"
+        $log.error e
 
   svc

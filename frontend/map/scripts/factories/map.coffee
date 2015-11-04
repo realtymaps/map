@@ -104,6 +104,17 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
+            leafletDrawOptions:
+              control:
+                promised: (promise) ->
+                  promise.then ({control, map}) ->
+                    #i should not have to do this as the ordering should be coming from the directives priority
+                    map.removeControl control#hack to fix ordering
+                    $timeout ->
+                      map.addControl control
+                    , 1000
+              position:"bottomleft"
+
             getNotes: () ->
               $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
 
@@ -120,18 +131,16 @@ app.factory 'rmapsMap',
 
             geojson: {}
 
+          #TODO: Redesign this
           controls:
             custom: [
-              rmapsControls.NavigationControl scope: @scope
-              rmapsControls.PropertiesControl scope: @scope
-              rmapsControls.LayerControl scope: @scope
-              @zoomBox
-              rmapsControls.LocationControl scope: @scope
+              rmapsControls.NavigationControl scope: $scope #this is very hackish angular
+              rmapsControls.PropertiesControl scope: $scope #this is very hackish angular
+              rmapsControls.LayerControl scope: $scope
+              self.zoomBox
+              rmapsControls.LocationControl scope: $scope
             ]
 
-          drawUtil:
-            draw: undefined
-            isEnabled: false
 
 
           formatters:
@@ -286,7 +295,7 @@ app.factory 'rmapsMap',
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
         return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng
         testLogger.debug 'lBounds'
-        if not paths and not @scope.drawUtil.isEnabled
+        if not paths #and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of lBounds
             if b?
