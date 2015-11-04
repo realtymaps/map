@@ -15,3 +15,10 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       res.send config.CARTODB
+
+
+  google:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) ->
+      res.send config.GOOGLE

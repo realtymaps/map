@@ -27,7 +27,7 @@ describe "rmapsMap factory", ->
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
       $httpBackend.when( 'GET', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
       $httpBackend.when( 'GET', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
-
+      $httpBackend.when( 'GET', backendRoutes.config.google).respond( undefined )
 
   it 'ctor exists', ->
     @ctor.should.be.ok

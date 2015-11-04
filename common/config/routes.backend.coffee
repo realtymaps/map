@@ -116,6 +116,7 @@ module.exports =
   config:
     mapboxKey: "#{apiBase}/mapbox_key"
     cartodb: "#{apiBase}/cartodb"
+    google: "#{apiBase}/google"
   properties:
     filterSummary: "#{apiBase}/properties/filter_summary/"
     parcelBase: "#{apiBase}/properties/parcel_base/"
