@@ -20,6 +20,6 @@ include ../mixins/property/_propertyAttributes.jade
         ng-click="formatters.results.click(property,property);showDetails = !showDetails")
           div.property-img
             span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-            img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 245, 163)}}" title="{{property.title}}")
+            img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
           +propertyAttributes('property')
           +propertyButtons('property')

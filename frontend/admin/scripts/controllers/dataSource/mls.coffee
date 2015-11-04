@@ -295,19 +295,15 @@ app.controller 'rmapsMlsCtrl',
           mlsModalData: () ->
             return getDefaultBase()
       # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (mlsModalData) ->
-          $scope.cleanConfigValues(mlsModalData)
-          rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
-          .then (newMls) ->
-            $scope.mlsData.current = newMls
-            $scope.updateObjectOptions($scope.mlsData.current)
-          .catch (err) ->
-            msg = 'Error saving MLS.'
-            $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
-        , () ->
-          console.log 'modal closed'
-      )
+      modalInstance.result.then (mlsModalData) ->
+        $scope.cleanConfigValues(mlsModalData)
+        rmapsMlsService.postConfig(mlsModalData, $scope.idOptions)
+        .then (newMls) ->
+          $scope.mlsData.current = newMls
+          $scope.updateObjectOptions($scope.mlsData.current)
+        .catch (err) ->
+          msg = 'Error saving MLS.'
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: msg }
 
     $scope.passwordModal = () ->
       modalInstance = $modal.open
@@ -316,13 +312,9 @@ app.controller 'rmapsMlsCtrl',
         controller: 'ModalPasswordCtrl'
 
       # ok/cancel behavior of modal
-      modalInstance.result.then(
-        (password) ->
-          $scope.mlsData.current.password = password
-          $scope.saveServerPassword()
-        , () ->
-          console.log 'password modal closed'
-      )
+      modalInstance.result.then (password) ->
+        $scope.mlsData.current.password = password
+        $scope.saveServerPassword()
 
 app.controller 'ModalInstanceCtrl',
   ($scope, $modalInstance, mlsModalData, adminConstants) ->

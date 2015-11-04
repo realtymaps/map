@@ -1,1 +1,0 @@
-ALTER TABLE mls_config DROP COLUMN active;

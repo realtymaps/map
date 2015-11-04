@@ -12,9 +12,7 @@
   color $textColor
 
 html, body
-  position absolute
   min-height: 100% !important
-  height 100%
   width 100%
 
 body
@@ -24,7 +22,6 @@ body
 html
   cursor default
   background $dark_blue_darker
-  overflow:hidden !important
   font: $mainFont
   // @extends .font-regular
 
@@ -66,8 +63,6 @@ p
   width 100%
   height 100%
   @extends .global-transition
-  &.on
-    left "calc(100% - %s)" % mobileNavOffset
 
 header.site-header
   display block

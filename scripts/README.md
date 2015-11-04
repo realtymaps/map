@@ -48,12 +48,7 @@ conninfo URL, or the specifier itself if it wasn't a conninfo URL
   
 #### Direct-use scripts
 * `foreman run ./scripts/database/syncMainDb` performs the following actions:
-  * updates the property db with the latest migrations from `./scripts/migrations/propertyData` (recursively)
-* `foreman run ./scripts/database/test` runs test migrations from `./scripts/migrations/test/`.
-  * Adding `--fresh` will cause the test db to be dropped and recreated first.
-  * Any additional arguments passed to `test` will be passed directly to `dbsync` to aid in testing.
-  * There are 2 test migrations set up; the first will create a table in the test db, and the second will run a
-  migration which will fail and roll back without changes.
+  * updates the property db with the latest migrations from `./scripts/migrations` (recursively)
 
 ## environmentNormalization scripts
 * `source ./scripts/environmentNormalization/dbsync` ensures dbsync is available for use by other scripts.  It finds

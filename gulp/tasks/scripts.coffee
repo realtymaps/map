@@ -62,7 +62,6 @@ browserifyTask = (app, watch = false) ->
     b = browserify config
       .transform (file, overrideOptions = {}) ->
         if (lintIgnore.filter [file]).length == 0
-          # console.log 'Ignoring', file
           file += '.ignore'
         browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
         .on 'error', ->

@@ -73,7 +73,9 @@ getProfiles = (auth_user_id) -> Promise.try () ->
     _.indexBy profiles, 'id'
 
 getFirst = (userId) ->
-  singleRow(tables.user.profile().where(auth_user_id: userId))
+  tables.user.profile()
+  .where(auth_user_id: userId)
+  .then singleRow
   .then (userState) ->
     if not userState
       tables.user.profile()

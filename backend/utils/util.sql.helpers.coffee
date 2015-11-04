@@ -206,26 +206,28 @@ selectCountDistinct = (knex, distinctField='rm_property_id') ->
   knex.select(knex.raw("count(distinct #{distinctField})"))
   knex
 
-singleRow = (q, doThrow = false) -> Promise.try ->
-  errMsg = 'Expected a Single Result and '
-  q.then (rows) ->
-    unless rows?.length
-      return unless doThrow
-      throw errMsg + 'rows are empty!'
-    ret = rows[0]
-    unless ret?
-      return unless doThrow
-      throw errMsg + 'row is undefined'
-    ret
+singleRow = (rows) -> Promise.try ->
+  if !rows?.length
+    return null
+  return rows[0]
 
-expectedSingleRow = (q) -> Promise.try ->
-  singleRow(q, true)
+expectSingleRow = (rows) -> Promise.try ->
+  errMsg = 'Expected a single result and '
+  if !rows?.length
+    throw new Error(errMsg + 'rows are empty!')
+  if !rows[0]?
+    throw new Error(errMsg + "row is #{rows[0]}")  # undefined or null
+  return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
-  singleRow tableFn().where(whereClause).whereNot(id:id).count()
+  tableFn()
+  .where(whereClause)
+  .whereNot(id:id)
+  .count()
+  .then singleRow
   .then (row) ->
     if row.count > 0
-      return Promise.reject "#{name} already exists"
+      return Promise.reject new Error("#{name} already exists")
     true
 
 safeJsonArray = (arr) ->
@@ -244,7 +246,7 @@ module.exports =
   select: select
   selectCountDistinct: selectCountDistinct
   singleRow: singleRow
-  expectedSingleRow: expectedSingleRow
+  expectSingleRow: expectSingleRow
   whereIn: whereIn
   orWhereIn: orWhereIn
   whereNotIn: whereNotIn

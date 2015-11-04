@@ -27,7 +27,7 @@ describe "rmapsMap factory", ->
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
       $httpBackend.when( 'GET', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
       $httpBackend.when( 'GET', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
-
+      $httpBackend.when( 'GET', backendRoutes.config.google).respond( undefined )
 
   it 'ctor exists', ->
     @ctor.should.be.ok
@@ -65,8 +65,6 @@ describe "rmapsMap factory", ->
             # showResults: true
           promises = @subject.drawFilterSummary(true)
           @digestor.digest()
-
-          # console.log promises
 
           promises.length.should.be.equal 1
           # promises[0].then ({data}) ->
