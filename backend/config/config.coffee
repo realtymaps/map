@@ -112,6 +112,10 @@ base =
       DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
       RUN_WINDOW: 120000  # 2 minutes
       DELAY_VARIATION: 10000  # 10 seconds
+  GOOGLE:
+    MAPS:
+      API_KEY: process.env.GOOGLE_MAPS_API_KEY
+
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number

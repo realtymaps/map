@@ -1,7 +1,14 @@
 app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
+{config} = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsGoogleService', ->
+app.service 'rmapsGoogleService', ($http) ->
+
+  _googleConfigPromise = $http.get(config.google).then ({data}) ->
+    data
+
+  ConfigPromise: _googleConfigPromise
+
   GeoJsonTo: do ->
 
     _point = do ->
@@ -45,3 +52,22 @@ app.service 'rmapsGoogleService', ->
   UiMap:
     getCorrectModel: (model) ->
       childModel = if model.model? then model.model else model #need to fix api inconsistencies on uiGmap (Markers vs Polygons events)
+
+  StreetView: do ->
+    apiKey = ''
+
+    _googleConfigPromise.then (data) ->
+      return unless data
+      apiKey = "&key=#{data.MAPS.API_KEY}"
+
+    getUrl: (geoObj, width, height, fov = '90', heading = '', pitch = '10', sensor = 'false') ->
+      # https://developers.google.com/maps/documentation/javascript/reference#StreetViewPanorama
+      # heading is better left as undefined as google figures out the best heading based on the lat lon target
+      # we might want to consider going through the api which will gives us URL
+      if heading
+        heading = "&heading=#{heading}"
+      return unless geoObj
+      lonLat = geoObj.geom_point_json.coordinates
+      "http://maps.googleapis.com/maps/api/streetview?size=#{width}x#{height}" +
+      "&location=#{lonLat[1]},#{lonLat[0]}" +
+      "&fov=#{fov}#{heading}&pitch=#{pitch}&sensor=#{sensor}#{apiKey}"

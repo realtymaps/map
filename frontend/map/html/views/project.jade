@@ -88,7 +88,7 @@ include ../includes/mixins/property/_propertyButtons.jade
                             .property-card
                               .property-img
                                 span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-                                img(ng-cloak ng-src="{{formatters.results.getStreetView(property, 420, 280)}}" title="{{property.title}}")
+                                img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
                               .property-data
                                 +propertyAttributes('property')
                                 +propertyButtons('property')
