@@ -126,12 +126,6 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
   $scope.doPreview = () ->
     $scope.templateObj.openPreview()
 
-app.config ($provide) ->
-  $provide.decorator 'taTools', ['$log', '$delegate', ($log, taTools) ->
-    $log.debug "taTools:"
-    $log.debug taTools
-    return taTools
-  ]
 
 app.config ($provide) ->
   $provide.decorator 'taOptions', ['$log', '$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', 'rmapsMainOptions',
@@ -140,89 +134,19 @@ app.config ($provide) ->
     # helps HTML5 compatibility, which uses css instead of deprecated tags like <font>
     $document[0].execCommand('styleWithCSS', false, true)
 
-    taRegisterTool 'fontSize10',
-      buttontext: "10pt",
-      class: "btn btn-white",
-      display: "<label> 10pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize10',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize10"
-
-    taRegisterTool 'fontSize12',
-      buttontext: "12pt",
-      class: "btn btn-white",
-      display: "<label> 12pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize12',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize12"
-
-    taRegisterTool 'fontSize13',
-      buttontext: "13pt",
-      class: "btn btn-white",
-      display: "<label> 13pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize13',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize13"
-
-    taRegisterTool 'fontSize14',
-      buttontext: "14pt",
-      class: "btn btn-white",
-      display: "<label> 14pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize14',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize14"
-
-    taRegisterTool 'fontSize16',
-      buttontext: "16pt",
-      class: "btn btn-white",
-      display: "<label> 16pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize16',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize16"
-
-    taRegisterTool 'fontSize18',
-      buttontext: "18pt",
-      class: "btn btn-white",
-      display: "<label> 18pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize18',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize18"
-
-    taRegisterTool 'fontSize20',
-      buttontext: "20pt",
-      class: "btn btn-white",
-      display: "<label> 20pt"
-      action: () ->
-        classApplier = rangy.createClassApplier 'fontSize20',
-          tagNames: ["*"],
-          normalize: true
-        classApplier.toggleSelection()
-      activeState: (el) ->
-        return el[0].className == "fontSize20"
+    for fontSize in [['fontSize10', '10pt'],['fontSize12', '12pt'],['fontSize14', '14pt'],['fontSize16', '16pt'],['fontSize18', '18pt'],['fontSize20', '20pt']]
+      do (fontSize) ->
+        taRegisterTool fontSize[0],
+          buttontext: fontSize[1],
+          class: "btn btn-white",
+          display: "<label> #{fontSize[1]}"
+          action: () ->
+            classApplier = rangy.createClassApplier fontSize[0],
+              tagNames: ["*"],
+              normalize: true
+            classApplier.toggleSelection()
+          activeState: (el) ->
+            return el[0].className == fontSize[0]
 
     for font in ['Georgia','Gill Sans','Times New Roman','Helvetica']
       do (font) ->

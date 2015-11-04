@@ -1,20 +1,39 @@
 app = require '../app.coffee'
-# htmljade = require('../../html/includes/mail/basic-letter-template.jade')()
-# console.log htmljade
 
 defaultHtml =
-  'basicLetter': require('../../html/includes/mail/basic-letter-template.jade')()
+  'basicLetter':
+    content: require('../../html/includes/mail/basic-letter-template.jade')()
+    # document level adjustments we want to make for wysiwyg based on template type
+    setup: (doc) ->
+      # add special things into wysiwyg that we don't want to put in the original template, and not show up in letter
+      # (requires explicit dom manipulation to set inner text, etc)
+      # e.g. let's put informative text into the "return-address-window" element indicating where address will go
+
+      # console.log "#### document:"
+      # console.log doc
+      # console.log doc.getElementById("return-address-window")
+      # console.log "#### try angular:"
+      # console.log angular.element("return-address-window")
+      # console.log angular.element( doc.querySelector( "return-address-window" ) )
+      # console.log angular.element( document.querySelector( "return-address-window" ) )
 
 defaultFinalStyle =
-  'basicLetter': require '../../styles/mailTemplates/basic-letter/lob.styl'
+  'basicLetter':
+    content: require '../../styles/mailTemplates/basic-letter/lob.styl'
 
-app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService, rmapsprincipal, rmapsevents) ->
+
+getDefaultHtml = (type) ->
+  return defaultHtml[type].content
+
+getDefaultFinalStyle = (type) ->
+  return defaultFinalStyle[type].content
+
+app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, $document, rmapsMailCampaignService, rmapsprincipal, rmapsevents) ->
   class MailTemplate
     constructor: (@type) ->
-      @defaultContent = defaultHtml[@type]
-      console.log "default content:"
-      console.log @defaultContent
-      @defaultFinalStyle = defaultFinalStyle[@type]
+      @defaultContent = getDefaultHtml(@type)
+      @defaultFinalStyle = getDefaultFinalStyle(@type)
+      @_updateDocument()
       @style = @defaultFinalStyle
       @user =
         userID: null
@@ -53,6 +72,11 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
           phone: '(239) 877-7853'
           email: 'dan@mangrovebaynaples.com'
 
+    _updateDocument: () =>
+      _load = () =>
+        defaultHtml[@type].setup($document[0])
+      addEventListener 'load', _load, false
+
     _createPreviewHtml: () =>
       shadowStyle = "body {box-shadow: 4px 4px 20px #888888;}"
       # bodyPadding = "body {margin: 20px;}"
@@ -67,7 +91,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
       preview.document.write @_createPreviewHtml()
 
     save: () =>
-      rmapsMailCampaignService.create(@mailCampaign) # put?
+      rmapsMailCampaignService.create(@mailCampaign) # put? upsert?
       .then (d) =>
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{@mailCampaign.name}\" saved.", type: 'rm-success' }
 

@@ -14,28 +14,16 @@ $template-stage-margin = 1in
         position relative
         overflow scroll
         background-color $gray_ligther
-        // left (-($template-stage-margin / 2) + 0.33in)
-        // height ($page-height / $wysiwyg-scale-factor)
-
-      // .clear-template
-      //   all initial
-      //   * 
-      //     all initial
 
       .template-stage
-        // all initial
-        // position absolute
         left 0
         top 0
         right 0
         bottom 0
         padding-top ($template-stage-margin / 2)
         background-color $gray_ligther
-        // border-right 1px solid $gray
-        // width (($page-width * $wysiwyg-scale-factor) + $template-stage-margin)
         height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
         text-align center
-        //line-height initial
 
         .letter-editor
           text-align left
@@ -47,9 +35,6 @@ $template-stage-margin = 1in
           border-radius 3px
           margin-left 2px
           margin-right 2px
-
-        // .form-control
-        //   line-height inherit
 
         .ta-letter-wrapper
           // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
@@ -63,10 +48,6 @@ $template-stage-margin = 1in
           
         .letter-page:focus
           border none
-          
-
-        // .ta-scroll-window .form-control
-        //   height ($page-height / $wysiwyg-scale-factor) !important
 
         .ta-scroll-window > .ta-bind
           padding: 0
@@ -77,9 +58,3 @@ $template-stage-margin = 1in
         #recipient-address-window, #return-address-window
           overflow hidden
           background-color rgba(100,100,100,0.5)
-          
-        // p
-        //   margin 0
-        //   padding 0
-        //   font-size inherit
-        //   line-height inherit
