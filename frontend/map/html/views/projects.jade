@@ -39,7 +39,8 @@
                   td.select
                     input(type="checkbox" name="selectGroup_{{$index}}")
                   td
-                    h4 {{project.name}}
+                    h4(ng-show="!project.sandbox") {{project.name}}
+                    h4(ng-show="project.sandbox") Sandbox
                     a.details(ui-sref="project({id: {{project.id}}})" title="View details") View Details
                   td
                     span {{project.propertiesTotal}}
