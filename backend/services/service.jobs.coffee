@@ -136,13 +136,13 @@ historyDbFn = () ->
     whereInterval = "now_utc() - started <= interval '#{_interval}'"
     dbquery = dbquery.whereRaw(whereInterval)
 
-    if query.name == 'All'
-      delete query.name
-      delete query.current # 'all' implies both current and non-current sets, so remove from query totally
-
     if query.list?
       if query.list == 'true'
-        dbquery = dbquery.select('name', 'current').groupBy('name', 'current')
+        dbquery = dbquery
+        .select(dbs.get('main').raw('DISTINCT ON (name) name'), 'current')
+        .groupBy('name', 'current')
+        .orderBy('name')
+        .orderBy('current', 'DESC')
       delete query.list
 
     dbquery.where(query)

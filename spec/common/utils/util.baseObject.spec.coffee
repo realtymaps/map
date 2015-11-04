@@ -32,7 +32,6 @@ cat = new Cat()
 describe 'util.baseObject', ->
   describe 'base', ->
     it 'Animal', ->
-      # console.log _.functions animal
       animal.base(animal, 'speak').should.equal "nope"
     it 'Wolf', ->
       wolf.base('speak').should.equal "howl"

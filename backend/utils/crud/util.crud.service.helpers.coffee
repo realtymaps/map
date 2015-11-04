@@ -66,7 +66,6 @@ class Crud extends BaseObject
 
   upsert: (entity, unique, doUpdate = true, safe, doLogQuery = false, fnExec = execQ) ->
     query = _.pick entity, unique
-    logger.info query
     throw new Error('unique field(s) must be provided') unless !_.isEmpty query
 
     @getAll query, doLogQuery, fnExec
@@ -76,7 +75,6 @@ class Crud extends BaseObject
       if found.length == 0
         Crud::create.call @, entity, entity[@idKey], doLogQuery, safe, fnExec
         .then (inserted) ->
-          logger.info inserted
           throw new Error('exactly one record should have been inserted') unless inserted.length == 1
           inserted
 
@@ -84,7 +82,6 @@ class Crud extends BaseObject
         return [ found[0][@idKey] ] unless doUpdate
         Crud::update.call @, found[0][@idKey], entity, safe, doLogQuery, fnExec
         .then (updated) ->
-          logger.info updated
           throw new Error('exactly one record should have been updated') unless updated.length == 1
           updated
 
@@ -175,7 +172,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
     getById: () ->
       q = super(arguments...)
       return q unless @doWrapGetThen
-      singleRow q
+      q.then singleRow
 
     #here down return thenables to be consistent on service returns for single items
     update: () ->

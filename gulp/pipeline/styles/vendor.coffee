@@ -18,6 +18,5 @@ pipeline = _.flatten([bower])
 #minify afterwards as not all libs come minified
 #.map (f) -> f.replace('.css','.min.css')
 
-#console.log "!!!!!!!!!!!!!!!!!!!!!!!#{pipeline}"
 
 module.exports = pipeline

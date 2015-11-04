@@ -1,12 +1,14 @@
 #mobile-nav
   position fixed
-  z-index 0
+  z-index 10000
   left 0
   top 0
-  padding-right mobileNavOffset
-  width 100%
+  width "calc(100% - %s)" % mobileNavOffset
+  max-width 400px
+  min-width 250px
   height 100%
   background $dark_blue_darker
+
   .inner
     position relative
 
@@ -105,3 +107,17 @@
           width 30px
           height 30px
           margin-right 10px
+
+// Overlay on map when Mobile menu is open
+.mobile-page.on
+  .page-map
+    &:after
+      content ""
+      display block
+      position fixed
+      top 0
+      left 0
+      height 100%
+      width 100%
+      z-index 10
+      background-color rgba(0,0,0,0.4)

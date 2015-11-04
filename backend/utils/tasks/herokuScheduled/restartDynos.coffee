@@ -6,8 +6,9 @@ encryptor = require '../../../config/encryptor'
 _ = require 'lodash'
 
 getHerokuCreds = () ->
-  q = tables.config.externalAccounts().where(name:'heroku')
-  singleRow q
+  tables.config.externalAccounts()
+  .where(name:'heroku')
+  .then singleRow
 
 restart = (appName = 'realtymaps-map') ->
   getHerokuCreds().then (creds) ->

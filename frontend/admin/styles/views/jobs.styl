@@ -1,8 +1,7 @@
 .jobs
-  position absolute
-  left 0
   width 100%
   padding 1%
+  overflow-y scroll
 
   *
   *:after
@@ -15,10 +14,14 @@
   .ui-grid
     margin 20px 0
     color black
-
-  .ui-grid-cell:hover
-    background-color rgb(179, 196, 199)
+    
+  .clickable-cell
+  .clickable-rows .ui-grid-cell
     cursor pointer
+
+  .clickable-cell:hover
+  .clickable-rows .ui-grid-row:hover .ui-grid-cell
+    background-color rgb(179, 196, 199)
 
   .summary-grid
     width 100%
@@ -45,7 +48,7 @@
   .ng-invalid-json
     background-color #fdd
     
-  .summary-current
+  .summary-grid .ui-grid-canvas .ui-grid-row:first-child .ui-grid-cell
     border-bottom 2px solid #CCC
 
   .job-reload
