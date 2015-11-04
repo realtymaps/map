@@ -123,7 +123,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     $scope.Toggles.enableNoteTap()
 
   $scope.addProject = () ->
-    $scope.newProject = {}
+    $scope.newProject =
+      copyCurrent: true
+      name: ($scope.selectedProject.name or 'Sandbox') + ' copy'
 
     modalInstance = $modal.open
       animation: true

@@ -39,7 +39,7 @@ safe = [
   'project_id'
 ]
 
-safeProject = ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+safeProject = (require '../utils/util.sql.helpers').columns.project
 
 toReturn = safe.concat ['id']
 
@@ -70,7 +70,6 @@ getProfiles = (auth_user_id) -> Promise.try () ->
         userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": auth_user_id
 
   .then (profiles) ->
-    logger.debug profiles
     _.indexBy profiles, 'id'
 
 getFirst = (userId) ->
@@ -93,7 +92,6 @@ getCurrent = (session) ->
 update = (profile) ->
   userProfileSvc.getById profile.id
   .then (profileProject) ->
-    logger.debug profileProject
     if profileProject?
       projectSvc.update profileProject.project_id, _.pick(profile, ['properties_selected'])
   .then () ->

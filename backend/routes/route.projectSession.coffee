@@ -14,7 +14,7 @@ tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 userUtils = require '../utils/util.user'
 
-safeProject = ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+safeProject = (require '../utils/util.sql.helpers').columns.project
 safeProfile = ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results']
 safeUser = ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
 safeNotes = (require '../utils/util.sql.helpers').columns.notes

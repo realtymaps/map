@@ -21,6 +21,7 @@ auth = require '../utils/util.auth.coffee'
 sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
 {validators} = require '../utils/util.validation'
+safeColumns = (require '../utils/util.sql.helpers').columns
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 dimensionLimits = config.IMAGES.dimensions.profile
@@ -160,13 +161,13 @@ newProject = (req, res, next) ->
     # If current profile is sandbox, convert it to a regular project
     if profile.sandbox is true
       toSave.sandbox = false
-      projectSvc.update profile.project_id, toSave
+      projectSvc.update profile.project_id, toSave, safeColumns.project
       .then () ->
         profile # leave the current profile selected
 
     # Otherwise create a new profile
     else
-      if req.query.copy is true
+      if req.body.copyCurrent is true
         _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results', 'properties_selected'])
 
       profileService.create toSave
