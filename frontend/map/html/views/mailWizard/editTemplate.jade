@@ -1,4 +1,4 @@
-#edit-template
+.edit-template
   form
     div.row.equal-height
       div.col-md-6
@@ -13,7 +13,7 @@
         .row
           input.form-control.name-input(ng-model="templateObj.mailCampaign.name")
         .row
-          .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")
+          .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")  
             .template-stage
               div.letter-editor(ng-class="applyTemplateClass('-body')")
                 div(text-angular 

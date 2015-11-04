@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.factory 'rmapsMailCampaignService', ($log, $http) ->
+app.service 'rmapsMailCampaignService', ($log, $http) ->
 
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 

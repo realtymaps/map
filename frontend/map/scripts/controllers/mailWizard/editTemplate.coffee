@@ -3,10 +3,12 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
+app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
 
   # might move this object to the mailWizard (parent) scope to expose the members to all wizard steps for building the object
   $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
+
+  _doc = $document[0]
 
   editor = {}
   $timeout () ->
@@ -17,12 +19,12 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
       e.targetScope.displayElements.text[0].focus()
 
       # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
-      if $document[0].caretPositionFromPoint
-        range = $document[0].caretPositionFromPoint $scope.mousex, $scope.mousey
+      if _doc.caretPositionFromPoint
+        range = _doc.caretPositionFromPoint $scope.mousex, $scope.mousey
         textNode = range.offsetNode
         offset = range.offset
-      else if $document[0].caretRangeFromPoint
-        range = $document[0].caretRangeFromPoint $scope.mousex, $scope.mousey
+      else if _doc.caretRangeFromPoint
+        range = _doc.caretRangeFromPoint $scope.mousex, $scope.mousey
         textNode = range.startContainer
         offset = range.startOffset
 
@@ -98,20 +100,28 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $state, $log, $wind
 
   # intercept html changes for updating things like removing macros, as well as save html data back to templateObj
   $scope.$watch 'data.htmlcontent', (newC, oldC) ->
-    sel = rangy.getSelection()
-
+    
     # process existing or typed macros (UNFINISHED)
-    if /.*?{{.*?}}.*?/.test(newC)
+    # $log.debug "#### newC:"
+    # $log.debug newC
 
-      i1 = newC.indexOf '{{'
-      i2 = newC.indexOf '}}'
-      # $log.debug "#### newC:"
-      # $log.debug newC
-      # $log.debug "i1, i2:"
-      # $log.debug "#{i1}, #{i2}"
+    # re = new RegExp('{{(.*?)}}')
+    # m = re.exec(newC)
+    # $log.debug "match:"
+    # $log.debug m
+    # debugger
+    # offset = m.index
+    # range = rangy.createRange()
+    # range.setStart newC, offset
+    # range.collapse true
+    # sel = rangy.getSelection()
+    # sel.setSingleRange range
+    # el = angular.element "<span class='macro-display'>#{$scope.macro}</span>"
+
 
     # if a macro-display element exists (which means it used to be valid macro) but 
     # is not among valid macros anymore (because that means it's being deleted), remove it completely
+    sel = rangy.getSelection()
     if sel?.focusNode?.data? && /macro-display/.test(sel.focusNode.parentNode.className) && not _.contains(_.map($scope.macros), sel.focusNode.data)
       parent = sel.focusNode.parentNode
       parent.remove()

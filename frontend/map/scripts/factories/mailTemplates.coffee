@@ -3,19 +3,30 @@ app = require '../app.coffee'
 defaultHtml =
   'basicLetter':
     content: require('../../html/includes/mail/basic-letter-template.jade')()
-    # document level adjustments we want to make for wysiwyg based on template type
-    setup: (doc) ->
-      # add special things into wysiwyg that we don't want to put in the original template, and not show up in letter
-      # (requires explicit dom manipulation to set inner text, etc)
-      # e.g. let's put informative text into the "return-address-window" element indicating where address will go
+    interpolations:
+      _reservedAddressText: "Reserved for return address"
+      _returnAddressText: "Reserved for recipient address"
 
-      # console.log "#### document:"
-      # console.log doc
-      # console.log doc.getElementById("return-address-window")
-      # console.log "#### try angular:"
-      # console.log angular.element("return-address-window")
-      # console.log angular.element( doc.querySelector( "return-address-window" ) )
-      # console.log angular.element( document.querySelector( "return-address-window" ) )
+    # document level adjustments we want to make for wysiwyg based on template type
+    # add/remove special things into wysiwyg that we don't want to put in the original template, and not show up in letter
+    # (requires explicit dom manipulation to set inner text, etc)
+    # e.g. let's put informative text into the "return-address-window" element indicating where address will go
+    addEditorAlterations: (doc) ->
+      doc.getElementById("return-address-window")
+      .insertAdjacentHTML 'beforeend', "<span class='fontSize20'>Reserved for return address</span>"
+
+      doc.getElementById("recipient-address-window")
+      .insertAdjacentHTML 'beforeend', "<span class='fontSize20'>Reserved for recipient address</span>"
+
+    removeEditorAlterations: (doc) ->
+      for clearDiv in ['return-address-window', 'recipient-address-window']
+        div = doc.getElementById(clearDiv)
+        for child in div.childNodes
+          child.remove()
+      tmpBody = doc.createElement 'div'
+      tmpBody.appendChild doc.children[0]
+      tmpBody.innerHTML
+
 
 defaultFinalStyle =
   'basicLetter':
@@ -29,11 +40,13 @@ getDefaultFinalStyle = (type) ->
   return defaultFinalStyle[type].content
 
 app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, $document, rmapsMailCampaignService, rmapsprincipal, rmapsevents) ->
+  _doc = $document[0]
+
   class MailTemplate
     constructor: (@type) ->
       @defaultContent = getDefaultHtml(@type)
       @defaultFinalStyle = getDefaultFinalStyle(@type)
-      #@_updateDocument()
+      @_updateDocument()
       @style = @defaultFinalStyle
       @user =
         userID: null
@@ -73,9 +86,8 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
           email: 'dan@mangrovebaynaples.com'
 
     _updateDocument: () =>
-      _load = () =>
-        defaultHtml[@type].setup($document[0])
-      addEventListener 'load', _load, false
+      angular.element(_doc).ready () =>
+        defaultHtml[@type].addEditorAlterations(_doc)
 
     _createPreviewHtml: () =>
       shadowStyle = "body {box-shadow: 4px 4px 20px #888888;}"
@@ -84,7 +96,9 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
       @_createLobHtml()
 
     _createLobHtml: () =>
-      "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{@mailCampaign.content}</body></html>"
+      letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/xml'
+      lobContent = defaultHtml[@type].removeEditorAlterations letterDocument
+      "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{lobContent}</body></html>"
 
     openPreview: () =>
       preview = $window.open "", "_blank"

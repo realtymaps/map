@@ -1,10 +1,10 @@
 @import '../mailTemplates/basic-letter/editor.styl'
 
-#mail
+.mail
   @extends .font-regular
   @extends .table-view
 
-  #mail-wizard-steps
+  .mail-wizard-steps
     header.send-progress
       background-color $dark_white
       padding 10px 20px
@@ -20,7 +20,7 @@
             &:after
               line-height 32px
 
-  #mail-wizard      
+  .mail-wizard      
     .nav-tabs li
       margin-bottom 0
       height 46px
@@ -71,7 +71,7 @@
       background-color #cacdd0
           
 
-    #select-recipients
+    .select-recipients
       ul.recipients-list
         list-style none
         padding 0
@@ -95,7 +95,7 @@
             li
               padding 10px 0 10px 30px
 
-    #select-template
+    .select-template
       .filters
         margin 0px -10px 20px
       ul.tmpl-list
@@ -143,7 +143,7 @@
           &:active
             border-color $light_blue
 
-    #edit-template
+    .edit-template
             
       ul.nav-tabs
         margin-bottom 0
@@ -174,7 +174,7 @@
       .btn
         min-width 0
 
-    #confirm
+    .confirm
       .overview-template
       .overview-table
         padding-top 40px
