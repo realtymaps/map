@@ -33,8 +33,8 @@ http {
   client_max_body_size 10M;
 
   upstream app_server {
-    # server unix:#{process.env.NGINX_SOCKET_LOCATION} fail_timeout=0;
-    server unix:./nginx.socket fail_timeout=0;
+    server unix:#{process.env.NGINX_SOCKET_LOCATION} fail_timeout=0;
+    # server unix:./nginx.socket fail_timeout=0;
   }
 
   server {

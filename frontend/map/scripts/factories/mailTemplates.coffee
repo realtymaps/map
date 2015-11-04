@@ -33,7 +33,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
     constructor: (@type) ->
       @defaultContent = getDefaultHtml(@type)
       @defaultFinalStyle = getDefaultFinalStyle(@type)
-      @_updateDocument()
+      #@_updateDocument()
       @style = @defaultFinalStyle
       @user =
         userID: null
