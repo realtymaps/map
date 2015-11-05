@@ -38,7 +38,7 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
         _.extend note,
           rm_property_id : model.rm_property_id || undefined
           geom_point_json : model.geom_point_json
-          project_id: $scope.selectedProfile.project_id || undefined
+          project_id: $scope.selectedProject.project_id || undefined
         _signalUpdate rmapsNotesService.create note
 
     updateNote: (note) ->

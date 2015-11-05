@@ -2,27 +2,26 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
   button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
     span
       span.icon.icon-project
-      h4(ng-show="selectedProfile.user_project_name") {{selectedProfile.user_project_name}}
-      h4(ng-show="!selectedProfile.user_project_name") Sandbox
+      h4(ng-show="selectedProject.sandbox") Sandbox
+      h4(ng-show="!selectedProject.sandbox") {{selectedProject.name}}
     span.caret
   .dropdown-menu.whiteblock.no-margin
     .fixed-header
-      a(ng-show="totalProfiles == 1" href="{{frontendRoutes.projects}}") {{totalProfiles}} Project
-      a(ng-show="totalProfiles != 1" href="{{frontendRoutes.projects}}") {{totalProfiles}} Projects
+      a(ng-show="totalProjects == 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Project
+      a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
     .inner
       ul
-        li(ng-repeat="profile in projects| orderBy: '-project_archived'" ng-click="loadProfile(profile)" )
+        li(ng-repeat="project in projects | orderBy: '-sandbox'" ng-click="loadProject(project)" )
           a
             span.enity
               span.icon.icon-project
               span.title
-                h3(ng-show="profile.user_project_name") {{profile.user_project_name}}
-                h3(ng-show="!profile.user_project_name") Sandbox
-                span.count {{profile.totalProperties}}
-                  span(ng-show="profile.totalProperties == 1")  Property
-                  span(ng-show="profile.totalProperties != 1")  Properties
-                  span(ng-show="profile.project_archived")  -- archived
+                h3(ng-show="project.sandbox") Sandbox
+                h3(ng-show="!project.sandbox") {{project.name}}
+                span.count {{project.totalProperties}}
+                  span(ng-show="project.totalProperties == 1")  Property
+                  span(ng-show="project.totalProperties != 1")  Properties
+                  span(ng-show="project.archived")  -- archived
             span.actions
-              //- span.icon.icon-remove
-              //- span.icon.icon-checked
-              span.icon.icon-save_on_disk(ng-show="profile.project_id" ng-click="archiveProject(profile)")
+              span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+              span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")

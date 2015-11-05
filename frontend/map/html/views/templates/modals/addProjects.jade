@@ -6,6 +6,14 @@ form.add-project
     .form-group
       label(for="name") Name your project
       input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here")
+
+    .form-group.project-options(ng-if="selectedProject")
+      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="newProject.name = 'New Project'")
+        span Empty Project
+      label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="true" uncheckable ng-click="newProject.name = (selectedProject.name || 'Sandbox') + ' copy'")
+        span(ng-show="selectedProject.sandbox") Copy Sandbox
+        span(ng-show="!selectedProject.sandbox") Copy {{selectedProject.name}}
+
     button.btn.btn-link(ng-click="showAddClientInfo = !showAddClientInfo" disabled) + Add Client Info
     .add-client-info(ng-cloak ng-show="showAddClientInfo")
       .form-section

@@ -86,6 +86,8 @@ columns =
 
   notes: ['id', 'auth_user_id', 'rm_property_id', 'project_id', 'geom_point_json', 'comments', 'text', 'title']
 
+  project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+
 columns.all = "#{columns.filter}, #{columns.detail}"
 
 
