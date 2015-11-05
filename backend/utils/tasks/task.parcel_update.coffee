@@ -1,22 +1,18 @@
 Promise = require 'bluebird'
 {uploadToParcelsDb} = require '../../services/service.parcels.saver'
 {parcel} = require '../../services/service.cartodb'
-encryptor = require '../../config/encryptor'
 jobQueue = require '../util.jobQueue'
 _ = require 'lodash'
 tables = require '../../config/tables'
 dbs = require '../../config/dbs'
+externalAccounts =  require '../../services/service.externalAccounts'
 
-
-_getCreds: (subtask) ->
-  taskData = JSON.parse subtask.task_data
-  for k, val of taskData.DIGIMAPS
-    taskData.DIGIMAPS[k] = encryptor.decrypt(val)
-  taskData.DIGIMAPS
 
 _subtasks =
   digimaps_define_imports: (subtask) ->
-    _defineImports(subtask, _getCreds(subtask))
+    externalAccounts.getAccountInfo('digimaps')
+    .then (creds) ->
+      _defineImports(subtask, creds)
     .then (imports) ->
       fileToDownload = imports.map (f) -> f.source_id
       jobQueue.queueSubsequentSubtask null, subtask, 'digimaps_save', fileToDownload, true
@@ -25,7 +21,9 @@ _subtasks =
     #all saving and upserting is handled in this function
     #is data_load_history row considered in-progress if inserted_rows, updated_rows, deleted_rows, and invalid_rows are all null
     #should there not be a column to indicate that imports have started for this history item?
-    uploadToParcelsDb(subtask.data, _getCreds(subtask))
+    externalAccounts.getAccountInfo('digimaps')
+    .then (creds) ->
+      uploadToParcelsDb(subtask.data, creds)
     .then ({invalidCtr, insertsCtr, updatesCtr}) ->
       tables.jobQueue.dataLoadHistory()
       .update

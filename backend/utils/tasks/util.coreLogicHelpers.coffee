@@ -13,8 +13,8 @@ tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
+externalAccounts = require '../../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
-encryptor = require '../../config/encryptor'
 unzip = require 'unzip2'
 split = require 'split'
 fs = require 'fs'
@@ -86,11 +86,13 @@ loadRawData = (subtask, options) ->
   rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, 'corelogic')
   ftp = new PromiseFtp()
-  ftp.connect
-    host: subtask.task_data.host
-    user: subtask.task_data.user
-    password: encryptor.decrypt(subtask.task_data.password)
-    autoReconnect: true
+  externalAccounts.getAccountInfo('corelogic')
+  .then (accountInfo) ->
+    ftp.connect
+      host: accountInfo.url
+      user: accountInfo.username
+      password: accountInfo.password
+      autoReconnect: true
   .then () ->
     ftp.get(subtask.data.path)
   .then (zipFileStream) -> new Promise (resolve, reject) ->

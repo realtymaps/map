@@ -7,7 +7,7 @@ validation = require '../utils/util.validation'
 _ = require 'lodash'
 {getParcelJSON, getFormatedParcelJSON, uploadToParcelsDb} = require '../services/service.parcels.saver'
 {defineImports} = require '../services/service.parcels.fetcher.digimaps'
-getDigiCreds =  require '../utils/util.digimaps.creds'
+externalAccounts =  require '../services/service.externalAccounts'
 uuid = require 'uuid'
 auth = require '../utils/util.auth'
 
@@ -30,7 +30,8 @@ _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) -> Promis
 
   validation.validateAndTransform(allParams, transforms)
   .then (validParams) ->
-    getDigiCreds().then (creds) ->
+    externalAccounts.getAccountInfo('digimaps')
+    .then (creds) ->
       logger.debug validParams.fullpath
       fn(validParams.fullpath, creds)
       .then (s) ->
@@ -66,7 +67,7 @@ module.exports =
       handle:(req, res, next) -> Promise.try ->
         logger.debug 'defineImports for digimaps_parcel_imports'
         logger.debug 'getting creds'
-        getDigiCreds()
+        externalAccounts.getAccountInfo('digimaps')
         .then (creds) ->
           #Basically create a mock subtask to satisfy all of defineImports deps
           defineImports(

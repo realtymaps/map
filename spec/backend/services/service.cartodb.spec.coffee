@@ -1,6 +1,10 @@
-{CARTODB} = require '../../../backend/config/config'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.cartodb'
+Promise = require 'bluebird'
+
+FAKE_API_KEY = 'fake key'
+FAKE_API_KEY_TO_US = 'fake key to us'
+
 
 describe 'service.cartodb', ->
   beforeEach ->
@@ -12,34 +16,45 @@ describe 'service.cartodb', ->
           whereNotNull: sinon.stub().returns
             orderBy: sinon.stub().returns
               limit: @limitStub
-              then: sinon.stub()
+              then: (handler) -> Promise.try () -> handler()
               stream: sinon.stub()
-
+    @cartodbConfigMock = sinon.stub().returns Promise.resolve
+      API_KEY: FAKE_API_KEY
+      API_KEY_TO_US: FAKE_API_KEY_TO_US
 
     @subject.__set__ sqlHelpers: @sqlHelpersMock
+    @subject.__set__ cartodbConfig: @cartodbConfigMock
 
 
   describe 'restful', ->
     describe 'getByFipsCode', ->
       describe 'runs', ->
-        it 'no limit', ->
+        it 'no limit', (done) ->
           @subject.restful.getByFipsCode
-            api_key: CARTODB.API_KEY_TO_US
+            api_key: FAKE_API_KEY_TO_US
             fipscode: 12011
-          @sqlHelpersMock.select.calledOnce.should.equal true
+          .then () =>
+            @sqlHelpersMock.select.calledOnce.should.equal(true)
+            done()
 
-        it 'limit', ->
+        it 'limit', (done) ->
           @subject.restful.getByFipsCode
-            api_key: CARTODB.API_KEY_TO_US
+            api_key: FAKE_API_KEY_TO_US
             fipscode: 12011
             limit: 10
-          @sqlHelpersMock.select.calledOnce.should.equal true
-          @limitStub.calledOnce.should.equal true
+          .then () =>
+            @sqlHelpersMock.select.calledOnce.should.equal(true)
+            @limitStub.calledOnce.should.equal(true)
+            done()
 
-      describe 'throws', ->
-        it 'api_key', ->
-          expect(@subject.restful.getByFipsCode).to.throw('UNAUTHORIZED')
-        it 'fips_code', ->
-          fn = =>
-            @subject.restful.getByFipsCode(api_key: CARTODB.API_KEY_TO_US)
-          expect(fn).to.throw('BADREQUEST')
+      describe 'rejects', ->
+        it 'api_key', (done) ->
+          @subject.restful.getByFipsCode()
+          .catch (err) ->
+            expect(err.message).to.equal('UNAUTHORIZED')
+            done()
+        it 'fips_code', (done) ->
+          @subject.restful.getByFipsCode(api_key: FAKE_API_KEY_TO_US)
+          .catch (err) ->
+            expect(err.message).to.equal('BADREQUEST')
+            done()

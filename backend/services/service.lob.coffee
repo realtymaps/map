@@ -1,4 +1,4 @@
-config = require '../config/config'
+externalAccounts = require '../services/service.externalAccounts'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
@@ -7,14 +7,16 @@ fs = require 'fs'
 logger = require '../config/logger'
 
 
-testLob = new LobFactory(config.LOB.TEST_API_KEY)
-testLob.setVersion(config.LOB.API_VERSION)
-testLob.rm_type = 'test'
-promisify.lob(testLob) # can't promisify before setting the version, apparently
-liveLob = new LobFactory(config.LOB.LIVE_API_KEY)
-liveLob.setVersion(config.LOB.API_VERSION)
-liveLob.rm_type = 'live'
-promisify.lob(liveLob) # can't promisify before setting the version, apparently
+lobPromise = Promise.try () ->
+  externalAccounts.getAccountInfo('lob')
+  .then (accountInfo) ->
+    test = new LobFactory(accountInfo.other.test_api_key)
+    test.rm_type = 'test'
+    promisify.lob(test)
+    live = new LobFactory(accountInfo.api_key)
+    live.rm_type = 'live'
+    promisify.lob(live)
+    { test, live }
 
 
 fileDisposer = (filename) ->
@@ -47,7 +49,12 @@ sendJob = (Lob, userId, templateId, data) -> Promise.try () ->
 
 module.exports =
   getPriceQuote: (userId, templateId, data) -> Promise.try () ->
-    sendJob(testLob, userId, templateId, data)
+    lobPromise
+    .then (lob) ->
+      sendJob(lob.test, userId, templateId, data)
     .then (lobResponse) ->
       lobResponse.price
-  sendSnailMail: (userId, templateId, data) -> sendJob(liveLob, userId, templateId, data)
+  sendSnailMail: (userId, templateId, data) ->
+    lobPromise
+    .then (lob) ->
+      sendJob(lob.live, userId, templateId, data)

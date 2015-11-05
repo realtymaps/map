@@ -17,12 +17,11 @@ _getClientFromDigiSettings = (digiMapsSettings) ->
   # logger.debug digiMapsSettings
   if _.isFunction digiMapsSettings?.then
     return digiMapsSettings
-  {URL, ACCOUNT, PASSWORD} = digiMapsSettings
   ftp = new PromiseFtp()
   ftp.connect
-    host: URL
-    user: ACCOUNT
-    password: PASSWORD
+    host: digiMapsSettings.url
+    user: digiMapsSettings.username
+    password: digiMapsSettings.password
     autoReconnect: true
 
 
