@@ -32,8 +32,7 @@ insert into "config_external_accounts" ("api_key", "environment", "name", "other
 insert into "config_external_accounts" ("api_key", "environment", "name", "other", "username") values ('4ZVqEu5ljv/p0Pql3ACK2w==$$WNdFzq8Lbmtes1y9/aGhTDVubBtSjh8CAG0Oz+9LUTpnCKhDoqd/vQ==$', NULL, 'cartodb', '{"api_key_to_us":"OS63qCRArt+CwAr+FjQunQ==$$My5V4phYiB8osLIhOR9Arv8EZC26SgGXKR4s9RCkh194U7T5$","maps":"aVdswRH0WOvprT7DHAgkgw==$$Qn8=$"}', 'yMScIqih2DJy3Sn/YPoYTA==$$1qaYD2H8SkL3xg==$');
 
 insert into "config_external_accounts" ("api_key", "environment", "name", "other") values ('jn5Q+Sb+qSS02fq7r2QZLQ==$$nOoYDWU1R/pwZw74N0CMPmCO9fuU6SdoFlrn4iH3OY14HdJPuffo$', 'production', 'googlemaps', NULL);
-insert into "config_external_accounts" ("api_key", "environment", "name", "other", "password", "url", "username") values ('cE0K9JpN0gVBbrRDpNjHcw==$$jGJwvdAwOwP0rQl9gDmXPA+i3SsZ+GRLZmkE3X2XMVvDCk63dFnnqA==$', 'production', 'lob', '{"test_api_key":"8MfcNdNXtCLEv5864FqOZA==$$cQWnqYTWw8xIA7tUU9gewHtyKeUVs3S1piZc7IFVEnKnJQ+fnFLjDw==$"}', NULL, NULL, NULL);
-
+insert into "config_external_accounts" ("api_key", "environment", "name", "other", "password", "url", "username") values ('cE0K9JpN0gVBbrRDpNjHcw==$$jGJwvdAwOwP0rQl9gDmXPA+i3SsZ+GRLZmkE3X2XMVvDCk63dFnnqA==$', 'production', 'lob', '{\"test_api_key\":\"8MfcNdNXtCLEv5864FqOZA==$$cQWnqYTWw8xIA7tUU9gewHtyKeUVs3S1piZc7IFVEnKnJQ+fnFLjDw==$\"}', NULL, NULL, NULL);
 
 UPDATE jq_task_config
   SET data = '{}'

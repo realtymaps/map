@@ -78,16 +78,10 @@ updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   if opts.logOnly
     return console.log(query.toString())
   query
-
-
-_normalizeOptString = (opts={}) ->
-  JSON.stringify
-    cipherKey: opts.cipherKey ? config.ENCRYPTION_AT_REST
-    environment: opts.environment ? config.ENV
   
 
 module.exports =
-  getAccountInfo: memoize.promise(getAccountInfo, maxAge: 15*60*1000, length: 2, resolvers: [String, _normalizeOptString], primitive: true)
+  getAccountInfo: memoize.promise(getAccountInfo, maxAge: 15*60*1000)
   insertAccountInfo: (accountInfo, opts={}) ->
     module.exports.getAccountInfo.delete(accountInfo.name, cipherKey: opts.cipherKey, environment: opts.environment)
     insertAccountInfo(accountInfo, opts)

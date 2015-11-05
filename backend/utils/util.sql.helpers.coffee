@@ -210,11 +210,10 @@ singleRow = (rows) -> Promise.try ->
   return rows[0]
 
 expectSingleRow = (rows) -> Promise.try ->
-  errMsg = 'Expected a single result and '
   if !rows?.length
-    throw new Error(errMsg + 'rows are empty!')
+    throw new Error('Expected a single result and rows are empty!')
   if !rows[0]?
-    throw new Error(errMsg + "row is #{rows[0]}")  # undefined or null
+    throw new Error("Expected a single result and row is #{rows[0]}")  # undefined or null
   return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
