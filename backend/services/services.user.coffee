@@ -55,9 +55,22 @@ groupsCols = [
 profileCols = [
   "#{tables.user.profile.tableName}.id as id"
   "#{tables.user.profile.tableName}.auth_user_id as user_id"
-  "#{tables.user.project.tableName}.name as #{tables.user.project.tableName}_name"
-  'filters', 'properties_selected', 'map_toggles', 'map_position', 'map_results',
-  'parent_auth_user_id',  'project_id'
+  "#{tables.user.profile.tableName}.parent_auth_user_id"
+  "#{tables.user.profile.tableName}.filters"
+  "#{tables.user.profile.tableName}.map_toggles"
+  "#{tables.user.profile.tableName}.map_position"
+  "#{tables.user.profile.tableName}.map_results"
+  "#{tables.user.profile.tableName}.project_id"
+
+  "#{tables.user.project.tableName}.name"
+  "#{tables.user.project.tableName}.archived"
+  "#{tables.user.project.tableName}.sandbox"
+  "#{tables.user.project.tableName}.minPrice"
+  "#{tables.user.project.tableName}.maxPrice"
+  "#{tables.user.project.tableName}.beds"
+  "#{tables.user.project.tableName}.baths"
+  "#{tables.user.project.tableName}.sqft"
+  "#{tables.user.project.tableName}.properties_selected"
 ]
 
 clientCols = [

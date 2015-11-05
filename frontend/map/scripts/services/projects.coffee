@@ -78,8 +78,8 @@ app.service 'rmapsProjectsService', ($http, $log) ->
     $http.put backendRoutes.projectSession.root + "/#{project.id}", project
 
   service =
-    getProjects: () ->
-      $http.get backendRoutes.projectSession.root
+    getProjects: (cache = false) ->
+      $http.get backendRoutes.projectSession.root, cache: cache
       .then (response) ->
         projects = response.data
         _.each projects, _mockData
@@ -98,6 +98,5 @@ app.service 'rmapsProjectsService', ($http, $log) ->
     createProject: (project) ->
       $http.post backendRoutes.userSession.newProject, project
 
-    archive: (project) ->
-      project.archived = !project.archived
-      _update project
+    delete: (project) ->
+      $http.delete backendRoutes.projectSession.root + "/#{project.id}"
