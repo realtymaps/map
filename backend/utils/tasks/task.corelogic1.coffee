@@ -4,7 +4,7 @@ jobQueue = require '../util.jobQueue'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
-coreLogicHelpers = require './util.coreLogicHelpers'
+countyHelpers = require './util.countyHelpers'
 externalAccounts = require '../../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
 _ = require 'lodash'
@@ -111,8 +111,10 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 loadRawData = (subtask) ->
-  coreLogicHelpers.loadRawData subtask,
+  countyHelpers.loadRawData subtask,
     dataSourceId: 'corelogic'
+    columnsHandler: (columnsLine) -> columnsLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps()
+    delimiter: '\t'
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "corelogic_normalizeData",
       rawTableSuffix: subtask.data.rawTableSuffix
@@ -125,7 +127,7 @@ normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
     dataSourceId: 'corelogic'
     dataSourceType: 'county'
-    buildRecord: coreLogicHelpers.buildRecord
+    buildRecord: countyHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
   Promise.map subtask.data.sources, (source) ->
@@ -138,7 +140,7 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.union(lists), NUM_ROWS_TO_PAGINATE, "corelogic_finalizeData")
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, coreLogicHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.values, countyHelpers.finalizeData.bind(null, subtask)
 
 
 module.exports = new TaskImplementation

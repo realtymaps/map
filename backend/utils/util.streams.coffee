@@ -1,8 +1,11 @@
 _ = require 'lodash'
 through = require 'through'
+through2 = require 'through2'
 logger = require '../config/logger'
 {parcelFeature} = require './util.geomToGeoJson'
 {Readable} = require 'stream'
+split = require 'split'
+
 
 class StringStream extends Readable
   constructor: (@str) ->
@@ -49,7 +52,39 @@ geoJsonFormatter = (toMove, deletes) ->
   through(write, end)
 
 
+delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
+  count = 0
+  outputStream = through2.obj()
+  splitStream = split()
+  finish = (err) ->
+    if err
+      outputStream.write(type: 'error', payload: err)
+    else
+      outputStream.write(type: 'done', payload: count)
+    outputStream.end()
+    splitStream.removeAllListeners()
+  inputStream.on('error', finish)
+  splitStream.on('error', finish)
+  splitStream.on('end', finish)
+  outputStream.write(type: 'delimiter', payload: delimiter)
+  
+  lineHandler = (line) ->
+    count++
+    outputStream.write(type: 'data', payload: line)
+  if !columnsHandler
+    columnsHandler = (headers) -> headers  # noop handler
+  if _.isArray(columnsHandler)
+    outputStream.write(type: 'columns', payload: columnsHandler)
+    splitStream.on('data', lineHandler)
+  else
+    splitStream.once 'data', (headerLine) ->
+      outputStream.write(type: 'columns', payload: columnsHandler(headerLine).split(delimiter))
+      splitStream.on('data', lineHandler)
+  inputStream.pipe(splitStream)  
+
+
 module.exports =
   pgStreamEscape: pgStreamEscape
   geoJsonFormatter: geoJsonFormatter
   StringStream: StringStream
+  delimitedTextToObjectStream: delimitedTextToObjectStream
