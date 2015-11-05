@@ -44,7 +44,6 @@ _transform = (fieldTransform, cipherKey, accountInfo) ->
 
 
 getAccountInfo = (name, opts={}) ->
-  console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@ getting #{name}")
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   environment = opts.environment ? config.ENV
   query = tables.config.externalAccounts(opts.transaction)
