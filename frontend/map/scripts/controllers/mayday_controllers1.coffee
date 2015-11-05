@@ -22,18 +22,6 @@ module.exports = (app) ->
   .controller 'PopoverCtrl', ($scope) ->
     $scope.staticPopover = title: 'Title'
 
-  .controller 'MobilePageCtrl', ($scope) ->
-    $scope.isOn = false
-
-    $scope.toggleIsOn = (event) ->
-      event.stopPropagation() if event
-      $scope.isOn = !$scope.isOn
-
-    $scope.maybeToggleOn = (event) ->
-      return if !$scope.isOn
-      event.stopPropagation()
-      $scope.isOn = false
-
   .controller 'CollapseCtrl', ($scope) ->
     $scope.isCollapsed = true
 
