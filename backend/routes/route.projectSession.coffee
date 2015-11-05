@@ -84,7 +84,7 @@ class ProjectsSessionCrud extends Crud
       if project.sandbox is true
         @svc.update project.id, properties_selected: {}, safeProject, @doLogQuery
 
-        .then () =>
+        .then () ->
           profileSvc.getAll project_id: project.id, auth_user_id: req.user.id
 
         .then (profiles) =>
@@ -92,18 +92,17 @@ class ProjectsSessionCrud extends Crud
             filters: {}
             map_results: {}
             map_position: {}
-            map_results: {}
 
           profileSvc.update profiles[0].id, profileReset, safeProfile, @doLogQuery
 
         .then () =>
           notesSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
 
-        .then () =>
+        .then () ->
           delete req.session.profiles #to force profiles refresh in cache
           userUtils.cacheUserValues req
 
-        .then () =>
+        .then () ->
           req.session.saveAsync()
           true
 
