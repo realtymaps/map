@@ -1,6 +1,6 @@
 div(ng-controller="MobilePageCtrl")
-  .mobile-page(ng-class="{' ':!isOn,'on':isOn}"
-  ng-click="maybeToggleOn($event);")
+  .mobile-page(ng-class="{' ':!isMobileNavOpen,'mobile-nav-open':isMobileNavOpen}"
+  ng-click="closeMobileNav($event);")
     include ../includes/_header
     block content
   include ../includes/_mobilenavigation

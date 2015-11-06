@@ -1,13 +1,13 @@
 include mixins/_avatarMixin.jade
 
-#mobile-nav(ng-show="isOn")
+#mobile-nav(ng-show="isMobileNavOpen")
     .inner
         include ./header/_logo
 
         a(id="closeicon")
-            i(class="fa fa-times fa-2x" ng-class="{'on':isOn}" ng-click="toggleIsOn($event)")
+            i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
-        ul.nav(ng-click="toggleIsOn()")
+        ul.nav(ng-click="closeMobileNav()")
             li
                 a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
                     span.icon.icon-property

@@ -1,13 +1,18 @@
 app = require '../app.coffee'
 
 module.exports = app.controller 'MobilePageCtrl', ($scope) ->
-  $scope.isOn = false
+  $scope.isMobileNavOpen = false
 
-  $scope.toggleIsOn = (event) ->
+  $scope.toggleMobileNav = (event) ->
     event.stopPropagation() if event
-    $scope.isOn = !$scope.isOn
+    $scope.isMobileNavOpen = !$scope.isMobileNavOpen
 
-  $scope.maybeToggleOn = (event) ->
-    return if !$scope.isOn
+  $scope.openMobileNav = (event) ->
+    return if $scope.isMobileNavOpen
     event.stopPropagation()
-    $scope.isOn = false
+    $scope.isMobileNavOpen = true
+
+  $scope.closeMobileNav = (event) ->
+    return if !$scope.isMobileNavOpen
+    event.stopPropagation()
+    $scope.isMobileNavOpen = false
