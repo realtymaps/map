@@ -3,24 +3,17 @@ app = require '../app.coffee'
 defaultHtml =
   'basicLetter':
     content: require('../../html/includes/mail/basic-letter-template.jade')()
-    interpolations:
-      _reservedAddressText: "Reserved for return address"
-      _returnAddressText: "Reserved for recipient address"
 
     # document level adjustments we want to make for wysiwyg based on template type
     # add/remove special things into wysiwyg that we don't want to put in the original template, and not show up in letter
     # (requires explicit dom manipulation to set inner text, etc)
     # e.g. let's put informative text into the "return-address-window" element indicating where address will go
-    addEditorAlterations: (doc) ->
-      doc.getElementById("return-address-window")
-      .insertAdjacentHTML 'beforeend', "<span class='fontSize20'>Reserved for return address</span>"
+    addTemporaryHtml: (doc) ->
+      # temporary indicator-text for address windows already placed in template
 
-      doc.getElementById("recipient-address-window")
-      .insertAdjacentHTML 'beforeend', "<span class='fontSize20'>Reserved for recipient address</span>"
-
-    removeEditorAlterations: (doc) ->
+    removeTemporaryHtml: (doc) ->
       for clearDiv in ['return-address-window', 'recipient-address-window']
-        div = doc.getElementById(clearDiv)
+        div = doc.getElementById(clearDiv) || {childNodes: []}
         for child in div.childNodes
           child.remove()
       tmpBody = doc.createElement 'div'
@@ -46,7 +39,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
     constructor: (@type) ->
       @defaultContent = getDefaultHtml(@type)
       @defaultFinalStyle = getDefaultFinalStyle(@type)
-      @_updateDocument()
+      @_setupWysiwygContent()
       @style = @defaultFinalStyle
       @user =
         userID: null
@@ -85,19 +78,20 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
           phone: '(239) 877-7853'
           email: 'dan@mangrovebaynaples.com'
 
-    _updateDocument: () =>
-      angular.element(_doc).ready () =>
-        defaultHtml[@type].addEditorAlterations(_doc)
+    _setupWysiwygContent: () =>
+      $timeout () =>
+        defaultHtml[@type].addTemporaryHtml(_doc)
 
     _createPreviewHtml: () =>
-      shadowStyle = "body {box-shadow: 4px 4px 20px #888888;}"
-      # bodyPadding = "body {margin: 20px;}"
-      # "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}#{shadowStyle}</style></head><body>#{@mailCampaign.content}</body></html>"
-      @_createLobHtml()
+      #previewStyle = "body {box-shadow: 4px 4px 20px #888888;}"
+      #previewStyle = "body {margin: 20px;}"
+      previewStyle = "body {border: 1px solid black;}"
+      "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}#{previewStyle}</style></head><body>#{@mailCampaign.content}</body></html>"
+      # @_createLobHtml()
 
     _createLobHtml: () =>
-      letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/xml'
-      lobContent = defaultHtml[@type].removeEditorAlterations letterDocument
+      letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/html'
+      lobContent = defaultHtml[@type].removeTemporaryHtml letterDocument
       "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{lobContent}</body></html>"
 
     openPreview: () =>

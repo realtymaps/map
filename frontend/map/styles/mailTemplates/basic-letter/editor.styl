@@ -10,10 +10,6 @@ $template-stage-margin = 1in
 .mail-wizard
   .edit-template
     .basicLetter-wysiwyg
-      .template-stage-container
-        position relative
-        overflow scroll
-        background-color $gray_ligther
 
       .template-stage
         left 0
@@ -25,16 +21,6 @@ $template-stage-margin = 1in
         height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
         text-align center
 
-        .letter-editor
-          text-align left
-          margin auto
-          box-shadow 4px 4px 20px #888888
-          
-        .macro-display
-          background-color #46b8f1
-          border-radius 3px
-          margin-left 2px
-          margin-right 2px
 
         .ta-letter-wrapper
           // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
@@ -51,6 +37,7 @@ $template-stage-margin = 1in
 
         .ta-scroll-window > .ta-bind
           padding: 0
+          height: (($page-height * $wysiwyg-scale-factor) - $template-stage-margin)
         
         .ta-root 
           height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)

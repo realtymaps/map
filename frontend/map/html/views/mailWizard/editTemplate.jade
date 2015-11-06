@@ -16,11 +16,11 @@
           .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")  
             .template-stage
               div.letter-editor(ng-class="applyTemplateClass('-body')")
-                div(text-angular 
+                div(text-angular
+                  rmaps-macro-helper
+                  rmaps-macro-event-helper
                   name="wysiwyg"
                   ta-text-editor-class="ta-letter-wrapper"
-                  on-drop="macro"
-                  ondragend="dropMacro(e)"
                   ta-html-editor-setup="htmlEditorSetup()"
                   ta-text-editor-setup="textEditorSetup()"
                   ng-model="data.htmlcontent"
