@@ -3,24 +3,6 @@ path = require 'path'
 common =  require '../../common/config/commonConfig'
 
 
-_getConfig = (rootName, propName, spacer, config = process.env) ->
-  envVarName = rootName + spacer + propName
-  config[envVarName]
-
-_getAllConfigs = (rootName, props, spacer = '_', config) ->
-  ret = {}
-  for key, maybePropName of props
-    if _.isString maybePropName
-      name = maybePropName
-    else if _.isString maybePropName?.name
-      name = maybePropName.name
-    throw new Error('config property is an unsupported type or malformed object.') unless name
-    ret[name] = _getConfig(rootName, name, spacer, config)
-    if maybePropName?.isJson?
-      ret[name] = JSON.parse ret[name]
-  ret
-
-
 base =
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
@@ -71,35 +53,6 @@ base =
   MEM_WATCH:
     IS_ON: process.env.MEM_WATCH_IS_ON || false
   TEMP_DIR: '/tmp'
-  LOB:
-    TEST_API_KEY: process.env.LOB_TEST_API_KEY
-    LIVE_API_KEY: process.env.LOB_LIVE_API_KEY
-    API_VERSION: '2014-12-18'
-  MAPBOX:
-    API_KEY: process.env.MAPBOX_API_KEY
-    UPLOAD_KEY: process.env.MAPBOX_API_UPLOAD_KEY
-    ACCOUNT: process.env.MAPBOX_ACCOUNT
-    MAPS:
-      main: process.env.MAPBOX_MAPS_MAIN
-  CARTODB: do ->
-    ret = _getAllConfigs('CARTODB', ['API_KEY', {name:'MAPS', isJson: true}, 'ACCOUNT', 'API_KEY_TO_US', 'TEMPLATE'])
-    root = "//#{ret.ACCOUNT}.cartodb.com/api/v1"
-    apiUrl = "api_key=#{ret.API_KEY}"
-
-    _.extend ret,
-      ROOT_URL: root
-      API_URL: apiUrl
-      TILE_URL: "#{root}/map/{mapid}/{z}/{x}/{y}.png?#{apiUrl}"
-      WAKE_URLS: ret.MAPS.map (m) -> "#{root}/map/named/#{m.name}?#{apiUrl}"
-
-  TWILIO:
-    ACCOUNT: process.env.TWILIO_ACCOUNT
-    API_KEY: process.env.TWILIO_API_KEY
-    NUMBER: process.env.TWILIO_NUMBER
-  GMAIL:
-    ACCOUNT: process.env.GMAIL_ACCOUNT
-    PASSWORD: process.env.GMAIL_PASSWORD
-
   MAP: common.map
   IMAGES: common.images
   VALIDATION: common.validation

@@ -63,7 +63,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
 
     constructor: (@mapCtrl) ->
       _.extend @, rmapsFormattersService.Common
-      _.extend @, rmapsFormattersService.Google
+      _.extend @, google: rmapsGoogleService
 
       @mapCtrl.scope.isScrolling = false
 

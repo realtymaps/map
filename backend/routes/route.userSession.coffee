@@ -8,6 +8,7 @@ profileService = require '../services/service.profiles'
 tables = require '../config/tables'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
+projectSvc = require('../services/services.user').project
 userUtils = require '../utils/util.user'
 ExpressResponse = require '../utils/util.expressResponse'
 alertIds = require '../../common/utils/enums/util.enums.alertIds'
@@ -20,6 +21,7 @@ auth = require '../utils/util.auth.coffee'
 sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
 {validators} = require '../utils/util.validation'
+safeColumns = (require '../utils/util.sql.helpers').columns
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
 dimensionLimits = config.IMAGES.dimensions.profile
@@ -147,28 +149,33 @@ profiles = (req, res, next) ->
     logger.error analyzeValue err
 
 newProject = (req, res, next) ->
-  logger.debug 'NEWPROJECT:', req.body.name
-  if !req.body.name
-    throw new Error('Error creating new project, name is required')
+
+  throw new Error 'Error creating new project, name is required' unless req.body.name
+
   Promise.try () ->
-    profileService.getCurrent(req.session)
+    profileService.getCurrent req.session
+
   .then (profile) ->
-    req.body.auth_user_id = req.user.id
+    toSave = _.extend auth_user_id: req.user.id, req.body
 
-    newProfile =
-      auth_user_id: req.user.id
-      map_toggles: {}
-      map_result: {}
+    # If current profile is sandbox, convert it to a regular project
+    if profile.sandbox is true
+      toSave.sandbox = false
+      projectSvc.update profile.project_id, toSave, safeColumns.project
+      .then () ->
+        profile # leave the current profile selected
 
-    # If current profile is sandbox, save the map state, otherwise create a clean profile
-    if !profile.project_id?
-      _.extend newProfile, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results'])
+    # Otherwise create a new profile
+    else
+      if req.body.copyCurrent is true
+        _.extend toSave, _.pick(profile, ['filters', 'map_toggles', 'map_position', 'map_results', 'properties_selected'])
 
-    profileService.create newProfile, req.body
+      profileService.create toSave
+
   .then (newProfile) ->
     req.session.current_profile_id = newProfile.id
     logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-    delete req.session.profiles#to force profiles refresh in cache
+    delete req.session.profiles # to force profiles refresh in cache
     updateCache(req, res, next)
 
 getImage = (req, res, next, entity, typeStr = 'user') -> Promise.try ->

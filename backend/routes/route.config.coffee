@@ -1,17 +1,34 @@
 logger = require '../config/logger'
-config = require '../config/config'
 auth = require '../utils/util.auth'
+externalAccounts = require '../services/service.externalAccounts'
+cartodbConfig = require '../config/cartodb/cartodb'
+
 
 module.exports =
   mapboxKey:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      key = config.MAPBOX.API_KEY
-      res.send key
+      externalAccounts.getAccountInfo('mapbox')
+      .then (accountInfo) ->
+        res.send accountInfo.api_key
 
   cartodb:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
-      res.send config.CARTODB
+      cartodbConfig().then (config) ->
+        res.send(config)
+
+  google:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) ->
+      externalAccounts.getAccountInfo('googlemaps')
+      .catch (err) ->
+        null
+      .then (accountInfo) ->
+        if accountInfo?.api_key?
+          res.send MAPS: API_KEY: accountInfo.api_key
+        else
+          res.send null

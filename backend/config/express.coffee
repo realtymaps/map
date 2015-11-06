@@ -133,6 +133,7 @@ app.set('trust proxy', config.TRUST_PROXY)
 _.extend app.locals,
   newrelic: newrelic
   paths: paths
+  google: require('./googleMaps').locals
 
 app.set('views', __dirname.replace('/config','/views'))
 app.set('view engine', 'jade')

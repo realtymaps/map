@@ -47,55 +47,16 @@ Promise.try () ->
         logger.info "#{prefix} changing key for sanity check..."
         keystore.setValue('ENCRYPTION_AT_REST', newEncryptor.encrypt('you are using the correct key!'), namespace: 'sanity', transaction: transaction)
       .then () ->
-        logger.info "#{prefix} changing key for corelogic task creds..."
-        tables.jobQueue.taskConfig(transaction)
-        .where(name: 'corelogic')
-        .then (rows=[]) ->
-          if !rows?.length
-            return
-          task = rows[0]
-          task.data.password = recrypt(task.data.password)
-          tables.jobQueue.taskConfig(transaction)
-          .where(name: 'corelogic')
-          .update(data: task.data)
-      .then () ->
-        logger.info "#{prefix} changing key for digimaps task creds..."
-        tables.jobQueue.taskConfig(transaction)
-        .where(name: 'parcel_update')
-        .then (rows=[]) ->
-          if !rows?.length
-            return
-          task = rows[0]
-          for key, payload of task.data.DIGIMAPS
-            task.data.DIGIMAPS[key] = recrypt(payload)
-          tables.jobQueue.taskConfig(transaction)
-          .where(name: 'parcel_update')
-          .update(data: sqlHelpers.safeJsonArray(task.data))
-      .then () ->
-        logger.info "#{prefix} changing key for mls passwords..."
-        tables.config.mls(transaction)
-        .then (rows=[]) ->
-          Promise.map rows, (mls) ->
-            logger.info "#{prefix} ... changing key for mls: #{mls.id}..."
-            mls.password = recrypt(mls.password)
-            tables.config.mls(transaction)
-            .where(id: mls.id)
-            .update(password: mls.password)
-      .then () ->
         logger.info "#{prefix} changing key for external accounts..."
+        externalAccounts = require '../../backend/services/service.externalAccounts'
         tables.config.externalAccounts(transaction)
-        .then (rows=[]) ->
-          Promise.map rows, (account) ->
-            logger.info "#{prefix} ... changing key for account: #{account.name}..."
-            account.username = recrypt(account.username)
-            account.password = recrypt(account.password)
-            account.api_key = recrypt(account.api_key)
-            for key, payload of account.other
-              account.other[key] = recrypt(payload)
-            account.other = sqlHelpers.safeJsonArray(account.other)
-            tables.config.externalAccounts(transaction)
-            .where(name: account.name)
-            .update(account)
+        .select('name')
+        .then (externalAccountsList) ->
+          Promise.map externalAccountsList, (accountName) ->
+            logger.info "#{prefix} ... changing key for account: #{account.name} ..."
+            externalAccounts.getAccountInfo(accountName, transaction: transaction, cipherKey: process.env.OLD_ENCRYPTION_AT_REST)
+            .then (accountInfo) ->
+              externalAccounts.updateAccountInfo(accountInfo, transaction: transaction, cipherKey: process.env.ENCRYPTION_AT_REST)
       .then () ->
         logger.info "#{prefix} DONE!"
     .finally () ->

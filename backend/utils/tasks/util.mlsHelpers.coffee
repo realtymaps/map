@@ -1,9 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../errors/util.error.partiallyHandledError'
-copyStream = require 'pg-copy-streams'
-from = require 'from'
-utilStreams = require '../util.streams'
 dbs = require '../../config/dbs'
 config = require '../../config/config'
 logger = require '../../config/logger'
@@ -17,52 +14,6 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
 {SoftFail} = require '../errors/util.error.jobQueue'
 through2 = require 'through2'
-
-
-_retsToDbStreamer = (retsStream) ->
-  # stream the results into a COPY FROM query
-  (tableName, promiseQuery, streamQuery) -> new Promise (resolve, reject) ->
-    delimiter = null
-    dbStream = null
-    finish = (promiseValue, promiseCallback, streamCallback) ->
-      promiseCallback(promiseValue)
-      retsStream.unpipe(dbStreamer)
-      dbStream.write('\\.\n')
-      dbStream.end()
-      dbStreamer.end()
-      streamCallback()
-    dbStreamer = through2.obj (event, encoding, callback) ->
-      try
-        switch event.type
-          when 'data'
-            dbStream.write(utilStreams.pgStreamEscape(event.payload))
-            dbStream.write('\n')
-            callback()
-          when 'delimiter'
-            delimiter = event.payload
-            callback()
-          when 'columns'
-            promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
-            .then () ->
-              tables.jobQueue.dataLoadHistory()
-              .where(raw_table_name: tableName)
-              .delete()
-            .then () ->
-              promiseQuery(dataLoadHelpers.createRawTempTable(tableName, event.payload))
-            .then () ->
-              copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
-              dbStream = streamQuery(copyStream.from(copyStart))
-              callback()
-          when 'done'
-            finish(event.payload, resolve, callback)
-          when 'error'
-            finish(event.payload, reject, callback)
-          else
-            callback()
-      catch err
-        finish(err, reject, callback)
-        
-    retsStream.pipe(dbStreamer)
 
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
@@ -96,7 +47,7 @@ loadUpdates = (subtask, options) ->
         data_type: 'listing'
         batch_id: subtask.batch_id
         raw_table_name: rawTableName
-      dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _retsToDbStreamer(retsStream))
+      dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, retsStream)
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->

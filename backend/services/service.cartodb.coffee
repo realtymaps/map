@@ -1,7 +1,7 @@
 sqlHelpers = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
 logger = require '../config/logger'
-{CARTODB} = require '../config/config'
+cartodbConfig = require '../config/cartodb/cartodb'
 cartodb = require 'cartodb-api'
 cartodbSql = require '../utils/util.cartodb.sql'
 tables = require '../config/tables'
@@ -12,31 +12,33 @@ JSONStream = require 'JSONStream'
 fs = require 'fs'
 
 _execCartodbSql = (sql) ->
-  cartodb.sql
-    apiKey: CARTODB.API_KEY
-    sql:sql
+  cartodbConfig()
+  .then (config) ->
+    cartodb.sql
+      apiKey: config.API_KEY
+      sql:sql
 
 _upload = (stream, fileName) -> Promise.try ->
-  # writeStream = fs.createWriteStream './output.json'
-  filteredStream =
-    stream.pipe(geoJsonFormatter())
 
+  filteredStream = stream.pipe(geoJsonFormatter())
+
+  # writeStream = fs.createWriteStream './output.json'
   # filteredStream.pipe(process.stdout) #uncomment to send to console
   # filteredStream.pipe(writeStream) #uncomment to write file
-
-  new Promise (resolve, reject) ->
-    filteredStream.on 'error', reject
-    filteredStream.on 'end', ->
-      logger.debug "stream length: #{byteLen}"
-      logger.debug 'done processing stream'
-
-      resolve Promise.all _.map MAPBOX.MAPS, (mapId) ->
-        cartodb.upload
-          apiKey: CARTODB.API_KEY
+  cartodbConfig()
+  .then (config) ->
+    new Promise (resolve, reject) ->
+      filteredStream.on 'error', reject
+      filteredStream.on 'end', ->
+        logger.debug "stream length: #{byteLen}"
+        logger.debug 'done processing stream'
+  
+        resolve cartodb.upload
+          apiKey: config.API_KEY
           stream: filteredStream
           uploadFileName: fileName
 
-_fipsCodeQuery = (opts) ->
+_fipsCodeQuery = (opts) -> Promise.try () ->
   throw new Error('opts.fipscode required!') unless opts?.fipscode?
   query =
   sqlHelpers.select(tables.property.parcel(), 'cartodb_parcel', false, 'distinct on (rm_property_id)')
@@ -77,11 +79,13 @@ module.exports =
   restful:
     getByFipsCode: (opts) ->
       # logger.debug opts,true
-      if !opts or !opts.api_key? or opts.api_key != CARTODB.API_KEY_TO_US
-        throw new Error('UNAUTHORIZED')
-      if !opts.fipscode?
-        throw new Error('BADREQUEST')
-
-      parcel.getByFipsCode(opts)
+      cartodbConfig()
+      .then (config) ->
+        if opts?.api_key != config.API_KEY_TO_US
+          throw new Error('UNAUTHORIZED')
+        if !opts.fipscode?
+          throw new Error('BADREQUEST')
+      .then () ->
+        parcel.getByFipsCode(opts)
     uploadParcel: (state, filters) -> Promise.try ->
       parcel.uploadParcel(filters.fips_code)

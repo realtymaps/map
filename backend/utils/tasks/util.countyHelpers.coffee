@@ -13,112 +13,65 @@ tables = require '../../config/tables'
 sqlHelpers = require '../util.sql.helpers'
 retsHelpers = require '../util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
+externalAccounts = require '../../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
-encryptor = require '../../config/encryptor'
+PromiseSftp = require 'promise-sftp'
 unzip = require 'unzip2'
-split = require 'split'
 fs = require 'fs'
 path = require 'path'
 through = require 'through2'
 rimraf = require 'rimraf'
 
 
-_fileToDbStreamer = (filePath) ->
-  # stream the contents of the file into a COPY FROM query
-  (tableName, promiseQuery, streamQuery) ->
-    count = 0
-    new Promise (resolve, reject) ->
-      rejected = false
-      doReject = (message) ->
-        (err) ->
-          if rejected
-            return
-          rejected = true
-          if !(err instanceof PartiallyHandledError)
-            err = new PartiallyHandledError(err, message)
-          reject(err)
-      splitter = split()
-      initialDoReject = doReject("error reading data from file: #{filePath}")
-      fileStream = fs.createReadStream(filePath)
-      .pipe(splitter)
-      .on('end', resolve)
-      .on('error', initialDoReject)
-      .once 'data', (headerLine) ->
-        fileStream.pause()
-        fileStream.removeListener('end', resolve)
-        fileStream.removeListener('error', initialDoReject)
-        # corelogic gives us header names in all caps, with spaces and other punctuation in the names, delimited by tabs
-        fields = headerLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
-        promiseQuery(dataLoadHelpers.createRawTempTable(tableName, fields).toString())
-        .then () -> new Promise (resolve2, reject2) ->
-          rejected2 = false
-          doReject2 = (message) ->
-            (err) ->
-              if rejected2
-                return
-              rejected2 = true
-              reject2(new PartiallyHandledError(err, message))
-          # stream the rest of the unzipped file directly to COPY FROM, with an appended termination buffer
-          transform = (chunk, enc, callback) ->
-            if chunk.length > 0
-              count += 1
-              this.push(utilStreams.pgStreamEscape(chunk))
-              this.push('\n')
-            callback()
-          flush = (callback) ->
-            this.push('\\.\n')
-            callback()
-          copyStart = "COPY \"#{tableName}\" (\"#{fields.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '')"
-          fileStream
-          .pipe(through(transform, flush))
-          .pipe(streamQuery(copyStream.from(copyStart)))
-          .on('finish', resolve2)
-          .on('error', doReject2("error streaming data to #{tableName}"))
-          fileStream.resume()
-        .then resolve
-        .catch doReject("error executing COPY FROM for #{tableName}")
-    .then () ->
-      count
-
-
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
   rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
-  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, 'corelogic')
-  ftp = new PromiseFtp()
-  ftp.connect
-    host: subtask.task_data.host
-    user: subtask.task_data.user
-    password: encryptor.decrypt(subtask.task_data.password)
-    autoReconnect: true
+  fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
+  if options.sftp
+    ftp = new PromiseSftp()
+  else
+    ftp = new PromiseFtp()
+  dataStreamPromise = externalAccounts.getAccountInfo(subtask.task_name)
+  .then (accountInfo) ->
+    ftp.connect
+      host: accountInfo.url
+      user: accountInfo.username
+      password: accountInfo.password
+      autoReconnect: true
   .then () ->
     ftp.get(subtask.data.path)
-  .then (zipFileStream) -> new Promise (resolve, reject) ->
-    zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
-    .on('finish', resolve)
-    .on('error', reject)
-  .then () ->  # just in case this is a retry, do rm -rf
-    rimraf.async("/tmp/#{fileBaseName}")
-  .then () ->
-    fs.mkdirAsync("/tmp/#{fileBaseName}")
-  .then () -> new Promise (resolve, reject) ->
-    fs.createReadStream("/tmp/#{fileBaseName}.zip")
-    .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
-    .on('close', resolve)
-    .on('error', reject)
-  .then () ->
+  
+  if options.unzip
+    dataStreamPromise = dataStreamPromise
+    .then (zipFileStream) -> new Promise (resolve, reject) ->
+      zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
+      .on('finish', resolve)
+      .on('error', reject)
+    .then () ->  # just in case this is a retry, do rm -rf
+      rimraf.async("/tmp/#{fileBaseName}")
+    .then () ->
+      fs.mkdirAsync("/tmp/#{fileBaseName}")
+    .then () -> new Promise (resolve, reject) ->
+      fs.createReadStream("/tmp/#{fileBaseName}.zip")
+      .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+      .on('close', resolve)
+      .on('error', reject)
+    .then () ->
+      fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+
+  dataStreamPromise.then (rawDataStream) ->
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    filePath = "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
-    dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, _fileToDbStreamer(filePath))
+    objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
+    dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
   .then (rowsInserted) ->
     return rowsInserted
   .catch isUnhandled, (error) ->
-    throw new PartiallyHandledError(error, "failed to load corelogic data for update")
+    throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->
     try
       # try to clean up after ourselves
