@@ -70,6 +70,13 @@ remotes on which no branches will be deleted, currently set to prod and upstream
 service can be either 'heroku' or 'github', and the project is the destination github project or heroku app.  It
 performs misc tasks related to such pushes.  If `--dbsync` is present, it will also run dbsync migrations
 before attempting the push/deploy.
-* `./scripts/misc/setHerokuStack <stack>` will set the heroku stack for all apps accessible by the credentialled user.
-* `source ./scripts/misc/syncVars` sets MAIN_DATABASE_URL and RAW_TEMP_DATABASE_URL based on the values of other
-environment variables.
+* `./scripts/misc/allHerokuApps <command> [args]` will execute a command on all heroku apps accessible by the
+credentialled user.  For example, `./scripts/misc/allHerokuApps config:set FOO=bar`
+* `./scripts/misc/externalAccount <action> <data> [app list...]` will set API keys and other account info in one or more
+app databases.
+  * `action` can be either 'insert' or 'update'
+  * `data` is a coffeescript-style object string, such as
+`'name: "test", api_key: "1234qwert5678"'` or `'{name: "foo", username: "bar", password: "baz", environment: "production"}'`
+  * The remaining arguments are the apps on which to set the values.  Each argument can be a staging prefix (such as
+  `joe` or `nem`), `prod`, or a fully-qualified app name (such as `dan-realtymaps-map` or `realtymaps-map`).  If no apps
+  are listed, the values will be set on all apps accessible by the credentialled user.
