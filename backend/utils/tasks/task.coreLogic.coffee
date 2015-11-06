@@ -5,7 +5,7 @@ tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 coreLogicHelpers = require './util.coreLogicHelpers'
-encryptor = require '../../config/encryptor'
+externalAccounts = require '../../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
 _ = require 'lodash'
 keystore = require '../../services/service.keystore'
@@ -21,11 +21,13 @@ DEED = 'deed'
 
 checkFtpDrop = (subtask) ->
   ftp = new PromiseFtp()
-  connectPromise = ftp.connect
-    host: subtask.task_data.host
-    user: subtask.task_data.user
-    password: encryptor.decrypt(subtask.task_data.password)
-    autoReconnect: true
+  connectPromise = externalAccounts.getAccountInfo('corelogic')
+  .then (accountInfo) ->
+    ftp.connect
+      host: accountInfo.url
+      user: accountInfo.username
+      password: accountInfo.password
+      autoReconnect: true
   .then () ->
     ftp.list('/')
   defaultValues = {}

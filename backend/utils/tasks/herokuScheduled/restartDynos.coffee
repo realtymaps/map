@@ -1,24 +1,16 @@
 tables = require '../../../config/tables'
 logger = require '../../../config/logger'
 Heroku = require 'heroku-client'
+externalAccounts = require '../../../services/service.externalAccounts'
 {singleRow} = require '../../util.sql.helpers'
-encryptor = require '../../../config/encryptor'
 _ = require 'lodash'
 
-getHerokuCreds = () ->
-  tables.config.externalAccounts()
-  .where(name:'heroku')
-  .then singleRow
-
 restart = (appName = 'realtymaps-map') ->
-  getHerokuCreds().then (creds) ->
+  externalAccounts.getAccountInfo('heroku')
+  .then (creds) ->
     if !creds?.api_key?
       logger.error 'Critical Error cannot restart heroku with no credentials'.
       process.exit(1)
-
-    for key, val of _.omit creds, ['id', 'other', 'name']
-      if val?
-        creds[key] = encryptor.decrypt val
 
     logger.debug 'Trying to Cycle All Dynos'
     heroku = new Heroku(token: creds.api_key)

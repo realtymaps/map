@@ -1,11 +1,13 @@
 nodemailer = require 'nodemailer'
-config = require './config'
+externalAccounts = require '../services/service.externalAccounts'
 
-mailer = nodemailer.createTransport
-  service: 'Gmail'
-  auth:
-    user: config.GMAIL.ACCOUNT
-    pass: config.GMAIL.PASSWORD
 
 module.exports =
-  mailer: mailer
+  getMailer: () ->
+    externalAccounts.getAccountInfo('gmail')
+    .then (accountInfo) ->
+      nodemailer.createTransport
+        service: 'Gmail'
+        auth:
+          user: accountInfo.username
+          pass: accountInfo.password

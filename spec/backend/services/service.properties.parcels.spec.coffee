@@ -1,4 +1,3 @@
-{DIGIMAPS} = require '../../../backend/config/config'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.properties.parcels'
 Promise = require 'bluebird'

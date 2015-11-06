@@ -14,14 +14,6 @@ map = undefined
 
 module.exports = app
 
-#WE WILL STILL NEED THIS IN PRODUCTION FOR A GOOGLE APIKEY
-#app.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
-#  GoogleMapApi.configure
-#    # key: 'your api key',
-#    v: '3.18'
-#    libraries: 'visualization,geometry,places'
-#])
-
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->

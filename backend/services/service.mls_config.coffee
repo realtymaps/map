@@ -1,10 +1,9 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 logger = require '../config/logger'
-config = require '../config/config'
+externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
-encryptor = require '../config/encryptor'
 crudService = require '../utils/crud/util.crud.service.helpers'
 jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
@@ -37,6 +36,12 @@ class MlsConfigCrud extends crudService.ThenableCrud
         @dbFn.tableName = tableName
       delete query.schemaReady
     super(query, doLogQuery)
+    .map (mlsConfig) ->
+      externalAccounts.getAccountInfo(mlsConfig.id)
+      .then (accountInfo) ->
+        mlsConfig.url = accountInfo.url
+        mlsConfig.username = accountInfo.username
+        mlsConfig
 
   update: (id, entity) ->
     # as config options are added to the mls_config table, they need to be added here as well
@@ -47,10 +52,12 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->
-    if serverInfo.password
-      serverInfo.password = encryptor.encrypt(serverInfo.password)
-    @base('getById', id)
-    .update _.pick(serverInfo, ['url', 'username', 'password'])
+    externalAccounts.getAccountInfo(id)
+    .then (accountInfo) ->
+      update = _.pick(serverInfo, ['url', 'username', 'password'])
+      update.name = id
+      update.environment = accountInfo.environment
+      externalAccounts.updateAccountInfo(update)
     .then (result) ->
       result == 1
     .catch isUnhandled, (error) ->
@@ -58,13 +65,16 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
   # Privileged
   create: (entity, id) ->
+    entity = _.omit(entity, ['url', 'username', 'password'])
     entity.id = id
-    if entity.password
-      entity.password = encryptor.encrypt(entity.password)
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
     super(entity,id)
+    .then () ->
+      accountInfo = _.pick(entity, ['url', 'username', 'password'])
+      accountInfo.name = id
+      externalAccounts.insertAccountInfo(accountInfo)
     .then () ->
       # prepare a queue task for this new MLS
       taskObj = _.merge _.clone(jobQueueTaskDefaults.task),
