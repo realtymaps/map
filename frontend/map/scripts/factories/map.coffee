@@ -113,7 +113,7 @@ app.factory 'rmapsMap',
                     $timeout ->
                       map.addControl control
                     , 1000
-              position:"bottomleft"
+              position:"bottomright"
 
             getNotes: () ->
               $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
