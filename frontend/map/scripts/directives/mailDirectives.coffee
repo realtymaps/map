@@ -57,7 +57,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       scope.setMacroClass el[0]
       range.insertNode el[0]
 
-    # determine if the node has been designated as macro
+    # determine if the node has been flagged as macro span (whether valid or not), by class
     scope.isMacroNode = (node) ->
       classedNode = if node.nodeType == 3 then node.parentNode else node
       # using regex instead of contains to account for classname with/without "-error" flag

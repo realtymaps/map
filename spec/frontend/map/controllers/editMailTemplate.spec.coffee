@@ -26,18 +26,3 @@ describe 'rmapsEditTemplateCtrl', ->
       xit 'ensures template class names are set correctly'
       expect(@scope.applyTemplateClass()).to.eql "#{templateType}"
       expect(@scope.applyTemplateClass('-body')).to.eql "#{templateType}-body"
-
-      xit 'vets appropriate changes to data.htmlcontent that occur during $watch (like macro management)'
-      # console.log "confirm document:"
-      # console.log JSON.stringify(@document)
-      # templateStage = @document.getElementsByClassName('template-stage')
-      # console.log JSON.stringify(templateStage)
-      # console.log templateStage[0]
-      # sel = rangy.getSelection()
-      # console.log "rangy thing:"
-      # console.log sel
-
-      xit 'adds macros appropriately to given text'
-      # @backupDocument = _.cloneDeep @document
-      # spyCb = sinon.spy @$rootScope, '$emit'
-
