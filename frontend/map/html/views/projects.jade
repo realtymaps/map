@@ -43,7 +43,7 @@
                     h4(ng-show="project.sandbox") Sandbox
                     a.details(ui-sref="project({id: {{project.id}}})" title="View details") View Details
                   td
-                    span {{project.propertiesTotal}}
+                    span(ui-sref="project({id: {{project.id}}}") {{project.propertiesTotal}}
                   td
                     span {{project.neighborhoods.length}}
                   td
