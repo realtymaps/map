@@ -80,7 +80,7 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
     splitStream.once 'data', (headerLine) ->
       outputStream.write(type: 'columns', payload: columnsHandler(headerLine).split(delimiter))
       splitStream.on('data', lineHandler)
-  inputStream.pipe(splitStream)  
+  inputStream.pipe(splitStream)
 
 
 module.exports =
