@@ -72,7 +72,7 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
     count++
     outputStream.write(type: 'data', payload: line)
   if !columnsHandler
-    columnsHandler = (headers) -> headers  # noop handler
+    columnsHandler = (headers) -> headers.split(delimiter)  # generic handler
   if _.isArray(columnsHandler)
     outputStream.write(type: 'columns', payload: columnsHandler)
     splitStream.on('data', lineHandler)

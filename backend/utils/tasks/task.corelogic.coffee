@@ -113,7 +113,7 @@ _queuePerFileSubtasks = (transaction, subtask, dir, type, files) -> Promise.try 
 loadRawData = (subtask) ->
   countyHelpers.loadRawData subtask,
     dataSourceId: 'corelogic'
-    columnsHandler: (columnsLine) -> columnsLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps()
+    columnsHandler: (columnsLine) -> columnsLine.replace(/[^a-zA-Z0-9\t]+/g, ' ').toInitCaps().split('\t')
     delimiter: '\t'
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "corelogic_normalizeData",
