@@ -8,6 +8,7 @@ controllerName = "#{domainName}Ctrl"
 
 app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
 leafletIterators, toastr, leafletData, leafletDrawEvents) ->
+
   _toast = null
   drawnItems = new L.FeatureGroup()
 
@@ -22,15 +23,15 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
             metric: false
             showArea: true
             drawError:
-              color: '#b00b00',
+              color: '#b00b00' #TODO change colors to map theme
               timeout: 1000
             shapeOptions:
-              color: '#bada55'
+              color: '#bada55' #TODO change colors to map theme
           circle:
             showArea: true
             metric: false
             shapeOptions:
-              color: '#662d91'
+              color: '#662d91' #TODO change colors to map theme
           marker: false
         edit:
           featureGroup: drawnItems
@@ -48,7 +49,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
 
     _endDrawAction = () ->
       toastr.clear _toast
-      rmapsNgLeafletEventGate.enableEvent(mapId, 'click')
+      rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
 
     _destroy = () ->
       _it.each _unsubscribes, (unsub) -> unsub()
@@ -60,7 +61,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
         onHidden: (hidden) ->
           _endDrawAction()
 
-      rmapsNgLeafletEventGate.disableEvent(mapId, 'click')#disable click events temporarily for rmapsMapEventsHandler
+      rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
 
     $scope.$on '$destroy', ->
       _destroy()
