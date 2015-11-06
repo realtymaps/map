@@ -15,6 +15,7 @@ app = window.angular.module appName, [
   'ngCookies'
   'ngResource'
   'ngRoute'
+  'ngTouch'
   'ui.bootstrap'
   'stateFiles'
   'ui.router'
