@@ -1,0 +1,49 @@
+#!/bin/bash
+
+###
+# See README.md for examples of how to use this script
+###
+
+set -e
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+cd "$SCRIPT_DIR/.."
+
+
+ACTION_TYPE="$1"
+shift
+
+ACTION_TARGET="$1"
+shift
+
+if [[ "$@" != "" ]]
+then
+    DB_TARGETS=""
+    for target in $@
+    do
+        if [[ "$target" == "prod" ]]
+        then
+            DB_TARGETS="$DB_TARGETS realtymaps-map"
+        elif [[ "$target" == *realtymaps-map ]]
+        then
+            DB_TARGETS="$DB_TARGETS $target"
+        else
+            DB_TARGETS="$DB_TARGETS ${target}-realtymaps-map"
+        fi
+    done
+else
+    DB_TARGETS=`./scripts/environmentNormalization/herokuCli - apps | tr -s ' ' | cut -f 1 -d ' '`
+fi
+
+
+export LOG_LEVEL='warn'
+SQL_COMMAND=`foreman run coffee --eval "require('./backend/services/service.externalAccounts').${ACTION_TYPE}AccountInfo(${ACTION_TARGET}, {logOnly: true}).then (result) -> process.exit(0)"`
+echo "SQL command: ${SQL_COMMAND//\"/}"
+
+
+for app in $DB_TARGETS
+do
+    echo
+    echo "Executing on MAIN_DATABASE@${app}..."
+    psql -d `./scripts/database/getDbUrl MAIN_DATABASE@$app` --command="${SQL_COMMAND}"
+done
+echo
