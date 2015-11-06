@@ -18,11 +18,11 @@ if config.MEM_WATCH.IS_ON
   memwatch.on 'leak', (d) -> logger.error "LEAK: #{JSON.stringify(d)}"
 
 
-if process.env.NGINX_SOCKET_FILENAME
-  p = rimraf.async("./nginx/#{process.env.NGINX_SOCKET_FILENAME}")
-else
-  p = Promise.resolve()
-p.then () ->
+require('./config/googleMaps').loadValues()
+.then () ->
+  if process.env.NGINX_SOCKET_FILENAME
+    rimraf.async("./nginx/#{process.env.NGINX_SOCKET_FILENAME}")
+.then () ->
   cluster 'web', config.PROC_COUNT, () ->
     # express configuration
     app = require './config/express'

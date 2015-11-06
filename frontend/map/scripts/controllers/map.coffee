@@ -14,15 +14,7 @@ map = undefined
 
 module.exports = app
 
-#WE WILL STILL NEED THIS IN PRODUCTION FOR A GOOGLE APIKEY
-#app.config(['uiGmapGoogleMapApiProvider', (GoogleMapApi) ->
-#  GoogleMapApi.configure
-#    # key: 'your api key',
-#    v: '3.18'
-#    libraries: 'visualization,geometry,places'
-#])
-
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
 
@@ -46,33 +38,34 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       rmapsprincipal.getIdentity()
     .then (identity) ->
       $scope.projects = identity.profiles
-      $scope.totalProfiles = (_.keys identity.profiles).length
+      $scope.totalProjects = (_.keys identity.profiles).length
       _.each $scope.projects, (project) ->
         project.totalProperties = (_.keys project.properties_selected).length
-      $scope.loadProfile uiProfile(identity)
+      $scope.loadProject uiProfile(identity)
 
     if not identity?.currentProfileId
       $location.path(frontendRoutes.profiles)
 
-  $scope.loadProfile = (profile) ->
-    if profile == $scope.selectedProfile
+  $scope.loadProject = (project) ->
+    if project == $scope.selectedProject
       return
 
-    # If switching profiles, ensure the old profile is up-to-date
-    if $scope.selectedProfile
-      $scope.selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-      $scope.selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-      $scope.selectedProfile.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
+    # If switching projects, ensure the old one is up-to-date
+    if $scope.selectedProject
+      $scope.selectedProject.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+      $scope.selectedProject.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+      $scope.selectedProject.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
+      $scope.selectedProject.properties_selected = rmapsPropertiesService.getSavedProperties()
 
-    rmapsProfilesService.setCurrent $scope.selectedProfile, profile
+    rmapsProfilesService.setCurrent $scope.selectedProject, project
     .then () ->
-      $scope.selectedProfile = profile
+      $scope.selectedProject = project
 
       $rootScope.selectedFilters = {}
 
       $scope.projectDropdown.isOpen = false
 
-      map_position = profile.map_position
+      map_position = project.map_position
       #fix messed center
       if !map_position?.center?.lng or !map_position?.center?.lat
         map_position =
@@ -84,17 +77,17 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       map_position =
         center: NgLeafletCenter map_position.center
 
-      if profile.filters
-        statusList = profile.filters.status || []
+      if project.filters
+        statusList = project.filters.status || []
         for key,status of rmapsParcelEnums.status
-          profile.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-        _.extend($rootScope.selectedFilters, _.omit(profile.filters, 'status'))
+          project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
+        _.extend($rootScope.selectedFilters, _.omit(project.filters, 'status'))
       if map
         if map_position?.center?
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
           $scope.map.center.zoom = Number map_position.zoom
-        $scope.rmapsMapToggles = new rmapsMapToggles(profile.map_toggles)
+        $scope.rmapsMapToggles = new rmapsMapToggles(project.map_toggles)
       else
         if map_position?
           if map_position.center? and
@@ -106,13 +99,13 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           if map_position.zoom?
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
-        rmapsMainOptions.map.toggles = new rmapsMapToggles(profile.map_toggles)
+        rmapsMainOptions.map.toggles = new rmapsMapToggles(project.map_toggles)
         map = new rmapsMap($scope)
 
-      if profile.map_results?.selectedResultId? and map?
+      if project.map_results?.selectedResultId? and map?
         $log.debug 'attempting to reinstate selectedResult'
         rmapsPropertiesService.getPropertyDetail(null,
-          rm_property_id: profile.map_results.selectedResultId, 'all')
+          rm_property_id: project.map_results.selectedResultId, 'all')
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
@@ -122,7 +115,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     $scope.Toggles.enableNoteTap()
 
   $scope.addProject = () ->
-    $scope.newProject = {}
+    $scope.newProject =
+      copyCurrent: true
+      name: ($scope.selectedProject.name or 'Sandbox') + ' copy'
 
     modalInstance = $modal.open
       animation: true
@@ -142,9 +137,15 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         $scope.loadIdentity response.data.identity
 
   $scope.archiveProject = (project) ->
-    rmapsProjectsService.archive project
+    rmapsProjectsService.update id: project.project_id, archived: !project.archived
     .then () ->
       $scope.projectDropdown.isOpen = false
+
+  $scope.resetProject = (project) ->
+    if confirm 'Clear all filters, saved properties, and notes?'
+      rmapsProjectsService.delete id: project.project_id
+      .then () ->
+        $window.location.reload()
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->

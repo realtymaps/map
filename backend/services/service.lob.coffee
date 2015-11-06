@@ -1,17 +1,20 @@
-config = require '../config/config'
+externalAccounts = require '../services/service.externalAccounts'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
 logger = require '../config/logger'
 _ = require 'lodash'
 
-testLob = new LobFactory(config.LOB.TEST_API_KEY)
-testLob.rm_type = 'test'
-promisify.lob(testLob)
-liveLob = new LobFactory(config.LOB.LIVE_API_KEY)
-liveLob.rm_type = 'live'
-promisify.lob(liveLob)
-
+lobPromise = Promise.try () ->
+  externalAccounts.getAccountInfo('lob')
+  .then (accountInfo) ->
+    test = new LobFactory(accountInfo.other.test_api_key)
+    test.rm_type = 'test'
+    promisify.lob(test)
+    live = new LobFactory(accountInfo.api_key)
+    live.rm_type = 'live'
+    promisify.lob(live)
+    { test, live }
 
 filterLobResponseErrors = (res) ->
   if 'errors' not of res
@@ -56,7 +59,12 @@ sendJob = (Lob, userId, data) -> Promise.try () ->
 
 module.exports =
   getPriceQuote: (userId, data) -> Promise.try () ->
-    sendJob(testLob, userId, data)
-    .then (lobResponse) ->
-      lobResponse.price
-  sendSnailMail: (userId, templateId, data) -> sendJob(liveLob, userId, data)
+    lobPromise
+    .then (lob) ->
+      sendJob(lob.test, userId, data)
+      .then (lobResponse) ->
+        lobResponse.price
+  sendSnailMail: (userId, data) -> 
+    lobPromise
+    .then (lob) ->
+      sendJob(lob.live, userId, data)

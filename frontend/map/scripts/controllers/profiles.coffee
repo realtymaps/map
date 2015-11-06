@@ -38,7 +38,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
             for key, profile of $scope.profiles
               profile.showProfileNameInput = false
               if profile.needsUpdate and profile.project_id?
-                $http.put("#{backendRoutes.projectSession.root}/#{profile.project_id}", name: profile.user_project_name)
+                $http.put("#{backendRoutes.projectSession.root}/#{profile.project_id}", name: profile.name)
                 .success ->
                   rmapsprincipal.unsetIdentity()
 

@@ -1,8 +1,21 @@
+externalAccounts = require '../services/service.externalAccounts'
+logger = require './logger'
 
-{GOOGLE} = require './config'
 
-
-keyParam = if GOOGLE?.MAPS?.API_KEY? then "key=#{GOOGLE.MAPS.API_KEY}&" else ""
+locals = {}
+setLocals = (keyParam) ->
+  locals.mapsSdkUrl = "http://maps.google.com/maps/api/js?v=3#{keyParam}&sensor=false"
+setLocals('')
 
 module.exports =
-  mapsSdkUrl = "http://maps.google.com/maps/api/js?v=3&#{keyParam}sensor=false"
+  loadValues: () ->
+    externalAccounts.getAccountInfo('googlemaps')
+    .catch (err) ->
+      null  # we expect to not necessarily get a value here
+    .then (accountInfo) ->
+      if accountInfo?.api_key?
+        logger.info("Setting GoogleMaps API key")
+        setLocals("&key=#{accountInfo.api_key}")
+      else
+        logger.warn("Not using a GoogleMaps API key")
+  locals: locals
