@@ -1,9 +1,9 @@
 basePath = require '../../basePath'
 rewire = require 'rewire'
-coreLogicHelpers = rewire "#{basePath}/utils/tasks/util.coreLogicHelpers"
-_listExtend = coreLogicHelpers.__get__('_listExtend')
+countyHelpers = rewire "#{basePath}/utils/tasks/util.countyHelpers"
+_listExtend = countyHelpers.__get__('_listExtend')
 
-describe 'coreLogicHelpers', () ->
+describe 'countyHelpers', () ->
   describe '_listExtend', () ->
     it 'should merge 2 specially-formatted lists', () ->
       list1 = [
