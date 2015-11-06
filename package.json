@@ -9,8 +9,8 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "0.12.7",
-    "npm": "2.14.x"
+    "node": "4.2.2",
+    "npm": "2.x"
   },
   "scripts": {
     "start": "./scripts/app/startAppWrapper",
@@ -24,7 +24,8 @@
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
     "job-queue": "./scripts/app/processJobQueue",
-    "cmocha": "foreman run ./scripts/misc/cmocha"
+    "cmocha": "foreman run ./scripts/misc/cmocha",
+    "stylus": "stylus"
   },
   "dependencies": {
     "JSONStream": "^0.10.0",
@@ -36,7 +37,7 @@
     "body-parser": "1.9.x",
     "bower": "1.x.x",
     "brfs": "^1.4.0",
-    "browserify": "^11.0.1",
+    "browserify": "12.x",
     "browserify-coffeelint": "1.2.0",
     "browserify-istanbul": "^0.2.1",
     "browserify-ngannotate": "^1.0.1",
@@ -86,7 +87,7 @@
     "gulp-gzip": "1.2.x",
     "gulp-help": "1.6.x",
     "gulp-if": "1.2.x",
-    "gulp-imagemin": "2.3.x",
+    "gulp-imagemin": "2.4.x",
     "gulp-inject": "1.5.x",
     "gulp-jade": "1.1.x",
     "gulp-less": "^3.0.3",
@@ -117,8 +118,9 @@
     "image-size": "^0.3.5",
     "isnode": "0.0.1",
     "jade": "^1.7.0",
-    "jadeify": "^4.4.0",
+    "jadeify": "git://github.com/realtymaps/jadeify.git",
     "js-yaml": "^3.3.1",
+    "istanbul": "git://github.com/realtymaps/istanbul.git#source-map",
     "karma": "0.13.x",
     "karma-chrome-launcher": "0.x",
     "karma-cli": "0.x",
@@ -130,6 +132,10 @@
     "karma-jasmine": "0.x",
     "karma-mocha": "0.x",
     "karma-phantomjs-launcher": "0.x",
+    "karma-browserify": "^4.3.0",
+    "karma-chai": "^0.1.0",
+    "karma-expect": "^1.1.0",
+    "karma-mocha-reporter": "^0.3.1",
     "knex": "git://github.com/tgriesser/knex.git#441675d4db9976e1d4888d8eb22de245db1b1ae6",
     "leaflet": "^0.7.3",
     "leaflet-plugins": "^1.3.2",
@@ -149,6 +155,8 @@
     "node-uuid": "1.4.3",
     "nodemailer": "1.3.4",
     "numeral": "^1.5.3",
+    "phantomjs": "^1.9.18",
+    "phantomjs-polyfill": "0.0.1",
     "pdfkit": "^0.7.0",
     "pg": "^4.4.1",
     "pg-copy-streams": "^0.3.0",
@@ -191,13 +199,6 @@
   },
   "devDependencies": {
     "gulp-wrap-commonjs": "^0.1.13",
-    "istanbul": "git://github.com/realtymaps/istanbul.git#source-map",
-    "karma-browserify": "^4.3.0",
-    "karma-chai": "^0.1.0",
-    "karma-expect": "^1.1.0",
-    "karma-mocha-reporter": "^0.3.1",
-    "phantomjs": "^1.9.18",
-    "phantomjs-polyfill": "0.0.1",
     "rewire": "^2.3.3"
   }
 }

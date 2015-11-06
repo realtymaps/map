@@ -29,6 +29,6 @@ gulp.task 'karmaNoCoverage', (done) ->
   karmaRunner (code) ->
     done(code)
     process.exit code #hack this should not need to be here
-  , reporters: ['mocha']
+  , reporters: ['dots']
 
 gulp.task 'frontendNoCoverageSpec', gulp.series 'karmaNoCoverage'

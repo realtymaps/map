@@ -12,8 +12,13 @@
 .leaflet-top, .leaflet-right, .leaflet-bottom, .leaflet-left
   z-index 3
 
-.leaflet-bottom .leaflet-control
-  margin-bottom 30px
+.leaflet-bottom
+  margin-bottom 25px
+  .leaflet-control
+    &:last-child
+      margin-bottom 0px
+  &.leaflet-right
+    margin-bottom 0px !important
 
 .leaflet-marker-icon
   .circle-nr
@@ -23,4 +28,7 @@
       height 100%
       width 100%
       font-size 14px
-      line-height 30px//matches icon height 
+      line-height 30px//matchxs icon height
+
+
+@import './leafletDraw'
