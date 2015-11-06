@@ -2,7 +2,7 @@ caseing = require 'case'
 app = require '../app.coffee'
 _thisName = "MapEventsLinkerService"
 
-app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpers) ->
+app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpers, leafletDrawEvents) ->
   $log = nemSimpleLogger.spawn("map:#{_thisName}")
   leafletEvents = rmapsNgLeafletHelpers.events
   _getMapIdEventStr = rmapsNgLeafletHelpers.events.getMapIdEventStr
@@ -47,6 +47,17 @@ app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHel
           if handler[name]?
             handler[name](leafletEvent, leafletObject, model,  modelName, layerName, 'map', originator)
 
+  _hookDraw = (mapId, handler, originator, events = leafletDrawEvents.getAvailableEvents()) ->
+    #return a array of unsubscibers if you want to early unsubscibe
+    events.map (name) ->
+      eventName = "leafletDirectiveDraw.#{_getMapIdEventStr(mapId)}" + name
+      $rootScope.$onRootScope eventName, (event, args) ->
+        _getArgs args, (leafletEvent, leafletObject, model, modelName, layerName) ->
+
+          if handler[name]?
+            handler[name](leafletEvent, leafletObject, model,  modelName, layerName, 'draw', originator)
+
   hookMarkers: _hookMarkers
   hookGeoJson: _hookGeoJson
   hookMap: _hookMap
+  hookDraw: _hookDraw

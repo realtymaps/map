@@ -106,17 +106,6 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
-            leafletDrawOptions:
-              control:
-                promised: (promise) ->
-                  promise.then ({control, map}) ->
-                    #i should not have to do this as the ordering should be coming from the directives priority
-                    map.removeControl control#hack to fix ordering
-                    $timeout ->
-                      map.addControl control
-                    , 1000
-              position:"bottomright"
-
             getNotes: () ->
               $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
 

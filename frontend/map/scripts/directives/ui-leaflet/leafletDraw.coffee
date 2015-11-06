@@ -1,5 +1,29 @@
 directiveName = 'lfDraw'
 angular.module('ui-leaflet')
+.factory 'leafletDrawEvents', ($rootScope, $q, leafletLogger, leafletHelpers, leafletEventsHelpersFactory, leafletData) ->
+  EventsHelper = leafletEventsHelpersFactory
+
+  DrawEvents = ->
+    EventsHelper.call this, 'leafletDirectiveDraw', 'draw'
+    return
+
+  DrawEvents:: = new EventsHelper()
+
+  DrawEvents::getAvailableEvents = ->
+    [
+      'created'
+      'edited'
+      'deleted'
+      'drawstart'
+      'drawstop'
+      'editstart'
+      'editstop'
+      'deletestart'
+      'deletestop'
+    ].map (n) -> 'draw:' + n
+
+  new DrawEvents()
+
 .config ($provide, nemDebugProvider) ->
   debug = nemDebugProvider.debug
   debug.enable("config:*")
@@ -20,7 +44,7 @@ angular.module('ui-leaflet')
     $delegate
 
 #Note styling this Leaflet.Draw.DrawTool sucks
-.directive directiveName, (leafletLogger, leafletData, leafletHelpers, leafletIterators, $timeout, $q) ->
+.directive directiveName, (leafletLogger, leafletData, leafletHelpers, leafletIterators, leafletDrawEvents, $timeout, $q) ->
   $log = leafletLogger
   isDefined = leafletHelpers.isDefined
   errorHeader = leafletHelpers.errorHeader
@@ -47,7 +71,7 @@ angular.module('ui-leaflet')
       if !_deferred || _deferred.resolvedDefer
         _deferred = $q.defer()#temp hack until directiveControls is more flexible
       return if _optionsEditedInDirective
-      #TODO Watch options and recreate control
+
       options = leafletScope[directiveName] or {}
 
       if options.control?
@@ -79,11 +103,4 @@ angular.module('ui-leaflet')
           control: drawControl
           map:map
 
-
-        #TODO Add in event handling via extending leafletEvents for leafletDrawEvents
-
-
-###
-Possibly Write Directives that Simply Call the Draw Objects to instantiate drawing.
-That way the templates can be whatever. Directive or html via ngDirectives
-###
+        leafletDrawEvents.bindEvents(attrs.id, map, name = null, options, leafletScope, layerName = null, {mapId: attrs.id})
