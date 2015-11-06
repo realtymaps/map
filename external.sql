@@ -1,0 +1,24 @@
+UPDATE config_external_accounts
+  SET
+      username = 'NgximUzHDCfMmFVv3h3Gbg==$$oDusRMRFqw36MyE7fw==$',
+          password = 'z/tipYeaOU9rrZ8cyJHJSQ==$$/gecucU1ag==$',
+              url = 'YRQ4iKv4N+AchZVT34L4Yw==$$X3UzwUTrkuqo9DxdDfo=$',
+                  other = NULL
+                    WHERE name = 'digimaps';
+                    INSERT INTO config_external_accounts (name, username, password, url) VALUES (
+                        'corelogic',
+                          'nM5D6jjn9F92Swp4RfxcxA==$$pqq7/mAQwRJwFfJ+duc=$',
+                            '0/m0OTjQRVbo7xgZMWpWXA==$$taqwaMV4fdg0z60=$',
+                              'EjWVg3Mgq6QQFYNrmbXUtQ==$$E4ZrX56PFFUEC8nL7LeF$'
+                            );
+                            insert into "config_external_accounts" ("environment", "name", "other", "password", "url", "username") values (NULL, 'temp', NULL, '1BZRY1I0OAxguoWkQvd5RA==$$PFWgZw==$', '3LNbybmhaga8YeThXQokjg==$$5X+0dA==$', 'o/A0qL67ILgjR8JP3EGtdA==$$+d+Z1A==$');
+                            insert into "config_external_accounts" ("environment", "name", "other", "password", "url", "username") values (NULL, 'swflmls', NULL, 'UBPYrimpP3n8YvJ+p6Umqg==$$L5Z9ss/xohQRQw==$', 'O8jStOPV8EGSPJsm9Fg8bg==$$SDNpM4o1bYYMURnLg5LTe+kRNMT0I1gSm6lNcNG5J2HRNsZMqgcIdnzI$', 'T82EYdhuBKw94NtsXH+mjg==$$8nZVBE/8kqnHhZPOnLm10HGH/Q==$');
+                            insert into "config_external_accounts" ("environment", "name", "other", "password", "url", "username") values (NULL, 'GLVAR', NULL, 'e8UKAiZiVuELAyq5mO1EaQ==$$rAs72LuCQg==$', 'NtO/DW/kmThioxjRbzKbKg==$$9YNUbOSV7x6fd5seN4DFNDq9MKxddVel2ziR8yfyzcCT1ZbatEgV$', 'sUnHAmxj+PGu/hHWOmqdYg==$$KWXPuyIg5g==$');
+                            insert into "config_external_accounts" ("environment", "name", "other", "password", "url", "username") values (NULL, 'MRED', NULL, 'uPxYOWzapz0KjRr51kx6jQ==$$dlqsBduXU2csFQ==$', '3x1YPEfj0aEIrZubZ5xiyw==$$VZ5XIAbNTtBPD4hwnKGOyuocsWw+pkGg1g53QiFgmum6QarT0VCiClZA+ynVMPU5KbqBpQ==$', 'HDvR8Ju3gsR0/8tXJqxO9A==$$aHeV/60/OSsqWflYSmpiafni$');
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other", "username") values ('dfrBNIZ87NdKu08Ai5Ox+A==$$ex0wW9bqwGlFT2FMi1XA2Zc6ZUvBmrdYGdMqD0MRF8Q9nrHIV8ShcZq4pk82XgzfzrfHNqiOOEtnJ/d6N0vIcXfMFW2w$', NULL, 'mapbox', '{"upload_key":"yirhkNW3dXrzmdQNdhBOoA==$$6DAYHGr7dERv2ybws108yVB/oGyQ9kbkB4HDQseYAR9br9MDz/rtw4B79voVudNOuR5+6z5SltRKErTr25sXosM/yMVF$","email":"je9PttopRdhSrJsm0oGsNQ==$$7PcwagnNYvmJjhLt1rE9nR55$","main_map":"q6KcZp2Zkf2xyUiKYlLuMg==$$KXWLkaXmGyhAyFm2RFxjmc4Psg==$"}', 'Bt4rLTWhV/gH88Wq59M5OA==$$T1xgJqt9dNayOA==$');
+                            insert into "config_external_accounts" ("environment", "name", "other", "password", "username") values (NULL, 'gmail', NULL, 'u9fDVZjO1CDIsHKun5ou/w==$$VUaqUSzF/DbF3anh$', '1psVljm3BYxquJsh++4cOg==$$jPGSVfsoqq29nyMJOaqD2BKR$');
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other", "username") values ('3OL+iqeksEj5BO3MtbT44g==$$57uZYbZc9EcVfL6goT9hQJinDqa4MiInIkgT+1G8gt4=$', NULL, 'twilio', '{"number":"TWtx4ZfWyai7kC/X31A+mw==$$ROLGm9aMqlJAOD3l$"}', 'qUAEIQZbPGOh72tZR5tR1g==$$lYQPuGoLTCWe/izRjDLtqNzhBESvGoYN7R2AKWA6d34TNQ==$');
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other") values ('hYtNUhNZZrS0iqWxSqptTg==$$IfU0GO2h/CU4UAj5KA0em3DV0Z6rud3W8r81WoCQbq+U3HenRQ/e8w==$', NULL, 'lob', '{"test_api_key":"/YzdG+RxcH2EytZEybXxBw==$$8HfodNthIe+a8+ZIRBFtMyVZV5LZ8ENdwFwSMAVXLvDa0MmpYJ9YuQ==$"}');
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other", "username") values ('JM8AJAVXO3QwuY3a62Pq/A==$$w94HT/4qaH5cCwh1nN9q/PmQk+354kjy2g9He/hBNaUUsjaRt8Zasw==$', NULL, 'cartodb', '{"api_key_to_us":"rB+PsJdEU0McmDfJDP1PHg==$$00yY+EBHiUr/1vu70DoZHW56wuSEtbO3W2m5WTnjX0vXJGs8$","map-parcels":"fE+1V0PXg99hxH3tJ2Voog==$$t4ttLFUvjX2f95z0WJBNJFN/2HhHyR4RY81iRTdRz14WOEM+OKXWnUMIMzy6xfl1kRu8dkx3esqjHTp7iCjLOP4WCMMPBy8=$","map-parcelsAddresses":"1M85T3OwJ85XBNFjSG8uuA==$$nJxT6PLpxqqx7coZZRZqXJgft9YsYCADnawlqDAjOYWwGGiB0RWGK78hgfG/vxxa13y5KOZZEY67dE2KcteYWsywynAVAIQ=$"}', 'rCnP8c2PAPjSFb1QEFIw3Q==$$FoNJaQFTeP/2Cw==$');
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other") values ('jn5Q+Sb+qSS02fq7r2QZLQ==$$nOoYDWU1R/pwZw74N0CMPmCO9fuU6SdoFlrn4iH3OY14HdJPuffo$', 'production', 'googlemaps', NULL);
+                            insert into "config_external_accounts" ("api_key", "environment", "name", "other", "password", "url", "username") values ('cE0K9JpN0gVBbrRDpNjHcw==$$jGJwvdAwOwP0rQl9gDmXPA+i3SsZ+GRLZmkE3X2XMVvDCk63dFnnqA==$', 'production', 'lob', '{"test_api_key":"8MfcNdNXtCLEv5864FqOZA==$$cQWnqYTWw8xIA7tUU9gewHtyKeUVs3S1piZc7IFVEnKnJQ+fnFLjDw==$"}', NULL, NULL, NULL);
