@@ -92,4 +92,6 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     .then (clients) ->
       $scope.project.clients = clients
 
-  $rootScope.registerScopeData $scope.loadProject
+  $rootScope.registerScopeData () ->
+    $scope.selected = $state.params.selected or 'project'
+    $scope.loadProject()

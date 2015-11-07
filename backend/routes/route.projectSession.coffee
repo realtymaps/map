@@ -70,6 +70,16 @@ class ProjectsSessionCrud extends Crud
     @restrictAll @withUser
     super arguments...
 
+  rootGET: (req, res, next) ->
+    super req, res, next
+    .then (projects) =>
+      userSvc.clients.getAll parent_auth_user_id: req.user.id, project_id: _.pluck(projects, 'id'), @doLogQuery
+      .then (clients) =>
+        projectsById = _.indexBy projects, 'id'
+        _.each projects, (project) ->
+          project.clients = _.filter clients, project_id: project.id
+        projects
+
   ###
     Remove or reset (sandbox) project data, including saved properties, notes, etc
   ###

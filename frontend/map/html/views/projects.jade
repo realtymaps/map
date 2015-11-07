@@ -35,23 +35,23 @@
                   th.col-md-1
                     span
               tbody
-                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'" ui-sref="project({id: {{project.id}}})")
+                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
                   td.select
                     input(type="checkbox" name="selectGroup_{{$index}}")
-                  td
+                  td(ui-sref="project({id: {{project.id}}})")
                     h4(ng-show="!project.sandbox") {{project.name}}
                     h4(ng-show="project.sandbox") Sandbox
-                    a.details(ui-sref="project({id: {{project.id}}})" title="View details") View Details
+                    a.details(title="View details") View Details
                   td
-                    span(ui-sref="project({id: {{project.id}}}") {{project.propertiesTotal}}
+                    a(ui-sref="project({id: {{project.id}}, selected: 'pins'})") {{project.propertiesTotal}}
                   td
-                    span {{project.neighborhoods.length}}
+                    a(ui-sref="project({id: {{project.id}}, selected: 'neighborhoods'})") {{project.neighborhoods.length}}
                   td
-                    span {{project.favorites.length}}
+                    a(ui-sref="project({id: {{project.id}}, selected: 'favorites'})") {{project.favorites.length}}
                   td
-                    span {{project.notes.length}}
+                    a(ui-sref="project({id: {{project.id}}, selected: 'notes'})") {{project.notes.length}}
                   td
-                    span {{project.clients.length}}
+                    a(ui-sref="project({id: {{project.id}}, selected: 'clients'})") {{project.clients.length}}
                   td
                     span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                   td.col-md-1

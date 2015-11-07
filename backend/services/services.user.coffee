@@ -77,6 +77,7 @@ clientCols = [
   "#{tables.user.profile.tableName}.id as id"
   "#{tables.user.profile.tableName}.auth_user_id as auth_user_id"
   "#{tables.user.profile.tableName}.parent_auth_user_id as parent_auth_user_id"
+  "#{tables.user.profile.tableName}.project_id as project_id"
 
   "#{tables.auth.user.tableName}.email as email"
   "#{tables.auth.user.tableName}.first_name as first_name"
