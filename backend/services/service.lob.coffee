@@ -64,7 +64,7 @@ module.exports =
       sendJob(lob.test, userId, data)
       .then (lobResponse) ->
         lobResponse.price
-  sendSnailMail: (userId, data) -> 
+  sendSnailMail: (userId, data) ->
     lobPromise
     .then (lob) ->
       sendJob(lob.live, userId, data)

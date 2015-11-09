@@ -35,9 +35,6 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
 app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document) ->
   restrict: 'A'
   require: 'ngModel'
-  controller: ($scope) ->
-    $log.debug "directive controller scope:"
-    $log.debug $scope
   link: (scope, element, attrs, ngModel) ->
     _doc = $document[0]
 

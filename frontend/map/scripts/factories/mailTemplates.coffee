@@ -110,8 +110,6 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
         recipient: @recipientData.recipient
         sender: @senderData
       $rootScope.modalControl = {}
-      $log.debug "#### body data:"
-      $log.debug $rootScope.lobData
       $modal.open
         template: require('../../html/views/templates/modal-snailPrice.tpl.jade')()
         controller: 'rmapsModalSnailPriceCtrl'
