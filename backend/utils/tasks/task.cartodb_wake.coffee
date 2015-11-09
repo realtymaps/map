@@ -1,5 +1,5 @@
 request = require 'hyperquest'
-cartodbConfig = require '../config/cartodb/cartodb'
+cartodbConfig = require '../../config/cartodb/cartodb'
 Promise = require 'bluebird'
 TaskImplementation = require './util.taskImplementation'
 

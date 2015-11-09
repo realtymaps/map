@@ -1,2 +1,2 @@
 a(id="burgericon" ng-if="principal.isAuthenticated()")
-    i(class="fa fa-bars fa-2x" ng-class="{'on':isOn}" ng-click="toggleIsOn($event)")
+    i(class="fa fa-bars fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="openMobileNav($event)")

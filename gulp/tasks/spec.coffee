@@ -8,8 +8,9 @@ open = require 'gulp-open'
 gulp.task 'spec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'frontendSpec'), 'gulpSpec'
 
 gulp.task 'rebuildSpec', gulp.series(
-  gulp.parallel('commonSpec', 'backendSpec'), 'gulpSpec'
-  , gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'frontendNoCoverageSpec')
+  gulp.parallel('commonSpec', 'backendSpec')
+  , gulp.parallel('otherAssets')
+  , 'gulpSpec', 'frontendNoCoverageSpec')
 
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 

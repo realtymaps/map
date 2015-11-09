@@ -10,6 +10,8 @@ logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
 dbs = require '../../config/dbs'
 {HardFail, SoftFail} = require '../errors/util.error.jobQueue'
+copyStream = require 'pg-copy-streams'
+utilStreams = require '../util.streams'
 
 
 DELETE =
@@ -357,14 +359,54 @@ finalizeEntry = (entries) ->
   entry
 
 
-manageRawDataStream = (tableName, dataLoadHistory, doStream) ->
+manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
     tables.jobQueue.dataLoadHistory()
     .insert(dataLoadHistory)
     .then () ->
       promiseQuery('BEGIN TRANSACTION')
-    .then () ->
-      doStream(tableName, promiseQuery, streamQuery)
+    .then () -> new Promise (resolve, reject) ->
+      # stream the results into a COPY FROM query
+      delimiter = null
+      dbStream = null
+      finish = (promiseValue, promiseCallback, streamCallback) ->
+        promiseCallback(promiseValue)
+        objectStream.unpipe(dbStreamer)
+        dbStream.write('\\.\n')
+        dbStream.end()
+        dbStreamer.end()
+        streamCallback()
+      dbStreamer = through2.obj (event, encoding, callback) ->
+        try
+          switch event.type
+            when 'data'
+              dbStream.write(utilStreams.pgStreamEscape(event.payload))
+              dbStream.write('\n')
+              callback()
+            when 'delimiter'
+              delimiter = event.payload
+              callback()
+            when 'columns'
+              promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
+              .then () ->
+                tables.jobQueue.dataLoadHistory()
+                .where(raw_table_name: tableName)
+                .delete()
+              .then () ->
+                promiseQuery(createRawTempTable(tableName, event.payload))
+              .then () ->
+                copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+                dbStream = streamQuery(copyStream.from(copyStart))
+                callback()
+            when 'done'
+              finish(event.payload, resolve, callback)
+            when 'error'
+              finish(event.payload, reject, callback)
+            else
+              callback()
+        catch err
+          finish(err, reject, callback)
+      objectStream.pipe(dbStreamer)
     .catch (err) ->
       promiseQuery('ROLLBACK TRANSACTION')
       .then () ->

@@ -35,7 +35,7 @@ module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leaflet
           geojsonWatchOptions: _.cloneDeep disableWatchObj
           bounds: undefined
           center: options.json.center
-          dragging: false,
+          dragging: false
           layers:
             baselayers: baseLayers
 

@@ -17,10 +17,10 @@ app.factory 'rmapsLeafletObjectFetcher', ($log, $q, leafletData) ->
       _lGeojsons = lObjs
 
     _getMarker = (rm_property_id, layerName = '') ->
-      _lMarkers[layerName + rm_property_id]
+      _lMarkers[layerName + rm_property_id] or _.get _lMarkers, [ layerName, rm_property_id ]
 
     _getPoly = (rm_property_id, layerName) ->
-      return if !layerName
+      return if !layerName or !_lGeojsons?[layerName]
       _.find _lGeojsons[layerName]._layers, (layer) ->
         layer.feature.rm_property_id == rm_property_id
     ###params:

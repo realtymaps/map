@@ -72,9 +72,9 @@ span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-cont
         span.label.col-md-4 Close Price
         .col-md-8
           .form-inline
-            input.form-control(ng-model="selectedFilters.closePriceMin" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
+            select.form-control(ng-model="selectedFilters.closePriceMin" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
             span.label to
-            input.form-control(ng-model="selectedFilters.closePriceMax" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
+            select.form-control(ng-model="selectedFilters.closePriceMax" numeral format="$0,0" ng-options='c.value as c.name for c in filterValues.listedDays')
 
       li.setHasOwner.row(ng-if="principal.isDebugEnvironment()")
         span.label.col-md-4 Has Owner

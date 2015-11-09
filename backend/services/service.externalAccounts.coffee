@@ -43,7 +43,7 @@ _transform = (fieldTransform, cipherKey, accountInfo) ->
   return result
 
 
-getAccountInfo = (name, opts={}) ->
+getAccountInfo = (name, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   environment = opts.environment ? config.ENV
   query = tables.config.externalAccounts(opts.transaction)
@@ -54,9 +54,6 @@ getAccountInfo = (name, opts={}) ->
   .orderBy('environment')
   .then expectSingleRow
   .then _transform.bind(null, _decrypt, cipherKey)
-  if opts.logOnly
-    return console.log(query.toString())
-  query
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
@@ -70,7 +67,7 @@ updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(opts.transaction)
   .where(name: accountInfo.name)
-  if accountInfo.environment == null
+  if !accountInfo.environment?
     query = query.whereNull('environment')
   else
     query = query.where(environment: accountInfo.environment)

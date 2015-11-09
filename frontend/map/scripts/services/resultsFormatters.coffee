@@ -307,7 +307,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
     clickSaveResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
       wasSaved = result?.savedDetails?.isSaved
-      @mapCtrl.saveProperty(result).then =>
+      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
         @reset()
         if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
           result.isMousedOver = undefined
