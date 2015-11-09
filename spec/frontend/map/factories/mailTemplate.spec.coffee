@@ -32,5 +32,5 @@ describe 'mailTemplate factory', ->
 
     xit 'test createLobHtml', ->
       # fails because DOMParser is returning null 
-      console.log @template._createLobHtml()
+      # @template._createLobHtml()
 
