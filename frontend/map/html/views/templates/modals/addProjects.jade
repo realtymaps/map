@@ -5,7 +5,7 @@ form.add-project
   .modal-body
     .form-group
       label(for="name") Name your project
-      input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here")
+      input.form-control(type="text" name="name" ng-model="newProject.name" placeholder="Type project name here" rmaps-autofocus="true")
 
     .form-group.project-options(ng-if="selectedProject")
       label.btn.btn-white.btn-radio(ng-model="newProject.copyCurrent" btn-radio="false" uncheckable ng-click="newProject.name = 'New Project'")
