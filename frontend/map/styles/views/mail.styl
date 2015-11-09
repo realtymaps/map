@@ -1,0 +1,210 @@
+@import '../mailTemplates/basic-letter/editor.styl'
+
+.mail
+  @extends .font-regular
+  @extends .table-view
+
+  .mail-wizard-steps
+    header.send-progress
+      background-color $dark_white
+      padding 10px 20px
+      border-bottom 1px solid $gray_ligther
+      overflow hidden
+      .pathway
+        margin 0
+        border 0 none
+        ul
+          margin 0
+          li
+            line-height 32px
+            &:after
+              line-height 32px
+
+  .mail-wizard      
+    .nav-tabs li
+      margin-bottom 0
+      height 46px
+      padding 0
+      text-align center
+      
+    .nav-tabs li button
+      margin-top 7px
+
+    .inner .container
+      width 100%
+      padding-right 0
+      padding-left 0
+      
+    .btn.btn-default.active
+      background-color #123d74
+
+    .toolGroup
+      width 370px
+      margin auto
+      
+      .btn-toolbar
+        margin 0
+      button
+        margin 5px
+        float right
+        height 2.5em
+      
+      .miscTools::before, .btn-toolbar::before
+        display initial
+        content initial
+        
+      .miscTools::after, .btn-toolbar::after
+        clear initial
+
+    .name-input
+      border 0
+      box-shadow none
+      font-size 30px
+      height 50px
+      color black
+      text-align center
+      background-color #dbdee1
+      border-radius 0
+      font-style italic
+      
+    .name-input:hover
+      background-color #cacdd0
+          
+
+    .select-recipients
+      ul.recipients-list
+        list-style none
+        padding 0
+        margin 0
+        li
+          border-bottom 1px solid $gray_ligther
+          padding 0
+
+          .checkbox
+            border-bottom 1px solid $gray_ligther
+            padding 20px 0
+            margin 0
+
+          &:last-child
+            border 0 none
+
+          ul
+            list-style none
+            padding 0
+            margin 0
+            li
+              padding 10px 0 10px 30px
+
+    .select-template
+      .filters
+        margin 0px -10px 20px
+      ul.tmpl-list
+        list-style none
+        padding 0
+
+        li
+          margin-bottom 20px
+
+        .tmpl-item
+          border 1px solid $darker_white
+          border-radius 3px
+          padding 10px
+          overflow hidden
+          display table
+          width 100%
+          @extends .global-transition
+
+          .tmpl-image
+            display table-cell
+            min-width 123px
+            height 145px
+            background-image url(/assets/base/template_img.png)
+            background-repeat no-repeat
+            background-position top
+            vertical-align top
+          .tmpl-data
+            display table-cell
+            position relative
+            padding-left 10px
+            h3.tmpl-title
+              font-size 14px
+              margin 0
+              display inline-block
+              vertical-align top
+              margin-bottom 40px
+            button
+              display inline-block
+              position absolute
+              right 0
+              bottom 0
+              min-width 1px
+
+          &:hover
+          &:active
+            border-color $light_blue
+
+    .edit-template
+            
+      ul.nav-tabs
+        margin-bottom 0
+
+        .nav-justified
+          height 46px
+          border-bottom 0
+
+      .nav .ta-toolbar
+        margin-left 0 !important
+
+        button
+          float right
+          margin-right 5px
+
+      label
+        color #000
+      
+      .fontTypeTools label.btn:not(.active)
+        border 1px solid white
+
+      .edit-template-content
+        padding 20px
+        
+      .edit-template-design
+        padding 20px
+        
+      .btn
+        min-width 0
+
+      .template-stage-container
+        position relative
+        overflow scroll
+        background-color $gray_ligther
+
+      .template-stage
+
+        .letter-editor
+          text-align left
+          margin auto
+          box-shadow 4px 4px 20px #888888
+          
+        .macro-display
+          background-color #46b8f1
+          border-radius 3px
+          margin-left 2px
+          margin-right 2px
+        .macro-display-error
+          background-color red
+          border-radius 3px
+          margin-left 2px
+          margin-right 2px
+
+
+    .confirm
+      .overview-template
+      .overview-table
+        padding-top 40px
+
+        table
+          td
+            &:nth-child(2)
+              text-align right
+              font-weight bold

@@ -9,7 +9,6 @@ module.exports =
   profiles:       'profiles'
   user:           'user'
   history:        'history'
-  mail:           'mail'
   properties:     'properties'
   projects:       'projects'
   project:        'project?id&selected'
@@ -19,6 +18,10 @@ module.exports =
   addProjects:    'addProjects'
   sendEmailModal: 'sendEmailModal'
   createNewEmail: 'newEmail'
+
+  mail:           'mail'
+  mailWizard:     'mailWizard'
+  editTemplate:   '/editTemplate'
 
   avatar:         '/assets/avatar.svg'
   mocks:

@@ -96,6 +96,8 @@ module.exports =
     company: 'user_company'
     accountImages: 'user_account_images'
     notes: 'user_notes'
+  mail:
+    campaign: 'user_mail_campaigns'
 
     
 # set up this way so IntelliJ's autocomplete works

@@ -1,6 +1,5 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
-require '../../directives/dragdrop.coffee'
 require '../../directives/listinput.coffee'
 
 

@@ -44,4 +44,9 @@ app.constant 'rmapsMainOptions', do () ->
       quietMillis: 30 * 1000   # 30 seconds
       # cancelQuietMillis is how long to prevent alerts when we expect an HTTP cancel
       cancelQuietMillis: 1000 # 1 second, just in case of a really bogged down browser; on my laptop, only 8ms is necessary
+
+    mail:
+      macros:
+        address: '{{address}}'
+        name: '{{name}}'
   res

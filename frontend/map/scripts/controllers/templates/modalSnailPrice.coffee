@@ -4,7 +4,7 @@ backendRoutes = require '../../../../../common/config/routes.backend.coffee'
 httpStatus = require '../../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 
-app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location) ->
+app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location, $log) ->
   
   $scope.$interpolate = $interpolate
   $scope.statuses =
@@ -38,14 +38,15 @@ app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $locati
           troubleshooting: JSON.stringify(status:status||null, data:data||null)
   
   $scope.modalControl.status = $scope.statuses.fetching
-  handlePost(backendRoutes.snail.quote, _.extend(rm_property_id: $scope.data.property.rm_property_id, $scope.form), alerts:false)
+
+  handlePost(backendRoutes.snail.quote, $scope.lobData, alerts:false)
   .success (data) ->
     $scope.messageData.price = data.price
     $scope.modalControl.status = $scope.statuses.asking
   
   $scope.send = () ->
     $scope.modalControl.status = $scope.statuses.sending
-    handlePost(backendRoutes.snail.send, _.extend(rm_property_id: $scope.data.property.rm_property_id, $scope.form), alerts:false)
+    handlePost(backendRoutes.snail.send, $scope.lobData, alerts:false)
     .success () ->
       $scope.modalControl.status = $scope.statuses.sent
   

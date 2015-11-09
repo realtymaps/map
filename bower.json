@@ -35,6 +35,7 @@
     "restangular": "1.5.1",
     "rmaps-angular-utils": "1.0.1",
     "spinkit": "~1.0.0",
+    "textAngular": "~1.4.6",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#0.0.14",
     "angular-toastr": "~1.5.0",
     "leaflet-draw": "git://github.com/michaelguild13/Leaflet.draw.git#master"
