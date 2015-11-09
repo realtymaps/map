@@ -14,7 +14,7 @@ map = undefined
 
 module.exports = app
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
   rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
 
@@ -32,19 +32,17 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapssearchbox('mainMap')
 
-  $scope.loadIdentity = (identity) ->
-    rmapsprincipal.getCurrentProfile()
-    .then ->
-      rmapsprincipal.getIdentity()
-    .then (identity) ->
+  $scope.loadIdentity = (identity, project_id) ->
+    if not identity?.currentProfileId and not project_id
+      $location.path(frontendRoutes.profiles)
+    else
       $scope.projects = identity.profiles
       $scope.totalProjects = (_.keys identity.profiles).length
       _.each $scope.projects, (project) ->
         project.totalProperties = (_.keys project.properties_selected).length
-      $scope.loadProject uiProfile(identity)
 
-    if not identity?.currentProfileId
-      $location.path(frontendRoutes.profiles)
+      projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
+      $scope.loadProject projectToLoad
 
   $scope.loadProject = (project) ->
     if project == $scope.selectedProject
@@ -82,7 +80,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         for key,status of rmapsParcelEnums.status
           project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
         _.extend($rootScope.selectedFilters, _.omit(project.filters, 'status'))
-      if map
+      if $scope.map?
         if map_position?.center?
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
@@ -113,6 +111,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   $scope.enableNoteTap = ->
     $scope.Toggles.enableNoteTap()
+
+  $scope.selectProject = (project) ->
+    $state.go $state.current, 'project_id': project.project_id, { notify: false }
+    $scope.loadProject project
 
   $scope.addProject = () ->
     $scope.newProject =
@@ -150,7 +152,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
     rmapsprincipal.getIdentity()
-    .then $scope.loadIdentity
+    .then (identity) ->
+      $scope.loadIdentity identity, Number($state.params.project_id)
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

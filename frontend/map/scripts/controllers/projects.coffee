@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $log, $modal, rmapsprincipal, rmapsProjectsService) ->
+app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("map:projects")
   $log.debug 'projectsCtrl'
@@ -30,6 +30,9 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $log, $modal, rm
       rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
         $scope.loadProjects()
+
+  $scope.loadMap = (project) ->
+    $state.go 'map', project_id: project.id, {reload: true}
 
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()

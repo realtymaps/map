@@ -2,7 +2,7 @@ module.exports =
   index:          '/'
   login:          'login'
   logout:         'logout'
-  map:            'map'
+  map:            'map?project_id'
   authenticating: 'authenticating'
   accessDenied:   'accessDenied'
   snail:          'snail'
