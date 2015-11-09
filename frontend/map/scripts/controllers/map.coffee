@@ -61,8 +61,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       $rootScope.selectedFilters = {}
 
-      $scope.projectDropdown.isOpen = false
-
       map_position = project.map_position
       #fix messed center
       if !map_position?.center?.lng or !map_position?.center?.lat
@@ -107,47 +105,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         .then (data) ->
           map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
 
-  $scope.projectDropdown = isOpen: false
-
   $scope.enableNoteTap = ->
     $scope.Toggles.enableNoteTap()
-
-  $scope.selectProject = (project) ->
-    $state.go $state.current, 'project_id': project.project_id, { notify: false }
-    $scope.loadProject project
-
-  $scope.addProject = () ->
-    $scope.newProject =
-      copyCurrent: true
-      name: ($scope.selectedProject.name or 'Sandbox') + ' copy'
-
-    modalInstance = $modal.open
-      animation: true
-      scope: $scope
-      template: require('../../html/views/templates/modals/addProjects.jade')()
-
-    modalInstance.result.then (result) ->
-
-    $scope.cancelModal = () ->
-      modalInstance.dismiss('cancel')
-
-    $scope.saveProject = () ->
-      modalInstance.dismiss('save')
-      rmapsProjectsService.createProject $scope.newProject
-      .then (response) ->
-        rmapsprincipal.setIdentity response.data.identity
-        $scope.loadIdentity response.data.identity
-
-  $scope.archiveProject = (project) ->
-    rmapsProjectsService.update id: project.project_id, archived: !project.archived
-    .then () ->
-      $scope.projectDropdown.isOpen = false
-
-  $scope.resetProject = (project) ->
-    if confirm 'Clear all filters, saved properties, and notes?'
-      rmapsProjectsService.delete id: project.project_id
-      .then () ->
-        $window.location.reload()
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
