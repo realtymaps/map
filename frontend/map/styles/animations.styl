@@ -1,8 +1,70 @@
-/*transitions*/
-.global-transition
-  transition all 250ms ease 0ms
+/*
+ * Utility Functions
+ */
 
-/*animations*/
+// Create the browser specific animation entries
+make-animation(args)
+  -webkit-animation args
+  -moz-animation args
+  animation args
+
+make-transition(args)
+  transition all 250ms ease 0ms
+  -webkit-transition all 250ms ease 0ms
+
+/* Global Transitions */
+.global-transition
+  //make-transition(all 250ms ease 0ms)
+
+.page.ng-leave
+  z-index:8888
+  make-animation(keepStill 0.5s both ease-in)
+
+.page.ng-enter
+  z-index:9999
+  make-animation(slideInUp 0.5s both ease-in)
+
+
+/* ANIMATIONS (from common.styl) */
+/* ============================================================================= */
+
+/* slide in from the right */
+@keyframes slideInRight {
+  from    { transform:translateX(100%); }
+  to      { transform: translateX(0); }
+}
+
+/* slide out the right */
+@keyframes slideOutRight {
+  from    { transform: translateX(0);}
+  to      { transform:translateX(100%);}
+}
+
+/* slide in from the bottom */
+@keyframes slideInUp {
+  from    { transform:translateY(100%); }
+  to      { transform: translateY(0); }
+}
+
+/* slide in from the left */
+@keyframes slideInLeft {
+  from    { transform:translateX(-100%); }
+  to      { transform: translateX(0); }
+}
+
+/* slide out from the left */
+@keyframes slideOutLeft {
+  from    { transform: translateX(0);}
+  to      { transform:translateX(-100%);}
+}
+
+/* keep page still */
+@keyframes keepStill
+  to { transform: translateX(0); }
+
+
+/* Animations (from animations.styl) */
+/* ============================================================================= */
 .grow
   animation-name grow
   -webkit-animation-name grow
@@ -27,19 +89,6 @@
 
   100%
     transform scale(1)
-
-@-webkit-keyframes grow
-  0%
-    -webkit-transform scale(.2)
-
-  50%
-    -webkit-transform scale(1.8)
-
-  70%
-    -webkit-transform scale(1.4)
-
-  100%
-    -webkit-transform scale(1)
 
 .slideFromLeft
   animation-name slideFromLeft
@@ -66,19 +115,6 @@
     transform translateX(0)
     opacity 1
 
-@-webkit-keyframes slideFromLeft
-  0%
-    -webkit-transform translateX(-20px)
-    opacity 0
-
-  50%
-    -webkit-transform translateX(10px)
-    opacity .5
-
-  100%
-    -webkit-transform translateX(0)
-    opacity 1
-
 .fadeIn
   animation-name fadeIn
   -webkit-animation-name fadeIn
@@ -90,16 +126,6 @@
   -webkit-animation-timing-function ease-out
 
 @keyframes fadeIn
-  0%
-    opacity 0
-
-  50%
-    opacity .3
-
-  100%
-    opacity 1
-
-@-webkit-keyframes fadeIn
   0%
     opacity 0
 
@@ -125,13 +151,6 @@
   -webkit-transform-origin 50% 0 0
 
 @keyframes slideFromTop
-  0%
-    max-height 0
-
-  100%
-    max-height 800px
-
-@-webkit-keyframes slideFromTop
   0%
     max-height 0
 
@@ -165,18 +184,6 @@
     opacity 1
     transform translateY(0px)
 
-@-webkit-keyframes fallDown
-  0%
-    opacity 0
-    -webkit-transform translateY(-30px)
-
-  75%
-    -webkit-transform translateY(5px)
-
-  100%
-    opacity 1
-    -webkit-transform translateY(0px)
-
 .growUp
   animation-name growUp
   -webkit-animation-name growUp
@@ -195,15 +202,6 @@
 
   100%
     transform: scale(1)
-    opacity 1
-
-@-webkit-keyframes growUp
-  0%
-    -webkit-transform: scale(.5)
-    opacity 0
-
-  100%
-    -webkit-transform: scale(1)
     opacity 1
 
 .growDown
@@ -225,15 +223,6 @@
     transform: scale(.5)
     opacity 0
 
-@-webkit-keyframes growDown
-  0%
-    -webkit-transform: scale(1)
-    opacity 1
-
-  100%
-    -webkit-transform: scale(.5)
-    opacity 0
-
 .moveToLeft
   animation-name moveToLeft
   -webkit-animation-name moveToLeft
@@ -244,20 +233,12 @@
   animation-timing-function ease
   -webkit-animation-timing-function ease
 
-
 @keyframes moveToLeft
   0%
     transform: translateX(0%)
 
   100%
     transform: translateX(-100%)
-
-@-webkit-keyframes moveToLeft
-  0%
-    -webkit-transform: translateX(0%)
-
-  100%
-    -webkit-transform: translateX(-100%)
 
 .moveToDown
   animation-name moveToDown
@@ -277,42 +258,12 @@
   100%
     transform: translateY(100%)
 
-@-webkit-keyframes moveToLeft
-  0%
-    -webkit-transform: translateY(0%)
-
-  100%
-    -webkit-transform: translateY(100%)
-
-@-webkit-keyframes pulse
-  40%
-    -webkit-transform scale(20)
-    -moz-transform scale(20)
-    transform scale(20)
-
-  100%
-    -webkit-transform scale(1)
-    -moz-transform scale(1)
-    transform scale(1)
-
-@-moz-keyframes pulse
-  40%
-    -webkit-transform scale(20);
-    -moz-transform scale(20);
-    transform scale(20);
-
-  100%
-    -webkit-transform scale(1)
-    -moz-transform scale(1)
-    transform scale(1)
-
 
 @keyframes pulse
   40%
     -webkit-transform scale(20)
     -moz-transform scale(20)
     transform scale(20)
-
 
   100%
     -webkit-transform scale(1)
