@@ -27,7 +27,7 @@ module.exports = (config) ->
       #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
-      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs', ["browserify-istanbul",{ "ignore": ["**/spec/**"]}]]
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs', ["browserify-istanbul",{ "ignore": ["spec/**/*"]}]]
       # extensions: ['.coffee', '.js']
 
 
@@ -65,7 +65,9 @@ module.exports = (config) ->
       'spec/common/**/*spec.coffee'
       'spec/frontend/**/*spec.coffee'
       #do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
-      {pattern:'*coffee', included: false}
+      {pattern:'frontend/**/*coffee', included: false}
+      {pattern:'common/**/*coffee', included: false}
+      {pattern:'spec/**/*coffee', included: false}
     ]
 
   # list of files to exclude
