@@ -132,8 +132,6 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoad
     if _.isArray markersUnSubs
       leafletIterators.each markersUnSubs, (unsub) ->
         unsub()
-    else if _.isFunction markersUnSubs
-      markersUnSubs()
 
   getNotes = () ->
     rmapsNotesService.getList().then (data) ->
