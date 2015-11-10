@@ -68,3 +68,13 @@ app.directive 'rmapsGetElement', ->
   link: (scope, element, attrs) ->
     elementName = attrs['rmapsGetElement']
     scope[elementName] = element
+
+# Eventually this may be added to angular. Example from https://groups.google.com/forum/#!msg/angular/lczCSTPMup0/qj1uMqYYdloJ
+app.directive 'rmapsAutofocus', ($timeout) ->
+  link: (scope, element, attrs) ->
+    scope.$watch attrs.rmapsAutofocus, ((val) ->
+      if angular.isDefined(val) and val
+        $timeout ->
+          element[0].focus()
+        , 250
+    ), true
