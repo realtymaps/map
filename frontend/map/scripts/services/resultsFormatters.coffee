@@ -268,7 +268,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       maybeFetchCb = (showDetails) =>
         #start getting more data
         if showDetails
-          rmapsPropertiesService.getPropertyDetail(@mapCtrl.refreshState(
+          rmapsPropertiesService.getPropertyDetail(@mapCtrl.scope.refreshState(
             map_results:
               selectedResultId: result.rm_property_id)
           , {rm_property_id: result.rm_property_id}, if result.rm_status then 'detail' else 'all')

@@ -94,6 +94,10 @@ app.factory 'rmapsMap',
           saved.then (savedDetails) =>
             @redraw(false)
 
+        @scope.refreshState = (overrideObj = {}) =>
+          @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
+          @mapState
+
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
@@ -106,17 +110,6 @@ app.factory 'rmapsMap',
             closeBoxDiv: ' '
 
           map:
-            leafletDrawOptions:
-              control:
-                promised: (promise) ->
-                  promise.then ({control, map}) ->
-                    #i should not have to do this as the ordering should be coming from the directives priority
-                    map.removeControl control#hack to fix ordering
-                    $timeout ->
-                      map.addControl control
-                    , 1000
-              position:"bottomright"
-
             getNotes: () ->
               $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
 
@@ -308,7 +301,7 @@ app.factory 'rmapsMap',
         testLogger.debug 'paths'
         @hash = _encode paths
         testLogger.debug 'encoded hash'
-        @refreshState()
+        @scope.refreshState()
         testLogger.debug 'refreshState'
         ret = @redraw()
         testLogger.debug 'redraw'
@@ -333,16 +326,13 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
+          drawn_shapes: @scope.map.drawState?.drawnShapes || {}
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
-
-      refreshState: (overrideObj = {}) =>
-        @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
-        @mapState
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)
