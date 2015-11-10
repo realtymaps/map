@@ -1,4 +1,4 @@
-span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen")
+span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsMapProjectsCtrl")
   button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
     span
       span.icon.icon-project
@@ -11,7 +11,7 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
       a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
     .inner
       ul
-        li(ng-repeat="project in projects | orderBy: '-sandbox'" ng-click="loadProject(project)" )
+        li(ng-repeat="project in projects | orderBy: '-sandbox'" ng-click="selectProject(project)" )
           a
             span.enity
               span.icon.icon-project

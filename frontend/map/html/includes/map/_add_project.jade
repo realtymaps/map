@@ -3,7 +3,7 @@ span(class="dropdown btn-group add-project-list" dropdown on-toggle="toggled(ope
         span.icon.icon-add
     ul(class="dropdown-menu btnblock")
         li
-            button(class="btn btn-transparent add-project" popover-placement="right" popover-trigger="mouseenter" popover="Add Project" ng-click="addProject()")
+            button(class="btn btn-transparent add-project" popover-placement="right" popover-trigger="mouseenter" popover="Add Project" ng-controller="rmapsMapProjectsCtrl" ng-click="addProject()")
                 span.icon.icon-add_project
         li
             button(class="btn btn-transparent add-note" popover-placement="right" popover-trigger="mouseenter" popover="Add Note" ng-click="enableNoteTap()")
