@@ -74,7 +74,7 @@ class ProjectsSessionCrud extends Crud
     super req, res, next
     .then (projects) =>
       userSvc.clients.getAll parent_auth_user_id: req.user.id, project_id: _.pluck(projects, 'id'), @doLogQuery
-      .then (clients) =>
+      .then (clients) ->
         projectsById = _.indexBy projects, 'id'
         _.each projects, (project) ->
           project.clients = _.filter clients, project_id: project.id
@@ -150,4 +150,3 @@ module.exports = mergeHandles new ProjectsSessionRouteCrud(projectSvc).init(fals
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
-

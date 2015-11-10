@@ -33,7 +33,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapssearchbox('mainMap')
 
   $scope.loadIdentity = (identity) ->
-    rmapsprincipal.getCurrentProfile()
+    rmapsprincipal.getCurrentProfileId()
     .then ->
       rmapsprincipal.getIdentity()
     .then (identity) ->

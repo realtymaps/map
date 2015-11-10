@@ -58,6 +58,19 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
 
     return _deferred.promise
 
+  getCurrentProfileId = (currentProfileId) ->
+    if _defferedCurrentProfile
+      _checkProfileInIdentity(currentProfileId)
+      return _defferedCurrentProfile.promise
+
+    _defferedCurrentProfile = $q.defer()
+    _checkProfileInIdentity()
+    return _defferedCurrentProfile.promise
+
+  getCurrentProfile = (currentProfileId) ->
+    getCurrentProfileId(currentProfileId).then (id) ->
+      _identity.profiles[id]
+
   isIdentityResolved: () ->
     return _resolved
   isAuthenticated: () ->
@@ -75,11 +88,5 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
   setIdentity: setIdentity
   unsetIdentity: unsetIdentity
   getIdentity: getIdentity
-  getCurrentProfile: (currentProfileId) ->
-    if _defferedCurrentProfile
-      _checkProfileInIdentity(currentProfileId)
-      return _defferedCurrentProfile.promise
-
-    _defferedCurrentProfile = $q.defer()
-    _checkProfileInIdentity()
-    return _defferedCurrentProfile.promise
+  getCurrentProfileId: getCurrentProfileId
+  getCurrentProfile: getCurrentProfile
