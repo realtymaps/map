@@ -32,6 +32,10 @@ app.controller 'rmapsMapProjectsCtrl', ($scope, $state, $modal, rmapsProjectsSer
         rmapsprincipal.setIdentity response.data.identity
         $scope.loadIdentity response.data.identity
 
+  $scope.checkSubmit = (evt) ->
+    if evt.keyCode == 13
+      $scope.saveProject()
+
   $scope.archiveProject = (project) ->
     rmapsProjectsService.update id: project.project_id, archived: !project.archived
     .then () ->
