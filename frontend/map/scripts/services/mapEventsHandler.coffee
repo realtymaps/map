@@ -20,7 +20,7 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
 rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters,
-rmapsPropertiesService) ->
+rmapsPropertiesService, rmapsMapEventEnums) ->
 
   _gate = rmapsNgLeafletEventGate
   limits = rmapsMainOptions.map
@@ -94,6 +94,7 @@ rmapsPropertiesService) ->
 
         #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
         if model.markerType != 'note'
+          return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
           mapCtrl.openWindow(model, lObject) if !maybeCaller && mapCtrl.openWindow?
 
         model.isMousedOver = true
@@ -125,7 +126,8 @@ rmapsPropertiesService) ->
         _handleHover(model, lObject, type, layerName, 'mouseout')
 
       click: (event, lObject, model, modelName, layerName, type) ->
-        return if _gate.isDisabledEvent(mapCtrl.mapId, 'click')
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.geojson.click) and type is 'geojson'
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
@@ -166,7 +168,7 @@ rmapsPropertiesService) ->
 
     rmapsMapEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
-        return if _gate.isDisabledEvent(mapCtrl.mapId, 'click')
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 

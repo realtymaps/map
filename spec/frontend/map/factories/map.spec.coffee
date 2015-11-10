@@ -114,12 +114,12 @@ describe "rmapsMap factory", ->
           a: 'a'
 
       it 'no args', ->
-        test = @subject.refreshState()
+        test = @subject.scope.refreshState()
         test.should.be.equal qs.stringify @subject.getMapStateObj()
 
       it 'args', ->
         arg = b: 'b'
-        test = @subject.refreshState(arg)
+        test = @subject.scope.refreshState(arg)
         test.should.be.equal qs.stringify(angular.extend @subject.getMapStateObj(), arg )
 
     describe 'draw', ->
@@ -153,12 +153,16 @@ describe "rmapsMap factory", ->
               _southWest:
                 lat: 90
                 lon: 1
-
-          expect(@subject.draw()).to.not.be.ok
+          drawn = @subject.draw()
+          # console.log 'drawn'
+          # console.log drawn
+          expect(drawn).to.not.be.ok
 
         it 'returns promises', ->
+          #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
           #if this is not mocked it hangs draw
-          @subject.refreshState = ->
+          #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+          @subject.scope.refreshState = ->
             mockRoutes.mapState
 
           @subject.map =

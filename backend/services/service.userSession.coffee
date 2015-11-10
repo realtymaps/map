@@ -82,7 +82,7 @@ NOTE: IF columns for auth_user_profile need to be deleted Session.state should b
   a invalid bookshelf object of old state will be queried.
   TODO: is the above still true?  we're not using bookshelf any longer, I'm not sure if the problem still exists
 ###
-_userStateCols = ['map_position', 'map_toggles', 'map_results']
+_userStateCols = ['map_position', 'map_toggles', 'map_results', 'drawn_shapes']
 #TODO: THIS NEEDS TO BE RETHOUGHT this special handling of removing types is very difficult
 # to remember and causes significant debugging
 _filtersToRemove = _userStateCols.concat(['bounds','returnType'])

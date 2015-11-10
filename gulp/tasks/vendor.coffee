@@ -51,5 +51,4 @@ gulp.task 'vendor_scripts', ->
   .pipe(concat('vendor.js'))
   .pipe(gulp.dest paths.destFull.scripts)
 
-
 gulp.task 'vendor', gulp.parallel 'vendor_scripts', 'vendor_css', 'vendor_fonts', 'vendor_assets'

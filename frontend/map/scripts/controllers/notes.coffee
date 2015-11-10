@@ -62,7 +62,8 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
 
   _destroy = () ->
     toastr.clear noteToast
-    rmapsNgLeafletEventGate.enableEvent(mapId, 'click')
+    rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+
     leafletIterators.each unsubscribes, (unsub) ->
       unsub()
     $scope.Toggles.showNoteTap = false
@@ -73,7 +74,7 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
     onHidden: (hidden) ->
       _destroy()
 
-  rmapsNgLeafletEventGate.disableEvent(mapId, 'click')#disable click events temporarily for rmapsMapEventsHandler
+  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
 
   _mapHandle =
     click: (event) ->

@@ -40,13 +40,27 @@ class Crud extends BaseObject
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @dbFn().where(query).count('*'), doLogQuery
 
-  getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
-    fnExec @dbFn().where(query), doLogQuery
+  getAll: () ->
+    @_getAll 'dbFn', arguments...
 
-  getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
+  _getAll: (dbFn, query = {}, doLogQuery = false, fnExec = execQ) ->
+    where = @[dbFn]()
+
+    _.each query, (val, key) ->
+      if _.isArray val
+        where = where.whereIn(key, val)
+
+    where = where.where(_.omit(query, _.isArray))
+
+    fnExec where, doLogQuery
+
+  getById: () ->
+    @_getById 'dbFn', arguments...
+
+  _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     throw new Error('id is required') unless id?
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(_.extend @idObj(id), entity), doLogQuery
+      fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
@@ -112,13 +126,11 @@ class HasManyCrud extends Crud
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @joinQuery().where(query).count('*'), doLogQuery
 
-  getAll: (query = {}, doLogQuery = false, fnExec = execQ) ->
-    fnExec @joinQuery().where(query), doLogQuery
+  getAll: () ->
+    @_getAll 'joinQuery', arguments...
 
-  getById: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-    throw new Error('id is required') unless id?
-    withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @joinQuery().where(_.extend @idObj(id), entity), doLogQuery
+  getById: () ->
+    @_getById 'joinQuery', arguments...
 
   create: () ->
     @joinCrud.create(arguments...)

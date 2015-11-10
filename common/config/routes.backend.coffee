@@ -24,6 +24,7 @@ apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseClients = "#{apiBaseSession}/clients"
+apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 
 module.exports =
   views:
@@ -178,5 +179,9 @@ module.exports =
     health: "#{apiBaseJobs}/health"
     runTask: "#{apiBaseJobs}/tasks/:name/run"
     cancelTask: "#{apiBaseJobs}/tasks/:name/cancel"
+  mail:
+    apiBaseMailCampaigns: apiBaseMailCampaigns
+    root: apiBaseMailCampaigns
+    byId: "#{apiBaseMailCampaigns}/:id"
 
   # hirefire secret value set from within backend/config/config.coffee

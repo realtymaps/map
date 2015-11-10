@@ -8,7 +8,8 @@ include ../includes/mixins/property/_propertyButtons.jade
         .row
           .col-md-12
             i.fa.fa-chevron-left.back-button(ui-sref="projects")
-            h1.pageTitle {{project.name}}
+            h1.pageTitle(ng-show="!project.sandbox") {{project.name}}
+            h1.pageTitle(ng-show="project.sandbox") Sandbox
             .project-tools
               button(class="btn btn-white" ng-click="editProject(project, $event)")
                 i.fa.fa-pencil-square-o
