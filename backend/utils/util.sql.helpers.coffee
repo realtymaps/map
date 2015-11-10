@@ -38,6 +38,8 @@ _parcel = [
   'fips_code', '\'{}\'::json AS properties'
 ]
 
+_commonProjectCols = ['id', 'auth_user_id', 'project_id']
+
 columns =
   # columns returned for filter requests
   filter: [
@@ -84,9 +86,11 @@ columns =
   #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
   cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
-  notes: ['id', 'auth_user_id', 'rm_property_id', 'project_id', 'geom_point_json', 'comments', 'text', 'title']
+  notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title']
 
   project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+
+  drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw']
 
 columns.all = "#{columns.filter}, #{columns.detail}"
 

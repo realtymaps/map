@@ -17,8 +17,8 @@ _buildQuery = (db, tableName) ->
     ret
   query.tableName = tableName
   query
-  
-  
+
+
 _buildQueries = (tables) ->
   queries = {}
   for id, bootstrapper of tables
@@ -96,10 +96,11 @@ module.exports =
     company: 'user_company'
     accountImages: 'user_account_images'
     notes: 'user_notes'
+    drawnShapes: 'user_drawn_shapes'
   mail:
     campaign: 'user_mail_campaigns'
 
-    
+
 # set up this way so IntelliJ's autocomplete works
 
 for groupName, groupConfig of module.exports

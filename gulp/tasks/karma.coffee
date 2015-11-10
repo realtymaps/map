@@ -6,11 +6,10 @@ _ = require 'lodash'
 
 karmaConf = require.resolve('../../karma.conf.coffee')
 
-karmaRunner = (done, options = {}) ->
+karmaRunner = (done, options = {singleRun: true}, conf = karmaConf) ->
   log '-- Karma Setup --'
   _.extend options,
-    configFile: karmaConf
-    singleRun: true
+    configFile: conf
   try
     server = new Karma options, (code) ->
       log "Karma Callback Code: #{code}"
@@ -21,7 +20,24 @@ karmaRunner = (done, options = {}) ->
     done(e)
 
 gulp.task 'karma', (done) ->
+  karmaRunner done,
+    reporters:['dots', 'coverage']
+    singleRun: true
+
+gulp.task 'karmaMocha', (done) ->
   karmaRunner(done)
+###
+  EASY TO DEBUG IN BROWSER
+###
+gulp.task 'karmaChrome', (done) ->
+  karmaRunner done,
+    singleRun: false
+    autoWatch: true
+    reporters: ['mocha']
+    browsers: ['Chrome']
+    browserify:
+      debug: true
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs']
 
 gulp.task 'frontendSpec', gulp.series 'karma'
 

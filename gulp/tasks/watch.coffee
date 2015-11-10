@@ -13,5 +13,5 @@ gulp.task 'watch_all_front', gulp.parallel 'angularWatch', 'angularWatchAdmin'
 gulp.task 'watch', gulp.series 'watch_all_front', (done) ->
   gulp.watch ['gulp/**/*.coffee','spec/gulp/**/*.coffee', specCommon], gulp.series 'gulpSpec'
   gulp.watch ['backend/**/*.coffee', 'spec/backend/**/*.coffee', specCommon], gulp.series 'backendSpec'
-  gulp.watch ['spec/frontend/**/*.coffee', specCommon], gulp.series 'frontendSpec'
+  gulp.watch ['spec/frontend/**/*.coffee', specCommon], gulp.series 'karmaMocha'
   done()

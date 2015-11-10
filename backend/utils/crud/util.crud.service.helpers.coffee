@@ -28,6 +28,13 @@ class Crud extends BaseObject
     unless _.isFunction @dbFn
       throw new Error('dbFn must be a knex function')
 
+  # a function to clone a instance so that, init in Thennable Trait can be called
+  # with different restrictions to make CrudServices adhoc
+  # IDEA: say we have service.user , which is wrapped, to have an unwrapped version
+  # service.user.clone().init(false,false,false)
+  clone: () ->
+    new Crud @dbFn, @idKey
+
   idObj: (val) ->
     if _.isNumber(val) or _.isString(val)
       obj = {}
@@ -108,11 +115,14 @@ class Crud extends BaseObject
     super([Crud,@].concat(_.toArray arguments)...)
 
 class HasManyCrud extends Crud
-  constructor: (dbFn, @rootCols, @joinCrud, joinIdStr, rootIdStr, idKey) ->
+  constructor: (dbFn, @rootCols, @joinCrud, @origJoinIdStr, @origRootIdStr, idKey) ->
     super(dbFn, idKey)
     unless @joinCrud instanceof Crud
       throw new Error('@joinCrud must be Instance of Crud')
-    @setIdStrs rootIdStr, joinIdStr
+    @setIdStrs @origRootIdStr, @origJoinIdStr
+
+  clone: () ->
+    new HasManyCrud @dbFn, @rootCols, @joinCrud, @origJoinIdStr, @origRootIdStr, @idKey
 
   joinQuery: () ->
     @joinCrud.dbFn()
@@ -164,9 +174,14 @@ singleResultBoolean = (q, doRowCount) ->
 
 thenables = [Crud, HasManyCrud].map (baseKlass) ->
   class ThenableTrait extends baseKlass
-    constructor: ->
-      super(arguments...)
+    constructor: (args...) ->
+      @conArgs = args #save off original args so it can be cloned with no args via clone
+      super(args...)
+      # console.log 'ThenableTrait: init()'
       @init()
+
+    clone: () ->
+      new @constructor(@conArgs...)#this ensures the derrived classes are called correctly
 
     init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) =>
       @
@@ -195,16 +210,19 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
     create: () ->
       q = super(arguments...)
       return q unless @doWrapSingleThen
+      return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q, true
 
     upsert: () ->
       q = super(arguments...)
       return q unless @doWrapSingleThen
+      return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q, true
 
     delete: () ->
       q = super(arguments...)
       return q unless @doWrapSingleThen
+      return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q
 
 

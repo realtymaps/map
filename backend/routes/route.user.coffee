@@ -6,15 +6,15 @@ logger = require '../config/logger'
 
 class UserCrud extends RouteCrud
   init: () ->
-    @permissionsCrud = hasManyRouteCrud(@svc.permissions, 'permission_id', 'user_id')
+    @permissionsCrud = hasManyRouteCrud(@svc.permissions, 'permission_id', 'user_id', 'PermissionsHasManyRouteCrud')
     @permissions = @permissionsCrud.root
     @permissionsById = @permissionsCrud.byId
 
-    @groupsCrud = hasManyRouteCrud(@svc.groups, 'group_id', 'user_id')#.init(true)#to enable logging
+    @groupsCrud = hasManyRouteCrud(@svc.groups, 'group_id', 'user_id', 'GroupsHasManyRouteCrud')#.init(true)#to enable logging
     @groups = @groupsCrud.root
     @groupsById = @groupsCrud.byId
 
-    @profilesCrud = hasManyRouteCrud(@svc.profiles, 'profile_id', 'auth_user_id')
+    @profilesCrud = hasManyRouteCrud(@svc.profiles, 'profile_id', 'auth_user_id', 'ProfilesHasManyRouteCrud')
     @profiles = @profilesCrud.root
     @profilesById = @profilesCrud.byId
 

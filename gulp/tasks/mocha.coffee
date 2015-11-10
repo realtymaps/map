@@ -1,32 +1,34 @@
 gulp = require 'gulp'
 mocha = require 'gulp-mocha'
 plumber = require 'gulp-plumber'
-# istanbul = require 'gulp-istanbul'
 istanbul = require 'gulp-coffee-istanbul'
-
 coffee = require 'gulp-coffee'
-
 paths = require '../../common/config/paths'
-
 require 'chai'
 require 'should'
 
-runMocha = (files, reporter = 'dot') ->
+runMocha = (files, reporter = 'dot', done) ->
   gulp.src files, read: false
   .pipe plumber()
-  .pipe(mocha(reporter: reporter))
+  .pipe mocha
+    reporter: reporter
+    showStack: true
   .once 'error', (err) ->
     console.log(err.stack ? err)
-    process.exit(1)
+    done()
+    return process.exit(1)
 
-gulp.task 'backendSpec', ->
-  runMocha ['spec/backend/**/*spec*']
+gulp.task 'backendSpec', (done) ->
+  runMocha ['spec/backend/**/*spec*'], undefined, done
 
-gulp.task 'commonSpec', ->
-  runMocha 'spec/common/**/*spec*'
+gulp.task 'backendDebugSpec', (done) ->
+  runMocha ['spec/backend/**/*spec*'], 'spec', done
 
-gulp.task 'gulpSpec', ->
-  runMocha  'spec/gulp/**/*spec*'
+gulp.task 'commonSpec', (done) ->
+  runMocha 'spec/common/**/*spec*', undefined, done
+
+gulp.task 'gulpSpec', (done) ->
+  runMocha  'spec/gulp/**/*spec*', undefined, done
 
 gulp.task 'mocha', gulp.series 'backendSpec'
 
@@ -35,8 +37,8 @@ gulp.task 'coverFiles', ->
   .pipe istanbul()
   .pipe istanbul.hookRequire()
 
-gulp.task 'backendCoverage', gulp.series 'coverFiles', ->
-  runMocha ['spec/backend/**/*spec*', 'spec/common/**/*spec*']
+gulp.task 'backendCoverage', gulp.series 'coverFiles', (done) ->
+  runMocha ['spec/backend/**/*spec*', 'spec/common/**/*spec*'], undefined, done
   .pipe istanbul.writeReports
     dir: './_public/coverage/application/backend'
     reporters: [ 'html', 'cobertura', 'json', 'text', 'text-summary' ]

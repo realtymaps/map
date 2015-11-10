@@ -1,5 +1,5 @@
 require '../../../globals'
-{Crud, HasManyCrud, hasManyCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
+{Crud, HasManyCrud, hasManyCrud, ThenableCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
 tables = require '../../../../backend/config/tables'
 userServices = require '../../../../backend/services/services.user'
 Promise = require 'bluebird'
@@ -28,6 +28,18 @@ describe 'util.crud.service.helpers', ->
         @instance.idKey.should.be.equal 'id'
       it 'getAll', ->
         @instance.getAll().toString().should.equal 'select * from "auth_user"'
+
+      describe 'clone', ->
+        it 'exists', ->
+          expect(@instance.clone).to.be.ok
+
+        describe 'works', ->
+          beforeEach ->
+            @clone = @instance.clone()
+          it 'dbFn', ->
+            @clone.dbFn.should.be.eql @instance.dbFn
+          it 'idKey', ->
+            @clone.idKey.should.be.eql @instance.idKey
 
       describe 'getById', ->
         it 'Number', ->
@@ -199,3 +211,52 @@ describe 'util.crud.service.helpers', ->
         it 'delete', ->
           @instance.delete(1).toString()
           .should.equal """delete from "#{tables.auth.m2m_user_permission.tableName}" where "id" = '1'"""
+
+        describe 'clone', ->
+          it 'exists', ->
+            expect(@instance.clone).to.be.ok
+
+          describe 'works', ->
+            beforeEach ->
+              @clone = @instance.clone()
+            it 'dbFn', ->
+              @clone.dbFn.should.be.eql @instance.dbFn
+            it 'rootCols', ->
+              @clone.rootCols.should.be.eql @instance.rootCols
+            it 'joinCrud', ->
+              @clone.joinCrud.should.be.eql @instance.joinCrud
+            it 'origJoinIdStr', ->
+              expect(@clone.origJoinIdStr).to.be.eql @instance.origJoinIdStr
+            it 'origRootIdStr', ->
+              expect(@clone.origRootIdStr).to.be.eql @instance.origRootIdStr
+            it 'idKey', ->
+              @clone.idKey.should.be.eql @instance.idKey
+            it 'joinCrud', ->
+              @clone.joinCrud.should.be.eql @instance.joinCrud
+            it 'joinIdStr', ->
+              @clone.joinIdStr.should.be.eql @instance.joinIdStr
+
+    describe 'ThenableCrud', ->
+      it 'exists', ->
+        ThenableCrud.should.be.ok
+
+      describe 'defaults', ->
+        before ->
+          @instance = new ThenableCrud(tables.auth.user)
+        it 'ctor', ->
+          @instance.dbFn.should.be.equal tables.auth.user
+          @instance.idKey.should.be.equal 'id'
+
+        describe 'clone', ->
+          it 'exists', ->
+            expect(@instance.clone).to.be.ok
+
+          describe 'works', ->
+            beforeEach ->
+              @clone = @instance.clone()
+            it 'dbFn', ->
+              @clone.dbFn.should.be.eql @instance.dbFn
+            it 'idKey', ->
+              @clone.idKey.should.be.eql @instance.idKey
+            it 'init', ->
+              expect(@clone.init).to.be.ok

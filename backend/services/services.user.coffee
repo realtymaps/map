@@ -20,6 +20,7 @@ _.extend toInit, _.pick tables.user, [
   'project'
   'company'
   'accountImages'
+  'drawnShapes'
 ]
 
 manualInits = {
@@ -93,21 +94,44 @@ clientCols = [
   "#{tables.auth.user.tableName}.parent_id as parent_id"
 ]
 
+notesCols = sqlHelpers.columns.notes.map (col) ->  "#{tables.user.notes.tableName}.#{col} as #{col}"
+
+drawnShapesCols = sqlHelpers.columns.drawnShapes.map (col) ->  "#{tables.user.drawnShapes.tableName}.#{col} as #{col}"
+
 class UserCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
-  permissions: thenableHasManyCrud(tables.auth.permission, permissionCols,
-    module.exports.m2m_user_permission, 'permission_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id")
-    .init(false)
+  init: () =>
+    # taking care of inits here fore internal svcs so they can be overriden
+    logger.debug 'INIT UserCrud Service'
+    @permissions = thenableHasManyCrud(tables.auth.permission, permissionCols,
+      module.exports.m2m_user_permission, 'permission_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id").init(arguments...)
 
-  groups: thenableHasManyCrud(tables.auth.group, groupsCols,
-    module.exports.m2m_user_group, 'group_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id").init(false)
+    @groups = thenableHasManyCrud(tables.auth.group, groupsCols,
+      module.exports.m2m_user_group, 'group_id', undefined, "#{tables.auth.m2m_user_group.tableName}.id").init(arguments...)
 
-  profiles: thenableHasManyCrud(tables.user.project, profileCols,
-    module.exports.profile, "#{tables.user.profile.tableName}.project_id", undefined, "#{tables.user.profile.tableName}.id").init(false)
+    @profiles = thenableHasManyCrud(tables.user.project, profileCols,
+      module.exports.profile, "#{tables.user.profile.tableName}.project_id", undefined, "#{tables.user.profile.tableName}.id").init(arguments...)
 
-  clients: thenableHasManyCrud(tables.auth.user, clientCols,
-    module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(false)
+    @clients = thenableHasManyCrud(tables.auth.user, clientCols,
+      module.exports.profile, undefined, undefined, "#{tables.user.profile.tableName}.id").init(arguments...)
+    super(arguments...)
 
 module.exports.user = new UserCrud(tables.auth.user).init(false)
+
+class ProjectCrud extends ThenableCrud
+  constructor: () ->
+    super(arguments...)
+
+  # clients: thenableHasManyCrud(tables.auth.user, clientCols, module.exports.profile, 'project_id',
+  #   undefined, clientCols[0]).init(false)
+  #(dbFn, @rootCols, @joinCrud, joinIdStr, rootIdStr, idKey) ->
+  notes: thenableHasManyCrud(tables.user.notes, notesCols, module.exports.notes, 'project_id',
+    undefined, notesCols[0]).init(false)
+
+  drawnShapes: thenableHasManyCrud(tables.user.drawnShapes, drawnShapesCols,
+    module.exports.drawnShapes, 'project_id', undefined, drawnShapesCols[0]).init(false)
+
+#temporary to not conflict with project
+module.exports.Project = new ProjectCrud(tables.user.project).init(true)

@@ -113,7 +113,7 @@ describe 'util.crud.route.helpers', ->
     describe 'ctor', ->
       it 'basic', ->
         @subject.svc.should.be.eql @stubbedSvc
-        @subject.id = 'crap_id'
+        @subject.paramIdKey.should.be.eql 'crap_id'
 
       it 'undefined rootGETKey throws', ->
         (=> new HasManyRouteCrud @stubbedSvc).should.throw('@rootGETKey must be defined')
