@@ -114,18 +114,3 @@ module.exports = (config) ->
   # Continuous Integration mode
   # if true, Karma captures browsers, runs the tests and exits
     singleRun: true
-
-    plugins: [
-      'karma-mocha-reporter'
-      'karma-chai'#makes should js work, but it can be loaded directly in a spec
-      'karma-expect'
-      'karma-coverage'
-      'karma-mocha'
-      'karma-html2js-preprocessor'
-      'karma-fixture'
-      #'karma-html-reporter'
-      'karma-chrome-launcher'
-      'karma-phantomjs-launcher'
-      'karma-coffee-preprocessor'
-      'karma-browserify'
-    ]

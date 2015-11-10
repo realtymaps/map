@@ -312,11 +312,11 @@ app.factory 'rmapsMap',
 
         try
           # This guarantees all lat/lon properties are in sync
-          centerToSave = NgLeafletCenter
+          centerToSave = NgLeafletCenter(
             lat: @scope.map.center.lat ? @scope.map.center.latitude,
             lng: @scope.map.center.lng ? @scope.map.center.lon ? @scope.map.center.longitude
             zoom: @scope.map.center.zoom
-
+          )
         catch
           #fallback to saftey and save a good center
           centerToSave = rmapsMainOptions.json.center
