@@ -2,7 +2,8 @@ section.map(ng-cloak ng-init="init('page-map')")
   include ../includes/mixins/_leafletMixin.jade
 
   div(ng-if="map.isReady" id="map")
-    +leafletMixin('map', 'mainMap')(lf-draw='map.leafletDrawOptions')
+    div(ng-controller="rmapsMapDrawCtrl")
+      +leafletMixin('map', 'mainMap')(lf-draw='map.leafletDrawOptions')
   
   include ../includes/map/_detailsTray.jade
   //- include ../includes/map/_filtersTray.jade

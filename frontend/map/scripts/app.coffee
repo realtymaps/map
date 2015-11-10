@@ -27,6 +27,7 @@ app = window.angular.module appName, [
   'validation.rule'
   'ngImgCrop'
   'toastr'
+  'textAngular'
 ]
 
 app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->

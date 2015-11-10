@@ -29,24 +29,25 @@ browserifyTask = (app, watch = false) ->
     stream
     .on 'error', (err) ->
       conf.errorHandler 'Bundler'
+    .on 'end', ->
+      timestamp = prettyHrtime process.hrtime startTime
+      gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
     .pipe source outputName
     .pipe buffer()
     .pipe $.sourcemaps.init loadMaps: true
     .pipe $.sourcemaps.write()
     .pipe gulp.dest paths.destFull.scripts
-    .on 'end', ->
-      timestamp = prettyHrtime process.hrtime startTime
-      gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
     stream
 
   bundledStream = pipeline through()
 
-  globby inputGlob, (err, entries) ->
+  globby(inputGlob)
+  .catch (err) ->
     # gutil.log "entries: #{entries}"
     if (err)
       bundledStream.emit('error', err)
       return
-
+  .then (entries) ->
     config =
       entries: entries
       outputName: outputName
@@ -97,6 +98,8 @@ browserifyTask = (app, watch = false) ->
 
 gulp.task 'browserify', -> browserifyTask 'map'
 gulp.task 'browserifyAdmin', -> browserifyTask 'admin'
+
+gulp.task 'browserifyAll', gulp.parallel 'browserify', 'browserifyAdmin'
 
 ###
 NOTE the watches here are the odd ball of all the gulp watches we have.

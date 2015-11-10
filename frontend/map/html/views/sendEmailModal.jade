@@ -1,6 +1,6 @@
 script(type="text/ng-template" id="modalSendEmail.html")
-    form#modalSendEmailHtml
-        div#select-recipients(ng-class="showActive == 'select-recipients' ? 'active' : ''")
+    form.modalSendEmailHtml
+        div.select-recipients(ng-class="showActive == 'select-recipients' ? 'active' : ''")
             div.modal-header
                 h3.modal-title Send Mail
                 span.icon.icon-close(ng-click="cancel()")
@@ -22,7 +22,7 @@ script(type="text/ng-template" id="modalSendEmail.html")
             div.modal-footer
                 button(class="btn btn-default" ng-click="cancel()") Cancel
                 button(class="btn btn-primary" ng-click="next('select-template')") Next
-        div#select-template(ng-class="showActive == 'select-template' ? 'active' : ''")
+        div.select-template(ng-class="showActive == 'select-template' ? 'active' : ''")
             div.modal-header
                 h3.modal-title Direct Mail
                 span.icon.icon-close(ng-click="cancel()")
@@ -56,7 +56,7 @@ script(type="text/ng-template" id="modalSendEmail.html")
                         span.template-title template title
             div.modal-footer
                 button(class="btn btn-primary" ng-click="next('letter-edit')") Next
-        div#letter-edit(ng-class="showActive == 'letter-edit' ? 'active' : ''")
+        div.letter-edit(ng-class="showActive == 'letter-edit' ? 'active' : ''")
             div.modal-header
                 h3.modal-title Direct Mail
                 span.icon.icon-close(ng-click="cancel()")
@@ -75,7 +75,7 @@ script(type="text/ng-template" id="modalSendEmail.html")
             div.modal-footer
                 button(class="btn btn-default" ng-click="back('select-template')") Back
                 button(class="btn btn-primary" ng-click="next('letter-confirm')") Next
-        div#letter-confirm(ng-class="showActive == 'letter-confirm' ? 'active' : ''")
+        div.letter-confirm(ng-class="showActive == 'letter-confirm' ? 'active' : ''")
             div.modal-header
                 h3.modal-title Direct Mail
                 span.icon.icon-close(ng-click="cancel()")
@@ -100,7 +100,7 @@ script(type="text/ng-template" id="modalSendEmail.html")
                 button(class="btn btn-default" ng-click="back('letter-edit')") Back
                 button(class="btn btn-primary" ng-click="next('mail-sent')") Next
 
-        div#mail-sent(ng-class="showActive == 'mail-sent' ? 'active' : ''")
+        div.mail-sent-container(ng-class="showActive == 'mail-sent' ? 'active' : ''")
             div.modal-header
                 h3.modal-title Direct Mail
                 span.icon.icon-close(ng-click="cancel()")
