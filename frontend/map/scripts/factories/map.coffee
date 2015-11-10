@@ -94,6 +94,10 @@ app.factory 'rmapsMap',
           saved.then (savedDetails) =>
             @redraw(false)
 
+        @scope.refreshState = (overrideObj = {}) =>
+          @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
+          @mapState
+
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
@@ -297,7 +301,7 @@ app.factory 'rmapsMap',
         testLogger.debug 'paths'
         @hash = _encode paths
         testLogger.debug 'encoded hash'
-        @refreshState()
+        @scope.refreshState()
         testLogger.debug 'refreshState'
         ret = @redraw()
         testLogger.debug 'redraw'
@@ -308,11 +312,11 @@ app.factory 'rmapsMap',
 
         try
           # This guarantees all lat/lon properties are in sync
-          centerToSave = NgLeafletCenter(
+          centerToSave = NgLeafletCenter
             lat: @scope.map.center.lat ? @scope.map.center.latitude,
             lng: @scope.map.center.lng ? @scope.map.center.lon ? @scope.map.center.longitude
             zoom: @scope.map.center.zoom
-          )
+
         catch
           #fallback to saftey and save a good center
           centerToSave = rmapsMainOptions.json.center
@@ -322,16 +326,13 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
+          drawn_shapes: @scope.map.drawState?.drawnShapes || {}
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
-
-      refreshState: (overrideObj = {}) =>
-        @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
-        @mapState
 
       subscribe: ->
         #subscribing to events (Angular's built in channel bubbling)

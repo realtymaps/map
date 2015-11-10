@@ -73,7 +73,6 @@ gulp.task 'stylesWatchAdmin', (done) ->
   watchAdminImpl()
   done()
 
-
 module.exports =
   ###
   For intent and purposes these exports are for testing only

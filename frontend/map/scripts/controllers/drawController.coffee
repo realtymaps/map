@@ -6,14 +6,40 @@ originator = 'map'
 domainName = 'MapDraw'
 controllerName = "#{domainName}Ctrl"
 
+#TODO: get colors from color palette
+
 app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, leafletData, leafletDrawEvents) ->
+leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
+
+  $log = $log.spawn("map:#{controllerName}")
+
+  _syncDrawnShapes = () ->
+    $scope.map.drawState.drawnShapes = drawnItems.toGeoJSON()
+    $scope.refreshState()
+
+  rmapsprincipal.getCurrentProfile().then (profile) ->
+    $log.debug('profile')
+    $log.debug(profile)
+    drawnShapes = profile.drawn_shapes
+    $scope.map.drawState.drawnShapes = drawnShapes || {}
+    # geoJson = L.geoJson drawnShapes,
+    #   style:
+    #     color: "red"
+    # geoJson.eachLayer (layer) ->
+    #   drawnItems.addLayer layer
+
+    $scope.map.leafletDrawOptions = _.extend {}, $scope.map.leafletDrawOptions,
+      edit:
+        featureGroup: drawnItems
 
   _toast = null
   drawnItems = new L.FeatureGroup()
 
+  #call this on every shape change to save shapes
+
   _.merge $scope,
     map:
+      drawState: {}
       leafletDrawOptions:
         position:"bottomright"
         draw:
@@ -44,7 +70,6 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
     lMap.addLayer(drawnItems)
 
     _linker = rmapsMapEventsLinkerService
-    $log = $log.spawn("map:#{controllerName}")
     _it = leafletIterators
 
     _endDrawAction = () ->
@@ -71,9 +96,11 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
     _handle =
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
+        _syncDrawnShapes()
       edited: ({layers}) ->
       deleted: ({layers}) ->
         drawnItems.removeLayer(layer)
+        _syncDrawnShapes()
       drawstart: ({layerType}) ->
         _doToast('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->
@@ -86,9 +113,6 @@ leafletIterators, toastr, leafletData, leafletDrawEvents) ->
         _doToast('Delete Drawing','Delete Drawing')
       deletestop: ({handler}) ->
         _endDrawAction()
-
-    # L.DomUtil.get('changeColor').onclick = ->
-    #   drawControl.setDrawingOptions({ rectangle: { shapeOptions: { color: '#004a80' } } })
 
     _handle = _.mapKeys _handle, (val, key) -> 'draw:' + key
     _unsubscribes = _linker.hookDraw(mapId, _handle, originator)
