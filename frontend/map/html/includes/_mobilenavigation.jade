@@ -1,6 +1,6 @@
 include mixins/_avatarMixin.jade
 
-#mobile-nav(ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
+#mobile-nav(class="menu-slide" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
     .inner
         include ./header/_logo
 

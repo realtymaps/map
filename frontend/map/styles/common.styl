@@ -50,9 +50,7 @@ p
   height 20px
   width 20px
   border-radius 10px
-  -webkit-animation pulse 1s ease 1s 3
-  -moz-animation pulse 1s ease 1s 3
-  animation pulse 1s ease 1s 3
+  make-animation(pulse 1s ease 1s 3)
 
 .mobile-page
   background $dark_blue_darker
@@ -166,102 +164,6 @@ header.site-header
     top:$navbarHeight
     width:100%
 
-
-/* ANIMATIONS
-============================================================================= */
-
-.page.ng-leave
-    z-index:8888
-    -webkit-animation:keepStill 0.5s both ease-in
-    -moz-animation:keepStill 0.5s  both ease-in
-    animation:keepStill 0.5s  both ease-in
-
-.page.ng-enter
-    z-index:9999
-    -webkit-animation:slideInUp 0.5s both ease-in
-    -moz-animation:slideInUp 0.5s both ease-in
-    animation:slideInUp 0.5s both ease-in
-
-/* slide in from the right */
-@keyframes slideInRight {
-    from    { transform:translateX(100%); }
-    to      { transform: translateX(0); }
-}
-@-moz-keyframes slideInRight {
-    from    { -moz-transform:translateX(100%); }
-    to      { -moz-transform: translateX(0); }
-}
-@-webkit-keyframes slideInRight {
-    from    { -webkit-transform:translateX(100%); }
-    to      { -webkit-transform: translateX(0); }
-}
-
-/* slide out the right */
-@keyframes slideOutRight {
-    from    { transform: translateX(0);}
-    to      { transform:translateX(100%);}
-}
-@-moz-keyframes slideOutRight {
-    from    { -moz-transform:translateX(0); }
-    to      { -moz-transform: translateX(100%); }
-}
-@-webkit-keyframes slideOutRight {
-    from    { -webkit-transform:translateX(0); }
-    to      { -webkit-transform: translateX(100%); }
-}
-
-/* slide in from the bottom */
-@keyframes slideInUp {
-    from    { transform:translateY(100%); }
-    to      { transform: translateY(0); }
-}
-@-moz-keyframes slideInUp {
-    from    { -moz-transform:translateY(100%); }
-    to      { -moz-transform: translateY(0); }
-}
-@-webkit-keyframes slideInUp {
-    from    { -webkit-transform:translateY(100%); }
-    to      { -webkit-transform: translateY(0); }
-}
-
-/* slide in from the left */
-@keyframes slideInLeft {
-    from    { transform:translateX(-100%); }
-    to      { transform: translateX(0); }
-}
-@-moz-keyframes slideInLeft {
-    from    { -moz-transform:translateX(-100%); }
-    to      { -moz-transform: translateX(0); }
-}
-@-webkit-keyframes slideInLeft {
-    from    { -webkit-transform:translateX(-100%); }
-    to      { -webkit-transform: translateX(0); }
-}
-
-/* slide out from the left */
-@keyframes slideOutLeft {
-    from    { transform: translateX(100%);}
-    to      { transform:translateX(0);}
-}
-@-moz-keyframes slideOutLeft {
-    from    { -moz-transform:translateX(100%); }
-    to      { -moz-transform: translateX(0); }
-}
-@-webkit-keyframes slideOutLeft {
-    from    { -webkit-transform:translateX(100%); }
-    to      { -webkit-transform: translateX(0); }
-}
-
-/* keep page still */
-@-webkit-keyframes keepStill {
-    to { -webkit-transform:  translateX(0); }
-}
-@-moz-keyframes keepStill {
-    to { -moz-transform: translateX(0); }
-}
-@keyframes keepStill {
-    to { transform: translateX(0); }
-}
 
 checkbox(size)
   input[type=checkbox]
