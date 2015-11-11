@@ -1,10 +1,10 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 
 # HTML5 drag and drop driective
 # --------
 # Intended to be used with e.g. ng-repeat so items can be moved between lists
 
-app.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
+mod.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
   _src = null
   _target = null
   dragStart: (src) ->
@@ -20,7 +20,7 @@ app.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
     _target
 ]
 
-app.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
+mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
     {
       restrict: 'A'
       scope: rmapsDraggable: '=', rmapsDraggableCollection: '='

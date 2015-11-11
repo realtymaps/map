@@ -62,7 +62,8 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
 
   _destroy = () ->
     toastr.clear noteToast
-    rmapsNgLeafletEventGate.enableEvent(mapId, 'click')
+    rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+
     leafletIterators.each unsubscribes, (unsub) ->
       unsub()
     $scope.Toggles.showNoteTap = false
@@ -73,7 +74,7 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
     onHidden: (hidden) ->
       _destroy()
 
-  rmapsNgLeafletEventGate.disableEvent(mapId, 'click')#disable click events temporarily for rmapsMapEventsHandler
+  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
 
   _mapHandle =
     click: (event) ->
@@ -96,7 +97,7 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
 .controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
-rmapsevents, rmapsLayerFormatters, leafletData, rmapsPopupLoader, rmapsMapEventsLinkerService) ->
+rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoader, rmapsMapEventsLinkerService) ->
 
   setMarkerNotesOptions = rmapsLayerFormatters.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormatters.setDataOptions
@@ -129,7 +130,9 @@ rmapsevents, rmapsLayerFormatters, leafletData, rmapsPopupLoader, rmapsMapEvents
     markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
 
   $scope.$on '$destroy', ->
-    markersUnSubs() if markersUnSubs?
+    if _.isArray markersUnSubs
+      leafletIterators.each markersUnSubs, (unsub) ->
+        unsub()
 
   getNotes = () ->
     rmapsNotesService.getList().then (data) ->

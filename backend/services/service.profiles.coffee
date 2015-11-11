@@ -37,6 +37,7 @@ safe = [
   'parent_auth_user_id'
   'auth_user_id'
   'project_id'
+  'drawn_shapes'
 ]
 
 safeProject = (require '../utils/util.sql.helpers').columns.project
@@ -97,6 +98,8 @@ update = (profile) ->
     if profileProject?
       projectSvc.update profileProject.project_id, _.pick(profile, ['properties_selected'])
   .then () ->
+    # logger.debug "profile update"
+    # logger.debug profile, true
     userProfileSvc.update profile.id, profile, safe
   .then (userState) ->
     if not userState

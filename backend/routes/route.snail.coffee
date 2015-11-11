@@ -1,4 +1,5 @@
 Promise = require 'bluebird'
+logger = require '../config/logger'
 ExpressResponse = require '../utils/util.expressResponse'
 commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
@@ -25,6 +26,7 @@ otherErrorMessage = (actionMsg) ->
   in a few minutes. If the problem continues, please let us know by emailing
   #{commonConfig.SUPPORT_EMAIL}, and giving us the following error message:"
 
+# to be used for ascertaining addresses for incoming rm-property-id's from 'quote' and 'send'
 getPropertyData = (rm_property_id) -> Promise.try () ->
   detailService.getDetail({rm_property_id: rm_property_id, columns: 'address'})
   .then (property) ->
@@ -59,9 +61,7 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      getPropertyData(req.body.rm_property_id)
-      .then (property) ->
-        lobService.getPriceQuote req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      lobService.getPriceQuote req.user.id, req.body
       .then (price) ->
         new ExpressResponse(price: price)
       .catch generateErrorHandler('get a price quote for that mailing')
@@ -72,9 +72,7 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      getPropertyData(req.body.rm_property_id)
-      .then (property) ->
-        lobService.sendSnailMail req.user.id, req.body.style.templateId, _.extend({}, pdfUtils.buildAddresses(property), req.body)
+      lobService.sendSnailMail req.user.id, req.body
       .then () ->
         new ExpressResponse({})
       .catch generateErrorHandler('send your mailing')

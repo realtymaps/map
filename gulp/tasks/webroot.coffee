@@ -1,6 +1,5 @@
 gulp = require 'gulp'
 paths = require '../../common/config/paths'
-
 ###
   Copy Files directly to the _public directory to be served up at webroot
 ###

@@ -19,7 +19,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
         return if profile.showProfileNameInput#needed for spaces in input name
         $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
         .then ->
-          rmapsprincipal.getCurrentProfile(profile.id)
+          rmapsprincipal.getCurrentProfileId(profile.id)
         .then ->
           $location.path(frontendRoutes.map)
 

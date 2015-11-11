@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-
+logger = require './logger'
 module.exports = {}
 
 
