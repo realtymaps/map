@@ -30,6 +30,13 @@ do
         --no-gulp-colors)
             export GULP_COLOR="--no-color"
             ;;
+        --debug)
+            export IS_DEBUG=true
+            ;;
+        --debug=*)
+            export IS_DEBUG=true
+            export USE_DEBUG_PORT="${!i:8}"
+            ;;
     esac
 done
 
