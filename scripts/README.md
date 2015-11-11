@@ -78,5 +78,6 @@ app databases.
   * `data` is a coffeescript-style object string, such as
 `'name: "test", api_key: "1234qwert5678"'` or `'{name: "foo", username: "bar", password: "baz", environment: "production"}'`
   * The remaining arguments are the apps on which to set the values.  Each argument can be a staging prefix (such as
-  `joe` or `nem`), `prod`, or a fully-qualified app name (such as `dan-realtymaps-map` or `realtymaps-map`).  If no apps
-  are listed, the values will be set on all apps accessible by the credentialled user.
+  `joe` or `nem`), `prod`/`production`, `local`/`localhost`, or a fully-qualified app name (such as `dan-realtymaps-map`
+  or `realtymaps-map`).  If no apps are listed, the values will be set on all heroku apps accessible by the
+  credentialled user.
