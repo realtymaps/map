@@ -1,6 +1,18 @@
 #!/bin/bash
 set -e
 
+if [[ "$IS_DEBUG" == "true" ]]
+then
+    if [[ "$USE_DEBUG_PORT" == "" ]]
+    then
+        DEBUG_ARG="--debug"
+    else
+        DEBUG_ARG="--debug=$USE_DEBUG_PORT"
+    fi
+
+    echo "Start Gulp with $DEBUG_ARG"
+fi
+
 if [[ "$IS_HEROKU" == "" ]]
 then
     DIR="$( cd -P "$( dirname "$0" )" > /dev/null && pwd )"
@@ -20,5 +32,5 @@ then
   gulp $GULP_COLOR prod
   coffee ./backend/server.coffee
 else
-  gulp $GULP_COLOR $GULP_TARGET
+  gulp $GULP_COLOR $GULP_TARGET $DEBUG_ARG
 fi

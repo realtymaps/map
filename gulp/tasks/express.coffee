@@ -5,6 +5,7 @@ config = require '../../backend/config/config'
 nodemon = require 'gulp-nodemon'
 do require '../../common/config/dbChecker.coffee'
 coffeelint = require 'gulp-coffeelint'
+argv = require('yargs').argv
 
 options =
   script: 'backend/server.coffee'
@@ -19,9 +20,8 @@ options =
   verbose: false
   # tasks: ['lint'] # THIS IS KILLING THE RESTART SPEED OF NODEMON , this should be done in a gulp watch or not at all
 
-run_express = (done, nodeArgs) ->
-  log 'ENV Port in gulp: ' + config.PORT
-  options.nodeArgs = nodeArgs if nodeArgs
+run_express = (done) ->
+  log 'ENV Port in gulp: ' + config.PORT + ', nodemon exec: ' + options.execMap.coffee
   nodemon options
   done()
 
@@ -37,7 +37,10 @@ gulp.task 'lint', () ->
   .pipe coffeelint.reporter()
 
 gulp.task 'express', gulp.parallel 'lint', (done) ->
-  run_express(done)
+  if argv.debug
+    port = if argv.debug == true then 9999 else argv.debug
 
-gulp.task 'express_debug', gulp.parallel 'lint', (done) ->
-  run_express done, ['--debug=9999']
+    log 'Start Express with debugger on port ' + port
+    options.execMap.coffee += ' --nodejs --debug=' + port
+
+  run_express(done)
