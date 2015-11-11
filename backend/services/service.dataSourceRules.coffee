@@ -70,7 +70,7 @@ module.exports =
     _putRules {data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType}, rules
 
   deleteRules: (dataSourceId, dataSourceType, dataListType) ->
-    _deleteRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType
+    _deleteRules {data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType}
 
   getListRules: (dataSourceId, dataSourceType, dataListType, list) ->
     _getRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list
@@ -82,7 +82,7 @@ module.exports =
     _putRules {data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list}, rules
 
   deleteListRules: (dataSourceId, dataSourceType, dataListType, list) ->
-    _deleteRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list
+    _deleteRules {data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list}
 
   getRule: (dataSourceId, dataSourceType, dataListType, list, ordering) ->
     _getRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list, ordering: ordering
@@ -100,4 +100,4 @@ module.exports =
       throw new PartiallyHandledError(error)
 
   deleteRule: (dataSourceId, dataSourceType, dataListType, list, ordering) ->
-    _deleteRules data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list, ordering: ordering
+    _deleteRules {data_source_id: dataSourceId, data_source_type: dataSourceType, data_type: dataListType, list: list, ordering: ordering}
