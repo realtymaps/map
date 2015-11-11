@@ -21,7 +21,7 @@ _getTaskCode = (taskName) ->
 
 class TaskImplementation
   
-  constructor: (@subtasks) ->
+  constructor: (@subtasks, @ready) ->
     @name = 'TaskImplementation'
 
   executeSubtask: (subtask) ->
@@ -41,6 +41,8 @@ class TaskImplementation
         return 0
       jobQueue = require '../util.jobQueue'
       jobQueue.queueSubtasks(transaction, batchId, subtasks)
+      
+  ready: null  # to properly set prototype
 
 
 TaskImplementation.getTaskCode = memoize.promise(_getTaskCode, primitive: true)

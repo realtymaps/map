@@ -20,12 +20,15 @@ then
     DB_TARGETS=""
     for target in $@
     do
-        if [[ "$target" == "prod" ]]
+        if [[ "$target" == "prod" || "$target" == "production" ]]
         then
             DB_TARGETS="$DB_TARGETS realtymaps-map"
         elif [[ "$target" == *realtymaps-map ]]
         then
             DB_TARGETS="$DB_TARGETS $target"
+        elif [[ "$target" == "local" || "$target" == "localhost" ]]
+        then
+            DB_TARGETS="$DB_TARGETS localhost"
         else
             DB_TARGETS="$DB_TARGETS ${target}-realtymaps-map"
         fi
@@ -44,6 +47,12 @@ for app in $DB_TARGETS
 do
     echo
     echo "Executing on MAIN_DATABASE@${app}..."
-    psql -d `./scripts/database/getDbUrl MAIN_DATABASE@$app` --command="${SQL_COMMAND}"
+    if [[ "${app}" == "localhost" ]]
+    then
+        DB_TARGET=''
+    else
+        DB_TARGET="@${app}"
+    fi
+    psql -d `foreman run ./scripts/database/getDbUrl MAIN_DATABASE${DB_TARGET}` --command="${SQL_COMMAND}"
 done
 echo

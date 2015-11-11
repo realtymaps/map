@@ -33,7 +33,7 @@ checkFtpDrop = (subtask) ->
   defaultValues = {}
   defaultValues[TAX] = '19700101'
   defaultValues[DEED] = '19700101'
-  processDatesPromise = keystore.getValuesMap CORELOGIC_PROCESS_DATES, defaultValues: defaultValues
+  processDatesPromise = keystore.getValuesMap(CORELOGIC_PROCESS_DATES, defaultValues: defaultValues)
   Promise.join connectPromise, processDatesPromise, (rootListing, processDates) ->
     todo = {}
     for dir in _.sortBy(rootListing, 'name') when dir.type == 'd' then do (dir) ->
