@@ -152,7 +152,6 @@ app.factory 'rmapsMap',
           if @scope.map.listingDetail?
             @scope.map.listingDetail.show = false if newVal isnt oldVal
         #END SCOPE EXTENDING ////////////////////////////////////////////////////////////
-        @subscribe()
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
@@ -326,31 +325,12 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
-          drawn_shapes: @scope.map.drawState?.drawnShapes || {}
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
             map_results:
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
-
-      subscribe: ->
-        #subscribing to events (Angular's built in channel bubbling)
-        @scope.$onRootScope rmapsevents.map.drawPolys.clear, =>
-          _.each @scope.layers, (layer, k) ->
-            return layer.length = 0 if layer? and _.isArray layer
-            layer = {} #this is when a layer is an object
-
-        @scope.$onRootScope rmapsevents.map.drawPolys.isEnabled, (event, isEnabled) =>
-          @scope.drawUtil.isEnabled = isEnabled
-          if isEnabled
-            @scope.drawUtil.draw()
-
-        @scope.$onRootScope rmapsevents.map.drawPolys.query, =>
-          polygons = @scope.layers.drawnPolys
-          paths = _.flatten polygons.map (polygon) ->
-            _.reduce(polygon.getPaths().getArray()).getArray()
-          @draw 'draw_tool', paths
 
       openWindow: (model, lTriggerObject) =>
         rmapsPopupLoader.load(@scope, @map, model, lTriggerObject)

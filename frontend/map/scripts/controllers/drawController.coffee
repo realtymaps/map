@@ -10,27 +10,23 @@ controllerName = "#{domainName}Ctrl"
 
 app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
 leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
-
+  # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
 
   _syncDrawnShapes = () ->
-    $scope.map.drawState.drawnShapes = drawnItems.toGeoJSON()
-    $scope.refreshState()
+    # shapesSvc.update drawnItems.toGeoJSON()
 
   rmapsprincipal.getCurrentProfile().then (profile) ->
     $log.debug('profile')
     $log.debug(profile)
-    drawnShapes = profile.drawn_shapes
-    $scope.map.drawState.drawnShapes = drawnShapes || {}
+    # drawnShapes = profile.drawn_shapes
+    # # TODO: drawn shapes will get its own tables for GIS queries
+    # $scope.map.drawState.drawnShapes = drawnShapes || {}
     # geoJson = L.geoJson drawnShapes,
-    #   style:
-    #     color: "red"
-    # geoJson.eachLayer (layer) ->
-    #   drawnItems.addLayer layer
-
-    $scope.map.leafletDrawOptions = _.extend {}, $scope.map.leafletDrawOptions,
-      edit:
-        featureGroup: drawnItems
+    #   onEachFeature: (feature, layer) ->
+    #     if feature.properties?.shapeType = 'Circle'
+    #       layer = L.Circle.createFromFeature feature
+    #     drawnItems.addLayer layer
 
   _toast = null
   drawnItems = new L.FeatureGroup()

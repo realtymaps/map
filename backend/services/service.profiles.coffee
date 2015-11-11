@@ -37,7 +37,6 @@ safe = [
   'parent_auth_user_id'
   'auth_user_id'
   'project_id'
-  'drawn_shapes'
 ]
 
 safeProject = (require '../utils/util.sql.helpers').columns.project

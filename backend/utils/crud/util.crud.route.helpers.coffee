@@ -10,7 +10,7 @@ NamedError = require '../errors/util.error.named'
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = 'Crud') ->
     unless @svc?
-      throw new NamedError(name, "#@svc must be defined.")
+      throw new NamedError(@name, "#{@name}: @svc must be defined.")
     @init()
 
   #intended available overrides
@@ -66,7 +66,8 @@ class Crud extends BaseObject
     super([Crud,@].concat(_.toArray arguments)...)
 
 class HasManyCrud extends Crud
-  constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyCrud') ->
+  constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud') ->
+    # console.log name
     super(svc, paramIdKey, name)
     unless @rootGETKey?
       throw new NamedError(@name,'@rootGETKey must be defined')

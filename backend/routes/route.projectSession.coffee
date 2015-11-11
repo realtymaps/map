@@ -1,11 +1,10 @@
 Promise = require 'bluebird'
 logger = require '../config/logger'
-userSvc = (require '../services/services.user').user
+userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 projectSvc = (require '../services/services.user').project
 notesSvc = (require '../services/services.user').notes
 {Crud, wrapRoutesTrait, HasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
-CrudSvc = (require '../utils/crud/util.crud.service.helpers').Crud
 {mergeHandles} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth.coffee'
 _ = require 'lodash'
@@ -38,8 +37,7 @@ class ClientsCrud extends HasManyRouteCrud
       parent_id: req.user.id
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
 
-    # Call base method so we get the ID rather than boolean
-    CrudSvc::upsert.call userSvc, _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
+    userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
     .then (clientIds) ->
       clientId = clientIds?[0]
       throw new Error 'user ID required - new or existing' unless clientId?
@@ -49,7 +47,7 @@ class ClientsCrud extends HasManyRouteCrud
         parent_auth_user_id: req.user.id
         project_id: req.params.id
 
-      CrudSvc::upsert.call profileSvc, newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
+      profileSvc.upsert newProfile, ['auth_user_id', 'project_id'], false, safeProfile, @doLogQuery
 
   ###
     Update user contact info - but only if the request came from the parent user
@@ -63,7 +61,7 @@ class ClientsCrud extends HasManyRouteCrud
 class ProjectsSessionCrud extends Crud
   @include userExtensions.route
   init: () ->
-    @clientsCrud = new ClientsCrud(userSvc.clients, 'client_id', 'project_id').init(false)
+    @clientsCrud = new ClientsCrud(userSvc.clients, 'client_id', 'project_id', 'ClientsHasManyCrud').init(false)
     @clients = @clientsCrud.root
     @clientsById = @clientsCrud.byId
 
@@ -129,7 +127,7 @@ class ProjectsSessionCrud extends Crud
 
 ProjectsSessionRouteCrud = wrapRoutesTrait ProjectsSessionCrud
 
-module.exports = mergeHandles new ProjectsSessionRouteCrud(projectSvc).init(false, safeProject),
+module.exports = mergeHandles new ProjectsSessionRouteCrud(projectSvc).init(true, safeProject),
   root:
     methods: ['get', 'post']
     middleware: [
