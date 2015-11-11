@@ -43,10 +43,6 @@ describe 'service.dataSourceRules.coffee', ->
       ]
 
     it 'should have valid _addRules insert query, without a given order count', (done) ->
-      expectedQuery = """insert into \"config_data_normalization\" (\"config\", \"data_source_id\", \"data_source_type\", \"data_type\", \"input\", \"list\",""" + 
-        """ \"ordering\", \"output\", \"required\") values ('{\\\"DataType\\\":\\\"Int\\\",\\\"nullZero\\\":true}', 'CoreLogic', 'county', 'tax', '\\\"\\\"',""" +
-        """ 'general', '0', 'Int Param', 'false'), ('{\\\"DataType\\\":\\\"Int\\\",\\\"nullZero\\\":true}', 'CoreLogic', 'county', 'tax', '\\\"\\\"', 'general',""" +
-        """ '1', 'Another Int Param', 'false')"""
       expectedInsertRules = [
         config:
           DataType: "Int"
@@ -75,7 +71,6 @@ describe 'service.dataSourceRules.coffee', ->
 
       @_addRulesFn(@query, @rules)
 
-      @rulesTableSqlMock.toString().should.equal expectedQuery
       @rulesTableSqlMock.insertSpy.calledOnce.should.be.true
       @rulesTableSqlMock.insertSpy.calledWith(expectedInsertRules).should.be.true
       done()
@@ -89,10 +84,6 @@ describe 'service.dataSourceRules.coffee', ->
         list: 'base'
         count: 3
         ]
-      expectedQuery = """insert into "config_data_normalization" ("config", "data_source_id", "data_source_type", "data_type", "input", "list", "ordering",""" +
-        """ "output", "required") values ('{\\\"DataType\\\":\\\"Int\\\",\\\"nullZero\\\":true}', 'CoreLogic', 'county', 'tax', '\\\"\\\"', 'general', '2',""" +
-        """ 'Int Param', 'false'), ('{\\\"DataType\\\":\\\"Int\\\",\\\"nullZero\\\":true}', 'CoreLogic', 'county', 'tax', '\\\"\\\"', 'general', '3',""" +
-        """ 'Another Int Param', 'false')"""
       expectedInsertRules = [
         config:
           DataType: "Int"
@@ -121,7 +112,6 @@ describe 'service.dataSourceRules.coffee', ->
 
       @_addRulesFn(@query, @rules, count)
 
-      @rulesTableSqlMock.toString().should.equal expectedQuery
       @rulesTableSqlMock.insertSpy.calledOnce.should.be.true
       @rulesTableSqlMock.insertSpy.calledWith(expectedInsertRules).should.be.true
       done()
@@ -158,7 +148,7 @@ describe 'service.dataSourceRules.coffee', ->
 
       svc.getRules(@query.data_source_id, @query.data_source_type, @query.data_type)
 
-      @rulesTableSqlMock.toString().should.equal expectedQuery
+      @rulesTableSqlMock.selectSpy.calledOnce.should.be.true
       @rulesTableSqlMock.whereSpy.calledOnce.should.be.true
       @rulesTableSqlMock.whereSpy.calledWith(@query).should.be.true
 
@@ -366,13 +356,8 @@ describe 'service.dataSourceRules.coffee', ->
       done()
 
     it 'should have valid updateRule query', (done) ->
-      expectedQuery = """update "config_data_normalization" set "config" = '{\\\"DataType\\\":\\\"Int\\\",\\\"nullZero\\\":true}', "data_source_id" """ +
-      """= 'CoreLogic', "data_source_type" = 'county', "data_type" = 'tax', "input" = '\\\"\\\"', "list" = 'general', "ordering" = '0',""" +
-      """ "output" = 'Int Param', "required" = 'false' where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and""" +
-      """ "data_type" = 'tax' and "list" = 'general' and "ordering" = '0'"""
-
       svc.updateRule(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @query.ordering, @rules[0])
-      @rulesTableSqlMock.toString().should.equal expectedQuery
+
       @rulesTableSqlMock.updateSpy.calledOnce.should.be.true
       @rulesTableSqlMock.updateSpy.calledWith(_.extend(@rules[0], @query)).should.be.true
       @rulesTableSqlMock.whereSpy.calledOnce.should.be.true
