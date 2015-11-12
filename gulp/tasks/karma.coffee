@@ -19,17 +19,10 @@ karmaRunner = (done, options = {singleRun: true}, conf = karmaConf) ->
     log "KARMA ERROR: #{e}"
     done(e)
 
-console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-console.log("~~~~~~~~~~~~~~~~~~~~~~~~ #{process.env.CIRCLE_TEST_REPORTS}")
-console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    
 gulp.task 'karma', (done) ->
   karmaRunner done,
-    reporters:['dots', 'coverage', 'junit']
+    reporters:['dots', 'coverage']
     singleRun: true
-    junitReporter:
-      outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
-      suite: 'realtymaps'
 
 gulp.task 'karmaMocha', (done) ->
   karmaRunner(done)
@@ -52,6 +45,11 @@ gulp.task 'karmaNoCoverage', (done) ->
   karmaRunner (code) ->
     done(code)
     process.exit code #hack this should not need to be here
-  , reporters: ['dots']
+  ,
+    reporters: ['dots', 'junit']
+    junitReporter:
+      outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
+      suite: 'realtymaps'
+      useBrowserName: true
 
 gulp.task 'frontendNoCoverageSpec', gulp.series 'karmaNoCoverage'
