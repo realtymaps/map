@@ -241,6 +241,41 @@ _rules =
         valid: () ->
           @input.first && @input.last
 
+    mortgage:
+      rm_property_id:
+        alias: 'Property ID'
+        required: true
+        type: 'rm_property_id'
+        input: {}
+        valid: () ->
+          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
+
+      data_source_uuid:
+        alias: 'County Number'
+        required: true
+        input: {}
+        valid: () ->
+          @input.batchid && @input.batchseq
+
+      fips_code:
+        alias: 'FIPS code'
+        type: 'fips'
+        required: true
+
+      owner_name:
+        alias: 'Owner 1'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
+      owner_name_2:
+        alias: 'Owner 2'
+        required: true
+        input: {}
+        valid: () ->
+          @input.first && @input.last
+
 # no lists currently have no base filters, but deed used to, so 
 # we'll keep this around just in case something comes along that needs this)
 _noBase = []
