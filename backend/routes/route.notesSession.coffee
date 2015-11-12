@@ -19,7 +19,7 @@ TODO: Validate query and body params.
 class NotesSessionCrud extends Crud
   @include userExtensions.route
   init: () ->
-    @restrictAll(@withUser)
+    @restrictAll(@withUser())
     super()
 
   rootGET: (req, res, next) =>

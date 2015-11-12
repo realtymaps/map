@@ -37,6 +37,19 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       expectReject(validateAndTransform({}, {a: required: true}), DataValidationError)
     ]
 
+  promiseIt 'mutated original val does not effect transform', () ->
+    orig = {a:2}
+    [
+      expectResolve validateAndTransform orig,
+        a: validators.noop
+        c: validators.defaults(defaultValue: 1)
+        d: validators.defaults(defaultValue: null)
+      .then (value) ->
+        value.should.eql({a: orig.a, c: 1, d: null})
+        orig.a = 3
+        value.a.should.not.eql orig.a
+    ]
+
   promiseIt 'should perform iterative validation when a validator is an array', () ->
     [
       expectResolve validateAndTransform {a: null},
@@ -72,3 +85,61 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       .then (value) ->
         value.should.eql(z: [2, 3, 1])
     ]
+
+  describe 'map', ->
+
+    promiseIt 'map values', () ->
+      transformMap =
+        map:
+          dog: 'bark'
+          cat: 'meow'
+          bigCat: 'RAAAR'
+      orig =
+        a:'dog'
+        b:'cat'
+        c:'bigCat'
+      [
+        expectResolve validateAndTransform orig,
+          a: validators.map (transformMap)
+          b: validators.map (transformMap)
+          c: validators.map (transformMap)
+        .then (value) ->
+          value.should.eql({a: transformMap.map.dog, b: transformMap.map.cat, c: transformMap.map.bigCat})
+      ]
+
+    promiseIt 'generalize values', () ->
+      notForSale = 'not-for-sale'
+      transformMap =
+        map:
+          'off-market': notForSale
+          sold: notForSale
+          pending: notForSale
+      orig =
+        a:'pending'
+        b:'sold'
+        c:'off-market'
+      [
+        expectResolve validateAndTransform orig,
+          a: validators.map (transformMap)
+          b: validators.map (transformMap)
+          c: validators.map (transformMap)
+        .then (value) ->
+          value.should.eql({a: notForSale, b: notForSale, c: notForSale})
+      ]
+
+  describe 'mapKeys', ->
+
+    promiseIt 'works', () ->
+      orig =
+        params:
+          id: 1
+          notes_id: 3
+      [
+        expectResolve validateAndTransform orig,
+          params: validators.mapKeys(id: 'user_project.id', notes_id: 'user_notes.id')
+        .then (value) ->
+          value.should.eql
+            params:
+              'user_project.id': 1
+              'user_notes.id': 3
+      ]

@@ -16,7 +16,7 @@ describe 'util.crud.extensions.user', ->
 
     describe 'withUser', ->
       beforeEach ->
-        @subject = mainSubject.route.withUser
+        @subject = mainSubject.route.withUser()
 
       it 'exists', ->
         @subject.should.be.ok

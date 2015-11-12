@@ -65,7 +65,7 @@ class ProjectsSessionCrud extends Crud
     @clients = @clientsCrud.root
     @clientsById = @clientsCrud.byId
 
-    @restrictAll @withUser
+    @restrictAll @withUser()
     super arguments...
 
   rootGET: (req, res, next) ->

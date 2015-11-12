@@ -2,29 +2,85 @@ _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 auth = require '../utils/util.auth'
 ProjectSvc = require('../services/service.user.project')
-{RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
+{routeCrud, RouteCrud, hasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 logger = require '../config/logger'
 {mergeHandles} = require '../utils/util.route.helpers'
-
+usrTableNames = require('../config/tableNames').user
+{joinColumnNames} = require '../utils/util.sql.columns'
+{validators} = require '../utils/util.validation'
 class ProjectRouteCrud extends RouteCrud
   @include userExtensions.route
   init: () ->
-    @restrictAll @withUser
-    @clientsCrud = hasManyRouteCrud(@svc.clients, 'id', 'project_id', 'ClientsHasManyRouteCrud')
+    @restrictAll @withUser()
+    @clientsCrud = routeCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud')#, ['query','params'])
+    @clientsCrud.byIdGETTransforms =
+      query: validators.mapKeys
+        id: joinColumnNames.client.project_id
+        clients_id: joinColumnNames.client.id
+      body:  validators.noop
+      params: validators.noop
+
+    @clientsCrud.rootGETTransforms =
+      query: validators.mapKeys auth_user_id: joinColumnNames.client.auth_user_id
+      body:  validators.noop
+      params: validators.mapKeys id: joinColumnNames.client.project_id
+
     @clients = @clientsCrud.root
     @clientsById = @clientsCrud.byId
 
-    @notesCrud = hasManyRouteCrud(@svc.notes, 'id', 'project_id', 'NotesHasManyRouteCrud')#.init(true)#to enable logging
+    #                                          :notes_id"  :(id -> project_id)
+    @notesCrud = routeCrud(@svc.notes, 'notes_id', 'NotesHasManyRouteCrud',['query','params'])
+    @notesCrud.byIdGETTransforms =
+      query: validators.mapKeys {id: "#{usrTableNames.project}.id",notes_id: "#{usrTableNames.notes}.id"}
+      body:  validators.noop
+      params: validators.noop
+
+    @notesCrud.rootGETTransforms =
+      query: validators.mapKeys auth_user_id: "#{usrTableNames.project}.auth_user_id"
+      body:  validators.noop
+      params: validators.mapKeys id: "#{usrTableNames.notes}.project_id"
+
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
-    @drawnShapesCrud = hasManyRouteCrud(@svc.drawnShapes, 'id', 'project_id', 'DrawnShapesHasManyRouteCrud')
+    #                                                     :drawn_shapes_id"  :(id -> project_id)
+    @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud.byIdGETTransforms =
+      query: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
+      body:  validators.noop
+      params: validators.noop
+    @drawnShapesCrud.rootGETTransforms =
+      query: validators.mapKeys auth_user_id: "#{usrTableNames.project}.auth_user_id"
+      body:  validators.noop
+      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
+
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
+
     super arguments...
 
+  byIdGET: (req, res, next) =>
+    #so this is where bookshelf or objection.js would be much more concise
+    super(req, res, next)
+    .then (project) =>
+      @clientsCrud.rootGET(req, res, next)
+      .then (clients) ->
+        project.clients = clients
+        project
+    .then (project) =>
+      @notesCrud.rootGET(req, res, next)
+      .then (notes) ->
+        project.notes = notes
+        project
+    .then (project) =>
+      @drawnShapesCrud.rootGET(req, res, next)
+      .then (drawnShapes) ->
+        project.drawnShapes = drawnShapes
+        project
+
+
 safeProjectCols = (require '../utils/util.sql.helpers').columns.project
-module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc).init(true, safeProjectCols),
+module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(true, safeProjectCols),
   root:
     methods: ['get', 'post']
     middleware: [
