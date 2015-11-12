@@ -19,6 +19,10 @@ karmaRunner = (done, options = {singleRun: true}, conf = karmaConf) ->
     log "KARMA ERROR: #{e}"
     done(e)
 
+console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+console.log("~~~~~~~~~~~~~~~~~~~~~~~~ #{process.env.CIRCLE_TEST_REPORTS}")
+console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    
 gulp.task 'karma', (done) ->
   karmaRunner done,
     reporters:['dots', 'coverage', 'junit']
@@ -26,7 +30,6 @@ gulp.task 'karma', (done) ->
     junitReporter:
       outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
       suite: 'realtymaps'
-      useBrowserName: true
 
 gulp.task 'karmaMocha', (done) ->
   karmaRunner(done)
