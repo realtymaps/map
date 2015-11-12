@@ -17,6 +17,7 @@ app.controller 'rmapsCountyCtrl',
 
   $scope.fieldData =
     current: null
+    totalCount: 0
 
   $scope.transformOptions =
     'Uppercase': 'forceUpperCase'
@@ -34,6 +35,9 @@ app.controller 'rmapsCountyCtrl',
   ,
     id: 'deed'
     name: 'Deed'
+  ,
+    id: 'mortgage'
+    name: 'mortgage'
   ]
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
@@ -248,6 +252,7 @@ app.controller 'rmapsCountyCtrl',
         parseRules(rules)
         rmapsCountyService.getColumnList(config.current.id, config.dataSourceType.id, config.dataListType.id)
       .then (fields) ->
+        $scope.fieldData.totalCount = fields.plain().length
         parseFields(fields)
 
   $scope.getCountyList = () ->
