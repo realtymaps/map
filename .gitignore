@@ -31,3 +31,4 @@ vagrant_app.log
 
 nginx/
 dumps/
+junit/

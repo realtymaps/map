@@ -21,8 +21,12 @@ karmaRunner = (done, options = {singleRun: true}, conf = karmaConf) ->
 
 gulp.task 'karma', (done) ->
   karmaRunner done,
-    reporters:['dots', 'coverage']
+    reporters:['dots', 'coverage', 'junit']
     singleRun: true
+    junitReporter:
+      outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
+      suite: 'realtymaps'
+      useBrowserName: true
 
 gulp.task 'karmaMocha', (done) ->
   karmaRunner(done)
