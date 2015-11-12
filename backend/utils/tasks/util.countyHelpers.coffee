@@ -21,6 +21,7 @@ fs = require 'fs'
 path = require 'path'
 through = require 'through2'
 rimraf = require 'rimraf'
+zlib = require 'zlib'
 
 
 # loads all records from a ftp-dropped zip file
@@ -41,23 +42,47 @@ loadRawData = (subtask, options) ->
   .then () ->
     ftp.get(subtask.data.path)
   
-  if options.unzip
-    dataStreamPromise = dataStreamPromise
-    .then (zipFileStream) -> new Promise (resolve, reject) ->
-      zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
-      .on('finish', resolve)
-      .on('error', reject)
-    .then () ->  # just in case this is a retry, do rm -rf
-      rimraf.async("/tmp/#{fileBaseName}")
-    .then () ->
-      fs.mkdirAsync("/tmp/#{fileBaseName}")
-    .then () -> new Promise (resolve, reject) ->
-      fs.createReadStream("/tmp/#{fileBaseName}.zip")
-      .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
-      .on('close', resolve)
-      .on('error', reject)
-    .then () ->
-      fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+  filetype = options.compression || path.extname(subtask.data.path).slice(1)
+  
+  switch filetype
+    when 'zip'
+      dataStreamPromise = dataStreamPromise
+      .then (compressedDataStream) -> new Promise (resolve, reject) ->
+        compressedDataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
+        .on('finish', resolve)
+        .on('error', reject)
+      .then () ->  # just in case this is a retry, do rm -rf
+        rimraf.async("/tmp/#{fileBaseName}")
+      .then () ->
+        fs.mkdirAsync("/tmp/#{fileBaseName}")
+      .then () -> new Promise (resolve, reject) ->
+        fs.createReadStream("/tmp/#{fileBaseName}.zip")
+        .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+        .on('close', resolve)
+        .on('error', reject)
+      .then () ->
+        fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+    when 'gz'
+      dataStreamPromise = dataStreamPromise
+      .then (compressedDataStream) -> new Promise (resolve, reject) ->
+        compressedDataStream
+        .pipe(zlib.createGunzip())
+        ###
+        # the below might be necessary, had bugs trying to avoid writing to files with the zip lib, will have to wait
+        # until blackknight fixes the FTP drop before I can test
+        compressedDataStream
+        .pipe(fs.createWriteStream("/tmp/#{fileBaseName}.gz"))
+        .on('finish', resolve)
+        .on('error', reject)
+      .then () -> new Promise (resolve, reject) ->
+        fs.createReadStream("/tmp/#{fileBaseName}.gz")
+        .pipe(zlib.createGunzip())
+        .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
+        .on('close', resolve)
+        .on('error', reject)
+      .then () ->
+        fs.createReadStream("/tmp/#{fileBaseName}")
+        ###
 
   dataStreamPromise.then (rawDataStream) ->
     dataLoadHistory =
