@@ -45,6 +45,11 @@ gulp.task 'karmaNoCoverage', (done) ->
   karmaRunner (code) ->
     done(code)
     process.exit code #hack this should not need to be here
-  , reporters: ['dots']
+  ,
+    reporters: ['dots', 'junit']
+    junitReporter:
+      outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
+      suite: 'realtymaps'
+      useBrowserName: true
 
 gulp.task 'frontendNoCoverageSpec', gulp.series 'karmaNoCoverage'

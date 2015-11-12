@@ -14,6 +14,9 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
   countyData = [
     id: 'CoreLogic'
     name: 'CoreLogic'
+  ,
+    id: 'BlackKnight'
+    name: 'Black Knight'
   ]
 
   getConfigs = (params = {}) ->

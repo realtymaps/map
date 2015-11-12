@@ -53,6 +53,18 @@ categories =
       building: 'Building'
       owner: 'Owner'
       deed: 'Deed & Mortgage'
+    mortgage:
+      base: 'Base'
+      unassigned: 'Unassigned'
+      hidden: 'Hidden'
+      general: 'General'
+      details: 'Details'
+      sale: 'Sale History'
+      taxes: 'Taxes & Assessments'
+      lot: 'Lot & Location'
+      building: 'Building'
+      owner: 'Owner'
+      deed: 'Deed & Mortgage'
 
 
 address =
