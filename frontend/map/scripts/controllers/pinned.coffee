@@ -10,8 +10,8 @@ app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, rmapsevents, rmapsprincip
     $scope.favoriteTotal = _.keys($scope.favoriteProperties).length
 
   $rootScope.registerScopeData () ->
-  	getPinned()
-  	getFavorites()
+    getPinned()
+    getFavorites()
 
   $rootScope.$onRootScope rmapsevents.map.properties.pin, getPinned
   $rootScope.$onRootScope rmapsevents.map.properties.favorite, getFavorites
