@@ -1,21 +1,17 @@
 mixin propertyButtons(resultName)
   div.btn-actions
-    button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(#{resultName}, $event); $event.stopPropagation()")
+    button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
       i.fa.fa-heart(ng-show="formatters.results.isFavoriteResult(#{resultName})") &nbsp;
       i.fa.fa-heart-o(ng-show="!formatters.results.isFavoriteResult(#{resultName})") &nbsp;
 
-    button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()")
+    button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.results.isSavedResult(#{resultName}) ? 'Unpin' : 'Pin'}}")
       span.icon.icon-pin
-      span(ng-cloak) {{formatters.results.isSavedResult(#{resultName}) ? 'Unpin' : 'Pin'}}
 
-    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()")
+    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
       span.icon.icon-send_email
-      span Mail
 
-    button.note(ng-controller="rmapsNotesCtrl" ng-click="createGeoNote(#{resultName}); $event.stopPropagation()")
+    button.note(ng-controller="rmapsNotesCtrl" ng-click="createGeoNote(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
       i.fa.fa-sticky-note &nbsp;
-      span Note
 
-    button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()")
+    button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")
       i.fa.fa-map-marker &nbsp;
-      span Zoom To
