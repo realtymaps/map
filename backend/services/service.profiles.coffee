@@ -1,47 +1,16 @@
 Promise = require 'bluebird'
 bcrypt = require 'bcrypt'
 _ = require 'lodash'
-
 logger = require '../config/logger'
 tables = require '../config/tables'
-{singleRow} = require '../utils/util.sql.helpers'
+sqlHelpers = require '../utils/util.sql.helpers'
+singleRow = sqlHelpers.singleRow
 {currentProfile} = require '../utils/util.session.helpers'
 userProfileSvc = (require './services.user').user.profiles
 projectSvc = (require './services.user').project
 
-analyzeValue = require '../../common/utils/util.analyzeValue'
-
-cols =  [
-  "#{tables.user.profile.tableName}.id as id"
-  "#{tables.user.profile.tableName}.filters"
-  "#{tables.user.profile.tableName}.map_toggles"
-  "#{tables.user.profile.tableName}.map_position"
-  "#{tables.user.profile.tableName}.map_results"
-  "#{tables.user.profile.tableName}.parent_auth_user_id"
-
-  "#{tables.user.project.tableName}.id as project_id"
-  "#{tables.user.project.tableName}.auth_user_id"
-  "#{tables.user.project.tableName}.name"
-  "#{tables.user.project.tableName}.sandbox"
-  "#{tables.user.project.tableName}.archived"
-  "#{tables.user.project.tableName}.properties_selected"
-  "#{tables.user.project.tableName}.rm_modified_time"
-  "#{tables.user.project.tableName}.rm_inserted_time"
-]
-
-safe = [
-  'filters'
-  'map_toggles'
-  'map_position'
-  'map_results'
-  'parent_auth_user_id'
-  'auth_user_id'
-  'project_id'
-]
-
-safeProject = (require '../utils/util.sql.helpers').columns.project
-
-toReturn = safe.concat ['id']
+safeProject = sqlHelpers.columns.project
+safeProfile = sqlHelpers.columns.profile
 
 create = (newProfile) ->
   Promise.try () ->
@@ -51,8 +20,8 @@ create = (newProfile) ->
   .then (projectIds) ->
     newProfile.project_id = projectIds[0]
     tables.user.profile()
-    .returning(toReturn)
-    .insert(_.pick newProfile, safe)
+    .returning(safeProfile)
+    .insert(_.pick newProfile, safeProfile)
   .then (inserted) ->
     inserted?[0]
 
@@ -99,7 +68,7 @@ update = (profile) ->
   .then () ->
     # logger.debug "profile update"
     # logger.debug profile, true
-    userProfileSvc.update profile.id, profile, safe
+    userProfileSvc.update profile.id, profile, safeProfile
   .then (userState) ->
     if not userState
       return {}

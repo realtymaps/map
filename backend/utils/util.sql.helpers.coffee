@@ -5,7 +5,6 @@ logger = require '../config/logger'
 Promise = require 'bluebird'
 util = require 'util'
 
-
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
 
@@ -89,6 +88,10 @@ columns =
   notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title']
 
   project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+
+  user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
+
+  profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results', 'favorites']
 
   drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw']
 
