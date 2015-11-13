@@ -45,7 +45,7 @@ class Crud extends BaseObject
     return val
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
-    fnExec @dbFn().where(query).count('*'), doLogQuery
+    fnExec @dbFn().where(query).count('*'), doLogQuery or @doLogQuery
 
   getAll: () ->
     @_getAll 'dbFn', arguments...
@@ -59,7 +59,7 @@ class Crud extends BaseObject
 
     where = where.where(_.omit(query, _.isArray))
 
-    fnExec where, doLogQuery
+    fnExec where, doLogQuery or @doLogQuery
 
   getById: () ->
     @_getById 'dbFn', arguments...
@@ -67,22 +67,22 @@ class Crud extends BaseObject
   _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     throw new Error('id is required') unless id?
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery
+      fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery or @doLogQuery
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery
+      fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery or @doLogQuery
     , true
 
   create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
       # support entity or array of entities
       if _.isArray entity
-        fnExec @dbFn().returning(@idKey).insert(entity), doLogQuery
+        fnExec @dbFn().returning(@idKey).insert(entity), doLogQuery or @doLogQuery
       else
         obj = {}
         obj = @idObj id if id?
-        fnExec @dbFn().returning(@idKey).insert(_.extend {}, entity, obj), doLogQuery
+        fnExec @dbFn().returning(@idKey).insert(_.extend {}, entity, obj), doLogQuery or @doLogQuery
     , true
 
   upsert: (entity, unique, doUpdate = true, safe, doLogQuery = false, fnExec = execQ) ->
@@ -94,21 +94,21 @@ class Crud extends BaseObject
       throw new Error('must match exactly one or zero records') unless found.length <= 1
 
       if found.length == 0
-        Crud::create.call @, entity, entity[@idKey], doLogQuery, safe, fnExec
+        Crud::create.call @, entity, entity[@idKey], doLogQuery or @doLogQuery, safe, fnExec
         .then (inserted) ->
           throw new Error('exactly one record should have been inserted') unless inserted.length == 1
           inserted
 
       else if found.length == 1
         return [ found[0][@idKey] ] unless doUpdate
-        Crud::update.call @, found[0][@idKey], entity, safe, doLogQuery, fnExec
+        Crud::update.call @, found[0][@idKey], entity, safe, doLogQuery or @doLogQuery, fnExec
         .then (updated) ->
           throw new Error('exactly one record should have been updated') unless updated.length == 1
           updated
 
   delete: (id, doLogQuery = false, entity, safe, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery
+      fnExec @dbFn().where(_.extend @idObj(id), entity).delete(), doLogQuery or @doLogQuery
     , true
 
   base: () ->
