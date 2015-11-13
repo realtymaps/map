@@ -12,10 +12,10 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
   # Hardcoding here for now, we may need to make a table for these later
   # This isn't really a "config", but rather the actual raw stuff this service handles, so no need to modularize it outside.
   countyData = [
-    id: 'CoreLogic'
+    id: 'corelogic'
     name: 'CoreLogic'
   ,
-    id: 'BlackKnight'
+    id: 'blackknight'
     name: 'Black Knight'
   ]
 
