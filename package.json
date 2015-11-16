@@ -165,7 +165,7 @@
     "phantomjs-polyfill": "0.0.1",
     "pretty-hrtime": "^0.2.1",
     "promise-ftp": "^1.2.8",
-    "promise-sftp": "^0.9.2",
+    "promise-sftp": "^0.9.4",
     "qs": "^2.3.3",
     "readable-stream": "^1.0.32",
     "require-dir": "^0.1.0",
