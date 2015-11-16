@@ -61,16 +61,16 @@ module.exports =
     byId: "#{apiBaseSession}/projects/:id"
     clients: "#{apiBaseSession}/projects/:id/clients"
     clientsById: "#{apiBaseSession}/projects/:id/clients/:client_id"
-  # projectSession2:
-  #   apiBase: apiBaseProjectsSession2
-  #   root: apiBaseProjectsSession2
-  #   byId: "#{apiBaseProjectsSession2}/:id"
-  #   # clients: "#{apiBaseProjectsSession2}/:id/clients"
-  #   # clientsById: "#{apiBaseProjectsSession2}/:id/clients/:client_id"
-  #   notes: "#{apiBaseProjectsSession2}/:id/notes"
-  #   notesById: "#{apiBaseProjectsSession2}/:id/notes/:note_id"
-  #   drawnShapes: "#{apiBaseProjectsSession2}/:id/drawnByShapes"
-  #   drawnShapesById: "#{apiBaseProjectsSession2}/:id/drawnByShapes/:drawn_shap_id"
+  projectSession2:
+    apiBase: apiBaseProjectsSession2
+    root: apiBaseProjectsSession2
+    byId: "#{apiBaseProjectsSession2}/:id"
+    clients: "#{apiBaseProjectsSession2}/:id/clients"
+    clientsById: "#{apiBaseProjectsSession2}/:id/clients/:client_id"
+    notes: "#{apiBaseProjectsSession2}/:id/notes"
+    notesById: "#{apiBaseProjectsSession2}/:id/notes/:note_id"
+    drawnShapes: "#{apiBaseProjectsSession2}/:id/drawnByShapes"
+    drawnShapesById: "#{apiBaseProjectsSession2}/:id/drawnByShapes/:drawn_shap_id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers
@@ -164,7 +164,7 @@ module.exports =
     apiBaseDataSource: apiBaseDataSource
     apiBaseDataSourceLookups: apiBaseDataSourceLookups
     getColumnList: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/columns"
-    getLookupTypes: "#{apiBaseDataSourceLookups}/:lookupId/types"
+    getLookupTypes: "#{apiBaseDataSourceLookups}/:dataSourceId/lookupId/:lookupId/types"
   data_source_rules:
     getRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"
     createRules: "#{apiBaseDataSource}/:dataSourceId/dataSourceType/:dataSourceType/dataListType/:dataListType/rules"

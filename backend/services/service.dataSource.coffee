@@ -27,7 +27,7 @@ getColumnList = (dataSourceId, dataSourceType, dataListType) ->
       field.LongName = field.LongName.replace(/\./g, '')
     fields
 
-getLookupTypes = (lookupId) ->
+getLookupTypes = (dataSourceId, lookupId) ->
   query = tables.config.dataSourceLookups()
   .select(
     'LookupName',
@@ -37,8 +37,9 @@ getLookupTypes = (lookupId) ->
   )
   .where
     LookupName: lookupId
+    data_source_id: dataSourceId
   .catch errorLib.isUnhandled, (error) ->
-    throw new errorLib.PartiallyHandledError(error, "Failed to retrieve lookups for metadata entry #{lookupId}")
+    throw new errorLib.PartiallyHandledError(error, "Failed to retrieve lookups for metadata entry #{lookupId}, #{dataSourceId}")
   .then (fields) ->
     fields
 
