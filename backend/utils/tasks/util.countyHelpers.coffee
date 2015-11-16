@@ -42,7 +42,7 @@ loadRawData = (subtask, options) ->
   .then () ->
     ftp.get(subtask.data.path)
   
-  filetype = options.compression || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
   
   switch filetype
     when 'zip'
@@ -67,22 +67,6 @@ loadRawData = (subtask, options) ->
       .then (compressedDataStream) ->
         compressedDataStream
         .pipe(zlib.createGunzip())
-        ###
-        # the below might be necessary, had bugs trying to avoid writing to files with the zip lib, will have to wait
-        # until blackknight fixes the FTP drop before I can test
-        compressedDataStream
-        .pipe(fs.createWriteStream("/tmp/#{fileBaseName}.gz"))
-        .on('finish', resolve)
-        .on('error', reject)
-      .then () -> new Promise (resolve, reject) ->
-        fs.createReadStream("/tmp/#{fileBaseName}.gz")
-        .pipe(zlib.createGunzip())
-        .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
-        .on('close', resolve)
-        .on('error', reject)
-      .then () ->
-        fs.createReadStream("/tmp/#{fileBaseName}")
-        ###
 
   dataStreamPromise.then (rawDataStream) ->
     dataLoadHistory =
