@@ -1,0 +1,24 @@
+include ../mixins/property/_propertyAttributes.jade
+include ../mixins/_circleNrMixin.jade
+
+span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" dropdown)
+  button(class="dropdown-toggle btn btn-transparent pinned" dropdown-toggle)
+    i.fa.fa-heart
+
+  .dropdown-menu.whiteblock.no-margin
+    .fixed-header
+      span
+        a {{favoriteTotal}} Favorite Properties
+    .inner
+      ul
+        li(ng-repeat="property in favoriteProperties")
+          a(ng-click="formatters.results.showModel(property)")
+            span.enity
+              +circleNrMixin('{{$index+1}}')
+              span.content
+                span(class="status" ng-class="formatters.results.getStatusLabelClass(property, true)") {{property.rm_status}}
+                +propertyAttributes('property')
+            span.actions
+              span.unpin(ng-click="formatters.results.clickFavoriteResultFromList(property); $event.stopPropagation()")
+                span.action Remove
+                i.fa.fa-heart
