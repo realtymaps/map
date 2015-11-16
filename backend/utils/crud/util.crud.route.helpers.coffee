@@ -14,16 +14,9 @@ class Crud extends BaseObject
     unless @svc?
       throw new NamedError(@name, "#{@name}: @svc must be defined.")
     #essentially clone the parts of a request we want to not mutate it
-    @reqTransforms =
-      query: validators.noop
-      body: validators.noop
-      params: validators.noop
-
+    @reqTransforms = defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
-    @rootGETTransforms =
-      query: validators.noop
-      body: validators.noop
-      params: validators.noop
+    @rootGETTransforms = defaultRequestTransforms()
 
     @init()
 
@@ -139,11 +132,6 @@ class HasManyCrud extends Crud
       @maybeLogRequest tReq, 'tReq'
       @svc.getAll(_.set(tReq.query, @rootGETKey, tReq.params.id), @doLogQuery)
 
-###
-TODO:
-- needs validation (leaving this to who actually is using it)
-- needs error handling
-###
 
 wrapRoutesTrait = (baseKlass) ->
   class RoutesTrait extends baseKlass
