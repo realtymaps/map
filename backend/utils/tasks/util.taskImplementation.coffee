@@ -41,7 +41,11 @@ class TaskImplementation
         return 0
       jobQueue = require '../util.jobQueue'
       jobQueue.queueSubtasks(transaction, batchId, subtasks)
-      
+    .then (count) ->
+      if count == 0
+        throw new Error("0 subtasks enqueued for #{task.name}")
+      count
+
   ready: null  # to properly set prototype
 
 

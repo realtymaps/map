@@ -12,6 +12,7 @@ dbs = require '../../config/dbs'
 {HardFail, SoftFail} = require '../errors/util.error.jobQueue'
 copyStream = require 'pg-copy-streams'
 utilStreams = require '../util.streams'
+through2 = require 'through2'
 
 
 DELETE =
