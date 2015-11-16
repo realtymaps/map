@@ -1,6 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
+logger  = require '../../config/logger'
 
 # Goal remap the keys of an object
 # example:
@@ -22,15 +23,15 @@ DataValidationError = require '../errors/util.error.dataValidation'
 module.exports = (options = {}) ->
   # console.log "validation.mapKeys options #{JSON.stringify options}"
   (param, value) -> Promise.try () ->
-    console.log "begin validation.mapKeys"
+#    logger.debug "begin validation.mapKeys"
     if !options?
       return Promise.reject new DataValidationError("no options provided, options are: #{JSON.stringify(options)}", param, value)
 
     reMapped = {}
-    console.log options
+#    logger.debug options
     for key, val of options
       origVal = value[key]
       reMapped[val] = origVal
-    console.log reMapped
-    console.log "end validation.mapKeys"
+#    logger.debug reMapped
+#    logger.debug "end validation.mapKeys"
     reMapped
