@@ -12,10 +12,10 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
   # Hardcoding here for now, we may need to make a table for these later
   # This isn't really a "config", but rather the actual raw stuff this service handles, so no need to modularize it outside.
   countyData = [
-    id: 'CoreLogic'
+    id: 'corelogic'
     name: 'CoreLogic'
   ,
-    id: 'BlackKnight'
+    id: 'blackknight'
     name: 'Black Knight'
   ]
 
@@ -25,8 +25,8 @@ app.service 'rmapsCountyService', [ '$log', 'Restangular', ($log, Restangular) -
   getColumnList = (dataSourceId, dataSourceType, dataListType) ->
     Restangular.all(dataSourceAPI).one(dataSourceId).all('dataSourceType').one(dataSourceType).all('dataListType').one(dataListType).all('columns').getList()
 
-  getLookupTypes = (lookupId) ->
-    Restangular.one(lookupAPI, lookupId).getList('types')
+  getLookupTypes = (dataSourceId, lookupId) ->
+    Restangular.all(lookupAPI).one(dataSourceId).all('lookupId').one(lookupId).getList('types')
 
   service =
     getConfigs: getConfigs
