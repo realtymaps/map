@@ -1,7 +1,7 @@
 div(class="{{pageClass}}", ng-show="$state.is('main')", ng-cloak).page
   section
     .hero-container.center-on-page
-      a(href="{{frontendRoutes.map}}",title="Show me the map!")
+      a(ui-sref="map",title="Show me the map!")
         .hero-container
           img(src="../../assets/logo.png")
         .hero-text
