@@ -53,7 +53,6 @@ geoJsonFormatter = (toMove, deletes) ->
 
 
 delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
-  columnNum = 0
   count = 0
   outputStream = through2.obj()
   splitStream = split()
@@ -71,22 +70,15 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   
   lineHandler = (line) ->
     count++
-    colCount = line.split(delimiter).length
-    if colCount != columnNum
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ line #{count} has only #{colCount} columns, expecting #{columnNum}:\n=================: #{JSON.stringify(line)}")
     outputStream.write(type: 'data', payload: line)
   if !columnsHandler
     columnsHandler = (headers) -> headers.split(delimiter)  # generic handler
   if _.isArray(columnsHandler)
-    columnNum = columnsHandler.length
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Expecting #{columnNum} columns")
     outputStream.write(type: 'columns', payload: columnsHandler)
     splitStream.on('data', lineHandler)
   else
     splitStream.once 'data', (headerLine) ->
       columns = columnsHandler(headerLine).split(delimiter)
-      columnNum = columns.length
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ Expecting #{columnNum} columns")
       outputStream.write(type: 'columns', payload: columns)
       splitStream.on('data', lineHandler)
   inputStream.pipe(splitStream)
