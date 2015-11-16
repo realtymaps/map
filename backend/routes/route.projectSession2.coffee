@@ -12,8 +12,9 @@ usrTableNames = require('../config/tableNames').user
 class ProjectRouteCrud extends RouteCrud
   @include userExtensions.route
   init: () ->
-    @restrictAll @withUser()
-    @clientsCrud = routeCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud')#, ['query','params'])
+    @restrictAll @withUser, true
+    @doLogQuery = ['query','params']
+    @clientsCrud = routeCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clientsCrud.byIdGETTransforms =
       query: validators.mapKeys
         id: joinColumnNames.client.project_id
@@ -48,6 +49,8 @@ class ProjectRouteCrud extends RouteCrud
     super arguments...
 
   byIdGET: (req, res, next) =>
+    console.log req.query
+    console.log req.params
     #so this is where bookshelf or objection.js would be much more concise
     super(req, res, next)
     .then (project) =>

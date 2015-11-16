@@ -2,7 +2,14 @@ Promise = require 'bluebird'
 basePath = require '../basePath'
 
 
-{validators, validateAndTransform, DataValidationError} = require "#{basePath}/utils/util.validation"
+{
+validators
+validateAndTransform
+DataValidationError
+defaultRequestTransforms
+falsyTransformsToNoop
+} = require "#{basePath}/utils/util.validation"
+
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
 
 
@@ -86,3 +93,46 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
         value.should.eql(z: [2, 3, 1])
     ]
 
+  describe 'defaultRequestTransforms', ->
+    it 'undefined', ->
+      res = defaultRequestTransforms()
+      for key,val of res
+        val.should.be.eql validators.noop
+    it 'has query params body', ->
+      res = defaultRequestTransforms()
+      for val in ['query', 'params', 'body']
+        res[val].should.be.eql validators.noop
+    it 'null', ->
+      res = defaultRequestTransforms(null)
+      for key,val of res
+        val.should.be.eql validators.noop
+    it 'false', ->
+      res = defaultRequestTransforms(false)
+      for key,val of res
+        val.should.be.eql validators.noop
+
+    describe 'partial', ->
+      ['query', 'body', 'params'].forEach (reqName) ->
+        it "not #{reqName}", ->
+          matchValidator = validators.string()
+          obj = {}
+          obj[reqName] = matchValidator
+          res = defaultRequestTransforms(obj)
+          for key,val of res
+            if key != reqName
+              val.should.be.eql validators.noop
+            else
+              val.should.be.eql matchValidator
+
+  describe 'falsyTransformsToNoop', ->
+    it 'undefined', ->
+      expect(falsyTransformsToNoop()).to.not.be.ok
+
+    it 'partial obj transforms def', ->
+      tForm = validators.string()
+      ret = falsyTransformsToNoop
+        query: tForm
+        params: null
+      ret.query.should.be.eql tForm
+      ret.params.should.be.eql validators.noop
+      expect(ret.body).to.not.be.ok

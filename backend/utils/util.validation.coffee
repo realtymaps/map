@@ -82,15 +82,16 @@ validateAndTransform = (params, definitions) -> Promise.try () ->
   Noop the default transforms for a Crud Request
 ###
 defaultRequestTransforms = (obj) ->
-  def = {}
-  fields = ["params", "query", "body"]
-  for val, index in fields
-    def[index] = validators.noop
+  def = {
+    params: validators.noop
+    query: validators.noop
+    body: validators.noop
+  }
 
   return def unless obj
 
   for key, val of def
-    obj[key] = if val? then val else def[key]
+    obj[key] = if obj[key]? then obj[key] else def[key]
   obj
 
 
@@ -100,6 +101,8 @@ defaultRequestTransforms = (obj) ->
 falsyTransformsToNoop = (transforms) ->
   for key, val of transforms
     transforms[key] = validators.noop unless val
+
+  transforms
 
 
 module.exports =
