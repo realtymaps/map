@@ -42,7 +42,7 @@ loadRawData = (subtask, options) ->
   .then () ->
     ftp.get(subtask.data.path)
   
-  filetype = options.compression || path.extname(subtask.data.path).slice(1)
+  filetype = options.compression || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
   
   switch filetype
     when 'zip'
@@ -64,7 +64,7 @@ loadRawData = (subtask, options) ->
         fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
     when 'gz'
       dataStreamPromise = dataStreamPromise
-      .then (compressedDataStream) -> new Promise (resolve, reject) ->
+      .then (compressedDataStream) ->
         compressedDataStream
         .pipe(zlib.createGunzip())
         ###
@@ -93,8 +93,6 @@ loadRawData = (subtask, options) ->
       raw_table_name: rawTableName
     objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
-  .then (rowsInserted) ->
-    return rowsInserted
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->

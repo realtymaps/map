@@ -1,6 +1,6 @@
 # Include the cluster module
 Promise = require 'bluebird'
-cluster = Promise.promisifyAll require('cluster')
+cluster = require('cluster')
 config = require './config'
 logger = require './logger'
 
@@ -35,14 +35,15 @@ module.exports = (clusterName, workerCount, workerCb) ->
     masterPrefix = "Master Process <#{clusterName}>"
     logger.debug "#{masterPrefix}: starting"
     process.on 'uncaughtException', catchUncaughtErrors.bind(null, masterPrefix)
-    logger.debug "#{masterPrefix}: forking #{workerCount} workers"
-    [1..workerCount].forEach ->
-      cluster.forkAsync()
+    logger.debug "#{masterPrefix}: forking #{workerCount} workers..."
+    for i in [1..workerCount]
+      logger.debug "#{masterPrefix}: ... worker #{i} forking ... "
+      cluster.fork()
 
-    cluster.onAsync('exit').then (worker) ->
+    cluster.on 'exit', (worker) ->
       logger.error "#{getWorkerPrefix(worker)}: exited"
       logger.debug "#{masterPrefix}: forking new worker"
-      cluster.forkAsync()
+      cluster.fork()
 
     return
 
