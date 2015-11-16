@@ -8,6 +8,7 @@ logger = require '../config/logger'
 usrTableNames = require('../config/tableNames').user
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
+
 class ProjectRouteCrud extends RouteCrud
   @include userExtensions.route
   init: () ->
@@ -17,12 +18,9 @@ class ProjectRouteCrud extends RouteCrud
       query: validators.mapKeys
         id: joinColumnNames.client.project_id
         clients_id: joinColumnNames.client.id
-      body:  validators.noop
-      params: validators.noop
 
     @clientsCrud.rootGETTransforms =
       query: validators.mapKeys auth_user_id: joinColumnNames.client.auth_user_id
-      body:  validators.noop
       params: validators.mapKeys id: joinColumnNames.client.project_id
 
     @clients = @clientsCrud.root
@@ -30,29 +28,19 @@ class ProjectRouteCrud extends RouteCrud
 
     #                                          :notes_id"  :(id -> project_id)
     @notesCrud = routeCrud(@svc.notes, 'notes_id', 'NotesHasManyRouteCrud',['query','params'])
-    @notesCrud.byIdGETTransforms =
-      query: validators.mapKeys {id: "#{usrTableNames.project}.id",notes_id: "#{usrTableNames.notes}.id"}
-      body:  validators.noop
-      params: validators.noop
-
-    @notesCrud.rootGETTransforms =
-      query: validators.mapKeys auth_user_id: "#{usrTableNames.project}.auth_user_id"
-      body:  validators.noop
-      params: validators.mapKeys id: "#{usrTableNames.notes}.project_id"
-
+    ["byIdGETTransforms","rootGETTransforms"].forEach (transFormMethod) =>
+      @notesCrud[transFormMethod] =
+        query: validators.mapKeys {id: "#{usrTableNames.project}.id",notes_id: "#{usrTableNames.notes}.id"}
+        params: validators.mapKeys id: "#{usrTableNames.notes}.project_id"
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud.byIdGETTransforms =
-      query: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
-      body:  validators.noop
-      params: validators.noop
-    @drawnShapesCrud.rootGETTransforms =
-      query: validators.mapKeys auth_user_id: "#{usrTableNames.project}.auth_user_id"
-      body:  validators.noop
-      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
+    ["byIdGETTransforms","rootGETTransforms"].forEach (transFormMethod) =>
+      @drawnShapesCrud[transFormMethod] =
+        query: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
+        params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
 
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
@@ -81,6 +69,7 @@ class ProjectRouteCrud extends RouteCrud
 
 safeProjectCols = (require '../utils/util.sql.helpers').columns.project
 module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(true, safeProjectCols),
+  ##TODO: How much of the post, delete, and puts do we really want to allow?
   root:
     methods: ['get', 'post']
     middleware: [
