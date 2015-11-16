@@ -12,7 +12,8 @@ mod.constant 'rmapsevents',
       filters:
         updated: 1
       properties:
-        updated: 1
+        pin: 1
+        favorite: 1
     principal:
       login:
         success: 1

@@ -21,6 +21,7 @@ fs = require 'fs'
 path = require 'path'
 through = require 'through2'
 rimraf = require 'rimraf'
+zlib = require 'zlib'
 
 
 # loads all records from a ftp-dropped zip file
@@ -41,23 +42,31 @@ loadRawData = (subtask, options) ->
   .then () ->
     ftp.get(subtask.data.path)
   
-  if options.unzip
-    dataStreamPromise = dataStreamPromise
-    .then (zipFileStream) -> new Promise (resolve, reject) ->
-      zipFileStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
-      .on('finish', resolve)
-      .on('error', reject)
-    .then () ->  # just in case this is a retry, do rm -rf
-      rimraf.async("/tmp/#{fileBaseName}")
-    .then () ->
-      fs.mkdirAsync("/tmp/#{fileBaseName}")
-    .then () -> new Promise (resolve, reject) ->
-      fs.createReadStream("/tmp/#{fileBaseName}.zip")
-      .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
-      .on('close', resolve)
-      .on('error', reject)
-    .then () ->
-      fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+  
+  switch filetype
+    when 'zip'
+      dataStreamPromise = dataStreamPromise
+      .then (compressedDataStream) -> new Promise (resolve, reject) ->
+        compressedDataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
+        .on('finish', resolve)
+        .on('error', reject)
+      .then () ->  # just in case this is a retry, do rm -rf
+        rimraf.async("/tmp/#{fileBaseName}")
+      .then () ->
+        fs.mkdirAsync("/tmp/#{fileBaseName}")
+      .then () -> new Promise (resolve, reject) ->
+        fs.createReadStream("/tmp/#{fileBaseName}.zip")
+        .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+        .on('close', resolve)
+        .on('error', reject)
+      .then () ->
+        fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+    when 'gz'
+      dataStreamPromise = dataStreamPromise
+      .then (compressedDataStream) ->
+        compressedDataStream
+        .pipe(zlib.createGunzip())
 
   dataStreamPromise.then (rawDataStream) ->
     dataLoadHistory =
@@ -68,8 +77,6 @@ loadRawData = (subtask, options) ->
       raw_table_name: rawTableName
     objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
-  .then (rowsInserted) ->
-    return rowsInserted
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->

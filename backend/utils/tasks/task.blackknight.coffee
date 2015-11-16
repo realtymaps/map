@@ -24,12 +24,12 @@ _findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () -
     for dir in rootListing when dir.type == 'd'
       date = dir.name.slice(-8)
       type = dir.name.slice(0, -8)
-      if !processDates[type]?
+      if !processDates[action]?
         logger.warn("Unexpected directory found in blackknight FTP drop: /Managed_#{action}/#{dir.name}")
         continue
       if processDates[action] >= date
         continue
-      newFolders["#{date}_#{action}"] ?= {}
+      newFolders["#{date}_#{action}"] ?= {date, action}
       newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
     newFolders
 
@@ -75,7 +75,7 @@ _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
   .then () ->
     if processInfo[constants.REFRESH].length + processInfo[constants.UPDATE].length + processInfo[constants.DELETE].length == 0
       # nothing in this folder, move on to the next thing in the drop
-      return _checkDropChain(ftp, newFolders, drops, i+1)
+      return _checkDropChain(ftp, processInfo, newFolders, drops, i+1)
     # we found files!  resolve the results
     processInfo.hasFiles = true
     processInfo
@@ -137,8 +137,7 @@ checkFtpDrop = (subtask) ->
     .then (newFolders) ->
       _findNewFolders(ftp, constants.UPDATE, processDates, newFolders)
     .then (newFolders) ->
-      drops = Object.keys(newFolders)
-      drops = _.sort(drops)  # sorts by date, with Refresh before Update
+      drops = Object.keys(newFolders).sort()  # sorts by date, with Refresh before Update
       if drops.length == 0
         logger.debug "No new blackknight directories to process"
       else
@@ -176,6 +175,7 @@ loadRawData = (subtask) ->
     dataSourceId: 'blackknight'
     columnsHandler: constants.COLUMNS[subtask.data.fileType][subtask.data.action][subtask.data.dataType]
     delimiter: '\t'
+    sftp: true
   .then (numRows) ->
     jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, constants.NUM_ROWS_TO_PAGINATE, "blackknight_normalizeData",
       rawTableSuffix: subtask.data.rawTableSuffix
@@ -184,7 +184,8 @@ loadRawData = (subtask) ->
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
 
-deleteData = (subtask) ->   # todo
+deleteData = (subtask) ->
+  Promise.reject('~~~~~~~~~~~~~~~~~ show stopper ~~~~~~~~~~~~~~~~~')
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,

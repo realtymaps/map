@@ -12,11 +12,12 @@ userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coff
 tables = require '../config/tables'
 analyzeValue = require '../../common/utils/util.analyzeValue'
 userUtils = require '../utils/util.user'
+sqlHelpers = require '../utils/util.sql.helpers'
 
-safeProject = (require '../utils/util.sql.helpers').columns.project
-safeProfile = ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results']
-safeUser = ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
-safeNotes = (require '../utils/util.sql.helpers').columns.notes
+safeProject = sqlHelpers.columns.project
+safeProfile = sqlHelpers.columns.profile
+safeUser = sqlHelpers.columns.user
+safeNotes = sqlHelpers.columns.notes
 
 class ClientsCrud extends HasManyRouteCrud
   @include userExtensions.route
@@ -73,7 +74,6 @@ class ProjectsSessionCrud extends Crud
     .then (projects) =>
       userSvc.clients.getAll parent_auth_user_id: req.user.id, project_id: _.pluck(projects, 'id'), @doLogQuery
       .then (clients) ->
-        projectsById = _.indexBy projects, 'id'
         _.each projects, (project) ->
           project.clients = _.filter clients, project_id: project.id
         projects

@@ -134,6 +134,9 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
     isSavedResult:(result) ->
       result?.savedDetails?.isSaved == true
 
+    isFavoriteResult:(result) ->
+      result?.savedDetails?.isFavorite == true
+
     getCurrentOwnersTitle: (result) =>
       title = 'result-property-hovered'
       if @hasMultipleOwners(result)
@@ -310,4 +313,12 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
         @reset()
         if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
+          result.isMousedOver = undefined
+
+    clickFavoriteResultFromList: (result, event = {}) =>
+      if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
+      wasFavorite = result?.savedDetails?.isFavorite
+      @mapCtrl.favoriteProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+        @reset()
+        if wasFavorite and !@mapCtrl.scope.results[result.rm_property_id]
           result.isMousedOver = undefined

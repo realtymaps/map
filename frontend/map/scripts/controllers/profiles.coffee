@@ -2,7 +2,7 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmapsprincipal) ->
+app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal, rmapsProfilesService) ->
   rmapsprincipal.getIdentity()
   .then (identity) ->
     {user, profiles} = identity
@@ -17,11 +17,9 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $location, $http, rmaps
         $event.stopPropagation()
         #https://github.com/angular/angular.js/pull/10288
         return if profile.showProfileNameInput#needed for spaces in input name
-        $http.post(backendRoutes.userSession.currentProfile, currentProfileId: profile.id)
+        rmapsProfilesService.setCurrent undefined, profile
         .then ->
-          rmapsprincipal.getCurrentProfileId(profile.id)
-        .then ->
-          $location.path(frontendRoutes.map)
+          $state.go('map', project_id: profile.project_id)
 
       change:(profile) ->
         profile.needsUpdate = true

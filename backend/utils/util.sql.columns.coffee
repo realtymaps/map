@@ -28,6 +28,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.map_toggles"
     "#{tables.user.profile.tableName}.map_position"
     "#{tables.user.profile.tableName}.map_results"
+    "#{tables.user.profile.tableName}.favorites"
     "#{tables.user.profile.tableName}.project_id"
 
     "#{tables.user.project.tableName}.name"

@@ -89,10 +89,17 @@ app.factory 'rmapsMap',
           #TODO: Need to debounce / throttle
           saved = rmapsPropertiesService.saveProperty(model)
           rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
-          lObject.setIcon(new L.divIcon(model.icon))
+          lObject?.setIcon(new L.divIcon(model.icon))
           return unless saved
           saved.then (savedDetails) =>
             @redraw(false)
+
+        @favoriteProperty = (model, lObject) =>
+          #TODO: Need to debounce / throttle
+          saved = rmapsPropertiesService.favoriteProperty(model)
+          rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
+          lObject?.setIcon(new L.divIcon(model.icon))
+          saved
 
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)

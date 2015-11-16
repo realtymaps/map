@@ -2,6 +2,7 @@ logger = require '../config/logger'
 dbs = require '../config/dbs'
 clone = require 'clone'
 
+
 _buildQuery = (db, tableName) ->
   query = (transaction=db, asName) ->
     if typeof(transaction) == 'string'
