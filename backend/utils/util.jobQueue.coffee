@@ -46,20 +46,18 @@ queueReadyTasks = () -> Promise.try () ->
   readyPromises = []
   # load all task definitions to check for overridden "ready" method
   taskImpls = loaders.loadSubmodules(path.join(__dirname, 'tasks'), /^task\.(\w+)\.coffee$/)
-  for taskName, taskImpl of taskImpls
+  Promise.map Object.keys(taskImpls), (taskName) ->
+    taskImpl = taskImpls[taskName]
     # task might define its own logic for determining if it should run
-    if taskImpl.ready?
-      readyPromise = taskImpl.ready()
-      .then (override) ->
-        # if the result is true, run this task (as long as it is active and is past any ignore_until)
-        if override == true
-          overrideRunNames.push(taskName)
-        # if the result is false, /don't/ run this task (no matter what)
-        else if override == false
-          overrideSkipNames.push(taskName)
-        # otherwise, rely on default ready-checking logic
-      readyPromises.push(readyPromise)
-  Promise.all(readyPromises)
+    taskImpl.ready?()
+    .then (override) ->
+      # if the result is true, run this task (as long as it is active and is past any ignore_until)
+      if override == true
+        overrideRunNames.push(taskName)
+      # if the result is false, /don't/ run this task (no matter what)
+      else if override == false
+        overrideSkipNames.push(taskName)
+      # otherwise, rely on default ready-checking logic
   .then () ->
     _withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
       tables.jobQueue.taskConfig(transaction)
@@ -244,6 +242,22 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         .insert singleSubtask
         .then () ->
           return 1
+
+cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
+  tables.jobQueue.taskHistory()
+  .where
+    current: true
+  .whereNull('finished')
+  .map (task) ->
+    cancelTask(task.name, status, withPrejudice)
+    .then () ->
+      if forget
+        tables.jobQueue.taskHistory()
+        .where
+          name: task.name
+          current: true
+        .whereNotNull('finished')
+        .delete()
 
 cancelTask = (taskName, status='canceled', withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
@@ -603,6 +617,7 @@ runWorker = (queueName, id, quit=false) ->
     prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
   else
     prefix = "<#{queueName}-#{id}>"
+  logger.debug "#{prefix} worker starting..."
   _runWorkerImpl(queueName, prefix, quit)
 
 _runWorkerImpl = (queueName, prefix, quit) ->
@@ -653,3 +668,4 @@ module.exports =
   getSubtaskConfig: getSubtaskConfig
   runWorker: runWorker
   getLastTaskStartTime: getLastTaskStartTime
+  cancelAllRunningTasks: cancelAllRunningTasks
