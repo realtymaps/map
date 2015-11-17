@@ -3,6 +3,13 @@ tables = require '../config/tables'
 {profile, notes, project, drawnShapes} = require './services.user'
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns} = require '../utils/util.sql.columns'
+sqlHelpers = require '../utils/util.sql.helpers'
+
+safeProject = sqlHelpers.columns.project
+safeProfile = sqlHelpers.columns.profile
+safeUser = sqlHelpers.columns.user
+safeNotes = sqlHelpers.columns.notes
+
 
 clientIdCol = joinColumns.client[0]
 projectId = "#{tables.user.project.tableName}.id"
@@ -24,6 +31,36 @@ class ProjectCrud extends ThenableCrud
       projectId, "#{tables.user.drawnShapes.tableName}.project_id").init(arguments...)
     # @drawnShapes.doLogQuery = true
     super(arguments...)
+
+  #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
+  delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
+    @svc.getById idObj, doLogQuery, entity, safe
+    .then (projects) =>
+      project = projects[0]
+      throw new Error 'Project not found' unless project?
+
+      # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
+      if project.sandbox is true
+        @svc.update project.id, properties_selected: {}, safeProject, doLogQuery
+        .then () =>
+          @clients.getAll idObj
+        .then (profiles) =>
+          profileReset =
+            filters: {}
+            map_results: {}
+            map_position: {}
+
+          profileSvc.update profiles[0].id, profileReset, safeProfile, @doLogQuery
+
+        .then () =>
+          @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: id.auth_user_id, safeNotes
+      else
+        @clients.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeProfile
+        .then () =>
+          @notes.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
+        .then () =>
+          super req, res, next
+
 
 #temporary to not conflict with project
 module.exports = new ProjectCrud(tables.user.project).init(false)
