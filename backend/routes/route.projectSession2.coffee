@@ -71,7 +71,7 @@ class ClientsCrud extends RouteCrud
 class ProjectRouteCrud extends RouteCrud
   @include userExtensions.route
   init: () ->
-    #replaces the need for restrictAll
+    #replaces the need for restrictAll7
     @reqTransforms =
       params: validators.reqId toKey: 'auth_user_id'
     @doLogQuery = ['query','params']
@@ -105,6 +105,7 @@ class ProjectRouteCrud extends RouteCrud
     super req, res, next
     .then (projects) =>
       newReq = @cloneRequest(req)
+      logger.debug "newReq: #{JSON.stringify newReq}"
       _.extend newReq.params, project_id: _.pluck(projects, 'id')
       @clientsCrud.rootGET(newReq,res,next)
       .then (clients) ->
@@ -125,8 +126,8 @@ class ProjectRouteCrud extends RouteCrud
         projects
 
   byIdGET: (req, res, next) =>
-    console.log req.query
-    console.log req.params
+    logger.debug @cloneRequest(req), true
+
     #so this is where bookshelf or objection.js would be much more concise
     super(req, res, next)
     .then (project) =>
