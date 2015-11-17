@@ -5,6 +5,9 @@ logger  = require '../../config/logger'
 {getNamespace} = require 'continuation-local-storage'
 {NAMESPACE} = require '../../config/config'
 
+
+_errMsg = (thing) ->
+  "no #{thing} provided, options are: #{JSON.stringify(options)}"
 # GOAL: To get a key from the continuation-local-storage and map it a object field
 # example:
 # options:
@@ -22,13 +25,13 @@ module.exports = (options = {}) ->
   # logger.debug "localStore: #{JSON.stringify options}"
   (param, value) -> Promise.try () ->
     if !options?
-      return Promise.reject new DataValidationError("no options provided, options are: #{JSON.stringify(options)}", param, value)
+      return Promise.reject new DataValidationError(_errMsg(options), param, value)
 
     if !options?.clsKey
-      return Promise.reject new DataValidationError("no clsKey provided, clsKey are: #{JSON.stringify(options)}", param, value)
+      return Promise.reject new DataValidationError(_errMsg('clsKey'), param, value)
 
     if !options?.toKey
-      return Promise.reject new DataValidationError("no clsKey provided, clsKey are: #{JSON.stringify(options)}", param, value)
+      return Promise.reject new DataValidationError(_errMsg('toKey'), param, value)
 
     space = getNamespace NAMESPACE
     firstRest = options.clsKey.firstRest('.')

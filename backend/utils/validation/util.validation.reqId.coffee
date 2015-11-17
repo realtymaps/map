@@ -14,7 +14,6 @@ logger = require '../../config/logger'
 #
 # Returns the mapped object.
 module.exports = (options = {}) ->
-  if options?
-    options.clsKey = 'req.user.id'
-  # logger.debug options, true
-  validLocalStore(options)
+  clsKey = options.clsKey ? 'req.user.id'
+  toKey = options.toKey ? 'auth_user_id'
+  validLocalStore({clsKey, toKey})
