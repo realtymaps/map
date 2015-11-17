@@ -96,9 +96,9 @@ loadRawData = (subtask, options) ->
   .finally () ->
     try
       # try to clean up after ourselves
-      rimraf.async("/tmp/#{fileBaseName}")
+      rimraf.async("/tmp/#{fileBaseName}*")
     catch err
-      logger.warn("Error trying to rm -rf temporary directory /tmp/#{fileBaseName}: #{err}")
+      logger.warn("Error trying to rm -rf temporary files /tmp/#{fileBaseName}*: #{err}")
 
 
 buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.try () ->

@@ -217,7 +217,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         # return 0 to indicate we queued 0 subtasks
         logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
-      suffix = if subtaskData?.length then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
+      suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
       logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->

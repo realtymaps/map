@@ -21,7 +21,7 @@ catchUncaughtErrors = (prefix, err) ->
 
 
 module.exports = (clusterName, options={}, workerCb) ->
-  workerCount = 1 #options.workerCount ? config.PROC_COUNT
+  workerCount = options.workerCount ? config.PROC_COUNT
   allowQuit = !!options.allowQuit
   quitWorkerCount = 0
   if workerCount == 1
