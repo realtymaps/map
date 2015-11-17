@@ -10,9 +10,11 @@ usrTableNames = require('../config/tableNames').user
 {validators} = require '../utils/util.validation'
 
 class ProjectRouteCrud extends RouteCrud
-  @include userExtensions.route
   init: () ->
-    @restrictAll @withUser, true
+    #replaces the need for restrictAll
+    @reqTransforms =
+      params: validators.reqId toKey: 'auth_user_id'
+
     @doLogQuery = ['query','params']
     @clientsCrud = routeCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clientsCrud.byIdGETTransforms =

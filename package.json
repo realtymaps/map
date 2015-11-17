@@ -55,6 +55,7 @@
     "connect-flash": "^0.1.1",
     "connect-multiparty": "1.2.x",
     "connect-pg-simple": "^3.0.1",
+    "continuation-local-storage": "^3.1.4",
     "cookie-parser": "1.3.x",
     "csv-stringify": "0.0.8",
     "d3": "^3.5.6",
