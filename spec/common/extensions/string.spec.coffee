@@ -66,6 +66,5 @@ describe "extensions > String".ns().ns('Common'), ->
 
     it 'has none', ->
       firstRest = ''.firstRest('.')
-      firstRest.first.should.be.ok
       firstRest.first.should.be.eql ''
       expect(firstRest.rest).to.not.be.ok
