@@ -4,7 +4,7 @@ DataValidationError = require '../errors/util.error.dataValidation'
 logger  = require '../../config/logger'
 {getNamespace} = require 'continuation-local-storage'
 {NAMESPACE} = require '../../config/config'
-
+clone =  require 'clone'
 
 _errMsg = (thing) ->
   "no #{thing} provided, options are: #{JSON.stringify(options)}"
@@ -35,7 +35,7 @@ module.exports = (options = {}) ->
 
     space = getNamespace NAMESPACE
     firstRest = options.clsKey.firstRest('.')
-    ret = {}
+    ret = clone(value) or {}
     # logger.debug "SPACE"
     # logger.debug space, true
     # logger.debug "first: #{firstRest.first}"

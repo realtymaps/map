@@ -1,5 +1,6 @@
 _ = require 'lodash'
 logger = require '../../../config/logger'
+clone = require 'clone'
 
 withRestriction = (req, toBeQueryClause, restrict, cb) ->
   unless toBeQueryClause
@@ -9,7 +10,14 @@ withRestriction = (req, toBeQueryClause, restrict, cb) ->
   # logger.debug req.query, true
   cb(toBeQueryClause) if cb?
 
+cloneRequest = (req) ->
+  params: clone req.params
+  query: clone req.query
+  body: clone req.body
+
 route =
+  cloneRequest: cloneRequest
+    
   ###
     Purpose is to extend some object to be used as the query clause of a query by a service.
     Most of the time this will be req.query to be used, However sometimes it could be req.body.
