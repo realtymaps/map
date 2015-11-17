@@ -23,7 +23,7 @@ require('./config/googleMaps').loadValues()
   if process.env.NGINX_SOCKET_FILENAME
     rimraf.async("./nginx/#{process.env.NGINX_SOCKET_FILENAME}")
 .then () ->
-  cluster 'web', config.PROC_COUNT, () ->
+  cluster 'web', {}, () ->
     # express configuration
     app = require './config/express'
 

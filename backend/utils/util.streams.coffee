@@ -52,7 +52,7 @@ geoJsonFormatter = (toMove, deletes) ->
   through(write, end)
 
 
-delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
+delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler, origFile) ->
   count = 0
   outputStream = through2.obj()
   splitStream = split()
@@ -69,6 +69,9 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   outputStream.write(type: 'delimiter', payload: delimiter)
   
   lineHandler = (line) ->
+    if !line
+      # hide empty lines
+      return
     count++
     outputStream.write(type: 'data', payload: line)
   if !columnsHandler

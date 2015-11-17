@@ -20,7 +20,10 @@ catchUncaughtErrors = (prefix, err) ->
   shutdownNow(prefix, 1)
 
 
-module.exports = (clusterName, workerCount, workerCb) ->
+module.exports = (clusterName, options={}, workerCb) ->
+  workerCount = 1 #options.workerCount ? config.PROC_COUNT
+  allowQuit = !!options.allowQuit
+  quitWorkerCount = 0
   if workerCount == 1
     #dont add fork overhead if only 1 process is needed
     return workerCb()
@@ -41,9 +44,16 @@ module.exports = (clusterName, workerCount, workerCb) ->
       cluster.fork()
 
     cluster.on 'exit', (worker) ->
-      logger.error "#{getWorkerPrefix(worker)}: exited"
-      logger.debug "#{masterPrefix}: forking new worker"
-      cluster.fork()
+      if allowQuit
+        quitWorkerCount++
+        logger.info "#{getWorkerPrefix(worker)}: quit"
+        if quitWorkerCount == workerCount
+          logger.info "#{masterPrefix}: #{quitWorkerCount} workers have quit, now quitting from master"
+          process.exit(0)
+      else
+        logger.error "#{getWorkerPrefix(worker)}: exited"
+        logger.debug "#{masterPrefix}: forking new worker"
+        cluster.fork()
 
     return
 

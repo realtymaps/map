@@ -32,6 +32,7 @@ loadRawData = (subtask, options) ->
     ftp = new PromiseSftp()
   else
     ftp = new PromiseFtp()
+  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
   dataStreamPromise = externalAccounts.getAccountInfo(subtask.task_name)
   .then (accountInfo) ->
     ftp.connect
@@ -40,17 +41,18 @@ loadRawData = (subtask, options) ->
       password: accountInfo.password
       autoReconnect: true
   .then () ->
-    ftp.get(subtask.data.path)
-  
-  filetype = options.processingType || subtask.data.path.substr(subtask.data.path.lastIndexOf('.')+1)
+    if options.sftp
+      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
+    else
+      ftp.get(subtask.data.path)
+      .then (dataStream) -> new Promise (resolve, reject) ->
+        dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
+        .on('finish', resolve)
+        .on('error', reject)
   
   switch filetype
     when 'zip'
       dataStreamPromise = dataStreamPromise
-      .then (compressedDataStream) -> new Promise (resolve, reject) ->
-        compressedDataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.zip"))
-        .on('finish', resolve)
-        .on('error', reject)
       .then () ->  # just in case this is a retry, do rm -rf
         rimraf.async("/tmp/#{fileBaseName}")
       .then () ->
@@ -61,21 +63,33 @@ loadRawData = (subtask, options) ->
         .on('close', resolve)
         .on('error', reject)
       .then () ->
-        fs.createReadStream("/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt")
+        "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
     when 'gz'
       dataStreamPromise = dataStreamPromise
-      .then (compressedDataStream) ->
-        compressedDataStream
+      .then () -> new Promise (resolve, reject) ->
+        fs.createReadStream("/tmp/#{fileBaseName}.gz")
         .pipe(zlib.createGunzip())
+        .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
+        .on('close', resolve)
+        .on('error', reject)
+      .then () ->
+        "/tmp/#{fileBaseName}"
+    else
+      dataStreamPromise = dataStreamPromise
+      .then () ->
+        "/tmp/#{fileBaseName}.#{filetype}"
 
-  dataStreamPromise.then (rawDataStream) ->
+  dataStreamPromise
+  .then (localFilePath) ->
+    fs.createReadStream(localFilePath)
+  .then (rawDataStream) ->
     dataLoadHistory =
       data_source_id: options.dataSourceId
       data_source_type: 'county'
       data_type: subtask.data.dataType
       batch_id: subtask.batch_id
       raw_table_name: rawTableName
-    objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler)
+    objectDataStream = utilStreams.delimitedTextToObjectStream(rawDataStream, options.delimiter, options.columnsHandler, subtask.data.path)
     dataLoadHelpers.manageRawDataStream(rawTableName, dataLoadHistory, objectDataStream)
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
