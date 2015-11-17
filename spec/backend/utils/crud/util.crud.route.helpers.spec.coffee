@@ -42,50 +42,95 @@ describe 'util.crud.route.helpers', ->
         ].forEach (testObj) ->
 
           describe "#{testObj.name}", ->
+            beforeEach ->
+              sinon.stub(@subject, 'validRequest').returns(Promise.resolve(@mockQuery))
+
             it "exists", ->
               @subject.should.be.ok
 
-            it "rootGET", ->
-              @subject.rootGET @mockQuery
+            describe "rootGET", ->
+              beforeEach ->
+                @subject.rootGET @mockQuery
 
-              stub = @stubbedSvc.getAll
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.query, testObj.args.doLogQuery, testObj.args.safe
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.getAll
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.query, testObj.args.doLogQuery, testObj.args.safe
 
-            it "rootPOST", ->
-              @subject.rootPOST @mockQuery
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'rootGET'
 
-              stub = @stubbedSvc.create
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.body, undefined, testObj.args.doLogQuery
+            describe "rootPOST", ->
+              beforeEach ->
+                @subject.rootPOST @mockQuery
 
-            it "byIdGET", ->
-              @subject.byIdGET @mockQuery
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.create
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.body, undefined, testObj.args.doLogQuery
 
-              stub = @stubbedSvc.getById
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.params.id, testObj.args.doLogQuery
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'rootPOST'
 
-            it "byIdPOST", ->
-              @subject.byIdPOST @mockQuery
+            describe "byIdGET", ->
+              beforeEach ->
+                @subject.byIdGET @mockQuery
 
-              stub = @stubbedSvc.create
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.body, @mockQuery.params.id, undefined, testObj.args.doLogQuery
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.getById
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.params.id, testObj.args.doLogQuery
 
-            it "byIdDELETE", ->
-              @subject.byIdDELETE @mockQuery
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'byIdGET'
 
-              stub = @stubbedSvc.delete
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.params.id, testObj.args.doLogQuery, @mockQuery.query, testObj.args.safe
+            describe "byIdPOST", ->
+              beforeEach ->
+                @subject.byIdPOST @mockQuery
 
-            it "byIdPUT", ->
-              @subject.byIdPUT @mockQuery
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.create
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.body, @mockQuery.params.id, undefined, testObj.args.doLogQuery
 
-              stub = @stubbedSvc.update
-              stub.calledOnce.should.be.ok
-              stub.calledWith @mockQuery.params.id, @mockQuery.body, testObj.args.safe, testObj.args.doLogQuery
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'byIdPOST'
+
+            describe "byIdDELETE", ->
+              beforeEach ->
+                @subject.byIdDELETE @mockQuery
+
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.delete
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.params.id, testObj.args.doLogQuery, @mockQuery.query, testObj.args.safe
+
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'byIdDELETE'
+
+            describe "byIdPUT", ->
+              beforeEach ->
+                @subject.byIdPUT @mockQuery
+
+              it "calls svc correctly", ->
+                stub = @stubbedSvc.update
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery.params.id, @mockQuery.body, testObj.args.safe, testObj.args.doLogQuery
+
+              it 'calls validRequest correctly', ->
+                stub = @subject.validRequest
+                stub.calledOnce.should.be.ok
+                stub.calledWith @mockQuery, 'byIdPUT'
 
       describe 'sugar', ->
         sugarSet =

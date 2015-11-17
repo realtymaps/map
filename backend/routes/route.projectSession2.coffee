@@ -30,7 +30,10 @@ class ClientsCrud extends RouteCrud
 
     @rootGETTransforms =
       query: validators.mapKeys auth_user_id: joinColumnNames.client.auth_user_id
-      params: validators.mapKeys id: joinColumnNames.client.project_id
+      params: [
+          validators.mapKeys id: joinColumnNames.client.project_id
+          validators.reqId toKey: 'parent_auth_user_id'
+      ]
 
     super arguments...
 
