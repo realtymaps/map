@@ -16,7 +16,7 @@ app.service 'rmapsZoomLevel', (rmapsMainOptions, $log) ->
     $log.error 'currentLevel undefined from _enumFromLevel' unless currentLevel
     if currentLevel <= _zoomThresh.price
       return _enum.price
-    if currentLevel >= _zoomThresh.price and currentLevel < _zoomThresh.addressParcel
+    if currentLevel >  _zoomThresh.price and currentLevel < _zoomThresh.addressParcel
       return _enum.parcel
     if currentLevel >= _zoomThresh.addressParcel
       return _enum.addressParcel
