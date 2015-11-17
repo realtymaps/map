@@ -4,6 +4,7 @@ common =  require '../../common/config/commonConfig'
 
 
 base =
+  NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
   ENV: process.env.NODE_ENV || 'development'
@@ -11,7 +12,7 @@ base =
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')
   PORT: process.env.PORT_GOD || (if process.env.NGINX_SOCKET_FILENAME then "./nginx/#{process.env.NGINX_SOCKET_FILENAME}" else false) || parseInt(process.env.PORT) || 4000
   LOGGING:
-    PATH: 'mean.coffee.log'
+    PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
   DBS:

@@ -2,6 +2,15 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 
+# Goal is to map the value of the param to a match mapped value
+#
+# TODO: rename to mapValues
+# use case:
+# sold, pending-sale, off-market all map to not-for-sale
+#
+# * `options  Options with the field map is expected {object}.
+#
+# Returns the mapped value.
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
     if !options.map

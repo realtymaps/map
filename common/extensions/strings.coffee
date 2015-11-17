@@ -20,6 +20,17 @@ String.orNA = (val) ->
 String.orDash = (val) ->
   val or '-'
 
+String::firstRest = (find) ->
+  findLoc = @indexOf find
+  if findLoc < 0
+    first: @ + ''
+    rest: undefined
+  else
+    first: @substring 0, findLoc
+    rest: @substring findLoc + 1, @length
+
+
+
 String::replaceLast = (find, replace) ->
   index = @lastIndexOf(find)
   if index >= 0

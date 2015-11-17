@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
 
-{validators, DataValidationError} = require "#{basePath}/utils/util.validation"
+{validators, DataValidationError, validateAndTransform} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
 
 
@@ -23,4 +23,43 @@ describe 'utils/validation.validators.map()'.ns().ns('Backend'), ->
     [
       expectResolve(validators.map(map: {abc: 'xyz', '5': 10, '10': 999, x: 1}, passUnmapped: true)(param, 'xxx')).then (value) ->
         value.should.equal('xxx')
+    ]
+
+  promiseIt 'map values', () ->
+    transformMap =
+      map:
+        dog: 'bark'
+        cat: 'meow'
+        bigCat: 'RAAAR'
+    orig =
+      a:'dog'
+      b:'cat'
+      c:'bigCat'
+    [
+      expectResolve validateAndTransform orig,
+        a: validators.map (transformMap)
+        b: validators.map (transformMap)
+        c: validators.map (transformMap)
+      .then (value) ->
+        value.should.eql({a: transformMap.map.dog, b: transformMap.map.cat, c: transformMap.map.bigCat})
+    ]
+
+  promiseIt 'generalize values', () ->
+    notForSale = 'not-for-sale'
+    transformMap =
+      map:
+        'off-market': notForSale
+        sold: notForSale
+        pending: notForSale
+    orig =
+      a:'pending'
+      b:'sold'
+      c:'off-market'
+    [
+      expectResolve validateAndTransform orig,
+        a: validators.map (transformMap)
+        b: validators.map (transformMap)
+        c: validators.map (transformMap)
+      .then (value) ->
+        value.should.eql({a: notForSale, b: notForSale, c: notForSale})
     ]
