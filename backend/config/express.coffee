@@ -94,7 +94,7 @@ app.use connectFlash()
 # create a transaction id for each request
 app.use (req, res, next) ->
   transactionId = uuid.genUUID()
-  #wrpa/bind namespace's life span to the life of a req/res
+  #wrap/bind namespace's life span to the life of a req/res
   namespace.bindEmitter req
   namespace.bindEmitter res
   namespace.run ->
