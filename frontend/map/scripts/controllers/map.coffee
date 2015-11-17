@@ -36,8 +36,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     if not identity?.currentProfileId and not project_id
       $location.path(frontendRoutes.profiles)
     else
-      $scope.projects = identity.profiles
-      $scope.totalProjects = (_.keys identity.profiles).length
+      $scope.projects = _.values identity.profiles
+      $scope.totalProjects = $scope.projects.length
       _.each $scope.projects, (project) ->
         project.totalProperties = (_.keys project.properties_selected).length
 
