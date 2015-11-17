@@ -55,3 +55,16 @@ describe "extensions > String".ns().ns('Common'), ->
 
     it 'does not have last', ->
       'redonkulous poopy poopy beer'.endsWith('beers').should.not.be.ok
+
+  describe 'firstRest', ->
+    it 'has both', ->
+      firstRest = 'req.user.id'.firstRest('.')
+      firstRest.first.should.be.ok
+      firstRest.first.should.be.eql 'req'
+      firstRest.rest.should.be.ok
+      firstRest.rest.should.be.eql 'user.id'
+
+    it 'has none', ->
+      firstRest = ''.firstRest('.')
+      firstRest.first.should.be.eql ''
+      expect(firstRest.rest).to.not.be.ok

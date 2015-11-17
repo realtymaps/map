@@ -60,12 +60,10 @@ app.factory 'rmapsMap',
         leafletData.getMap('mainMap').then (map) =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
-            if $scope.map.layers.overlays?.filterSummary?
-              $scope.map.layers.overlays.filterSummary.visible = newVal
+            $scope.map.layers.overlays?.filterSummary?.visible = newVal
 
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
-            if $scope.map.layers.overlays?.parcelsAddresses?
-              $scope.map.layers.overlays.parcelsAddresses.visible = newVal
+            $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
@@ -89,10 +87,17 @@ app.factory 'rmapsMap',
           #TODO: Need to debounce / throttle
           saved = rmapsPropertiesService.saveProperty(model)
           rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
-          lObject.setIcon(new L.divIcon(model.icon))
+          lObject?.setIcon(new L.divIcon(model.icon))
           return unless saved
           saved.then (savedDetails) =>
             @redraw(false)
+
+        @favoriteProperty = (model, lObject) =>
+          #TODO: Need to debounce / throttle
+          saved = rmapsPropertiesService.favoriteProperty(model)
+          rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
+          lObject?.setIcon(new L.divIcon(model.icon))
+          saved
 
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
@@ -229,20 +234,36 @@ app.factory 'rmapsMap',
             return if !data? or _.isString data
             @handleSummaryResults(data)
 
-            if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
-              if overlays?.parcels?
-                overlays.parcels.visible = ! !!rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
+            mapZoom = @scope.map.center.zoom
 
-              Toggles.showAddresses = !!rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
+            if rmapsZoomLevel.isParcel(mapZoom) or rmapsZoomLevel.isAddressParcel(mapZoom)
 
+              if rmapsZoomLevel.isAddressParcel mapZoom
+                if rmapsZoomLevel.isBeyondCartoDb mapZoom
+                  zoomLvl = 'addressParcelBeyondCartoDB'
+                else
+                  zoomLvl = 'addressParcel'
+
+              else if rmapsZoomLevel.isParcel mapZoom
+                zoomLvl = 'parcel'
+
+              overlays?.parcels?.visible = not rmapsZoomLevel.isBeyondCartoDb mapZoom
               Toggles.showPrices = false
+              Toggles.showAddresses = rmapsZoomLevel.isAddressParcel mapZoom
+              overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
               @handleGeoJsonResults(filters, cache)
 
             else
-              overlays.parcels.visible = false if overlays?.parcels?
+              zoomLvl = 'price'
+
+              overlays?.parcels?.visible = false
               Toggles.showPrices = true
               Toggles.showAddresses = false
+              overlays?.parcelsAddresses?.visible = false
+
+            $log.debug "drawFilterSummary zoom=#{mapZoom} (@#{zoomLvl})"
+
         promises.push p
         promises
 

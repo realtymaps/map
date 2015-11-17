@@ -65,7 +65,7 @@ class Crud extends BaseObject
     @_getById 'dbFn', arguments...
 
   _getById: (dbFn, id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-    throw new Error('id is required') unless id?
+    throw new Error("#{@dbFn.tableName}: id is required") unless id?
     withSafeEntity entity, safe, (entity, safe) =>
       fnExec @[dbFn]().where(_.extend @idObj(id), entity), doLogQuery or @doLogQuery
 

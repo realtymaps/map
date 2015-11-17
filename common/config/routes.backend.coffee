@@ -66,11 +66,11 @@ module.exports =
     root: apiBaseProjectsSession2
     byId: "#{apiBaseProjectsSession2}/:id"
     clients: "#{apiBaseProjectsSession2}/:id/clients"
-    clientsById: "#{apiBaseProjectsSession2}/:id/clients/:client_id"
+    clientsById: "#{apiBaseProjectsSession2}/:id/clients/:clients_id"
     notes: "#{apiBaseProjectsSession2}/:id/notes"
-    notesById: "#{apiBaseProjectsSession2}/:id/notes/:note_id"
-    drawnShapes: "#{apiBaseProjectsSession2}/:id/drawnByShapes"
-    drawnShapesById: "#{apiBaseProjectsSession2}/:id/drawnByShapes/:drawn_shap_id"
+    notesById: "#{apiBaseProjectsSession2}/:id/notes/:notes_id"
+    drawnShapes: "#{apiBaseProjectsSession2}/:id/drawnShapes"
+    drawnShapesById: "#{apiBaseProjectsSession2}/:id/drawnShapes/:drawn_shapes_id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers

@@ -11,7 +11,7 @@ span(class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.
       a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
     .inner
       ul
-        li(ng-repeat="project in projects | orderBy: '-sandbox'" ng-click="selectProject(project)" )
+        li(ng-repeat="project in projects | orderBy:'sandbox':true" ng-click="selectProject(project)" )
           a
             span.enity
               span.icon.icon-project

@@ -34,9 +34,12 @@ methodOverride = require 'method-override'
 serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
-promisify = require('./promisify')
+cls = require 'continuation-local-storage'
+promisify = require './promisify'
 sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
+
+namespace = cls.createNamespace config.NAMESPACE
 
 app = express()
 
@@ -81,6 +84,23 @@ app.use Promise.nodeifyWrapper(auth.checkSessionSecurity)
 
 # enable flash messages
 app.use connectFlash()
+
+
+#ability to get request and transaction id without callback hell
+#http://stackoverflow.com/questions/12575858/is-it-possible-to-get-the-current-request-that-is-being-served-by-node-js
+#DOMAINS ARE deprecated so we are going with continuation-local-storage instead. Which appears to be cleaner anyhow.
+###
+###
+# create a transaction id for each request
+app.use (req, res, next) ->
+  transactionId = uuid.genUUID()
+  #wrap/bind namespace's life span to the life of a req/res
+  namespace.bindEmitter req
+  namespace.bindEmitter res
+  namespace.run ->
+    namespace.set 'transactionId', transactionId
+    namespace.set 'req', req
+    next()
 
 swaggerObject = require('js-yaml').load(require('fs').readFileSync(__dirname + '/swagger.yaml'))
 swagger.initializeMiddleware swaggerObject, (middleware) ->

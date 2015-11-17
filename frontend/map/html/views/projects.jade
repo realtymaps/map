@@ -35,7 +35,7 @@
                   th.col-md-1
                     span
               tbody
-                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
+                tr(ng-repeat="project in projects | filter: searchQuery | orderBy: ['-sandbox', 'name']")
                   td.select
                     input(type="checkbox" name="selectGroup_{{$index}}")
                   td(ui-sref="project({id: {{project.id}}})")
