@@ -76,9 +76,7 @@ class ProjectRouteCrud extends RouteCrud
   init: () ->
     #replaces the need for restrictAll7
     @reqTransforms =
-      params: validators.reqId
-        toKey: 'auth_user_id'
-        doLog: true
+      params: validators.reqId toKey: 'auth_user_id'
     # @doLogQuery = ['query','params']
 
     @clientsCrud = new ClientsCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
