@@ -49,5 +49,4 @@ tables.jobQueue.queueConfig()
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"
   logger.error "#{err.stack||err}"
-  dbs.shutdown()
-  process.exit(100)
+  _doExit(100)
