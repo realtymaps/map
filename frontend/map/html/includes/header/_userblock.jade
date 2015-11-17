@@ -8,9 +8,9 @@ include ../mixins/_avatarMixin.jade
       li(ng-show="principal.isAuthenticated()", ng-cloak)
         a(href="{{frontendRoutes.logout}}") log out
       li(ng-show="principal.isAuthenticated()", ng-cloak)
-        a(href="{{frontendRoutes.user}}") {{user.username}}
+        a(href="{{frontendRoutes.user}}" target="_self") {{user.username}}
       li(ng-show="principal.isStaff()", ng-cloak)
-        a(href="{{adminRoutes.index}}") Admin
+        a(href="{{adminRoutes.index}}" target="_self") Admin
 
       .block-become-a-member
         h4 trial period
