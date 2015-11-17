@@ -198,7 +198,6 @@ app.factory 'rmapsMap',
             style: @layerFormatter.Parcels.getStyle
 
       drawFilterSummary:(cache) =>
-        $log.debug 'drawFilterSummary, cache =', cache
         promises = []
         overlays = @scope.map.layers.overlays
         Toggles = @scope.Toggles
@@ -228,37 +227,40 @@ app.factory 'rmapsMap',
             return if !data? or _.isString data
             @handleSummaryResults(data)
 
-            if rmapsZoomLevel.isParcel(@scope.map.center.zoom) or rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
+            mapZoom = @scope.map.center.zoom
 
-              if rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
-                if rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
-                  $log.debug 'FilterSummary @addressParcelBeyond', 'zoom = ', @scope.map.center.zoom
+            if rmapsZoomLevel.isParcel(mapZoom) or rmapsZoomLevel.isAddressParcel(mapZoom)
+
+              if rmapsZoomLevel.isAddressParcel mapZoom
+                if rmapsZoomLevel.isBeyondCartoDb mapZoom
+                  zoomLvl = 'addressParcelBeyondCartoDB'
                 else
-                  $log.debug 'FilterSummary @addressParcel', 'zoom = ', @scope.map.center.zoom
+                  zoomLvl = 'addressParcel'
 
-              if rmapsZoomLevel.isParcel(@scope.map.center.zoom)
-                $log.debug 'FilterSummary @parcel', 'zoom = ', @scope.map.center.zoom
+              else if rmapsZoomLevel.isParcel mapZoom
+                zoomLvl = 'parcel'
 
-              overlays?.parcels?.visible = not rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
+              overlays?.parcels?.visible = not rmapsZoomLevel.isBeyondCartoDb mapZoom
               Toggles.showPrices = false
-              Toggles.showAddresses = rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom)
+              Toggles.showAddresses = rmapsZoomLevel.isAddressParcel mapZoom
               overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
               @handleGeoJsonResults(filters, cache)
 
             else
-              $log.debug 'FilterSummary @price', 'zoom = ', @scope.map.center.zoom
+              zoomLvl = 'price'
 
               overlays?.parcels?.visible = false
               Toggles.showPrices = true
               Toggles.showAddresses = false
               overlays?.parcelsAddresses?.visible = false
 
+            $log.debug "drawFilterSummary zoom=#{mapZoom} (@#{zoomLvl})"
+
         promises.push p
         promises
 
       redraw: (cache = true) =>
-        $log.debug 'redraw, cache =', cache
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
