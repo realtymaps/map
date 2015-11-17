@@ -22,8 +22,8 @@ _errMsg = (thing) ->
 #
 # Returns the mapped object.
 module.exports = (options = {}) ->
-  # logger.debug "localStore: #{JSON.stringify options}"
   (param, value) -> Promise.try () ->
+    logger.debug "localStore: #{JSON.stringify options}"
     if !options?
       return Promise.reject new DataValidationError(_errMsg('options'), param, value)
 
@@ -34,12 +34,19 @@ module.exports = (options = {}) ->
       return Promise.reject new DataValidationError(_errMsg('toKey'), param, value)
 
     space = getNamespace NAMESPACE
+
     firstRest = options.clsKey.firstRest('.')
     ret = clone(value) or {}
-    # logger.debug "SPACE"
-    # logger.debug space, true
-    # logger.debug "first: #{firstRest.first}"
     maybeRet = space.get firstRest.first
-    # logger.debug maybeRet
+
+    if options?.doLog
+      logger.debug "first: '#{firstRest.first}'"
+      logger.debug space, true
+
+    unless maybeRet?
+      logger.warn "first: '#{firstRest.first}'"
+      logger.warn "maybeRet: is undefined"
+      logger.warn space, true
+
     ret[options.toKey] = if firstRest.rest? then _.get(maybeRet, firstRest.rest) else maybeRet
     ret

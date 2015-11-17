@@ -1,8 +1,10 @@
-require '../../../globals'
-{Crud, HasManyRouteCrud, wrapRoutesTrait} = require '../../../../backend/utils/crud/util.crud.route.helpers'
-crudSvc = require '../../../../backend/utils/crud/util.crud.service.helpers'
 Promise = require 'bluebird'
 _ = require 'lodash'
+require '../../../globals'
+basePath = require '../../basePath'
+{Crud, HasManyRouteCrud, wrapRoutesTrait} = require "#{basePath}/utils/crud/util.crud.route.helpers"
+crudSvc = require "#{basePath}/utils/crud/util.crud.service.helpers"
+{validators} = require "#{basePath}/utils/util.validation"
 
 describe 'util.crud.route.helpers', ->
 
@@ -33,6 +35,20 @@ describe 'util.crud.route.helpers', ->
         init.calledOnce.should.be.ok
 
     describe 'subject', ->
+      describe 'validRequest', ->
+        it 'defaults noop validation', ->
+          @subject.rootGETTransforms = null
+          @subject.validRequest(@mockQuery, 'rootGET')
+          .then (req) =>
+            req.should.be.eql @mockQuery
+
+        it 'partial defaults noop validation', ->
+          @subject.rootGETTransforms =
+            query: validators.noop
+          @subject.validRequest(@mockQuery, 'rootGET')
+          .then (req) =>
+            req.should.be.eql @mockQuery
+
       do ->
         args = {doLogQuery: false, safe: undefined}
         [

@@ -12,17 +12,20 @@ sqlHelpers = require '../utils/util.sql.helpers'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 clone = require 'clone'
+assert = require 'assert'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
 safeNotes = sqlHelpers.columns.notes
 
+parent_auth_user_idTrans = validators.reqId toKey: 'parent_auth_user_id'
+
 class ClientsCrud extends RouteCrud
   init: () ->
     @svc.doLogQuery = true
     @reqTransforms =
-      params: validators.reqId toKey: 'parent_auth_user_id'
+      params: parent_auth_user_idTrans
     @byIdGETTransforms =
       query: validators.mapKeys
         id: joinColumnNames.client.project_id
@@ -30,10 +33,7 @@ class ClientsCrud extends RouteCrud
 
     @rootGETTransforms =
       query: validators.mapKeys auth_user_id: joinColumnNames.client.auth_user_id
-      params: [
-          validators.mapKeys id: joinColumnNames.client.project_id
-          validators.reqId toKey: 'parent_auth_user_id'
-      ]
+      params: validators.mapKeys id: joinColumnNames.client.project_id
 
     super arguments...
 
@@ -76,8 +76,10 @@ class ProjectRouteCrud extends RouteCrud
   init: () ->
     #replaces the need for restrictAll7
     @reqTransforms =
-      params: validators.reqId toKey: 'auth_user_id'
-    @doLogQuery = ['query','params']
+      params: validators.reqId
+        toKey: 'auth_user_id'
+        doLog: true
+    # @doLogQuery = ['query','params']
 
     @clientsCrud = new ClientsCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clients = @clientsCrud.root
@@ -134,6 +136,7 @@ class ProjectRouteCrud extends RouteCrud
     #so this is where bookshelf or objection.js would be much more concise
     super(req, res, next)
     .then (project) =>
+      assert.equal @clientsCrud.reqTransforms.params, parent_auth_user_idTrans
       @clientsCrud.rootGET(req, res, next)
       .then (clients) ->
         project.clients = clients
@@ -151,7 +154,7 @@ class ProjectRouteCrud extends RouteCrud
 
 
 safeProjectCols = (require '../utils/util.sql.helpers').columns.project
-module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(true, safeProjectCols),
+module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(false, safeProjectCols),
   ##TODO: How much of the post, delete, and puts do we really want to allow?
   root:
     methods: ['get', 'post']
