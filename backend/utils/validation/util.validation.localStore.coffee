@@ -25,7 +25,7 @@ module.exports = (options = {}) ->
   # logger.debug "localStore: #{JSON.stringify options}"
   (param, value) -> Promise.try () ->
     if !options?
-      return Promise.reject new DataValidationError(_errMsg(options), param, value)
+      return Promise.reject new DataValidationError(_errMsg('options'), param, value)
 
     if !options?.clsKey
       return Promise.reject new DataValidationError(_errMsg('clsKey'), param, value)
