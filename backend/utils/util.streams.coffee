@@ -52,7 +52,7 @@ geoJsonFormatter = (toMove, deletes) ->
   through(write, end)
 
 
-delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler, origFile) ->
+delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   count = 0
   outputStream = through2.obj()
   splitStream = split()
