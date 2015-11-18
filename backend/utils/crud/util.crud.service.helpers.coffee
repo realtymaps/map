@@ -264,5 +264,5 @@ module.exports =
   ThenableHasManyCrud: ThenableHasManyCrud
   thenableHasManyCrud: factory ThenableHasManyCrud
   withSafeEntity:withSafeEntity
-  toTestableCrudClass: toTestableCrudClass
   toTestableCrudInstance: toTestableCrudInstance
+  toTestThenableCrudInstance: toTestThenableCrudInstance
