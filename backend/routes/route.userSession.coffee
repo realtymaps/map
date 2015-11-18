@@ -45,6 +45,7 @@ safeUserFields = [
   'website_url'
   'account_use_type_id'
   'company_id'
+  'parent_id'
 ]
 
 # handle login authentication, and do all the things needed for a new login session

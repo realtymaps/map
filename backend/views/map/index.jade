@@ -10,6 +10,6 @@ block customHead
 
 
 block content
-  .realtymaps-main(ui-view='' ng-controller="rmapsAppController")
+  .realtymaps-main(ui-view='' ng-controller="rmapsAppController" ng-class="{ 'is-subscriber': principal.isSubscriber(), 'is-editor': principal.isProjectEditor(), 'is-viewer': principal.isProjectViewer() }")
   script(type='application/javascript', src='#{paths.destFull.bundle.map}')
   script(type='application/javascript', src='#{paths.destFull.templates.map}')

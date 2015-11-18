@@ -1,5 +1,6 @@
 sqlHelpers = require './util.sql.helpers'
 tables = require '../config/tables'
+_ = require 'lodash'
 
 #TODO: Move all of SQL Helpers columns into here as another sep PR.
 joinColumns = do ->
@@ -27,6 +28,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.map_toggles"
     "#{tables.user.profile.tableName}.map_position"
     "#{tables.user.profile.tableName}.map_results"
+    "#{tables.user.profile.tableName}.favorites"
     "#{tables.user.profile.tableName}.project_id"
 
     "#{tables.user.project.tableName}.name"
@@ -64,5 +66,21 @@ joinColumns = do ->
 
   drawnShapes: sqlHelpers.columns.drawnShapes.map (col) ->  "#{tables.user.drawnShapes.tableName}.#{col} as #{col}"
 
+joinColumnNames = do ->
+  _.mapValues joinColumns, (v) ->
+    obj = {}
+    for str in v
+      #remove as portion
+      val = str.split(' as ')[0]
+      val = if !val then str else val
+      #get basic name
+      split = val.split('.')
+      key = if split?.length > 1 then split[1] else val
+      #obj.basicName = complex explicit join name
+      #clients.email = "{tables.auth.user.tableName}.email"
+      obj[key] = val
+    obj
+
 module.exports =
   joinColumns: joinColumns
+  joinColumnNames: joinColumnNames

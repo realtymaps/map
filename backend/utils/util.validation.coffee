@@ -78,6 +78,32 @@ validateAndTransform = (params, definitions) -> Promise.try () ->
       promiseMap[output] = validateAndTransformSingleOutput(params, output, definition)
     Promise.props(promiseMap)
 
+###
+  Noop the default transforms for a Crud Request
+###
+defaultRequestTransforms = (obj) ->
+  def = {
+    params: validators.noop
+    query: validators.noop
+    body: validators.noop
+  }
+
+  return def unless obj
+
+  for key, val of def
+    obj[key] = if obj[key]? then obj[key] else def[key]
+  obj
+
+
+###
+  Noop All transforms if Falsy
+###
+falsyTransformsToNoop = (transforms) ->
+  for key, val of transforms
+    transforms[key] = validators.noop unless val
+
+  transforms
+
 
 module.exports =
   validateAndTransform: validateAndTransform
@@ -85,3 +111,5 @@ module.exports =
   validators: validators
   doValidationSteps: doValidationSteps
   validateAndTransformSingleOutput: validateAndTransformSingleOutput
+  falsyTransformsToNoop:falsyTransformsToNoop
+  defaultRequestTransforms : defaultRequestTransforms

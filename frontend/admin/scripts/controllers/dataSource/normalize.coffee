@@ -235,7 +235,7 @@ app.controller 'rmapsNormalizeCtrl',
   , 2000
 
   $scope.getTransform = () ->
-    if $scope.fieldData.current
+    if $scope.fieldData.current?.getTransformString?
       $scope.fieldData.current.getTransformString $scope.mlsData.current.data_rules
 
   # Data service. Initialized once an MLS is selected
