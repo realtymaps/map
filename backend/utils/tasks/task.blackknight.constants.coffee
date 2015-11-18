@@ -74,6 +74,3 @@ _deedColumns().then (cols) ->
 
 _mortgageColumns().then (cols) ->
   columns[module.exports.LOAD][module.exports.REFRESH][module.exports.MORTGAGE] = cols
-
-# columns[module.exports.LOAD][module.exports.REFRESH][module.exports.DEED] = _deedColumns()
-# columns[module.exports.LOAD][module.exports.REFRESH][module.exports.MORTGAGE] = _mortgageColumns()
