@@ -233,14 +233,6 @@ ThenableHasManyCrud = thenables[1]
 
 dbFnCalls = [ 'count','getAll','getById','update','create','upsert','delete']
 
-toTestableCrudClass = (klass) ->
-  class Testable extends klass
-  for fnName in dbFnCalls
-    do (fnName) ->
-      Testable::[fnName] = () ->
-        klass::apply(arguments...).toString()
-  Testable
-
 #wraps a crud instance to return all db functions as sql query or a sql payload object
 toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
   if doLog
@@ -274,4 +266,3 @@ module.exports =
   withSafeEntity:withSafeEntity
   toTestableCrudClass: toTestableCrudClass
   toTestableCrudInstance: toTestableCrudInstance
-  toTestThenableCrudInstance: toTestThenableCrudInstance
