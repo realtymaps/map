@@ -252,7 +252,7 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
       crudInstance[fnName] = () ->
         calledSql = origFn.apply(crudInstance, arguments).toString()
         return calledSql unless mockResponse?[fnName]
-        resp = mockResponse[fnName]()
+        resp = mockResponse[fnName](calledSql)
         resp.sql = calledSql
         if doRetAsPromise
           return Promise.resolve resp
