@@ -1,11 +1,12 @@
+_ = require 'lodash'
+Promise = require 'bluebird'
 logger = require '../../config/logger'
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
-_ = require 'lodash'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
-NamedError = require '../errors/util.error.named'
 {IsIdObjError} = require '../errors/util.error.crud.coffee'
+
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -230,6 +231,37 @@ ThenableCrud = thenables[0]
 
 ThenableHasManyCrud = thenables[1]
 
+dbFnCalls = [ 'count','getAll','getById','update','create','upsert','delete']
+
+toTestableCrudClass = (klass) ->
+  class Testable extends klass
+  for fnName in dbFnCalls
+    do (fnName) ->
+      Testable::[fnName] = () ->
+        klass::apply(arguments...).toString()
+  Testable
+
+#wraps a crud instance to return all db functions as sql query or a sql payload object
+toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
+  if doLog
+    logger.debug crudInstance, true
+    logger.debug "crudInstance: dbFn: #{crudInstance.dbFn}"
+  for fnName in dbFnCalls
+    do (fnName) ->
+      origFn = crudInstance[fnName]
+      crudInstance[fnName] = () ->
+        calledSql = origFn.apply(crudInstance, arguments).toString()
+        return calledSql unless mockResponse?[fnName]
+        resp = mockResponse[fnName]()
+        resp.sql = calledSql
+        if doRetAsPromise
+          return Promise.resolve resp
+        resp
+  crudInstance
+
+toTestThenableCrudInstance = (crudInstance, mockResponse, doLog) ->
+  toTestableCrudInstance(crudInstance, mockResponse, true, doLog)
+
 module.exports =
   Crud:Crud
   crud: factory Crud
@@ -240,3 +272,6 @@ module.exports =
   ThenableHasManyCrud: ThenableHasManyCrud
   thenableHasManyCrud: factory ThenableHasManyCrud
   withSafeEntity:withSafeEntity
+  toTestableCrudClass: toTestableCrudClass
+  toTestableCrudInstance: toTestableCrudInstance
+  toTestThenableCrudInstance: toTestThenableCrudInstance
