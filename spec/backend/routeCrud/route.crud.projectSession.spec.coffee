@@ -1,6 +1,8 @@
 require '../../globals'
 expect = require('chai').expect
+sinon = require 'sinon'
 require 'should'
+Promise = require 'bluebird'
 basePath = require '../basePath'
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 {toTestableCrudInstance, toTestThenableCrudInstance} = require "#{basePath}/utils/crud/util.crud.service.helpers"
@@ -16,26 +18,65 @@ testableProjSvc = toTestableCrudInstance userServices.project,
   getAll: ->
     # console.log "testableProjSvc: getAll"
     [id:1]
+  getById: ->
+    Promise.resolve [id:1, sandbox: false]
+  delete: ->
+    true
 
 
 userSvc = routeCrudToTest.__get__('userSvc')
+profileSvc = routeCrudToTest.__get__('profileSvc')
+notesSvc = routeCrudToTest.__get__('notesSvc')
+
+sinonStubs =
+  profile:
+    delete: sinon.stub()
+  notes:
+    delete: sinon.stub()
+
+resetAllStubs = () ->
+  for key, svc of sinonStubs
+    do(svc) ->
+      for stubName, stub of svc
+        do(stub) ->
+          stub.reset()
+      return
+    return
+
 
 #needed since a route is mixing with route and svc logic... ugh
 testableClientsSvc = toTestThenableCrudInstance userSvc.clients,
   getAll: (calledSql) ->
-    console.log "testableClientsSvc: getAll"
+    # console.log "testableClientsSvc: getAll"
     [{project_id:1, client_id:2, sql: calledSql}]
+
+testableProfileSvc = toTestThenableCrudInstance profileSvc,
+  delete: (calledSql) ->
+    sinonStubs.profile.delete(calledSql)
+    console.log calledSql
+    # console.log "testableProfileSvc: getAll"
+    true
+
+
+testableNotesSvc = toTestThenableCrudInstance notesSvc,
+  delete: (calledSql) ->
+    sinonStubs.notes.delete(calledSql)
+    # console.log "testableNotesSvc: getAll"
+    true
 
 userSvc.clients = testableClientsSvc
 
 # console.log userSvc.clients, true
 
 routeCrudToTest.__set__ 'userSvc', userSvc
+routeCrudToTest.__set__ 'profileSvc', testableProfileSvc
+routeCrudToTest.__set__ 'notesSvc', testableNotesSvc
 
 #END BEGIN TESTABLE OVERRIDES
 
 describe 'route.projectSession', ->
   beforeEach ->
+    resetAllStubs()
     @ctor = routeCrudToTest
     @subject = new @ctor(testableProjSvc).init(false, safeProject)
     @mockRequest =
@@ -68,3 +109,11 @@ describe 'route.projectSession', ->
          "auth_user"."work_phone" as "work_phone", "auth_user"."parent_id" as "parent_id" from
          "user_profile" inner join "auth_user" on "auth_user"."id" = "user_profile"."auth_user_id" where "project_id" in ('1') and "parent_auth_user_id" = '1'
         """.replace(/\n/g,'')
+
+  describe 'byIdDELETE', ->
+    it 'can run', ->
+      @subject.byIdDELETE(@mockRequest)
+      sinonStubs.profile.delete.called.should.be.true
+      sinonStubs.profile.delete.calledWith("""delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'""")
+      sinonStubs.notes.delete.called.should.be.true
+      sinonStubs.notes.delete.calledWith("""delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'""")
