@@ -25,8 +25,8 @@ testableProjSvc = toTestableCrudInstance userServices.project,
 
 
 userSvc = routeCrudToTest.__get__('userSvc')
-profileSvc = routeCrudToTest.__get__('profileSvc')
-notesSvc = routeCrudToTest.__get__('notesSvc')
+profileSvc = routeCrudToTest.__get__('profileSvc').clone()
+notesSvc = routeCrudToTest.__get__('notesSvc').clone()
 
 sinonStubs =
   profile:
