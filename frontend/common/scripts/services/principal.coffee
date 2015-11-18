@@ -71,6 +71,15 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
     getCurrentProfileId(currentProfileId).then (id) ->
       _identity.profiles[id]
 
+  isSubscriber: () ->
+    _identity?.user?.parent_id == null
+
+  isProjectEditor: () ->
+    _identity?.profiles?[_identity?.currentProfileId]?.parent_auth_user_id == null
+
+  isProjectViewer: () ->
+    _identity?.profiles?[_identity?.currentProfileId]?.parent_auth_user_id != null
+
   isIdentityResolved: () ->
     return _resolved
   isAuthenticated: () ->

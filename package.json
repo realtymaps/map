@@ -85,7 +85,6 @@
     "gulp-concat": "2.6.x",
     "gulp-consolidate": "^0.1.2",
     "gulp-exit": "0.0.2",
-    "gulp-express": "0.3.x",
     "gulp-filter": "^3.0.0",
     "gulp-flatten": "0.1.x",
     "gulp-gzip": "1.2.x",
