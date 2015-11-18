@@ -8,70 +8,76 @@ include mixins/_avatarMixin.jade
             i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
         //
-        // Editor View
+        // Subscriber Project Selection
         //
 
-        div(ng-if="principal.isProjectEditor()")
-            ul.nav(ng-click="closeMobileNav($event)")
+        div(ng-if="principal.isSubscriber()")
+            ul.nav.project-select(ng-click="closeMobileNav($event)")
                 li
                     a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
                         span.icon.icon-property
                         span.label Projects
-                        span.conut {{projectsArray.length}}
+                        span.count {{projectTotal}}
 
-                li
+        //
+        // Editor View
+        //
+
+        div(ng-if="principal.isProjectEditor() && project")
+            ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                li(ng-show="project")
                     a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
                         span.icon.icon-pin
                         span.label Pinned Properties
-                        span.conut {{propertiesArray.length}}
+                        span.count {{project.propertiesTotal}}
 
-                li
+                li(ng-show="project")
                     a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
                         span.icon.icon-note
                         span.label Notes
-                        span.conut {{notesList.length}}
+                        span.count {{project.notes.length}}
 
-                li
+                li(ng-show="project")
                     a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                         span.icon.icon-neighbourhood
                         span.label Neighborhoods
-                        span.conut {{neighbourhoodList.length}}
+                        span.count {{project.neighborhoods.length}}
 
-            .bottom
-                a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
+            .bottom(ng-click="closeMobileNav($event)")
+                a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
 
 
         //
         // Viewer View
         //
 
-        div(ng-if="principal.isProjectViewer()")
-            ul.nav(ng-click="closeMobileNav($event)")
+        div(ng-if="principal.isProjectViewer() && project")
+            ul.nav.menu-options(ng-click="closeMobileNav($event)")
                 li
                     a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                         span.icon.icon-neighbourhood
                         span.label Neighbourhoods
-                        span.conut {{neighbourhoodList.length}}
+                        span.count {{project.neighborhoods.length}}
 
                 li
                     a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
                         span.icon.icon-property
                         span.label Properties
-                        span.conut {{propertiesArray.length}}
+                        span.count {{project.propertiesTotal}}
 
                 li
                     a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
                         span.icon.icon-note
                         span.label Notes
-                        span.conut {{notesList.length}}
+                        span.count {{project.notes.length}}
 
                 li
                     a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
                         span.icon.icon-favorites
                         span.label Favorites
-                        span.conut {{favoritesList.length}}
+                        span.count {{project.favorites.length}}
 
-            .bottom
+            .bottom(ng-click="closeMobileNav($event)")
                 a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
                     +avatarMixin()(class='tiny-avatar')
-                a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
+                a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
