@@ -20,17 +20,20 @@ class Crud extends BaseObject
 
     @init()
 
-  maybeLogRequest: (req, description) =>
-    logger.debug description if description
+  maybeLogRequest: (req, description = '') =>
+    if description.length
+      description += ':'
     # logger.debug "doLogRequest: #{doLogRequest}"
     return unless @doLogRequest
     switch typeof @doLogRequest
-      when 'boolean' then logger.debug req
-      when 'string' then logger.debug req[@doLogRequest]
+      when 'boolean' then logger.debug("#{description}"); logger.debug req
+      when 'string' then logger.debug "#{description} #{@name}: #{@doLogRequest}: #{JSON.stringify req[@doLogRequest]}"
       when 'object'
         if @doLogRequest instanceof Array
+          toLog = {}
           @doLogRequest.forEach (k) ->
-            logger.debug "#{k}: #{JSON.stringify req[k]}"
+            toLog[k] = req[k]
+          logger.debug "#{description} #{@name}: #{JSON.stringify toLog}"
       else return
   # Public: validRequest a request via transforms
   #
@@ -43,8 +46,8 @@ class Crud extends BaseObject
     for transforms in [@reqTransforms, specificTransforms]
       falsyTransformsToNoop(defaultRequestTransforms(transforms)) if transforms?
     validateAndTransform req, @reqTransforms
-    .then (tReq) ->
-      logger.debug "root: tReq: #{JSON.stringify tReq}"
+    .then (tReq) =>
+      logger.debug "#{@name}: root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
         return validateAndTransform tReq, specificTransforms
       tReq

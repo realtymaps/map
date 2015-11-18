@@ -8,7 +8,7 @@ describe 'utils/validation.validators.mapKeys()', () ->
 
   describe 'mapKeys', () ->
 
-    promiseIt 'works', () ->
+    promiseIt 'maps all', () ->
       orig =
         params:
           id: 1
@@ -21,4 +21,19 @@ describe 'utils/validation.validators.mapKeys()', () ->
             params:
               'user_project.id': 1
               'user_notes.id': 3
+      ]
+
+    promiseIt 'passes through unmapped props', () ->
+      orig =
+        params:
+          id: 1
+          notes_id: 3
+      [
+        expectResolve validateAndTransform orig,
+          params: validators.mapKeys(id: 'user_project.id')
+        .then (value) ->
+          value.should.eql
+            params:
+              'user_project.id': 1
+              notes_id: 3
       ]

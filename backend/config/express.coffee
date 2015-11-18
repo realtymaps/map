@@ -35,6 +35,7 @@ serveStatic = require 'serve-static'
 errorHandler = require 'errorhandler'
 connectFlash = require 'connect-flash'
 cls = require 'continuation-local-storage'
+patchNamespaceForPromise = require 'cls-bluebird'
 promisify = require './promisify'
 sessionSecurity = require '../services/service.sessionSecurity'
 status = require '../../common/utils/httpStatus'
@@ -95,6 +96,7 @@ app.use connectFlash()
 app.use (req, res, next) ->
   transactionId = uuid.genUUID()
   #wrap/bind namespace's life span to the life of a req/res
+  patchNamespaceForPromise namespace
   namespace.bindEmitter req
   namespace.bindEmitter res
   namespace.run ->

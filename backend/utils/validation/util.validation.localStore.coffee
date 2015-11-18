@@ -4,7 +4,7 @@ DataValidationError = require '../errors/util.error.dataValidation'
 logger  = require '../../config/logger'
 {getNamespace} = require 'continuation-local-storage'
 {NAMESPACE} = require '../../config/config'
-
+clone =  require 'clone'
 
 _errMsg = (thing) ->
   "no #{thing} provided, options are: #{JSON.stringify(options)}"
@@ -22,8 +22,8 @@ _errMsg = (thing) ->
 #
 # Returns the mapped object.
 module.exports = (options = {}) ->
-  # logger.debug "localStore: #{JSON.stringify options}"
   (param, value) -> Promise.try () ->
+    logger.debug "localStore: #{JSON.stringify options}"
     if !options?
       return Promise.reject new DataValidationError(_errMsg('options'), param, value)
 
@@ -34,12 +34,19 @@ module.exports = (options = {}) ->
       return Promise.reject new DataValidationError(_errMsg('toKey'), param, value)
 
     space = getNamespace NAMESPACE
+
     firstRest = options.clsKey.firstRest('.')
-    ret = {}
-    # logger.debug "SPACE"
-    # logger.debug space, true
-    # logger.debug "first: #{firstRest.first}"
+    ret = clone(value) or {}
     maybeRet = space.get firstRest.first
-    # logger.debug maybeRet
+
+    if options?.doLog
+      logger.debug "first: '#{firstRest.first}'"
+      logger.debug space, true
+
+    unless maybeRet?
+      logger.warn "first: '#{firstRest.first}'"
+      logger.warn "maybeRet: is undefined"
+      logger.warn space, true
+
     ret[options.toKey] = if firstRest.rest? then _.get(maybeRet, firstRest.rest) else maybeRet
     ret

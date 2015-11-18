@@ -26,3 +26,20 @@ describe 'utils/validation.validators.localStore', () ->
           .then (value) ->
             value.should.eql params: notes_id: 3
             resolve()
+
+    promiseIt 'passes through pre defined fields', () ->
+
+      new Promise (resolve, reject) -> Promise.try ->
+
+        namespace = cls.createNamespace(NAMESPACE)
+        namespace.run -> #test must be inside of run as that is the namespaces lifespan
+          namespace.set 'orig',
+            params:
+              id: 1
+              notes_id: 3
+
+          expectResolve validateAndTransform {params: crap:'poo'},
+            params: validators.localStore(clsKey: 'orig.params.notes_id', toKey: 'notes_id')
+          .then (value) ->
+            value.should.eql params: {notes_id: 3, crap: 'poo'}
+            resolve()
