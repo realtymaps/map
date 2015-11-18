@@ -7,37 +7,71 @@ include mixins/_avatarMixin.jade
         a(id="closeicon")
             i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
-        ul.nav(ng-click="closeMobileNav($event)")
-            li
-                a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
-                    span.icon.icon-property
-                    span.label Properties
+        //
+        // Editor View
+        //
 
-                    span.conut {{propertiesArray.length}}
+        div(ng-if="principal.isProjectEditor()")
+            ul.nav(ng-click="closeMobileNav($event)")
+                li
+                    a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+                        span.icon.icon-property
+                        span.label Projects
+                        span.conut {{projectsArray.length}}
 
-            li
-                a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+                li
+                    a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                        span.icon.icon-pin
+                        span.label Pinned Properties
+                        span.conut {{propertiesArray.length}}
 
-                    span.icon.icon-property
-                    span.label Projects
+                li
+                    a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                        span.icon.icon-note
+                        span.label Notes
+                        span.conut {{notesList.length}}
 
-                    span.conut {{projectsArray.length}}
-            li
-                a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
-                    span.icon.icon-pin
-                    span.label Favorites
-                    span.conut {{favoritesList.length}}
-            li
-                a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
-                    span.icon.icon-note
-                    span.label Notes
-                    span.conut {{notesList.length}}
-            li
-                a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                    span.icon.icon-neighbourhood
-                    span.label Neighbourhoods
-                    span.conut {{neighbourhoodList.length}}
-        .bottom
-            a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                +avatarMixin()(class='tiny-avatar')
-            a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
+                li
+                    a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        span.icon.icon-neighbourhood
+                        span.label Neighborhoods
+                        span.conut {{neighbourhoodList.length}}
+
+            .bottom
+                a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
+
+
+        //
+        // Viewer View
+        //
+
+        div(ng-if="principal.isProjectViewer()")
+            ul.nav(ng-click="closeMobileNav($event)")
+                li
+                    a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        span.icon.icon-neighbourhood
+                        span.label Neighbourhoods
+                        span.conut {{neighbourhoodList.length}}
+
+                li
+                    a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                        span.icon.icon-property
+                        span.label Properties
+                        span.conut {{propertiesArray.length}}
+
+                li
+                    a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                        span.icon.icon-note
+                        span.label Notes
+                        span.conut {{notesList.length}}
+
+                li
+                    a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
+                        span.icon.icon-favorites
+                        span.label Favorites
+                        span.conut {{favoritesList.length}}
+
+            .bottom
+                a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
+                    +avatarMixin()(class='tiny-avatar')
+                a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
