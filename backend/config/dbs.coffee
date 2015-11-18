@@ -5,6 +5,7 @@ config = require './config'
 logger = require './logger'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 do require '../../common/config/dbChecker.coffee'
+_ = require 'lodash'
 
 
 connectedDbs =
