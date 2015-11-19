@@ -17,7 +17,5 @@
             span Confirm
 
   .mail-wizard
-    div.inner
-      div.container
-        div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
+    div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
 

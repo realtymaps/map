@@ -1,0 +1,20 @@
+.select-template
+  .inner
+    .container
+      form
+        h1.pageTitle Select A template
+
+          div.filters
+            button.btn.btn-filter.active(ng-click="filterByType()") All Templates
+            button.btn.btn-filter(ng-click="filterByType('letter')") Letters
+            button.btn.btn-filter(ng-click="filterByType('postcard')") Postcards
+            button.btn.btn-filter(ng-click="filterByType('favorite')") Favorites
+          div(rmapsMailTemplateLayout templatesArray="$parent.templateType")
+          //- div.row
+          //-   ul.tmpl-list
+          //-     li(ng-repeat="emailTmpl in templatesArray")
+          //-       div.tmpl-item
+          //-         div.tmpl-image
+          //-         div.tmpl-data
+          //-           h3.tmpl-title {{emailTmpl.title}}
+          //-           button.btn.btn-default(ng-click="selectTemplate($index)") Select
