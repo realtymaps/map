@@ -69,6 +69,9 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   outputStream.write(type: 'delimiter', payload: delimiter)
   
   lineHandler = (line) ->
+    if !line
+      # hide empty lines
+      return
     count++
     outputStream.write(type: 'data', payload: line)
   if !columnsHandler

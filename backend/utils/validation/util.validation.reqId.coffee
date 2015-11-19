@@ -16,4 +16,5 @@ logger = require '../../config/logger'
 module.exports = (options = {}) ->
   clsKey = options.clsKey ? 'req.user.id'
   toKey = options.toKey ? 'auth_user_id'
-  validLocalStore({clsKey, toKey})
+  doLog = options.doLog ? false
+  validLocalStore({clsKey, toKey, doLog})
