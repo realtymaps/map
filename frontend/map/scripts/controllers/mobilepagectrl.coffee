@@ -16,24 +16,26 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
     if rmapsprincipal.isAuthenticated()
       rmapsprincipal.getCurrentProfile()
       .then (profile) ->
+        $scope.profile = profile
+
+        # Load the Project counts such as number of properties, neighborhoods, etc...
         rmapsProjectsService.getProject profile.project_id
         .then (project) ->
           project.propertiesTotal = _.keys(project.properties_selected).length
-
           $scope.project = project
 
-          # If Editor, retrieve the clients for the project
-          $scope.clients = null
-          if rmapsprincipal.isProjectEditor()
-            clientsService = new rmapsClientsService project.id
-            clientsService.getAll()
-            .then (clients) ->
-              angular.forEach clients, (client) ->
-                client.initials = ''
-                client.initials += client.first_name[0] if client.first_name
-                client.initials += client.last_name[0] if client.last_name
+        # If Editor, retrieve the clients for the project
+        $scope.clients = null
+        if rmapsprincipal.isProjectEditor()
+          clientsService = new rmapsClientsService profile.project_id
+          clientsService.getAll()
+          .then (clients) ->
+            angular.forEach clients, (client) ->
+              client.initials = ''
+              client.initials += client.first_name[0] if client.first_name
+              client.initials += client.last_name[0] if client.last_name
 
-              $scope.clients = clients
+            $scope.clients = clients
 
       rmapsprincipal.getIdentity()
       .then (identity) ->

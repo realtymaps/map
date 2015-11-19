@@ -27,21 +27,21 @@ include mixins/_avatarMixin.jade
             // Editor View
             //
 
-            div(ng-if="principal.isProjectEditor() && project")
+            div(ng-if="principal.isProjectEditor() && profile")
                 ul.nav.menu-options(ng-click="closeMobileNav($event)")
-                    li(ng-show="project")
+                    li(ng-show="profile")
                         a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
                             span.menu-label Pinned Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
-                    li(ng-show="project")
+                    li(ng-show="profile")
                         a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
-                    li(ng-show="project")
+                    li(ng-show="profile")
                         a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
                             span.menu-label Neighborhoods
@@ -64,27 +64,27 @@ include mixins/_avatarMixin.jade
             // Viewer View
             //
 
-            div(ng-if="principal.isProjectViewer() && project")
+            div(ng-if="principal.isProjectViewer() && profile")
                 ul.nav.menu-options(ng-click="closeMobileNav($event)")
-                    li
+                    li(ng-show="profile")
                         a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
                             span.menu-label Neighbourhoods
                             span.menu-badge.count {{project.neighborhoods.length}}
 
-                    li
-                        a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-property
                             span.menu-label Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
-                    li
+                    li(ng-show="profile")
                         a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
-                    li
+                    li(ng-show="profile")
                         a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
                             span.icon.menu-icon.icon-favorites
                             span.menu-label Favorites
