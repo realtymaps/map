@@ -1,11 +1,11 @@
+_ = require 'lodash'
 logger = require '../../config/logger'
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
-_ = require 'lodash'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
-NamedError = require '../errors/util.error.named'
 {IsIdObjError} = require '../errors/util.error.crud.coffee'
+clone = require 'clone'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -36,6 +36,7 @@ class Crud extends BaseObject
     new Crud @dbFn, @idKey
 
   idObj: (val) ->
+    val = clone val
     if _.isNumber(val) or _.isString(val)
       obj = {}
       obj[@idKey] = val
@@ -240,3 +241,4 @@ module.exports =
   ThenableHasManyCrud: ThenableHasManyCrud
   thenableHasManyCrud: factory ThenableHasManyCrud
   withSafeEntity:withSafeEntity
+  dbFnCalls: [ 'count','getAll','getById','update','create','upsert','delete']
