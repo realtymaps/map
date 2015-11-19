@@ -8,18 +8,17 @@ basePath = require '../basePath'
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 {toTestableCrudInstance, toTestThenableCrudInstance} = require "../../specUtils/util.crud.service.test.helpers"
 userServices = require("#{basePath}/services/services.user")
-
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
-safeProject = sqlHelpers.columns.project
 rewire = require 'rewire'
 routeCrudToTest = rewire "#{basePath}/routeCrud/route.crud.projectSession"
+safeProject = sqlHelpers.columns.project
 safeNotes = sqlHelpers.columns.notes
 safeProfile = sqlHelpers.columns.profile
 
 #BEGIN TESTABLE OVERRIDES
-testableProjSvc = toTestableCrudInstance userServices.project,
+testableProjSvc = toTestThenableCrudInstance userServices.project,
   getAll:[id:1]
-  getById: Promise.resolve [id:1, sandbox: false]
+  getById: [id:1, sandbox: false]
   delete: true
 
 
@@ -44,7 +43,7 @@ routeCrudToTest.__set__ 'profileSvc', testableProfileSvc
 routeCrudToTest.__set__ 'notesSvc', testableNotesSvc
 
 resetAllStubs = () ->
-  testableProjSvc.resetStubs()
+  testableProjSvc.resetStubs()#(true, 'deleteStub')
   testableProfileSvc.resetStubs()#(true, 'deleteStub')
   testableClientsSvc.resetStubs()
   testableNotesSvc.resetStubs()
@@ -97,6 +96,7 @@ describe 'route.projectSession', ->
       @promise.then =>
         testableProfileSvc.deleteStub.called.should.be.true
         testableProfileSvc.deleteStub.sqls[0].should.be.eql """delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'"""
+        #EXPLICITLY NOT USING CALLEDWITH as this gives better error output
         testableProfileSvc.deleteStub.args[0][0].should.be.eql {}
         testableProfileSvc.deleteStub.args[0][1].should.be.eql false
         testableProfileSvc.deleteStub.args[0][2].should.be.eql
@@ -116,4 +116,12 @@ describe 'route.projectSession', ->
         testableNotesSvc.deleteStub.args[0][3].should.be.eql safeNotes
 
     it 'super', ->
-      testableProjSvc.deleteStub.called.should.be.true
+      # testableProjSvc.resetStubs(true, 'deleteStub')
+      @promise.then =>
+        testableProjSvc.deleteStub.called.should.be.true
+        testableProjSvc.deleteStub().should.be.eql true
+        testableProjSvc.deleteStub.args.should.be.ok
+        testableProjSvc.deleteStub.args[0][0].should.be.eql @mockRequest.params
+        testableProjSvc.deleteStub.args[0][1].should.be.eql false
+        assert.isUndefined testableProjSvc.deleteStub.args[0][2]
+        testableProjSvc.deleteStub.args[0][3].should.be.eql safeProject

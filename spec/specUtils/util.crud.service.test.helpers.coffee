@@ -4,6 +4,7 @@ logger = require "#{basePath}/config/logger"
 sinon = require 'sinon'
 
 #wraps a crud instance to return all db functions as sql query or a sql payload object
+#TODO: Overwrite @dbFn with SqlMock
 toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
   if doLog
     logger.debug crudInstance, true
@@ -41,7 +42,7 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
           doLog = stubNameToLog == stubName
         if doLog
           logger.debug stubName
-          logger.debug crudInstance[stubName]
+          logger.debug crudInstance, true
         crudInstance[stubName].reset()
         crudInstance[stubName].sqls = []
 
