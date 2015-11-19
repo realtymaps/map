@@ -49,17 +49,16 @@ include mixins/_avatarMixin.jade
 
                 #client-section(ng-show="clients")
                     #client-header.menu-label My Clients
+                        span.menu-badge.count {{clients.length}}
 
                     ul.nav.clients
-                        li(ng-repeat="client in clients")
-                            a.client
+                        li.client(ng-repeat="client in clients | limitTo:3")
+                            a
                                 div.client-initials {{client.initials}}
                                 div.menu-label.client-name {{client.first_name}} {{client.last_name}}
                                 div.menu-caption.client-email {{client.email}}
 
-                .bottom(ng-click="closeMobileNav($event)")
-                    a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
-
+                    .client-more.menu-caption(ng-show="clients.length > 3") + {{clients.length - 3}} more...
 
             //
             // Viewer View
@@ -91,7 +90,18 @@ include mixins/_avatarMixin.jade
                             span.menu-label Favorites
                             span.menu-badge.count {{project.favorites.length}}
 
-                .bottom(ng-click="closeMobileNav($event)")
-                    a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                        +avatarMixin()(class='tiny-avatar')
-                    a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
+        .bottom
+            ul.nav(ng-click="closeMobileNav($event)")
+                //li(ng-if="principal.isProjectViewer()")
+                //    a(href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
+                //        +avatarMixin()(class='tiny-avatar')
+
+                li
+                    a.menu-label(href="{{frontendRoutes.user}}")
+                        i.icon.menu-icon.fa.fa-cog
+                        span Account Settings
+
+                li
+                    a(href="{{frontendRoutes.logout}}")
+                        i.icon.menu-icon.fa.fa-sign-out
+                        span.menu-label Sign Out

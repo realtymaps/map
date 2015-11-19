@@ -6,6 +6,9 @@
 .menu-slide.ng-hide-add
   make-animation(slideOutLeft 0.15s both ease-in)
 
+$menu-header-height = 46px
+$menu-footer-height = 93px
+
 #mobile-nav
 
   position fixed
@@ -22,144 +25,148 @@
 
   .inner
     position relative
+    height 100%
 
-    #mobile-nav-header
-      position relative
+  #mobile-nav-header
+    position absolute
+    top 0
+    left 0
+    right 0
+    height $menu-header-height
 
-      .closeicon
-        position: absolute;
-        top: 0;
-        right: 0;
-        width: 44px;
-        height: 44px;
-        cursor: pointer;
+    .closeicon
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      color $rm-menu-icon
+
+      &:hover
         color $rm-menu-icon
+
+      i
+        margin: 10px 5px 0 0;
+        font-size: 25px;
+
+  #mobile-nav-content
+    position absolute
+    top $menu-header-height
+    left 0
+    right 0
+    bottom $menu-footer-height
+    overflow-y auto
+    overflow-x hidden
+    padding-top 30px
+
+  .menu-options
+    margin-bottom 30px
+
+  h1.logo
+    display block
+    width 100%
+    margin-bottom 30px
+    float none
+
+  .icon
+    margin-right 12px
+    font-size 16px
+    vertical-align bottom
+
+  .menu-label
+    color c_gray
+    font-size 16px
+    font-weight normal
+
+  .count
+    float right
+    font-size 16px
+    margin-right 10px
+
+  ul.nav
+    padding 0 10px 0 16px
+    width 100%
+    border-bottom 1px solid c_gray
+
+    li
+      a
+        padding 10px
 
         &:hover
+        &:focus
+          background-color inherit
           color $rm-menu-icon
 
-        i
-          margin: 10px 5px 0 0;
-          font-size: 25px;
+      span.new
+        color $light_blue
+        text-transform uppercase
+        margin-left 5px
+        font-size 10px
 
-    #mobile-nav-content
-      position relative
-
-    .menu-options
-      margin-bottom 30px
-
-    h1.logo
-      display block
-      width 100%
-      margin-bottom 30px
-      float none
-
-    .menu-label
-      color c_gray
-      font-size 16px
-      font-weight normal
-
-    ul.nav
-      padding 0 10px 0 16px
-      width 100%
-      border-bottom 1px solid c_gray
-
-      li
+      &.active
         a
-          text-transform capitalize
-          span.count
-            float right
-            font-size 16px
-            margin-right 10px
+          color $rm-menu-icon
 
-          &.projects
-          &.properties
-          &.notes
-          &.neighbourhoods
-          &.favorites
-            position relative
+  #client-header
+    padding 30px 20px 16px 25px
+    border-top solid 1px $rm-border-line
 
-        a
-          padding 10px
+  ul.nav.clients
+    padding: 0 10px 0 10px;
 
-          .icon
-            margin-right 7px
-            font-size 16px
-            vertical-align bottom
+  .client
+    margin-bottom: 10px;
 
-          &:hover
-          &:focus
-            background c_black_20
-            color $rm-menu-icon
+  .client-initials
+    circle(40px)
+    float left
+    background-color: $rm-menu-caption;
+    color: white;
 
-        span.new
-          color $light_blue
-          text-transform uppercase
-          margin-left 5px
-          font-size 10px
+  .client-email, .client-name
+    padding: 4px 0 0 55px;
+    font-size: 13px;
 
-        &.active
-          a
-            color $rm-menu-icon
-
-    #client-header
-      padding 30px 10px 16px 25px
-      border-top solid 1px $rm-border-line
-
-    ul.nav.clients
-      padding: 0 10px 0 10px;
-
-    .client-initials
-      circle(40px)
-      float left
-      background: $rm-menu-caption;
-      color: white;
-
-    .client-email, .client-name
-      padding: 4px 0 0 55px;
-      font-size: 13px;
+  .client-more
+    text-align center
+    margin-top 10px
+    font-size 12px
 
   .bottom
-    position fixed
+    position absolute
     left 0
-    right 60px
+    right 0
     bottom 0
-    padding 10px 15px 10px 15px
+    height $menu-footer-height
+    border-top solid 1px $rm-border-line
+    background-color $dark_blue_darker
+    padding 10px 0
 
-    a
-      color $rm-menu-icon
-      text-decoration none
-      position relative
-      &:hover
-      &:focus
-        background $black_20
-        color $rm-menu-icon
-        text-decoration none
-
-    a
-      line-height 40px
-      display block
-      padding 0 10px 0 40px
-      text-transform capitalize
-      &.settings
-        &:before
-          content ''
-          position absolute
-          top 0
-          left 0
-          display block
-          width 40px
-          height 40px
-          background url('/assets/base/icons/settings_icon_mobile.png') no-repeat center center
-      &.realtor
-        padding 0 10px 0 0
-
-        .tiny-avatar
-          float left
-          display block
-          width 30px
-          height 30px
-          margin-right 10px
+    //a
+    //  color $rm-menu-icon
+    //  text-decoration none
+    //  position relative
+    //  &:hover
+    //  &:focus
+    //    color $rm-menu-icon
+    //    text-decoration none
+    //
+    //a
+    //  line-height 40px
+    //  display block
+    //  padding 0 10px 0 40px
+    //  text-transform capitalize
+    //
+    //  &.realtor
+    //    padding 0 10px 0 0
+    //
+    //    .tiny-avatar
+    //      float left
+    //      display block
+    //      width 30px
+    //      height 30px
+    //      margin-right 10px
 
 // Overlay on map when Mobile menu is open
 #mobile-page-overlay
