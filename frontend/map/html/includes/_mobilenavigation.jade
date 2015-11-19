@@ -2,82 +2,96 @@ include mixins/_avatarMixin.jade
 
 #mobile-nav(class="menu-slide" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
     .inner
-        include ./header/_logo
+        #mobile-nav-header
+            a.closeicon
+                i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
-        a(id="closeicon")
-            i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
+            div(ng-click="closeMobileNav($event)")
+                    include ./header/_logo
 
-        //
-        // Subscriber Project Selection
-        //
+        #mobile-nav-content
 
-        div(ng-if="principal.isSubscriber()")
-            ul.nav.project-select(ng-click="closeMobileNav($event)")
-                li
-                    a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
-                        span.icon.icon-property
-                        span.label Projects
-                        span.count {{projectTotal}}
+            //
+            // Subscriber Project Selection
+            //
 
-        //
-        // Editor View
-        //
+            div(ng-if="principal.isSubscriber() || principal.isEditor()")
+                ul.nav.project-select(ng-click="closeMobileNav($event)")
+                    li
+                        a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+                            span.icon.menu-icon.icon-property
+                            span.menu-label Projects
+                            span.menu-badge.count {{projectTotal}}
 
-        div(ng-if="principal.isProjectEditor() && project")
-            ul.nav.menu-options(ng-click="closeMobileNav($event)")
-                li(ng-show="project")
-                    a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
-                        span.icon.icon-pin
-                        span.label Pinned Properties
-                        span.count {{project.propertiesTotal}}
+            //
+            // Editor View
+            //
 
-                li(ng-show="project")
-                    a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
-                        span.icon.icon-note
-                        span.label Notes
-                        span.count {{project.notes.length}}
+            div(ng-if="principal.isProjectEditor() && project")
+                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                    li(ng-show="project")
+                        a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                            span.icon.menu-icon.icon-pin
+                            span.menu-label Pinned Properties
+                            span.menu-badge.count {{project.propertiesTotal}}
 
-                li(ng-show="project")
-                    a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                        span.icon.icon-neighbourhood
-                        span.label Neighborhoods
-                        span.count {{project.neighborhoods.length}}
+                    li(ng-show="project")
+                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                            span.icon.menu-icon.icon-note
+                            span.menu-label Notes
+                            span.menu-badge.count {{project.notes.length}}
 
-            .bottom(ng-click="closeMobileNav($event)")
-                a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
+                    li(ng-show="project")
+                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                            span.icon.menu-icon.icon-neighbourhood
+                            span.menu-label Neighborhoods
+                            span.menu-badge.count {{project.neighborhoods.length}}
+
+                #client-section(ng-show="clients")
+                    #client-header.menu-label My Clients
+
+                    ul.nav.clients
+                        li(ng-repeat="client in clients")
+                            a.client
+                                div.client-initials {{client.initials}}
+                                div.menu-label.client-name {{client.first_name}} {{client.last_name}}
+                                div.menu-caption.client-email {{client.email}}
+
+                .bottom(ng-click="closeMobileNav($event)")
+                    a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
 
 
-        //
-        // Viewer View
-        //
+            //
+            // Viewer View
+            //
 
-        div(ng-if="principal.isProjectViewer() && project")
-            ul.nav.menu-options(ng-click="closeMobileNav($event)")
-                li
-                    a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                        span.icon.icon-neighbourhood
-                        span.label Neighbourhoods
-                        span.count {{project.neighborhoods.length}}
+            div(ng-if="principal.isProjectViewer() && project")
+                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                    li
+                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                            span.icon.menu-icon.icon-neighbourhood
+                            span.menu-label Neighbourhoods
+                            span.menu-badge.count {{project.neighborhoods.length}}
 
-                li
-                    a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
-                        span.icon.icon-property
-                        span.label Properties
-                        span.count {{project.propertiesTotal}}
+                    li
+                        a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                            span.icon.menu-icon.icon-property
+                            span.menu-label Properties
+                            span.menu-badge.count {{project.propertiesTotal}}
 
-                li
-                    a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
-                        span.icon.icon-note
-                        span.label Notes
-                        span.count {{project.notes.length}}
+                    li
+                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                            span.icon.menu-icon.icon-note
+                            span.menu-label Notes
+                            span.menu-badge.count {{project.notes.length}}
 
-                li
-                    a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
-                        span.icon.icon-favorites
-                        span.label Favorites
-                        span.count {{project.favorites.length}}
+                    li
+                        a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
+                            span.icon.menu-icon.icon-favorites
+                            span.menu-label Favorites
+                            span.menu-badge.count {{project.favorites.length}}
 
-            .bottom(ng-click="closeMobileNav($event)")
-                a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                    +avatarMixin()(class='tiny-avatar')
-                a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings
+                .bottom(ng-click="closeMobileNav($event)")
+                    a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
+                        +avatarMixin()(class='tiny-avatar')
+                    a(href="{{frontendRoutes.user}}" class="settings" ng-class="{ active: isActive('settings') }") account settings

@@ -22,9 +22,26 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
 
           $scope.project = project
 
+          # If Editor, retrieve the clients for the project
+          $scope.clients = null
+          if rmapsprincipal.isProjectEditor()
+            clientsService = new rmapsClientsService project.id
+            clientsService.getAll()
+            .then (clients) ->
+              angular.forEach clients, (client) ->
+                client.initials = ''
+                client.initials += client.first_name[0] if client.first_name
+                client.initials += client.last_name[0] if client.last_name
+
+              $scope.clients = clients
+
       rmapsprincipal.getIdentity()
       .then (identity) ->
         $scope.projectTotal = _.keys(identity.profiles).length
+    else
+      $scope.projectTotal = null
+      $scope.project = null
+      $scope.clients = null
 
   $scope.closeMobileNav = (event) ->
     return if !$scope.isMobileNavOpen
