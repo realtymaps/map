@@ -7,7 +7,8 @@
   make-animation(slideOutLeft 0.15s both ease-in)
 
 $menu-header-height = 46px
-$menu-footer-height = 93px
+$menu-footer-editor-height = 93px
+$menu-footer-viewer-height = 129px
 
 #mobile-nav
 
@@ -55,7 +56,7 @@ $menu-footer-height = 93px
     top $menu-header-height
     left 0
     right 0
-    bottom $menu-footer-height
+    bottom $menu-footer-editor-height
     overflow-y auto
     overflow-x hidden
     padding-top 30px
@@ -138,10 +139,14 @@ $menu-footer-height = 93px
     left 0
     right 0
     bottom 0
-    height $menu-footer-height
+    height $menu-footer-editor-height
     border-top solid 1px $rm-border-line
     background-color $dark_blue_darker
     padding 10px 0
+
+  &.is-viewer
+    .bottom
+      height $menu-footer-viewer-height
 
     //a
     //  color $rm-menu-icon

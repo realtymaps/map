@@ -1,6 +1,6 @@
 include mixins/_avatarMixin.jade
 
-#mobile-nav(class="menu-slide" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
+#mobile-nav(class="menu-slide" ng-class="{ 'is-editor': principal.isProjectEditor(), 'is-viewer': principal.isProjectViewer() }" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
     .inner
         #mobile-nav-header
             a.closeicon
@@ -92,9 +92,10 @@ include mixins/_avatarMixin.jade
 
         .bottom
             ul.nav(ng-click="closeMobileNav($event)")
-                //li(ng-if="principal.isProjectViewer()")
-                //    a(href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                //        +avatarMixin()(class='tiny-avatar')
+                li(ng-if="principal.isProjectViewer()")
+                    a
+                        span.icon.menu-icon.icon-project
+                        span.menu-label My Realtor
 
                 li
                     a.menu-label(href="{{frontendRoutes.user}}")
