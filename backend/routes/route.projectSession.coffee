@@ -39,8 +39,7 @@ class ClientsCrud extends HasManyRouteCrud
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
 
     userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
-    .then (clientIds) ->
-      clientId = clientIds?[0]
+    .then (clientId) ->
       throw new Error 'user ID required - new or existing' unless clientId?
 
       newProfile =
