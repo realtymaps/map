@@ -1,12 +1,9 @@
 require '../../globals'
-expect = require('chai').expect
 assert = require('chai').assert
-sinon = require 'sinon'
 require 'should'
-Promise = require 'bluebird'
 basePath = require '../basePath'
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
-{toTestableCrudInstance, toTestThenableCrudInstance} = require "../../specUtils/util.crud.service.test.helpers"
+{toTestThenableCrudInstance} = require "../../specUtils/util.crud.service.test.helpers"
 userServices = require("#{basePath}/services/services.user")
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 rewire = require 'rewire'
