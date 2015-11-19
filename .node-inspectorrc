@@ -6,7 +6,7 @@
   "debug-brk": false,
   "hidden": [
     "_public/",
-    "app/",
+    "frontend/",
     "gulp/",
     "karma/",
     "node_modules/"

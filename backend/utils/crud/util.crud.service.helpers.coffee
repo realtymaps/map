@@ -1,12 +1,11 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
 logger = require '../../config/logger'
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
 {IsIdObjError} = require '../errors/util.error.crud.coffee'
-
+clone = require 'clone'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -37,6 +36,7 @@ class Crud extends BaseObject
     new Crud @dbFn, @idKey
 
   idObj: (val) ->
+    val = clone val
     if _.isNumber(val) or _.isString(val)
       obj = {}
       obj[@idKey] = val
@@ -231,29 +231,6 @@ ThenableCrud = thenables[0]
 
 ThenableHasManyCrud = thenables[1]
 
-dbFnCalls = [ 'count','getAll','getById','update','create','upsert','delete']
-
-#wraps a crud instance to return all db functions as sql query or a sql payload object
-toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
-  if doLog
-    logger.debug crudInstance, true
-    logger.debug "crudInstance: dbFn: #{crudInstance.dbFn}"
-  for fnName in dbFnCalls
-    do (fnName) ->
-      origFn = crudInstance[fnName]
-      crudInstance[fnName] = () ->
-        calledSql = origFn.apply(crudInstance, arguments).toString()
-        return calledSql unless mockResponse?[fnName]
-        resp = mockResponse[fnName](calledSql)
-        resp.sql = calledSql
-        if doRetAsPromise
-          return Promise.resolve resp
-        resp
-  crudInstance
-
-toTestThenableCrudInstance = (crudInstance, mockResponse, doLog) ->
-  toTestableCrudInstance(crudInstance, mockResponse, true, doLog)
-
 module.exports =
   Crud:Crud
   crud: factory Crud
@@ -264,5 +241,4 @@ module.exports =
   ThenableHasManyCrud: ThenableHasManyCrud
   thenableHasManyCrud: factory ThenableHasManyCrud
   withSafeEntity:withSafeEntity
-  toTestableCrudInstance: toTestableCrudInstance
-  toTestThenableCrudInstance: toTestThenableCrudInstance
+  dbFnCalls: [ 'count','getAll','getById','update','create','upsert','delete']
