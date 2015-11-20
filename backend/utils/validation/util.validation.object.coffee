@@ -14,6 +14,10 @@ module.exports = (options = {}) ->
       return values[options.pluck]
     if !_.isPlainObject values
       return Promise.reject new DataValidationError('plain object expected', param, values)
+    if options.isEmpty && !_.isEmpty values
+      return Promise.reject new DataValidationError('plain empty object expected', param, values)
+    if options.isEmptyProtect && !_.isEmpty values
+      return {}
     if options.subValidateSeparate
       # subValidateSeparate can be an object of validations/transformations suitable for use in validateAndTransform()
       # (including arrays of iteratively applied functions).  Each validation/transformation in the object is applied to
