@@ -1,3 +1,5 @@
+-- reset sequence (no idea why I'm having to do that here, but my best guess is maybe it's related to user db merge a bit ago)
+select setval('"data_source_fields_MetadataEntryID_seq"'::regclass, max("MetadataEntryID")) from config_data_source_fields;
 --
 -- PostgreSQL database dump
 --
