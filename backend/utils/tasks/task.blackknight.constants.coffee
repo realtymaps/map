@@ -1,6 +1,5 @@
 _ = require 'lodash'
 svc = require '../../services/service.dataSource'
-tableNames = require '../../config/tableNames'
 
 
 _getColumns = (list) ->
