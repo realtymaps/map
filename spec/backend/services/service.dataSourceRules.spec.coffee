@@ -1,7 +1,6 @@
 _ = require 'lodash'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.dataSourceRules.coffee'
-{PartiallyHandledError, isUnhandled} = require '../../../backend/utils/errors/util.error.partiallyHandledError'
 tables = require '../../../backend/config/tables'
 sqlMockUtil = require '../../specUtils/sqlMock.coffee'
 
