@@ -194,7 +194,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
     if fieldName
       whereClause.output = fieldName
     tables.config.dataNormalization()
-    .where
+    .where(whereClause)
     .orderBy('list')
     .orderBy('ordering')
     .then (validations=[]) ->
