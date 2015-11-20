@@ -14,6 +14,7 @@ dbs = require '../../config/dbs'
 path = require 'path'
 moment = require 'moment'
 constants = require './task.blackknight.constants'
+validation = require '../util.validation'
 
 
 
@@ -95,10 +96,6 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
       action: file.action
     if action == constants.DELETE
       loadData.fileType = constants.DELETE
-      deleteDataList.push
-        rawTableSuffix: rawTableSuffix
-        dataType: file.type
-        action: file.action
     else
       loadData.fileType = constants.LOAD
       countDataList.push
@@ -109,7 +106,6 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
           fips_code: file.name.slice(0, 5)
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
-  deleteDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_deleteData", deleteDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, deleteDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
@@ -177,15 +173,56 @@ loadRawData = (subtask) ->
     delimiter: '\t'
     sftp: true
   .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, constants.NUM_ROWS_TO_PAGINATE, "blackknight_normalizeData",
+    if subtask.data.fileType == constants.DELETE
+      nextSubtaskName = "blackknight_deleteData"
+    else
+      nextSubtaskName = "blackknight_normalizeData"
+    jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, constants.NUM_ROWS_TO_PAGINATE, nextSubtaskName,
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
+      action: subtask.data.action
 
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
 
 deleteData = (subtask) ->
-  Promise.reject('~~~~~~~~~~~~~~~~~ show stopper ~~~~~~~~~~~~~~~~~')
+  rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  # get rows for this subtask
+  normalDataTable = tables.property[constants.tableIdMap[subtask.data.dataType]]
+  tables.buildRawTableQuery(rawTableName)
+  .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+  .then (rows) ->
+    promises = for row in rows then do (row) ->
+      if subtask.data.action == constants.REFRESH
+        normalDataTable()
+        .where
+          data_source_id: 'blackknight'
+          fips_code: row['FIPS Code']
+        .whereNull('deleted')
+        .update(deleted: subtask.batch_id)
+      else
+        if subtask.data.dataType == constants.TAX
+          # get validation for parcel_id
+          dataLoadHelpers.getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType, 'base', 'parcel_id')
+          .then (validationInfo) ->
+            Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+          .then (normalizedData) ->
+            normalDataTable()
+            .where
+              data_source_id: 'blackknight'
+              fips_code: row['FIPS Code']
+              parcel_id: normalizedData.parcel_id
+            .whereNull('deleted')
+            .update(deleted: subtask.batch_id)
+        else
+          normalDataTable()
+          .where
+            data_source_id: 'blackknight'
+            fips_code: row['FIPS Code']
+            data_source_uuid: row['BK PID']
+          .whereNull('deleted')
+          .update(deleted: subtask.batch_id)
+    Promise.all promises
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
