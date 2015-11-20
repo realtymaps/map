@@ -73,6 +73,9 @@ class SqlMock
     # bootstrap
     @_svc = @_svc() # bootstrap
 
+  getSvc: () ->
+    @_svc
+
   resetSpies: () ->
     @selectSpy.reset()
     @groupBySpy.reset()

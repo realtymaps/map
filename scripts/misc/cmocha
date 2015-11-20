@@ -1,4 +1,21 @@
 #!/bin/bash
 set -e
 
-mocha --compilers coffee:coffee-script/register $@
+for ((i=1; i<=$#; i++))
+do
+    case "${!i}" in
+        --debug)
+            export IS_DEBUG=true
+            ;;
+        --debug=*)
+            export IS_DEBUG=true
+            export USE_DEBUG_PORT="${!i:8}"
+            ;;
+    esac
+done
+
+if [[ "$IS_DEBUG" == "true" ]]; then
+  mocha --debug-brk --compilers coffee:coffee-script/register $@
+else
+  mocha --compilers coffee:coffee-script/register $@
+fi
