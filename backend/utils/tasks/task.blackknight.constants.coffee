@@ -1,5 +1,5 @@
 _ = require 'lodash'
-svc = require '../../services/service.dataSource.coffee'
+svc = require '../../services/service.dataSource'
 
 
 _getColumns = (list) ->
@@ -29,6 +29,10 @@ module.exports =
   DELETE: 'Delete'
   LOAD: 'Load'
   COLUMNS: columns
+  tableIdMap:
+    ASMT: 'tax'
+    Deed: 'deed'
+    SAM: 'mortgage'
 
 columns[module.exports.DELETE] = {}
 columns[module.exports.DELETE][module.exports.REFRESH] = {}
@@ -47,17 +51,17 @@ columns[module.exports.DELETE][module.exports.REFRESH][module.exports.MORTGAGE] 
 columns[module.exports.DELETE][module.exports.UPDATE] = {}
 columns[module.exports.DELETE][module.exports.UPDATE][module.exports.TAX] = [
   "FIPS Code"
-  "APN"
+  "Assessor’s Parcel Number"
   "Edition"
   "Load Date"
 ]
 columns[module.exports.DELETE][module.exports.UPDATE][module.exports.DEED] = [
   "FIPS Code"
-  "PID"
+  "BK PID"
 ]
 columns[module.exports.DELETE][module.exports.UPDATE][module.exports.MORTGAGE] = [
   "FIPS Code"
-  "PID"
+  "BK PID"
 ]
 
 
