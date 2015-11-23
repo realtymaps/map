@@ -1,11 +1,18 @@
+@import "components/shapes.styl"
+
 .menu-slide.ng-hide-remove
   make-animation(slideInLeft 0.15s both ease-in)
 
 .menu-slide.ng-hide-add
   make-animation(slideOutLeft 0.15s both ease-in)
 
+$menu-header-height = 46px
+$menu-footer-editor-height = 93px
+$menu-footer-viewer-height = 129px
+
 #mobile-nav
-  position fixed
+
+  position absolute
   z-index 1001
   left 0
   top 0
@@ -13,106 +20,133 @@
   max-width 400px
   min-width 250px
   height 100%
+  color $rm-menu-icon
   background $dark_blue_darker
+  @extends .font-museo-500
 
   .inner
     position relative
+    height 100%
 
-    h1.logo
-      display block
-      width 100%
-      margin 0 0 0 20px
+  #mobile-nav-header
+    position absolute
+    top 0
+    left 0
+    right 0
+    height $menu-header-height
 
-    ul.nav
-      padding 40px 10px
-      float left
-      width 100%
-      border-bottom 1px solid c_gray
-      li
+    .closeicon
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 44px;
+      height: 44px;
+      cursor: pointer;
+      color $rm-menu-icon
+
+      &:hover
+        color $rm-menu-icon
+
+      i
+        margin: 10px 5px 0 0;
+        font-size: 25px;
+
+  #mobile-nav-content
+    position absolute
+    top $menu-header-height
+    left 0
+    right 0
+    bottom $menu-footer-editor-height
+    overflow-y auto
+    overflow-x hidden
+    padding-top 30px
+
+  .menu-options
+    margin-bottom 30px
+
+  h1.logo
+    display block
+    width 100%
+    margin-bottom 30px
+    float none
+
+  .icon
+    margin-right 12px
+    font-size 16px
+    vertical-align bottom
+
+  .menu-label
+    color c_gray
+    font-size 16px
+    font-weight normal
+
+  .count
+    float right
+    font-size 16px
+    margin-right 10px
+
+  ul.nav
+    padding 0 10px 0 16px
+    width 100%
+    border-bottom 1px solid c_gray
+
+    li
+      a
+        padding 10px
+
+        &:hover
+        &:focus
+          background-color inherit
+          color $rm-menu-icon
+
+      span.new
+        color $light_blue
+        text-transform uppercase
+        margin-left 5px
+        font-size 10px
+
+      &.active
         a
-          text-transform capitalize
-          span.conut
-            float right
-          &.projects
-          &.properties
-          &.notes
-          &.neighbourhoods
-          &.favorites
-            position relative
+          color $rm-menu-icon
 
-        a
-          color c_white_50
-          padding 10px
+  #client-header
+    padding 30px 20px 16px 25px
+    border-top solid 1px $rm-border-line
 
-          *
-            @extends .global-transition
+  ul.nav.clients
+    padding: 0 10px 0 10px;
 
-          .icon
-            font-size 16px
-            vertical-align bottom
-          .label
-            color c_gray
-            font-size 16px
-            font-weight normal
+  .client
+    margin-bottom: 10px;
 
-          &:hover
-          &:focus
-            background c_black_20
-            color $white
+  .client-initials
+    circle(40px)
+    float left
+    background-color: $rm-menu-caption;
+    color: white;
 
-            .label
-              color $white
+  .client-email, .client-name
+    padding: 4px 0 0 55px;
+    font-size: 13px;
 
-        span.new
-          color $light_blue
-          text-transform uppercase
-          margin-left 5px
-          font-size 10px
-
-        &.active
-          a
-            color $white
+  .client-more
+    text-align center
+    margin-top 10px
+    font-size 12px
 
   .bottom
-    position fixed
+    position absolute
     left 0
-    right 60px
+    right 0
     bottom 0
-    padding 10px 15px 10px 15px
-    a
-      color $white_50
-      text-decoration none
-      position relative
-      &:hover
-      &:focus
-        background $black_20
-        color $white
-        text-decoration none
+    height $menu-footer-editor-height
+    border-top solid 1px $rm-border-line
+    background-color $dark_blue_darker
+    padding 10px 0
 
-    a
-      line-height 40px
-      display block
-      padding 0 10px 0 40px
-      text-transform capitalize
-      &.settings
-        &:before
-          content ''
-          position absolute
-          top 0
-          left 0
-          display block
-          width 40px
-          height 40px
-          background url('/assets/base/icons/settings_icon_mobile.png') no-repeat center center
-      &.realtor
-        padding 0 10px 0 0
-
-        .tiny-avatar
-          float left
-          display block
-          width 30px
-          height 30px
-          margin-right 10px
+  &.is-viewer
+    .bottom
+      height $menu-footer-viewer-height
 
 // Overlay on map when Mobile menu is open
 #mobile-page-overlay

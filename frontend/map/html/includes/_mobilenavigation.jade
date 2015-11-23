@@ -1,43 +1,108 @@
 include mixins/_avatarMixin.jade
 
-#mobile-nav(class="menu-slide" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
+#mobile-nav(class="menu-slide" ng-class="{ 'is-editor': principal.isProjectEditor(), 'is-viewer': principal.isProjectViewer() }" ng-show="isMobileNavOpen" ng-swipe-left='closeMobileNav($event)')
     .inner
-        include ./header/_logo
+        #mobile-nav-header
+            a.closeicon
+                i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
-        a(id="closeicon")
-            i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
+            div(ng-click="closeMobileNav($event)")
+                    include ./header/_logo
 
-        ul.nav(ng-click="closeMobileNav($event)")
-            li
-                a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
-                    span.icon.icon-property
-                    span.label Properties
+        #mobile-nav-content
 
-                    span.conut {{propertiesArray.length}}
+            //
+            // Subscriber Project Selection
+            //
 
-            li
-                a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+            div(ng-if="principal.isSubscriber() || principal.isEditor()")
+                ul.nav.project-select(ng-click="closeMobileNav($event)")
+                    li
+                        a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
+                            span.icon.menu-icon.icon-property
+                            span.menu-label Projects
+                            span.menu-badge.count {{projectTotal}}
 
-                    span.icon.icon-property
-                    span.label Projects
+            //
+            // Editor View
+            //
 
-                    span.conut {{projectsArray.length}}
-            li
-                a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
-                    span.icon.icon-pin
-                    span.label Favorites
-                    span.conut {{favoritesList.length}}
-            li
-                a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
-                    span.icon.icon-note
-                    span.label Notes
-                    span.conut {{notesList.length}}
-            li
-                a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
-                    span.icon.icon-neighbourhood
-                    span.label Neighbourhoods
-                    span.conut {{neighbourhoodList.length}}
+            div(ng-if="principal.isProjectEditor() && profile")
+                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                    li(ng-show="profile")
+                        a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                            span.icon.menu-icon.icon-pin
+                            span.menu-label Pinned Properties
+                            span.menu-badge.count {{project.propertiesTotal}}
+
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                            span.icon.menu-icon.icon-note
+                            span.menu-label Notes
+                            span.menu-badge.count {{project.notes.length}}
+
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                            span.icon.menu-icon.icon-neighbourhood
+                            span.menu-label Neighborhoods
+                            span.menu-badge.count {{project.neighborhoods.length}}
+
+                #client-section(ng-show="clients")
+                    #client-header.menu-label My Clients
+                        span.menu-badge.count {{clients.length}}
+
+                    ul.nav.clients
+                        li.client(ng-repeat="client in clients | limitTo:3")
+                            a
+                                div.client-initials {{client.initials}}
+                                div.menu-label.client-name {{client.first_name}} {{client.last_name}}
+                                div.menu-caption.client-email {{client.email}}
+
+                    .client-more.menu-caption(ng-show="clients.length > 3") + {{clients.length - 3}} more...
+
+            //
+            // Viewer View
+            //
+
+            div(ng-if="principal.isProjectViewer() && profile")
+                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                            span.icon.menu-icon.icon-neighbourhood
+                            span.menu-label Neighbourhoods
+                            span.menu-badge.count {{project.neighborhoods.length}}
+
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                            span.icon.menu-icon.icon-property
+                            span.menu-label Properties
+                            span.menu-badge.count {{project.propertiesTotal}}
+
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                            span.icon.menu-icon.icon-note
+                            span.menu-label Notes
+                            span.menu-badge.count {{project.notes.length}}
+
+                    li(ng-show="profile")
+                        a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
+                            span.icon.menu-icon.icon-favorites
+                            span.menu-label Favorites
+                            span.menu-badge.count {{project.favorites.length}}
+
         .bottom
-            a(ng-cloak href="/realtor" class="realtor" ng-class="{ active: isActive('realtor') }") my realtor
-                +avatarMixin()(class='tiny-avatar')
-            a(href="#settings" class="settings" ng-class="{ active: isActive('settings') }") account settings
+            ul.nav(ng-click="closeMobileNav($event)")
+                li(ng-if="principal.isProjectViewer()")
+                    a
+                        span.icon.menu-icon.icon-project
+                        span.menu-label My Realtor
+
+                li
+                    a.menu-label(href="{{frontendRoutes.user}}")
+                        i.icon.menu-icon.fa.fa-cog
+                        span Account Settings
+
+                li
+                    a(href="{{frontendRoutes.logout}}")
+                        i.icon.menu-icon.fa.fa-sign-out
+                        span.menu-label Sign Out

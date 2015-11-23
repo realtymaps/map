@@ -16,6 +16,7 @@ module.exports =
     listing: 'data_normal_listing'
     tax: 'data_normal_tax'
     deed: 'data_normal_deed'
+    mortgage: 'data_normal_mortgage'
     combined: 'data_combined'
     deletes: 'data_combined_deletes'
     # the following are deprecated, so I'm not bothering to standardize their names

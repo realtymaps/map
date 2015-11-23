@@ -172,7 +172,7 @@ _getUsedInputFields = (validationDefinition) ->
     return [validationDefinition.output]
 
 
-getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
+getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName) ->
   if dataSourceType == 'mls'
     dataSourcePromise = Promise.try () ->
       tables.config.mls()
@@ -186,10 +186,15 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType) ->
 
   dataSourcePromise
   .then (global_rules) ->
-    tables.config.dataNormalization()
-    .where
+    whereClause =
       data_source_id: dataSourceId
       data_type: dataType
+    if listName
+      whereClause.list = listName
+    if fieldName
+      whereClause.output = fieldName
+    tables.config.dataNormalization()
+    .where(whereClause)
     .orderBy('list')
     .orderBy('ordering')
     .then (validations=[]) ->
@@ -292,6 +297,9 @@ _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () 
       result = result[0]
       updateRow.change_history = result.change_history ? []
       changes = _getRowChanges(updateRow, result, diffExcludeKeys)
+      if changes.deleted == stats.batch_id
+        # it wasn't really deleted, just purged earlier in this task as per black knight data flow
+        delete changes.deleted
       if !_.isEmpty changes
         updateRow.change_history.push changes
         updateRow.updated = stats.batch_id
