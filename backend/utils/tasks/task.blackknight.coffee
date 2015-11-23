@@ -24,8 +24,8 @@ _findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () -
   .then (rootListing) ->
     for dir in rootListing when dir.type == 'd'
       date = dir.name.slice(-8)
-      type = dir.name.slice(0, -8)
-      if !processDates[action]?
+      type = constants.tableIdMap[dir.name.slice(0, -8)]
+      if !processDates[action]? || !type
         logger.warn("Unexpected directory found in blackknight FTP drop: /Managed_#{action}/#{dir.name}")
         continue
       if processDates[action] >= date
@@ -107,7 +107,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
-  Promise.join loadRawDataPromise, deleteDataPromise, recordChangeCountsPromise, () ->  # empty handler
+  Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 
 checkFtpDrop = (subtask) ->
@@ -188,7 +188,7 @@ saveProcessedDates = (subtask) ->
 deleteData = (subtask) ->
   rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   # get rows for this subtask
-  normalDataTable = tables.property[constants.tableIdMap[subtask.data.dataType]]
+  normalDataTable = tables.property[subtask.data.dataType]
   tables.buildRawTableQuery(rawTableName)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   .then (rows) ->
