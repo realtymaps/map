@@ -7,27 +7,22 @@ describe 'mailTemplateType service', ->
   
     inject (rmapsMailTemplateTypeService) =>
       @svc = rmapsMailTemplateTypeService
-      # @type = 'basicLetter'
-      # @template = new rmapsMailTemplate(@type)
-      # @template.mailCampaign.content = testBasicLetterMarkup
-      # @template.style = 'body {width: 8.5in; height: 11in;}'
+      @type = 'basicLetter'
 
   describe 'service members', ->
-    it "tests ok svc", ->
+    it "passes sanity check", ->
       @svc.should.be.ok
+      @svc.getDefaultHtml(@type).should.be.ok
+      @svc.getDefaultFinalStyle(@type).should.be.ok
 
-    it "makes sure structure sizes jive", ->
-      expect(@svc.getTemplateTypeNames)
-    #   @template.should.be.ok
-    #   expect(@template.type).to.eql @type
+    it "should have correct types", ->
+      expect(@svc.getTypeNames()).to.include.members ['basicLetter']
 
-    # it 'test createPreviewHtml', ->
-    #   expectedPreviewMarkup = '<html><head><title>New Mailing</title><style>body {width: 8.5in; height: 11in;}body {border: 1px solid black;}</style>'+
-    #   '</head><body><div class="letter-page"><div id="recipient-address-window"><div>placeholder1</div></div><div id="return-address-window"><div>placeholder2</div></div>'+
-    #   '<div class="letter-page-content-text"><span class="fontSize18">testing markup with a {{goodmacro}} and a {{badmacro}}.</span></div></div></body></html>'
-    #   expect(@template._createPreviewHtml()).to.equal expectedPreviewMarkup
-
-    # xit 'test createLobHtml', ->
-    #   # fails because DOMParser is returning null 
-    #   # @template._createLobHtml()
-
+    it "should have correct categories", ->
+      expect(@svc.getCategories()).to.eql [
+        ['all', 'All Templates']
+        ['letter', 'Letters']
+        ['postcard', 'Postcards']
+        ['favorite', 'Favorites']
+        ['custom', 'Custom']
+      ]
