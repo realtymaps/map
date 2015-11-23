@@ -42,6 +42,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         project.totalProperties = (_.keys project.properties_selected).length
 
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
+
       $scope.loadProject projectToLoad
 
   $scope.loadProject = (project) ->
@@ -98,12 +99,20 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         rmapsMainOptions.map.toggles = new rmapsMapToggles(project.map_toggles)
         map = new rmapsMap($scope)
 
-      if project.map_results?.selectedResultId? and map?
-        $log.debug 'attempting to reinstate selectedResult'
-        rmapsPropertiesService.getPropertyDetail(null,
-          rm_property_id: project.map_results.selectedResultId, 'all')
-        .then (data) ->
-          map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
+      selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
+
+      if selectedResultId? and map?
+        $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+        rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+          rm_property_id: selectedResultId, 'all')
+        .then (result) ->
+          $timeout () ->
+            map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
+          , 50
+          resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+          resultCenter.zoom = 18
+          map.scope.map.center = resultCenter
 
   $scope.enableNoteTap = ->
     $scope.Toggles.enableNoteTap()
