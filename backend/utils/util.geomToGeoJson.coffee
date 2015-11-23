@@ -1,11 +1,4 @@
-_parcelPropertiesMove = [
-  'rm_property_id'
-  'street_address_num'
-  'geom_point_json'
-  'passedFilters'
-]
-
-parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
+toGeoFeature = (row, toMove, deletes = []) ->
   deletes.forEach (prop) ->
     delete row[prop]
 
@@ -16,11 +9,13 @@ parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
   row
 
 module.exports =
-  parcelFeature: parcelFeature
+  toGeoFeature: toGeoFeature
+  toGeoFeatureCollection: (toMove, uniqueKey, deletes) ->
+    (rows) ->
+      if uniqueKey
+        rows = _.uniq rows, (r) ->
+          r[uniqueKey]
 
-  parcelFeatureCollection: (rows) ->
-    rows = _.uniq rows, (r) ->
-      r.rm_property_id
-    rows.forEach (row) ->
-      row = parcelFeature(row)
-    type: 'FeatureCollection', features: rows
+      rows.forEach (row) ->
+        row = toGeoFeature(row, toMove, deletes)
+      type: 'FeatureCollection', features: rows

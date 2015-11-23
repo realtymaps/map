@@ -74,29 +74,37 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       maxPrice: 100000
       archived: false
 
-  _update = (project) ->
+    _update = (project) ->
     $http.put backendRoutes.projectSession.root + "/#{project.id}", project
 
-  service =
-    getProjects: (cache = false) ->
-      $http.get backendRoutes.projectSession.root, cache: cache
-      .then (response) ->
-        projects = response.data
-        _.each projects, _mockData
-        projects
 
-    getProject: (id) ->
-      $http.get backendRoutes.projectSession.root + "/#{id}"
-      .then (response) ->
-        project = response.data?[0]
-        _mockData project
-        project
+  getProjects: (cache = false) ->
+    $http.get backendRoutes.projectSession.root, cache: cache
+    .then ({data}) ->
+      _.each data, _mockData
+      data
 
-    saveProject: (project) ->
-      _update project
+  getProject: (id) ->
+    $http.get backendRoutes.projectSession.root + "/#{id}"
+    .then (response) ->
+      project = response.data?[0]
+      _mockData project
+      project
 
-    createProject: (project) ->
-      $http.post backendRoutes.userSession.newProject, project
+  saveProject: (project) ->
+    _update project
 
-    delete: (project) ->
-      $http.delete backendRoutes.projectSession.root + "/#{project.id}"
+  createProject: (project) ->
+    $http.post backendRoutes.userSession.newProject, project
+
+  delete: (project) ->
+    $http.delete backendRoutes.projectSession.root + "/#{project.id}"
+
+  drawnShapes:
+    getAll: (cache = false) ->
+      $http.get backendRoutes.projectSession.drawnShapes, cache: cache
+      .then ({data}) ->
+        data
+
+    save: (shapes) ->
+      $http.put backendRoutes.projectSession.drawnShapes, shapes

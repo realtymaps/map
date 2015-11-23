@@ -2,7 +2,7 @@ _ = require 'lodash'
 through = require 'through'
 through2 = require 'through2'
 logger = require '../config/logger'
-{parcelFeature} = require './util.geomToGeoJson'
+{toGeoFeature} = require './util.geomToGeoJson'
 {Readable} = require 'stream'
 split = require 'split'
 
@@ -23,7 +23,7 @@ pgStreamEscape = (str) ->
   .replace(/\r/g, '\\r')
 
 
-geoJsonFormatter = (toMove, deletes) ->
+geoJsonFormatter = (toMove , deletes) ->
   prefixWritten = false
   rm_property_ids = {}
   lastBuffStr = null
@@ -35,7 +35,7 @@ geoJsonFormatter = (toMove, deletes) ->
 
     return if rm_property_ids[row.rm_property_id] #GTFO
     rm_property_ids[row.rm_property_id] = true
-    row = parcelFeature row, toMove, deletes
+    row = toGeoFeature row, toMove, deletes
 
     #hold off on adding to buffer so we know it has a next item to add ','
     if lastBuffStr
@@ -67,7 +67,7 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   splitStream.on('error', finish)
   splitStream.on('end', finish)
   outputStream.write(type: 'delimiter', payload: delimiter)
-  
+
   lineHandler = (line) ->
     if !line
       # hide empty lines

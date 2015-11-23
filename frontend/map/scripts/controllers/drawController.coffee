@@ -9,24 +9,24 @@ controllerName = "#{domainName}Ctrl"
 #TODO: get colors from color palette
 
 app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
+leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
+  drawnShapesSvc = rmapsProjectsService.drawnShapes
 
   _syncDrawnShapes = () ->
-    # shapesSvc.update drawnItems.toGeoJSON()
+    drawnShapesSvc.update drawnItems.toGeoJSON()
 
   rmapsprincipal.getCurrentProfile().then (profile) ->
     $log.debug('profile')
     $log.debug(profile)
-    # drawnShapes = profile.drawn_shapes
-    # # TODO: drawn shapes will get its own tables for GIS queries
-    # $scope.map.drawState.drawnShapes = drawnShapes || {}
-    # geoJson = L.geoJson drawnShapes,
-    #   onEachFeature: (feature, layer) ->
-    #     if feature.properties?.shapeType = 'Circle'
-    #       layer = L.Circle.createFromFeature feature
-    #     drawnItems.addLayer layer
+    drawnShapesSvc.getAll().then (drawnShapes) ->
+      # # TODO: drawn shapes will get its own tables for GIS queries
+      geoJson = L.geoJson drawnShapes,
+        onEachFeature: (feature, layer) ->
+          if feature.properties?.shapeType = 'Circle'
+            layer = L.Circle.createFromFeature feature
+          drawnItems.addLayer layer
 
   _toast = null
   drawnItems = new L.FeatureGroup()

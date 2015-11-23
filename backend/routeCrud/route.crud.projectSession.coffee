@@ -52,7 +52,7 @@ class ClientsCrud extends RouteCrud
       date_invited: new Date()
       parent_id: req.user.id
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
-
+    #TODO: the majority of this is service business logic and should be moved to service.user.project
     userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
     .then (clientId) ->
       throw new Error 'user ID required - new or existing' unless clientId?
@@ -71,6 +71,7 @@ class ClientsCrud extends RouteCrud
     @svc.getById req.params[@paramIdKey], @doLogQuery, parent_id: req.user.id, [ 'parent_id' ]
     .then (profile) =>
       throw new Error 'Client info cannot be modified' unless profile?
+      #TODO: the majority of this is service business logic and should be moved to service.user.project
       userSvc.update profile.auth_user_id, req.body, safeUser, @doLogQuery
 
 class ProjectRouteCrud extends RouteCrud

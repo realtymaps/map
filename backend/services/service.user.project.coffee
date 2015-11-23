@@ -1,9 +1,10 @@
 logger = require '../config/logger'
 tables = require '../config/tables'
 {profile, notes, project, drawnShapes} = require './services.user'
-{crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
+{crud, ThenableCrud, thenableHasManyCrud, ThenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
+{toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
@@ -13,6 +14,24 @@ safeNotes = sqlHelpers.columns.notes
 
 clientIdCol = joinColumns.client[0]
 projectId = "#{tables.user.project.tableName}.id"
+
+class DrawnShapesCrud extends ThenableHasManyCrud
+  constructor: () ->
+    super(arguments...)
+    @drawnShapeCols = sqlHelpers.columns.drawnShapes
+
+  updateManyShapes: (entity, unique, doUpdate, safe) ->
+    for feature in entity.featureCollection
+      do (feature) =>
+        @base.upsert feature, unique, doUpdate, safe
+
+  upsert: (entity, unique, doUpdate, safe) ->
+    updateManyShapes(entity, unique, doUpdate, safe)
+
+  getAll: () ->
+    super(arguments...)
+    .then toGeoFeatureCollection(@drawnShapeCols)
+
 
 class ProjectCrud extends ThenableCrud
   constructor: () ->
@@ -27,7 +46,7 @@ class ProjectCrud extends ThenableCrud
       "#{tables.user.notes.tableName}.id").init(arguments...)
     @notes.doLogQuery = true
 
-    @drawnShapes = thenableHasManyCrud(tables.user.drawnShapes, joinColumns.drawnShapes, project,
+    @drawnShapes = new DrawnShapesCrud(tables.user.drawnShapes, joinColumns.drawnShapes, project,
       projectId, "#{tables.user.drawnShapes.tableName}.project_id").init(arguments...)
     # @drawnShapes.doLogQuery = true
     super(arguments...)
