@@ -1,0 +1,14 @@
+include ../../includes/mixins/property/_propertyAttributes.jade
+include ../../includes/mixins/property/_propertyButtons.jade
+
+.collapse-header
+  h2.title Pinned ({{project.propertiesTotal}})
+.row
+  li.col-md-6(ng-repeat="property in project.properties_selected")
+    .property-card
+      .property-img
+        span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+        img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+      .property-data
+        +propertyAttributes('property')
+        +propertyButtons('property')
