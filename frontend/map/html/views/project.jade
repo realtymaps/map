@@ -1,6 +1,3 @@
-include ../includes/mixins/property/_propertyAttributes.jade
-include ../includes/mixins/property/_propertyButtons.jade
-
 #projects-list.content-section-container
   .desktop-view
     .inner
@@ -20,14 +17,20 @@ include ../includes/mixins/property/_propertyButtons.jade
                 span(ng-if="project.archived") Unarchive
         .row
           .col-md-3.navbar
-            include ../includes/_sidebar.jade
+            ul.nav
+              li(ng-class="{active: $state.is('project')}")
+                a(ui-sref="project") Project
+              li(ng-repeat="state in $state.get() | filter:{parent: 'project'}"
+                ng-class="{active: $state.is(state.name)}")
+                a(ui-sref="{{state.name}}") {{getStateName(state.name)}}
+
           .col-md-9.content
             .row
               .col-md-12
                 ul
                   li
                     .data
-                      div(ng-show="selected == 'project'")
+                      div(ui-view="project" ng-show="$state.is('project')" ng-cloak)
                         h3 Property Info
                         .row.property
                           .col-md-6.price
@@ -43,91 +46,7 @@ include ../includes/mixins/property/_propertyButtons.jade
                             span.value {{project.sqft}}
                             span.small Sq Ft
 
-                      ul.clients(ng-show="selected == 'clients'")
-                        .collapse-header
-                          h2.title Clients ({{project.clients.length}})
-                          .tools
-                            button(class="btn btn-white" ng-click="editClient()")
-                              span Add Client
-                        li(class="client" ng-repeat="client in project.clients")
-                          h3 Client {{$index + 1}}
-                          .tools
-                            button(class="btn btn-link" ng-click="editClient(client)") Edit
-                            button(class="btn btn-link" ng-click="removeClient(client)") Remove
-                          .row
-                            .col-md-6
-                              span.label Name
-                              span {{client.first_name}} {{client.last_name}}
-                              span.label Phone (Cell)
-                              span {{client.cell_phone}}
-                              span.label Email
-                              span {{client.email}}
-                            .col-md-6
-                              span.label Address
-                              span {{client.address_1}} {{client.address_2}} {{client.zip}}
-                              span.label Phone (Work)
-                              span {{client.work_phone}}
-
-                      ul.neighborhoods(ng-show="selected == 'neighborhoods'")
-                        .collapse-header
-                          h2.title Neighborhoods ({{project.neighborhoods.length}})
-                        li(ng-repeat="neighborhood in project.neighborhoods" class="col-md-6")
-                          a(class="map" href="#/neighborhoods/{{neighborhood.id}}")
-                            span View Neighbourhood
-                            img(src="/assets/test_map.jpg")
-                          .data
-                            h3 {{neighborhood.name}}
-                          button.btn.btn-link
-                            i.fa.fa-trash-o
-                            span Delete
-
-                      ul.pinned(ng-show="selected == 'pins'")
-                        .collapse-header
-                          h2.title Pinned ({{project.propertiesTotal}})
-                        .row
-                          li.col-md-6(ng-repeat="property in project.properties_selected")
-                            .property-card
-                              .property-img
-                                span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-                                img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-                              .property-data
-                                +propertyAttributes('property')
-                                +propertyButtons('property')
-
-                      ul.notes(ng-show="selected == 'notes'")
-                        .collapse-header
-                          h2.title Notes ({{project.notes.length}})
-                        li(ng-repeat="note in project.notes" class="row")
-                          .col-md-2
-                            a(class="note-img" href="/map")
-                              img(src="/assets/test_map.jpg")
-                          .col-md-8
-                            .data
-                              h4 {{note.title}}
-                              p {{note.text}}
-                          .col-md-2
-                            .note-date
-                              | Apr 10
-                            .tools
-                              button(class="btn btn-link") Edit
-                              button(class="btn btn-link") Remove
-
-                      ul.favorites(ng-show="selected == 'favorites'")
-                        .collapse-header
-                          h2.title Favorites ({{project.favorites.length}})
-                        .row
-                          li.col-md-6(ng-repeat="favorite in project.favorites")
-                            .property-card
-                              .property-img
-                                img(src="/assets/test_property.jpg")
-                                span.property-status(ng-class="favorite.status")
-                                  | {{favorite.status}}
-                              .property-data
-                                +propertyAttributes('favorite')
-                              .actions
-                                button.details
-                                  span.icon.icon-arrow
-                                  span See details
-                                button.pinto
-                                  span.icon.icon-pin
-                                  span Pin to
+                      ul(ng-repeat="state in $state.get() | filter:{parent: 'project'}"
+                        ui-view="{{state.name}}"
+                        ng-show="$state.includes(state.name)"
+                        ng-cloak ng-class="state.name.replace('project','').toLowerCase()")

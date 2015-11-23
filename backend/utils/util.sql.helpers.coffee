@@ -243,6 +243,10 @@ safeJsonArray = (arr) ->
     return arr
   JSON.stringify(arr)
 
+sqlizeColName = (fullName) ->
+  fullName.split('.').map (name) ->
+    '"' + name + '"'
+  .join('.')
 
 module.exports =
   between: between
@@ -263,3 +267,4 @@ module.exports =
   isUnique: isUnique
   columns: columns
   whereIntersects: whereIntersects
+  sqlizeColName: sqlizeColName

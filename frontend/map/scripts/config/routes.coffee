@@ -24,7 +24,8 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     if !state.template
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
-        console.debug 'loading template:', name
+        console.debug 'loading template:', name, 'from', templateName
+        console.debug 'controller is:', state.controller
         #$templateCache.get "./views/#{name}.jade"
         $templateCache.get templateName
 
@@ -49,6 +50,11 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'properties'
   buildState 'projects'
   buildState 'project'
+  buildState 'projectClients', parent: 'project'
+  buildState 'projectNotes', parent: 'project'
+  buildState 'projectFavorites', parent: 'project'
+  buildState 'projectNeighborhoods', parent: 'project'
+  buildState 'projectPins', parent: 'project'
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'

@@ -1,0 +1,16 @@
+.collapse-header
+  h2.title Notes ({{project.notes.length}})
+li(ng-repeat="note in project.notes" class="row")
+  .col-md-2
+    a(class="note-img" href="/map")
+      img(src="/assets/test_map.jpg")
+  .col-md-8
+    .data
+      h4 {{note.title}}
+      p {{note.text}}
+  .col-md-2
+    .note-date
+      | Apr 10
+    .tools
+      button(class="btn btn-link") Edit
+      button(class="btn btn-link") Remove

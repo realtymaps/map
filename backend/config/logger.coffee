@@ -3,7 +3,7 @@ fs = require('fs')
 stackTrace = require('stack-trace')
 path = require 'path'
 cluster = require 'cluster'
-
+colorWrap = require 'color-wrap'
 config = require('./config')
 logPath = config.LOGGING.PATH
 _ = require 'lodash'
@@ -66,5 +66,8 @@ unless logger.infoRoute
 
 logger.log 'debug', 'Log Levels: %j', logger.levels, {}
 logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+
+colorWrap logger, myCustomLevels.levels
+
 
 module.exports = logger
