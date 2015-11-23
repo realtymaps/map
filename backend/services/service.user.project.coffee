@@ -2,7 +2,7 @@ logger = require '../config/logger'
 tables = require '../config/tables'
 {profile, notes, project, drawnShapes} = require './services.user'
 {crud, ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
-{joinColumns} = require '../utils/util.sql.columns'
+{joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 
 safeProject = sqlHelpers.columns.project
@@ -19,7 +19,7 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
   init: () =>
     @clients = thenableHasManyCrud(tables.auth.user, joinColumns.client, profile,
-      'project_id', undefined, clientIdCol).init(arguments...)
+      joinColumnNames.client.auth_user_id, undefined, clientIdCol).init(arguments...)
     # @clients.doLogQuery = true
     #(dbFn, @rootCols, @joinCrud, @origJoinIdStr, @origRootIdStr, idKey) ->
     @notes = thenableHasManyCrud(tables.user.notes, joinColumns.notes, project,
@@ -34,14 +34,14 @@ class ProjectCrud extends ThenableCrud
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
-    @svc.getById idObj, doLogQuery, entity, safe
+    @getById idObj, doLogQuery, entity, safe
     .then (projects) =>
       project = projects[0]
       throw new Error 'Project not found' unless project?
 
       # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
       if project.sandbox is true
-        @svc.update project.id, properties_selected: {}, safeProject, doLogQuery
+        @update project.id, properties_selected: {}, safeProject, doLogQuery
         .then () =>
           @clients.getAll idObj
         .then (profiles) =>
@@ -50,16 +50,16 @@ class ProjectCrud extends ThenableCrud
             map_results: {}
             map_position: {}
 
-          profileSvc.update profiles[0].id, profileReset, safeProfile, @doLogQuery
+          @clients.update profiles[0].id, profileReset, safeProfile, @doLogQuery
 
         .then () =>
-          @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: id.auth_user_id, safeNotes
+          @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: idObj.auth_user_id, safeNotes
       else
-        @clients.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeProfile
+        @clients.delete {}, @doLogQuery, project_id: project.id, auth_user_id: idObj.user.id, safeProfile
         .then () =>
-          @notes.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
+          @notes.delete {}, @doLogQuery, project_id: project.id, auth_user_id: idObj.user.id, safeNotes
         .then () =>
-          super req, res, next
+          super idObj, doLogQuery, entity, safe, fnExec
 
 
 #temporary to not conflict with project
