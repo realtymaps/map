@@ -16,6 +16,7 @@ mockCls = require '../../specUtils/mockCls'
 {joinColumnNames} = require "#{basePath}/utils/util.sql.columns"
 usrTableNames = require("#{basePath}/config/tableNames").user
 sinon = require 'sinon'
+require "#{basePath}/extensions"
 
 projCrudSvc = rewire "#{basePath}/services/service.user.project"
 
@@ -101,7 +102,7 @@ describe 'route.projectSession', ->
           auth_user_id: 2
         @subject.svc.getAllStub.args[0][1].should.be.eql false
 
-        console.log JSON.stringify(projects).cyan
+        # console.log.cyan projects, true
         projects.length.should.be.ok
         projects[0].clients.length.should.be.ok
         projects[0].notes.length.should.be.ok
@@ -183,6 +184,7 @@ describe 'route.projectSession', ->
       @promise.then =>
         @subject.clientsCrud.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
+        console.log @subject.clientsCrud.svc.deleteStub.sql
         # @subject.clientsCrud.svc.deleteStub.sqls[0].should.be.eql """delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'"""
         #EXPLICITLY NOT USING CALLEDWITH as this gives better error output
         # @subject.clientsCrud.svc.deleteStub.args[0][0].should.be.eql {}
