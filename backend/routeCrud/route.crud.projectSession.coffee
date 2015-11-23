@@ -8,6 +8,10 @@ userUtils = require '../utils/util.user'
 sqlHelpers = require '../utils/util.sql.helpers'
 logger =  require '../config/logger'
 
+# Needed for temporary create client user workaround until onboarding is completed
+userSessionSvc = require '../services/service.userSession'
+# End temporary
+
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
@@ -36,8 +40,21 @@ class ClientsCrud extends HasManyRouteCrud
     .then (clientId) ->
       throw new Error 'user ID required - new or existing' unless clientId?
 
+      # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
+      newUser.id = clientId
+      userSessionSvc.updatePassword newUser, 'Password$1'
+
+    .then ->
+      # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
+      permission =
+        user_id: newUser.id
+        permission_id: 19
+
+      userSvc.permissions.create permission, null, ['user_id', 'permission_id'], @doLogQuery
+
+    .then ->
       newProfile =
-        auth_user_id: clientId
+        auth_user_id: newUser.id
         parent_auth_user_id: req.user.id
         project_id: req.params.id
 
