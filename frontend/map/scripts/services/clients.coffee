@@ -6,7 +6,7 @@ app.factory 'rmapsClientsService', ($http) ->
 
   class ClientsService
     constructor: (@projectId) ->
-      @endpoint = "#{backendRoutes.projectSession2.root}/#{@projectId}/clients"
+      @endpoint = "#{backendRoutes.projectSession.root}/#{@projectId}/clients"
 
     getAll: (query) ->
       $http.get @endpoint, cache: false, params: query
