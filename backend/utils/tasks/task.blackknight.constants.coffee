@@ -20,9 +20,9 @@ columns = {}
 module.exports =
   NUM_ROWS_TO_PAGINATE: 500
   BLACKKNIGHT_PROCESS_DATES: 'blackknight process dates'
-  TAX: 'ASMT'
-  DEED: 'Deed'
-  MORTGAGE: 'SAM'
+  TAX: 'tax'
+  DEED: 'deed'
+  MORTGAGE: 'mortgage'
   REFRESH: 'Refresh'
   UPDATE: 'Update'
   LAST_COMPLETE_CHECK: 'last complete check'

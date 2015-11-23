@@ -1,28 +1,48 @@
-userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
-profileSvc = (require '../services/services.user').profile
-notesSvc = (require '../services/services.user').notes
-
-{Crud, wrapRoutesTrait, HasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
-userUtils = require '../utils/util.user'
+{routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
+logger = require '../config/logger'
+usrTableNames = require('../config/tableNames').user
+{joinColumnNames} = require '../utils/util.sql.columns'
+{validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
-logger =  require '../config/logger'
+userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
+profileSvc = (require '../services/services.user').profile
+userUtils = require '../utils/util.user'
 
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
 # End temporary
 
-safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
-safeNotes = sqlHelpers.columns.notes
 
-class ClientsCrud extends HasManyRouteCrud
-  @include userExtensions.route
+class ClientsCrud extends RouteCrud
   init: () ->
-    @restrictAll @withParent
+    @svc.doLogQuery = true
+    @reqTransforms = params: validators.reqId toKey: 'parent_auth_user_id'
+    @byIdGETTransforms =
+      params: validators.mapKeys
+        id: joinColumnNames.client.project_id
+        clients_id: joinColumnNames.client.id
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+
+    @byIdDELETETransforms =
+      params: validators.mapKeys
+        id: joinColumnNames.client.project_id
+        clients_id: joinColumnNames.client.id
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+
+    @rootGETTransforms =
+      params: validators.mapKeys
+        id: joinColumnNames.client.project_id
+        auth_user_id: joinColumnNames.client.auth_user_id
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+
     super arguments...
 
   ###
@@ -79,70 +99,102 @@ class ClientsCrud extends HasManyRouteCrud
       throw new Error 'Client info cannot be modified' unless profile?
       userSvc.update profile.auth_user_id, req.body, safeUser, @doLogQuery
 
-class ProjectsSessionCrud extends Crud
+class ProjectRouteCrud extends RouteCrud
   @include userExtensions.route
   init: () ->
-    @clientsCrud = new ClientsCrud(userSvc.clients, 'client_id', 'project_id', 'ClientsHasManyCrud').init(false)
+    #replaces the need for restrictAll
+    @reqTransforms =
+      params: validators.reqId toKey: 'auth_user_id'
+    # @doLogQuery = ['query','params']
+
+    # @byIdDELETETransforms =
+    #   params:
+
+
+    @clientsCrud = new ClientsCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clients = @clientsCrud.root
     @clientsById = @clientsCrud.byId
 
-    @restrictAll @withUser
+    #                                          :notes_id"  :(id -> project_id)
+    @notesCrud = routeCrud(@svc.notes, 'notes_id', 'NotesHasManyRouteCrud',['query','params'])
+    @notesCrud.rootGETTransforms =
+      params: validators.mapKeys id: "#{usrTableNames.notes}.project_id"
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+    @notesCrud.byIdGETTransforms =
+      params: validators.mapKeys {id: "#{usrTableNames.project}.id",notes_id: "#{usrTableNames.notes}.id"}
+    @notes = @notesCrud.root
+    @notesById = @notesCrud.byId
+
+    #                                                     :drawn_shapes_id"  :(id -> project_id)
+    @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud.rootGETTransforms =
+      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+    @drawnShapesCrud.byIdGETTransforms =
+      params: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
+
+    @drawnShapes = @drawnShapesCrud.root
+    @drawnShapesById = @drawnShapesCrud.byId
+
     super arguments...
 
   rootGET: (req, res, next) ->
     super req, res, next
     .then (projects) =>
-      userSvc.clients.getAll parent_auth_user_id: req.user.id, project_id: _.pluck(projects, 'id'), @doLogQuery
+      newReq = @cloneRequest(req)
+      logger.debug "newReq: #{JSON.stringify newReq}"
+      #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
+      _.extend newReq.params, id: _.pluck(projects, 'id')#set to id since it gets mapped to user_profile.project_id
+      @clientsCrud.rootGET(newReq,res,next)
       .then (clients) ->
         _.each projects, (project) ->
           project.clients = _.filter clients, project_id: project.id
         projects
-
-  ###
-    Remove or reset (sandbox) project data, including saved properties, notes, etc
-  ###
-  byIdDELETE: (req, res, next) ->
-    @svc.getById req.params[@paramIdKey], @doLogQuery, req.query, safeProject
-
     .then (projects) =>
-      project = projects[0]
-      throw new Error 'Project not found' unless project?
+      @notesCrud.rootGET(req, res, next)
+      .then (notes) ->
+        _.each projects, (project) ->
+          project.notes = _.filter notes, project_id: project.id
+        projects
+    .then (projects) =>
+      @drawnShapesCrud.rootGET(req, res, next)
+      .then (drawnShapes) ->
+        _.each projects, (project) ->
+          project.drawnShapes = _.filter drawnShapes, project_id: project.id
+        projects
 
-      # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
-      if project.sandbox is true
-        @svc.update project.id, properties_selected: {}, safeProject, @doLogQuery
+  byIdGET: (req, res, next) =>
+    logger.debug @cloneRequest(req), true
 
-        .then () ->
-          profileSvc.getAll project_id: project.id, auth_user_id: req.user.id
+    #so this is where bookshelf or objection.js would be much more concise
+    super(req, res, next)
+    .then (project) =>
+      @clientsCrud.rootGET(req, res, next)
+      .then (clients) ->
+        project.clients = clients
+        project
+    .then (project) =>
+      @notesCrud.rootGET(req, res, next)
+      .then (notes) ->
+        project.notes = notes
+        project
+    .then (project) =>
+      @drawnShapesCrud.rootGET(req, res, next)
+      .then (drawnShapes) ->
+        project.drawnShapes = drawnShapes
+        project
 
-        .then (profiles) =>
-          profileReset =
-            filters: {}
-            map_results: {}
-            map_position: {}
+  byIdDELETE: (req, res, next) ->
+    super req, res, next
+    .then (isSandBox) ->
+      if isSandBox
+        delete req.session.profiles #to force profiles refresh in cache
+        userUtils.cacheUserValues req
+      isSandBox
+    .then (isSandBox) ->
+      req.session.saveAsync()
+      true
 
-          profileSvc.update profiles[0].id, profileReset, safeProfile, @doLogQuery
-
-        .then () =>
-          notesSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
-
-        .then () ->
-          delete req.session.profiles #to force profiles refresh in cache
-          userUtils.cacheUserValues req
-
-        .then () ->
-          req.session.saveAsync()
-          true
-
-      # For non-sandbox projects, allow deletion
-      else
-        profileSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeProfile
-        .then () =>
-          notesSvc.delete {}, @doLogQuery, project_id: project.id, auth_user_id: req.user.id, safeNotes
-        .then () =>
-          super req, res, next
-
-
-ProjectsSessionRouteCrud = wrapRoutesTrait ProjectsSessionCrud
-
-module.exports = ProjectsSessionRouteCrud
+module.exports = ProjectRouteCrud

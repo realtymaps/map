@@ -52,6 +52,8 @@
     "coffee-script-mapped": "^0.1.7",
     "coffeeify": "^1.1.0",
     "coffeelint": "1.11.1",
+    "color-wrap": "0.0.2",
+    "colors": "^1.1.2",
     "combined-stream2": "^1.1.1",
     "compression": "1.1.x",
     "connect-flash": "^0.1.1",

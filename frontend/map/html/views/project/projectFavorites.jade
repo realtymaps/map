@@ -1,0 +1,20 @@
+include ../../includes/mixins/property/_propertyAttributes.jade
+
+.collapse-header
+  h2.title Favorites ({{project.favorites.length}})
+.row
+  li.col-md-6(ng-repeat="favorite in project.favorites")
+    .property-card
+      .property-img
+        img(src="/assets/test_property.jpg")
+        span.property-status(ng-class="favorite.status")
+          | {{favorite.status}}
+      .property-data
+        +propertyAttributes('favorite')
+      .actions
+        button.details
+          span.icon.icon-arrow
+          span See details
+        button.pinto
+          span.icon.icon-pin
+          span Pin to
