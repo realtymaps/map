@@ -88,7 +88,7 @@ app.service 'rmapsProjectsService', ($http, $log) ->
     getProject: (id) ->
       $http.get backendRoutes.projectSession.root + "/#{id}"
       .then (response) ->
-        project = response.data?[0]
+        project = response.data
         _mockData project
         project
 
