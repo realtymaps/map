@@ -2,7 +2,7 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal, rmapsProfilesService) ->
+app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal, rmapsProfilesService, rmapsProjectsService) ->
   rmapsprincipal.getIdentity()
   .then (identity) ->
     {user, profiles} = identity
@@ -28,7 +28,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal,
         $event.stopPropagation()
         profile.showProfileNameInput = !profile.showProfileNameInput
 
-      blur: ->
+      blur: () ->
         anyToTurnOff = _.any $scope.profiles, (p) ->
           p.showProfileNameInput
         if anyToTurnOff
@@ -36,7 +36,9 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal,
             for key, profile of $scope.profiles
               profile.showProfileNameInput = false
               if profile.needsUpdate and profile.project_id?
-                $http.put("#{backendRoutes.projectSession.root}/#{profile.project_id}", name: profile.name)
+                rmapsProjectsService.saveProject
+                  id: profile.project_id
+                  name: profile.name
                 .success ->
                   rmapsprincipal.unsetIdentity()
 

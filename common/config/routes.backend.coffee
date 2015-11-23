@@ -15,7 +15,6 @@ apiBaseGroups = "#{apiBase}/groups"
 apiBaseGroupsPermissions = "#{apiBase}/groupsPermissions"
 apiBasePermissions = "#{apiBase}/permissions"
 apiBaseProjects = "#{apiBase}/projects"
-apiBaseProjects2 = "#{apiBase}/projects2"
 apiBaseProfiles = "#{apiBase}/profiles"
 apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
@@ -26,7 +25,7 @@ apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseClients = "#{apiBaseSession}/clients"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
-apiBaseProjectsSession2 = "#{apiBaseSession}/projects2"
+apiBaseProjectsSession = "#{apiBaseSession}/projects"
 
 module.exports =
   views:
@@ -57,20 +56,15 @@ module.exports =
     root: apiBaseNotes
     byId: "#{apiBaseNotes}/:id"
   projectSession:
-    root: "#{apiBaseSession}/projects"
-    byId: "#{apiBaseSession}/projects/:id"
-    clients: "#{apiBaseSession}/projects/:id/clients"
-    clientsById: "#{apiBaseSession}/projects/:id/clients/:client_id"
-  projectSession2:
-    apiBase: apiBaseProjectsSession2
-    root: apiBaseProjectsSession2
-    byId: "#{apiBaseProjectsSession2}/:id"
-    clients: "#{apiBaseProjectsSession2}/:id/clients"
-    clientsById: "#{apiBaseProjectsSession2}/:id/clients/:clients_id"
-    notes: "#{apiBaseProjectsSession2}/:id/notes"
-    notesById: "#{apiBaseProjectsSession2}/:id/notes/:notes_id"
-    drawnShapes: "#{apiBaseProjectsSession2}/:id/drawnShapes"
-    drawnShapesById: "#{apiBaseProjectsSession2}/:id/drawnShapes/:drawn_shapes_id"
+    apiBase: apiBaseProjectsSession
+    root: apiBaseProjectsSession
+    byId: "#{apiBaseProjectsSession}/:id"
+    clients: "#{apiBaseProjectsSession}/:id/clients"
+    clientsById: "#{apiBaseProjectsSession}/:id/clients/:clients_id"
+    notes: "#{apiBaseProjectsSession}/:id/notes"
+    notesById: "#{apiBaseProjectsSession}/:id/notes/:notes_id"
+    drawnShapes: "#{apiBaseProjectsSession}/:id/drawnShapes"
+    drawnShapesById: "#{apiBaseProjectsSession}/:id/drawnShapes/:drawn_shapes_id"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers

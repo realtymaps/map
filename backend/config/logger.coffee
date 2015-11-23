@@ -3,10 +3,7 @@ fs = require('fs')
 stackTrace = require('stack-trace')
 path = require 'path'
 cluster = require 'cluster'
-colors = require 'colors'
-ansiStyles = require 'colors/lib/styles'
-util = require 'util'
-
+colorWrap = require 'color-wrap'
 config = require('./config')
 logPath = config.LOGGING.PATH
 _ = require 'lodash'
@@ -70,18 +67,7 @@ unless logger.infoRoute
 logger.log 'debug', 'Log Levels: %j', logger.levels, {}
 logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
 
-#TODO: Open source this.. very very useful
-#examples:
-#          logger.debug.green(someObject, true)
-#          logger.warn.orange(someObject, true)
-# could extend console as well.
-for level of myCustomLevels.levels
-  do (level) ->
-    logFn = logger[level]
-    _.keys(ansiStyles).forEach (style) ->
-      logFn[style] = () ->
-        formatted = util.format(arguments...)
-        logFn colors[style] formatted
+colorWrap logger, myCustomLevels.levels
 
 
 module.exports = logger
