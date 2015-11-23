@@ -3,12 +3,19 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $log, $window, $timeout, $document, rmapsprincipal, rmapsMailTemplate, textAngularManager, rmapsMainOptions) ->
-
-  # might move this object to the mailWizard (parent) scope to expose the members to all wizard steps for building the object
-  $scope.templateObj = new rmapsMailTemplate($scope.$parent.templateType)
-
+app.controller 'rmapsEditTemplateCtrl',
+($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsprincipal,
+rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
   _doc = $document[0]
+
+  # may as well set up a templateType choice just in case it's not set for some reason
+  typeNames = rmapsMailTemplateTypeService.getTypeNames()
+  if $state.params.templateType? and $state.params.templateType in typeNames
+    $scope.templateType = $state.params.templateType
+  else
+    $scope.templateType = typeNames[0]
+
+  $scope.templateObj = new rmapsMailTemplate($scope.templateType)
 
   editor = {}
 
@@ -37,7 +44,7 @@ app.controller 'rmapsEditTemplateCtrl', ($rootScope, $scope, $log, $window, $tim
     htmlcontent: $scope.templateObj.mailCampaign.content
 
   $scope.applyTemplateClass = (qualifier = '') ->
-    "#{$scope.$parent.templateType}#{qualifier}"
+    "#{$scope.templateType}#{qualifier}"
 
   $scope.doPreview = () ->
     $scope.templateObj.openPreview()

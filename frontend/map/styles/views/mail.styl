@@ -105,8 +105,12 @@
         li
           margin-bottom 20px
 
+        .no-tmpl
+          font-size 18px
+          color black
+
         .tmpl-item
-          border 1px solid $darker_white
+          border 1px solid white
           border-radius 3px
           padding 10px
           overflow hidden
@@ -115,28 +119,27 @@
           @extends .global-transition
 
           .tmpl-image
-            display table-cell
             min-width 123px
             height 145px
-            background-image url(/assets/base/template_img.png)
-            background-repeat no-repeat
-            background-position top
             vertical-align top
           .tmpl-data
             display table-cell
             position relative
-            padding-left 10px
+            padding-left 15px
+            padding-right 15px
+            text-align center
             h3.tmpl-title
               font-size 14px
+              color black
               margin 0
               display inline-block
               vertical-align top
-              margin-bottom 40px
             button
               display inline-block
               position absolute
               right 0
               bottom 0
+              width 100%
               min-width 1px
 
           &:hover

@@ -4,30 +4,22 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, $log, rmapsprincipal, rmapsMailTemplate, rmapsMailTemplateTypeService) ->
-  $log.debug "#### rmapsSelectTemplateCtrl"
 
-  $log.debug "#### rmapsMailTemplate:"
-  $log.debug rmapsMailTemplate
+  $scope.displayCategory = 'all'
 
-  $log.debug "#### rmapsTemplateTypeService:"
-  $log.debug rmapsTemplateTypeService
-
-
-  $scope.templatesArray = [
-    name: "basicLetter"
-    thumb: "path/to/basicLetter"
-  ,
-    name: "formalLetter"
-    thumb: "path/to/formalLetter"
-  ]
+  $scope.categories = rmapsMailTemplateTypeService.getCategories()
+  $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
 
   $scope.$parent.templateType = {}
 
+  $scope.isEmptyCategory = () ->
+    return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
+
+  $scope.setCategory = (category) ->
+    if !category?
+      category = 'all'
+    $scope.displayCategory = category
 
   $scope.selectTemplate = (idx) ->
-    $scope.$parent.templateType = $scope.templatesArray[idx].name
-
-  $scope.filterByType = (type) ->
-    if !type?
-      return 
-    $log.debug "#### filtering by type #{type}..."
+    templateType = $scope.categoryLists[$scope.displayCategory][idx].type
+    $state.go($state.get('editTemplate'), {templateType: templateType}, { reload: true })

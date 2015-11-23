@@ -173,24 +173,3 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->
       scope.macro = macro
-
-
-app.directive 'rmapsMailTemplateLayout', ($log, $rootScope, $timeout, $window, $document) ->
-  restrict: 'EA'
-  transclude: false,
-  template: require('../../html/views/templates/mail-sel-tpl-layout.tpl.jade')()
-  scope:
-    templatesArray: "="
-  #require: 'ngModel'
-  link: (scope, element, attrs, ngModel) ->
-    $log.debug "#### rmapsMailTemplateLayout"
-    $log.debug "scope:"
-    $log.debug scope
-    $log.debug "element:"
-    $log.debug element
-    $log.debug "attrs:"
-    $log.debug attrs
-    $log.debug "ngModel:"
-    $log.debug ngModel
-
-

@@ -7,4 +7,22 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapspr
   $log.debug "#### state:"
   $log.debug $state
   $scope.step = $state.current.name
-  $scope.templateType = "basicLetter"
+
+  $scope.steps = [
+    'selectTemplate'
+    'editTemplate'
+  ]
+
+  $scope.nextStep = () ->
+    thisStep = $scope.steps.indexOf $scope.step
+    if thisStep < 0 or thisStep >= ($scope.steps.length-1)
+      return
+    newStep = $scope.steps[thisStep+1]
+    $state.go($state.get(newStep), {}, { reload: true })
+
+  $scope.prevStep = () ->
+    thisStep = $scope.steps.indexOf $scope.step
+    if thisStep <= 0 or thisStep > ($scope.steps.length-1)
+      return
+    newStep = $scope.steps[thisStep-1]
+    $state.go($state.get(newStep), {}, { reload: true })

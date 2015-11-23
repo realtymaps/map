@@ -6,21 +6,11 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 
   class MailTemplate
     constructor: (@type) ->
-      console.log "#### type rmapsMailTemplateTypeService?"
-      console.log typeof rmapsMailTemplateTypeService
-      console.log "#### rmapsMailTemplateTypeService keys"
-      console.log Object.keys rmapsMailTemplateTypeService
-
-      console.log "#### rmapsMailCampaignService?"
-      console.log typeof rmapsMailCampaignService
-      console.log "#### rmapsMailCampaignService keys"
-      console.log Object.keys rmapsMailCampaignService
-
-
       @defaultContent = rmapsMailTemplateTypeService.getDefaultHtml(@type)
-      @defaultFinalStyle = rmapsMailTemplateTypeService.getDefaultFinalStyle(@type)
+      @style = rmapsMailTemplateTypeService.getDefaultFinalStyle(@type)
+
       @_setupWysiwygContent()
-      @style = @defaultFinalStyle
+
       @user =
         userID: null
       @mailCampaign =
@@ -30,7 +20,6 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
         status: 'pending'
         content: @defaultContent
         project_id: 1
-
 
       rmapsprincipal.getIdentity()
       .then (identity) =>
@@ -62,7 +51,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 
     _setupWysiwygContent: () =>
       $timeout () =>
-        defaultHtml[@type].addTemporaryHtml(_doc)
+        rmapsMailTemplateTypeService.setUp(@type, _doc)
 
     _createPreviewHtml: () =>
       #previewStyle = "body {box-shadow: 4px 4px 20px #888888;}"
@@ -73,7 +62,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 
     _createLobHtml: () =>
       letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/html'
-      lobContent = defaultHtml[@type].removeTemporaryHtml letterDocument
+      lobContent = rmapsMailTemplateTypeService.tearDown(@type, letterDocument)
       "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{lobContent}</body></html>"
 
     openPreview: () =>
