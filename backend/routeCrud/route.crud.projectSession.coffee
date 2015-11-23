@@ -1,6 +1,7 @@
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 notesSvc = (require '../services/services.user').notes
+
 {Crud, wrapRoutesTrait, HasManyRouteCrud} = require '../utils/crud/util.crud.route.helpers'
 _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
@@ -10,6 +11,7 @@ logger =  require '../config/logger'
 
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
+permissionsService = require '../services/service.permissions'
 # End temporary
 
 safeProject = sqlHelpers.columns.project
@@ -45,10 +47,18 @@ class ClientsCrud extends HasManyRouteCrud
       userSessionSvc.updatePassword newUser, 'Password$1'
 
     .then ->
+      # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
+      permissionsService.getPermissionForCodename 'unlimited_logins'
+
+    .then (authPermission) ->
+      logger.debug "Found new client permission id: #{authPermission.id}"
+
       # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
+      throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
+
       permission =
         user_id: newUser.id
-        permission_id: 19
+        permission_id: authPermission.id
 
       userSvc.permissions.create permission, null, ['user_id', 'permission_id'], @doLogQuery
 

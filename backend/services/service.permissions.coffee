@@ -17,6 +17,20 @@ hashifyGroups = (hash, group) ->
   return hash
 
 
+# returns: Permission primary key ID for the given permission codename
+getPermissionForCodename = (codename) ->
+  tables.auth.permission()
+  .where
+    codename: codename
+  .then (permissions=[]) ->
+    # we want to reformat this data as a hash of codenames to truthy values
+    logger.info("permission found for codename #{codename}")
+    throw new Error "Could not find permission id for #{codename}" unless permissions.length > 0
+    Promise.resolve(permissions[0])
+  .catch (err) ->
+    logger.error "error loading permission for codename #{codename}: #{err}"
+    Promise.reject(err)
+
 # returns: a hash of codenames to truthy values
 getPermissionsForGroupId = (id) ->
   tables.auth.permission()
@@ -85,6 +99,7 @@ getGroupsForUserId = (id) ->
 
 
 module.exports =
+  getPermissionForCodename: getPermissionForCodename
   getPermissionsForGroupId: memoize(getPermissionsForGroupId, primitive: true, maxAge: 10*60*1000, preFetch: .1)
   getPermissionsForUserId: getPermissionsForUserId
   getGroupsForUserId: getGroupsForUserId
