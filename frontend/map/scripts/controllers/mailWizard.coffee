@@ -13,16 +13,17 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapspr
     'editTemplate'
   ]
 
+
   $scope.nextStep = () ->
     thisStep = $scope.steps.indexOf $scope.step
-    if thisStep < 0 or thisStep >= ($scope.steps.length-1)
+    if thisStep >= ($scope.steps.length-1)
       return
     newStep = $scope.steps[thisStep+1]
     $state.go($state.get(newStep), {}, { reload: true })
 
   $scope.prevStep = () ->
     thisStep = $scope.steps.indexOf $scope.step
-    if thisStep <= 0 or thisStep > ($scope.steps.length-1)
+    if thisStep <= 0
       return
     newStep = $scope.steps[thisStep-1]
     $state.go($state.get(newStep), {}, { reload: true })
