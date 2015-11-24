@@ -7,6 +7,7 @@ logger = require '../config/logger'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 
+{expectSingleRow} =  require '../utils/util.sql.helpers'
 
 hashifyPermissions = (hash, permission) ->
   hash[permission.codename] = true
@@ -22,11 +23,10 @@ getPermissionForCodename = (codename) ->
   tables.auth.permission()
   .where
     codename: codename
-  .then (permissions=[]) ->
-    # we want to reformat this data as a hash of codenames to truthy values
+  .then expectSingleRow
+  .then (row) ->
     logger.info("permission found for codename #{codename}")
-    throw new Error "Could not find permission id for #{codename}" unless permissions.length > 0
-    Promise.resolve(permissions[0])
+    Promise.resolve(row)
   .catch (err) ->
     logger.error "error loading permission for codename #{codename}: #{err}"
     Promise.reject(err)
