@@ -42,7 +42,15 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
-  buildState 'map'
+  buildState 'map', reloadOnSearch: false,
+    params:
+      project_id:
+        value: null
+        squash: true
+      property_id:
+        value: null
+        squash: true
+
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
