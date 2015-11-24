@@ -1,8 +1,8 @@
 .mail
   .mail-wizard-steps
     header.send-progress
-      button(class="btn btn-default pull-left" ng-click="setActiveStep('select-template')") Back
-      button(class="btn btn-primary pull-right" ng-click="setActiveStep('confirm')") Next
+      button(class="btn btn-default pull-left" ng-click="prevStep()") Back
+      button(class="btn btn-primary pull-right" ng-click="nextStep()") Next
       div.pathway
         ul
           li(ng-class="{ active: step == 'recipient' }")
@@ -17,7 +17,5 @@
             span Confirm
 
   .mail-wizard
-    div.inner
-      div.container
-        div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
+    div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
 
