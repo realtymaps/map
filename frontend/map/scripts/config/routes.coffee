@@ -63,6 +63,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
   buildState 'mail'
   buildState 'mailWizard'
+  buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'
 
   buildState 'login', template: loginTemplate, sticky: false, loginRequired: false

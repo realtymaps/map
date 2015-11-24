@@ -18,7 +18,7 @@ describe 'rmapsEditTemplateCtrl', ->
     # lumping multiple tests on controller here so that we aren't re-evaluating controller over and over
     it 'vetting controller logic', ->
       templateType = 'basicLetter'
-      @scope.$parent['templateType'] = templateType
+      @scope.templateType = templateType
       
       controller = @$controller 'rmapsEditTemplateCtrl', { $scope: @scope }
       expect(@scope.templateObj.type).to.eql templateType
