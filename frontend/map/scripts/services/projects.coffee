@@ -99,7 +99,7 @@ app.service 'rmapsProjectsService', ($http, $log) ->
 
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
-      .replace(":id",profile.id)
+      .replace(":id",profile.project_id)
       .replace(":drawn_shapes_id",shape.properties.id)
 
     _getGeomName = (type) ->

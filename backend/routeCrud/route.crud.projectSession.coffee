@@ -111,26 +111,24 @@ class ProjectRouteCrud extends RouteCrud
     @drawnShapesCrud.byIdGETTransforms =
       params: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
 
+    bodyTransform =
+      validators.object
+        subValidateSeparate:
+          geom_point_json: validators.geojson(toCrs:true)
+          geom_polys_json: validators.geojson(toCrs:true)
+          geom_line_json:  validators.geojson(toCrs:true)
+
     @drawnShapesCrud.rootPOSTTransforms =
       params: validators.mapKeys id: "#{usrTableNames.project}.id"
       query: validators.object isEmptyProtect: true
-      body:
-        validators.object
-          subValidateSeparate:
-            geom_point_json: validators.geojson(toCrs:true)
-            geom_polys_json: validators.geojson(toCrs:true)
-            geom_line_json:  validators.geojson(toCrs:true)
+      body: bodyTransform
 
-    @drawnShapesCrud.byIdPUTTransforms =
-      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
-      query: validators.object isEmptyProtect: true
-      body:
-        validators.object
-          subValidateSeparate:
-            geom_point_json: validators.geojson(toCrs:true)
-            geom_polys_json: validators.geojson(toCrs:true)
-            geom_line_json:  validators.geojson(toCrs:true)
-
+    for route in ['byIdPUT', 'byIdDELETE']
+      do (route) =>
+        @drawnShapesCrud[route + 'Transforms'] =
+          params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
+          query: validators.object isEmptyProtect: true
+          body: bodyTransform
 
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
