@@ -119,6 +119,7 @@ class ProjectRouteCrud extends RouteCrud
           subValidateSeparate:
             geom_point_json: validators.geojson(toCrs:true)
             geom_polys_json: validators.geojson(toCrs:true)
+            geom_line_json:  validators.geojson(toCrs:true)
 
     @drawnShapesCrud.byIdPUTTransforms =
       params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
@@ -128,17 +129,7 @@ class ProjectRouteCrud extends RouteCrud
           subValidateSeparate:
             geom_point_json: validators.geojson(toCrs:true)
             geom_polys_json: validators.geojson(toCrs:true)
-      # body: validators.object subValidateSeparate:
-      #   geom_point_json_OR_geom_polys_json:
-      #     input: ["geom_point_json", "geom_polys_json"]
-      #     transform: validators.pickFirst()
-      #     required: true
-      #
-      #   geom_point_json: transform: validators.geojson()
-      #   geom_polys_json: transform: validators.geojson()
-      #   project_id:
-      #     transform: [ validators.integer()]
-      #     required:true
+            geom_line_json:  validators.geojson(toCrs:true)
 
 
     @drawnShapes = @drawnShapesCrud.root

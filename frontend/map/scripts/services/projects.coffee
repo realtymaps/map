@@ -102,12 +102,20 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       .replace(":id",profile.id)
       .replace(":drawn_shapes_id",shape.properties.id)
 
+    _getGeomName = (type) ->
+      switch type
+        when 'Point' then 'geom_point_json'
+        when 'Polygon' then 'geom_polys_json'
+        when 'LineString' then 'geom_line_json'
+        else
+          throw new Error 'geom type not supported'
+
+
     _normalize = (shape) ->
       unless shape.geometry
         throw new Error("Shape must be GeoJSON with a geometry")
       normal = {}
-      geomField = if shape.geometry.type == 'Point' then 'geom_point_json' else 'geom_polys_json'
-      normal[geomField] = shape.geometry
+      normal[_getGeomName(shape.geometry.type)] = shape.geometry
       normal.project_id = profile.project_id
       normal.id = shape.properties.id if shape.properties?.id?
       normal.shape_extras = shape.properties.shape_extras if shape.properties?.shape_extras?
