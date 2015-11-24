@@ -2,6 +2,8 @@ Promise = require 'bluebird'
 basePath = require '../../basePath'
 _ = require 'lodash'
 expect = require('chai').expect
+colorWrap = require 'color-wrap'
+colorWrap(console)
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject} = require('../../../specUtils/promiseUtils')
@@ -48,5 +50,18 @@ describe 'utils/validation.validators.object()'.ns().ns('Backend'), ->
             id: validators.integer()
             someStr: validators.string()
         )(param, toSubVal)).then (value) ->
-          value.should.equal(testObj2)
+          value.should.eql(toSubVal)
+      ]
+
+    it 'subValidaiton fails', () ->
+      toSubVal =
+          id: 1
+          someStr: 'happy'
+
+      [
+        expectReject(validators.object(
+          subValidateSeparate:
+            id: validators.integer()
+            someStr: validators.string(minLength:6)
+        )(param, toSubVal))
       ]
