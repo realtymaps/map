@@ -110,6 +110,26 @@ class ProjectRouteCrud extends RouteCrud
     @drawnShapesCrud.byIdGETTransforms =
       params: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
 
+    @drawnShapesCrud.rootPOSTTransforms =
+      params: validators.mapKeys id: "#{usrTableNames.project}.id"
+      query: validators.object isEmptyProtect: true
+      body:
+        validators.object
+          subValidateSeparate:
+            geom_point_json: validators.geojson(toCrs:undefined)
+      # body: validators.object subValidateSeparate:
+      #   geom_point_json_OR_geom_polys_json:
+      #     input: ["geom_point_json", "geom_polys_json"]
+      #     transform: validators.pickFirst()
+      #     required: true
+      #
+      #   geom_point_json: transform: validators.geojson()
+      #   geom_polys_json: transform: validators.geojson()
+      #   project_id:
+      #     transform: [ validators.integer()]
+      #     required:true
+
+
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
 

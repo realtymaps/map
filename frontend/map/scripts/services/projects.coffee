@@ -100,11 +100,35 @@ app.service 'rmapsProjectsService', ($http, $log) ->
   delete: (project) ->
     $http.delete backendRoutes.projectSession.root + "/#{project.id}"
 
-  drawnShapes:
+  drawnShapes: (project) ->
+    rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",project.id)
+
+    _byIdUrl = (shape) ->
+      backendRoutes.projectSession.drawnShapesById
+      .replace(":id",project.id)
+      .replace(":drawn_shapes_id",shape.properties.id)
+
+    _normalize = (shape) ->
+      unless shape.geometry
+        throw new Error("Shape must be GeoJSON with a geometry")
+      normal = {}
+      geomField = if shape.geometry.type == 'Point' then 'geom_point_json' else 'geom_polys_json'
+      normal[geomField] = shape.geometry
+      normal.project_id = project.id
+      normal.id = shape.properties.id if shape.properties?.id?
+      normal.shape_extras = shape.properties.shape_extras if shape.properties?.shape_extras?
+      normal
+
     getAll: (cache = false) ->
-      $http.get backendRoutes.projectSession.drawnShapes, cache: cache
+      $http.get rootUrl, cache: cache
       .then ({data}) ->
         data
 
-    save: (shapes) ->
-      $http.put backendRoutes.projectSession.drawnShapes, shapes
+    create: (shape) ->
+      $http.post rootUrl, _normalize shape
+
+    update: (shape) ->
+      $http.put _byIdUrl(shape), _normalize shape
+
+    delete: (shape) ->
+      $http.delete _byIdUrl(shape)

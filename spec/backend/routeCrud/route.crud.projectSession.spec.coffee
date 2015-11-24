@@ -151,14 +151,14 @@ describe 'route.projectSession', ->
         params["#{usrTableNames.drawnShapes}.project_id"] = @mockRequest.params.id
         @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
         @subject.drawnShapesCrud.svc.getAllStub.args[0][1].should.be.eql false
-        assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
-        # console.log @subject.drawnShapesCrud.svc.getAllStub.sqls[0].cyan
-        @subject.drawnShapesCrud.svc.getAllStub.sqls[0].should.be.equal """
-          select "user_drawn_shapes"."id" as "id", "user_drawn_shapes"."auth_user_id" as "auth_user_id",
-           "user_drawn_shapes"."project_id" as "project_id", "user_drawn_shapes"."geom_point_json" as "geom_point_json",
-           "user_drawn_shapes"."geom_polys_raw" as "geom_polys_raw" from "user_project" inner join "user_drawn_shapes"
-           on "user_drawn_shapes"."project_id" = "user_project"."id" where "user_drawn_shapes"."project_id" = '1'
-           """.replace(/\n/g,'')
+        # assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
+        # # console.log @subject.drawnShapesCrud.svc.getAllStub.sqls[0].cyan
+        # @subject.drawnShapesCrud.svc.getAllStub.sqls[0].should.be.equal """
+        #   select "user_drawn_shapes"."id" as "id", "user_drawn_shapes"."auth_user_id" as "auth_user_id",
+        #    "user_drawn_shapes"."project_id" as "project_id", "user_drawn_shapes"."geom_point_json" as "geom_point_json",
+        #    "user_drawn_shapes"."geom_polys_raw" as "geom_polys_raw" from "user_project" inner join "user_drawn_shapes"
+        #    on "user_drawn_shapes"."project_id" = "user_project"."id" where "user_drawn_shapes"."project_id" = '1'
+        #    """.replace(/\n/g,'')
 
   describe 'byIdDELETE', ->
     beforeEach ->

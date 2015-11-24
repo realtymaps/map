@@ -24,6 +24,7 @@ module.exports = (options = {}) ->
       # the corresponding element of the object, and remaining elements are passed unchanged
       separatePromises = _.clone(values)
       for key, subValidation of options.subValidateSeparate
+        logger.debug.cyan key
         separatePromises[key] = doValidationSteps(subValidation, param, values[key])
       return Promise.props separatePromises
     else if options.subValidateEach

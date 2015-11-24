@@ -34,3 +34,19 @@ describe 'utils/validation.validators.object()'.ns().ns('Backend'), ->
         expect(value).to.not.be.ok
       expectReject(validators.object(isEmpty:true)(param, {id:1}))
     ]
+  describe 'subValidateSeparate', ->
+    it 'should resolve basic object', () ->
+      toSubVal =
+          id: 1
+          someStr: 'happy'
+
+      [
+        expectResolve(validators.object()(param, toSubVal)).then (value) ->
+          value.should.equal(toSubVal)
+        expectResolve(validators.object(
+          subValidateSeparate:
+            id: validators.integer()
+            someStr: validators.string()
+        )(param, toSubVal)).then (value) ->
+          value.should.equal(testObj2)
+      ]

@@ -15,17 +15,18 @@ L.Circle::toGeoJSON = () ->
   feature = _pointToGeoJSON.apply(@)
   feature.properties = feature.properties or {}
   L.extend feature.properties,
-    shapeType: 'Circle'
-    radius: @getRadius()
+    shape_extras:
+      type: 'Circle'
+      radius: @getRadius()
   feature
 
 if L.Circle.createFromFeature
   throw new Error 'L.Circle.createFromFeature exists: prior to our definition. Library conflict!'
 
 L.Circle.createFromFeature = (feature) ->
-  if feature.properties?.shapeType != 'Circle'
+  if feature.properties?.shape_extras?.type != 'Circle'
     throw new Error 'Trying to create a Circle from a feature an invalid or non existent shapeType!'
-  if !feature.properties?.radius?
+  if !feature.properties?.shape_extras?.radius?
     throw new Error 'Trying to create a Circle with no radius!'
   new L.Circle new L.LatLng(feature.geometry.coordinates[1],feature.geometry.coordinates[0]),
     feature.properties.radius

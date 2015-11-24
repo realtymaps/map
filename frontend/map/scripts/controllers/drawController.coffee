@@ -12,14 +12,13 @@ app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerServ
 leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
-  drawnShapesSvc = rmapsProjectsService.drawnShapes
-
-  _syncDrawnShapes = () ->
-    drawnShapesSvc.update drawnItems.toGeoJSON()
+  drawnShapesFact = rmapsProjectsService.drawnShapes
+  drawnShapesSvc = null
 
   rmapsprincipal.getCurrentProfile().then (profile) ->
     $log.debug('profile')
     $log.debug(profile)
+    drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
     drawnShapesSvc.getAll().then (drawnShapes) ->
       # # TODO: drawn shapes will get its own tables for GIS queries
       geoJson = L.geoJson drawnShapes,
@@ -92,11 +91,12 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
     _handle =
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
-        _syncDrawnShapes()
+        drawnShapesSvc?.create(layer.toGeoJSON())
       edited: ({layers}) ->
+        drawnShapesSvc?.update(layer.toGeoJSON())
       deleted: ({layers}) ->
         drawnItems.removeLayer(layer)
-        _syncDrawnShapes()
+        drawnShapesSvc?.delete(layer.toGeoJSON())
       drawstart: ({layerType}) ->
         _doToast('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->

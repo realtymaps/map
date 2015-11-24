@@ -15,18 +15,10 @@ safeNotes = sqlHelpers.columns.notes
 clientIdCol = joinColumns.client[0]
 projectId = "#{tables.user.project.tableName}.id"
 
-class DrawnShapesCrud extends ThenableHasManyCrud
+class DrawnShapesCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
     @drawnShapeCols = sqlHelpers.columns.drawnShapes
-
-  updateManyShapes: (entity, unique, doUpdate, safe) ->
-    for feature in entity.featureCollection
-      do (feature) =>
-        @base.upsert feature, unique, doUpdate, safe
-
-  upsert: (entity, unique, doUpdate, safe) ->
-    updateManyShapes(entity, unique, doUpdate, safe)
 
   getAll: () ->
     super(arguments...)
@@ -46,8 +38,7 @@ class ProjectCrud extends ThenableCrud
       "#{tables.user.notes.tableName}.id").init(arguments...)
     @notes.doLogQuery = true
 
-    @drawnShapes = new DrawnShapesCrud(tables.user.drawnShapes, joinColumns.drawnShapes, project,
-      projectId, "#{tables.user.drawnShapes.tableName}.project_id").init(arguments...)
+    @drawnShapes = new DrawnShapesCrud(tables.user.drawnShapes).init(arguments...)
     # @drawnShapes.doLogQuery = true
     super(arguments...)
 
