@@ -6,7 +6,7 @@ safeProjectCols = (require '../utils/util.sql.helpers').columns.project
 
 ProjectRouteCrud = require '../routeCrud/route.crud.projectSession'
 
-module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(false, safeProjectCols),
+module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(true, safeProjectCols),
   ##TODO: How much of the post, delete, and puts do we really want to allow?
   root:
     methods: ['get', 'post']

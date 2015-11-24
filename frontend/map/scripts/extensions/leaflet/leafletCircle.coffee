@@ -29,4 +29,4 @@ L.Circle.createFromFeature = (feature) ->
   if !feature.properties?.shape_extras?.radius?
     throw new Error 'Trying to create a Circle with no radius!'
   new L.Circle new L.LatLng(feature.geometry.coordinates[1],feature.geometry.coordinates[0]),
-    feature.properties.radius
+    feature.properties.shape_extras.radius

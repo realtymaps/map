@@ -1,21 +1,34 @@
-toGeoFeature = (row, toMove, deletes = []) ->
-  deletes.forEach (prop) ->
+_ = require 'lodash'
+
+toGeoFeature = (row, opts) ->
+  opts.deletes?.forEach (prop) ->
     delete row[prop]
 
   row.properties = {}
-  toMove.forEach (prop) ->
+
+  if opts?.geometry?
+    geometryStr = _.find opts.geometry, (geomName) ->
+      row[geomName]?
+    row.geometry = row[geometryStr]
+
+    # console.log row, true
+
+  opts?.toMove?.forEach (prop) ->
     row.properties[prop] = row[prop]
     delete row[prop]
+
+  row.type = 'Feature'
+
+
   row
 
 module.exports =
   toGeoFeature: toGeoFeature
-  toGeoFeatureCollection: (toMove, uniqueKey, deletes) ->
+  toGeoFeatureCollection: (opts) ->
     (rows) ->
-      if uniqueKey
+      if opts?.uniqueKey?
         rows = _.uniq rows, (r) ->
-          r[uniqueKey]
+          r[opts.uniqueKey]
 
-      rows.forEach (row) ->
-        row = toGeoFeature(row, toMove, deletes)
+      toGeoFeature(row, opts) for row in rows
       type: 'FeatureCollection', features: rows

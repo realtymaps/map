@@ -103,6 +103,7 @@ class ProjectRouteCrud extends RouteCrud
 
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud.doLogRequest = ['params', 'body']
     @drawnShapesCrud.rootGETTransforms =
       params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
       query: validators.object isEmptyProtect: true
@@ -116,7 +117,17 @@ class ProjectRouteCrud extends RouteCrud
       body:
         validators.object
           subValidateSeparate:
-            geom_point_json: validators.geojson(toCrs:undefined)
+            geom_point_json: validators.geojson(toCrs:true)
+            geom_polys_json: validators.geojson(toCrs:true)
+
+    @drawnShapesCrud.byIdPUTTransforms =
+      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
+      query: validators.object isEmptyProtect: true
+      body:
+        validators.object
+          subValidateSeparate:
+            geom_point_json: validators.geojson(toCrs:true)
+            geom_polys_json: validators.geojson(toCrs:true)
       # body: validators.object subValidateSeparate:
       #   geom_point_json_OR_geom_polys_json:
       #     input: ["geom_point_json", "geom_polys_json"]

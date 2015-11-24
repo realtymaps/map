@@ -35,7 +35,9 @@ geoJsonFormatter = (toMove , deletes) ->
 
     return if rm_property_ids[row.rm_property_id] #GTFO
     rm_property_ids[row.rm_property_id] = true
-    row = toGeoFeature row, toMove, deletes
+    row = toGeoFeature row,
+      toMove: toMove
+      deletes: deletes
 
     #hold off on adding to buffer so we know it has a next item to add ','
     if lastBuffStr

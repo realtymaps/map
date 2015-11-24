@@ -22,7 +22,10 @@ class DrawnShapesCrud extends ThenableCrud
 
   getAll: () ->
     super(arguments...)
-    .then toGeoFeatureCollection(@drawnShapeCols)
+    .then toGeoFeatureCollection
+      toMove: @drawnShapeCols
+      geometry: ['geom_point_json', 'geom_polys_json']
+      deletes: ['rm_inserted_time', 'rm_modified_time', 'geom_point_raw', 'geom_polys_json']
 
 
 class ProjectCrud extends ThenableCrud

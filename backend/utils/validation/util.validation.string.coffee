@@ -35,5 +35,5 @@ module.exports = (options = {}) ->
       transformedValue = transformedValue.toLowerCase()
     else if (options.forceUpperCase)
       transformedValue = transformedValue.toUpperCase()
-    logger.debug.cyan "validation.string: #{transformedValue}"
+    # logger.debug.cyan "validation.string: #{transformedValue}"
     return transformedValue

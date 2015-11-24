@@ -5,6 +5,8 @@ module.exports =
   WGS84: WGS84
   UTM: UTM
   crsFactory: (EPSG = UTM) ->
+    if typeof EPSG != 'string'
+      EPSG = UTM
     type: 'name'
     properties:
       name: "EPSG:#{EPSG}"

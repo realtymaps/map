@@ -16,15 +16,16 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
   drawnShapesSvc = null
 
   rmapsprincipal.getCurrentProfile().then (profile) ->
-    $log.debug('profile')
-    $log.debug(profile)
+    $log.debug('profile: project_id' + profile.project_id)
     drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
     drawnShapesSvc.getAll().then (drawnShapes) ->
       # # TODO: drawn shapes will get its own tables for GIS queries
       geoJson = L.geoJson drawnShapes,
         onEachFeature: (feature, layer) ->
-          if feature.properties?.shapeType = 'Circle'
+          $log.debug feature
+          if feature.properties?.shape_extras?.type = 'Circle'
             layer = L.Circle.createFromFeature feature
+          layer.model = feature
           drawnItems.addLayer layer
 
   _toast = null
@@ -93,7 +94,9 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
         drawnItems.addLayer(layer)
         drawnShapesSvc?.create(layer.toGeoJSON())
       edited: ({layers}) ->
-        drawnShapesSvc?.update(layer.toGeoJSON())
+        layer = layers.getLayers()[0]
+        model = _.merge layer.model, layer.toGeoJSON()
+        drawnShapesSvc?.update(model)
       deleted: ({layers}) ->
         drawnItems.removeLayer(layer)
         drawnShapesSvc?.delete(layer.toGeoJSON())

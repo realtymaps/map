@@ -94,12 +94,12 @@ app.service 'rmapsProjectsService', ($http, $log) ->
   delete: (project) ->
     $http.delete backendRoutes.projectSession.root + "/#{project.id}"
 
-  drawnShapes: (project) ->
-    rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",project.id)
+  drawnShapes: (profile) ->
+    rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
 
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
-      .replace(":id",project.id)
+      .replace(":id",profile.id)
       .replace(":drawn_shapes_id",shape.properties.id)
 
     _normalize = (shape) ->
@@ -108,7 +108,7 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       normal = {}
       geomField = if shape.geometry.type == 'Point' then 'geom_point_json' else 'geom_polys_json'
       normal[geomField] = shape.geometry
-      normal.project_id = project.id
+      normal.project_id = profile.project_id
       normal.id = shape.properties.id if shape.properties?.id?
       normal.shape_extras = shape.properties.shape_extras if shape.properties?.shape_extras?
       normal

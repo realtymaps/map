@@ -93,7 +93,7 @@ columns =
 
   profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results', 'favorites']
 
-  drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw']
+  drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras']
 
 columns.all = "#{columns.filter}, #{columns.detail}"
 
