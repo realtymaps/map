@@ -6,14 +6,14 @@ span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dro
   .dropdown-menu.whiteblock.no-margin(ng-cloak)
     .fixed-header
       span
-        a(href="#notes") {{notes.length}} Notes
+        a(ui-sref="projectNotes({id: selectedProject.project_id})") {{notes.length}} Notes
     .inner
       ul
         li(ng-repeat="note in map.markers.notes" ng-cloak)
           div(ng-controller="rmapsNotesCtrl")
             span.enity
               +noteMixin('{{note.title}}','{{note.text}}','{{$index+1}}')
-              
+
               // TODO - add sketch feature in
                 span.sketch
                   span.icon.icon-pen
@@ -21,7 +21,7 @@ span(ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list" dro
               // TODO - add comment feature in
                 span.comment
                   a(href="#comment") Leave a comment
-            
+
             span.actions
               span.icon.icon-remove(ng-click="removeNote(note); $event.stopPropagation()")
               span.fa.fa-edit(ng-click="updateNote(note); $event.stopPropagation()")
