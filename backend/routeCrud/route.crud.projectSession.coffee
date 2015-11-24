@@ -101,6 +101,7 @@ class ProjectRouteCrud extends RouteCrud
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
+    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
     @drawnShapesCrud.doLogRequest = ['params', 'body`']
