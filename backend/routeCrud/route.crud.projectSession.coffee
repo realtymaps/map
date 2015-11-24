@@ -103,7 +103,7 @@ class ProjectRouteCrud extends RouteCrud
 
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud.doLogRequest = ['params', 'body']
+    @drawnShapesCrud.doLogRequest = ['params', 'body`']
     @drawnShapesCrud.rootGETTransforms =
       params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
       query: validators.object isEmptyProtect: true
