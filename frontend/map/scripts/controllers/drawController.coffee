@@ -88,9 +88,12 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
       _destroy()
       $log.debug('destroyed')
 
-    _getShapeModelFromLayers = (layers) ->
-      layer = layers.getLayers()[0]
+    _getShapeModel = (layer) ->
       model = _.merge layer.model, layer.toGeoJSON()
+
+    _eachLayerModel = (layersObj, cb) ->
+      layersObj.getLayers().forEach (layer) ->
+        cb(_getShapeModel layer)
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
@@ -98,10 +101,11 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
         drawnItems.addLayer(layer)
         drawnShapesSvc?.create(layer.toGeoJSON())
       edited: ({layers}) ->
-        drawnShapesSvc?.update(_getShapeModelFromLayers layers)
+        _eachLayerModel layers, (model) ->
+          drawnShapesSvc?.update(model)
       deleted: ({layers}) ->
-        # drawnItems.removeLayer(layer)
-        drawnShapesSvc?.delete(_getShapeModelFromLayers layers)
+        _eachLayerModel layers, (model) ->
+          drawnShapesSvc?.delete(model)
       drawstart: ({layerType}) ->
         _doToast('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->
