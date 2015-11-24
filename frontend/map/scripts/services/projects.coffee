@@ -74,20 +74,14 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       maxPrice: 100000
       archived: false
 
-    _update = (project) ->
+  _update = (project) ->
     $http.put backendRoutes.projectSession.root + "/#{project.id}", project
 
-
-  getProjects: (cache = false) ->
-    $http.get backendRoutes.projectSession.root, cache: cache
-    .then ({data}) ->
-      _.each data, _mockData
-      data
 
   getProject: (id) ->
     $http.get backendRoutes.projectSession.root + "/#{id}"
     .then (response) ->
-      project = response.data?[0]
+      project = response.data
       _mockData project
       project
 

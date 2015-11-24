@@ -11,9 +11,11 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
 
   $scope.formatters = results: new rmapsResultsFormatter scope: $scope
 
-  $scope.selected = 'project'
   $scope.project = null
   clientsService = null
+
+  $scope.getStateName = (name) ->
+    name.replace /project(.+)/, '$1'
 
   $scope.archiveProject = (project, evt) ->
     evt.stopPropagation()
@@ -93,5 +95,4 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
       $scope.project.clients = clients
 
   $rootScope.registerScopeData () ->
-    $scope.selected = $state.params.selected or 'project'
     $scope.loadProject()
