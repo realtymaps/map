@@ -23,7 +23,7 @@ pgStreamEscape = (str) ->
   .replace(/\r/g, '\\r')
 
 
-geoJsonFormatter = (toMove , deletes) ->
+geoJsonFormatter = (toMove, deletes) ->
   prefixWritten = false
   rm_property_ids = {}
   lastBuffStr = null
