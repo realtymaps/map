@@ -43,15 +43,15 @@
                     h4(ng-show="project.sandbox") Sandbox
                     a.details(title="View details") View Details
                   td
-                    a(ui-sref="project({id: {{project.id}}, selected: 'pins'})") {{project.propertiesTotal}}
+                    a(ui-sref="projectPins({id: {{project.id}}})") {{project.propertiesTotal}}
                   td
-                    a(ui-sref="project({id: {{project.id}}, selected: 'neighborhoods'})") {{project.neighborhoods.length}}
+                    a(ui-sref="projectNeighborhoods({id: {{project.id}}})") {{project.neighborhoods.length}}
                   td
-                    a(ui-sref="project({id: {{project.id}}, selected: 'favorites'})") {{project.favorites.length}}
+                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{project.favorites.length}}
                   td
-                    a(ui-sref="project({id: {{project.id}}, selected: 'notes'})") {{project.notes.length}}
+                    a(ui-sref="projectNotes({id: {{project.id}}})") {{project.notes.length}}
                   td
-                    a(ui-sref="project({id: {{project.id}}, selected: 'clients'})") {{project.clients.length}}
+                    a(ui-sref="projectClients({id: {{project.id}}})") {{project.clients.length}}
                   td
                     span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                   td.col-md-1

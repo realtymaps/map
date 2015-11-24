@@ -4,25 +4,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.service 'rmapsProjectsService', ($http, $log) ->
 
   _mockData = (project) ->
-    project.notes = []
-    project.notes.push
-      title: 'Heads Up'
-      text: 'Just a note that you should really check out this property'
-    project.notes.push
-      title: 'Open House'
-      text: 'This property has an open house on Saturday!'
-    project.notes.push
-      title: 'Open House'
-      text: 'This property has an open house on Saturday!'
-    project.notes.push
-      title: 'Open House'
-      text: 'This property has an open house on Saturday!'
-    project.notes.push
-      title: 'Open House'
-      text: 'This property has an open house on Saturday!'
-    project.notes.push
-      title: 'Open House'
-      text: 'This property has an open house on Saturday!'
 
     project.neighborhoods = []
     project.neighborhoods.push
