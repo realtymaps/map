@@ -2,7 +2,7 @@ module.exports =
   index:          '/'
   login:          'login'
   logout:         'logout'
-  map:            'map?project_id'
+  map:            'map?project_id&property_id'
   authenticating: 'authenticating'
   accessDenied:   'accessDenied'
   snail:          'snail'
@@ -26,7 +26,8 @@ module.exports =
 
   mail:           'mail'
   mailWizard:     'mailWizard'
-  editTemplate:   '/editTemplate'
+  editTemplate:   '/editTemplate?templateType'
+  selectTemplate:   '/selectTemplate'
 
   avatar:         '/assets/avatar.svg'
   mocks:

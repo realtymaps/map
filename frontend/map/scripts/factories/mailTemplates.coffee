@@ -1,46 +1,16 @@
 app = require '../app.coffee'
 
-defaultHtml =
-  'basicLetter':
-    content: require('../../html/includes/mail/basic-letter-template.jade')()
 
-    # document level adjustments we want to make for wysiwyg based on template type
-    # add/remove special things into wysiwyg that we don't want to put in the original template, and not show up in letter
-    # (requires explicit dom manipulation to set inner text, etc)
-    # e.g. let's put informative text into the "return-address-window" element indicating where address will go
-    addTemporaryHtml: (doc) ->
-      # temporary indicator-text for address windows already placed in template
-
-    removeTemporaryHtml: (doc) ->
-      for clearDiv in ['return-address-window', 'recipient-address-window']
-        div = doc.getElementById(clearDiv) || {childNodes: []}
-        for child in div.childNodes
-          child.remove()
-      tmpBody = doc.createElement 'div'
-      tmpBody.appendChild doc.children[0]
-      tmpBody.innerHTML
-
-
-defaultFinalStyle =
-  'basicLetter':
-    content: require '../../styles/mailTemplates/basic-letter/lob.styl'
-
-
-getDefaultHtml = (type) ->
-  return defaultHtml[type].content
-
-getDefaultFinalStyle = (type) ->
-  return defaultFinalStyle[type].content
-
-app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, $document, rmapsMailCampaignService, rmapsprincipal, rmapsevents) ->
+app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, $document, rmapsMailCampaignService, rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService) ->
   _doc = $document[0]
 
   class MailTemplate
     constructor: (@type) ->
-      @defaultContent = getDefaultHtml(@type)
-      @defaultFinalStyle = getDefaultFinalStyle(@type)
+      @defaultContent = rmapsMailTemplateTypeService.getDefaultHtml(@type)
+      @style = rmapsMailTemplateTypeService.getDefaultFinalStyle(@type)
+
       @_setupWysiwygContent()
-      @style = @defaultFinalStyle
+
       @user =
         userID: null
       @mailCampaign =
@@ -78,9 +48,10 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
           phone: '(239) 877-7853'
           email: 'dan@mangrovebaynaples.com'
 
+
     _setupWysiwygContent: () =>
       $timeout () =>
-        defaultHtml[@type].addTemporaryHtml(_doc)
+        rmapsMailTemplateTypeService.setUp(@type, _doc)
 
     _createPreviewHtml: () =>
       #previewStyle = "body {box-shadow: 4px 4px 20px #888888;}"
@@ -91,7 +62,7 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 
     _createLobHtml: () =>
       letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/html'
-      lobContent = defaultHtml[@type].removeTemporaryHtml letterDocument
+      lobContent = rmapsMailTemplateTypeService.tearDown(@type, letterDocument)
       "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{lobContent}</body></html>"
 
     openPreview: () =>

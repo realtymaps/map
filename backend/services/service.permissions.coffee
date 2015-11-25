@@ -7,6 +7,7 @@ logger = require '../config/logger'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 
+{expectSingleRow} =  require '../utils/util.sql.helpers'
 
 hashifyPermissions = (hash, permission) ->
   hash[permission.codename] = true
@@ -16,6 +17,19 @@ hashifyGroups = (hash, group) ->
   hash[group.name] = true
   return hash
 
+
+# returns: Permission primary key ID for the given permission codename
+getPermissionForCodename = (codename) ->
+  tables.auth.permission()
+  .where
+    codename: codename
+  .then expectSingleRow
+  .then (row) ->
+    logger.info("permission found for codename #{codename}")
+    Promise.resolve(row)
+  .catch (err) ->
+    logger.error "error loading permission for codename #{codename}: #{err}"
+    Promise.reject(err)
 
 # returns: a hash of codenames to truthy values
 getPermissionsForGroupId = (id) ->
@@ -85,6 +99,7 @@ getGroupsForUserId = (id) ->
 
 
 module.exports =
+  getPermissionForCodename: getPermissionForCodename
   getPermissionsForGroupId: memoize(getPermissionsForGroupId, primitive: true, maxAge: 10*60*1000, preFetch: .1)
   getPermissionsForUserId: getPermissionsForUserId
   getGroupsForUserId: getGroupsForUserId

@@ -3,4 +3,23 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, rmapsprincipal) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, $log, rmapsprincipal, rmapsMailTemplate, rmapsMailTemplateTypeService) ->
+
+  $scope.displayCategory = 'all'
+
+  $scope.categories = rmapsMailTemplateTypeService.getCategories()
+  $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
+
+  $scope.$parent.templateType = {}
+
+  $scope.isEmptyCategory = () ->
+    return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
+
+  $scope.setCategory = (category) ->
+    if !category?
+      category = 'all'
+    $scope.displayCategory = category
+
+  $scope.selectTemplate = (idx) ->
+    templateType = $scope.categoryLists[$scope.displayCategory][idx].type
+    $state.go($state.get('editTemplate'), {templateType: templateType}, { reload: true })

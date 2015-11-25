@@ -117,7 +117,7 @@ getImage = (entity) -> Promise.try () ->
   accountImagesSvc.getById(entity.account_image_id)
   .then singleRow
 
-upsertImage = (entity, blob, tableFn = userData.user) ->
+upsertImage = (entity, blob, tableFn = tables.auth.user) ->
   getImage(entity)
   .then (image) ->
     if image
@@ -135,11 +135,11 @@ upsertImage = (entity, blob, tableFn = userData.user) ->
       .where(id:entity.id)
 
 upsertCompanyImage = (entity, blob) ->
-  upsertImage(entity,blob, userData.company)
+  upsertImage(entity,blob, tables.user.company)
 
 updatePassword = (user, password) ->
   createPasswordHash(password).then (password) ->
-    userData.user().update(password:password)
+    tables.auth.user().update(password:password)
     .where(id: user.id)
 
 module.exports =

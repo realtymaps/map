@@ -4,7 +4,7 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
-app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmapsParcelEnums,
+app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
   rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
   rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
 
@@ -174,7 +174,8 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
       @zoomTo(result,false)
 
     zoomTo: (result, doChangeZoom = true) =>
-      return if !result or not result.geom_point_json?
+      return if not result?.coordinates?
+
       resultCenter = new Point(result.coordinates[1],result.coordinates[0])
       old = _.cloneDeep @mapCtrl.scope.map.center
       resultCenter.zoom = old.zoom
@@ -279,6 +280,7 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, rmaps
             return unless data
             $timeout () =>
               angular.extend @mapCtrl.scope.selectedResult, data
+              $location.search 'property_id', result.rm_property_id
             , 50
 
         @mapCtrl.scope.Toggles.showDetails = showDetails
