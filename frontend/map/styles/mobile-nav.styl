@@ -62,7 +62,11 @@ $menu-footer-viewer-height = 129px
     padding-top 30px
 
   .menu-options
-    margin-bottom 30px
+    margin-bottom 20px
+    margin-top 20px
+
+  .project-select
+    border-bottom solid 1px $rm-border-line
 
   h1.logo
     display block
@@ -80,15 +84,23 @@ $menu-footer-viewer-height = 129px
     font-size 16px
     font-weight normal
 
-  .count
+  .count, .change-project
     float right
-    font-size 16px
     margin-right 10px
+
+  .count
+    font-size 16px
+
+  .change-project
+    font-size 12px
 
   ul.nav
     padding 0 10px 0 16px
     width 100%
     border-bottom 1px solid c_gray
+
+    &.project-select
+      padding-bottom 5px
 
     li
       a

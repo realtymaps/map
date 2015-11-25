@@ -16,12 +16,11 @@ include mixins/_avatarMixin.jade
             //
 
             div(ng-if="principal.isSubscriber() || principal.isEditor()")
-                ul.nav.project-select(ng-click="closeMobileNav($event)")
+              ul.nav.project-select(ng-click="closeMobileNav($event)")
                     li
                         a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
-                            span.icon.menu-icon.icon-property
-                            span.menu-label Projects
-                            span.menu-badge.count {{projectTotal}}
+                            span.menu-label {{project.name || "Sandbox"}}
+                            span.menu-alert.change-project Change Project
 
             //
             // Editor View
