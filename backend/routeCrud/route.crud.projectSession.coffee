@@ -10,6 +10,11 @@ userSvc = (require '../services/services.user').user.clone().init(false, true, '
 profileSvc = (require '../services/services.user').profile
 userUtils = require '../utils/util.user'
 
+# Needed for temporary create client user workaround until onboarding is completed
+userSessionSvc = require '../services/service.userSession'
+permissionsService = require '../services/service.permissions'
+# End temporary
+
 safeProfile = sqlHelpers.columns.profile
 safeUser = sqlHelpers.columns.user
 
@@ -57,8 +62,29 @@ class ClientsCrud extends RouteCrud
     .then (clientId) ->
       throw new Error 'user ID required - new or existing' unless clientId?
 
+      # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
+      newUser.id = clientId
+      userSessionSvc.updatePassword newUser, 'Password$1'
+
+    .then ->
+      # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
+      permissionsService.getPermissionForCodename 'unlimited_logins'
+
+    .then (authPermission) ->
+      logger.debug "Found new client permission id: #{authPermission.id}"
+
+      # TODO - TEMPORARY WORKAROUND to add unlimited access permission to client user, until onboarding is completed
+      throw new Error 'Could not find permission id for "unlimited_logins"' unless authPermission
+
+      permission =
+        user_id: newUser.id
+        permission_id: authPermission.id
+
+      userSvc.permissions.create permission, null, ['user_id', 'permission_id'], @doLogQuery
+
+    .then ->
       newProfile =
-        auth_user_id: clientId
+        auth_user_id: newUser.id
         parent_auth_user_id: req.user.id
         project_id: req.params.id
 
