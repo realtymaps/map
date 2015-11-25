@@ -26,6 +26,8 @@ module.exports =
   toGeoFeature: toGeoFeature
   toGeoFeatureCollection: (opts) ->
     (rows) ->
+      if !rows?.length
+        return type: 'FeatureCollection', features: []
       if opts?.uniqueKey?
         rows = _.uniq rows, (r) ->
           r[opts.uniqueKey]

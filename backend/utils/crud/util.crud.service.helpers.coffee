@@ -166,7 +166,8 @@ Many times returning the query itself is sufficent so it can be piped (MUCH bett
 ###
 singleResultBoolean = (q, doRowCount) ->
   q.then (result) ->
-    # logger.debug result
+    # logger.debug.yellow result
+    # logger.debug.yellow result.rowCount
     unless doRowCount
       return result == 1
     result.rowCount == 1

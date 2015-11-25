@@ -15,8 +15,14 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
       origFn = crudInstance[fnName]
       stub = crudInstance[fnName + 'Stub'] = sinon.stub()
       stub.sqls = []
+      stub.knexPromises = []
       crudInstance[fnName] = () ->
-        calledSql = origFn.apply(crudInstance, arguments).toString()
+        potentialKnexPromise = origFn.apply(crudInstance, arguments)
+        maybeSql = potentialKnexPromise.toString()
+        if maybeSql != "[object Promise]"
+          calledSql = maybeSql
+
+        stub.knexPromises.push potentialKnexPromise
 
         unless mockResponse?[fnName]
           stub.returns(calledSql)

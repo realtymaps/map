@@ -80,11 +80,6 @@ class ProjectRouteCrud extends RouteCrud
     #replaces the need for restrictAll
     @reqTransforms =
       params: validators.reqId toKey: 'auth_user_id'
-    # @doLogQuery = ['query','params']
-
-    # @byIdDELETETransforms =
-    #   params:
-
 
     @clientsCrud = new ClientsCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clients = @clientsCrud.root

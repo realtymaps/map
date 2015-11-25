@@ -1,6 +1,7 @@
 require '../../globals'
-assert = require('chai').assert
+{assert} = require('chai')
 Promise = require 'bluebird'
+_ = require 'lodash'
 require 'should'
 basePath = require '../basePath'
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
@@ -14,27 +15,31 @@ mockCls = require '../../specUtils/mockCls'
 usrTableNames = require("#{basePath}/config/tableNames").user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
+mockKnex = require 'mock-knex'
+colorWrap = require 'color-wrap'
+colorWrap(console)
+tables = require("#{basePath}/config/tables")
+db = require("#{basePath}/config/dbs").get("main")
+
 
 projCrudSvc = rewire "#{basePath}/services/service.user.project"
 
-#BEGIN TESTABLE OVERRIDES
-projCrudSvc = toTestThenableCrudInstance projCrudSvc,
+projectResponses =
   getAll:[id:1]
   getById: [id:1, sandbox: false]
-  delete: true
+  delete: 1
 
+drawnShapesRsponses = notesResponses = clientResponses =
+  delete: 1
+  getAll: [{project_id:1, id:2}]
+
+#BEGIN TESTABLE OVERRIDES
+projCrudSvc = toTestThenableCrudInstance projCrudSvc, projectResponses
 
 #needed since a route is mixing with route and svc logic... ugh
-projCrudSvc.clients = toTestThenableCrudInstance projCrudSvc.clients,
-  getAll: [{project_id:1, id:2}]
-
-projCrudSvc.notes = toTestThenableCrudInstance projCrudSvc.notes,
-  delete: true
-  getAll: [{project_id:1, id:2}]
-
-projCrudSvc.drawnShapes = toTestThenableCrudInstance projCrudSvc.drawnShapes,
-  delete: true
-  getAll: [{project_id:1, id:2}]
+projCrudSvc.clients = toTestThenableCrudInstance projCrudSvc.clients, clientResponses
+projCrudSvc.notes = toTestThenableCrudInstance projCrudSvc.notes, notesResponses
+projCrudSvc.drawnShapes = toTestThenableCrudInstance projCrudSvc.drawnShapes, drawnShapesRsponses
 
 #STUB cacheUserValues to keep the tests from bombing when we dont care about this
 #functionality
@@ -83,7 +88,6 @@ describe 'route.projectSession', ->
           id:1
         query:{}
         body:{}
-
 
     it 'project', ->
       @subject.rootGET(@mockRequest)
@@ -145,7 +149,7 @@ describe 'route.projectSession', ->
       @subject.rootGET(@mockRequest)
       .then () =>
         @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
-        query = params = {}
+        params = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
         params["#{usrTableNames.drawnShapes}.project_id"] = @mockRequest.params.id
@@ -171,14 +175,40 @@ describe 'route.projectSession', ->
           id:1
         query:{}
         body:{}
-      @promise = @subject.byIdDELETE(@mockRequest)
 
     it 'clients', ->
-      @promise.then =>
+      mockDb = mockKnex.mock(db)
+      tables.bootstrapModule mockDb
+      tracker = mockKnex.getTracker()
+      tracker.install()
+
+      tracker.on 'query', (query) ->
+        switch query.method
+          when 'select'#satisfy getById
+            console.log.blue 'select called'
+            query.response projectResponses.getById
+          when 'del'
+            console.log.cyan 'delete called'
+            query.response clientResponses.delete
+          else
+            console.log.blue 'unhandled query method: ' + query.method
+            query.response []
+
+      @subject.byIdDELETE(@mockRequest)
+      .then =>
         @subject.clientsCrud.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
-        console.log @subject.clientsCrud.svc.deleteStub.sql
-        # @subject.clientsCrud.svc.deleteStub.sqls[0].should.be.eql """delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'"""
+        assert.ok @subject.clientsCrud.svc.deleteStub.sqls
+        assert.ok @subject.clientsCrud.svc.deleteStub.sqls.length
+        assert.notOk @subject.clientsCrud.svc.deleteStub.sqls[0]
+        assert.ok @subject.clientsCrud.svc.deleteStub.knexPromises[0]
+        @subject.clientsCrud.svc.deleteStub.knexPromises[0].then (result) ->
+          assert.isTrue result
+        @subject.clientsCrud.svc.deleteStub.knexPromises[0]
+
+      .finally ->
+        tracker.uninstall()
+        mockKnex.unmock(db)
         #EXPLICITLY NOT USING CALLEDWITH as this gives better error output
         # @subject.clientsCrud.svc.deleteStub.args[0][0].should.be.eql {}
         # @subject.clientsCrud.svc.deleteStub.args[0][1].should.be.eql false
@@ -186,25 +216,3 @@ describe 'route.projectSession', ->
         #   project_id: @mockRequest.params.id
         #   auth_user_id: @mockRequest.user.id
         # @subject.clientsCrud.svc.deleteStub.args[0][3].should.be.eql safeProfile
-  #
-  #   it 'notesSvc', ->
-  #     @promise.then =>
-  #       testableNotesSvc.deleteStub.called.should.be.true
-  #       testableNotesSvc.deleteStub.sqls[0].should.be.eql """delete from "user_notes" where "auth_user_id" = '1' and "project_id" = '1'"""
-  #       testableNotesSvc.deleteStub.args[0][0].should.be.eql {}
-  #       testableNotesSvc.deleteStub.args[0][1].should.be.eql false
-  #       testableNotesSvc.deleteStub.args[0][2].should.be.eql
-  #         project_id: @mockRequest.params.id
-  #         auth_user_id: @mockRequest.user.id
-  #       testableNotesSvc.deleteStub.args[0][3].should.be.eql safeNotes
-  #
-  #   it 'super', ->
-  #     # testableProjSvc.resetStubs(true, 'deleteStub')
-  #     @promise.then =>
-  #       testableProjSvc.deleteStub.called.should.be.true
-  #       testableProjSvc.deleteStub().should.be.eql true
-  #       testableProjSvc.deleteStub.args.should.be.ok
-  #       testableProjSvc.deleteStub.args[0][0].should.be.eql @mockRequest.params
-  #       testableProjSvc.deleteStub.args[0][1].should.be.eql false
-  #       assert.isUndefined testableProjSvc.deleteStub.args[0][2]
-  #       testableProjSvc.deleteStub.args[0][3].should.be.eql safeProject

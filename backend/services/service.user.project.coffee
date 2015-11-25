@@ -1,16 +1,14 @@
-logger = require '../config/logger'
+_ = require 'lodash'
 tables = require '../config/tables'
-{profile, notes, project, drawnShapes} = require './services.user'
-{crud, ThenableCrud, thenableHasManyCrud, ThenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
+{profile, project} = require './services.user'
+{ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
-safeUser = sqlHelpers.columns.user
 safeNotes = sqlHelpers.columns.notes
-
 
 clientIdCol = joinColumns.client[0]
 projectId = "#{tables.user.project.tableName}.id"
@@ -68,9 +66,11 @@ class ProjectCrud extends ThenableCrud
         .then () =>
           @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: idObj.auth_user_id, safeNotes
       else
-        @clients.delete {}, @doLogQuery, project_id: project.id, auth_user_id: idObj.user.id, safeProfile
+        @clients.delete {}, @doLogQuery,
+          _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.profile.project_id, project.id), safeProfile
         .then () =>
-          @notes.delete {}, @doLogQuery, project_id: project.id, auth_user_id: idObj.user.id, safeNotes
+          @notes.delete {}, @doLogQuery,
+            _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.notes.project_id, project.id), safeNotes
         .then () =>
           super idObj, doLogQuery, entity, safe, fnExec
 

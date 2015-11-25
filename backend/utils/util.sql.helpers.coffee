@@ -1,9 +1,6 @@
 _ = require 'lodash'
-memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
-logger = require '../config/logger'
 Promise = require 'bluebird'
-util = require 'util'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
