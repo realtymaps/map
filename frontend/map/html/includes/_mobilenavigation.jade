@@ -18,9 +18,8 @@ include mixins/_avatarMixin.jade
             div(ng-if="principal.isSubscriber() || principal.isEditor()")
               ul.nav.project-select(ng-click="closeMobileNav($event)")
                     li
-                        a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
-                            span.menu-label {{project.name || "Sandbox"}}
-                            span.menu-alert.change-project Change Project
+                        a.menu-label.project-name(ui-sref="project({id: project.id})" class="projects" ng-class="{ active: isActive('projects') }") {{project.name || "Sandbox"}}
+                        a.menu-alert.change-project(ui-sref='projects') Change Project
 
             //
             // Editor View

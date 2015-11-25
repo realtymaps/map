@@ -84,14 +84,22 @@ $menu-footer-viewer-height = 129px
     font-size 16px
     font-weight normal
 
-  .count, .change-project
+  .count
     float right
     margin-right 10px
-
-  .count
     font-size 16px
 
+  .project-name
+    display: inline-block;
+    width: calc(100% - 105px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
   .change-project
+    position absolute
+    top 0
+    right 10px
     font-size 12px
 
   ul.nav
