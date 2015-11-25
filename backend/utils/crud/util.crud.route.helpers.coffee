@@ -122,32 +122,19 @@ class Crud extends BaseObject
   base: () ->
     super([Crud,@].concat(_.toArray arguments)...)
 
-class UpsertCrud extends Crud
-  byIdPUT: (req, res, next) =>
+class HasManyCrud extends Crud
+  constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud', doLogRequest) ->
+    # console.log name
+    super(svc, paramIdKey, name, doLogRequest)
+    unless @rootGETKey?
+      throw new NamedError(@name,'@rootGETKey must be defined')
+
+  rootGET: (req, res, next) =>
     @maybeLogRequest req, 'req'
-    @validRequest(req, 'byIdPUT').then (tReq) =>
+    @validRequest(req, 'rootGET').then (tReq) =>
       @maybeLogRequest tReq, 'tReq'
-      @svc.update(tReq.body, tReq.params, undefined, @safe, @doLogQuery)
+      @svc.getAll(_.set(tReq.query, @rootGETKey, tReq.params.id), @doLogQuery)
 
-wrapHasManyTrait = (baseKlass) ->
-  class HasManyTrait extends baseKlass
-    constructor: (svc, paramIdKey, @rootGETKey, name = 'HasManyRouteCrud', doLogRequest) ->
-      # console.log name
-      super(svc, paramIdKey, name, doLogRequest)
-      unless @rootGETKey?
-        throw new NamedError(@name,'@rootGETKey must be defined')
-
-    rootGET: (req, res, next) =>
-      @maybeLogRequest req, 'req'
-      @validRequest(req, 'rootGET').then (tReq) =>
-        @maybeLogRequest tReq, 'tReq'
-        @svc.getAll(_.set(tReq.query, @rootGETKey, tReq.params.id), @doLogQuery)
-
-hasManyCruds = [Crud, UpsertCrud].map (baseKlass) ->
-  wrapHasManyTrait(baseKlass)
-
-HasManyCrud = hasManyCruds[0]
-HasManyUpsertCrud = hasManyCruds[1]
 
 wrapRoutesTrait = (baseKlass) ->
   class RoutesTrait extends baseKlass
@@ -165,24 +152,17 @@ wrapRoutesTrait = (baseKlass) ->
     byId: (req, res, next) ->
       @handleQuery super(req, res, next), res
 
-routeCruds = [Crud, UpsertCrud, HasManyCrud, HasManyUpsertCrud].map (baseKlass) ->
+routeCruds = [Crud, HasManyCrud].map (baseKlass) ->
   wrapRoutesTrait(baseKlass)
 
 RouteCrud = routeCruds[0]
-RouteUpsertCrud = routeCruds[1]
-HasManyRouteCrud = routeCruds[2]
-HasManyRouteUpsertCrud = routeCruds[3]
+HasManyRouteCrud = routeCruds[1]
 
 module.exports =
-  wrapRoutesTrait: wrapRoutesTrait
-  wrapHasManyTrait: wrapHasManyTrait
   Crud:Crud
-  UpsertCrud: UpsertCrud
-  RouteCrud: RouteCrud
-  RouteUpsertCrud: RouteUpsertCrud
-  HasManyRouteCrud: HasManyRouteCrud
-  HasManyRouteUpsertCrud: HasManyRouteUpsertCrud
   crud: factory(Crud)
+  RouteCrud: RouteCrud
   routeCrud: factory(RouteCrud)
+  HasManyRouteCrud: HasManyRouteCrud
   hasManyRouteCrud: factory(HasManyRouteCrud)
-  hasManyRouteUpsertCrud: factory(HasManyRouteUpsertCrud)
+  wrapRoutesTrait: wrapRoutesTrait
