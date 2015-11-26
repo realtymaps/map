@@ -49,10 +49,12 @@ shutdown = () ->
     logger.error 'all databases shut down (?), some with errors.'
     Promise.reject(error)
 
+knexFactory = (dbName) ->
+  knex(config.DBS[dbName.toUpperCase()])
 
-getKnex = (dbName) ->
-  if !connectedDbs[dbName]?
-    connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
+getKnex = (dbName, force) ->
+  if !connectedDbs[dbName]? or force
+    connectedDbs[dbName] = knexFactory(dbName)
   connectedDbs[dbName]
 
 
@@ -75,3 +77,4 @@ module.exports =
   shutdown: shutdown
   get: getKnex
   getPlainClient: getPlainClient
+  knexFactory: knexFactory

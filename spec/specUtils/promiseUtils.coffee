@@ -1,5 +1,6 @@
 Promise = require 'bluebird'
 analyzeValue = require '../../common/utils/util.analyzeValue'
+require '../../backend/config/promisify'
 
 # This error class is private, intended for use within this module only
 class PromiseExpectationError extends Error
@@ -34,7 +35,7 @@ module.exports =
         if err not instanceof Error
           err = new Error(err)
         done(err)
-  
+
   # the promise returned from this function succeeds if the argument promise resolves (passing on the resolved value), and fails otherwise
   expectResolve: (promise) ->
     Promise.try () ->
@@ -52,7 +53,7 @@ module.exports =
     if type == PromiseExpectationError
       # since PromiseExpectationError isn't being exported, this would be a hard situation to create, but it is possible
       return Promise.reject(new Error("PromiseExpectationError passed as rejection type; this error is for internal use only"))
-    
+
     promise = Promise.try () ->
       promise
     .then (value) ->

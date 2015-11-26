@@ -19,6 +19,7 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
       crudInstance[fnName] = () ->
         potentialKnexPromise = origFn.apply(crudInstance, arguments)
         maybeSql = potentialKnexPromise.toString()
+        logger.debug.green maybeSql
         if maybeSql != "[object Promise]"
           calledSql = maybeSql
 
@@ -30,8 +31,8 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
 
         resp = mockResponse[fnName]
         stub.sqls.push calledSql
-        # logger.debug stub.sqls
-        # logger.debug "mockResponse[#{fnName}]"
+        logger.debug.green stub.sqls
+        logger.debug.green "mockResponse[#{fnName}]"
         # logger.debug resp, true
         stub.returns(resp)
         # console.log arguments, true

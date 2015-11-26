@@ -207,7 +207,8 @@ class ProjectRouteCrud extends RouteCrud
     super req, res, next
     .then (isSandBox) ->
       if isSandBox
-        delete req.session.profiles #to force profiles refresh in cache
+        if req?.session?.profiles
+          delete req.session.profiles #to force profiles refresh in cache
         userUtils.cacheUserValues req
       isSandBox
     .then (isSandBox) ->

@@ -3,7 +3,7 @@ dbs = require '../config/dbs'
 clone = require 'clone'
 _ = require 'lodash'
 
-escapeExports = ['bootstrapModule', 'buildRawTableQuery']
+escapeExports = ['bootstrapModule', 'buildRawTableQuery', 'dbFnFactory', 'dbFnsFactory']
 
 _buildQuery = (db, tableName) ->
   query = (transaction=db, asName) ->
@@ -58,13 +58,19 @@ module.exports = clone require './tableNames'
 
 # set up this way so IntelliJ's autocomplete works
 
-bootstrapModule = (db) ->
+bootstrapModule = (db, doLog) ->
   mainBootstrapped = false
   for groupName, groupConfig of module.exports
+    if _.contains escapeExports, groupName
+      continue
     #module.exports[groupName] = _buildQueries(groupConfig)
     module.exports[groupName] = {}
     for id, tableName of groupConfig
-      module.exports[groupName][id] = _buildQueryBootstrapper({groupName, id, tableName, db})
+      do (id, tableName) ->
+        if doLog
+          logger.debug {groupName, id}, true
+        module.exports[groupName][id] = _buildQueryBootstrapper({groupName, id, tableName, db})
+        return
 
 bootstrapModule()
 
@@ -73,4 +79,10 @@ module.exports.bootstrapModule = bootstrapModule
 module.exports.buildRawTableQuery = (tableName, args...) ->
   _buildQuery(dbs.get('raw_temp'), tableName)(args...)
 
+module.exports.dbFnFactory = _buildQuery
+module.exports.dbFnsFactory = (db, objTablesToDefined) ->
+  for name, val of objTablesToDefined
+    do(name, val) ->
+      objTablesToDefined[name] = _buildQuery(db, name)
+  objTablesToDefined
 #allow the whole tables lib to be rebootstrapped if needed / say mocked

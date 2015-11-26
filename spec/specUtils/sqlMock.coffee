@@ -1,6 +1,6 @@
 _ = require 'lodash'
 tables = require '../../backend/config/tables'
-
+sinon = require 'sinon'
 
 class SqlMock
   ### Helper class for shielding database from sql queries during tests.  Advantages include:
