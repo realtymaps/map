@@ -26,6 +26,7 @@ class Crud extends BaseObject
   constructor: (@dbFn, @idKey = 'id') ->
     super()
     unless _.isFunction @dbFn
+      logger.debug @dbFn, true
       throw new Error('dbFn must be a knex function')
 
   # a function to clone a instance so that, init in Thennable Trait can be called
@@ -53,7 +54,6 @@ class Crud extends BaseObject
 
   _getAll: (dbFn, query = {}, doLogQuery = false, fnExec = execQ) ->
     where = @[dbFn]()
-
     _.each query, (val, key) ->
       if _.isArray val
         where = where.whereIn(key, val)
@@ -133,6 +133,9 @@ class HasManyCrud extends Crud
   setIdStrs: (rootIdStr,joinIdStr) ->
     @rootIdStr = rootIdStr or @dbFn.tableName + '.id'
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
+    logger.debug 'setIdStrs !!!!!!!!!!!!!!!!!!'
+    logger.debug @rootIdStr
+    logger.debug @joinIdStr
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @joinQuery().where(query).count('*'), doLogQuery
