@@ -48,11 +48,6 @@ stylesWatch = (app) ->
   types = [ 'less', 'styles', 'stylus' ]
   watchPaths = _.union (_.values _.pick paths.map, types), (_.values _.pick paths[app], types)
 
-  # Options passed to gulp's underlying watch lib chokidar
-  # See https://github.com/paulmillr/chokidar
-  chokidarOpts =
-    alwaysStat: true
-
   # Keeps many files changing at once triggering the task over and over
   stylesFn = _.debounce styles(app), 1000
   # Just for nicer gulp out
@@ -60,33 +55,10 @@ stylesWatch = (app) ->
 
   console.log watchPaths
 
-  watcher = gulp.watch watchPaths, chokidarOpts, stylesFn
+  watcher = gulp.watch watchPaths, conf.chokidarOpts, stylesFn
 
   # Useful for debugging file watch issues
-  if verbose = false
-    watcher.on 'add', (path) ->
-      console.log 'File', path, 'has been added'
-
-    .on 'change', (path) ->
-      console.log 'File', path, 'has been changed'
-
-    .on 'unlink', (path) ->
-      console.log 'File', path, 'has been removed'
-
-    .on 'addDir', (path) ->
-      console.log 'Directory', path, 'has been added'
-
-    .on 'unlinkDir', (path) ->
-      console.log 'Directory', path, 'has been removed'
-
-    .on 'error', (error) ->
-      console.log 'Error happened', error
-
-    .on 'ready', ->
-      console.log 'Initial scan complete. Ready for changes'
-
-    .on 'raw', (event, path, details) ->
-      console.log 'Raw event info:', event, path, details
+  # require('../util/bundleLogger').logEvents(watcher)
 
   watcher
 

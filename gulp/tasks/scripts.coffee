@@ -80,7 +80,6 @@ browserifyTask = (app, watch = false) ->
     bundle = (stream) ->
       startTime = process.hrtime()
 
-      # Re-evaluate input pattern so new files are picked up
       globby(inputGlob)
       .then (newEntries) ->
         gutil.log 'Bundling', gutil.colors.blue(config.outputName) + ' ' + newEntries.length + ' files ...'
@@ -88,14 +87,8 @@ browserifyTask = (app, watch = false) ->
 
     if watch
 
-      # Options passed to gulp's underlying watch lib chokidar
-      # See https://github.com/paulmillr/chokidar
-      chokidarOpts =
-        alwaysStat: true
-
-      watcher = gulp.watch inputGlob, chokidarOpts, watchFn
-
-      watchFn = _.debounce () ->
+      watcher = gulp.watch inputGlob, conf.chokidarOpts, _.debounce () ->
+        # Re-evaluate input pattern so new files are picked up
         globby(inputGlob)
         .then (newEntries) ->
           diff = _.difference newEntries, entries
@@ -103,42 +96,19 @@ browserifyTask = (app, watch = false) ->
             console.log "New files: #{diff}"
             b.add diff
             entries = newEntries
-            debounced()
+            onUpdate()
       , 1000
 
       # Useful for debugging file watch issues
-      if verbose = false
-        watcher.on 'add', (path) ->
-          console.log 'File', path, 'has been added'
-
-        .on 'change', (path) ->
-          console.log 'File', path, 'has been changed'
-
-        .on 'unlink', (path) ->
-          console.log 'File', path, 'has been removed'
-
-        .on 'addDir', (path) ->
-          console.log 'Directory', path, 'has been added'
-
-        .on 'unlinkDir', (path) ->
-          console.log 'Directory', path, 'has been removed'
-
-        .on 'error', (error) ->
-          console.log 'Error happened', error
-
-        .on 'ready', ->
-          console.log 'Initial scan complete. Ready for changes'
-
-        .on 'raw', (event, path, details) ->
-          console.log 'Raw event info:', event, path, details
+      require('../util/bundleLogger').logEvents(watcher)
 
       b = watchify b
 
-      debounced = _.debounce () ->
+      onUpdate = _.debounce () ->
         bundle pipeline through()
-      , 1000, { leading: true, trailing: true }
+      , 1000
 
-      b.on 'update', debounced
+      b.on 'update', onUpdate
 
       gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
     else

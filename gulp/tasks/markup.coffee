@@ -40,43 +40,15 @@ markup = (app) ->
   markupFn
 
 markupWatch = (app) ->
-  # Options passed to gulp's underlying watch lib chokidar
-  # See https://github.com/paulmillr/chokidar
-  chokidarOpts =
-    alwaysStat: true
-
   # Keeps many files changing at once triggering the task over and over
   markupFn = _.debounce markup(app), 1000
   # Just for nicer gulp out
   markupFn.displayName = 'markup'
 
-  watcher = gulp.watch paths[app].jade, chokidarOpts, markupFn
+  watcher = gulp.watch paths[app].jade, conf.chokidarOpts, markupFn
 
   # Useful for debugging file watch issues
-  if verbose = false
-    watcher.on 'add', (path) ->
-      console.log 'File', path, 'has been added'
-
-    .on 'change', (path) ->
-      console.log 'File', path, 'has been changed'
-
-    .on 'unlink', (path) ->
-      console.log 'File', path, 'has been removed'
-
-    .on 'addDir', (path) ->
-      console.log 'Directory', path, 'has been added'
-
-    .on 'unlinkDir', (path) ->
-      console.log 'Directory', path, 'has been removed'
-
-    .on 'error', (error) ->
-      console.log 'Error happened', error
-
-    .on 'ready', ->
-      console.log 'Initial scan complete. Ready for changes'
-
-    .on 'raw', (event, path, details) ->
-      console.log 'Raw event info:', event, path, details
+  # require('../util/bundleLogger').logEvents(watcher)
 
   watcher
 
