@@ -64,7 +64,8 @@
           .col-md-12
             ul.projects-list
               li(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'" ui-sref="project({id: {{project.id}}})" ng-click="selectProject($index)")
-                h2.title {{project.name}}
+                h2.title {{project.name || "Sandbox"}}
+                  i.fa.fa-chevron-right.pull-right(ng-click="loadMap(project); $event.stopPropagation()")
                 div.tools
                     a(href="#/project/{{enity.id}}") Next
                 ul.data
