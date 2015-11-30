@@ -1,3 +1,4 @@
+require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
 path = require 'path'
 gulp = require 'gulp'
@@ -16,7 +17,7 @@ through = require 'through2'
 conf = require './conf'
 require './markup'
 ignore = require 'ignore'
-
+_ = require 'lodash'
 
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
@@ -78,13 +79,76 @@ browserifyTask = (app, watch = false) ->
 
     bundle = (stream) ->
       startTime = process.hrtime()
-      gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
-      b.bundle().pipe(stream)
+
+      # Re-evaluate input pattern so new files are picked up
+      globby(inputGlob)
+      .then (newEntries) ->
+        gutil.log 'Bundling', gutil.colors.blue(config.outputName) + ' ' + newEntries.length + ' files ...'
+        b.bundle().pipe(stream)
 
     if watch
+
+      # Options passed to gulp's underlying watch lib chokidar
+      # See https://github.com/paulmillr/chokidar
+      chokidarOpts =
+        alwaysStat: true
+
+      watcher = gulp.watch inputGlob, chokidarOpts, watchFn
+
+      watchFn = _.debounce () ->
+        globby(inputGlob)
+        .then (newEntries) ->
+          # console.log 'newEntries'
+          # console.log newEntries
+          diff = _.difference newEntries, entries
+          # console.log 'diff'
+          # console.log diff
+          if diff.length > 0
+            console.log diff + ' are new files'
+          b.add diff
+          entries = newEntries
+          # console.log 'entries'
+          # console.log entries
+
+          debounced()
+      , 1000
+
+      watchFn.displayName = 'scriptsChanged'
+
+      # Useful for debugging file watch issues
+      if verbose = true
+        watcher.on 'add', (path) ->
+          console.log 'File', path, 'has been added'
+
+        .on 'change', (path) ->
+          console.log 'File', path, 'has been changed'
+
+        .on 'unlink', (path) ->
+          console.log 'File', path, 'has been removed'
+
+        .on 'addDir', (path) ->
+          console.log 'Directory', path, 'has been added'
+
+        .on 'unlinkDir', (path) ->
+          console.log 'Directory', path, 'has been removed'
+
+        .on 'error', (error) ->
+          console.log 'Error happened', error
+
+        .on 'ready', ->
+          console.log 'Initial scan complete. Ready for changes'
+
+        .on 'raw', (event, path, details) ->
+          console.log 'Raw event info:', event, path, details
+
       b = watchify b
-      b.on 'update', () ->
+
+      debounced = _.debounce () ->
         bundle pipeline through()
+      , 1000, { leading: true, trailing: true }
+
+      b.on 'update', debounced
+
       gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
     else
       if config.require
