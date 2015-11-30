@@ -98,25 +98,16 @@ browserifyTask = (app, watch = false) ->
       watchFn = _.debounce () ->
         globby(inputGlob)
         .then (newEntries) ->
-          # console.log 'newEntries'
-          # console.log newEntries
           diff = _.difference newEntries, entries
-          # console.log 'diff'
-          # console.log diff
           if diff.length > 0
-            console.log diff + ' are new files'
-          b.add diff
-          entries = newEntries
-          # console.log 'entries'
-          # console.log entries
-
-          debounced()
+            console.log "New files: #{diff}"
+            b.add diff
+            entries = newEntries
+            debounced()
       , 1000
 
-      watchFn.displayName = 'scriptsChanged'
-
       # Useful for debugging file watch issues
-      if verbose = true
+      if verbose = false
         watcher.on 'add', (path) ->
           console.log 'File', path, 'has been added'
 
