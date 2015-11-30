@@ -70,7 +70,6 @@ class TaskService extends crudService.Crud
 healthDbFn = () ->
   _queryFn = (query = {}) ->
     _interval = '30 days'
-
     # validate time range to 30 days if not specified
     if query.timerange?
       if query.timerange in ['1 hour', '1 day', '7 days', '30 days']

@@ -1,6 +1,7 @@
 _ = require 'lodash'
 tables = require '../../backend/config/tables'
-
+dbs = require '../../backend/config/dbs'
+sinon = require 'sinon'
 
 class SqlMock
   ### Helper class for shielding database from sql queries during tests.  Advantages include:
@@ -18,6 +19,8 @@ class SqlMock
       throw new Error('\'tableHandle\' is a required option for SqlMock class')
 
     # dynamic instance hooks for the mock sql calls
+    @id = Math.trunc(Math.random()*1000000000)
+    @noBootstrap = !!@options.noBootstrap
     @[@options.groupName] = @
     @[@options.tableHandle] = (trx) =>
       if trx?
@@ -32,10 +35,16 @@ class SqlMock
     # spy on query-operators
     @selectSpy = sinon.spy()
     @groupBySpy = sinon.spy()
+    @groupByRawSpy = sinon.spy()
     @whereSpy = sinon.spy()
+    @whereRawSpy = sinon.spy()
     @insertSpy = sinon.spy()
     @updateSpy = sinon.spy()
     @deleteSpy = sinon.spy()
+    @asSpy = sinon.spy()
+    @rawSpy = sinon.spy()
+    @fromSpy = sinon.spy()
+    @leftJoinSpy = sinon.spy()
 
     @init()
 
@@ -67,11 +76,13 @@ class SqlMock
     @_queryChainFlag = false
     @_queryArgChain = []
 
-  initSvc: () ->
-    @_svc = tables[@options.groupName][@options.tableHandle]
-
-    # bootstrap
-    @_svc = @_svc() # bootstrap
+  initSvc: () ->    
+    if @options.groupName == 'dbs' and @options.tableHandle == 'main'
+      unless @noBootstrap then @_svc = dbs.get('main')
+    else
+      @_svc = tables[@options.groupName][@options.tableHandle]
+      unless @noBootstrap then @_svc = @_svc()
+      #@_svc = if @noBootstrap then @_svc()
 
   getSvc: () ->
     @_svc
@@ -79,10 +90,16 @@ class SqlMock
   resetSpies: () ->
     @selectSpy.reset()
     @groupBySpy.reset()
+    @groupByRawSpy.reset()
     @whereSpy.reset()
+    @whereRawSpy.reset()
     @insertSpy.reset()
     @updateSpy.reset()
     @deleteSpy.reset()
+    @asSpy.reset()
+    @rawSpy.reset()
+    @fromSpy.reset()
+    @leftJoinSpy.reset()
 
   _appendArgChain: (operator, args) ->
     @_queryArgChain.push
@@ -98,7 +115,8 @@ class SqlMock
   _quickQuery: () ->
     if !@_queryChainFlag
       for link in @_queryArgChain
-        @_svc = @_svc[link.operator](link.args)
+        if typeof @_svc[link.operator] is 'function'
+          @_svc = @_svc[link.operator](link.args)
       @_queryChainFlag = true
     @_svc
 
@@ -113,9 +131,19 @@ class SqlMock
     @_appendArgChain('groupBy', cols)
     @
 
+  groupByRaw: (rawCols) ->
+    @groupByRawSpy(rawCols)
+    @_appendArgChain('groupByRaw', rawCols)
+    @
+
   where: (query) ->
     @whereSpy(query)
     @_appendArgChain('where', query)
+    @
+
+  whereRaw: (query) ->
+    @whereRawSpy(query)
+    @_appendArgChain('whereRaw', query)
     @
 
   insert: (args) ->
@@ -131,6 +159,26 @@ class SqlMock
   delete: (args) ->
     @deleteSpy(args)
     @_appendArgChain('delete', args)
+    @
+
+  as: (args) ->
+    @asSpy(args)
+    @_appendArgChain('as', args)
+    @
+
+  raw: (args) ->
+    @rawSpy(args)
+    @_appendArgChain('raw', args)
+    @
+
+  from: (args) ->
+    @fromSpy(args)
+    @_appendArgChain('from', args)
+    @
+
+  leftJoin: (args) ->
+    @leftJoinSpy(args)
+    @_appendArgChain('leftJoin', args)
     @
 
   #### public evaluators ####
