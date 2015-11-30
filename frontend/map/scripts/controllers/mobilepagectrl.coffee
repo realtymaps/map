@@ -14,8 +14,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
 
     # Load the current project, if any, in order to populate totals in the menu
     if rmapsprincipal.isAuthenticated()
-      rmapsprincipal.getCurrentProfile()
-      .then (profile) ->
+      profile = rmapsprincipal.getCurrentProfile()
+      if profile
         $scope.profile = profile
 
         # Load the Project counts such as number of properties, neighborhoods, etc...

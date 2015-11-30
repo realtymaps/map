@@ -16,7 +16,8 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
   _syncDrawnShapes = () ->
     # shapesSvc.update drawnItems.toGeoJSON()
 
-  rmapsprincipal.getCurrentProfile().then (profile) ->
+  profile = rmapsprincipal.getCurrentProfile()
+  if profile
     $log.debug('profile')
     $log.debug(profile)
     # drawnShapes = profile.drawn_shapes

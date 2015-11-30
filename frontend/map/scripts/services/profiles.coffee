@@ -16,8 +16,7 @@ app.service 'rmapsProfilesService', ($http, $rootScope, rmapsprincipal, rmapseve
   _current = (profile) ->
     _currentProfSvc.setCurrent profile
     .then () ->
-      $rootScope.$emit rmapsevents.principal.profile.updated, profile
-      rmapsprincipal.getCurrentProfileId profile.id
+      rmapsprincipal.setCurrentProfile profile
 
   setCurrent: (oldProfile, newProfile) ->
     if oldProfile?
