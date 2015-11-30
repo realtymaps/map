@@ -3,6 +3,7 @@ tables = require '../../backend/config/tables'
 sinon = require 'sinon'
 colorWrap = require 'color-wrap'
 colorWrap(console)
+Promise = require 'bluebird'
 
 _sqlFns = [
   'select'
@@ -62,7 +63,10 @@ class SqlMock
         callback(temptrx)
 
   dbFn: () =>
-    @
+    fn = () =>
+      @
+    fn.tableName = @tableName
+    fn
 
   thenSpy: ->
     @_thenSpy
@@ -87,7 +91,7 @@ class SqlMock
   initSvc: () ->
     @_svc = tables[@options.groupName][@options.tableHandle] unless @_svc
     @tableName = @options?.tableHandle or @_svc.tableName
-    console.log.cyan @tableName
+    # console.log.cyan @tableName
     # bootstrap
     @_svc = @_svc() # bootstrap
     # console.log.cyan @_svc, true
@@ -116,7 +120,8 @@ class SqlMock
     @_svc
 
   #### public evaluators ####
-  then: (callback) ->
+  then: () ->
+    #map toString to some result
     @
 
   catch: (err) ->

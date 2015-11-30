@@ -133,9 +133,9 @@ class HasManyCrud extends Crud
   setIdStrs: (rootIdStr,joinIdStr) ->
     @rootIdStr = rootIdStr or @dbFn.tableName + '.id'
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
-    logger.debug 'setIdStrs !!!!!!!!!!!!!!!!!!'
-    logger.debug @rootIdStr
-    logger.debug @joinIdStr
+    # logger.debug 'setIdStrs !!!!!!!!!!!!!!!!!!'
+    # logger.debug @rootIdStr
+    # logger.debug @joinIdStr
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @joinQuery().where(query).count('*'), doLogQuery

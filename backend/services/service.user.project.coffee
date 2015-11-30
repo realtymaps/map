@@ -67,6 +67,7 @@ class ProjectCrud extends ThenableCrud
 
       # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
       if project.sandbox is true
+        logger.debug.yellow 'is sandbox'
         @update project.id, properties_selected: {}, safeProject, doLogQuery
         .then () =>
           @clients.getAll idObj
@@ -81,12 +82,16 @@ class ProjectCrud extends ThenableCrud
         .then () =>
           @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: idObj.auth_user_id, safeNotes
       else
+        logger.debug.yellow 'not sandbox'
         @clients.delete {}, @doLogQuery,
+          logger.debug.yellow 'not sandbox clients delete'
           _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.profile.project_id, project.id), safeProfile
         .then () =>
           @notes.delete {}, @doLogQuery,
+            logger.debug.yellow 'not sandbox notes delete'
             _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.notes.project_id, project.id), safeNotes
         .then () =>
+          logger.debug.yellow 'not sandbox project delete'
           super idObj, doLogQuery, entity, safe, fnExec
 
 

@@ -3,6 +3,7 @@ pg = require 'pg'
 Promise = require 'bluebird'
 config = require './config'
 logger = require './logger'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 do require '../../common/config/dbChecker.coffee'
 _ = require 'lodash'
 
@@ -20,7 +21,7 @@ _knexShutdown = (db, name) ->
     logger.error "!!! '#{name}' database shutdown error: #{error}"
     Promise.reject(error)
 
-
+    
 _barePgShutdown = () ->
   new Promise (resolve, reject) ->
     logger.info "... attempting bare pg database shutdown ..."
@@ -49,15 +50,13 @@ shutdown = () ->
     logger.error 'all databases shut down (?), some with errors.'
     Promise.reject(error)
 
-knexFactory = (dbName) ->
-  knex(config.DBS[dbName.toUpperCase()])
-
-getKnex = (dbName, force) ->
-  if !connectedDbs[dbName]? or force
-    connectedDbs[dbName] = knexFactory(dbName)
+    
+getKnex = (dbName) ->
+  if !connectedDbs[dbName]?
+    connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
   connectedDbs[dbName]
 
-
+  
 getPlainClient = (dbName, handler) ->
   dbConfig = config.DBS[dbName.toUpperCase()]
   client = new pg.Client(dbConfig.connection)
@@ -71,10 +70,9 @@ getPlainClient = (dbName, handler) ->
       client.end()
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
-
+      
 
 module.exports =
   shutdown: shutdown
   get: getKnex
   getPlainClient: getPlainClient
-  knexFactory: knexFactory
