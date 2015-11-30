@@ -13,11 +13,11 @@ _ = require 'lodash'
 _getZoom = (position) ->
   position.center.zoom
 
-_handleReturnType = (state, queryParams, limit, zoom = 13) ->
+_handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   returnAs = queryParams.returnType
 
   _default = ->
-    query = base.getFilterSummaryAsQuery(state, queryParams, 800)
+    query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 800)
     return Promise.resolve([]) unless query
 
     # include saved id's in query so no need to touch db later
@@ -37,14 +37,14 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       props
 
   _cluster = ->
-    base.getFilterSummary(state, queryParams, limit, sqlCluster.clusterQuery(zoom))
+    filterSummaryImpl.getFilterSummary(state, queryParams, limit, sqlCluster.clusterQuery(zoom))
     .then (properties) ->
       sqlCluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
 
   _geojsonPolys = ->
-    query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
+    query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 2000, query)
     return Promise.resolve([]) unless query
 
     # include saved id's in query so no need to touch db later
@@ -62,7 +62,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
           d
 
   _clusterOrDefault = ->
-    base.getResultCount(state, queryParams).then (data) ->
+    filterSummaryImpl.getResultCount(state, queryParams).then (data) ->
       if data[0].count > config.backendClustering.resultThreshold
         return _cluster()
       else
@@ -78,9 +78,9 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   handle()
 
 module.exports =
-  getFilterSummary: (state, rawFilters, limit = 2000) ->
+  getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = base) ->
     _zoom = null
     Promise.try ->
-      base.validateAndTransform(state, rawFilters)
+      filterSummaryImpl.validateAndTransform(state, rawFilters)
     .then (queryParams) ->
-      _handleReturnType(state, queryParams, limit, _getZoom(state.map_position))
+      _handleReturnType(filterSummaryImpl, state, queryParams, limit, _getZoom(state.map_position))
