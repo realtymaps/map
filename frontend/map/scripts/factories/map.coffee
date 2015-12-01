@@ -66,6 +66,7 @@ app.factory 'rmapsMap',
             $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
 
           $scope.$watch 'Toggles.propertiesInShapes', (newVal) =>
+            $rootScope.propertiesInShapes = newVal
             @redraw()
 
           _firstCenter = true

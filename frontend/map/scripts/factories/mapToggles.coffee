@@ -47,7 +47,6 @@ app.factory 'rmapsMapToggles', ($rootScope) ->
 
     @togglePropertiesInShapes = =>
       @propertiesInShapes = !@propertiesInShapes
-      $rootScope.propertiesInShapes = @propertiesInShapes
 
     @toggleSearch = (val) =>
       if val?
