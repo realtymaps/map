@@ -5,6 +5,8 @@ qs = require 'qs'
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
+  $log = $log.spawn("map:rmapsPropertiesService")
+
   #HASH to properties by rm_property_id
   #we may want to save details beyond just saving there fore it will be a hash pointing to an object
   _savedProperties = {}
@@ -46,10 +48,13 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
 
     returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
 
-    if $rootScope.propertiesInShapes
+    boundsStr = "bounds=#{hash}"
+    if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
       pathId = 'drawnShapes'
+      boundsStr = ''
 
-    route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
+    $log.debug("filters: #{filters}")
+    route = "#{backendRoutes.properties[pathId]}?#{boundsStr}#{returnTypeStr}#{filters}&#{mapState}"
     $log.log(route) if window.isTest
     $http.get(route, cache: cache)
 
@@ -128,11 +133,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       url = "#{backendRoutes.properties.detail}?#{queryStr}&columns=#{column_set}#{mapStateStr}"
       _detailThrottler.invokePromise $http.get(url, cache: cache)
       , http: {route: backendRoutes.properties.detail }
-
-    getDrawnShapes: (hash, mapState, cache = true) ->
-      _addressThrottler.invokePromise _getPropertyData(
-        'drawnShapes', hash, mapState, undefined, filters = '', cache)
-      , http: {route: backendRoutes.properties.drawnShapes }
 
     getProperties: (ids, columns) ->
       $http.get backendRoutes.properties.details, params: rm_property_id: ids, columns: columns

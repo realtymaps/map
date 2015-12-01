@@ -85,7 +85,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        # logger.debug.cyan req.query, true
+        logger.debug.cyan req.query.current_project_id, true
         # logger.functions DrawnShapesFiltSvc
         filterSummaryService.getFilterSummary(
           currentProfile(req),

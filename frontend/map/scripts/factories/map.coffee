@@ -100,7 +100,7 @@ app.factory 'rmapsMap',
           saved
 
         @scope.refreshState = (overrideObj = {}) =>
-          @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
+          @mapState = qs.stringify _.extend({}, @getMapStateObj(), overrideObj)
           @mapState
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////

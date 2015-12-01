@@ -65,7 +65,10 @@ _getResultCount = (state, filters) ->
   query
 
 _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
-  return if !filters or !filters?.status?.length or !query
+  throw new Error('filters undefined') if !filters
+  throw new Error('filters.status empty') if !filters?.status?.length
+  throw new Error('knex starting query missing!') if !query
+
   query.limit(limit) if limit
   if filters.bounds
     sqlHelpers.whereInBounds(query, "#{dbTableName}.geom_polys_raw", filters.bounds)

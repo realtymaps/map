@@ -19,7 +19,6 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   logger.debug "_handleReturnType: " + returnAs
   _default = ->
     query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 800)
-    return Promise.resolve([]) unless query
 
     # include saved id's in query so no need to touch db later
     propertiesIds = _.keys(state.properties_selected)
