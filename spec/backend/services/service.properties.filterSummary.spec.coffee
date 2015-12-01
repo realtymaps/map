@@ -1,6 +1,5 @@
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.properties.filterSummary'
-Promise = require 'bluebird'
 gjv = require 'geojson-validation'
 mocks =
   map:
@@ -18,7 +17,6 @@ describe 'service.properties.filterSummary', ->
   # NOTE this is really an integration test
   # This is important as the database column naming is highly dependent!
   it 'geojsonPolys returns valid geojson', (done) ->
-    throw Error("mocks.map.filter.status problem") if !mocks.map.filter.status.length
     @subject.getFilterSummary mocks.map.state, mocks.map.filter
     .then (data) ->
       gjv.valid(data).should.be.ok

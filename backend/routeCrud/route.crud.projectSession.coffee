@@ -9,7 +9,6 @@ sqlHelpers = require '../utils/util.sql.helpers'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
 userUtils = require '../utils/util.user'
-{currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
@@ -153,7 +152,6 @@ class ProjectRouteCrud extends RouteCrud
           query: validators.object isEmptyProtect: true
           body: bodyTransform
 
-    # drawnShapesCrud
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
 
