@@ -1,9 +1,6 @@
 _ = require 'lodash'
-memoize = require 'memoizee'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
-logger = require '../config/logger'
 Promise = require 'bluebird'
-util = require 'util'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -93,7 +90,7 @@ columns =
 
   profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results', 'favorites']
 
-  drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw']
+  drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras']
 
 columns.all = "#{columns.filter}, #{columns.detail}"
 

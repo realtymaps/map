@@ -2,12 +2,9 @@
 factory = require '../util.factory'
 logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
-ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
-{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 NamedError = require '../errors/util.error.named'
-{validators, validateAndTransform, falsyTransformsToNoop, defaultRequestTransforms} = require '../util.validation'
-Promise = require 'bluebird'
+{validateAndTransform, falsyTransformsToNoop, defaultRequestTransforms} = require '../util.validation'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = 'Crud', @doLogRequest) ->
