@@ -65,6 +65,9 @@ app.factory 'rmapsMap',
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
             $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
 
+          $scope.$watch 'Toggles.propertiesInShapes', (newVal) =>
+            @redraw()
+
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal
