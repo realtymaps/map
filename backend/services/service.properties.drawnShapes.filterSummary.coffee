@@ -5,6 +5,7 @@ tablesNames = require '../config/tableNames'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 {validators} = require '../utils/util.validation'
+{distance} = require '../../common/utils/enums/util.enums.map.coord_system.coffee'
 
 ###
 override:
@@ -13,20 +14,6 @@ override:
 - getDefaultQuery
 - (optionally) validateAndTransform
 - tested non knex query that works
-
-select distinct on (rm_property_id) *
-from mv_property_details
-inner join user_drawn_shapes on
-st_within(mv_property_details.geom_point_raw,user_drawn_shapes.geom_polys_raw) or
-(
-user_drawn_shapes.geom_point_raw is not null and
-user_drawn_shapes.shape_extras is not null and
-ST_DWithin(
-mv_property_details.geom_point_raw,
-user_drawn_shapes.geom_point_raw,
-text(user_drawn_shapes.shape_extras->'radius')::float)
-) limit 500;
-
 ###
 
 detailsName = tablesNames.property.propertyDetails
@@ -48,7 +35,7 @@ getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
      ST_DWithin(
      #{detailsName}.geom_point_raw,
      #{drawnShapesName}.geom_point_raw,
-     text(#{drawnShapesName}.shape_extras->'radius')::float/111195)
+     text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
 getFilterSummaryAsQuery = (state, filters, limit, query = getDefaultQuery()) ->
