@@ -57,7 +57,7 @@ class ClientsCrud extends RouteCrud
       date_invited: new Date()
       parent_id: req.user.id
       username: req.body.username || "#{req.body.first_name}_#{req.body.last_name}".toLowerCase()
-
+    #TODO: the majority of this is service business logic and should be moved to service.user.project
     userSvc.upsert  _.defaults(newUser, req.body), [ 'email' ], false, safeUser, @doLogQuery
     .then (clientId) ->
       throw new Error 'user ID required - new or existing' unless clientId?
@@ -97,6 +97,7 @@ class ClientsCrud extends RouteCrud
     @svc.getById req.params[@paramIdKey], @doLogQuery, parent_id: req.user.id, [ 'parent_id' ]
     .then (profile) =>
       throw new Error 'Client info cannot be modified' unless profile?
+      #TODO: the majority of this is service business logic and should be moved to service.user.project
       userSvc.update profile.auth_user_id, req.body, safeUser, @doLogQuery
 
 class ProjectRouteCrud extends RouteCrud
@@ -105,11 +106,6 @@ class ProjectRouteCrud extends RouteCrud
     #replaces the need for restrictAll
     @reqTransforms =
       params: validators.reqId toKey: 'auth_user_id'
-    # @doLogQuery = ['query','params']
-
-    # @byIdDELETETransforms =
-    #   params:
-
 
     @clientsCrud = new ClientsCrud(@svc.clients, 'clients_id', 'ClientsHasManyRouteCrud', ['query','params'])
     @clients = @clientsCrud.root
@@ -126,14 +122,35 @@ class ProjectRouteCrud extends RouteCrud
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
+    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud.doLogRequest = ['params', 'body`']
     @drawnShapesCrud.rootGETTransforms =
       params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
     @drawnShapesCrud.byIdGETTransforms =
       params: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
+
+    bodyTransform =
+      validators.object
+        subValidateSeparate:
+          geom_point_json: validators.geojson(toCrs:true)
+          geom_polys_json: validators.geojson(toCrs:true)
+          geom_line_json:  validators.geojson(toCrs:true)
+
+    @drawnShapesCrud.rootPOSTTransforms =
+      params: validators.mapKeys id: "#{usrTableNames.project}.id"
+      query: validators.object isEmptyProtect: true
+      body: bodyTransform
+
+    for route in ['byIdPUT', 'byIdDELETE']
+      do (route) =>
+        @drawnShapesCrud[route + 'Transforms'] =
+          params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
+          query: validators.object isEmptyProtect: true
+          body: bodyTransform
 
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
@@ -190,7 +207,8 @@ class ProjectRouteCrud extends RouteCrud
     super req, res, next
     .then (isSandBox) ->
       if isSandBox
-        delete req.session.profiles #to force profiles refresh in cache
+        if req?.session?.profiles
+          delete req.session.profiles #to force profiles refresh in cache
         userUtils.cacheUserValues req
       isSandBox
     .then (isSandBox) ->

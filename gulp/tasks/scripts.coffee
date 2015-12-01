@@ -1,3 +1,4 @@
+require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
 path = require 'path'
 gulp = require 'gulp'
@@ -16,7 +17,7 @@ through = require 'through2'
 conf = require './conf'
 require './markup'
 ignore = require 'ignore'
-
+_ = require 'lodash'
 
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
@@ -78,13 +79,37 @@ browserifyTask = (app, watch = false) ->
 
     bundle = (stream) ->
       startTime = process.hrtime()
-      gutil.log 'Bundling', gutil.colors.blue(config.outputName) + '...'
-      b.bundle().pipe(stream)
+
+      globby(inputGlob)
+      .then (newEntries) ->
+        gutil.log 'Bundling', gutil.colors.blue(config.outputName) + ' ' + newEntries.length + ' files ...'
+        b.bundle().pipe(stream)
 
     if watch
+
+      watcher = gulp.watch inputGlob, conf.chokidarOpts, _.debounce () ->
+        # Re-evaluate input pattern so new files are picked up
+        globby(inputGlob)
+        .then (newEntries) ->
+          diff = _.difference newEntries, entries
+          if diff.length > 0
+            console.log "New files: #{diff}"
+            b.add diff
+            entries = newEntries
+            onUpdate()
+      , 1000
+
+      # Useful for debugging file watch issues
+      require('../util/bundleLogger').logEvents(watcher)
+
       b = watchify b
-      b.on 'update', () ->
+
+      onUpdate = _.debounce () ->
         bundle pipeline through()
+      , 1000
+
+      b.on 'update', onUpdate
+
       gutil.log "Watching #{entries.length} files matching", gutil.colors.yellow(inputGlob)
     else
       if config.require

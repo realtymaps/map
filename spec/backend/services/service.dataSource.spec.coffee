@@ -2,17 +2,18 @@ _ = require 'lodash'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.dataSource.coffee'
 tables = require '../../../backend/config/tables'
-sqlMockUtil = require '../../specUtils/sqlMock.coffee'
-
+SqlMock = require '../../specUtils/sqlMock'
+{expect, assert} = require 'chai'
+require 'should'
 
 describe 'service.dataSource.coffee', ->
   describe 'basic CRUD', ->
     beforeEach ->
-      @dsSqlMock = new sqlMockUtil.SqlMock
+      @dsSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataSourceFields'
 
-      svc.__set__('tables', @dsSqlMock)
+      svc.__get__('tables', @dsSqlMock)
 
       @query =
         data_source_id: 'blackknight'
@@ -28,7 +29,7 @@ describe 'service.dataSource.coffee', ->
 
   describe 'getColumnList', ->
     beforeEach ->
-      @dsSqlMock = new sqlMockUtil.SqlMock
+      @dsSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataSourceFields'
 
@@ -43,7 +44,7 @@ describe 'service.dataSource.coffee', ->
         MetadataEntryID: 1
         LongName: 'a.long.name'
         SystemName: 'A Long Name'
-      ,  
+      ,
         MetadataEntryID: 2
         LongName: 'another.long.name'
         SystemName: 'Another Long Name'
@@ -71,7 +72,7 @@ describe 'service.dataSource.coffee', ->
 
   describe 'getLookupTypes', ->
     beforeEach ->
-      @dsSqlMock = new sqlMockUtil.SqlMock
+      @dsSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataSourceLookups'
 
@@ -91,6 +92,3 @@ describe 'service.dataSource.coffee', ->
       @dsSqlMock.catchSpy().callCount.should.equal 1
 
       done()
-
-
-

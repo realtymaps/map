@@ -2,13 +2,16 @@ gulp = require 'gulp'
 mocha = require 'gulp-mocha'
 plumber = require 'gulp-plumber'
 istanbul = require 'gulp-coffee-istanbul'
-coffee = require 'gulp-coffee'
 paths = require '../../common/config/paths'
+logFile = require '../util/logFile'
+es = require 'event-stream'
+
 require 'chai'
 require 'should'
 
 runMocha = (files, reporter = 'dot', done) ->
   gulp.src files, read: false
+  # .pipe logFile(es)
   .pipe plumber()
   .pipe mocha
     reporter: reporter
@@ -34,6 +37,7 @@ gulp.task 'mocha', gulp.series 'backendSpec'
 
 gulp.task 'coverFiles', ->
   gulp.src [paths.common, paths.backend].map (f) -> f + '*.coffee'
+  # .pipe logFile(es)
   .pipe istanbul()
   .pipe istanbul.hookRequire()
 
