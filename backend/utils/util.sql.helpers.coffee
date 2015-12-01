@@ -180,6 +180,7 @@ sqlizeColName = (fullName) ->
 
 module.exports =
   between: between
+  ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
   orderByDistanceFromPoint: orderByDistanceFromPoint
   allPatternsInAnyColumn: allPatternsInAnyColumn
   select: select

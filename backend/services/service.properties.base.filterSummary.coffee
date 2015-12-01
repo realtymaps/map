@@ -1,9 +1,7 @@
 Promise = require "bluebird"
 logger = require "../config/logger"
-config = require "../config/config"
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
-sqlColumnsHelpers = require "./../utils/util.sql.columns"
 filterStatuses = require "../enums/filterStatuses"
 _ = require "lodash"
 tables = require "../config/tables"
@@ -15,7 +13,6 @@ dbTableName = tableNames.property.propertyDetails
 validators = validation.validators
 
 statuses = filterStatuses.keys
-filterStatusesEnum =  filterStatuses.enum
 
 minMaxValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
@@ -107,9 +104,9 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
     sqlHelpers.allPatternsInAnyColumn(query, patterns, ["#{dbTableName}.owner_name", "#{dbTableName}.owner_name2"])
 
   if filters.listedDaysMin
-    sqlColumnsHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
+    sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
   if filters.listedDaysMax
-    sqlColumnsHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", "<=", filters.listedDaysMax)
+    sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", "<=", filters.listedDaysMax)
 
   query
 
