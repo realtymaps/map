@@ -26,6 +26,7 @@ _orWhereRawSafe = (query, rawSafe) ->
 _orderByRawSafe = (query, rawSafe) ->
   query.orderByRaw rawSafe.sql, rawSafe.bindings
 
+#TODO in sep PR remove this and all its dependencies
 columns = sqlColumns.basicColumns
 
 _getPartialPoint = (objOrArray, arrayDex, param) ->

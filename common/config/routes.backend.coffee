@@ -27,7 +27,6 @@ apiBaseClients = "#{apiBaseSession}/clients"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 
-drawnShapesPropertiesWithin = "#{apiBaseProjectsSession}/:id/drawnShapes/propertiesWithin"
 
 module.exports =
   views:
