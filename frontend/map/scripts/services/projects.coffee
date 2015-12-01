@@ -58,6 +58,12 @@ app.service 'rmapsProjectsService', ($http, $log) ->
   _update = (project) ->
     $http.put backendRoutes.projectSession.root + "/#{project.id}", project
 
+  getProjects: (cache = false) ->
+    $http.get backendRoutes.projectSession.root, cache: cache
+    .then (response) ->
+      projects = response.data
+      _.each projects, _mockData
+      projects
 
   getProject: (id) ->
     $http.get backendRoutes.projectSession.root + "/#{id}"
