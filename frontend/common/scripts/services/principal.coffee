@@ -70,10 +70,6 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
   ##
   ##
 
-  getCurrentProfileNotPromise = () ->
-    if _identity?.currentProfileId? && _identity?.profiles?.hasOwnProperty(_identity?.currentProfileId)
-      return _identity.profiles[_identity.currentProfileId]
-
   isSubscriber: () ->
     return _identity and _identity.user?.parent_id == null
 
@@ -120,4 +116,3 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
   setCurrentProfile: setCurrentProfile
   getCurrentProfileId: getCurrentProfileId
   getCurrentProfile: getCurrentProfile
-  getCurrentProfileNotPromise: getCurrentProfileNotPromise

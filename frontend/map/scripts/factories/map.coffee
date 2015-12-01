@@ -347,7 +347,7 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
-          current_project_id: rmapsprincipal.getCurrentProfileNotPromise()?.project_id
+          current_project_id: rmapsprincipal.getCurrentProfile()?.project_id
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
