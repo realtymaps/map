@@ -15,7 +15,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
   drawnShapesFact = rmapsProjectsService.drawnShapes
   drawnShapesSvc = null
 
-  rmapsprincipal.getCurrentProfile().then (profile) ->
+  if profile = rmapsprincipal.getCurrentProfile()
     $log.debug('profile: project_id' + profile.project_id)
     drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
     drawnShapesSvc.getAll().then (drawnShapes) ->
