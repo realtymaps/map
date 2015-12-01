@@ -1,26 +1,36 @@
-_parcelPropertiesMove = [
-  'rm_property_id'
-  'street_address_num'
-  'geom_point_json'
-  'passedFilters'
-]
+_ = require 'lodash'
 
-parcelFeature = (row, toMove = _parcelPropertiesMove, deletes = []) ->
-  deletes.forEach (prop) ->
+toGeoFeature = (row, opts) ->
+  opts.deletes?.forEach (prop) ->
     delete row[prop]
 
   row.properties = {}
-  toMove.forEach (prop) ->
+
+  if opts?.geometry?
+    geometryStr = _.find opts.geometry, (geomName) ->
+      row[geomName]?
+    row.geometry = row[geometryStr]
+
+    # console.log row, true
+
+  opts?.toMove?.forEach (prop) ->
     row.properties[prop] = row[prop]
     delete row[prop]
+
+  row.type = 'Feature'
+
+
   row
 
 module.exports =
-  parcelFeature: parcelFeature
+  toGeoFeature: toGeoFeature
+  toGeoFeatureCollection: (opts) ->
+    (rows) ->
+      if !rows?.length
+        return type: 'FeatureCollection', features: []
+      if opts?.uniqueKey?
+        rows = _.uniq rows, (r) ->
+          r[opts.uniqueKey]
 
-  parcelFeatureCollection: (rows) ->
-    rows = _.uniq rows, (r) ->
-      r.rm_property_id
-    rows.forEach (row) ->
-      row = parcelFeature(row)
-    type: 'FeatureCollection', features: rows
+      toGeoFeature(row, opts) for row in rows
+      type: 'FeatureCollection', features: rows

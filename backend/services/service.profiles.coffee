@@ -17,8 +17,9 @@ create = (newProfile) ->
     tables.user.project()
     .returning('id')
     .insert(_.pick newProfile, safeProject)
-  .then (projectIds) ->
-    newProfile.project_id = projectIds[0]
+  .then singleRow
+  .then (project) ->
+    newProfile.project_id = project
     tables.user.profile()
     .returning(safeProfile)
     .insert(_.pick newProfile, safeProfile)

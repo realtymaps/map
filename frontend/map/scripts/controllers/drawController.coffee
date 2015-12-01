@@ -9,24 +9,24 @@ controllerName = "#{domainName}Ctrl"
 #TODO: get colors from color palette
 
 app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
+leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
-
-  _syncDrawnShapes = () ->
-    # shapesSvc.update drawnItems.toGeoJSON()
+  drawnShapesFact = rmapsProjectsService.drawnShapes
+  drawnShapesSvc = null
 
   rmapsprincipal.getCurrentProfile().then (profile) ->
-    $log.debug('profile')
-    $log.debug(profile)
-    # drawnShapes = profile.drawn_shapes
-    # # TODO: drawn shapes will get its own tables for GIS queries
-    # $scope.map.drawState.drawnShapes = drawnShapes || {}
-    # geoJson = L.geoJson drawnShapes,
-    #   onEachFeature: (feature, layer) ->
-    #     if feature.properties?.shapeType = 'Circle'
-    #       layer = L.Circle.createFromFeature feature
-    #     drawnItems.addLayer layer
+    $log.debug('profile: project_id' + profile.project_id)
+    drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
+    drawnShapesSvc.getAll().then (drawnShapes) ->
+      # # TODO: drawn shapes will get its own tables for GIS queries
+      geoJson = L.geoJson drawnShapes,
+        onEachFeature: (feature, layer) ->
+          $log.debug feature
+          if feature.properties?.shape_extras?.type = 'Circle'
+            layer = L.Circle.createFromFeature feature
+          layer.model = feature
+          drawnItems.addLayer layer
 
   _toast = null
   drawnItems = new L.FeatureGroup()
@@ -88,15 +88,24 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal) ->
       _destroy()
       $log.debug('destroyed')
 
+    _getShapeModel = (layer) ->
+      model = _.merge layer.model, layer.toGeoJSON()
+
+    _eachLayerModel = (layersObj, cb) ->
+      layersObj.getLayers().forEach (layer) ->
+        cb(_getShapeModel layer)
+
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
-        _syncDrawnShapes()
+        drawnShapesSvc?.create(layer.toGeoJSON())
       edited: ({layers}) ->
+        _eachLayerModel layers, (model) ->
+          drawnShapesSvc?.update(model)
       deleted: ({layers}) ->
-        drawnItems.removeLayer(layer)
-        _syncDrawnShapes()
+        _eachLayerModel layers, (model) ->
+          drawnShapesSvc?.delete(model)
       drawstart: ({layerType}) ->
         _doToast('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->

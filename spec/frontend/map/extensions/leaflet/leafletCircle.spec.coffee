@@ -5,5 +5,5 @@ describe 'leafletCircle extensions', ->
   it 'toGeoJSON', ->
     feat = @subject.toGeoJSON()
     # console.log feat
-    feat.properties.shapeType.should.be.eql 'Circle'
-    feat.properties.radius.should.be.eql @subject.getRadius()
+    feat.properties.shape_extras.type.should.be.eql 'Circle'
+    feat.properties.shape_extras.radius.should.be.eql @subject.getRadius()

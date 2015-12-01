@@ -2,13 +2,13 @@ _ = require 'lodash'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.dataSourceRules.coffee'
 tables = require '../../../backend/config/tables'
-sqlMockUtil = require '../../specUtils/sqlMock.coffee'
+SqlMock = require '../../specUtils/sqlMock.coffee'
 
 
 describe 'service.dataSourceRules.coffee', ->
   describe 'private api', ->
     beforeEach ->
-      @rulesTableSqlMock = new sqlMockUtil.SqlMock
+      @rulesTableSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataNormalization'
 
@@ -38,7 +38,7 @@ describe 'service.dataSourceRules.coffee', ->
         input: "\"\""
         required: false
         data_source_type: "county"
-        data_type: "tax"        
+        data_type: "tax"
       ]
 
     it 'should have valid _addRules insert query, without a given order count', (done) ->
@@ -55,8 +55,8 @@ describe 'service.dataSourceRules.coffee', ->
         list: "general"
         ordering: 0
       ,
-        config: 
-          DataType: "Int" 
+        config:
+          DataType: "Int"
           nullZero: true
         output: "Another Int Param"
         input: "\"\""
@@ -118,7 +118,7 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'rules', ->
     beforeEach ->
-      @rulesTableSqlMock = new sqlMockUtil.SqlMock
+      @rulesTableSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataNormalization'
 
@@ -178,7 +178,7 @@ describe 'service.dataSourceRules.coffee', ->
       done()
 
     it 'should have valid putRules query', (done) ->
-      svc.__with__('dbs', sqlMockUtil.SqlMock.dbs)(
+      svc.__with__('dbs', SqlMock.dbs)(
         =>
           expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax'"""
 
@@ -217,7 +217,7 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'list rules', ->
     beforeEach ->
-      @rulesTableSqlMock = new sqlMockUtil.SqlMock
+      @rulesTableSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataNormalization'
 
@@ -277,7 +277,7 @@ describe 'service.dataSourceRules.coffee', ->
       done()
 
     it 'should have valid putListRules query', (done) ->
-      svc.__with__('dbs', sqlMockUtil.SqlMock.dbs)(
+      svc.__with__('dbs', SqlMock.dbs)(
         =>
 
           expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax' and "list" = 'general'"""
@@ -314,7 +314,7 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'simple rule api', ->
     beforeEach ->
-      @rulesTableSqlMock = new sqlMockUtil.SqlMock
+      @rulesTableSqlMock = new SqlMock
         groupName: 'config'
         tableHandle: 'dataNormalization'
 
@@ -371,7 +371,7 @@ describe 'service.dataSourceRules.coffee', ->
       done()
 
     it 'should have valid deleteRule query', (done) ->
-      svc.__with__('dbs', sqlMockUtil.SqlMock.dbs)(
+      svc.__with__('dbs', SqlMock.dbs)(
         =>
 
           expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax' and "list" = 'general' and "ordering" = '0'"""
