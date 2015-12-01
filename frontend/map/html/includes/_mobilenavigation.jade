@@ -15,10 +15,10 @@ include mixins/_avatarMixin.jade
             // Subscriber Project Selection
             //
 
-            div(ng-if="principal.isSubscriber() || principal.isEditor()")
+            div(ng-if="(principal.isSubscriber() || principal.isEditor()) && profile")
               ul.nav.project-select(ng-click="closeMobileNav($event)")
                     li
-                        a.menu-label.project-name(ui-sref="project({id: project.id})" class="projects" ng-class="{ active: isActive('projects') }") {{project.name || "Sandbox"}}
+                        a.menu-label.project-name(ui-sref="project({id: project.id})" class="projects" ng-class="{ active: isActive('projects') }") {{profile.name || "Sandbox"}}
                         a.menu-alert.change-project(ui-sref='projects') Change Project
 
             //
