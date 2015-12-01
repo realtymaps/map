@@ -144,13 +144,13 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoad
   $scope.$watch 'Toggles.showNotes', (newVal) ->
     $scope.map.layers.overlays.notes.visible = newVal
 
-  $rootScope.$onRootScope rmapsevents.notes, ->
-    getNotes().then ->
-      ###
-        NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
-        in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
-        #https://github.com/tombatossals/angular-leaflet-directive/issues/820
-      ###
-      directiveControls.markers.create($scope.map.markers)#<-- me dangerous
+  # $rootScope.$onRootScope rmapsevents.notes, ->
+  #   getNotes().then ->
+  #     ###
+  #       NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
+  #       in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
+  #       #https://github.com/tombatossals/angular-leaflet-directive/issues/820
+  #     ###
+  #     directiveControls.markers.create($scope.map.markers)#<-- me dangerous
 
   getNotes()

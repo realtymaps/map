@@ -9,13 +9,14 @@ logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
+validation = require '../utils/util.validation'
 
 _getZoom = (position) ->
   position.center.zoom
 
 _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   returnAs = queryParams.returnType
-
+  logger.debug "_handleReturnType: " + returnAs
   _default = ->
     query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 800)
     return Promise.resolve([]) unless query
@@ -77,10 +78,24 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   handle = handles[returnAs] or handles.default
   handle()
 
+_validateAndTransform = (state, rawFilters, localTransforms) ->
+  # note this is looking at the pre-transformed status filter
+  if !rawFilters.status?.length && (!state?.properties_selected || _.size(state.properties_selected) == 0)
+    # we know there is absolutely nothing to select, GTFO before we do any real work
+    logger.debug 'GTFO'
+    return
+
+  logger.debug 'validating transforms'
+  validatedQuery = validation.validateAndTransform(rawFilters, localTransforms)
+  logger.debug 'validated transforms'
+  validatedQuery
+
 module.exports =
   getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = base) ->
+    # logger.debug.green rawFilters, true
     _zoom = null
     Promise.try ->
-      filterSummaryImpl.validateAndTransform(state, rawFilters)
+      _validateAndTransform(state, rawFilters, filterSummaryImpl.transforms)
     .then (queryParams) ->
+      # logger.debug queryParams, true
       _handleReturnType(filterSummaryImpl, state, queryParams, limit, _getZoom(state.map_position))

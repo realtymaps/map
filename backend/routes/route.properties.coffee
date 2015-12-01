@@ -2,6 +2,7 @@ logger = require '../config/logger'
 Promise = require 'bluebird'
 detailService = require '../services/service.properties.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
+DrawnShapesFiltSvc = require '../services/service.properties.drawnShapes.filterSummary'
 parcelService = require '../services/service.properties.parcels'
 addressService = require '../services/service.properties.addresses'
 validation = require '../utils/util.validation'
@@ -76,3 +77,19 @@ module.exports =
     handle: (req, res, next) ->
       handleRoute res, next, () ->
         detailService.getDetails(req.query)
+
+
+  drawnShapes:
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+    handle: (req, res, next) ->
+      handleRoute res, next, () ->
+        # logger.debug.cyan req.query, true
+        # logger.functions DrawnShapesFiltSvc
+        filterSummaryService.getFilterSummary(
+          currentProfile(req),
+          req.query,
+          undefined,
+          DrawnShapesFiltSvc
+        )

@@ -45,6 +45,10 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       $log.error "returnType is not a string. returnType: #{returnType}"
 
     returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
+
+    if $rootScope.propertiesInShapes
+      pathId = 'drawnShapes'
+
     route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
     $log.log(route) if window.isTest
     $http.get(route, cache: cache)
@@ -124,6 +128,11 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       url = "#{backendRoutes.properties.detail}?#{queryStr}&columns=#{column_set}#{mapStateStr}"
       _detailThrottler.invokePromise $http.get(url, cache: cache)
       , http: {route: backendRoutes.properties.detail }
+
+    getDrawnShapes: (hash, mapState, cache = true) ->
+      _addressThrottler.invokePromise _getPropertyData(
+        'drawnShapes', hash, mapState, undefined, filters = '', cache)
+      , http: {route: backendRoutes.properties.drawnShapes }
 
     getProperties: (ids, columns) ->
       $http.get backendRoutes.properties.details, params: rm_property_id: ids, columns: columns

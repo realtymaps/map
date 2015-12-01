@@ -37,6 +37,13 @@ directiveControls = [
     position: 'bottomleft'
   directive: ($log) ->
     template: require('../../../html/includes/map/_location.jade')()
+,
+  name: 'propsdrawnshapes'
+  options:
+    position: 'bottomright'
+  directive: ($log) ->
+    tmp = require('../../../html/includes/map/_propertiesByDrawnShapes.jade')()
+    template: tmp
 ]
 
 for control in directiveControls

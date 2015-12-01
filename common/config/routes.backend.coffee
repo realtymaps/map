@@ -27,6 +27,8 @@ apiBaseClients = "#{apiBaseSession}/clients"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 
+drawnShapesPropertiesWithin = "#{apiBaseProjectsSession}/:id/drawnShapes/propertiesWithin"
+
 module.exports =
   views:
     rmap: '/rmap.html'
@@ -64,7 +66,6 @@ module.exports =
     notes: "#{apiBaseProjectsSession}/:id/notes"
     notesById: "#{apiBaseProjectsSession}/:id/notes/:notes_id"
     drawnShapes: "#{apiBaseProjectsSession}/:id/drawnShapes"
-    drawnShapesPropertiesWithin: "#{apiBaseProjectsSession}/:id/drawnShapes/propertiesWithin"
     drawnShapesById: "#{apiBaseProjectsSession}/:id/drawnShapes/:drawn_shapes_id"
   user:
     apiBase: apiBaseUsers
@@ -130,6 +131,7 @@ module.exports =
     addresses: "#{apiBase}/properties/addresses/"
     detail: "#{apiBase}/properties/detail/"
     details: "#{apiBase}/properties/details/"
+    drawnShapes: "#{apiBase}/properties/drawnShapes/"
   snail:
     quote: "#{apiBase}/snail/quote"
     send: "#{apiBase}/snail/send"

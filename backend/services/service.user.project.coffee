@@ -6,8 +6,6 @@ logger = require '../config/logger'
 {joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
-FilterSummaryBus = require './service.properties.filterSummary'
-DrawnShapesFiltSvc = require './service.properties.drawnShapes.filterSummary'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
@@ -27,11 +25,6 @@ class DrawnShapesCrud extends ThenableCrud
       toMove: @drawnShapeCols
       geometry: ['geom_point_json', 'geom_polys_json', 'geom_line_json']
       deletes: ['rm_inserted_time', 'rm_modified_time', 'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
-
-  #TODO: filters in filterSummary should be handled at the route level
-  getPropertiesWithin: (projectId, state, rawFilters) ->
-    FilterSummaryBus.getFilterSummary(state, rawFilters, undefined, DrawnShapesFiltSvc)
-    .where("#{@svc.tableName}.project_id", projectId)
 
 class ProjectCrud extends ThenableCrud
   constructor: () ->

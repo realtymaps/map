@@ -50,11 +50,4 @@ merged = mergeHandles routeCrud,
       auth.requireLogin(redirectOnFail: true)
     ]
 
-merged.drawnShapesPropertiesWithin =
-  handle: routeCrud.drawnShapesCrud.propertiesWithin
-  methods: ['get']
-  middleware: [
-    auth.requireLogin(redirectOnFail: true)
-  ]
-
 module.exports = merged

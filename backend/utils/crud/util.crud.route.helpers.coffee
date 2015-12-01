@@ -55,6 +55,7 @@ class Crud extends BaseObject
 
   exec: (crudMethodStr, req, res, next) =>
     @maybeLogRequest req, 'req'
+    logger.debug req.originalUrl if req.originalUrl
     @validRequest(req, crudMethodStr).then (tReq) =>
       @maybeLogRequest tReq, 'tReq'
       tReq

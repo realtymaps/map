@@ -153,15 +153,6 @@ class ProjectRouteCrud extends RouteCrud
           query: validators.object isEmptyProtect: true
           body: bodyTransform
 
-    @drawnShapesCrud.propertiesWithinGETTransforms =
-      params:
-        validators.object
-          subValidateSeparate:
-            id: validators.integer()
-
-    @drawnShapesCrud.propertiesWithin = (req, res, next) =>
-      @exec('propertiesWithinGET', req, res, next).then (tReq) =>
-        @svc.getPropertiesWithin(tReq.params.id, currentProfile(tReq), tReq.query)
     # drawnShapesCrud
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId

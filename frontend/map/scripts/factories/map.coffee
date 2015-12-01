@@ -22,7 +22,7 @@ app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsPropertiesService, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService) ->
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService, rmapsprincipal) ->
 
     limits = rmapsMainOptions.map
 
@@ -139,6 +139,7 @@ app.factory 'rmapsMap',
               rmapsControls.LayerControl scope: $scope
               self.zoomBox
               rmapsControls.LocationControl scope: $scope
+              rmapsControls.PropsdrawnshapesControl scope: $scope
             ]
 
 
@@ -346,6 +347,7 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
+          current_project_id: rmapsprincipal.getCurrentProfileNotPromise()?.project_id
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,

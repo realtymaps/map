@@ -1,8 +1,81 @@
-sqlHelpers = require './util.sql.helpers'
 tables = require '../config/tables'
+tablesNames = require '../config/tableNames'
 _ = require 'lodash'
 
+ageOrDaysFromStartToNow = (listingAge, beginDate) ->
+  "COALESCE(#{listingAge}, now()::DATE - #{beginDate})"
+
+
 #TODO: Move all of SQL Helpers columns into here as another sep PR.
+basicColumns = do ->
+  _parcel = [
+    'rm_property_id', 'street_address_num', 'geom_polys_json AS geometry',
+    '\'Feature\' AS type',
+    'fips_code', '\'{}\'::json AS properties'
+  ]
+
+  _commonProjectCols = ['id', 'auth_user_id', 'project_id']
+
+  ret =
+    # columns returned for filter requests
+    filter: [
+      'rm_property_id', 'street_address_num', 'street_address_name', 'street_address_unit', 'geom_polys_json AS geometry',
+      'geom_point_json', 'rm_status', 'owner_name', 'owner_name2', 'year_built', 'acres', 'finished_sqft', 'baths_full',
+      'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
+      'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
+      'owner_zip'
+    ].map((name)-> tablesNames.property.propertyDetails + '.' + name).join(', ')
+    # columns returned for additional detail results
+    detail: [
+      'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
+      'year_modified', 'ask_price', 'prior_sale_price', 'original_price', 'close_price', 'mortgage_amount',
+      'listing_start_date', 'close_date', 'mortgage_date', 'recording_date', 'title_company_name',
+      'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc', 'heat',
+      'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
+      'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id',
+      'mls_name', 'sewer', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage',
+      'depth_footage', 'mls_close_date', 'mls_close_price', 'sale_date', 'sale_price', 'prior_sale_date',
+      "#{ageOrDaysFromStartToNow('listing_age_days', 'listing_start_date')} AS listing_age",
+    ].join(', ')
+    # columns returned for full detail results, with geom_polys_json AS geometry for geojson standard
+    all_detail_geojson: [
+      'rm_property_id', 'has_mls', 'has_tax', 'has_deed', 'street_address_num', 'street_address_name', 'street_address_unit',
+      'city', 'state', 'zip', 'geom_polys_raw', 'geom_point_raw', 'geom_polys_json AS geometry', 'geom_point_json', 'close_date',
+      'owner_name', 'owner_name2_raw', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
+      'owner_city', 'owner_state', 'owner_zip', 'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name',
+      'zoning', 'year_built', 'year_modified', 'acres', 'finished_sqft', 'baths_full', 'baths_half', 'baths_total', 'bedrooms',
+      'ask_price', 'prior_sale_price', 'prior_sale_date', 'original_price', 'close_price', 'mls_close_date', 'mls_close_price',
+      'sale_date', 'sale_price', 'mortgage_amount', 'listing_start_date', 'listing_age_days', 'mortgage_date', 'recording_date',
+      'title_company_name', 'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc',
+      'heat', 'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
+      'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id', 'mls_name',
+      'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage', 'depth_footage',
+      'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
+    ].join(', ')
+    # columns returned internally for snail pdf render lookups
+    address: [
+      'owner_name', 'owner_name2', 'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit',
+      'owner_city', 'owner_state', 'street_address_num', 'street_address_name', 'street_address_unit', 'city', 'state',
+      'zip', 'owner_zip'
+    ].join(', ')
+    parcel: ['geom_point_json'].concat(_parcel).join(', ')
+    #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
+    cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
+
+    notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title']
+
+    project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+
+    user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
+
+    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results', 'favorites']
+
+    drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras']
+
+  ret.all = "#{ret.filter}, #{ret.detail}"
+  ret
+
+
 joinColumns = do ->
   permission: [
     "#{tables.auth.m2m_user_permission.tableName}.id as id"
@@ -62,9 +135,9 @@ joinColumns = do ->
     "#{tables.auth.user.tableName}.parent_id as parent_id"
   ]
 
-  notes: sqlHelpers.columns.notes.map (col) ->  "#{tables.user.notes.tableName}.#{col} as #{col}"
+  notes: basicColumns.notes.map (col) ->  "#{tables.user.notes.tableName}.#{col} as #{col}"
 
-  drawnShapes: sqlHelpers.columns.drawnShapes.map (col) ->  "#{tables.user.drawnShapes.tableName}.#{col} as #{col}"
+  drawnShapes: basicColumns.drawnShapes.map (col) ->  "#{tables.user.drawnShapes.tableName}.#{col} as #{col}"
 
 joinColumnNames = do ->
   _.mapValues joinColumns, (v) ->
@@ -82,5 +155,7 @@ joinColumnNames = do ->
     obj
 
 module.exports =
+  basicColumns: basicColumns
   joinColumns: joinColumns
   joinColumnNames: joinColumnNames
+  ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
