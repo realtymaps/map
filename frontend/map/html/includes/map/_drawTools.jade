@@ -7,5 +7,11 @@
       ng-class="Toggles.propertiesInShapes ? 'on' : ''")
       span.icon.icon-markers-in-shapes
       
-    button(class="btn btn-transparent add-neighbour" popover-placement="top" popover-trigger="mouseenter" popover="Add Neighbour")
+    button(
+      ng-controller="rmapsNeighborhoodsModalCtrl"
+      class="btn btn-transparent add-neighbour"
+      popover-placement="top"
+      popover-trigger="mouseenter"
+      popover="Add Neighbour"
+      ng-click="Toggles.enableNeighborhoodTap()")
         span.icon.icon-add_neighbourhood
