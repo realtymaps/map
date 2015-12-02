@@ -1,34 +1,37 @@
+###global _:true, L:true ###
 app = require '../app.coffee'
-notesTemplate = do require '../../html/views/templates/modals/note.jade'
+template = do require '../../html/views/templates/modals/neighborhoods.jade'
 mapId = 'mainMap'
 originator = 'map'
 popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
-app.controller 'rmapsNotesCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
+app.controller 'rmapsNeighborhoodsCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
+  _event = rmapsevents.neighborhoods
+
   _signalUpdate = (promise) ->
-    return $rootScope.$emit rmapsevents.notes unless promise
+    return $rootScope.$emit _event unless promise
     promise.then ->
-      $rootScope.$emit rmapsevents.notes
+      $rootScope.$emit _event
 
   _.extend $scope,
-    activeView: 'notes'
+    activeView: 'neighborhoods'
 
-    createModal: (note = {}) ->
+    createModal: (neighborhood = {}) ->
       modalInstance = $modal.open
         animation: rmapsMainOptions.modals.animationsEnabled
-        template: notesTemplate
+        template: template
         controller: 'rmapsModalInstanceCtrl'
-        resolve: model: -> note
+        resolve: model: -> neighborhood
 
       modalInstance.result
 
-    createGeoNote: (model) ->
-      $scope.createModal().then (note) ->
-        _.extend note,
+    createNeighborhood: (model) ->
+      $scope.createModal().then (lModle) ->
+        _.extend lModle,
           rm_property_id : model.rm_property_id || undefined
           geom_point_json : model.geom_point_json
           project_id: $scope.selectedProject.project_id || undefined
-        _signalUpdate rmapsNotesService.create note
+        _signalUpdate rmapsNotesService.create lModle
 
     updateNote: (note) ->
       note = _.cloneDeep note
@@ -39,12 +42,11 @@ app.controller 'rmapsNotesCtrl', ($rootScope, $scope, $modal, rmapsNotesService,
       _signalUpdate rmapsNotesService.remove note.id
 
 #this should be nested under rmapsNotesCtrl to be able to create modals
-.controller 'rmapsMapNotesTapCtrl',
-($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, $log) ->
+.controller 'rmapsMapNeighborhoodsTapCtrl', ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+  leafletIterators, toastr, $log) ->
 
   linker = rmapsMapEventsLinkerService
-  $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
+  $log = $log.spawn("map:rmapsMapNeighborhoodsTapCtrl")
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -85,20 +87,17 @@ leafletIterators, toastr, $log) ->
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
+.controller 'rmapsMapNeighborhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
 rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoader, rmapsMapEventsLinkerService) ->
 
   setMarkerNotesOptions = rmapsLayerFormatters.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormatters.setDataOptions
   linker = rmapsMapEventsLinkerService
-  directiveControls = null
+
   popup = rmapsPopupLoader
   markersUnSubs = null
 
-  leafletData.getDirectiveControls('mainMap').then (controls) ->
-    directiveControls = controls
-
-  $log = $log.spawn("map:notes")
+  $log = $log.spawn("map:neighborhoods")
 
   _.merge $scope,
     map:
@@ -130,16 +129,9 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoad
 
   $scope.map.getNotes = getNotes
 
-  $scope.$watch 'Toggles.showNotes', (newVal) ->
-    $scope.map.layers.overlays.notes.visible = newVal
+  # $scope.$watch 'Toggles.showNeighborhoods', (newVal) ->
 
-  $rootScope.$onRootScope rmapsevents.notes, ->
-    getNotes().then ->
-      ###
-        NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition
-        in markers.js in angular-leaflet . So if we start seeing issues then all drawing should go through map.draw() from mapFactory
-        #https://github.com/tombatossals/angular-leaflet-directive/issues/820
-      ###
-      directiveControls.markers.create($scope.map.markers)#<-- me dangerous
+  $rootScope.$onRootScope rmapsevents.neighborhoods, ->
+    getNotes()
 
   getNotes()

@@ -38,11 +38,11 @@ directiveControls = [
   directive: ($log) ->
     template: require('../../../html/includes/map/_location.jade')()
 ,
-  name: 'propsdrawnshapes'
+  name: 'drawtools'
   options:
     position: 'bottomright'
   directive: ($log) ->
-    tmp = require('../../../html/includes/map/_propertiesByDrawnShapes.jade')()
+    tmp = require('../../../html/includes/map/_drawTools.jade')()
     template: tmp
 ]
 
