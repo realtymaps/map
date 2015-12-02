@@ -1,3 +1,5 @@
+@import '../color_scheme.styl'
+
 $defaultHeight = 50px //Leaflet.Draw default is 26px
 
 $fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
@@ -29,12 +31,15 @@ $fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
       width $defaultHeight
       display inline-block //This is what keeps the images from moving around on hover.. not sure why
       border-right 1px solid rgba(0,0,0,0.1)
+    &:hover
+      color $rm-map-btn-icon-hover
 
   a
     display inline-block //default is block
     text-align center
     text-decoration none
-
+  &:hover
+    color $rm-map-btn-icon-hover
 
 .leaflet-draw-section
   position relative
@@ -42,11 +47,14 @@ $fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
   height $defaultHeight
 
 .leaflet-draw-toolbar
+  @extend .desktop-view
+
   height $defaultHeight
   margin-top 12px
   a
     background-image url('/assets/spritesheet-2x.png')
     background-repeat no-repeat
+
   $fnMakeLeafletDrawToolbar(-2, -1, 2, 2)
   &.leaflet-bar
     a

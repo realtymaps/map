@@ -14,7 +14,7 @@ module.exports = (options = {}) ->
       return Promise.reject new DataValidationError('invalid data for geojson field', param, value)
     if options?.crs? and !value.crs
       return Promise.reject new DataValidationError('invalid data for geojson.crs field missing', param, value)
-    logger.debug.green options, true
+    # logger.debug.green options, true
     if options?.toCrs?
       logger.debug.green 'toCrs'
       value.crs = crsFactory(options.toCrs)

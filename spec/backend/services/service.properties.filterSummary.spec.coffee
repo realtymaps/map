@@ -1,6 +1,5 @@
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.properties.filterSummary'
-Promise = require 'bluebird'
 gjv = require 'geojson-validation'
 mocks =
   map:
