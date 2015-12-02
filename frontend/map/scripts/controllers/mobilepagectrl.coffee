@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
   $scope.isMobileNavOpen = false
 
   $scope.toggleMobileNav = (event) ->
@@ -46,5 +46,9 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
 
   $scope.closeMobileNav = (event) ->
     return if !$scope.isMobileNavOpen
-    event.stopPropagation()
+    event.stopPropagation() if event
     $scope.isMobileNavOpen = false
+
+  $scope.goToState = (state, params, options) ->
+    $scope.closeMobileNav()
+    $state.go state, params, options
