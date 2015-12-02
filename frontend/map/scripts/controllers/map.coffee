@@ -78,7 +78,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         statusList = project.filters.status || []
         for key,status of rmapsParcelEnums.status
           project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-        _.extend($rootScope.selectedFilters, _.omit(project.filters, 'status'))
+        #TODO: this is a really ugly hack to workaround our poor state design in our app
+        #filters and mapState need to be combined, also both should be moved to rootScope
+        #the omits here are to keep from saving off duplicate data where project.filters is from the backend
+        _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
       if $scope.map?
         if map_position?.center?
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)

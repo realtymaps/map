@@ -9,16 +9,16 @@ logger = require '../config/logger'
 propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
+validation = require '../utils/util.validation'
 
 _getZoom = (position) ->
   position.center.zoom
 
-_handleReturnType = (state, queryParams, limit, zoom = 13) ->
+_handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   returnAs = queryParams.returnType
-
+  logger.debug "_handleReturnType: " + returnAs
   _default = ->
-    query = base.getFilterSummaryAsQuery(state, queryParams, 800)
-    return Promise.resolve([]) unless query
+    query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 800)
 
     # include saved id's in query so no need to touch db later
     propertiesIds = _.keys(state.properties_selected)
@@ -37,14 +37,14 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
       props
 
   _cluster = ->
-    base.getFilterSummary(state, queryParams, limit, sqlCluster.clusterQuery(zoom))
+    filterSummaryImpl.getFilterSummary(state, queryParams, limit, sqlCluster.clusterQuery(zoom))
     .then (properties) ->
       sqlCluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
 
   _geojsonPolys = ->
-    query = base.getFilterSummaryAsQuery(state, queryParams, 2000, query)
+    query = filterSummaryImpl.getFilterSummaryAsQuery(state, queryParams, 2000, query)
     return Promise.resolve([]) unless query
 
     # include saved id's in query so no need to touch db later
@@ -62,7 +62,7 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
           d
 
   _clusterOrDefault = ->
-    base.getResultCount(state, queryParams).then (data) ->
+    filterSummaryImpl.getResultCount(state, queryParams).then (data) ->
       if data[0].count > config.backendClustering.resultThreshold
         return _cluster()
       else
@@ -77,10 +77,24 @@ _handleReturnType = (state, queryParams, limit, zoom = 13) ->
   handle = handles[returnAs] or handles.default
   handle()
 
+_validateAndTransform = (state, rawFilters, localTransforms) ->
+  # note this is looking at the pre-transformed status filter
+  if !rawFilters.status?.length && (!state?.properties_selected || _.size(state.properties_selected) == 0)
+    # we know there is absolutely nothing to select, GTFO before we do any real work
+    logger.debug 'GTFO'
+    return
+
+  logger.debug 'validating transforms'
+  validatedQuery = validation.validateAndTransform(rawFilters, localTransforms)
+  logger.debug 'validated transforms'
+  validatedQuery
+
 module.exports =
-  getFilterSummary: (state, rawFilters, limit = 2000) ->
+  getFilterSummary: (state, rawFilters, limit = 2000, filterSummaryImpl = base) ->
+    # logger.debug.green rawFilters, true
     _zoom = null
     Promise.try ->
-      base.validateAndTransform(state, rawFilters)
+      _validateAndTransform(state, rawFilters, filterSummaryImpl.transforms)
     .then (queryParams) ->
-      _handleReturnType(state, queryParams, limit, _getZoom(state.map_position))
+      # logger.debug queryParams, true
+      _handleReturnType(filterSummaryImpl, state, queryParams, limit, _getZoom(state.map_position))

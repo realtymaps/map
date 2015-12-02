@@ -21,6 +21,8 @@ module.exports = (options = {}) ->
 
     transformedValue = value
 
+    if options.null
+      transformedValue = null
     if options.trim
       transformedValue = transformedValue.trim()
     if options.replace?
