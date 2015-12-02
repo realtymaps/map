@@ -48,7 +48,7 @@ _countInvalidRows = (tableName, assignedFalse) ->
   .then (results) ->
     results?[0].count ? 0
 
-    
+
 recordChangeCounts = (subtask) ->
   rawTableName = buildUniqueSubtaskName(subtask)
   subset =
@@ -139,7 +139,7 @@ activateNewData = (subtask) ->
           rm_property_id: dbs.get('main').raw("updater.rm_property_id")
           data_source_id: dbs.get('main').raw("updater.data_source_id")
       .update(active: dbs.get('main').raw('NOT "active"'))
-      
+
     activatePromise
     .then () ->
       # delete inactive rows
@@ -402,7 +402,9 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 .where(raw_table_name: tableName)
                 .delete()
               .then () ->
-                promiseQuery(createRawTempTable(tableName, event.payload))
+                #promiseQuery(createRawTempTable(tableName, event.payload))
+                q = createRawTempTable(tableName, event.payload)
+                promiseQuery(q)
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
                 dbStream = streamQuery(copyStream.from(copyStart))
@@ -434,7 +436,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
         .update(raw_rows: count)
       .then () ->
         count
-    
+
 
 module.exports =
   buildUniqueSubtaskName: buildUniqueSubtaskName
