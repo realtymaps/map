@@ -110,6 +110,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
           rm_property_id: selectedResultId, 'all')
         .then (result) ->
+          return if _.isString result#not sure how this was happening but if we get it bail (should be an object)
           $timeout () ->
             map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
           , 50

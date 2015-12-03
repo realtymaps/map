@@ -1,27 +1,24 @@
 span(class="dropdown btn-group neighbourhood-list"
- ng-controller="rmapsMapNeighborhoodsCtrl"
- dropdown on-toggle="toggled(open)" auto-close="disabled")
-    button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
-        span.icon.icon-neighbourhood
-    .dropdown-menu.whiteblock.no-margin
-        .fixed-header
-            span
-                a(href="goToState('neighbourhoods')") {{neighbourhoods.length}} Neighborhoods
-        .inner
-            ul
-                li(ng-repeat="model in neighbourhoods")
-                    div(ng-controller="rmapsNeighborhoodsModalCtrl")
-                        span.enity
-                            span.count {{$index+1}}.
+	ng-controller="rmapsMapNeighbourhoodsCtrl"
+	dropdown on-toggle="neighbourhoodListToggled(open)" auto-close="disabled")
+		button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
+			span.icon.icon-neighbourhood
+		.dropdown-menu.whiteblock.no-margin
+			.fixed-header
+				span
+					a(href="goToState('neighbourhoods')") {{neighbourhoods.length}} Neighbourhoods
+			.inner
+				ul
+					li(ng-repeat="model in neighbourhoods")
+						div(ng-controller="rmapsNeighbourhoodsModalCtrl")
+							span.enity
+								span.count {{$index+1}}.
 
-                            //- span.map
-                            //-     img(src="/assets/test_map.jpg" title="Map preview")
+								span.content
+									a(href="#/neighbourhoods/{{model.properties.id}}")
+									h3.title {{model.properties.neighbourhood_name}}
+									p.text {{model.properties.neighbourhood_details}}
 
-                            span.content
-                                a(href="#/neighbourhoods/{{model.id}}")
-                                    h3.title {{model.name}}
-                                //- p.properties {{model.properties}} Properties
-
-                        span.actions
-                          span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
-                          span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
+							span.actions
+								span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+								span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

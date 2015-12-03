@@ -16,7 +16,7 @@ module.exports =
   projectFavorites: 'project/:id/favorites'
   projectNotes:   'project/:id/notes'
   projectPins:    'project/:id/pins'
-  projectNeighborhoods: 'project/:id/neighborhoods'
+  projectNeighbourhoods: 'project/:id/neighbourhoods'
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'
   favorites:      'favorites'

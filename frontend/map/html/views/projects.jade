@@ -5,7 +5,7 @@
         header.row
           .col-md-8
             h1.pageTitle Projects
-            p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighborhoods, and clients.
+            p This is summary of all projects you have created to date. Click a project to see pinned properties, notes, neighbourhoods, and clients.
           .col-md-4.text-right
             .tools
               input.search-box(type="search" ng-model="searchQuery" placeholder="Search projects")
@@ -23,7 +23,7 @@
                   th
                     span Pins
                   th
-                    span Neighborhoods
+                    span Neighbourhoods
                   th
                     span Favorites
                   th
@@ -45,7 +45,7 @@
                   td
                     a(ui-sref="projectPins({id: {{project.id}}})") {{project.propertiesTotal}}
                   td
-                    a(ui-sref="projectNeighborhoods({id: {{project.id}}})") {{project.neighborhoods.length}}
+                    a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}}
                   td
                     a(ui-sref="projectFavorites({id: {{project.id}}})") {{project.favorites.length}}
                   td
@@ -70,7 +70,7 @@
                     a(href="#/project/{{enity.id}}") Next
                 ul.data
                   li
-                      a(href="#neighbourhoods") {{enity.neighborhoods.length}} Neighborhoods
+                      a(href="#neighbourhoods") {{enity.neighbourhoods.length}} Neighbourhoods
                   li
                       a(href="#properties") {{enity.properties.length}} Properties
                   li

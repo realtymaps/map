@@ -33,7 +33,7 @@
         header
             a(class="subnav" href="#map")
                 img(src='static/img/base/icons/mobile_back_icon.png', width='23px' height='23px' alt='back')
-                | Neighborhoods
+                | Neighbourhoods
             .menu
                 a(href="#map")
                     | Filter
@@ -46,7 +46,7 @@
                         accordion(close-others="oneAtATime")
                             accordion-group(ng-repeat="enity in projectsArray" heading="{{enity.title}}" is-open="status.isItemOpen[$index]")
                                 ul.neighbourhood-list
-                                    li(ng-repeat="id in enity.neighborhoods")
+                                    li(ng-repeat="id in enity.neighbourhoods")
                                         div.mapimg
                                             img(src="static/img/{{neighbourhoodData[id].mapImg}}" alt="Neighbourhood map")
                                         div.info

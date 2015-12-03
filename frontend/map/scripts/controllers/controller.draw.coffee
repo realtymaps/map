@@ -18,7 +18,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
   if profile = rmapsprincipal.getCurrentProfile()
     $log.debug('profile: project_id' + profile.project_id)
     drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
-    drawnShapesSvc.getAll().then (drawnShapes) ->
+    drawnShapesSvc.getList().then (drawnShapes) ->
       # # TODO: drawn shapes will get its own tables for GIS queries
       geoJson = L.geoJson drawnShapes,
         onEachFeature: (feature, layer) ->
@@ -95,12 +95,32 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
       layersObj.getLayers().forEach (layer) ->
         cb(_getShapeModel(layer), layer)
 
-    $scope.$watch 'Toggles.showNeighborhoodTap', (newVal) ->
+    _hiddenDrawnItems = []
+
+    showHiddenLayers = () ->
+      for layer in _hiddenDrawnItems
+        drawnItems.addLayer(layer)
+      _hiddenDrawnItems = []
+
+    hideNonNeighbourHoodLayers  = () ->
+      _eachLayerModel drawnItems, (model, layer) ->
+        if !model?.properties?.neighbourhood_name?
+          _hiddenDrawnItems.push layer
+          drawnItems.removeLayer(layer)
+
+    $rootScope.$on rmapsevents.neighbourhoods.listToggled, (event, args...) ->
+      [isOpen] = args
+      unless isOpen
+        showHiddenLayers()
+        return
+      hideNonNeighbourHoodLayers()
+
+    $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
       _eachLayerModel drawnItems, (model, layer) ->
         if newVal
-          $log.debug "bound: #{rmapsevents.neighborhoods.createClick}"
+          $log.debug "bound: #{rmapsevents.neighbourhoods.createClick}"
           layer.on 'click', () ->
-            $rootScope.$emit rmapsevents.neighborhoods.createClick, model, layer
+            $rootScope.$emit rmapsevents.neighbourhoods.createClick, model, layer
           return
         layer.clearAllEventListeners()
 
