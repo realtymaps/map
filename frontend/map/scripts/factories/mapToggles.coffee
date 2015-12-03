@@ -13,12 +13,15 @@ app.factory 'rmapsMapToggles', ($rootScope) ->
 
     @showAddresses = true
     @showPrices = true
-    @showNoteTap = false
+    @showNeighborhoodTap = false
     @showNotes = false
     @propertiesInShapes = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
+
+    @enableNeighborhoodTap = () =>
+      @showNeighborhoodTap = true
 
     @toggleNotes = () =>
       @showNotes = !@showNotes

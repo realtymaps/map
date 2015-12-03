@@ -1,2 +1,3 @@
-div(ng-if="Toggles.showNoteTap" ng-controller="rmapsNotesCtrl")
-  .notes-tap(ng-controller="rmapsMapNotesTapCtrl")
+//This keeps the modal inside of the map div
+div(ng-if="Toggles.showNoteTap" ng-controller="rmapsNotesModalCtrl")
+  .tap-modal(ng-controller="rmapsMapNotesTapCtrl")

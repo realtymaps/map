@@ -10,7 +10,7 @@ mixin propertyButtons(resultName)
     button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
       span.icon.icon-send_email
 
-    button.note(ng-controller="rmapsNotesCtrl" ng-click="createGeoNote(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
+    button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
       i.fa.fa-sticky-note &nbsp;
 
     button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")

@@ -1,21 +1,10 @@
 app = require '../app.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
 mapId = 'mainMap'
 originator = 'map'
 popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
-app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $location) ->
-  _.extend $scope,
-    note: note
-
-    save: ->
-      $modalInstance.close $scope.note
-
-    cancel: ->
-      $modalInstance.dismiss 'cancel'
-
-.controller 'rmapsNotesCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
+app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
   _signalUpdate = (promise) ->
     return $rootScope.$emit rmapsevents.notes unless promise
     promise.then ->
@@ -28,12 +17,12 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
       modalInstance = $modal.open
         animation: rmapsMainOptions.modals.animationsEnabled
         template: notesTemplate
-        controller: 'rmapsModalNotesInstanceCtrl'
-        resolve: note: -> note
+        controller: 'rmapsModalInstanceCtrl'
+        resolve: model: -> note
 
       modalInstance.result
 
-    createGeoNote: (model) ->
+    create: (model) ->
       $scope.createModal().then (note) ->
         _.extend note,
           rm_property_id : model.rm_property_id || undefined
@@ -41,21 +30,21 @@ app.controller 'rmapsModalNotesInstanceCtrl', ($scope, $modalInstance, note, $lo
           project_id: $scope.selectedProject.project_id || undefined
         _signalUpdate rmapsNotesService.create note
 
-    updateNote: (note) ->
+    update: (note) ->
       note = _.cloneDeep note
       $scope.createModal(note).then (note) ->
         _signalUpdate rmapsNotesService.update note
 
-    removeNote: (note) ->
+    remove: (note) ->
       _signalUpdate rmapsNotesService.remove note.id
 
-#this should be nested under rmapsNotesCtrl to be able to create modals
 .controller 'rmapsMapNotesTapCtrl',
 ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
+leafletIterators, toastr, $log) ->
 
   linker = rmapsMapEventsLinkerService
-  $log = rmapsMapNotesTapCtrlLogger
+  $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
+  createFromModal = $scope.create
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -79,7 +68,7 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
   _mapHandle =
     click: (event) ->
       geojson = (new L.Marker(event.latlng)).toGeoJSON()
-      $scope.createGeoNote
+      createFromModal
         geom_point_json: geojson.geometry
       .finally ->
         _destroy()
@@ -87,7 +76,7 @@ leafletIterators, toastr, rmapsMapNotesTapCtrlLogger) ->
   _markerGeoJsonHandle =
     click: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       $log.debug "note for model: #{model.rm_property_id}"
-      $scope.createGeoNote(model).finally ->
+      createFromModal(model).finally ->
         _destroy()
 
   mapUnSubs = linker.hookMap(mapId, _mapHandle, originator, ['click'])

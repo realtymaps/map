@@ -11,7 +11,7 @@ _eventsToObj = (key) ->
   _.zipObject _events.map (name) ->
     [name, key + ':' + name]
 
-obj = _.zipObject ['map','window', 'marker', 'geojson']
+obj = _.zipObject ['map','window', 'marker', 'geojson', 'drawnShapes']
 
 for key, val of obj
   obj[key] = _eventsToObj key

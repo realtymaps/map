@@ -8,26 +8,46 @@ validation = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 status = require '../../common/utils/httpStatus'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+config = require '../config/config'
+uuid = require '../utils/util.uuid'
+cls = require 'continuation-local-storage'
+namespace = cls.createNamespace config.NAMESPACE
 
+###
+ability to get request and transaction id without callback hell
+http://stackoverflow.com/questions/12575858/is-it-possible-to-get-the-current-request-that-is-being-served-by-node-js
+DOMAINS ARE deprecated so we are going with continuation-local-storage instead. Which appears to be cleaner anyhow.
+###
+wrappedCLS = (req, res, promisFnToWrap) ->
+  ctx = namespace.createContext()
+  namespace.enter(ctx)
+  namespace.set 'transactionId', uuid.genUUID()
+  namespace.set 'req', req
+  # logger.debug namespace, true
+  promisFnToWrap()
+  .finally ->
+    namespace.exit(ctx)
+    logger.debug 'CLS: Context exited'
 
 module.exports = (app) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
     logger.infoRoute "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
-      Promise.try () ->
-        route.handle(req, res, next)
-      .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error)
-      .catch (error) ->
-        if isCausedBy(validation.DataValidationError, error)
-          returnStatus = status.BAD_REQUEST
-        else
-          returnStatus = status.INTERNAL_SERVER_ERROR
-        next new ExpressResponse
-          alert:
-            msg: error.message
-          returnStatus
+      wrappedCLS req,res, ->
+        Promise.try () ->
+          route.handle(req, res, next)
+        .catch isUnhandled, (error) ->
+          throw new PartiallyHandledError(error)
+        .catch (error) ->
+          if isCausedBy(validation.DataValidationError, error)
+            returnStatus = status.BAD_REQUEST
+          else
+            returnStatus = status.INTERNAL_SERVER_ERROR
+          next new ExpressResponse
+            alert:
+              msg: error.message
+            returnStatus
     app[route.method](route.path, route.middleware..., wrappedHandle)
 
   logger.info '\n'

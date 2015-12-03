@@ -8,8 +8,8 @@ controllerName = "#{domainName}Ctrl"
 
 #TODO: get colors from color palette
 
-app.controller "rmaps#{controllerName}", ($scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService) ->
+app.controller "rmaps#{controllerName}", ($rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
   drawnShapesFact = rmapsProjectsService.drawnShapes
@@ -63,6 +63,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
           enable: leafletDrawEvents.getAvailableEvents()
 
   leafletData.getMap(mapId).then (lMap) ->
+
     lMap.addLayer(drawnItems)
 
     _linker = rmapsMapEventsLinkerService
@@ -84,16 +85,29 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
 
       rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
 
-    $scope.$on '$destroy', ->
-      _destroy()
-      $log.debug('destroyed')
-
     _getShapeModel = (layer) ->
       model = _.merge layer.model, layer.toGeoJSON()
 
     _eachLayerModel = (layersObj, cb) ->
+      unless layersObj?
+        $log.error("layersObj is undefined")
+        return
       layersObj.getLayers().forEach (layer) ->
-        cb(_getShapeModel layer)
+        cb(_getShapeModel(layer), layer)
+
+    $scope.$watch 'Toggles.showNeighborhoodTap', (newVal) ->
+      _eachLayerModel drawnItems, (model, layer) ->
+        if newVal
+          $log.debug "bound: #{rmapsevents.neighborhoods.createClick}"
+          layer.on 'click', () ->
+            $rootScope.$emit rmapsevents.neighborhoods.createClick, model, layer
+          return
+        layer.clearAllEventListeners()
+
+
+    $scope.$on '$destroy', ->
+      _destroy()
+      $log.debug('destroyed')
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =

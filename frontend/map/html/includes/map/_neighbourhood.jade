@@ -1,24 +1,27 @@
-span(class="dropdown btn-group neighbourhood-list" dropdown on-toggle="toggled(open)")
+span(class="dropdown btn-group neighbourhood-list"
+ ng-controller="rmapsMapNeighborhoodsCtrl"
+ dropdown on-toggle="toggled(open)" auto-close="disabled")
     button(class="dropdown-toggle btn btn-transparent neighbour" dropdown-toggle)
         span.icon.icon-neighbourhood
     .dropdown-menu.whiteblock.no-margin
         .fixed-header
             span
-                a(href="{{frontendRoutes.neighbourhoods}}") {{neighbourArray.length}} Neighborhoods
+                a(href="goToState('neighbourhoods')") {{neighbourhoods.length}} Neighborhoods
         .inner
             ul
-                li(ng-repeat="neighbourhood in neighbourArray")
-                    div
+                li(ng-repeat="model in neighbourhoods")
+                    div(ng-controller="rmapsNeighborhoodsModalCtrl")
                         span.enity
                             span.count {{$index+1}}.
 
-                            span.map
-                                img(src="/assets/test_map.jpg" title="Map preview")
+                            //- span.map
+                            //-     img(src="/assets/test_map.jpg" title="Map preview")
 
                             span.content
-                                a(href="#/neighbourhoods/{{neighbourhood.id}}")
-                                    h3.title {{neighbourhood.title}}
-                                p.properties {{neighbourhood.properties}} Properties
+                                a(href="#/neighbourhoods/{{model.id}}")
+                                    h3.title {{model.name}}
+                                //- p.properties {{model.properties}} Properties
 
                         span.actions
-                            span.icon.icon-remove
+                          span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+                          span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

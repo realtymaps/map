@@ -143,7 +143,7 @@ app.factory 'rmapsMap',
               rmapsControls.LayerControl scope: $scope
               self.zoomBox
               rmapsControls.LocationControl scope: $scope
-              rmapsControls.PropsdrawnshapesControl scope: $scope
+              rmapsControls.DrawtoolsControl scope: $scope
             ]
 
 

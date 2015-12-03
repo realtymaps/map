@@ -1,9 +1,12 @@
+
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 mod = require '../module.coffee'
 
 mod.constant 'rmapsevents',
   keysToValues
     notes: 1
+    neighborhoods:
+      createClick: 1
     map:
       drawPolys:
         isEnabled: 1

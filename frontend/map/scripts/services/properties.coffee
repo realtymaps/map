@@ -26,12 +26,12 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
 
     service.getProperties propertyIds, 'filter'
-    .then (result) ->
-      for idx, detail of result.data
+    .then ({data}) ->
+      for detail in data
         if model = profile.properties_selected[detail.rm_property_id]
           _.extend model, detail
           _saveProperty model
-        if model = profile.favorites[detail.rm_property_id]
+        if model = profile.favorites?[detail.rm_property_id]
           _.extend model, detail
           _favoriteProperty model
 

@@ -117,9 +117,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           resultCenter.zoom = 18
           map.scope.map.center = resultCenter
 
-  $scope.enableNoteTap = ->
-    $scope.Toggles.enableNoteTap()
-
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
     rmapsprincipal.getIdentity()

@@ -83,7 +83,10 @@ class Crud extends BaseObject
       else
         obj = {}
         obj = @idObj id if id?
-        fnExec @dbFn().returning(@idKey).insert(_.extend {}, entity, obj), doLogQuery or @doLogQuery
+        # logger.debug.cyan id, true
+        newEntity = _.extend {}, entity, obj
+        # logger.debug.yellow newEntity,true
+        fnExec @dbFn().returning(@idKey).insert(newEntity), doLogQuery or @doLogQuery
     , true
 
   upsert: (entity, unique, doUpdate = true, safe, doLogQuery = false, fnExec = execQ) ->
