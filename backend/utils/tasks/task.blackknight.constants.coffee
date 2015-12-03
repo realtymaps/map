@@ -1,21 +1,25 @@
 _ = require 'lodash'
+Promise = require "bluebird"
 svc = require '../../services/service.dataSource'
 
 
-_getColumns = (list) ->
-  svc.getAll(data_source_id:'blackknight', data_source_type:'county', data_list_type: list).select('LongName').then (data) ->
-    _.map data, 'LongName'
-
-_taxColumns = () ->
-  _getColumns 'tax'
-
-_deedColumns = () ->
-  _getColumns 'deed'
-
-_mortgageColumns = () ->
-  _getColumns 'mortgage'
-
 columns = {}
+
+_getColumns = (fileType, action, dataType) ->
+  svc
+  .getAll(data_source_id:'blackknight', data_source_type:'county', data_list_type: dataType)
+  .select('LongName')
+  .then (data) ->
+    _.map(data, 'LongName')
+  .then (cols) ->
+    columns[fileType][action][dataType] = cols
+
+getColumns = (fileType, action, dataType) -> Promise.try () ->
+  if !columns[fileType][action][dataType]?
+    _getColumns(fileType, action, dataType)
+  else
+    columns[fileType][action][dataType]
+
 
 module.exports =
   NUM_ROWS_TO_PAGINATE: 500
@@ -28,11 +32,12 @@ module.exports =
   LAST_COMPLETE_CHECK: 'last complete check'
   DELETE: 'Delete'
   LOAD: 'Load'
-  COLUMNS: columns
+  getColumns: getColumns
   tableIdMap:
     ASMT: 'tax'
     Deed: 'deed'
     SAM: 'mortgage'
+
 
 columns[module.exports.DELETE] = {}
 columns[module.exports.DELETE][module.exports.REFRESH] = {}
@@ -64,17 +69,8 @@ columns[module.exports.DELETE][module.exports.UPDATE][module.exports.MORTGAGE] =
   "BK PID"
 ]
 
-
 columns[module.exports.LOAD] = {}
 columns[module.exports.LOAD][module.exports.REFRESH] = {}
 # load columns are the same whether refresh or update
 columns[module.exports.LOAD][module.exports.UPDATE] = columns[module.exports.LOAD][module.exports.REFRESH]
 
-_taxColumns().then (cols) ->
-  columns[module.exports.LOAD][module.exports.REFRESH][module.exports.TAX] = cols
-
-_deedColumns().then (cols) ->
-  columns[module.exports.LOAD][module.exports.REFRESH][module.exports.DEED] = cols
-
-_mortgageColumns().then (cols) ->
-  columns[module.exports.LOAD][module.exports.REFRESH][module.exports.MORTGAGE] = cols

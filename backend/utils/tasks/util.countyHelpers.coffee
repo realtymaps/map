@@ -49,7 +49,7 @@ loadRawData = (subtask, options) ->
         dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
         .on('finish', resolve)
         .on('error', reject)
-  
+
   switch filetype
     when 'zip'
       dataStreamPromise = dataStreamPromise
@@ -145,12 +145,19 @@ finalizeData = (subtask, id) ->
   .orderBy('rm_property_id')
   .orderBy('deleted')
   .orderByRaw('close_date ASC NULLS LAST')
+  mortgageEntriesPromise = tables.property.mortgage()
+  .select('*')
+  .where(rm_property_id: id)
+  .whereNull('deleted')
+  .orderBy('rm_property_id')
+  .orderBy('deleted')
+  .orderByRaw('close_date ASC NULLS LAST')
   # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-  # TODO: simultaneous closings, how do we property sort to account for that?
+  # TODO: simultaneous closings, how do we properly sort to account for that?
   parcelsPromise = tables.property.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
-  Promise.join taxEntriesPromise, deedEntriesPromise, parcelsPromise, (taxEntries=[], deedEntries=[], parcel=[]) ->
+  Promise.join taxEntriesPromise, deedEntriesPromise, mortgageEntriesPromise, parcelsPromise, (taxEntries=[], deedEntries=[], mortgageEntries=[], parcel=[]) ->
     if taxEntries.length == 0
       # not sure if this should ever be possible, but we'll handle it anyway
       return tables.property.deletes()
@@ -161,6 +168,7 @@ finalizeData = (subtask, id) ->
     tax = dataLoadHelpers.finalizeEntry(taxEntries)
     tax.data_source_type = 'county'
     _.extend(tax, parcel[0])
+    ###
     currentSale = []
     priorSale = []
     for field in tax.sale
@@ -220,22 +228,28 @@ finalizeData = (subtask, id) ->
         salesHistory.concat(deedEntries)
     else
       salesHistory = [current, prior]
-    
+    ###
+
     # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
     # TODO: static data fields?
 
     # now that we have an ordered sales history, overwrite that into the tax record
-    lastSale = salesHistory.shift()
-    tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-    tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-    for field in saleFields
-      tax[field] = lastSale[field]
-    tax.shared_groups.sale = salesHistory
-    
+
+    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address']
+    tax.subscriber_groups.mortgage = mortgageEntries
+    lastSale = deedEntries.pop()
+    if lastSale?
+      tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+      tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+      for field in saleFields
+        tax[field] = lastSale[field]
+    tax.shared_groups.sale = deedEntries
+
     tables.property.combined()
     .insert(tax)
 
 
+###
 _listExtend = (list1, list2) ->
   list1Map = dataLoadHelpers.getValues(list1)
   i=0
@@ -254,8 +268,8 @@ _listExtend = (list1, list2) ->
       list1.splice(i, 0, list2[j])
       i++
       j++
-      
-    
+###
+
 module.exports =
   loadRawData: loadRawData
   buildRecord: buildRecord
