@@ -44,6 +44,7 @@ leafletIterators, toastr, $log) ->
 
   linker = rmapsMapEventsLinkerService
   $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
+  createFromModal = $scope.create
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -67,7 +68,7 @@ leafletIterators, toastr, $log) ->
   _mapHandle =
     click: (event) ->
       geojson = (new L.Marker(event.latlng)).toGeoJSON()
-      $scope.create
+      createFromModal
         geom_point_json: geojson.geometry
       .finally ->
         _destroy()
@@ -75,7 +76,7 @@ leafletIterators, toastr, $log) ->
   _markerGeoJsonHandle =
     click: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
       $log.debug "note for model: #{model.rm_property_id}"
-      $scope.create(model).finally ->
+      createFromModal(model).finally ->
         _destroy()
 
   mapUnSubs = linker.hookMap(mapId, _mapHandle, originator, ['click'])

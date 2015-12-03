@@ -4,8 +4,11 @@ template = do require '../../html/views/templates/modals/neighborhood.jade'
 mapId = 'mainMap'
 originator = 'map'
 
-app.controller 'rmapsNeighborhoodsModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
+app.controller 'rmapsNeighborhoodsModalCtrl', ($rootScope, $scope, $modal,
+rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
+
   _event = rmapsevents.neighborhoods
+  drawnShapesSvc = rmapsProjectsService.drawnShapes($rootScope.principal.getCurrentProfile())
 
   _signalUpdate = (promise) ->
     return $rootScope.$emit _event unless promise
@@ -24,24 +27,30 @@ app.controller 'rmapsNeighborhoodsModalCtrl', ($rootScope, $scope, $modal, rmaps
 
       modalInstance.result
 
-    create: (model) ->
-      $scope.createModal().then (lModle) ->
-        _.extend lModle,
-          rm_property_id : model.rm_property_id || undefined
-          geom_point_json : model.geom_point_json
+    create: () ->
+      $scope.createModal().then (model) ->
+        _.extend model,
           project_id: $scope.selectedProject.project_id || undefined
-        _signalUpdate rmapsNotesService.create lModle
+        _signalUpdate drawnShapesSvc.update model
 
-    update: (note) ->
-      note = _.cloneDeep note
-      $scope.createModal(note).then (note) ->
-        _signalUpdate rmapsNotesService.update note
+    update: (model) ->
+      model = _.cloneDeep model
+      $scope.createModal(model).then (model) ->
+        _signalUpdate drawnShapesSvc.update model
 
-    remove: (note) ->
-      _signalUpdate rmapsNotesService.remove note.id
+    remove: (model) ->
+      delete model.neighborhood_name
+      delete model.neighborhood_details
+      _signalUpdate drawnShapesSvc.update model
 
-.controller 'rmapsMapNeighborhoodsTapCtrl', ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-  leafletIterators, toastr, $log) ->
+.controller 'rmapsMapNeighborhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+  leafletIterators, toastr, $log, rmapsevents) ->
+
+  createFromModal = $scope.create
+  ###
+  This controller is meant to have a short life span. It is turned on to create or update neighborhoods.
+  Once it goes out of context for that specific job it should be destroyed.
+  ###
 
   linker = rmapsMapEventsLinkerService
   $log = $log.spawn("map:rmapsMapNeighborhoodsTapCtrl")
@@ -53,8 +62,6 @@ app.controller 'rmapsNeighborhoodsModalCtrl', ($rootScope, $scope, $modal, rmaps
     toastr.clear toast
     rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
 
-    leafletIterators.each unsubscribes, (unsub) ->
-      unsub()
     $scope.Toggles.showNeighborhoodTap = false
 
   toast = toastr.info 'Assign a shape (Circle, Polygon, or Square) by clicking one.', 'Create a Neighborhood',
@@ -63,31 +70,17 @@ app.controller 'rmapsNeighborhoodsModalCtrl', ($rootScope, $scope, $modal, rmaps
     onHidden: (hidden) ->
       _destroy()
 
-  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
+  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)#safety precausion to not fire of unintended behavior
 
-  _mapHandle =
-    click: (event) ->
-      geojson = (new L.Marker(event.latlng)).toGeoJSON()
-      $scope.create
-        geom_point_json: geojson.geometry
-      .finally ->
-        _destroy()
-
-  _markerGeoJsonHandle =
-    click: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-      $log.debug "note for model: #{model.rm_property_id}"
-      $scope.create(model).finally ->
-        _destroy()
-
-  mapUnSubs = linker.hookMap(mapId, _mapHandle, originator, ['click'])
-  markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
-  geoJsonUnSubs = linker.hookGeoJson(mapId, _markerGeoJsonHandle, originator)
-
-  unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
+  $rootScope.$on rmapsevents.neighborhoods.createClick, (event, model, layer) ->
+    createFromModal(model).finally ->
+      _destroy()
 
 .controller 'rmapsMapNeighborhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
 rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsMapEventsLinkerService) ->
-
+  ###
+    Anything long term statewise goes here.
+  ###
 
   $log = $log.spawn("map:neighborhoods")
 
