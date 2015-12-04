@@ -9,7 +9,7 @@ controllerName = "#{domainName}Ctrl"
 #TODO: get colors from color palette
 
 app.controller "rmaps#{controllerName}", (
-$rootScope, $scope, $log, $timeout, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
+$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
 leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
@@ -150,10 +150,11 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
     #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
     $rootScope.$on rmapsevents.neighbourhoods.listToggled, (event, args...) ->
       [isOpen] = args
-      unless isOpen
+      if !isOpen
         _showHiddenLayers()
-        return
-      _hideNonNeighbourHoodLayers()
+      else
+        _hideNonNeighbourHoodLayers()
+      _commonPostDrawActions()
 
     $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
       _eachLayerModel drawnItems, (model, layer) ->

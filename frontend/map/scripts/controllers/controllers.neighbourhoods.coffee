@@ -102,6 +102,8 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsMapEvents
         unsub()
 
   $scope.neighbourhoodListToggled = (isOpen) ->
+    #originally was not going to put this into state but it is needed for service.properties
+    $rootScope.neighbourhoodsListIsOpen = isOpen
     $rootScope.$emit rmapsevents.neighbourhoods.listToggled, isOpen
 
   getAll()
