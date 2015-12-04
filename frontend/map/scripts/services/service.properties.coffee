@@ -51,7 +51,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     boundsStr = "bounds=#{hash}"
     if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
       pathId = 'drawnShapes'
-      boundsStr = ''
+      boundsStr = if $rootScope.neighbourhoodsListIsOpen then 'isNeighbourhood=true' else ''
 
     $log.debug("filters: #{filters}")
     route = "#{backendRoutes.properties[pathId]}?#{boundsStr}#{returnTypeStr}#{filters}&#{mapState}"

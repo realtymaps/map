@@ -40,9 +40,18 @@ getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
 
 getFilterSummaryAsQuery = (state, filters, limit, query = getDefaultQuery()) ->
   # logger.debug.green state, true
-  # logger.debug.green filters.current_project_id, true
-  BaseFilterSummaryService.getFilterSummaryAsQuery(state, filters, limit, query)
+  logger.debug.green filters, true
+  query = BaseFilterSummaryService.getFilterSummaryAsQuery(state, filters, limit, query)
   .where("#{drawnShapesName}.project_id", filters.current_project_id)
+
+  if filters.isNeighbourhood?
+    if filters.isNeighbourhood
+      query = query.whereNotNull("#{drawnShapesName}.neighbourhood_name", filters.current_project_id)
+    else
+      query = query.whereNull("#{drawnShapesName}.neighbourhood_name", filters.current_project_id)
+
+  logger.debug.cyan query.toString()
+  query
 
 getResultCount = (state, filters) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
@@ -54,7 +63,8 @@ module.exports =
   getDefaultQuery: getDefaultQuery
   getResultCount: getResultCount
   getFilterSummaryAsQuery: getFilterSummaryAsQuery
-  transforms: _.extend {}, BaseFilterSummaryService.transforms,
+  transforms: _.merge {}, BaseFilterSummaryService.transforms,
+    isNeighbourhood: validators.boolean()
     bounds: validators.string(null:true)
     current_project_id:
       transforms: [validators.integer()]

@@ -19,6 +19,11 @@ class DrawnShapesCrud extends ThenableCrud
     super(arguments...)
     @drawnShapeCols = sqlHelpers.columns.drawnShapes
 
+  init:() =>
+    super arguments...
+    @doWrapSingleThen = 'singleRaw'
+    @
+    
   getAll: () ->
     super(arguments...)
     .then toGeoFeatureCollection

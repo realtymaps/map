@@ -5,17 +5,17 @@ app.service 'rmapsProjectsService', ($http, $log) ->
 
   _mockData = (project) ->
 
-    project.neighborhoods = []
-    project.neighborhoods.push
+    project.neighbourhoods = []
+    project.neighbourhoods.push
       name: 'Hill Valley'
-      description: 'A friendly neighborhood for families and scientists alike'
-    project.neighborhoods.push
+      description: 'A friendly neighbourhood for families and scientists alike'
+    project.neighbourhoods.push
       name: 'Park Place'
       description: 'Kinda expensive...'
-    project.neighborhoods.push
+    project.neighbourhoods.push
       name: 'South Park'
       description: 'A great place to live if you like comedy'
-    project.neighborhoods.push
+    project.neighbourhoods.push
       name: 'Monticello'
       description: 'Not the famous one'
 
@@ -84,10 +84,15 @@ app.service 'rmapsProjectsService', ($http, $log) ->
   drawnShapes: (profile) ->
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
 
+    getList = (cache = false) ->
+      $http.get rootUrl, cache: cache
+      .then ({data}) ->
+        data
+
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
-      .replace(":id",profile.project_id)
-      .replace(":drawn_shapes_id",shape.properties.id)
+      .replace(":id", profile.project_id)
+      .replace(":drawn_shapes_id",shape.id || shape.properties.id)
 
     _getGeomName = (type) ->
       switch type
@@ -106,12 +111,17 @@ app.service 'rmapsProjectsService', ($http, $log) ->
       normal.project_id = profile.project_id
       normal.id = shape.properties.id if shape.properties?.id?
       normal.shape_extras = shape.properties.shape_extras if shape.properties?.shape_extras?
+      normal.neighbourhood_name = shape.properties.neighbourhood_name || null
+      normal.neighbourhood_details = shape.properties.neighbourhood_details || null
       normal
 
-    getAll: (cache = false) ->
-      $http.get rootUrl, cache: cache
-      .then ({data}) ->
-        data
+    getList: getList
+
+    getListNormalized: (cache = false) ->
+      getList(cache).then (geojson) ->
+        return [] unless geojson
+        {features} = geojson
+        features
 
     create: (shape) ->
       $http.post rootUrl, _normalize shape

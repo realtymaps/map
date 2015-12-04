@@ -191,7 +191,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
     clone: () ->
       new @constructor(@conArgs...)#this ensures the derrived classes are called correctly
 
-    init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) =>
+    init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) => #TODO: should @doWrapSingleThen default to 'singleRaw'?
       @
 
     #Majority of the time GETS are the main functions you might want to stream
@@ -217,6 +217,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
 
     create: () ->
       q = super(arguments...)
+      logger.debug "@doWrapSingleThen: " + @doWrapSingleThen
       return q unless @doWrapSingleThen
       return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q, true

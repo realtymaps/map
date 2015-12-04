@@ -25,7 +25,7 @@ minMaxValidations =
 otherValidations =
   returnType: validators.string()
   ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-  hasOwner: validators.boolean(truthy: "true", falsy: "false")
+  hasOwner: validators.boolean()
   bounds:
     transform: [
       validators.string(minLength: 1)

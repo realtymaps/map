@@ -8,8 +8,9 @@ controllerName = "#{domainName}Ctrl"
 
 #TODO: get colors from color palette
 
-app.controller "rmaps#{controllerName}", ($rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
-leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
+app.controller "rmaps#{controllerName}", (
+$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
+leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:#{controllerName}")
   drawnShapesFact = rmapsProjectsService.drawnShapes
@@ -18,7 +19,7 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
   if profile = rmapsprincipal.getCurrentProfile()
     $log.debug('profile: project_id' + profile.project_id)
     drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
-    drawnShapesSvc.getAll().then (drawnShapes) ->
+    drawnShapesSvc.getList().then (drawnShapes) ->
       # # TODO: drawn shapes will get its own tables for GIS queries
       geoJson = L.geoJson drawnShapes,
         onEachFeature: (feature, layer) ->
@@ -95,31 +96,41 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
       layersObj.getLayers().forEach (layer) ->
         cb(_getShapeModel(layer), layer)
 
-    $scope.$watch 'Toggles.showNeighborhoodTap', (newVal) ->
+    _hiddenDrawnItems = []
+
+    _showHiddenLayers = () ->
+      for layer in _hiddenDrawnItems
+        drawnItems.addLayer(layer)
+      _hiddenDrawnItems = []
+
+    _hideNonNeighbourHoodLayers  = () ->
       _eachLayerModel drawnItems, (model, layer) ->
-        if newVal
-          $log.debug "bound: #{rmapsevents.neighborhoods.createClick}"
-          layer.on 'click', () ->
-            $rootScope.$emit rmapsevents.neighborhoods.createClick, model, layer
-          return
-        layer.clearAllEventListeners()
+        if !model?.properties?.neighbourhood_name?
+          _hiddenDrawnItems.push layer
+          drawnItems.removeLayer(layer)
 
-
-    $scope.$on '$destroy', ->
-      _destroy()
-      $log.debug('destroyed')
+    _commonPostDrawActions = () ->
+      if $scope.Toggles.propertiesInShapes
+        $rootScope.$emit rmapsevents.map.mainMap.redraw
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
-        drawnShapesSvc?.create(layer.toGeoJSON())
+        drawnShapesSvc?.create(layer.toGeoJSON()).then ({data}) ->
+          newId = data
+          layer.model =
+            properties:
+              id: newId
+          _commonPostDrawActions()
       edited: ({layers}) ->
         _eachLayerModel layers, (model) ->
-          drawnShapesSvc?.update(model)
+          drawnShapesSvc?.update(model).then ->
+            _commonPostDrawActions()
       deleted: ({layers}) ->
         _eachLayerModel layers, (model) ->
-          drawnShapesSvc?.delete(model)
+          drawnShapesSvc?.delete(model).then ->
+            _commonPostDrawActions()
       drawstart: ({layerType}) ->
         _doToast('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->
@@ -135,5 +146,29 @@ leafletIterators, toastr, leafletData, leafletDrawEvents, rmapsprincipal, rmapsP
 
     _handle = _.mapKeys _handle, (val, key) -> 'draw:' + key
     _unsubscribes = _linker.hookDraw(mapId, _handle, originator)
+
+    #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
+    $rootScope.$on rmapsevents.neighbourhoods.listToggled, (event, args...) ->
+      [isOpen] = args
+      if !isOpen
+        _showHiddenLayers()
+      else
+        _hideNonNeighbourHoodLayers()
+      _commonPostDrawActions()
+
+    $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
+      _eachLayerModel drawnItems, (model, layer) ->
+        if newVal
+          $log.debug "bound: #{rmapsevents.neighbourhoods.createClick}"
+          layer.on 'click', () ->
+            $rootScope.$emit rmapsevents.neighbourhoods.createClick, model, layer
+          return
+        layer.clearAllEventListeners()
+
+
+    $scope.$on '$destroy', ->
+      _destroy()
+      $log.debug('destroyed')
+    #END SCOPE Extensions
 
     $log.debug 'loaded'

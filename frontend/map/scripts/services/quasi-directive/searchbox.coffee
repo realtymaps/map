@@ -28,7 +28,7 @@ app.service 'rmapssearchbox', (leafletData) ->
       # setup for search bar; available search options: https://github.com/stefanocudini/leaflet-search/blob/master/src/leaflet-search.js
       searchParams =
         wrapper: 'searchbox-container',
-        text: 'Enter a city, address, neighborhood, etc...',
+        text: 'Enter a city, address, neighbourhood, etc...',
         textErr: 'Processing... try being more specific.',
         url: apiUrl,
         markerIcon: searchMarker,

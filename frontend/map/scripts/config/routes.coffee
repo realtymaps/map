@@ -61,7 +61,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'projectClients', parent: 'project'
   buildState 'projectNotes', parent: 'project'
   buildState 'projectFavorites', parent: 'project'
-  buildState 'projectNeighborhoods', parent: 'project'
+  buildState 'projectNeighbourhoods', parent: 'project'
   buildState 'projectPins', parent: 'project'
   buildState 'neighbourhoods'
   buildState 'notes'

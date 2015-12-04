@@ -5,9 +5,12 @@ mod = require '../module.coffee'
 mod.constant 'rmapsevents',
   keysToValues
     notes: 1
-    neighborhoods:
+    neighbourhoods:
       createClick: 1
+      listToggled: 1
     map:
+      mainMap:
+        reDraw: 1
       drawPolys:
         isEnabled: 1
         clear: 1
