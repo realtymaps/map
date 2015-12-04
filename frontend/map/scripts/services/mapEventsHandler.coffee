@@ -1,6 +1,7 @@
 NgLeafletCenter = require('../../../../common/utils/util.geometries.coffee').NgLeafletCenter
 caseing = require 'case'
 app = require '../app.coffee'
+events = require '../../../common/scripts/utils/events.coffee'
 
 _isMarker = (type) ->
   type == 'marker'
@@ -42,7 +43,6 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
       return if !layerName or !type or !lObject
       if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
         rmapsLayerFormatters.MLS.setMarkerPriceOptions(model)
-        lObject.setIcon(new L.divIcon(model.icon))
       if type == 'geojson'
         if eventName == 'mouseout'
           s = 's'
@@ -58,6 +58,8 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
       return if maybeCaller == 'results' #avoid recursion
 
       mapCtrl.closeWindow() if mapCtrl.closeWindow?
+      _lastEvents.mouseover = null
+
       $scope.formatters.results.mouseleave(null, model)
 
     _handleManualMarkerCluster = (model) ->
@@ -82,15 +84,16 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
       Thus in a two way event everything should be visited once.
       ###
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
+
         if _isMarker(type) and model?.markerType? and
             (model.markerType == 'streetnum' or model.markerType == 'cluster') or
             _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
             (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+          # $log.debug '[BLOCKED] ' + events.targetInfo(event.originalEvent)
           return
         _lastEvents.mouseover = model
-        _lastEvents.mouseout = null
 
-        # $log.debug mouseover: type: #{type}, layerName: #{layerName}, modelName: #{modelName}
+        $log.debug events.targetInfo(event.originalEvent)
 
         #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
         if model.markerType != 'note'
@@ -113,11 +116,15 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
           $scope.formatters.results.mouseenter(null, model)
 
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-        if _isMarker(type) and model?.markerType? and
+        if event.originalEvent.relatedTarget?.className?.slice? or # Detect whether this is firing on a child element
+            (_isMarker(type) and model?.markerType? and
             (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
             # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
-            (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
+            (originator == thisOriginator and maybeCaller?)) #this has been called here b4 originally
+          # $log.debug '[BLOCKED]' + events.targetInfo(event.originalEvent)
           return
+
+        $log.debug events.targetInfo(event.originalEvent)
 
         _lastEvents.mouseout = model
         _lastEvents.mouseover = null
