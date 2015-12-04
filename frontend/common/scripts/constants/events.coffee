@@ -9,6 +9,8 @@ mod.constant 'rmapsevents',
       createClick: 1
       listToggled: 1
     map:
+      mainMap:
+        reDraw: 1
       drawPolys:
         isEnabled: 1
         clear: 1
