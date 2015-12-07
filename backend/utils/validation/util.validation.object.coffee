@@ -7,7 +7,7 @@ logger = require '../../config/logger'
 module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
     if !values
-      return null
+      return options.falsyReturn or null
     if options.json
       values = JSON.parse values
     if options.pluck

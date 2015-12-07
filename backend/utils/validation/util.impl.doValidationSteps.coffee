@@ -14,6 +14,13 @@ doValidationSteps = (transform, param, value, index, length) -> Promise.try () -
         value = result
     .then () ->
       return value
+  else if _.isArray transform?.any
+    promises = transform.any.map (subtransform) ->
+      doValidationSteps(subtransform, param, value, index, length)
+    Promise.any promises #pick the first validation that works
+    .then (result) ->
+      value = result
+      return value
   else
     # or just a singleton
     return transform(param, value, index, length)

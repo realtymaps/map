@@ -13,6 +13,10 @@ beforeEach ->
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)
     $provide.decorator nemSimpleLoggerProvider.decorator...
+    $provide.decorator 'nemSimpleLogger', ($delegate) ->
+      $delegate.spawn = () ->
+        console
+      $delegate
 
     $provide.decorator '$timeout', ($delegate, $browser) ->
       $delegate.hasPendingTasks = ->
@@ -50,6 +54,7 @@ beforeEach ->
   .run ($httpBackend) ->
     $httpBackend.when( 'GET', backendRoutes.config.mapboxKey).respond(500)
     $httpBackend.when( 'GET', backendRoutes.config.cartodb).respond(500)
+    $httpBackend.when( 'GET', backendRoutes.config.google).respond(500)
 
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log

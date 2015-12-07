@@ -38,25 +38,24 @@ getDefaultQuery = (query = BaseFilterSummaryService.getDefaultQuery()) ->
      text(#{drawnShapesName}.shape_extras->'radius')::float/#{distance.METERS_PER_EARTH_RADIUS})
     """
 
-getFilterSummaryAsQuery = (state, filters, limit, query = getDefaultQuery()) ->
-  # logger.debug.green state, true
-  logger.debug.green filters, true
-  query = BaseFilterSummaryService.getFilterSummaryAsQuery(state, filters, limit, query)
-  .where("#{drawnShapesName}.project_id", filters.current_project_id)
+getFilterSummaryAsQuery = (filters, limit, query = getDefaultQuery()) ->
+  # logger.debug.green filters, true
+  query = BaseFilterSummaryService.getFilterSummaryAsQuery(filters, limit, query)
+  .where("#{drawnShapesName}.project_id", filters.project_id)
 
   if filters.isNeighbourhood?
     if filters.isNeighbourhood
-      query = query.whereNotNull("#{drawnShapesName}.neighbourhood_name", filters.current_project_id)
+      query = query.whereNotNull("#{drawnShapesName}.neighbourhood_name", filters.project_id)
     else
-      query = query.whereNull("#{drawnShapesName}.neighbourhood_name", filters.current_project_id)
+      query = query.whereNull("#{drawnShapesName}.neighbourhood_name", filters.project_id)
 
-  logger.debug.cyan query.toString()
+  # logger.debug.cyan query.toString()
   query
 
-getResultCount = (state, filters) ->
+getResultCount = (filters) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
-  q = getFilterSummaryAsQuery(state, filters,null, query)
-  logger.debug q.toString()
+  q = getFilterSummaryAsQuery(filters,null, query)
+  # logger.debug q.toString()
   q
 
 module.exports =
@@ -66,6 +65,4 @@ module.exports =
   transforms: _.merge {}, BaseFilterSummaryService.transforms,
     isNeighbourhood: validators.boolean()
     bounds: validators.string(null:true)
-    current_project_id:
-      transforms: [validators.integer()]
-      required: true
+    project_id: validators.integer()#even though this is set on the backend it is needed so it is not lost in base impl

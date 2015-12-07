@@ -1,16 +1,15 @@
 Promise = require 'bluebird'
-bcrypt = require 'bcrypt'
 _ = require 'lodash'
 logger = require '../config/logger'
 tables = require '../config/tables'
-sqlHelpers = require '../utils/util.sql.helpers'
-singleRow = sqlHelpers.singleRow
-{currentProfile} = require '../utils/util.session.helpers'
+{singleRow} = require '../utils/util.sql.helpers'
+{basicColumns} = require '../utils/util.sql.columns'
+{currentProfile} = require '../../common/utils/util.profile'
 userProfileSvc = (require './services.user').user.profiles
 projectSvc = (require './services.user').project
 
-safeProject = sqlHelpers.columns.project
-safeProfile = sqlHelpers.columns.profile
+safeProject = basicColumns.project
+safeProfile = basicColumns.profile
 
 create = (newProfile) ->
   Promise.try () ->
@@ -58,10 +57,12 @@ getFirst = (userId) ->
       delete result.id
       return result
 
-getCurrent = (session) ->
+getCurrentSessionProfile = (session) ->
   currentProfile(session)
 
-update = (profile) ->
+update = (profile, auth_user_id, safe = safeProfile) ->
+  Promise.throw("auth_usr_id is undefined") unless auth_user_id
+
   userProfileSvc.getById profile.id
   .then (profileProject) ->
     if profileProject?
@@ -69,7 +70,7 @@ update = (profile) ->
   .then () ->
     # logger.debug "profile update"
     # logger.debug profile, true
-    userProfileSvc.update profile.id, profile, safeProfile
+    userProfileSvc.update {id: profile.id, auth_user_id: auth_user_id}, profile, safe
   .then (userState) ->
     if not userState
       return {}
@@ -77,26 +78,31 @@ update = (profile) ->
     delete result.id
     return result
 
-updateCurrent = (session, partialState) ->
-  # need the id for lookup, so we don't want to allow it to be set this way
-  delete partialState.id
-
+_hasProfileStateChanged = (profile, partialState) ->
   #avoid unnecessary saves as there is the possibility for race conditions
   needsSave = false
-  profile = currentProfile(session)
   for key,part of partialState
     if !_.isEqual part, profile[key]
       needsSave = true
       break
+  needsSave
+
+updateCurrent = (session, partialState, safe) ->
+  sessionProfile = getCurrentSessionProfile(session)
+  # saveSessionPromise = null
 #  logger.debug "service.user needsSave: #{needsSave}"
-  if needsSave
-    _.extend(profile, partialState)
+  if _hasProfileStateChanged(sessionProfile, partialState)
+    _.extend(sessionProfile, partialState)
+    # saveSessionPromise = session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
     session.saveAsync()  # save immediately to prevent problems from overlapping AJAX calls
-  update(profile)
+  # else
+  #   saveSessionPromise = Promise.resolve()
+  # saveSessionPromise.then () ->
+  update(sessionProfile, session.userid, safe)
 
 module.exports =
   getProfiles: getProfiles
-  getCurrent: getCurrent
+  getCurrentSessionProfile: getCurrentSessionProfile
   updateCurrent: updateCurrent
   update: update
   getFirst: getFirst

@@ -70,6 +70,7 @@ basicColumns = do ->
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
       'address_1', 'address_2', 'zip', 'city', 'parent_id']
 
+    #all id, _id .. are not technically safe unless it is coming from session explicitly
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles',
       'map_position', 'map_results', 'favorites']
 
@@ -79,6 +80,8 @@ basicColumns = do ->
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret
 
+safeFromQuery =
+  profile: _.without basicColumns.profile, 'id', 'auth_user_id', 'parent_auth_user_id'
 
 joinColumns = do ->
   permission: [
@@ -160,6 +163,7 @@ joinColumnNames = do ->
 
 module.exports =
   basicColumns: basicColumns
+  safeFromQuery: safeFromQuery
   joinColumns: joinColumns
   joinColumnNames: joinColumnNames
   ageOrDaysFromStartToNow: ageOrDaysFromStartToNow

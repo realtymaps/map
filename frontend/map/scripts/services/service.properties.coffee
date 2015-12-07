@@ -1,6 +1,5 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-qs = require 'qs'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
@@ -20,6 +19,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
   _saveThrottler = new rmapsPromiseThrottler('saveThrottler')
   _addressThrottler = new rmapsPromiseThrottler('addressThrottler')
 
+  _prependAmpersand = (str) ->
+    if str then '&' + str else ''
   # Reset the properties hash when switching profiles
   $rootScope.$onRootScope rmapsevents.principal.profile.updated, (event, profile) ->
 
@@ -38,27 +39,37 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
       $rootScope.$emit rmapsevents.map.properties.favorite, _favoriteProperties
 
+  _getState = (mapState = {}, filters = {}) ->
+    # $log.debug "mapState: #{JSON.stringify mapState}"
+    # $log.debug "filters: #{JSON.stringify filters}"
+    _.extend {}, mapState,
+      filters: filters
+
   # this convention for a combined service call helps elsewhere because we know how to get the path used
   # by this call, which means we can do things with alerts related to it
-  _getPropertyData = (pathId, hash, mapState, returnType, filters='', cache = true) ->
+  _getPropertyData = (pathId, hash, mapState, returnType, filters, cache = true) ->
     return null if !hash?
 
     if returnType? and !_.isString(returnType)
       $log.error "returnType is not a string. returnType: #{returnType}"
 
-    returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
-
-    boundsStr = "bounds=#{hash}"
     if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
       pathId = 'drawnShapes'
       boundsStr = if $rootScope.neighbourhoodsListIsOpen then 'isNeighbourhood=true' else ''
 
-    $log.debug("filters: #{filters}")
-    route = "#{backendRoutes.properties[pathId]}?#{boundsStr}#{returnTypeStr}#{filters}&#{mapState}"
-    $log.log(route) if window.isTest
-    $http.get(route, cache: cache)
+    route = backendRoutes.properties[pathId]
+    if !window.isTest
+      $log.debug("filters: #{JSON.stringify filters}")
+      $log.debug mapState
+      $log.log(route)
 
-  _getFilterSummary = (hash, mapState, returnType, filters='', cache = true, throttler = _filterThrottler) ->
+    $http.post route,
+      bounds: hash
+      returnType: returnType
+      state: _getState(mapState, filters)
+    , cache: cache
+
+  _getFilterSummary = (hash, mapState, returnType, filters, cache = true, throttler = _filterThrottler) ->
     throttler.invokePromise(
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
@@ -105,37 +116,36 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
 
     # will receive results from backend, which will be organzed either as
     #   standard results or cluster results, determined in backend by #of results returned
-    getFilterResults: (hash, mapState, filters='', cache = true) ->
+    getFilterResults: (hash, mapState, filters, cache = true) ->
       _getFilterSummary(hash, mapState, 'clusterOrDefault', filters, cache)
 
-    getFilterSummary: (hash, mapState, filters='', cache = true) ->
+    getFilterSummary: (hash, mapState, filters, cache = true) ->
       _getFilterSummary(hash, mapState, undefined, filters, cache)
 
-    getFilterSummaryAsCluster: (hash, mapState, filters='', cache = true) ->
+    getFilterSummaryAsCluster: (hash, mapState, filters, cache = true) ->
       _getFilterSummary(hash, mapState, 'cluster', filters, cache, _filterThrottlerCluster)
 
-    getFilterSummaryAsGeoJsonPolys: (hash, mapState, filters='', cache = true) ->
+    getFilterSummaryAsGeoJsonPolys: (hash, mapState, filters, cache = true) ->
       _getFilterSummary(hash, mapState, 'geojsonPolys', filters, cache, _filterThrottlerGeoJson)
 
     getParcelBase: (hash, mapState, cache = true) ->
       _parcelThrottler.invokePromise _getPropertyData(
-        'parcelBase', hash, mapState, undefined, filters = '', cache)
+        'parcelBase', hash, mapState, undefined, undefined, cache)
       , http: {route: backendRoutes.properties.parcelBase }
 
     getAddresses: (hash, mapState, cache = true) ->
       _addressThrottler.invokePromise _getPropertyData(
-        'addresses', hash, mapState, undefined, filters = '', cache)
+        'addresses', hash, mapState, undefined, undefined, cache)
       , http: {route: backendRoutes.properties.parcelBase }
 
-    getPropertyDetail: (mapState, queryObj, column_set, cache = true) ->
-      queryStr = qs.stringify queryObj
-      mapStateStr = if mapState? then "&#{mapState}" else ''
-      url = "#{backendRoutes.properties.detail}?#{queryStr}&columns=#{column_set}#{mapStateStr}"
-      _detailThrottler.invokePromise $http.get(url, cache: cache)
-      , http: {route: backendRoutes.properties.detail }
+    getPropertyDetail: (mapState, queryObj, columns, cache = true) ->
+      promise =
+        $http.post(backendRoutes.properties.detail,
+        _.extend({}, queryObj,{ state: _getState(mapState), columns: columns }), cache: cache)
+      _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail)
 
     getProperties: (ids, columns) ->
-      $http.get backendRoutes.properties.details, params: rm_property_id: ids, columns: columns
+      $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
     saveProperty: (model) ->
       _saveProperty model

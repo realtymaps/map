@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-injector = app.injector
+
 app.config(($provide) ->
   #recommended way of dealing with clean up of angular communication channels
   #http://stackoverflow.com/questions/11252780/whats-the-correct-way-to-communicate-between-controllers-in-angularjs
