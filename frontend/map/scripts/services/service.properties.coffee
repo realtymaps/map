@@ -5,6 +5,8 @@ qs = require 'qs'
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
+  $log = $log.spawn("map:rmapsPropertiesService")
+
   #HASH to properties by rm_property_id
   #we may want to save details beyond just saving there fore it will be a hash pointing to an object
   _savedProperties = {}
@@ -24,12 +26,12 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
 
     service.getProperties propertyIds, 'filter'
-    .then (result) ->
-      for idx, detail of result.data
+    .then ({data}) ->
+      for detail in data
         if model = profile.properties_selected[detail.rm_property_id]
           _.extend model, detail
           _saveProperty model
-        if model = profile.favorites[detail.rm_property_id]
+        if model = profile.favorites?[detail.rm_property_id]
           _.extend model, detail
           _favoriteProperty model
 
@@ -45,7 +47,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       $log.error "returnType is not a string. returnType: #{returnType}"
 
     returnTypeStr = if returnType? then "&returnType=#{returnType}" else ''
-    route = "#{backendRoutes.properties[pathId]}?bounds=#{hash}#{returnTypeStr}#{filters}&#{mapState}"
+
+    boundsStr = "bounds=#{hash}"
+    if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
+      pathId = 'drawnShapes'
+      boundsStr = if $rootScope.neighbourhoodsListIsOpen then 'isNeighbourhood=true' else ''
+
+    $log.debug("filters: #{filters}")
+    route = "#{backendRoutes.properties[pathId]}?#{boundsStr}#{returnTypeStr}#{filters}&#{mapState}"
     $log.log(route) if window.isTest
     $http.get(route, cache: cache)
 

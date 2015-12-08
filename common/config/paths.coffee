@@ -22,7 +22,6 @@ getAssetCollection = (name) ->
     rootStylus: app + 'styles/main.styl'
     stylus: app + 'styles/**/*.styl'
     less: app + 'styles/**/*.less'
-    stylusWatch: app + 'styles/**/*'
     svg: app + 'html/svg/*.svg'
     html: app + 'html/**/*.html'
     jade: app + 'html/**/*.jade'

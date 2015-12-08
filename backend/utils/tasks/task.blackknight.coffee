@@ -56,7 +56,7 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
       fileInfo = _.clone(folderInfo)
       fileInfo.name = file.name
       processLists[fileType].push(fileInfo)
-      
+
 _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
   if i >= drops.length
     # we've iterated over the whole list
@@ -165,13 +165,15 @@ checkFtpDrop = (subtask) ->
       dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'blackknight_saveProcessDates', dates: processInfo.dates, true)
       Promise.join ftpEnd, fileProcessing, dates, () ->  # empty handler
 
-  
+
 loadRawData = (subtask) ->
-  countyHelpers.loadRawData subtask,
-    dataSourceId: 'blackknight'
-    columnsHandler: constants.COLUMNS[subtask.data.fileType][subtask.data.action][subtask.data.dataType]
-    delimiter: '\t'
-    sftp: true
+  constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
+  .then (columns) ->
+    countyHelpers.loadRawData subtask,
+      dataSourceId: 'blackknight'
+      columnsHandler: columns
+      delimiter: '\t'
+      sftp: true
   .then (numRows) ->
     if subtask.data.fileType == constants.DELETE
       nextSubtaskName = "blackknight_deleteData"
@@ -256,7 +258,7 @@ ready = () ->
       return undefined
     dayOfWeek = moment.utc().isoWeekday()
     if dayOfWeek == 7 || dayOfWeek == 1
-      # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday  
+      # Sunday or Monday, because drops don't happen at the end of Saturday and Sunday
       return false
     yesterday = moment.utc().subtract(1, 'day').format('YYYYMMDD')
     if processDates[constants.REFRESH] == yesterday && processDates[constants.UPDATE] == yesterday

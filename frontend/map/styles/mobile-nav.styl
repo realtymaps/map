@@ -11,7 +11,6 @@ $menu-footer-editor-height = 93px
 $menu-footer-viewer-height = 129px
 
 #mobile-nav
-
   position absolute
   z-index 1001
   left 0
@@ -62,7 +61,11 @@ $menu-footer-viewer-height = 129px
     padding-top 30px
 
   .menu-options
-    margin-bottom 30px
+    margin-bottom 20px
+    margin-top 20px
+
+  .project-select
+    border-bottom solid 1px $rm-border-line
 
   h1.logo
     display block
@@ -82,13 +85,29 @@ $menu-footer-viewer-height = 129px
 
   .count
     float right
-    font-size 16px
     margin-right 10px
+    font-size 16px
+
+  .project-name
+    display: inline-block;
+    width: calc(100% - 105px);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+
+  .change-project
+    position absolute
+    top 0
+    right 10px
+    font-size 12px
 
   ul.nav
     padding 0 10px 0 16px
     width 100%
     border-bottom 1px solid c_gray
+
+    &.project-select
+      padding-bottom 5px
 
     li
       a

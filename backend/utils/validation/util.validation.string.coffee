@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 require '../../../common/extensions/strings'
-
+logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
@@ -21,6 +21,8 @@ module.exports = (options = {}) ->
 
     transformedValue = value
 
+    if options.null
+      transformedValue = null
     if options.trim
       transformedValue = transformedValue.trim()
     if options.replace?
@@ -35,4 +37,5 @@ module.exports = (options = {}) ->
       transformedValue = transformedValue.toLowerCase()
     else if (options.forceUpperCase)
       transformedValue = transformedValue.toUpperCase()
+    # logger.debug.cyan "validation.string: #{transformedValue}"
     return transformedValue

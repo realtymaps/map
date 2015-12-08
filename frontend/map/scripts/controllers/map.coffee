@@ -42,6 +42,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         project.totalProperties = (_.keys project.properties_selected).length
 
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
+
       $scope.loadProject projectToLoad
 
   $scope.loadProject = (project) ->
@@ -77,7 +78,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         statusList = project.filters.status || []
         for key,status of rmapsParcelEnums.status
           project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-        _.extend($rootScope.selectedFilters, _.omit(project.filters, 'status'))
+        #TODO: this is a really ugly hack to workaround our poor state design in our app
+        #filters and mapState need to be combined, also both should be moved to rootScope
+        #the omits here are to keep from saving off duplicate data where project.filters is from the backend
+        _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
       if $scope.map?
         if map_position?.center?
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
@@ -98,15 +102,21 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         rmapsMainOptions.map.toggles = new rmapsMapToggles(project.map_toggles)
         map = new rmapsMap($scope)
 
-      if project.map_results?.selectedResultId? and map?
-        $log.debug 'attempting to reinstate selectedResult'
-        rmapsPropertiesService.getPropertyDetail(null,
-          rm_property_id: project.map_results.selectedResultId, 'all')
-        .then (data) ->
-          map.scope.selectedResult = _.extend map.scope.selectedResult or {}, data
+      selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
-  $scope.enableNoteTap = ->
-    $scope.Toggles.enableNoteTap()
+      if selectedResultId? and map?
+        $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+        rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+          rm_property_id: selectedResultId, 'all')
+        .then (result) ->
+          return if _.isString result#not sure how this was happening but if we get it bail (should be an object)
+          $timeout () ->
+            map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
+          , 50
+          resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+          resultCenter.zoom = 18
+          map.scope.map.center = resultCenter
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->

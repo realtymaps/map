@@ -3,11 +3,12 @@
 @import './map/mapProperties.styl'
 @import './map/mapUlDropdown.styl'
 @import './map/mapNotes.styl'
-@import './map/mapNeighborhoods.styl'
+@import './map/mapNeighbourhoods.styl'
 @import './map/mapSettings.styl'
 @import './map/mapLayerTools.styl'
 @import './map/mapZoomLocTools.styl'
 @import './map/mapNotesTap.styl'
+@import './map/mapDrawTools.styl'
 
 .leaflet-control-layers
   display none
@@ -26,7 +27,7 @@ body
     $fnMakeMapUlDropdown()
 
     $fnMakeMapNotes()
-    $fnMakeMapNeighborhoods()
+    $fnMakeMapNeighbourhoods()
     $fnMakeMapSettings()
     $fnMakeMapPinned()
 
@@ -78,6 +79,7 @@ body
 
   $fnMakeMapLayerTools()
   $fnMakeMapZoomLocTools()
+  $fnMakeMapDrawTools()
 
 .add-project
   h3

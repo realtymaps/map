@@ -22,7 +22,7 @@ app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsPropertiesService, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
   rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
-  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService) ->
+  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService, rmapsprincipal) ->
 
     limits = rmapsMainOptions.map
 
@@ -65,6 +65,10 @@ app.factory 'rmapsMap',
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
             $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
 
+          $scope.$watch 'Toggles.propertiesInShapes', (newVal) =>
+            $rootScope.propertiesInShapes = newVal
+            @redraw()
+
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal
@@ -78,8 +82,9 @@ app.factory 'rmapsMap',
 
         @singleClickCtrForDouble = 0
 
-        $rootScope.$onRootScope rmapsevents.map.filters.updated, => #tried without the closure and bombs
-          @redraw()
+        [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
+          $rootScope.$onRootScope eventName, =>
+            @redraw(false)
 
         @layerFormatter = rmapsLayerFormatters
 
@@ -100,7 +105,7 @@ app.factory 'rmapsMap',
           saved
 
         @scope.refreshState = (overrideObj = {}) =>
-          @mapState = qs.stringify _.extend(@getMapStateObj(), overrideObj)
+          @mapState = qs.stringify _.extend({}, @getMapStateObj(), overrideObj)
           @mapState
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
@@ -139,6 +144,7 @@ app.factory 'rmapsMap',
               rmapsControls.LayerControl scope: $scope
               self.zoomBox
               rmapsControls.LocationControl scope: $scope
+              rmapsControls.DrawtoolsControl scope: $scope
             ]
 
 
@@ -346,6 +352,7 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
+          current_project_id: rmapsprincipal.getCurrentProfile()?.project_id
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,

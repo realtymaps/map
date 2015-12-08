@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
   $scope.isMobileNavOpen = false
 
   $scope.toggleMobileNav = (event) ->
@@ -14,11 +14,10 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
 
     # Load the current project, if any, in order to populate totals in the menu
     if rmapsprincipal.isAuthenticated()
-      rmapsprincipal.getCurrentProfile()
-      .then (profile) ->
+      if profile = rmapsprincipal.getCurrentProfile()
         $scope.profile = profile
 
-        # Load the Project counts such as number of properties, neighborhoods, etc...
+        # Load the Project counts such as number of properties, neighbourhoods, etc...
         rmapsProjectsService.getProject profile.project_id
         .then (project) ->
           project.propertiesTotal = _.keys(project.properties_selected).length
@@ -47,5 +46,9 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, rmapsprincipal, rmaps
 
   $scope.closeMobileNav = (event) ->
     return if !$scope.isMobileNavOpen
-    event.stopPropagation()
+    event.stopPropagation() if event
     $scope.isMobileNavOpen = false
+
+  $scope.goToState = (state, params, options) ->
+    $scope.closeMobileNav()
+    $state.go state, params, options

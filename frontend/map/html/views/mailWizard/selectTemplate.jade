@@ -1,0 +1,23 @@
+.select-template
+  .inner
+    .container
+      form
+        h1.pageTitle Select A Template
+          .filters
+            span(ng-repeat="category in categories")
+              button.btn.btn-filter(ng-click="setCategory(category[0])" ng-class="{ 'active': displayCategory == category[0]}") {{category[1]}}
+          .row
+            ul.tmpl-list
+              li.col-md-3(ng-show="isEmptyCategory()")
+                .no-tmpl There are no items to view here.
+              li.col-md-2(ng-repeat="template in categoryLists[displayCategory]")
+                .tmpl-item(ng-click="selectTemplate($index)")
+                  .tmpl-data
+                    h3.tmpl-title {{template.name}}
+                    img.tmpl-image(src="{{template.thumb}}")
+
+                //- .tmpl-item(ng-click="selectTemplate($index)")
+                //-   img.tmpl-image(src="{{template.thumb}}")
+                //-   .tmpl-data
+                //-     h3.tmpl-title {{template.name}}
+                //-     button.btn.btn-default(ng-click="selectTemplate($index)") Select

@@ -15,94 +15,93 @@ include mixins/_avatarMixin.jade
             // Subscriber Project Selection
             //
 
-            div(ng-if="principal.isSubscriber() || principal.isEditor()")
-                ul.nav.project-select(ng-click="closeMobileNav($event)")
+            div(ng-if="(principal.isSubscriber() || principal.isEditor()) && profile")
+              ul.nav.project-select
                     li
-                        a(href="{{frontendRoutes.projects}}" class="projects" ng-class="{ active: isActive('projects') }")
-                            span.icon.menu-icon.icon-property
-                            span.menu-label Projects
-                            span.menu-badge.count {{projectTotal}}
+                        a.menu-label.menu-link.project-name(ng-click="goToState('project', {id: project.id})" class="projects" ng-class="{ active: isActive('projects') }") {{profile.name || "Sandbox"}}
+                        a.menu-alert.menu-link.change-project(ng-click="goToState('projects')") Change Project
 
             //
             // Editor View
             //
 
             div(ng-if="principal.isProjectEditor() && profile")
-                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                ul.nav.menu-options
                     li(ng-show="profile")
-                        a(ng-cloak href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                        a.menu-link(ng-click="goToState('properties')" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
                             span.menu-label Pinned Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                        a.menu-link(ng-click="goToState('notes')" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        a.menu-link(ng-click="goToState('neighbourhoods')" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
-                            span.menu-label Neighborhoods
-                            span.menu-badge.count {{project.neighborhoods.length}}
+                            span.menu-label Neighbourhoods
+                            span.menu-badge.count {{project.neighbourhoods.length}}
 
                 #client-section(ng-show="clients")
                     #client-header.menu-label My Clients
-                        span.menu-badge.count {{clients.length}}
+                        a.menu-badge.menu-link.count(ng-click="goToState('projectClients', {id: project.id})") {{clients.length}}
 
                     ul.nav.clients
                         li.client(ng-repeat="client in clients | limitTo:3")
-                            a
+                            a.menu-link
                                 div.client-initials {{client.initials}}
                                 div.menu-label.client-name {{client.first_name}} {{client.last_name}}
                                 div.menu-caption.client-email {{client.email}}
 
-                    .client-more.menu-caption(ng-show="clients.length > 3") + {{clients.length - 3}} more...
+                    div.client-more
+                        a.menu-caption.menu-link(ng-show="clients.length > 3" ng-click="goToState('projectClients', {id: project.id})") + {{clients.length - 3}} more...
 
             //
             // Viewer View
             //
 
             div(ng-if="principal.isProjectViewer() && profile")
-                ul.nav.menu-options(ng-click="closeMobileNav($event)")
+                ul.nav.menu-options
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.neighbourhoods}}" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        a.menu-link(ng-click="goToState('neighbourhoods')" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
                             span.menu-label Neighbourhoods
-                            span.menu-badge.count {{project.neighborhoods.length}}
+                            span.menu-badge.count {{project.neighbourhoods.length}}
 
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.properties}}" class="properties" ng-class="{ active: isActive('properties') }")
+                        a.menu-link(ng-click="goToState('properties')" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-property
                             span.menu-label Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.notes}}" class="notes" ng-class="{ active: isActive('notes') }")
+                        a.menu-link(ng-click="goToState('notes')" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
                     li(ng-show="profile")
-                        a(href="{{frontendRoutes.favorites}}" class="favorites" ng-class="{ active: isActive('favorites') }")
+                        a.menu-link(ng-click="goToState('favorites')" class="favorites" ng-class="{ active: isActive('favorites') }")
                             span.icon.menu-icon.icon-favorites
                             span.menu-label Favorites
                             span.menu-badge.count {{project.favorites.length}}
 
         .bottom
-            ul.nav(ng-click="closeMobileNav($event)")
+            ul.nav
                 li(ng-if="principal.isProjectViewer()")
-                    a
+                    a.menu-link
                         span.icon.menu-icon.icon-project
                         span.menu-label My Realtor
 
                 li
-                    a.menu-label(href="{{frontendRoutes.user}}")
+                    a.menu-label.menu-link(ng-click="goToState('user')")
                         i.icon.menu-icon.fa.fa-cog
                         span Account Settings
 
                 li
-                    a(href="{{frontendRoutes.logout}}")
+                    a.menu-link(ng-click="goToState('logout')")
                         i.icon.menu-icon.fa.fa-sign-out
                         span.menu-label Sign Out

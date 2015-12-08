@@ -1,60 +1,98 @@
 require '../../globals'
-assert = require('chai').assert
+{assert} = require('chai')
 Promise = require 'bluebird'
 require 'should'
 basePath = require '../basePath'
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
-{toTestThenableCrudInstance} = require "../../specUtils/util.crud.service.test.helpers"
+CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"
+ServiceCrud = CrudServiceHelpers.Crud
+{toTestThenableCrudInstance} = require "../../specUtils/crudServiceMock"
+{sqlMock} = require "../../specUtils/sqlMock"
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 rewire = require 'rewire'
 routeCrudToTest = rewire "#{basePath}/routeCrud/route.crud.projectSession"
 safeProject = sqlHelpers.columns.project
 mockCls = require '../../specUtils/mockCls'
 {joinColumnNames} = require "#{basePath}/utils/util.sql.columns"
-usrTableNames = require("#{basePath}/config/tableNames").user
+tableNames = require "#{basePath}/config/tableNames"
+tables = require "#{basePath}/config/tables"
+usrTableNames = tableNames.user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
+colorWrap = require 'color-wrap'
+colorWrap(console)
 
-projCrudSvc = rewire "#{basePath}/services/service.user.project"
+ServiceCrudProject = require "#{basePath}/services/service.user.project"
 
-#BEGIN TESTABLE OVERRIDES
-projCrudSvc = toTestThenableCrudInstance projCrudSvc,
+projectResponses =
   getAll:[id:1]
   getById: [id:1, sandbox: false]
-  delete: true
+  delete: 1
 
-
-#needed since a route is mixing with route and svc logic... ugh
-projCrudSvc.clients = toTestThenableCrudInstance projCrudSvc.clients,
+drawnShapesRsponses = notesResponses = clientResponses =
+  delete: 1
   getAll: [{project_id:1, id:2}]
 
-projCrudSvc.notes = toTestThenableCrudInstance projCrudSvc.notes,
-  delete: true
-  getAll: [{project_id:1, id:2}]
 
-projCrudSvc.drawnShapes = toTestThenableCrudInstance projCrudSvc.drawnShapes,
-  delete: true
-  getAll: [{project_id:1, id:2}]
-
-#STUB cacheUserValues to keep the tests from bombing when we dont care about this
-#functionality
 userUtils =
   cacheUserValues: sinon.stub()
 
-projCrudSvc.__set__ 'userUtils', userUtils
+routeCrudToTest.__set__ 'userUtils', userUtils
 
-# console.log userSvc.clients, true
-resetAllStubs = () ->
-  projCrudSvc.resetStubs()#(true, 'deleteStub')
-  projCrudSvc.clients.resetStubs()#(true, 'deleteStub')
-  projCrudSvc.notes.resetStubs()
-  # projCrudSvc.drawnShapes.resetStubs()
+class TestServiceCrudProject extends ServiceCrudProject
+  constructor: () ->
+    super sqlMock(tables.user.project).dbFn()
+
+  #overide the generators so we can inject fresh mocks without destroying the singleton tables
+  clientsFact: () ->
+    clientsSvcCrud = super sqlMock(tables.auth.user).dbFn(), new ServiceCrud(sqlMock(tables.user.profile).dbFn())
+    # console.log.cyan  "clientsSvcCrud: #{clientsSvcCrud.dbFn().tableName}"
+    # console.log.cyan  "clientsSvcCrud: joinCrud: #{clientsSvcCrud.joinCrud.dbFn().tableName}"
+
+    clientsSvcCrud.resetSpies = () =>
+      @svc.resetSpies()
+      @joinCrud.svc.resetSpies()
+
+    toTestThenableCrudInstance clientsSvcCrud, clientResponses, undefined, true
+
+  notesFact: () ->
+    noteSvcCrud = super sqlMock(tables.user.notes).dbFn(), new ServiceCrud(sqlMock(tables.user.project).dbFn())
+    noteSvcCrud.resetSpies = () =>
+      @svc.resetSpies()
+      @joinCrud.svc.resetSpies()
+
+    # console.log.cyan  "noteSvcCrud: #{noteSvcCrud.dbFn().tableName}"
+    # console.log.cyan  "noteSvcCrud: joinCrud: #{noteSvcCrud.joinCrud.dbFn().tableName}"
+
+    toTestThenableCrudInstance noteSvcCrud, notesResponses
+
+  drawnShapesFact: () ->
+    drawSvcCrud = super(sqlMock(tables.user.drawnShapes).dbFn())
+    # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
+    toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
+
+
+  resetSpies: () ->
+    #RESET UNDERLYING dbFn spies
+    @svc.resetSpies()#(true, 'deleteStub')
+    @clients.resetSpies()#(true, 'deleteStub')
+    @notes.resetSpies()
+    @drawnShapes.svc.resetSpies()
+
+  resetStubs: () ->
+    #RESET SvcCrud Stubs
+    @resetStubs()#(true, 'deleteStub')
+    @clients.resetStubs()#(true, 'deleteStub')
+    @notes.resetStubs()
+    @drawnShapes.resetStubs()
+
+
 
 #END BEGIN TESTABLE OVERRIDES
 
 describe 'route.projectSession', ->
   afterEach ->
-    resetAllStubs()
+    @projCrudSvc.resetStubs()
     @cls.kill()
 
   beforeEach ->
@@ -66,7 +104,9 @@ describe 'route.projectSession', ->
       @mockRequest = req
 
     @ctor = routeCrudToTest
-    @subject = new @ctor(projCrudSvc).init(false, safeProject)
+    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, undefined, true
+
+    @subject = new @ctor(@projCrudSvc).init(false, safeProject)
 
   it 'ctor', ->
     @ctor.should.be.ok
@@ -84,10 +124,10 @@ describe 'route.projectSession', ->
         query:{}
         body:{}
 
-
     it 'project', ->
       @subject.rootGET(@mockRequest)
       .then (projects) =>
+        @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
         console.log @subject.svc.getAllStub.args[0], true
         @subject.svc.getAllStub.args[0][0].should.be.eql
@@ -145,20 +185,20 @@ describe 'route.projectSession', ->
       @subject.rootGET(@mockRequest)
       .then () =>
         @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
-        query = params = {}
+        params = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
         params["#{usrTableNames.drawnShapes}.project_id"] = @mockRequest.params.id
         @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
         @subject.drawnShapesCrud.svc.getAllStub.args[0][1].should.be.eql false
-        assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
-        # console.log @subject.drawnShapesCrud.svc.getAllStub.sqls[0].cyan
-        @subject.drawnShapesCrud.svc.getAllStub.sqls[0].should.be.equal """
-          select "user_drawn_shapes"."id" as "id", "user_drawn_shapes"."auth_user_id" as "auth_user_id",
-           "user_drawn_shapes"."project_id" as "project_id", "user_drawn_shapes"."geom_point_json" as "geom_point_json",
-           "user_drawn_shapes"."geom_polys_raw" as "geom_polys_raw" from "user_project" inner join "user_drawn_shapes"
-           on "user_drawn_shapes"."project_id" = "user_project"."id" where "user_drawn_shapes"."project_id" = '1'
-           """.replace(/\n/g,'')
+        # assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
+        # # console.log @subject.drawnShapesCrud.svc.getAllStub.sqls[0].cyan
+        # @subject.drawnShapesCrud.svc.getAllStub.sqls[0].should.be.equal """
+        #   select "user_drawn_shapes"."id" as "id", "user_drawn_shapes"."auth_user_id" as "auth_user_id",
+        #    "user_drawn_shapes"."project_id" as "project_id", "user_drawn_shapes"."geom_point_json" as "geom_point_json",
+        #    "user_drawn_shapes"."geom_polys_raw" as "geom_polys_raw" from "user_project" inner join "user_drawn_shapes"
+        #    on "user_drawn_shapes"."project_id" = "user_project"."id" where "user_drawn_shapes"."project_id" = '1'
+        #    """.replace(/\n/g,'')
 
   describe 'byIdDELETE', ->
     beforeEach ->
@@ -171,40 +211,13 @@ describe 'route.projectSession', ->
           id:1
         query:{}
         body:{}
-      @promise = @subject.byIdDELETE(@mockRequest)
 
     it 'clients', ->
-      @promise.then =>
+      @subject.byIdDELETE(@mockRequest)
+      .then =>
         @subject.clientsCrud.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
-        console.log @subject.clientsCrud.svc.deleteStub.sql
-        # @subject.clientsCrud.svc.deleteStub.sqls[0].should.be.eql """delete from "user_profile" where "auth_user_id" = '1' and "project_id" = '1'"""
-        #EXPLICITLY NOT USING CALLEDWITH as this gives better error output
-        # @subject.clientsCrud.svc.deleteStub.args[0][0].should.be.eql {}
-        # @subject.clientsCrud.svc.deleteStub.args[0][1].should.be.eql false
-        # @subject.clientsCrud.svc.deleteStub.args[0][2].should.be.eql
-        #   project_id: @mockRequest.params.id
-        #   auth_user_id: @mockRequest.user.id
-        # @subject.clientsCrud.svc.deleteStub.args[0][3].should.be.eql safeProfile
-  #
-  #   it 'notesSvc', ->
-  #     @promise.then =>
-  #       testableNotesSvc.deleteStub.called.should.be.true
-  #       testableNotesSvc.deleteStub.sqls[0].should.be.eql """delete from "user_notes" where "auth_user_id" = '1' and "project_id" = '1'"""
-  #       testableNotesSvc.deleteStub.args[0][0].should.be.eql {}
-  #       testableNotesSvc.deleteStub.args[0][1].should.be.eql false
-  #       testableNotesSvc.deleteStub.args[0][2].should.be.eql
-  #         project_id: @mockRequest.params.id
-  #         auth_user_id: @mockRequest.user.id
-  #       testableNotesSvc.deleteStub.args[0][3].should.be.eql safeNotes
-  #
-  #   it 'super', ->
-  #     # testableProjSvc.resetStubs(true, 'deleteStub')
-  #     @promise.then =>
-  #       testableProjSvc.deleteStub.called.should.be.true
-  #       testableProjSvc.deleteStub().should.be.eql true
-  #       testableProjSvc.deleteStub.args.should.be.ok
-  #       testableProjSvc.deleteStub.args[0][0].should.be.eql @mockRequest.params
-  #       testableProjSvc.deleteStub.args[0][1].should.be.eql false
-  #       assert.isUndefined testableProjSvc.deleteStub.args[0][2]
-  #       testableProjSvc.deleteStub.args[0][3].should.be.eql safeProject
+        assert.ok @subject.clientsCrud.svc.deleteStub.sqls
+        assert.notOk @subject.clientsCrud.svc.deleteStub.sqls.length
+        @subject.notesCrud.svc.deleteStub.called.should.be.true
+        @subject.svc.deleteStub.called.should.be.true

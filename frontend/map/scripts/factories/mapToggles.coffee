@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.factory 'rmapsMapToggles', ->
+app.factory 'rmapsMapToggles', ($rootScope) ->
 
   (json) ->
     _locationCb = null
@@ -13,11 +13,15 @@ app.factory 'rmapsMapToggles', ->
 
     @showAddresses = true
     @showPrices = true
-    @showNoteTap = false
+    @showNeighbourhoodTap = false
     @showNotes = false
+    @propertiesInShapes = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
+
+    @enableNeighbourhoodTap = () =>
+      @showNeighbourhoodTap = true
 
     @toggleNotes = () =>
       @showNotes = !@showNotes
@@ -43,6 +47,9 @@ app.factory 'rmapsMapToggles', ->
 
     @toggleFilters = =>
       @showFilters = !@showFilters
+
+    @togglePropertiesInShapes = =>
+      @propertiesInShapes = !@propertiesInShapes
 
     @toggleSearch = (val) =>
       if val?

@@ -2,6 +2,7 @@ basePath = require '../backend/basePath'
 logger = require "#{basePath}/config/logger"
 {dbFnCalls} = require "#{basePath}/utils/crud/util.crud.service.helpers"
 sinon = require 'sinon'
+# Promise = require 'bluebird'
 
 #wraps a crud instance to return all db functions as sql query or a sql payload object
 #TODO: Overwrite @dbFn with SqlMock
@@ -16,7 +17,14 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
       stub = crudInstance[fnName + 'Stub'] = sinon.stub()
       stub.sqls = []
       crudInstance[fnName] = () ->
-        calledSql = origFn.apply(crudInstance, arguments).toString()
+        potentialKnexPromise = origFn.apply(crudInstance, arguments)
+        maybeSql = potentialKnexPromise.toString()
+
+        # logger.debug.green maybeSql
+        # logger.debug.cyan potentialKnexPromise, true
+
+        if maybeSql != "[object Promise]"
+          calledSql = maybeSql
 
         unless mockResponse?[fnName]
           stub.returns(calledSql)
@@ -24,9 +32,11 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
 
         resp = mockResponse[fnName]
         stub.sqls.push calledSql
-        # logger.debug stub.sqls
-        # logger.debug "mockResponse[#{fnName}]"
-        # logger.debug resp, true
+        if doLog
+          logger.debug.green stub.sqls
+          logger.debug.green "mockResponse[#{fnName}]"
+        logger.debug.red resp, true
+        logger.debug.red fnName
         stub.returns(resp)
         # console.log arguments, true
         resp =  stub(arguments...)

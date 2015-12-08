@@ -1,7 +1,28 @@
 _ = require 'lodash'
 tables = require '../../backend/config/tables'
-dbs = require '../../backend/config/dbs'
 sinon = require 'sinon'
+colorWrap = require 'color-wrap'
+colorWrap(console)
+Promise = require 'bluebird'
+dbs = require '../../backend/config/dbs'
+
+_sqlFns = [
+  'select'
+  'groupBy'
+  'where'
+  'whereIn'
+  'insert'
+  'update'
+  'delete'
+  'innerJoin'
+  'leftJoin'
+  'count'
+  'raw'
+  'groupByRaw'
+  'whereRaw'
+  'as'
+  'from'
+]
 
 class SqlMock
   ### Helper class for shielding database from sql queries during tests.  Advantages include:
@@ -12,39 +33,32 @@ class SqlMock
        how many are chained, and easily test input/output of callbacks
 
   ###
-  constructor: (@options) ->
-    if !@options.groupName?
-      throw new Error('\'groupName\' is a required option for SqlMock class')
-    if !@options.tableHandle?
-      throw new Error('\'tableHandle\' is a required option for SqlMock class')
 
-    # dynamic instance hooks for the mock sql calls
-    @id = Math.trunc(Math.random()*1000000000)
-    @noBootstrap = !!@options.noBootstrap
-    @[@options.groupName] = @
-    @[@options.tableHandle] = (trx) =>
-      if trx?
-        @commitSpy = sinon.spy(trx, 'commit')
-        @rollbackSpy = sinon.spy(trx, 'rollback')
-      return @
+  constructor: (optionsOrDbFn) ->
+    if _.isFunction optionsOrDbFn
+      @_svc = optionsOrDbFn
+    else
+      @options = optionsOrDbFn
+      if !@options.groupName?
+        throw new Error('\'groupName\' is a required option for SqlMock class')
+      if !@options.tableHandle?
+        throw new Error('\'tableHandle\' is a required option for SqlMock class')
+
+      # dynamic instance hooks for the mock sql calls
+      @[@options.groupName] = @
+      @[@options.tableHandle] = (trx) =>
+        if trx?
+          @commitSpy = sinon.spy(trx, 'commit')
+          @rollbackSpy = sinon.spy(trx, 'rollback')
+        return @
 
     # spy on query-evaluators
     @_thenSpy = sinon.spy(@, 'then')
     @_catchSpy = sinon.spy(@, 'catch')
 
-    # spy on query-operators
-    @selectSpy = sinon.spy()
-    @groupBySpy = sinon.spy()
-    @groupByRawSpy = sinon.spy()
-    @whereSpy = sinon.spy()
-    @whereRawSpy = sinon.spy()
-    @insertSpy = sinon.spy()
-    @updateSpy = sinon.spy()
-    @deleteSpy = sinon.spy()
-    @asSpy = sinon.spy()
-    @rawSpy = sinon.spy()
-    @fromSpy = sinon.spy()
-    @leftJoinSpy = sinon.spy()
+    _sqlFns.forEach (name) =>
+      # spy on query-operators
+      @[name + 'Spy'] = sinon.spy()
 
     @init()
 
@@ -55,6 +69,12 @@ class SqlMock
         rollback: ->
       transaction: (callback) ->
         callback(temptrx)
+
+  dbFn: () =>
+    fn = () =>
+      @
+    fn.tableName = @tableName
+    fn
 
   thenSpy: ->
     @_thenSpy
@@ -76,30 +96,18 @@ class SqlMock
     @_queryChainFlag = false
     @_queryArgChain = []
 
-  initSvc: () ->    
-    if @options.groupName == 'dbs' and @options.tableHandle == 'main'
-      unless @noBootstrap then @_svc = dbs.get('main')
+  initSvc: () ->
+    if @options? and @options.groupName == 'dbs' and @options.tableHandle == 'main'
+      @_svc = dbs.get('main')
     else
-      @_svc = tables[@options.groupName][@options.tableHandle]
-      unless @noBootstrap then @_svc = @_svc()
-      #@_svc = if @noBootstrap then @_svc()
-
-  getSvc: () ->
+      @_svc = tables[@options.groupName][@options.tableHandle] unless @_svc
+      @tableName = @options?.tableHandle or @_svc.tableName
+      @_svc = @_svc() # bootstrap
     @_svc
 
   resetSpies: () ->
-    @selectSpy.reset()
-    @groupBySpy.reset()
-    @groupByRawSpy.reset()
-    @whereSpy.reset()
-    @whereRawSpy.reset()
-    @insertSpy.reset()
-    @updateSpy.reset()
-    @deleteSpy.reset()
-    @asSpy.reset()
-    @rawSpy.reset()
-    @fromSpy.reset()
-    @leftJoinSpy.reset()
+    _sqlFns.forEach (name) =>
+      @[name + 'Spy'].reset()
 
   _appendArgChain: (operator, args) ->
     @_queryArgChain.push
@@ -115,74 +123,14 @@ class SqlMock
   _quickQuery: () ->
     if !@_queryChainFlag
       for link in @_queryArgChain
-        if typeof @_svc[link.operator] is 'function'
-          @_svc = @_svc[link.operator](link.args)
+        if _.isFunction @_svc[link.operator]
+          @_svc = @_svc[link.operator](link.args...)
       @_queryChainFlag = true
     @_svc
 
-  #### public operators ####
-  select: (query) ->
-    @selectSpy(query)
-    @_appendArgChain('select', query)
-    @
-
-  groupBy: (cols) ->
-    @groupBySpy(cols)
-    @_appendArgChain('groupBy', cols)
-    @
-
-  groupByRaw: (rawCols) ->
-    @groupByRawSpy(rawCols)
-    @_appendArgChain('groupByRaw', rawCols)
-    @
-
-  where: (query) ->
-    @whereSpy(query)
-    @_appendArgChain('where', query)
-    @
-
-  whereRaw: (query) ->
-    @whereRawSpy(query)
-    @_appendArgChain('whereRaw', query)
-    @
-
-  insert: (args) ->
-    @insertSpy(args)
-    @_appendArgChain('insert', args)
-    @
-
-  update: (args) ->
-    @updateSpy(args)
-    @_appendArgChain('update', args)
-    @
-
-  delete: (args) ->
-    @deleteSpy(args)
-    @_appendArgChain('delete', args)
-    @
-
-  as: (args) ->
-    @asSpy(args)
-    @_appendArgChain('as', args)
-    @
-
-  raw: (args) ->
-    @rawSpy(args)
-    @_appendArgChain('raw', args)
-    @
-
-  from: (args) ->
-    @fromSpy(args)
-    @_appendArgChain('from', args)
-    @
-
-  leftJoin: (args) ->
-    @leftJoinSpy(args)
-    @_appendArgChain('leftJoin', args)
-    @
-
   #### public evaluators ####
-  then: (callback) ->
+  then: () ->
+    #map toString to some result
     @
 
   catch: (err) ->
@@ -195,5 +143,13 @@ class SqlMock
     @_quickQuery().toSQL()
 
 
-module.exports =
-  SqlMock: SqlMock
+SqlMock.sqlMock = () ->
+  new SqlMock arguments...
+
+_sqlFns.forEach (name) ->
+  SqlMock::[name] = ->
+    @[name + 'Spy'](arguments...)
+    @_appendArgChain(name, arguments)
+    @
+
+module.exports = SqlMock

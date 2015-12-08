@@ -2,12 +2,9 @@
 factory = require '../util.factory'
 logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
-ExpressResponse = require '../util.expressResponse'
 _ = require 'lodash'
-{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 NamedError = require '../errors/util.error.named'
-{validators, validateAndTransform, falsyTransformsToNoop, defaultRequestTransforms} = require '../util.validation'
-Promise = require 'bluebird'
+{validateAndTransform, falsyTransformsToNoop, defaultRequestTransforms} = require '../util.validation'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = 'Crud', @doLogRequest) ->
@@ -56,40 +53,35 @@ class Crud extends BaseObject
   init: (@doLogQuery = false, @safe = undefined) =>
     @
 
-  rootGET: (req, res, next) =>
+  exec: (crudMethodStr, req, res, next) =>
     @maybeLogRequest req, 'req'
-    @validRequest(req, 'rootGET').then (tReq) =>
+    logger.debug req.originalUrl if req.originalUrl
+    @validRequest(req, crudMethodStr).then (tReq) =>
       @maybeLogRequest tReq, 'tReq'
+      tReq
+
+  rootGET: (req, res, next) =>
+    @exec('rootGET', req, res, next).then (tReq) =>
       @svc.getAll(_.merge({}, tReq.query, tReq.params), @doLogQuery)
 
   rootPOST: (req, res, next) =>
-    @maybeLogRequest req, 'req'
-    @validRequest(req, 'rootPOST').then (tReq) =>
-      @maybeLogRequest tReq, 'tReq'
+    @exec('rootPOST', req, res, next).then (tReq) =>
       @svc.create(tReq.body, undefined, @doLogQuery)
 
   byIdGET: (req, res, next) =>
-    @maybeLogRequest req, 'req'
-    @validRequest(req, 'byIdGET').then (tReq) =>
-      @maybeLogRequest tReq, 'tReq'
+    @exec('byIdGET', req, res, next).then (tReq) =>
       @svc.getById(tReq.params, @doLogQuery)
 
   byIdPOST: (req, res, next) =>
-    @maybeLogRequest req, 'req'
-    @validRequest(req, 'byIdPOST').then (tReq) =>
-      @maybeLogRequest tReq, 'tReq'
+    @exec('byIdPOST', req, res, next).then (tReq) =>
       @svc.create(tReq.body, tReq.params, undefined, @doLogQuery)
 
   byIdDELETE: (req, res, next) =>
-    @maybeLogRequest req, 'req'
-    @validRequest(req, 'byIdDELETE').then (tReq) =>
-      @maybeLogRequest tReq, 'tReq'
+    @exec('byIdDELETE', req, res, next).then (tReq) =>
       @svc.delete(tReq.params, @doLogQuery, tReq.query, @safe)
 
   byIdPUT: (req, res, next) =>
-    @maybeLogRequest req, 'req'
-    @validRequest(req, 'byIdPUT').then (tReq) =>
-      @maybeLogRequest tReq, 'tReq'
+    @exec('byIdPUT', req, res, next).then (tReq) =>
       @svc.update(tReq.params, tReq.body, @safe, @doLogQuery)
   #end intended overrides
 

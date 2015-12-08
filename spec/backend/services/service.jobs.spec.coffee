@@ -4,18 +4,17 @@ knex = require 'knex'
 rewire = require 'rewire'
 config = require '../../../backend/config/config'
 svc = rewire '../../../backend/services/service.jobs'
-sqlMockUtil = require '../../specUtils/sqlMock'
-
+SqlMock = require '../../specUtils/sqlMock.coffee'
 
 describe 'service.jobs.spec.coffee', ->
 
   describe 'history service', ->
     beforeEach ->
-      @jobQueue_taskHistory = new sqlMockUtil.SqlMock
+      @jobQueue_taskHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'taskHistory'
 
-      @dbs_main = new sqlMockUtil.SqlMock
+      @dbs_main = new SqlMock
         groupName: 'dbs'
         tableHandle: 'main'
 
@@ -60,7 +59,7 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'history error service', ->
     beforeEach ->
-      @jobQueue_subtaskErrorHistory = new sqlMockUtil.SqlMock
+      @jobQueue_subtaskErrorHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'subtaskErrorHistory'
 
@@ -80,10 +79,10 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'task service', ->
     beforeEach ->
-      @jobQueue_taskConfig = new sqlMockUtil.SqlMock
+      @jobQueue_taskConfig = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'taskConfig'
-      @jobQueue_subtaskConfig = new sqlMockUtil.SqlMock
+      @jobQueue_subtaskConfig = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'subtaskConfig'
 
@@ -109,16 +108,16 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'health service', ->
     beforeEach ->
-      @jobQueue_taskHistory = new sqlMockUtil.SqlMock
+      @jobQueue_taskHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'taskHistory'
-      @jobQueue_dataLoadHistory = new sqlMockUtil.SqlMock
+      @jobQueue_dataLoadHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'dataLoadHistory'
-      @property_combined = new sqlMockUtil.SqlMock
+      @property_combined = new SqlMock
         groupName: 'property'
         tableHandle: 'combined'
-      @dbs_main = new sqlMockUtil.SqlMock
+      @dbs_main = new SqlMock
         groupName: 'dbs'
         tableHandle: 'main'
 

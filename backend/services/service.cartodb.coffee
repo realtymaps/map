@@ -20,7 +20,12 @@ _execCartodbSql = (sql) ->
 
 _upload = (stream, fileName) -> Promise.try ->
 
-  filteredStream = stream.pipe(geoJsonFormatter())
+  filteredStream = stream.pipe(geoJsonFormatter([
+    'rm_property_id'
+    'street_address_num'
+    'geom_point_json'
+    'passedFilters'
+  ]))
 
   # writeStream = fs.createWriteStream './output.json'
   # filteredStream.pipe(process.stdout) #uncomment to send to console
@@ -32,7 +37,7 @@ _upload = (stream, fileName) -> Promise.try ->
       filteredStream.on 'end', ->
         logger.debug "stream length: #{byteLen}"
         logger.debug 'done processing stream'
-  
+
         resolve cartodb.upload
           apiKey: config.API_KEY
           stream: filteredStream

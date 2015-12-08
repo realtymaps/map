@@ -2,11 +2,12 @@ auth = require '../utils/util.auth'
 ProjectSvc = require('../services/service.user.project')
 logger = require '../config/logger'
 {mergeHandles} = require '../utils/util.route.helpers'
-safeProjectCols = (require '../utils/util.sql.helpers').columns.project
-
+safeProjectCols = require('../utils/util.sql.helpers').columns.project
+tables = require '../config/tables'
 ProjectRouteCrud = require '../routeCrud/route.crud.projectSession'
 
-module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'ProjectRouteCrud').init(false, safeProjectCols),
+routeCrud = new ProjectRouteCrud(new ProjectSvc(tables.user.project).init(false), undefined, 'ProjectRouteCrud').init(true, safeProjectCols)
+merged = mergeHandles routeCrud,
   ##TODO: How much of the post, delete, and puts do we really want to allow?
   root:
     methods: ['get', 'post']
@@ -48,3 +49,5 @@ module.exports = mergeHandles new ProjectRouteCrud(ProjectSvc, undefined, 'Proje
     middleware: [
       auth.requireLogin(redirectOnFail: true)
     ]
+
+module.exports = merged

@@ -42,7 +42,15 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
-  buildState 'map'
+  buildState 'map', reloadOnSearch: false,
+    params:
+      project_id:
+        value: null
+        squash: true
+      property_id:
+        value: null
+        squash: true
+
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
@@ -53,7 +61,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'projectClients', parent: 'project'
   buildState 'projectNotes', parent: 'project'
   buildState 'projectFavorites', parent: 'project'
-  buildState 'projectNeighborhoods', parent: 'project'
+  buildState 'projectNeighbourhoods', parent: 'project'
   buildState 'projectPins', parent: 'project'
   buildState 'neighbourhoods'
   buildState 'notes'
@@ -63,6 +71,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
   buildState 'mail'
   buildState 'mailWizard'
+  buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'
 
   buildState 'login', template: loginTemplate, sticky: false, loginRequired: false

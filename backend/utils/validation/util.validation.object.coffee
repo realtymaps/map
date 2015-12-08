@@ -18,6 +18,8 @@ module.exports = (options = {}) ->
       return Promise.reject new DataValidationError('plain empty object expected', param, values)
     if options.isEmptyProtect && !_.isEmpty values
       return {}
+    if options.isNullProtect && !_.isEmpty values
+      return null
     if options.subValidateSeparate
       # subValidateSeparate can be an object of validations/transformations suitable for use in validateAndTransform()
       # (including arrays of iteratively applied functions).  Each validation/transformation in the object is applied to
@@ -25,6 +27,7 @@ module.exports = (options = {}) ->
       separatePromises = _.clone(values)
       for key, subValidation of options.subValidateSeparate
         separatePromises[key] = doValidationSteps(subValidation, param, values[key])
+      # logger.debug.cyan separatePromises, true
       return Promise.props separatePromises
     else if options.subValidateEach
       # subValidateEach can be any validation/transformation suitable for use in validateAndTransform() (including

@@ -26,6 +26,7 @@ class Crud extends BaseObject
   constructor: (@dbFn, @idKey = 'id') ->
     super()
     unless _.isFunction @dbFn
+      logger.debug @dbFn, true
       throw new Error('dbFn must be a knex function')
 
   # a function to clone a instance so that, init in Thennable Trait can be called
@@ -53,7 +54,6 @@ class Crud extends BaseObject
 
   _getAll: (dbFn, query = {}, doLogQuery = false, fnExec = execQ) ->
     where = @[dbFn]()
-
     _.each query, (val, key) ->
       if _.isArray val
         where = where.whereIn(key, val)
@@ -83,7 +83,10 @@ class Crud extends BaseObject
       else
         obj = {}
         obj = @idObj id if id?
-        fnExec @dbFn().returning(@idKey).insert(_.extend {}, entity, obj), doLogQuery or @doLogQuery
+        # logger.debug.cyan id, true
+        newEntity = _.extend {}, entity, obj
+        # logger.debug.yellow newEntity,true
+        fnExec @dbFn().returning(@idKey).insert(newEntity), doLogQuery or @doLogQuery
     , true
 
   upsert: (entity, unique, doUpdate = true, safe, doLogQuery = false, fnExec = execQ) ->
@@ -133,6 +136,9 @@ class HasManyCrud extends Crud
   setIdStrs: (rootIdStr,joinIdStr) ->
     @rootIdStr = rootIdStr or @dbFn.tableName + '.id'
     @joinIdStr = joinIdStr or @joinCrud.dbFn.tableName + ".#{@dbFn.tableName}_id"
+    # logger.debug 'setIdStrs !!!!!!!!!!!!!!!!!!'
+    # logger.debug @rootIdStr
+    # logger.debug @joinIdStr
 
   count: (query = {}, doLogQuery = false, fnExec = execQ) ->
     fnExec @joinQuery().where(query).count('*'), doLogQuery
@@ -166,7 +172,8 @@ Many times returning the query itself is sufficent so it can be piped (MUCH bett
 ###
 singleResultBoolean = (q, doRowCount) ->
   q.then (result) ->
-    # logger.debug result
+    # logger.debug.yellow result
+    # logger.debug.yellow result.rowCount
     unless doRowCount
       return result == 1
     result.rowCount == 1
@@ -184,7 +191,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
     clone: () ->
       new @constructor(@conArgs...)#this ensures the derrived classes are called correctly
 
-    init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) =>
+    init:(@doWrapGetAllThen = true, @doWrapGetThen = true, @doWrapSingleThen = true) => #TODO: should @doWrapSingleThen default to 'singleRaw'?
       @
 
     #Majority of the time GETS are the main functions you might want to stream
@@ -210,6 +217,7 @@ thenables = [Crud, HasManyCrud].map (baseKlass) ->
 
     create: () ->
       q = super(arguments...)
+      logger.debug "@doWrapSingleThen: " + @doWrapSingleThen
       return q unless @doWrapSingleThen
       return q.then singleRow if @doWrapSingleThen == 'singleRaw'
       singleResultBoolean q, true

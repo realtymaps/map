@@ -27,6 +27,7 @@ apiBaseClients = "#{apiBaseSession}/clients"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 
+
 module.exports =
   views:
     rmap: '/rmap.html'
@@ -129,6 +130,7 @@ module.exports =
     addresses: "#{apiBase}/properties/addresses/"
     detail: "#{apiBase}/properties/detail/"
     details: "#{apiBase}/properties/details/"
+    drawnShapes: "#{apiBase}/properties/drawnShapes/"
   snail:
     quote: "#{apiBase}/snail/quote"
     send: "#{apiBase}/snail/send"
