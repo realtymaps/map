@@ -18,29 +18,35 @@
 
   .detail-card
     display: none;
+    position: absolute;
+    top: 0;
     width: 325px;
     height: 100%;
-    //margin: 0 auto;
     background: white;
     border: solid 1px #666;
     border-bottom: none;
     padding: 5px;
+    transition: left 125ms ease;
 
   .detail-card.tray-center
-    display: block
-    margin: 0 auto;
+    display: block;
+    left: calc(50% - 162px)
 
   .detail-card.tray-right
     display: block
-    position: absolute;
-    top: 0;
     left: calc(100% - 20px);
 
   .detail-card.tray-left
     display: block
-    position: absolute;
-    top: 0;
-    right: calc(100% - 20px);
+    left: -305px;
+
+  .detail-card.hidden-right
+    display: block
+    left: calc(100% + 345px);
+
+  .detail-card.hidden-left
+    display: block
+    left: -345px;
 
   .photo
     float left

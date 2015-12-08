@@ -16,6 +16,10 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
       return 'tray-right'
     else if $index == ($scope.index - 1)
       return 'tray-left'
+    else if $index > $scope.index
+      return 'hidden-right'
+    else
+      return 'hidden-left'
 
   $scope.swipeLeft = () ->
     $log.debug "Swipe Left"
@@ -35,6 +39,11 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
 
     $scope.index = idx
 
-  $scope.cardClick = (property) ->
+  $scope.cardClick = ($index, property) ->
     $log.debug "Card Click"
-    $scope.index = $scope.index + 1
+
+    if $index > $scope.index
+      $scope.index = $scope.index + 1
+    else if $index < $scope.index
+      $scope.index = $scope.index - 1
+
