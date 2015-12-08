@@ -1,25 +1,40 @@
 include ../mixins/property/_propertyButtons.jade
 include ../mixins/property/_propertyAttributes.jade
 
-.results-container.navbar-below#results-slide(ng-show="Toggles.showResults" ng-init="resultsInit('results-list')")
-  .filters
-    span Sort By:
-    ul(ng-click="$event.stopPropagation()")
-      li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
-        span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
-      li(ng-click="formatters.results.setOrReverseResultsPredicate('bedrooms')") Beds
-        span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('bedrooms')")
-      li(ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')") Sq Ft
-        span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
-      li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
-        span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
-  .inner
-    #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
-      ul.list
-        li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
-        ng-click="formatters.results.click(property,property);showDetails = !showDetails")
-          div.property-img
-            span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
-            img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
-          +propertyAttributes('property')
-          +propertyButtons('property')
+.desktop-view
+  .results-container.navbar-below#results-slide(ng-show="Toggles.showResults" ng-init="resultsInit('results-list')")
+    .filters
+      span Sort By:
+      ul(ng-click="$event.stopPropagation()")
+        li(ng-click="formatters.results.setOrReverseResultsPredicate('price')" ) Price
+          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('price')")
+        li(ng-click="formatters.results.setOrReverseResultsPredicate('bedrooms')") Beds
+          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('bedrooms')")
+        li(ng-click="formatters.results.setOrReverseResultsPredicate('finished_sqft')") Sq Ft
+          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
+        li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
+          span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
+    .inner
+      #results-list.list(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='1' infinite-scroll-container='"#results-list"')
+        ul.list
+          li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
+          ng-click="formatters.results.click(property,property);showDetails = !showDetails")
+            div.property-img
+              span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+              img(ng-cloak ng-src="{{formatters.results.google.StreetView.getUrl(property, 245, 163)}}" title="{{property.title}}")
+            +propertyAttributes('property')
+            +propertyButtons('property')
+
+.mobile-view
+  #detail-card-tray(ng-controller="swipeTrayCtrl")
+    #detail-card-container(ng-init="formatters.results.loadMore()" ng-swipe-left="swipeLeft()" ng-swipe-right="swipeRight()")
+      .detail-card(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
+      ng-class="trayPosition($index)")
+        .photo
+          i.fa.fa-home
+        .card-info
+          .price(ng-if="property.price")
+            span.price-label {{formatters.results.getPriceLabel(property.rm_status)}}&nbsp;
+            | {{formatters.results.getPrice(property.price)}}
+          .address {{property.street_address_num}} {{property.street_address_name}} {{property.street_address_unit}}
+          .city-state-zip {{formatters.results.getCityStateZip(property)}}

@@ -6,22 +6,45 @@
   height: 100px;
   z-index: 10
   padding: 10px 0 0 0;
+  overflow: hidden
 
   @extends .font-museo-500
 
+  #detail-card-container
+    position: relative;
+    background-color blue;
+    width: 100%;
+    height: 100px;
+
   .detail-card
-    width: 90%;
+    display: none;
+    width: 325px;
     height: 100%;
-    margin: 0 auto;
+    //margin: 0 auto;
     background: white;
-    border: solid 1px #ddd;
+    border: solid 1px #666;
     border-bottom: none;
     padding: 5px;
 
-  .angular-google-map-street-view-panorama
-    height 90px
-    width 90px
+  .detail-card.tray-center
+    display: block
+    margin: 0 auto;
+
+  .detail-card.tray-right
+    display: block
+    position: absolute;
+    top: 0;
+    left: calc(100% - 20px);
+
+  .detail-card.tray-left
+    display: block
+    position: absolute;
+    top: 0;
+    right: calc(100% - 20px);
+
+  .photo
     float left
+    font-size: 6em;
 
   .card-info
     margin-left: 100px;

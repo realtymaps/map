@@ -242,28 +242,41 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
       numberOfCards
 
     throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
-      unless @resultsContainer
-        @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
-      return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
-      amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
-      return unless amountToLoad
+      $log.debug "throttledLoadMore()"
 
-      if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
-        @filterSummaryInBounds = []
-        _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
-          return unless prop
-          @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
+      @filterSummaryInBounds = []
+      _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
+        return unless prop
+        @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
 
-        @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+      _.each @filterSummaryInBounds, (summary) =>
+        if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
+          @mapCtrl.scope.results[summary.rm_property_id] = summary
 
-      return unless _.keys(@filterSummaryInBounds).length
+      @mapCtrl.scope.resultsLimit = @filterSummaryInBounds.length
 
-      if not @mapCtrl.scope.results.length # only do this once (per map bound)
-        _.each @filterSummaryInBounds, (summary) =>
-          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
-            @mapCtrl.scope.results[summary.rm_property_id] = summary
-
-      @mapCtrl.scope.resultsLimit += amountToLoad
+#      unless @resultsContainer
+#        @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
+#      return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
+#      amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
+#      return unless amountToLoad
+#
+#      if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
+#        @filterSummaryInBounds = []
+#        _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
+#          return unless prop
+#          @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
+#
+#        @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+#
+#      return unless _.keys(@filterSummaryInBounds).length
+#
+#      if not @mapCtrl.scope.results.length # only do this once (per map bound)
+#        _.each @filterSummaryInBounds, (summary) =>
+#          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
+#            @mapCtrl.scope.results[summary.rm_property_id] = summary
+#
+#      @mapCtrl.scope.resultsLimit += amountToLoad
 
     showModel: (model) =>
       @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
