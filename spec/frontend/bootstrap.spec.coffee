@@ -13,10 +13,6 @@ beforeEach ->
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)
     $provide.decorator nemSimpleLoggerProvider.decorator...
-    $provide.decorator 'nemSimpleLogger', ($delegate) ->
-      $delegate.spawn = () ->
-        console
-      $delegate
 
     $provide.decorator '$timeout', ($delegate, $browser) ->
       $delegate.hasPendingTasks = ->

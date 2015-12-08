@@ -50,12 +50,15 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
   _getPropertyData = (pathId, hash, mapState, returnType, filters, cache = true) ->
     return null if !hash?
 
+    bodyExtensions = {}
+
     if returnType? and !_.isString(returnType)
       $log.error "returnType is not a string. returnType: #{returnType}"
 
     if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
       pathId = 'drawnShapes'
-      boundsStr = if $rootScope.neighbourhoodsListIsOpen then 'isNeighbourhood=true' else ''
+      if $rootScope.neighbourhoodsListIsOpen
+        bodyExtensions.isNeighbourhood = true
 
     route = backendRoutes.properties[pathId]
     if !window.isTest
@@ -63,11 +66,11 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       $log.debug mapState
       $log.log(route)
 
-    $http.post route,
+    $http.post(route, _.extend({}, bodyExtensions,
       bounds: hash
       returnType: returnType
-      state: _getState(mapState, filters)
-    , cache: cache
+      state: _getState(mapState, filters))
+    , cache: cache)
 
   _getFilterSummary = (hash, mapState, returnType, filters, cache = true, throttler = _filterThrottler) ->
     throttler.invokePromise(
