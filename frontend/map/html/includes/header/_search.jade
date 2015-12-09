@@ -23,14 +23,9 @@ div.search-field
           ng-show="searchScope == 'Owners'"
           tooltip="{{searchTooltip}}"
           tooltip-placement="bottom"
+          tooltip-popup-delay="500"
+          tooltip-close-popup-delay="500"
+          tooltip-enable="selectedFilters.ownerName.length > 0"
+          tooltip-trigger="keyup mouseenter focus"
           placeholder="Enter a name"
-          ng-model="selectedFilters.ownerName"
-          ng-change="searchChanged()")
-
-        input.search-input.form-control(
-          ng-show="searchScope == 'Properties'"
-          disabled
-          tooltip="{{searchTooltip}}"
-          placeholder="Enter an adddress"
-          ng-model="selectedFilters.address"
-          ng-change="searchChanged()")
+          ng-model="selectedFilters.ownerName")

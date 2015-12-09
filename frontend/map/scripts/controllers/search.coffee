@@ -7,22 +7,14 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $l
 
   $scope.searchScope = 'Properties'
 
-  $scope.searchTooltip = "go for it"
-
-  $scope.searchChanged = _.debounce () ->
-    $log.debug "search: #{$scope.selectedFilters.ownerName}"
-    # rmapsPropertiesService.getFilterResults 'search', undefined, '&owner=jesse'
-    # .then (result) ->
-    #   $log.debug result
-  , 200
-
   $rootScope.$onRootScope rmapsevents.map.results, (evt, map) ->
     numResults = _.keys(map.markers.filterSummary).length
     $log.debug numResults
     if numResults == 0
-      $scope.searchTooltip = "No results found, try removing some filters"
+      $scope.searchTooltip = "No results, try a different search or remove filters"
     else
       $scope.searchTooltip = "Found #{numResults} results"
 
-  $scope.$watch 'markers.filterSummary', (newVal, oldVal) ->
-    $log.debug newVal
+app.config ($tooltipProvider) ->
+  $tooltipProvider.setTriggers
+    'keyup': 'keydown'
