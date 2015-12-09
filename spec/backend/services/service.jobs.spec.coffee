@@ -9,7 +9,7 @@ SqlMock = require '../../specUtils/sqlMock.coffee'
 describe 'service.jobs.spec.coffee', ->
 
   describe 'history service', ->
-    beforeEach ->
+    beforeEach () =>
       @jobQueue_taskHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'taskHistory'
@@ -38,27 +38,26 @@ describe 'service.jobs.spec.coffee', ->
       svc.__set__('dbs', @mainDBS)
       svc.__set__('tables', @tables)
 
-    # getting a timeout error on this test
-    xit 'should query history, defaults', (done) =>
-      svc.taskHistory.getAll().then (d) =>
-        @jobQueue_taskHistory.selectSpy.callCount.should.equal 0
-        @jobQueue_taskHistory.whereRawSpy.calledOnce.should.be.true
-        expect(@jobQueue_taskHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - started <= interval '30 days'" # the default
-        done()
+    it 'should query history, defaults', (done) =>
+      svc.taskHistory.getAll()
+      @jobQueue_taskHistory.selectSpy.callCount.should.equal 0
+      @jobQueue_taskHistory.whereRawSpy.calledOnce.should.be.true
+      expect(@jobQueue_taskHistory.whereRawSpy.args[0][0]).to.equal "now_utc() - started <= interval '30 days'" # the default
+      done()
 
 
   describe 'history with doMaintenance', ->
     beforeEach ->
       @maintenanceSpy = sinon.spy(svc.__get__('jobQueue').doMaintenance)
 
-    # getting a timeout error on this test
-    xit 'should query summary with doMaintenance', (done) ->
+    it 'should query summary with doMaintenance', (done) ->
       svc.summary.getAll().then (d) =>
         @maintenanceSpy.calledOnce.should.be.true
+        done()
 
 
   describe 'history error service', ->
-    beforeEach ->
+    beforeEach () =>
       @jobQueue_subtaskErrorHistory = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'subtaskErrorHistory'
@@ -70,15 +69,14 @@ describe 'service.jobs.spec.coffee', ->
 
       svc.__set__('tables', @tables)
 
-    # getting a timeout error on this test
-    xit 'should query history errors', (done) ->
-      svc.subtaskErrorHistory.getAll().then (d) ->
-        @jobQueue_subtaskErrorHistory.whereRawSpy.callCount.should.equal 1
-        done()
+    it 'should query history errors', (done) =>
+      svc.subtaskErrorHistory.getAll()
+      @jobQueue_subtaskErrorHistory.whereRawSpy.callCount.should.equal 1
+      done()
 
 
   describe 'task service', ->
-    beforeEach ->
+    beforeEach () =>
       @jobQueue_taskConfig = new SqlMock
         groupName: 'jobQueue'
         tableHandle: 'taskConfig'
@@ -86,9 +84,7 @@ describe 'service.jobs.spec.coffee', ->
         groupName: 'jobQueue'
         tableHandle: 'subtaskConfig'
 
-      # niether of these seem to work
-      #@tasks = new svc.__get__('TaskService')(@jobQueue_taskConfig())
-      svc.tasks.dbFn = @jobQueue_taskConfig()
+      @jobQueue_taskConfig.tableName = "jq_task_config"
 
       @tables =
         jobQueue:
@@ -99,10 +95,17 @@ describe 'service.jobs.spec.coffee', ->
 
       svc.__set__('tables', @tables)
 
-    # issue involving 'this.jobQueue_taskConfig' not being a function
-    xit 'should query task service', (done) ->
-      svc.tasks.getAll(name: "foo").then (d) =>
-        @jobQueue_taskConfig.whereRawSpy.callCount.should.equal 1
+    # the TaskService class in service.jobs.coffee contains a hack that is difficult to test, here
+    xit 'should query task service', (done) =>
+      svc.tasks.getAll(name: "foo")#.then (d) =>
+      @jobQueue_taskConfig.whereRawSpy.callCount.should.equal 1
+      done()
+
+    # the delete() call isn't resolving for some reason
+    xit 'should delete subtasks', (done) =>
+      #Promise.resolve(svc.tasks.delete("foo")).then (p) =>
+      svc.tasks.delete("foo").then (d) =>
+        @jobQueue_subtaskConfig.deleteSpy.callCount.should.equal 1
         done()
 
 

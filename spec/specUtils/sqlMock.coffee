@@ -13,6 +13,7 @@ _sqlFns = [
   'whereIn'
   'insert'
   'update'
+  'del'
   'delete'
   'innerJoin'
   'leftJoin'
@@ -102,7 +103,13 @@ class SqlMock
     else
       @_svc = tables[@options.groupName][@options.tableHandle] unless @_svc
       @tableName = @options?.tableHandle or @_svc.tableName
-      @_svc = @_svc() # bootstrap
+      # console.log "\n\nbootstrap flag:"
+      # console.log @options.bootstrapFlag?
+      #if !@options.bootstrapFlag?
+        #console.log "\n\n#{@options.groupName} #{@options.tableHandle} bootstrapping..."
+      @_svc = @_svc()# unless @options.bootstrapFlag?
+      #else
+        #console.log "\n\n#{@options.groupName} #{@options.tableHandle} not bootstrapping..."
     @_svc
 
   resetSpies: () ->
@@ -148,8 +155,22 @@ SqlMock.sqlMock = () ->
 
 _sqlFns.forEach (name) ->
   SqlMock::[name] = ->
+#    if @['tableHandle'] == 'subtaskConfig'
+    # if name == 'delete' or name == 'whereRaw' or name == 'del'
+    #   console.log "\n####### \n#{@options.tableHandle} is calling #{name}..."
+
+
+
     @[name + 'Spy'](arguments...)
+    # if name == 'delete' or name == 'whereRaw' or name == 'del'
+    #   console.log "\n####### spy defined..."
     @_appendArgChain(name, arguments)
+    # if name == 'delete' or name == 'whereRaw' or name == 'del'
+    #   console.log "\n####### arg chained..."
+    # if @options.promiseFlag and name == 'delete'
+    #   console.log "\n####### promise incorporated"
+    #   #return () ->
+    #   return Promise.resolve(@)
     @
 
 module.exports = SqlMock
