@@ -77,8 +77,3 @@ span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-cont
         span.col-md-1.label to
         .col-md-4
           input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
-
-      li.setHasOwner.row(ng-if="principal.isDebugEnvironment()")
-        span.label.col-md-3 Has Owner
-        .col-md-9
-          select.form-control(ng-model="$root.selectedFilters.hasOwner" ng-options='c.value as c.name for c in filterValues.hasOwner')
