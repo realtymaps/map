@@ -300,6 +300,7 @@ app.factory 'rmapsMap',
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
           https://github.com/tombatossals/angular-leaflet-directive/issues/820
           ###
+          $rootScope.$emit rmapsevents.map.results, @scope.map
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
