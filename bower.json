@@ -39,7 +39,8 @@
     "textAngular": "~1.4.6",
     "ui-router-extras": "https://github.com/christopherthielen/ui-router-extras.git#0.0.14",
     "angular-toastr": "~1.5.0",
-    "leaflet-draw": "git://github.com/michaelguild13/Leaflet.draw.git#master"
+    "leaflet-draw": "git://github.com/michaelguild13/Leaflet.draw.git#master",
+    "angular-google-places-autocomplete": "~0.2.7"
   },
   "overrides": {
     "angular-busy":{

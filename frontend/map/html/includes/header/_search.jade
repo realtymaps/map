@@ -29,3 +29,9 @@ div.search-field
           tooltip-trigger="keyup mouseenter focus"
           placeholder="Enter a name"
           ng-model="selectedFilters.ownerName")
+
+        input.search-input.form-control(
+          ng-show="searchScope == 'Properties'"
+          g-places-autocomplete
+          placeholder="Enter an address"
+          ng-model="selectedFilters.address")
