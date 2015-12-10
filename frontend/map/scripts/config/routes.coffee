@@ -1,6 +1,5 @@
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-loginTemplate = require '../../../common/html/login.jade'
 # for documentation, see the following:
 #   https://github.com/angular-ui/ui-router/wiki/Nested-States-%26-Nested-Views
 #   https://github.com/angular-ui/ui-router/wiki
@@ -51,9 +50,9 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
         value: null
         squash: true
 
-  buildState 'onBoardingPlan', parent: 'onBoarding'
-  # buildState 'onBoardingPayment', parent: 'onBoarding'
-  # buildState 'onBoardingLocation', parent: 'onBoarding'
+  buildState 'onBoardingPlan', template: require('../../html/views/onBoarding/onBoardingPlan.jade')
+  # buildState 'onBoardingPayment'
+  # buildState 'onBoardingLocation'
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
@@ -77,7 +76,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
   buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'
 
-  buildState 'login', template: loginTemplate, sticky: false, loginRequired: false
+  buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false

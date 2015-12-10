@@ -1,24 +1,54 @@
 section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
   .container
-      h1.page-header Welcome, Select your plan
+      h1.page-header Welcome!
+      
+      h2 Select your plan
       p Proin ornare ligula eu tellus tempus elementum. Aenean bibendum iaculis mi, nec blandit lacus interdum vitae.
       
       .row
-        // left column
-        .col-md-4.col-sm-6.col-xs-12
-            form.form-horizontal(role='form' name='plan')
-              .form-plan
-                p Standard
-                p Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it? Do you see a little Asian child with a blank expression on his face sitting outside on a mechanical helicopter that shakes when you put quarters in it? No? Well, that's what you see at a toy store. And you must think you're in a toy store, because you're here shopping for an infant named Jeb.
+        .col-md-6.col-sm-6.col-xs-12
+          p Standard
+          p Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it? Do you see a little Asian child with a blank expression on his face sitting outside on a mechanical helicopter that shakes when you put quarters in it? No? Well, that's what you see at a toy store. And you must think you're in a toy store, because you're here shopping for an infant named Jeb.
+          button.btn.btn-primary(
+            ng-click="setPlan('standard')"
+            ng-bind="getSelected('standard')"
+          )
+        .col-md-6.col-sm-6.col-xs-12
+          p Pro
+          p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+          button.btn.btn-primary(
+            ng-click="setPlan('pro')"
+            ng-bind="getSelected('pro')"
+          )
+      .row
+        h2 Sign up to start your free month
+        p Create your account
+        
+        form.form-horizontal(role='form' name='userForm')
+          .form-plan
+            .form-group
+              .label Email:
+              .col-lg-3
+                input.form-control(
+                  name="email"
+                  ng-model="user.email"
+                  type='text'
+                  validator="email,required,checkUniqueEmail")
+            .form-group
+              .label Password:
+              .col-md-3
+                input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
+            .form-group
+              .label Confirm password:
+              .col-md-3
+                input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
+            .form-group
+              .label
+              .col-md-3
+                span(ng-if="pass.errorMsg")
+                  .label.has-error() {{pass.errorMsg}}
+            .form-group
+              .col-md-3
                 input.btn.btn-primary(
-                  ng-model="plan" type='button'
-                  bt-checkbox btn-checkbox-true="standard" btn-checkbox-false=""
-                ng-bind="plan === 'standard'? 'selected': 'select'")
-                
-                p Pro
-                p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                input.btn.btn-primary(
-                  ng-model="plan" type='button'
-                  bt-checkbox btn-checkbox-true="pro" btn-checkbox-false=""
-                ng-bind="plan === 'standard'? 'selected': 'select'")
+                  value='Continue' type='button' ng-click="user.submit()" validation-submit="userForm")
               
