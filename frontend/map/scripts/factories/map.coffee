@@ -82,7 +82,7 @@ app.factory 'rmapsMap',
 
         [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
           $rootScope.$onRootScope eventName, =>
-            @redraw(false)
+            @redraw()
 
         @layerFormatter = rmapsLayerFormatters
 
