@@ -236,33 +236,17 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
 
     loadMore: =>
       #debugging
-      return unless @mapCtrl.scope.Toggles.showResults
       @postRepeat.lastTime = new Date() if @postRepeat
       #end debugging
       if @loader
         $timeout.cancel @loader
       @loader = $timeout @throttledLoadMore, 20
 
-    getAmountToLoad: _.memoize () ->
+    getAmountToLoad: () ->
       return @LOAD_MORE_LENGTH
 
     throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
       $log.debug "throttledLoadMore()"
-
-
-
-#      # Load all
-#      @filterSummaryInBounds = []
-#      _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
-#        return unless prop
-#        @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
-#
-#      _.each @filterSummaryInBounds, (summary) =>
-#        if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
-#          @mapCtrl.scope.results[summary.rm_property_id] = summary
-#
-#      @mapCtrl.scope.resultsLimit = @filterSummaryInBounds.length
-
 
       amountToLoad = @getAmountToLoad()
 
