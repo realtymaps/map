@@ -50,7 +50,11 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
         value: null
         squash: true
 
-  buildState 'onBoardingPlan', template: require('../../html/views/onBoarding/onBoardingPlan.jade')
+  buildState 'onBoardingPlan',
+    template: require('../../html/views/onBoarding/onBoardingPlan.jade')
+    sticky: false
+    loginRequired: false
+    permissionsRequired: false
   # buildState 'onBoardingPayment'
   # buildState 'onBoardingLocation'
   buildState 'snail'

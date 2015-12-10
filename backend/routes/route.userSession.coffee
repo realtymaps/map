@@ -382,5 +382,4 @@ module.exports =
 
   emailIsUnique:
     method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
     handle: emailIsUnique
