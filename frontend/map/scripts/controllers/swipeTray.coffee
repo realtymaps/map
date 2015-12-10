@@ -49,7 +49,7 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
       $scope.index = $scope.index - 1
 
   # Reset the index to 0 if the available properties in the scope have changed
-  $scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
+  $scope.$watch 'map.markers.filterSummary', (newVal, oldVal) ->
     $log.debug 'swipeTrayCtrl - watch filterSummary'
     return if newVal == oldVal
 
