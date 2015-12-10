@@ -3,6 +3,7 @@ logger = require "../config/logger"
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
+filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
 tableNames = require "../config/tableNames"
@@ -38,6 +39,14 @@ otherValidations =
       subValidateEach: [
         validators.string(forceLowerCase: true)
         validators.choice(choices: statuses)
+      ]
+    validators.defaults(defaultValue: [])
+  ]
+  address: [
+    validators.object
+      pluck: filterAddress.keys
+      subValidateEach: [
+        validators.string(minLength: 1)
       ]
     validators.defaults(defaultValue: [])
   ]
@@ -107,6 +116,9 @@ _getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQue
     sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
   if filters.listedDaysMax
     sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", "<=", filters.listedDaysMax)
+
+  for key, value of filters.address
+    query.orWhere("#{dbTableName}.#{key}", "=", value)
 
   query
 

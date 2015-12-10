@@ -31,6 +31,14 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, rm
       else if place.types.indexOf "country" != -1
         zoom = 8
 
+
+      $rootScope.selectedFilters.address =
+        street_address_num: (_.find place.address_components, (c) -> c.types.indexOf 'street_number' != -1)?.short_name ? ""
+        street_address_name: (_.find place.address_components, (c) -> c.types.indexOf 'route' != -1)?.short_name ? ""
+        city: (_.find place.address_components, (c) -> c.types.indexOf 'locality' != -1)?.short_name ? ""
+        state: (_.find place.address_components, (c) -> c.types.indexOf 'administrative_area_level_1' != -1)?.short_name ? ""
+        zip: (_.find place.address_components, (c) -> c.types.indexOf "potal_code" != -1)?.short_name ? ""
+
       $rootScope.$emit rmapsevents.map.center, coords:
         latitude: place.geometry.location.lat()
         longitude: place.geometry.location.lng() # reposition map event
