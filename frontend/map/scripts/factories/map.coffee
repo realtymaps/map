@@ -304,6 +304,7 @@ app.factory 'rmapsMap',
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
           @scope.$evalAsync =>
+            $log.debug 'map.coffee - redraw calling results reset()'
             @scope.formatters.results?.reset()
 
 
@@ -311,7 +312,10 @@ app.factory 'rmapsMap',
         testLogger.debug 'draw'
         return if !@scope.map.isReady
         testLogger.debug 'isReady'
+
+        $log.debug 'map.coffee - redraw calling results reset()'
         @scope?.formatters?.results?.reset()
+
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
         return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng

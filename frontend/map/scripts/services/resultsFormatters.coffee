@@ -53,6 +53,9 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
 
   class ResultsFormatter
 
+    RESULTS_LIST_DEFAULT_LENGTH: 10
+    LOAD_MORE_LENGTH: 10
+
     _isWithinBounds = (map, prop) ->
       pointBounds = rmapsGoogleService.GeoJsonTo.MultiPolygon
       .toBounds(prop.geometry or prop.geom_polys_json or prop.geom_point_json)
@@ -77,7 +80,9 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
       , 100
 
       @reset = _.debounce =>
-        @mapCtrl.scope.resultsLimit = 10
+        $log.debug 'resultsFormatters.reset()'
+
+        @mapCtrl.scope.resultsLimit = @RESULTS_LIST_DEFAULT_LENGTH
         @mapCtrl.scope.results = {}
         @lastSummaryIndex = 0
         @mapCtrl.scope.resultsPotentialLength = undefined
@@ -90,7 +95,8 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
           angular.extend(@mapCtrl.scope.selectedResult, summary[@mapCtrl.scope.selectedResult.rm_property_id])
         @loadMore()
       , 5
-      @mapCtrl.scope.resultsLimit = 10
+
+      @mapCtrl.scope.resultsLimit = @RESULTS_LIST_DEFAULT_LENGTH
       @mapCtrl.scope.results = {}
       @mapCtrl.scope.resultsPotentialLength = undefined
       @mapCtrl.scope.resultsDescending = false
@@ -104,15 +110,17 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
         doDeleteLastTime: false
 
       @mapCtrl.scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
+        $log.debug 'resultsFormatter - watch filterSummary'
+
         return if newVal == oldVal
         @lastSummaryIndex = 0
         #what is special about this case where we do not use reset??
         @mapCtrl.scope.results = {}
         @loadMore()
 
-      @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
-        return if newVal == oldVal
-        @loadMore()
+#      @mapCtrl.scope.$watch 'Toggles.showResults', (newVal, oldVal) =>
+#        return if newVal == oldVal
+#        @loadMore()
 
     getResultsArray: =>
       _.values @mapCtrl.scope.results
@@ -235,48 +243,47 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
         $timeout.cancel @loader
       @loader = $timeout @throttledLoadMore, 20
 
-    getAmountToLoad: _.memoize (totalHeight) ->
-      cardHeight = 95 #we really need to somehow combine css constants and js constants
-      numberOfCards = Math.round totalHeight / cardHeight
-      #min height to keep scrolling
-      numberOfCards
+    getAmountToLoad: _.memoize () ->
+      return @LOAD_MORE_LENGTH
 
     throttledLoadMore: (amountToLoad, loadedCtr = 0) =>
       $log.debug "throttledLoadMore()"
 
-      @filterSummaryInBounds = []
-      _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
-        return unless prop
-        @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
 
-      _.each @filterSummaryInBounds, (summary) =>
-        if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
-          @mapCtrl.scope.results[summary.rm_property_id] = summary
 
-      @mapCtrl.scope.resultsLimit = @filterSummaryInBounds.length
+#      # Load all
+#      @filterSummaryInBounds = []
+#      _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
+#        return unless prop
+#        @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
+#
+#      _.each @filterSummaryInBounds, (summary) =>
+#        if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
+#          @mapCtrl.scope.results[summary.rm_property_id] = summary
+#
+#      @mapCtrl.scope.resultsLimit = @filterSummaryInBounds.length
 
-#      unless @resultsContainer
-#        @resultsContainer = document.getElementById(@mapCtrl.scope.resultsListId)
-#      return if not @resultsContainer or not @resultsContainer.offsetHeight > 0
-#      amountToLoad = @getAmountToLoad(@resultsContainer.offsetHeight) unless amountToLoad
-#      return unless amountToLoad
-#
-#      if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
-#        @filterSummaryInBounds = []
-#        _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
-#          return unless prop
-#          @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
-#
-#        @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
-#
-#      return unless _.keys(@filterSummaryInBounds).length
-#
-#      if not @mapCtrl.scope.results.length # only do this once (per map bound)
-#        _.each @filterSummaryInBounds, (summary) =>
-#          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
-#            @mapCtrl.scope.results[summary.rm_property_id] = summary
-#
-#      @mapCtrl.scope.resultsLimit += amountToLoad
+
+      amountToLoad = @getAmountToLoad()
+
+      if !@filterSummaryInBounds and _.keys(@mapCtrl.scope.map.markers.filterSummary).length
+        @filterSummaryInBounds = []
+        _.each @mapCtrl.scope.map.markers.filterSummary, (prop) =>
+          return unless prop
+          @filterSummaryInBounds.push prop if _isWithinBounds(@mapCtrl.map, prop)
+
+        @mapCtrl.scope.resultsPotentialLength = @filterSummaryInBounds.length
+
+      return unless _.keys(@filterSummaryInBounds).length
+
+      if not @mapCtrl.scope.results.length # only do this once (per map bound)
+        _.each @filterSummaryInBounds, (summary) =>
+          if @mapCtrl.layerFormatter.isVisible(@mapCtrl.scope, summary)
+            @mapCtrl.scope.results[summary.rm_property_id] = summary
+
+      @mapCtrl.scope.resultsLimit = Math.min @mapCtrl.scope.resultsLimit + amountToLoad, @mapCtrl.scope.resultsPotentialLength
+
+      $log.debug "New results limit > #{@mapCtrl.scope.resultsLimit} / #{@mapCtrl.scope.resultsPotentialLength} <"
 
     showModel: (model) =>
       @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')

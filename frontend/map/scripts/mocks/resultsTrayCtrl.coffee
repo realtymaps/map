@@ -13,4 +13,4 @@ module.exports =
       $scope.layers.filterSummary = data.data
     $scope.formatters = angular.extend $scope.formatters or {},
       results: new rmapsResultsFormatter($scope)
-    $scope.formatters.results.loadMore()
+#    $scope.formatters.results.loadMore()

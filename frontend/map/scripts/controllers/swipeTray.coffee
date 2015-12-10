@@ -8,8 +8,6 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
   $scope.index = 0
 
   $scope.trayPosition = ($index) ->
-    console.log "trayPosition(#{$index})"
-
     if $index == $scope.index
       return 'tray-center'
     else if $index == ($scope.index + 1)
@@ -28,6 +26,8 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
     if idx >= $scope.formatters.results.getResultsArray()?.length
       idx = $scope.formatters.results.getResultsArray()?.length - 1
 
+    checkLoadMore()
+
     $scope.index = idx
 
   $scope.swipeRight = () ->
@@ -44,6 +44,19 @@ app.controller 'swipeTrayCtrl', ($scope, $log) ->
 
     if $index > $scope.index
       $scope.index = $scope.index + 1
+      checkLoadMore()
     else if $index < $scope.index
       $scope.index = $scope.index - 1
+
+  # Reset the index to 0 if the available properties in the scope have changed
+  $scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
+    $log.debug 'swipeTrayCtrl - watch filterSummary'
+    return if newVal == oldVal
+
+    $scope.index = 0
+
+  checkLoadMore = () ->
+    if $scope.index >= $scope.resultsLimit - 2
+      $log.debug 'Swipe Tray - call loadMore()'
+      $scope.formatters.results.loadMore()
 
