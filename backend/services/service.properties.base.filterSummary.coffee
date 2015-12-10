@@ -30,19 +30,21 @@ transforms = do ->
   minMaxFilterValidations = _.transform(minMaxFilterValidations, makeMinMaxes)
   state: validators.object
     subValidateSeparate:
-      filters: validators.object
-        falsyReturn: {}
-        subValidateSeparate: _.extend minMaxFilterValidations,
-          ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-          hasOwner: validators.boolean()
-          status: [
-            validators.array
-              subValidateEach: [
-                validators.string(forceLowerCase: true)
-                validators.choice(choices: statuses)
-              ]
-            validators.defaults(defaultValue: [])
-          ]
+      filters: [
+        validators.object
+          subValidateSeparate: _.extend minMaxFilterValidations,
+            ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
+            hasOwner: validators.boolean()
+            status: [
+              validators.array
+                subValidateEach: [
+                  validators.string(forceLowerCase: true)
+                  validators.choice(choices: statuses)
+                ]
+              validators.defaults(defaultValue: [])
+            ]
+          validators.defaults(defaultValue: {})
+      ]
   bounds:
     transform: [
       validators.string(minLength: 1)

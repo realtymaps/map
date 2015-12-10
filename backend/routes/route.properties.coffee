@@ -24,18 +24,19 @@ _transforms =
   properties_selected: validators.object()
   geom_point_json: validators.object()
   rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
-  state:
+  state: [
     validators.object
-      falsyReturn: {}
       subValidateSeparate:
         account_image_id: validators.integer()
         filters: validators.object()
         favorites: validators.object()
         map_toggles: validators.object()
         map_position: validators.object()
-        map_results: validators.object(falsyReturn: {})
+        map_results: [validators.object(), validators.defaults(defaultValue: {})]
         auth_user_id: validators.integer()
         parent_auth_user_id: validators.integer()
+    validators.defaults(defaultValue: {})
+  ]
 
 _appendProjectId = (req, obj) ->
   obj.project_id = currentProfile(req).project_id
