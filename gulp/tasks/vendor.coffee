@@ -25,9 +25,9 @@ gulp.task 'vendor_css', ->
   .pipe(onlyDirs es)
   .pipe(concat 'vendor.css')
   .pipe rework rework_url  (url) ->
-    if url.match /[.](woff|woff2|ttf|eot|otf)(#.*)?$/
+    if url.match /[.](woff|woff2|ttf|eot|otf)(#.*)?$/ and !url.match /^\/\//
       "./#{url}".replace path.dirname("./#{url}"), '/fonts'
-    else if url.match /[.](jpg|jpeg|gif|png|svg|ico)$/
+    else if url.match /[.](jpg|jpeg|gif|png|svg|ico)$/ and !url.match /^\/\//
       "./#{url}".replace path.dirname("./#{url}"), '/assets'
     else
       url
