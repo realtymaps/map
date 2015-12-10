@@ -31,11 +31,31 @@
     margin 1.1363636363636365em 0 0 0
     color rgba(255, 255, 255, 0.51)
 
+.welcome-1
+  background-image url("/assets/homesAerial1.jpg")
+  background-position 36%
+.welcome-2
+  background-image url("/assets/homesAerial2.jpg")
+  background-position 17%
+.welcome-3
+  background-image url("/assets/homesSide1.jpg")
+  background-position 20% 45%
+
+a.main
+  background-color rgba(22, 27, 26, 0.72)
+  border-radius 25px
+  &:hover
+    background-color rgba(22, 27, 26, 0.85)
+
 @media (min-width: 768px)
     .hero-container
         width 80%
     .hero-text
         font-size 20px
+    .welcome-1, .welcome-2
+      background-position 0%
+    .welcome-3
+      background-position 0% 45%
 
 @media (min-width: 1200px)
     .hero-container
