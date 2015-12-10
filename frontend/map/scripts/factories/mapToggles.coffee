@@ -73,6 +73,9 @@ app.factory 'rmapsMapToggles', ($rootScope) ->
     @togglePreviousLocation = ->
       _locationCb()
 
+    @setLocation = (location) ->
+      _locationCb?(location)
+
     if json?
       _.extend @, _.mapValues json, (val) ->
         return val == 'true'

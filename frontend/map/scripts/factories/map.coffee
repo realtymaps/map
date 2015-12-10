@@ -37,7 +37,7 @@ app.factory 'rmapsMap',
         else
           position = $scope.previousCenter
 
-        position.zoom = rmapsZoomLevel.getZoom($scope) ? 14
+        position.zoom = position.zoom ? rmapsZoomLevel.getZoom($scope) ? 14
         $scope.map.center = NgLeafletCenter position
         $scope.$evalAsync()
 
@@ -85,6 +85,9 @@ app.factory 'rmapsMap',
         [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
           $rootScope.$onRootScope eventName, =>
             @redraw(false)
+
+        $rootScope.$onRootScope rmapsevents.map.center, (evt, location) ->
+          $scope.Toggles.setLocation location
 
         @layerFormatter = rmapsLayerFormatters
 

@@ -1,5 +1,5 @@
 div.search-field
-  form(ng-cloak ng-controller="rmapsSearchCtrl")
+  div(ng-cloak ng-controller="rmapsSearchCtrl")
     button.btn.btn-icon.search-btn(ng-click="openSearchTools = !openSearchTools" )
       span.icon.icon-magnify
     div.search(ng-controller="DropdownCtrl" ng-class="openSearchTools ? 'opened' : ''")
@@ -34,4 +34,4 @@ div.search-field
           ng-show="searchScope == 'Properties'"
           g-places-autocomplete
           placeholder="Enter an address"
-          ng-model="selectedFilters.address")
+          ng-model="result.googlePlace")

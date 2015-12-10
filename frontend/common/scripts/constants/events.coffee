@@ -10,6 +10,7 @@ mod.constant 'rmapsevents',
       listToggled: 1
     map:
       results: 1
+      center: 1
       mainMap:
         reDraw: 1
       drawPolys:
