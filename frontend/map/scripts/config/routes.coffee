@@ -51,6 +51,9 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
         value: null
         squash: true
 
+  buildState 'onBoardingPlan', parent: 'onBoarding'
+  # buildState 'onBoardingPayment', parent: 'onBoarding'
+  # buildState 'onBoardingLocation', parent: 'onBoarding'
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
