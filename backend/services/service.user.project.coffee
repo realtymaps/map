@@ -23,7 +23,7 @@ class DrawnShapesCrud extends ThenableCrud
     super arguments...
     @doWrapSingleThen = 'singleRaw'
     @
-    
+
   getAll: () ->
     super(arguments...)
     .then toGeoFeatureCollection
@@ -48,7 +48,7 @@ class ProjectCrud extends ThenableCrud
       "#{tables.user.notes.tableName}.id")
 
   drawnShapesFact: (dbFn = tables.user.drawnShapes) ->
-    logger.debug.cyan dbFn
+    # logger.debug.cyan dbFn
     new DrawnShapesCrud(dbFn)
 
   init: () =>
