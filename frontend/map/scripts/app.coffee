@@ -28,6 +28,7 @@ app = window.angular.module appName, [
   'ngImgCrop'
   'toastr'
   'textAngular'
+  'google.places'
 ]
 
 app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->

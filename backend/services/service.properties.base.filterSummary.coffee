@@ -3,6 +3,7 @@ logger = require "../config/logger"
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
+filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
 tableNames = require "../config/tableNames"
@@ -52,6 +53,10 @@ transforms = do ->
       validators.array(minLength: 2)
     ]
     required: true
+  address: [
+    validators.object()
+    validators.defaults(defaultValue: {})
+  ]
   returnType: validators.string()
 
 _getDefaultQuery = ->
@@ -111,6 +116,18 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
     sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
   if filters.listedDaysMax
     sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", "<=", filters.listedDaysMax)
+
+  # If full address available, include matched property in addition to other matches regardless of filters
+  filters.address = _.pick filters.address, filterAddress.keys
+  filters.address = _.omit filters.address, _.isEmpty
+  if _.keys(filters.address).length == filterAddress.keys.length
+    query.orWhere ->
+      for key, value of filters.address
+        if key == 'zip'
+          # Match 5-digit zip even if DB contains zip ext
+          @where("#{dbTableName}.#{key}", "like", "#{value}%")
+        else
+          @where("#{dbTableName}.#{key}", "=", value)
 
   query
 
