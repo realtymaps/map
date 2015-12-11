@@ -13,7 +13,6 @@ module.exports =
     .catch (err) ->
       null  # we expect to not necessarily get a value here
     .then (accountInfo) ->
-      accountInfo = api_key: 'AIzaSyBqtgskPD3EIGgEdIFLaAlCXgaKHaxERJs'
       if accountInfo?.api_key?
         logger.info("Setting GoogleMaps API key")
         setLocals("&key=#{accountInfo.api_key}")

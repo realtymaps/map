@@ -27,7 +27,6 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
 
     # remove dupes
     # include "savedDetails" for saved props
-    # logger.debug query.toString()
     query.then (properties) ->
       propMerge.updateSavedProperties(state, properties)
 
