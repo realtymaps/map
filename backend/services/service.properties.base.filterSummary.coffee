@@ -15,7 +15,7 @@ validators = validation.validators
 
 statuses = filterStatuses.keys
 
-minMaxValidations =
+minMaxFilterValidations =
   price: [validators.string(replace: [/[$,]/g, ""]), validators.integer()]
   listedDays: validators.integer()
   beds: validators.integer()
@@ -23,10 +23,29 @@ minMaxValidations =
   acres: validators.float()
   sqft: [ validators.string(replace: [/,/g, ""]), validators.integer() ]
 
-otherValidations =
-  returnType: validators.string()
-  ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
-  hasOwner: validators.boolean()
+transforms = do ->
+  makeMinMaxes = (result, validators, name) ->
+    result["#{name}Min"] = validators
+    result["#{name}Max"] = validators
+
+  minMaxFilterValidations = _.transform(minMaxFilterValidations, makeMinMaxes)
+  state: validators.object
+    subValidateSeparate:
+      filters: [
+        validators.object
+          subValidateSeparate: _.extend minMaxFilterValidations,
+            ownerName: [validators.string(trim: true), validators.defaults(defaultValue: "")]
+            hasOwner: validators.boolean()
+            status: [
+              validators.array
+                subValidateEach: [
+                  validators.string(forceLowerCase: true)
+                  validators.choice(choices: statuses)
+                ]
+              validators.defaults(defaultValue: [])
+            ]
+          validators.defaults(defaultValue: {})
+      ]
   bounds:
     transform: [
       validators.string(minLength: 1)
@@ -34,46 +53,31 @@ otherValidations =
       validators.array(minLength: 2)
     ]
     required: true
-  status: [
-    validators.array
-      subValidateEach: [
-        validators.string(forceLowerCase: true)
-        validators.choice(choices: statuses)
-      ]
-    validators.defaults(defaultValue: [])
-  ]
   address: [
     validators.object()
     validators.defaults(defaultValue: {})
   ]
-
-
-makeMinMaxes = (result, validators, name) ->
-  result["#{name}Min"] = validators
-  result["#{name}Max"] = validators
-
-minMaxes = _.transform(minMaxValidations, makeMinMaxes)
-
-transforms = _.extend {}, otherValidations, minMaxes
+  returnType: validators.string()
 
 _getDefaultQuery = ->
   sqlHelpers.select(dbFn(), "filter", true, "distinct on (rm_property_id)")
 
-_getResultCount = (state, filters) ->
+_getResultCount = (validatedQuery) ->
   # obtain a count(*)-style select query
   query = sqlHelpers.selectCountDistinct(dbFn())
-  # apply the state & filters (mostly "where" clause stuff)
-  query = _getFilterSummaryAsQuery(state, filters, null, query)
+  # apply the validatedQuery (mostly "where" clause stuff)
+  query = _getFilterSummaryAsQuery(validatedQuery, null, query)
   query
 
-_getFilterSummaryAsQuery = (state, filters, limit = 2000, query = _getDefaultQuery()) ->
-  throw new Error('filters undefined') if !filters
-  throw new Error('filters.status empty') if !filters?.status?.length
+_getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQuery()) ->
+  {bounds, state} = validatedQuery
+  {filters} = state
+  return query if !filters?.status?.length
   throw new Error('knex starting query missing!') if !query
 
   query.limit(limit) if limit
-  if filters.bounds
-    sqlHelpers.whereInBounds(query, "#{dbTableName}.geom_polys_raw", filters.bounds)
+  if bounds
+    sqlHelpers.whereInBounds(query, "#{dbTableName}.geom_polys_raw", bounds)
 
   if filters.status.length < statuses.length
     sqlHelpers.whereIn(query, "#{dbTableName}.rm_status", filters.status)
@@ -135,6 +139,6 @@ module.exports =
   getFilterSummaryAsQuery: _getFilterSummaryAsQuery
   getResultCount: _getResultCount
 
-  getFilterSummary: (state, filters, limit, query) ->
+  getFilterSummary: (filters, limit, query) ->
     Promise.try () ->
-      _getFilterSummaryAsQuery(state, filters, limit, query)
+      _getFilterSummaryAsQuery(filters, limit, query)

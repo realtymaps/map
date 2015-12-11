@@ -31,7 +31,7 @@ describe "rmapsFilterManager", ->
 
         spyCb = sinon.spy @$rootScope, '$emit'
         @$rootScope.$onRootScope @rmapsevents.map.filters.updated, (event, filters) ->
-          expect(filters).to.equal '&status%5B0%5D=for%20sale'
+          expect(filters).to.eql status: ['for sale']
           done()
 
         @$rootScope.selectedFilters =
@@ -52,25 +52,25 @@ describe "rmapsFilterManager", ->
           @$rootScope.selectedFilters =
             forSale: true
 
-          expect(@subject.getFilters()).to.equal '&status%5B0%5D=for%20sale'
+          expect(@subject.getFilters()).to.eql status: ['for sale']
 
         it 'pending', ->
           @$rootScope.selectedFilters =
             pending: true
 
-          expect(@subject.getFilters()).to.equal '&status%5B0%5D=pending'
+          expect(@subject.getFilters()).to.eql status: ['pending']
 
         it 'sold', ->
           @$rootScope.selectedFilters =
             sold: true
 
-          expect(@subject.getFilters()).to.equal '&status%5B0%5D=recently%20sold'
+          expect(@subject.getFilters()).to.eql status: ['recently sold']
 
         it 'notForSale', ->
           @$rootScope.selectedFilters =
             notForSale: true
 
-          expect(@subject.getFilters()).to.equal '&status%5B0%5D=not%20for%20sale'
+          expect(@subject.getFilters()).to.eql status: ['not for sale']
 
       describe 'multi filters', ->
 
@@ -79,7 +79,7 @@ describe "rmapsFilterManager", ->
             forSale: true
             notForSale: true
 
-          expect(@subject.getFilters()).to.equal '&' + qs.stringify(status: ['for sale', 'not for sale'])
+          expect(@subject.getFilters()).to.eql status: ['for sale', 'not for sale']
 
 
         it 'forSale, sold and notForSale', ->
@@ -88,4 +88,4 @@ describe "rmapsFilterManager", ->
             sold: true
             notForSale: true
 
-          expect(@subject.getFilters()).to.equal '&' + qs.stringify(status: ['for sale', 'recently sold', 'not for sale'])
+          expect(@subject.getFilters()).to.eql status: ['for sale', 'recently sold', 'not for sale']

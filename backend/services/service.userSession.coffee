@@ -73,43 +73,6 @@ verifyPassword = (email, password) ->
           .catch (err) -> logger.error "failed to update password hash for userid #{user.id}: #{err}"
         return user
 
-###
-map_position -  is to hold center, zoom, bounds.., altitude.. any kind of position relative map info
-map_results =
-  selectedResult: {}
-  results: [] #maybe
-NOTE: IF columns for auth_user_profile need to be deleted Session.state should be purged! Otherwise,
-  a invalid bookshelf object of old state will be queried.
-  TODO: is the above still true?  we're not using bookshelf any longer, I'm not sure if the problem still exists
-###
-_userStateCols = ['map_position', 'map_toggles', 'map_results', 'drawn_shapes']
-#TODO: THIS NEEDS TO BE RETHOUGHT this special handling of removing types is very difficult
-# to remember and causes significant debugging
-_filtersToRemove = _userStateCols.concat(['bounds','returnType'])
-
-_commonCaptureState = (req, stateUpdate = {}) ->
-  hasSomeState = false
-  _userStateCols.forEach (col) ->
-    stateUpdate[col] = req.query[col] if req.query[col]?
-    hasSomeState = true if stateUpdate[col]?
-
-  if hasSomeState
-    profileSvc.updateCurrent(req.session, stateUpdate)
-  else
-    Promise.resolve({})
-
-captureMapState = (req, res, next) -> Promise.try () ->
-  _commonCaptureState(req)
-  .then () ->
-    next()
-
-captureMapFilterState = (req, res, next) -> Promise.try () ->
-  filters = _.clone(req.query)
-  _filtersToRemove.forEach (removeParam) ->
-    delete filters[removeParam]
-  _commonCaptureState(req, filters: filters)
-  .then () ->
-    next()
 
 getImage = (entity) -> Promise.try () ->
   if !entity?.account_image_id?
@@ -147,8 +110,6 @@ module.exports =
   getProfile: profileSvc.getFirst
   updateCurrentProfile: profileSvc.updateCurrent
   updateProfile: profileSvc.update
-  captureMapState: captureMapState
-  captureMapFilterState: captureMapFilterState
   getProfiles: profileSvc.getProfiles
   getImage: getImage
   upsertImage: upsertImage

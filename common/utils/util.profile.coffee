@@ -1,7 +1,3 @@
-{hiddenRequire} = require './webpackHack.coffee'
-unless window?
-  _ = hiddenRequire('lodash')
-
 currentProfile = (obj, currentProfileStr = 'current_profile_id') ->
   unless obj[currentProfileStr]
     throw new Error('No Profile has been selected!')
