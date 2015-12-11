@@ -23,6 +23,7 @@ module.exports =
   addProjects:    'addProjects'
   sendEmailModal: 'sendEmailModal'
   createNewEmail: 'newEmail'
+  onBoardingPlan: 'onBoardingPlan'
 
   mail:           'mail'
   mailWizard:     'mailWizard'

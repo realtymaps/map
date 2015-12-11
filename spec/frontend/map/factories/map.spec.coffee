@@ -1,8 +1,6 @@
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-
 mockRoutes = require '../fixtures/propertyData.coffee'
-qs = require 'qs'
 
 describe "rmapsMap factory", ->
   beforeEach ->
@@ -35,9 +33,9 @@ describe "rmapsMap factory", ->
       @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
-      $httpBackend.when( 'GET', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
-      $httpBackend.when( 'GET', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
-      $httpBackend.when( 'GET', backendRoutes.config.google).respond( undefined )
+      $httpBackend.when( 'POST', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
+      $httpBackend.when( 'POST', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
+      $httpBackend.when( 'POST', backendRoutes.config.google).respond( undefined )
 
   it 'ctor exists', ->
     @ctor.should.be.ok
@@ -127,12 +125,12 @@ describe "rmapsMap factory", ->
 
       it 'no args', ->
         test = @subject.scope.refreshState()
-        test.should.be.equal qs.stringify @subject.getMapStateObj()
+        test.should.be.eql @subject.getMapStateObj()
 
       it 'args', ->
         arg = b: 'b'
         test = @subject.scope.refreshState(arg)
-        test.should.be.equal qs.stringify(angular.extend @subject.getMapStateObj(), arg )
+        test.should.be.eql angular.extend(@subject.getMapStateObj(), arg)
 
     describe 'draw', ->
       beforeEach ->
