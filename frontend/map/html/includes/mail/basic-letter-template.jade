@@ -1,20 +1,19 @@
 //---- content attempt 1 ----//
 
-.letter-page(style='background-color:rgba(128,128,128,0); margin-left:0.25in !important; margin-top:0.25in !important; width:8.0in !important; height:10.5in !important;')
-  .letter-page-content(style="position: absolute; background-color: rgba(0,0,0,0);")
-    .letter-page-content-text(style="position: absolute; left: 0.25in; top: 3.0in; width: 8.0in;")
-      span(style="color: black") 
-        span(style="font-family: Helvetica")
-          span.fontSize18 This box is the safe area. {{address}} Do not put text outside this box. If you are using the data argument, you can add variables like this: {{name}}.
+.letter-page
+  .letter-page-content
+    span(style="color: black")
+      span(style="font-family: Helvetica")
+        span.fontSize18 This box is the safe area. {{address}} Do not put text outside this box. If you are using the data argument, you can add variables like this: {{name}}.
 
-  #return-address-window.wysiwygOnly(style="position: absolute; left: 0.625in; top: 0.5in; width: 3.25in; height: 0.875in;")
-    #return-address-text(style="position: absolute; left: 3.05in; top: 0.1in; width: 3.05in; height: 0.675in;")
+  .return-address-window.wysiwygOnly
+    .return-address-text
       span(style="color: black")
         span(style="font-family: Helvetica")
           span.fontSize12 The Return Address will be printed here. This area will be visible through the envelope window.
 
-  #recipient-address-window.wysiwygOnly(style="position: absolute; left: 0.625in; top: 1.75in; width: 4.0in; height: 1.0in;")
-    #recipient-address-text(style="position: absolute; left: 0.1in; top: 0.1in; width: 3.80in; height: 0.8in;")
+  .recipient-address-window.wysiwygOnly
+    .recipient-address-text
       span(style="color: black")
         span(style="font-family: Helvetica")
           span.fontSize12 The Recipient's Address will be printed here. This area will be visible through the envelope window.
