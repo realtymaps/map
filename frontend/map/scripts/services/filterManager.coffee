@@ -1,6 +1,5 @@
 #TODO This should probably become a controller
 app = require '../app.coffee'
-qs = require 'qs'
 
 app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums, rmapsRendering, rmapsevents, rmapsMainOptions) ->
   _promiseObject =
@@ -13,7 +12,6 @@ app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums, rmapsRend
         delete filters[k]
 
   getFilters = () ->
-    filter = null
     if $rootScope.selectedFilters
       selectedFilters = _.clone($rootScope.selectedFilters)
       _cleanFilters(selectedFilters)
@@ -31,10 +29,7 @@ app.service 'rmapsFilterManager', ($rootScope, $log, rmapsParcelEnums, rmapsRend
       delete selectedFilters.sold
       delete selectedFilters.notForSale
 
-      filter = qs.stringify(selectedFilters)
-      if filter.length > 0
-        filter = '&' + filter
-      filter
+      selectedFilters
 
   _updateFilters = (newFilters, oldFilters) ->
     return if (not newFilters and not oldFilters) or newFilters == oldFilters

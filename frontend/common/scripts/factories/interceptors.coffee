@@ -37,9 +37,9 @@ interceptors =
           msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
         $rootScope.$emit rmapsevents.alert.spawn, alert
       return response
-    'response': handle
-    'responseError': (response) -> $q.reject(handle(response, true))
-    'requestError': (request) ->
+    response: handle
+    responseError: (response) -> $q.reject(handle(response, true))
+    requestError: (request) ->
       if request.alerts == false
         # we're explicitly not supposed to show an alert for this request according to the frontend
         return $q.reject(request)
@@ -50,16 +50,16 @@ interceptors =
       $q.reject(request)
 
   rmapsLoadingIconInterceptor: ($q, rmapsSpinner) ->
-    'request': (request) ->
+    request: (request) ->
       rmapsSpinner.incrementLoadingCount(request.url)
       request
-    'requestError': (rejection) ->
+    requestError: (rejection) ->
       rmapsSpinner.decrementLoadingCount(rejection.url)
       $q.reject(rejection)
-    'response': (response) ->
+    response: (response) ->
       rmapsSpinner.decrementLoadingCount(response.config?.url)
       response
-    'responseError': (rejection) ->
+    responseError: (rejection) ->
       rmapsSpinner.decrementLoadingCount(rejection.config?.url)
       $q.reject(rejection)
 ###

@@ -1,7 +1,5 @@
 app = require '../app.coffee'
-qs = require 'qs'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
-{Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
+{NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
 _encode = require('geohash64').encode
 _emptyGeoJsonData =
@@ -84,7 +82,7 @@ app.factory 'rmapsMap',
 
         [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
           $rootScope.$onRootScope eventName, =>
-            @redraw(false)
+            @redraw()
 
         @layerFormatter = rmapsLayerFormatters
 
@@ -105,8 +103,7 @@ app.factory 'rmapsMap',
           saved
 
         @scope.refreshState = (overrideObj = {}) =>
-          @mapState = qs.stringify _.extend({}, @getMapStateObj(), overrideObj)
-          @mapState
+          @mapState = _.extend {}, @getMapStateObj(), overrideObj
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
         @eventHandle = rmapsMapEventsHandlerService(@)
@@ -219,7 +216,7 @@ app.factory 'rmapsMap',
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManager.getFilters()
         # $log.debug filters
-        if !/status/.test(filters)
+        unless filters?.status?
           @clearFilterSummary()
           return promises
 
@@ -300,6 +297,7 @@ app.factory 'rmapsMap',
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
           https://github.com/tombatossals/angular-leaflet-directive/issues/820
           ###
+          $rootScope.$emit rmapsevents.map.results, @scope.map
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
@@ -352,7 +350,6 @@ app.factory 'rmapsMap',
             center: centerToSave
             zoom: @scope.zoom
           map_toggles: @scope.Toggles or {}
-          current_project_id: rmapsprincipal.getCurrentProfile()?.project_id
 
         if @scope.selectedResult?.rm_property_id?
           _.extend stateObj,
