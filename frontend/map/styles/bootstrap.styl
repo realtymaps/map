@@ -470,6 +470,17 @@ p.required
   font-weight normal
   margin-bottom 10px
 
+.white-page
+  for num in (1...7)
+    h{num}
+      @extends .pageTitle
+
+  .page-header
+    color $light_blue
+
+  label, input
+    color $black
+
 .popover
   color $black
   font-size 11px
