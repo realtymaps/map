@@ -41,7 +41,7 @@ app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsst
     normalColors[rmapsParcelEnums.status.pending] = rmapsstylusVariables.$rm_pending
     normalColors[rmapsParcelEnums.status.forSale] = rmapsstylusVariables.$rm_forsale
     normalColors[rmapsParcelEnums.status.notForSale] = rmapsstylusVariables.$rm_notforsale
-    normalColors['saved'] = rmapsstylusVariables['$rm-highlight-yellow']
+    normalColors['saved'] = rmapsstylusVariables['$rm-saved']
     normalColors['default'] = 'transparent'
 
     hoverColors = {}
