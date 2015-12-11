@@ -12,9 +12,9 @@ div.search-field
                   | {{searchScope}}
               span.caret
             ul.dropdown-menu
-              li(ng-click="searchScope = 'Properties'")
+              li(ng-click="searchScope = 'Places'")
                 span.icon.icon-property
-                | Properties
+                | Places
               li(ng-click="searchScope = 'Owners'")
                 span.icon.icon-project
                 | Owners
@@ -31,7 +31,8 @@ div.search-field
           ng-model="selectedFilters.ownerName")
 
         input.search-input.form-control(
-          ng-show="searchScope == 'Properties'"
+          ng-show="searchScope == 'Places'"
           g-places-autocomplete
-          placeholder="Enter an address"
-          ng-model="result.googlePlace")
+          placeholder="Enter an address or place"
+          ng-model="result.googlePlace"
+          ng-change="addressChange()")
