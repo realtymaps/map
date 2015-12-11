@@ -15,34 +15,34 @@ include ../../../../common/html/includes/mixins/_spinnerMixin.jade
                   .row
                       .col-sm-7
                           .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-                          .city-state-zip {{formatters.results.getCityStateZip(selectedResult)}}
+                          .city-state-zip {{formatters.property.getCityStateZip(selectedResult)}}
                           +propertyButtons('selectedResult')
                       .col-sm-5
                           .price(ng-if="selectedResult.price")
-                              span.price-label {{formatters.results.getPriceLabel(selectedResult.rm_status)}}&nbsp;
-                              | {{formatters.results.getPrice(selectedResult.price)}}
+                              span.price-label {{formatters.property.getPriceLabel(selectedResult.rm_status)}}&nbsp;
+                              | {{formatters.property.getPrice(selectedResult.price)}}
                           .below-price
-                              .property-status(ng-class="formatters.results.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
-                              .sold-date.info.title(ng-if="formatters.results.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
+                              .property-status(ng-class="formatters.property.getStatusLabelClass(selectedResult,true)") {{selectedResult.rm_status}}
+                              .sold-date.info.title(ng-if="formatters.property.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                   .row.beds-baths-sqft
                       .col-sm-12.detail-section-title Property Info
                   .row.quick-summary
                       .col-sm-3(ng-if="selectedResult.bedrooms" ng-cloak)
-                          span.data {{formatters.results.orNa(selectedResult.bedrooms)}}
+                          span.data {{formatters.property.orNa(selectedResult.bedrooms)}}
                           span.title Beds
                       .col-sm-3(ng-if="selectedResult.baths_total" ng-cloak)
-                          span.data {{formatters.results.orNa(selectedResult.baths_total)}}
+                          span.data {{formatters.property.orNa(selectedResult.baths_total)}}
                           span.title Baths
                       .col-sm-3(ng-if="selectedResult.finished_sqft" ng-cloak)
-                          span.data {{formatters.results.orNa(selectedResult.finished_sqft)}}
+                          span.data {{formatters.property.orNa(selectedResult.finished_sqft)}}
                           span.title Sq Ft
                       .col-sm-3(ng-if="selectedResult.year_built" ng-cloak)
-                          span.data {{formatters.results.getYear(selectedResult.year_built)}}
+                          span.data {{formatters.property.getYear(selectedResult.year_built)}}
                           span.title Built
                   .row.tool.quick-summary
                       .padding-top-15
                           .col-sm-3(ng-if="selectedResult.acres" ng-cloak)
-                              span.data {{formatters.results.orNa(selectedResult.acres)}}
+                              span.data {{formatters.property.orNa(selectedResult.acres)}}
                               span.title Acres
                           .col-sm-3(ng-if="selectedResult.land_square_footage" ng-cloak)
                               span.data {{selectedResult.land_square_footage}}
@@ -63,7 +63,7 @@ include ../../../../common/html/includes/mixins/_spinnerMixin.jade
                       .col-sm-12.detail-section-title Owner Info
                       div(ng-if="selectedResult.owner_name")
                           .col-sm-4
-                              .title {{formatters.results.getCurrentOwnersTitle(selectedResult)}}:
+                              .title {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
                           .col-sm-8
                               .data(ng-if="selectedResult.owner_name") {{selectedResult.owner_name}}
                                   span(ng-if="selectedResult.owner_name2")
@@ -76,26 +76,26 @@ include ../../../../common/html/includes/mixins/_spinnerMixin.jade
                               div(ng-if="selectedResult.owner_street_address_num || selectedResult.owner_street_address_name" ng-cloak)
                                   .data {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
                                       br/
-                                      | {{formatters.results.getCityStateZip(selectedResult,true)}}
+                                      | {{formatters.property.getCityStateZip(selectedResult,true)}}
 
 
-                  .row.listing-info(ng-if="formatters.results.showListingData(selectedResult)")
+                  .row.listing-info(ng-if="formatters.property.showListingData(selectedResult)")
                       .col-sm-12.detail-section-title MLS Listing Info
                       .row(ng-if="selectedResult.listing_age" ng-cloak)
                           .col-sm-4
                               .title Listed For:
                           .col-sm-8
-                              .data {{formatters.results.humanizeDays(selectedResult.listing_age) }}
+                              .data {{formatters.property.humanizeDays(selectedResult.listing_age) }}
                       .row(ng-if="selectedResult.original_price" ng-cloak)
                           .col-sm-4
                               .title Original Asking Price:
                           .col-sm-8
-                              .data {{formatters.results.getPrice(selectedResult.original_price)}}
+                              .data {{formatters.property.getPrice(selectedResult.original_price)}}
                       .row(ng-if="selectedResult.mls_close_price" ng-cloak)
                           .col-sm-4
                               .title Close Price:
                           .col-sm-8
-                              .data {{formatters.results.getPrice(selectedResult.mls_close_price)}}
+                              .data {{formatters.property.getPrice(selectedResult.mls_close_price)}}
                       .row(ng-if="selectedResult.mls_close_date" ng-cloak)
                           .col-sm-4
                               .title Close Date:
@@ -104,36 +104,36 @@ include ../../../../common/html/includes/mixins/_spinnerMixin.jade
                                   span(ng-if="selectedResult.mls_close_date") {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                                   span(ng-if="!selectedResult.mls_close_date") N/A
 
-                  .row.sale-info(ng-if="formatters.results.showSalesData(selectedResult)")
+                  .row.sale-info(ng-if="formatters.property.showSalesData(selectedResult)")
                       .col-sm-12.detail-section-title Historical Sales Info
                       .row(ng-if="selectedResult.mortgage_amount" ng-cloak)
                           .col-sm-4
                               .title Mortgage Amount:
                           .col-sm-8
-                              .data {{formatters.results.getPrice(selectedResult.mortgage_amount)}}
+                              .data {{formatters.property.getPrice(selectedResult.mortgage_amount)}}
                       .row.divider(ng-if="selectedResult.mortgage_date" ng-cloak)
                           .col-sm-4
                               .title Mortgage Date:
                           .col-sm-8
                               .data {{selectedResult.mortgage_date.toLocaleString() | date : 'MM/dd/yyyy'}}
-                      .row(ng-if="formatters.results.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
+                      .row(ng-if="formatters.property.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
                           .col-sm-4
                               .title Prior Sale Price:
                           .col-sm-8
-                              .data {{formatters.results.getPrice(selectedResult.sale_price)}}
-                      .row.divider(ng-if="formatters.results.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
+                              .data {{formatters.property.getPrice(selectedResult.sale_price)}}
+                      .row.divider(ng-if="formatters.property.showIfDifferentFrom(selectedResult, 'sale', 'mls_close')" ng-cloak)
                           .col-sm-4
                               .title Prior Sale Date:
                           .col-sm-8
                               .data
                                   span(ng-if="selectedResult.sale_date") {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                                   span(ng-if="!selectedResult.sale_date") N/A
-                      .row(ng-if="formatters.results.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && formatters.results.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
+                      .row(ng-if="formatters.property.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && formatters.property.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
                           .col-sm-4
                               .title Prior Sale Price:
                           .col-sm-8
-                              .data {{formatters.results.getPrice(selectedResult.prior_sale_price)}}
-                      .row.divider(ng-if="formatters.results.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && formatters.results.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
+                              .data {{formatters.property.getPrice(selectedResult.prior_sale_price)}}
+                      .row.divider(ng-if="formatters.property.showIfDifferentFrom(selectedResult, 'prior_sale', 'mls_close') && formatters.property.showIfDifferentFrom(selectedResult, 'prior_sale', 'sale')" ng-cloak)
                           .col-sm-4
                               .title Prior Sale Date:
                           .col-sm-8
@@ -147,7 +147,7 @@ include ../../../../common/html/includes/mixins/_spinnerMixin.jade
       ui-gmap-street-view-panorama(ng-cloak,style="background-color:transparent;",ng-if="streetViewPanorama.status == 'OK'",focalcoord="selectedResult.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
       .card-info
         .price(ng-if="selectedResult.price")
-          span.price-label {{formatters.results.getPriceLabel(selectedResult.rm_status)}}&nbsp;
-          | {{formatters.results.getPrice(selectedResult.price)}}
+          span.price-label {{formatters.property.getPriceLabel(selectedResult.rm_status)}}&nbsp;
+          | {{formatters.property.getPrice(selectedResult.price)}}
         .address {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
-        .city-state-zip {{formatters.results.getCityStateZip(selectedResult)}}
+        .city-state-zip {{formatters.property.getCityStateZip(selectedResult)}}

@@ -21,7 +21,7 @@ _wrapGeomPointJson = (obj) ->
 app.factory 'rmapsMap',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
   rmapsPropertiesService, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-  rmapsFilterManager, rmapsResultsFormatter, rmapsZoomLevel,
+  rmapsFilterManager, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsZoomLevel,
   rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService, rmapsprincipal) ->
 
     limits = rmapsMainOptions.map
@@ -151,6 +151,7 @@ app.factory 'rmapsMap',
 
           formatters:
             results: new rmapsResultsFormatter(self)
+            property: new rmapsPropertyFormatter()
 
           dragZoom: {}
           changeZoom: (increment) ->
