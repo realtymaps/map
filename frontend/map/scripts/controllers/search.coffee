@@ -51,7 +51,3 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $t
     else if _.isString place and !_.isString oldPlace
       # Clear address filter
       $rootScope.selectedFilters?.address = {}
-
-app.config ($tooltipProvider) ->
-  $tooltipProvider.setTriggers
-    'keyup': 'keydown'
