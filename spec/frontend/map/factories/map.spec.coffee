@@ -14,14 +14,24 @@ describe "rmapsMap factory", ->
         json:
           center: _.extend Point(latitude: 26.221501806466513, longitude: -81.80125951766968), zoom: mockRoutes.zoom
 
+    @mockMapData =
+      whenReady: () ->
+      invalidateSize: () ->
+      getBounds: () ->
+        intersects: () ->
+          return false
+
       zoomThresholdMilli: 1000
 
     inject ($rootScope, rmapsMap, rmapsMainOptions, $httpBackend, digestor, rmapsMapToggles) =>
+      # Store variables for tests
       @$rootScope = $rootScope
       $rootScope.silenceRmapsControls = true
       @rmapsMapToggles = rmapsMapToggles
       @digestor = digestor
       @ctor = rmapsMap
+
+      # Construct the rmapsMap object to test
       @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
@@ -61,8 +71,10 @@ describe "rmapsMap factory", ->
         it 'has mocked clusterOrDefault response', ->
           @subject.hash = mockRoutes.hash
           @subject.mapState = mockRoutes.mapState
+          @subject.map = @mockMapData
           @subject.scope.Toggles = @rmapsMapToggles()
-            # showResults: true
+
+          # showResults: true
           promises = @subject.drawFilterSummary(true)
           @digestor.digest()
 

@@ -145,7 +145,6 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
 
     loadMore: =>
       #debugging
-      return unless @mapCtrl.scope.Toggles.showResults
       @postRepeat.lastTime = new Date() if @postRepeat
       #end debugging
       if @loader
