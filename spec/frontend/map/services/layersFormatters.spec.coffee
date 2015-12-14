@@ -144,8 +144,8 @@ describe "rmapsLayerFormatters", ->
             style = @subject {savedDetails:isSaved: true}
             style.should.be.ok
             style.weight.should.be.equal 2
-            style.color.should.be.equal @rmapsstylusVariables['$rm-highlight-yellow']
-            style.fillColor.should.be.equal @rmapsstylusVariables['$rm-highlight-yellow']
+            style.color.should.be.equal @rmapsstylusVariables['$rm_saved']
+            style.fillColor.should.be.equal @rmapsstylusVariables['$rm_saved']
             style.fillOpacity.should.be.equal .75
 
           describe 'feature not saved', ->

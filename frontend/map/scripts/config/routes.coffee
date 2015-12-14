@@ -1,3 +1,4 @@
+###global _:true###
 app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 # for documentation, see the following:
@@ -8,7 +9,8 @@ stateDefaults =
   sticky: true
   loginRequired: true
 
-module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
+module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
+rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
 
   buildState = (name, overrides = {}) ->
     state =
@@ -20,7 +22,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     _.extend(state, overrides)
     _.defaults(state, stateDefaults)
 
-    if !state.template
+    if !state.template && !state.templateProvider
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         console.debug 'loading template:', name, 'from', templateName
@@ -50,13 +52,37 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
         value: null
         squash: true
 
-  buildState 'onBoardingPlan',
-    template: require('../../html/views/onBoarding/onBoardingPlan.jade')
-    sticky: false
+  buildState 'onBoarding',
+    abstract: true
+    url: frontendRoutes.onBoarding
     loginRequired: false
     permissionsRequired: false
-  # buildState 'onBoardingPayment'
-  # buildState 'onBoardingLocation'
+
+  buildState 'onBoardingPlan',
+    parent: 'onBoarding'
+    loginRequired: false
+    permissionsRequired: false
+    showSteps: false
+
+  rmapsOnBoardingOrderProvider.steps.forEach (boardingName) ->
+    buildState boardingName,
+      parent: 'onBoarding'
+      url: '/' + (rmapsOnBoardingOrderProvider.getId(boardingName) + 1)
+      loginRequired: false
+      permissionsRequired: false
+      showSteps: true
+
+  rmapsOnBoardingProOrderProvider.steps.forEach (boardingName) ->
+    buildState boardingName + 'Pro',
+      parent: 'onBoarding'
+      controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
+      url: '/pro/' + (rmapsOnBoardingProOrderProvider.getId(boardingName) + 1)
+      templateProvider: ($templateCache) ->
+        $templateCache.get "./views/onBoarding/#{boardingName}.jade"
+      loginRequired: false
+      permissionsRequired: false
+      showSteps: true
+
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
