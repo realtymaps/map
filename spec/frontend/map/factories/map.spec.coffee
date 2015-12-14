@@ -5,7 +5,7 @@ mockRoutes = require '../fixtures/propertyData.coffee'
 describe "rmapsMap factory", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module('rmapsMapApp')
 
     @mocks =
       options:
@@ -33,9 +33,16 @@ describe "rmapsMap factory", ->
       @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
-      $httpBackend.when( 'POST', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
-      $httpBackend.when( 'POST', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
       $httpBackend.when( 'POST', backendRoutes.config.google).respond( undefined )
+      $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
+        data = JSON.parse dataString
+
+        console.log "Mock Filter Summary for type #{data.returnType}"
+        if data.returnType == 'clusterOrDefault'
+          return ['200', mockRoutes.filterSummary.clusterOrDefault]
+        else
+          return ['200', mockRoutes.filterSummary.geojsonPolys]
+      )
 
   it 'ctor exists', ->
     @ctor.should.be.ok
