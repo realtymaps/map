@@ -1,0 +1,50 @@
+section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
+  .container
+      h2 Payment Details
+      p Nullam eros mi, mollis in sollicitudin non, tincidunt sed enim. Sed et felis metus, rhoncus ornare nibh. Ut at magna leo. Suspendisse egestas est ac dolor imperdiet pretium. 
+      
+      .row
+        form.form-horizontal(role='form' name='userForm')
+          .form-payment
+            .col-md-6.col-sm-6.col-xs-12
+              .form-group
+                .label First Name:
+                .col-lg-3
+                  input.form-control(
+                    name="first_name"
+                    ng-model="user.first_name"
+                    type='text'
+                    validator="required,minlength=2")
+              .form-group
+                .label Card Number:
+                .col-lg-3
+                  input.form-control(
+                    name="card_number"
+                    ng-model="user.card_number"
+                    type='text'
+                    validator="required,minlength=2")
+                
+            
+            .col-md-6.col-sm-6.col-xs-12
+              .form-group
+                .label LastName:
+                .col-md-3
+                  input.form-control(
+                    name="last_name"
+                    ng-model="user.last_name"
+                    type='text'
+                    validator="required,minlength=2")
+              .form-group
+                .label Zip:
+                .col-md-3
+                  input.form-control(
+                    ng-model="user.zip"
+                    name="zip"
+                    type='text' validator="required,zipcode")
+                    
+            .form-group
+              .col-md-3
+                input.btn.btn-primary(
+                  value='Continue' type='button' ng-click="user.submit()" validation-submit="userForm")
+        
+              
