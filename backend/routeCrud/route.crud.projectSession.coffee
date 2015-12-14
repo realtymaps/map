@@ -199,6 +199,7 @@ class ProjectRouteCrud extends RouteCrud
       else
         project
     .then (project) =>
+      project.id  = project.project_id ? project.id
       throw new Error('Project not found') unless project
       @clientsCrud.rootGET(req, res, next)
       .then (clients) ->
