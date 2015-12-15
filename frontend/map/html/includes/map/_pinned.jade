@@ -16,7 +16,7 @@ span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" drop
             span.enity
               +circleNrMixin('{{$index+1}}')
               span.content
-                span(class="status" ng-class="formatters.results.getStatusLabelClass(property, true)") {{property.rm_status}}
+                span(class="status" ng-class="formatters.property.getStatusLabelClass(property, true)") {{property.rm_status}}
                 +propertyAttributes('property')
             span.actions
               span.unpin(ng-click="formatters.results.clickSaveResultFromList(property); $event.stopPropagation()")

@@ -4,12 +4,14 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertiesService) ->
+app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsPropertiesService) ->
   $scope.activeView = 'project'
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl'
 
-  $scope.formatters = results: new rmapsResultsFormatter scope: $scope
+  $scope.formatters =
+    results: new rmapsResultsFormatter scope: $scope
+    property: new rmapsPropertyFormatter
 
   # Override for property button
   $scope.formatters.results.zoomTo = (result) ->

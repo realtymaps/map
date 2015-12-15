@@ -1,16 +1,12 @@
 _lng = -81.80125951766968
 _lat = 26.221501806466513
-geojsonPolys =
+filterSummary =
   route: "/api/properties/filter_summary/"
-  response: require './geojsonPolys.json'
-
-clusterOrDefault =
-  route: "/api/properties/filter_summary/"
-  response: require './clusterOrDefault.json'
+  geojsonPolys: require './geojsonPolys.json'
+  clusterOrDefault: require './clusterOrDefault.json'
 
 module.exports =
-  geojsonPolys: geojsonPolys
-  clusterOrDefault: clusterOrDefault
+  filterSummary: filterSummary
   hash: 'wt~~CjojrNglB_lD'
   zoom: 16
   mapState:
