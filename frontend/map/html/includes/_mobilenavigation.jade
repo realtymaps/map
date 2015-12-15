@@ -72,7 +72,7 @@ include mixins/_avatarMixin.jade
                             span.menu-badge.count {{project.neighbourhoods.length}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('projectPinned', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
+                        a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-property
                             span.menu-label Properties
                             span.menu-badge.count {{project.propertiesTotal}}
