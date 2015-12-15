@@ -87,7 +87,7 @@ include mixins/_avatarMixin.jade
                         a.menu-link(ng-click="goToState('projectFavorites', {id: project.id})" class="favorites" ng-class="{ active: isActive('favorites') }")
                             span.icon.menu-icon.icon-favorites
                             span.menu-label Favorites
-                            span.menu-badge.count {{project.favorites.length}}
+                            span.menu-badge.count {{project.favoritesTotal}}
 
         .bottom
             ul.nav

@@ -1,5 +1,5 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsProjectNeighborhoodsCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:projectNeighborhoods")
+app.controller 'rmapsProjectNeighbourhoodsCtrl', ($scope, $log) ->
+  $log = $log.spawn("map:projectNeighbourhoods")

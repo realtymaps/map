@@ -1,20 +1,15 @@
 include ../../includes/mixins/property/_propertyAttributes.jade
+include ../../includes/mixins/property/_propertyButtons.jade
 
 .collapse-header
-  h2.title Favorites ({{project.favorites.length}})
-.row
-  li.col-md-6(ng-repeat="favorite in project.favorites")
+  h2.title Favorites ({{project.favoritesTotal}})
+.row.repeat
+  li.col-md-6(ng-repeat="property in project.favorites")
     .property-card
       .property-img
-        img(src="/assets/test_property.jpg")
-        span.property-status(ng-class="favorite.status")
-          | {{favorite.status}}
+        span.status(ng-class="formatters.results.getStatusLabelClass(property,true)") {{property.rm_status}}
+        img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.results.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+        img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
       .property-data
-        +propertyAttributes('favorite')
-      .actions
-        button.details
-          span.icon.icon-arrow
-          span See details
-        button.pinto
-          span.icon.icon-pin
-          span Pin to
+        +propertyAttributes('property')
+        +propertyButtons('property')
