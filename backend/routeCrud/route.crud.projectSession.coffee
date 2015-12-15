@@ -215,6 +215,12 @@ class ProjectRouteCrud extends RouteCrud
       .then (drawnShapes) ->
         project.drawnShapes = drawnShapes
         project
+    .then (project) =>
+      profileSvc.getAll project_id: req.params.id, true
+      .then (profiles) =>
+        favorites = _.reduce _.pluck(profiles, 'favorites'), _.merge
+        project.favorites = favorites
+        project
 
   byIdDELETE: (req, res, next) ->
     super req, res, next
