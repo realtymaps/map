@@ -39,7 +39,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       $scope.projects = _.values identity.profiles
       $scope.totalProjects = $scope.projects.length
       _.each $scope.projects, (project) ->
-        project.totalProperties = (_.keys project.properties_selected).length
+        project.totalProperties = (_.keys project.properties_selected)?.length
+        project.totalFavorites = (_.keys project.favorites)?.length
 
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
 
