@@ -1,7 +1,37 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+  #
+  # Scope variables
+  #
+
   $scope.isMobileNavOpen = false
+
+  #
+  # Determine if this is Desktop or Mobile view
+  # Rules should match those defined in responsive.styl
+  #
+
+  setViewClass = (mobileMQL) ->
+    if mobileMQL.matches
+      console.log "Setting mobile-view"
+      $scope.mobileView = true
+      $scope.desktopView = false
+    else
+      console.log "Setting desktop-view"
+      $scope.mobileView = false
+      $scope.desktopView = true
+
+  xs        = 768
+  mobile = "(max-width: #{xs - 1}px)"
+
+  mobileMQL = $window.matchMedia mobile
+  mobileMQL.addListener setViewClass
+  setViewClass mobileMQL
+
+  #
+  # Mobile Menu Events
+  #
 
   $scope.toggleMobileNav = (event) ->
     event.stopPropagation() if event
@@ -48,6 +78,10 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipa
     return if !$scope.isMobileNavOpen
     event.stopPropagation() if event
     $scope.isMobileNavOpen = false
+
+  #
+  # Mobile Menu Navigation - Handles closing menu if open
+  #
 
   $scope.goToState = (state, params, options) ->
     $scope.closeMobileNav()
