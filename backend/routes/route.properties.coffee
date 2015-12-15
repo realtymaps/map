@@ -29,12 +29,12 @@ _transforms =
       subValidateSeparate:
         account_image_id: validators.integer()
         filters: validators.object()
-        favorites: validators.object()
+        # favorites: validators.object()
         map_toggles: validators.object()
         map_position: validators.object()
         map_results: [validators.object(), validators.defaults(defaultValue: {})]
         auth_user_id: validators.integer()
-        parent_auth_user_id: validators.integer()
+        # parent_auth_user_id: validators.integer()
     validators.defaults(defaultValue: {})
   ]
 
