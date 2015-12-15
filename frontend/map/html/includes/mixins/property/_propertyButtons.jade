@@ -1,17 +1,17 @@
 mixin propertyButtons(resultName)
   div.btn-actions
-    button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
-      i.fa.fa-heart(ng-show="formatters.results.isFavoriteResult(#{resultName})") &nbsp;
-      i.fa.fa-heart-o(ng-show="!formatters.results.isFavoriteResult(#{resultName})") &nbsp;
+    button.favorite(ng-click="formatters.property.clickFavoriteResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
+      i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(#{resultName})") &nbsp;
+      i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(#{resultName})") &nbsp;
 
-    button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.results.isSavedResult(#{resultName}) ? 'Unpin' : 'Pin'}}")
+    button.pinto(ng-click="formatters.property.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isSavedResult(#{resultName}) ? 'Unpin' : 'Pin'}}")
       span.icon.icon-pin
 
-    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.results.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
+    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.property.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
       span.icon.icon-send_email
 
     button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
       i.fa.fa-sticky-note &nbsp;
 
-    button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")
+    button.snail(ng-click="formatters.property.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")
       i.fa.fa-map-marker &nbsp;
