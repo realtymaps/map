@@ -80,7 +80,7 @@ class ClientsCrud extends RouteCrud
         user_id: newUser.id
         permission_id: authPermission.id
 
-      userSvc.permissions.create permission, null, ['user_id', 'permission_id'], @doLogQuery
+      userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
 
     .then ->
       newProfile =
