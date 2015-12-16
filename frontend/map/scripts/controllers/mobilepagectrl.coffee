@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResponsiveView) ->
   #
   # Scope variables
   #
@@ -12,22 +12,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
   # Rules should match those defined in responsive.styl
   #
 
-  setViewClass = (mobileMQL) ->
-    if mobileMQL.matches
-      console.log "Setting mobile-view"
-      $scope.mobileView = true
-      $scope.desktopView = false
-    else
-      console.log "Setting desktop-view"
-      $scope.mobileView = false
-      $scope.desktopView = true
-
-  xs        = 768
-  mobile = "(max-width: #{xs - 1}px)"
-
-  mobileMQL = $window.matchMedia mobile
-  mobileMQL.addListener setViewClass
-  setViewClass mobileMQL
+  $scope.mobileView = rmapsResponsiveView.isMobileView()
+  $scope.desktopView = rmapsResponsiveView.isDesktopView()
 
   #
   # Mobile Menu Events

@@ -2,12 +2,6 @@ app = require '../app.coffee'
 _ = require 'lodash'
 
 #
-# Media Query
-#
-xs        = 768
-mobile = "(max-width: #{xs - 1}px)"
-
-#
 # This is based on the ngIf directive implementation, but is applied to CSS class selectors
 #
 generateViewDirective = ($animate, $window, showView) ->
@@ -53,13 +47,11 @@ generateViewDirective = ($animate, $window, showView) ->
 #
 # Directive targeting .desktop-only CSS selector
 #
-app.directive 'desktopOnly', ($animate, $window) ->
-  mobileMQL = $window.matchMedia mobile
-  return generateViewDirective($animate, $window, !mobileMQL.matches)
+app.directive 'desktopOnly', ($animate, $window, rmapsResponsiveView) ->
+  return generateViewDirective($animate, $window, rmapsResponsiveView.isDesktopView())
 
 #
 # Directive targeting .mobile-only CSS selector
 #
-app.directive 'mobileOnly', ($animate, $window) ->
-  mobileMQL = $window.matchMedia mobile
-  return generateViewDirective($animate, $window, mobileMQL.matches)
+app.directive 'mobileOnly', ($animate, $window, rmapsResponsiveView) ->
+  return generateViewDirective($animate, $window, rmapsResponsiveView.isMobileView())
