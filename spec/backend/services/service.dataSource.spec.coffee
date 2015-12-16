@@ -42,11 +42,11 @@ describe 'service.dataSource.coffee', ->
 
       @thenTestArg = [
         MetadataEntryID: 1
-        LongName: 'a.long.name'
+        LongName: 'a long name'
         SystemName: 'A Long Name'
       ,
         MetadataEntryID: 2
-        LongName: 'another.long.name'
+        LongName: 'another long name'
         SystemName: 'Another Long Name'
       ]
 
@@ -57,15 +57,16 @@ describe 'service.dataSource.coffee', ->
       expect(@dsSqlMock.toString()).to.contain('"data_list_type" = \'tax\'')
       @dsSqlMock.selectSpy.calledOnce.should.be.true
       @dsSqlMock.whereSpy.calledOnce.should.be.true
+      @dsSqlMock.orderBySpy.calledOnce.should.be.true
       @dsSqlMock.thenSpy().callCount.should.equal 1
       @dsSqlMock.catchSpy().callCount.should.equal 1
 
       fn = @dsSqlMock.getThenCallback(0)
       output = fn(@thenTestArg)
       expect(output[0]).to.have.property 'LongName'
-        .and.equal 'alongname'
+        .and.equal 'a long name'
       expect(output[1]).to.have.property 'LongName'
-        .and.equal 'anotherlongname'
+        .and.equal 'another long name'
 
       done()
 

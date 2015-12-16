@@ -259,7 +259,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   # get start time for "last updated" stamp
   startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
   Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationInfo, startTime) ->
-    promises = for row in rows then do (row) ->
+    Promise.each rows, (row, index, length) ->
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
@@ -276,7 +276,6 @@ normalizeData = (subtask, options) -> Promise.try () ->
         tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
-    Promise.all promises
 
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->

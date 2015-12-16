@@ -14,8 +14,9 @@ ruleDefaults =
   valid: () ->
     !@required || @input
 
+  # this excludes certain config fields from going into the transform (the ones that are handled manually in getTransform)
   getOptions: () ->
-    _.pick @config, (v, k) -> ['advanced', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
+    _.pick @config, (v, k) -> ['advanced', 'alias', 'DataType', 'nullZero', 'nullEmpty', 'nullNumber', 'nullString'].indexOf(k) == -1
 
   getTransform: (globalOpts = {}) ->
     transformArr = []
@@ -25,7 +26,7 @@ ruleDefaults =
       transformArr.push name: 'nullify', options: value: String(globalOpts.nullString)
 
     # Primary transform
-    transformArr.push name: (@type?.name || @type), options: @getOptions()
+    transformArr.push name: @type?.name, options: @getOptions()
 
     # Transforms that should occur after type-specific logic
     if @config.nullZero
@@ -53,12 +54,19 @@ ruleDefaults =
 # Base/filter rule definitions
 _rules =
   common:
+    rm_property_id:
+      alias: 'Property ID'
+      required: true
+      type: name: 'rm_property_id'
+      input: {}
+      valid: () ->
+        @input.apn && (@input.fipsCode || (@input.stateCode && @input.county))
+
     address:
       alias: 'Address'
-      required: true
       input: {}
       group: 'general'
-      type: 'address'
+      type: name: 'address'
       valid: () ->
         @input.city && @input.state && (@input.zip || @input.zip9) &&
         ((@input.streetName && @input.streetNum) || @input.streetFull)
@@ -71,21 +79,14 @@ _rules =
 
     price:
       alias: 'Price'
-      type: 'currency'
-      required: true
+      type: name: 'currency'
 
     close_date:
       alias: 'Close Date'
-      type: 'datetime'
+      type: name: 'datetime'
 
   mls:
     listing:
-      rm_property_id:
-        alias: 'Property ID'
-        required: true
-        type: 'rm_property_id'
-        input: {}
-
       data_source_uuid:
         alias: 'MLS Number'
         required: true
@@ -94,41 +95,41 @@ _rules =
         alias: 'FIPS code'
         required: true
         input: {}
-        type: 'fips'
+        type: name: 'fips'
         valid: () ->
           @input.stateCode && @input.county
 
       bedrooms:
         alias: 'Bedrooms'
-        type: 'integer'
+        type: name: 'integer'
 
       baths_full:
         alias: 'Baths Full'
-        type: 'integer'
+        type: name: 'integer'
 
       acres:
         alias: 'Acres'
-        type: 'float'
+        type: name: 'float'
 
       sqft_finished:
         alias: 'Finished Sq Ft'
-        type: 'integer'
+        type: name: 'integer'
 
       days_on_market:
         alias: 'Days on Market'
         required: true
-        type: 'days_on_market'
+        type: name: 'days_on_market'
         input: []
         valid: () ->
           @input[0] || @input[1]
 
       hide_address:
         alias: 'Hide Address'
-        type: 'boolean'
+        type: name: 'boolean'
 
       hide_listing:
         alias: 'Hide Listing'
-        type: 'boolean'
+        type: name: 'boolean'
 
       status:
         alias: 'Status'
@@ -151,46 +152,39 @@ _rules =
 
       discontinued_date:
         alias: 'Discontinued Date'
-        type: 'datetime'
+        type: name: 'datetime'
 
 
   county:
     tax:
-      rm_property_id:
-        alias: 'Property ID'
-        required: true
-        type: 'rm_property_id'
-        input: {}
-        valid: () ->
-          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
-
       data_source_uuid:
-        alias: 'County Number'
+        alias: 'Data Source UUID'
         required: true
         input: {}
         valid: () ->
-          @input.batchid && @input.batchseq
+          @input.batchid
+        type: name: 'data_source_uuid'
 
       fips_code:
         alias: 'FIPS code'
-        type: 'fips'
+        type: name: 'fips'
         required: true
 
       bedrooms:
         alias: 'Bedrooms'
-        type: 'integer'
+        type: name: 'integer'
 
       baths_full:
         alias: 'Baths Full'
-        type: 'integer'
+        type: name: 'integer'
 
       acres:
         alias: 'Acres'
-        type: 'float'
+        type: name: 'float'
 
       sqft_finished:
         alias: 'Finished Sq Ft'
-        type: 'integer'
+        type: name: 'integer'
 
       owner_name:
         alias: 'Owner 1'
@@ -198,6 +192,7 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
       owner_name_2:
         alias: 'Owner 2'
@@ -205,26 +200,20 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
     deed:
-      rm_property_id:
-        alias: 'Property ID'
-        required: true
-        type: 'rm_property_id'
-        input: {}
-        valid: () ->
-          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
-
       data_source_uuid:
-        alias: 'County Number'
+        alias: 'Data Source UUID'
         required: true
         input: {}
         valid: () ->
-          @input.batchid && @input.batchseq
+          @input.batchid
+        type: name: 'data_source_uuid'
 
       fips_code:
         alias: 'FIPS code'
-        type: 'fips'
+        type: name: 'fips'
         required: true
 
       owner_name:
@@ -233,6 +222,7 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
       owner_name_2:
         alias: 'Owner 2'
@@ -240,26 +230,20 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
     mortgage:
-      rm_property_id:
-        alias: 'Property ID'
-        required: true
-        type: 'rm_property_id'
-        input: {}
-        valid: () ->
-          @input.fipsCode && @input.apnUnformatted && @input.apnSequence
-
       data_source_uuid:
-        alias: 'County Number'
+        alias: 'Data Source UUID'
+        type: name: 'data_source_uuid'
         required: true
         input: {}
         valid: () ->
-          @input.batchid && @input.batchseq
+          @input.batchid
 
       fips_code:
         alias: 'FIPS code'
-        type: 'fips'
+        type: name: 'fips'
         required: true
 
       owner_name:
@@ -268,6 +252,7 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
       owner_name_2:
         alias: 'Owner 2'
@@ -275,8 +260,9 @@ _rules =
         input: {}
         valid: () ->
           @input.first && @input.last
+        type: name: 'name'
 
-# no lists currently have no base filters, but deed used to, so 
+# no lists currently have no base filters, but deed used to, so
 # we'll keep this around just in case something comes along that needs this)
 _noBase = []
 

@@ -37,7 +37,7 @@
         ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'output']") {{item.output}}
+        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
@@ -62,14 +62,14 @@
         cg-busy="fieldData.category.loading")
         .field(
         class="base unselectable"
-        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
+        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.output }}
         .field(
         ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
         ng-repeat="item in fieldData.category.items")
-          span(ng-show="!item.unselectable") {{item.output}}
-          span(ng-show="item.unselectable") {{item.alias}}
+          span(ng-show="!item.unselectable") {{item.input}}
+          span(ng-show="item.unselectable") {{item.output}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
@@ -88,14 +88,14 @@
           .field-list
             .field(
             class="base unselectable"
-            ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
+            ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.output }}
             .field(
             ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
-              span(ng-show="!item.unselectable") {{item.output}}
-              span(ng-show="item.unselectable") {{item.alias}}
+              span(ng-show="!item.unselectable") {{item.input}}
+              span(ng-show="item.unselectable") {{item.output}}
               span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
                'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
                'datatype-yn': item.type.name == 'boolean', \
@@ -109,7 +109,7 @@
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       .row
         .col-md-2 County Field Name:
-        .col-md-10 {{fieldData.current.output}}
+        .col-md-10 {{fieldData.current.input}}
       .row
         .col-md-2 Data Type:
         .col-md-10(ng-if="fieldData.current.type") {{fieldData.current.type.label}}
@@ -118,7 +118,7 @@
       .row
         .col-md-2 Alias:
         .col-md-2
-          input(type="text" ng-model="fieldData.current.config.alias" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+          input(type="text" ng-model="fieldData.current.output" ng-change="updateRule()")
         .col-md-8.help Supply a more readable name for this field if necessary
       .row(ng-if="fieldData.current.type.name == 'integer' || fieldData.current.type.name == 'float'")
         .col-md-2 Remove zero (0) values?
@@ -252,16 +252,19 @@
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 Batch ID and Batch Sequence
+          .col-md-2 Batch ID
           .col-md-10
-            .field(rmaps-droppable="'batchid'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['batchid'] }")
-              span(ng-show="fieldData.current.input['batchid']") {{fieldData.current.input['batchid']}}:
+            .field(rmaps-droppable="'batchid'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.batchid }")
+              span(ng-show="fieldData.current.input.batchid") {{fieldData.current.input.batchid}}:
               span Batch ID
-              span.remove-icon(ng-show="fieldData.current.input['batchid']" ng-click="removeBaseInput('batchid')") X
-            .field(rmaps-droppable="'batchseq'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['batchseq'] }")
-              span(ng-show="fieldData.current.input['batchseq']") {{fieldData.current.input['batchseq']}}:
+              span.remove-icon(ng-show="fieldData.current.input.batchid" ng-click="removeBaseInput('batchid')") X
+        .row
+          .col-md-2 Batch Sequence (optional)
+          .col-md-10
+            .field(rmaps-droppable="'batchseq'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.batchseq }")
+              span(ng-show="fieldData.current.input.batchseq") {{fieldData.current.input.batchseq}}:
               span Batch Sequence
-              span.remove-icon(ng-show="fieldData.current.input['batchseq']" ng-click="removeBaseInput('batchseq')") X
+              span.remove-icon(ng-show="fieldData.current.input.batchseq" ng-click="removeBaseInput('batchseq')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'owner_name'")
         .row
@@ -270,14 +273,14 @@
         .row
           .col-md-2 First and Last Name
           .col-md-10
-            .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['first'] }")
-              span(ng-show="fieldData.current.input['first']") {{fieldData.current.input['first']}}:
+            .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.first }")
+              span(ng-show="fieldData.current.input.first") {{fieldData.current.input.first}}:
               span First Name
-              span.remove-icon(ng-show="fieldData.current.input['first']" ng-click="removeBaseInput('first')") X
-            .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['last'] }")
-              span(ng-show="fieldData.current.input['last']") {{fieldData.current.input['last']}}:
+              span.remove-icon(ng-show="fieldData.current.input.first" ng-click="removeBaseInput('first')") X
+            .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.last }")
+              span(ng-show="fieldData.current.input.last") {{fieldData.current.input.last}}:
               span Last Name
-              span.remove-icon(ng-show="fieldData.current.input['last']" ng-click="removeBaseInput('last')") X
+              span.remove-icon(ng-show="fieldData.current.input.last" ng-click="removeBaseInput('last')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'owner_name_2'")
         .row
@@ -286,34 +289,37 @@
         .row
           .col-md-2 First and Last Name
           .col-md-10
-            .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['first'] }")
-              span(ng-show="fieldData.current.input['first']") {{fieldData.current.input['first']}}:
+            .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.first }")
+              span(ng-show="fieldData.current.input.first") {{fieldData.current.input.first}}:
               span First Name
-              span.remove-icon(ng-show="fieldData.current.input['first']" ng-click="removeBaseInput('first')") X
-            .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['last'] }")
-              span(ng-show="fieldData.current.input['last']") {{fieldData.current.input['last']}}:
+              span.remove-icon(ng-show="fieldData.current.input.first" ng-click="removeBaseInput('first')") X
+            .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.last }")
+              span(ng-show="fieldData.current.input.last") {{fieldData.current.input.last}}:
               span Last Name
-              span.remove-icon(ng-show="fieldData.current.input['last']" ng-click="removeBaseInput('last')") X
+              span.remove-icon(ng-show="fieldData.current.input.last" ng-click="removeBaseInput('last')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 Fips Code, APN Unformatted, and APN Seq Number
+          .col-md-2 Fips Code and Assessor's Parcel Number
           .col-md-10
-            .field(rmaps-droppable="'fipsCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['fipsCode'] }")
-              span(ng-show="fieldData.current.input['fipsCode']") {{fieldData.current.input['fipsCode']}}:
+            .field(rmaps-droppable="'fipsCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.fipsCode }")
+              span(ng-show="fieldData.current.input.fipsCode") {{fieldData.current.input.fipsCode}}:
               span Fips Code
-              span.remove-icon(ng-show="fieldData.current.input['fipsCode']" ng-click="removeBaseInput('fipsCode')") X
-            .field(rmaps-droppable="'apnUnformatted'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['apnUnformatted'] }")
-              span(ng-show="fieldData.current.input['apnUnformatted']") {{fieldData.current.input['apnUnformatted']}}:
-              span Apn Unformatted
-              span.remove-icon(ng-show="fieldData.current.input['apnUnformatted']" ng-click="removeBaseInput('apnUnformatted')") X
-            .field(rmaps-droppable="'apnSequence'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['apnSequence'] }")
-              span(ng-show="fieldData.current.input['apnSequence']") {{fieldData.current.input['apnSequence']}}:
-              span Apn Sequence Number
-              span.remove-icon(ng-show="fieldData.current.input['apnSequence']" ng-click="removeBaseInput('apnSequence')") X
+              span.remove-icon(ng-show="fieldData.current.input.fipsCode" ng-click="removeBaseInput('fipsCode')") X
+            .field(rmaps-droppable="'apn'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.apn }")
+              span(ng-show="fieldData.current.input.apn") {{fieldData.current.input.apn}}:
+              span APN
+              span.remove-icon(ng-show="fieldData.current.input.apn" ng-click="removeBaseInput('apn')") X
+        .row
+          .col-md-2 Sequence Number (optional)
+          .col-md-10
+            .field(rmaps-droppable="'sequenceNumber'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.sequenceNumber }")
+              span(ng-show="fieldData.current.input.sequenceNumber") {{fieldData.current.input.sequenceNumber}}:
+              span Sequence Number
+              span.remove-icon(ng-show="fieldData.current.input.sequenceNumber" ng-click="removeBaseInput('sequenceNumber')") X
 
       //- Generic
       .col-md-12.scroll(ng-show="['address','rm_property_id','data_source_uuid', 'owner_name', 'owner_name_2'].indexOf(fieldData.current.output) == -1")
@@ -324,24 +330,33 @@
               span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
               span {{fieldData.current.alias}}
               span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
-        .row(ng-if="['parcel_id'].indexOf(fieldData.current.output) != -1")
+        .row(ng-if="fieldData.current.output == 'parcel_id'")
           .col-md-2 Strip Formatting
           .col-md-4
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
+
+    .col-md-12.typeahead.scroll(ng-show="fieldData.current.type.name == 'datetime'")
+      .row
+        .col-md-2 Date Format
+        .col-md-4
+          input(type="text" ng-model="fieldData.current.config.format" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
+        .col-md-6.help Date formatting, as documented #{''}
+          a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
 
     .col-md-12.scroll
       .row.advanced
         .col-md-2
           .btn-group
             .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="false" ng-change="updateRule()") Simple
-            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true") Advanced
+            .btn.btn-primary(ng-model="fieldData.current.config.advanced" btn-radio="true" ng-change="updateRule()") Advanced
         .col-md-10
-          textarea.transform(ng-model="fieldData.current.transform" ng-disabled="!fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
+          textarea.transform(ng-model="fieldData.current.transform" ng-show="fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
+          textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" disabled)
 
-    .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
+    .col-md-12(ng-show="fieldData.current.list == 'base'")
       .row.advanced
         .col-md-2
         .col-md-10
-          textarea.transform(ng-bind="JSON.stringify(fieldData.current.input)" disabled)
+          textarea.inputTextarea.transform(ng-bind="JSON.stringify(fieldData.current.input,null,2)" disabled)
 
