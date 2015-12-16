@@ -629,17 +629,21 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       return executeSubtask(subtask)
       .then nextIteration
 
+    if !quit && logger.level != 'debug'
+      return Promise.delay(30000) # poll again in 30 seconds
+      .then nextIteration
+
     tables.jobQueue.currentSubtasks()
     .count('* as count')
     .where(queue_name: queueName)
     .whereNull('finished')
     .then (moreSubtasks) ->
-      if quit && !parseInt(moreSubtasks?[0]?.count)
+      if !parseInt(moreSubtasks?[0]?.count)
         logger.debug "#{prefix} Queue is empty; quitting worker."
         Promise.resolve()
       else
         logger.debug "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
-        return Promise.delay(30000) # poll again in 30 seconds
+        Promise.delay(30000) # poll again in 30 seconds
         .then nextIteration
 
 # determines the start of the last time a task ran, or defaults to the Epoch (Jan 1, 1970) if
