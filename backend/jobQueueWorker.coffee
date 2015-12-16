@@ -12,7 +12,7 @@ dbs = require "./config/dbs"
 _doExit = (exitCode) ->
   dbs.shutdown()
   process.exit(exitCode)
-  
+
 
 # catch all uncaught exceptions
 process.on 'uncaughtException', (err) ->
@@ -33,7 +33,7 @@ tables.jobQueue.queueConfig()
   if !queue.active
     logger.error "Queue shouldn't be active: #{queueName}"
     _doExit(3)
-  
+
   clusterOpts =
     workerCount: queue.processes_per_dyno
     allowQuit: quit
@@ -44,7 +44,7 @@ tables.jobQueue.queueConfig()
     Promise.all(workers)
     .then () ->
       if quit
-        logger.debug("All workers done; quitting.")
+        logger.debug("All workers done; quitting master process.")
         _doExit(0)
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"

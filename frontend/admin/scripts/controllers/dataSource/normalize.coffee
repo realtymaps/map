@@ -6,11 +6,20 @@ require '../../services/normalize.coffee'
 require '../../directives/listinput.coffee'
 require '../../factories/validatorBuilder.coffee'
 
+###
+    ****************************************************************************************
+    * When changing this file, look at county.coffee for possible redundant changes needed *
+    ****************************************************************************************
+###
+
+
 app.controller 'rmapsNormalizeCtrl',
 ['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal', 'adminConstants',
 ($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
 
   $scope.$state = $state
+
+  $scope.JSON = JSON
 
   $scope.mlsData =
     current: null
@@ -27,6 +36,12 @@ app.controller 'rmapsNormalizeCtrl',
     'True': true
     'False': false
     'Neither': null
+
+  $scope.dateFormats = [
+    'YYYY-MM-DD'
+    'YYYYMMDD'
+    'MMDDYYYY'
+  ]
 
   $scope.statusOptions = _.values rmapsParcelEnums.status
 
@@ -58,7 +73,8 @@ app.controller 'rmapsNormalizeCtrl',
       ordering: category.length
       list: list
     idx = _.sortedIndex(category, rule, 'ordering')
-    category.splice idx, 0, allRules[rule.output] = rule
+    allRules[if list == 'base' then rule.output else rule.input] = rule
+    category.splice idx, 0, rule
 
   # Handles adding base rules
   addBaseRule = (rule) ->
@@ -77,9 +93,9 @@ app.controller 'rmapsNormalizeCtrl',
         addRule rule, 'unassigned'
 
     # Create base rules that don't exist yet
-    _.forEach $scope.baseRules, (rule, output) ->
-      if !allRules[output]
-        rule.output = output
+    _.forEach $scope.baseRules, (rule, baseRulesKey) ->
+      if !allRules[baseRulesKey]
+        rule.output = baseRulesKey
         addBaseRule rule
 
     # Save base rules
@@ -94,6 +110,7 @@ app.controller 'rmapsNormalizeCtrl',
       else
         rule = field
         rule.output = rule.LongName
+        rule.input = rule.LongName
         addRule rule, 'unassigned'
 
       # It is important to save the data type so a transform can be regenerated entirely from the config
@@ -101,7 +118,7 @@ app.controller 'rmapsNormalizeCtrl',
       validatorBuilder.buildDataRule rule
       true
 
-    _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
+    _.forEach $scope.categories.base, (rule) -> updateAssigned()
 
   # Show field options
   $scope.selectField = (field) ->
@@ -137,7 +154,7 @@ app.controller 'rmapsNormalizeCtrl',
       drag.model,
       from,
       to,
-      if idx != -1 then idx else 0
+      if idx != -1 then idx else drop.collection.length
     ).then () ->
       $scope.selectField(drag.model)
       $scope.$evalAsync()
@@ -146,8 +163,8 @@ app.controller 'rmapsNormalizeCtrl',
     field = $scope.fieldData.current
     key = drop.collection
     removed = field.input[key]
-    field.input[key] = drag.model.output
-    updateAssigned(field)
+    field.input[key] = drag.model.input
+    updateAssigned()
     updateBase(field, removed)
 
   # Remove base field input
@@ -163,7 +180,7 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.onDropBase = (drag, drop, target) ->
     field = $scope.fieldData.current
     removed = field.input
-    field.input = drag.model.output
+    field.input = drag.model.input
     $scope.loadLookups(drag.model)
     updateBase(field, removed)
 
@@ -177,22 +194,25 @@ app.controller 'rmapsNormalizeCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    updateAssigned(field, removed)
+    updateAssigned()
     saveRule(field)
 
-  updateAssigned = (rule, removed) ->
-    if $scope.baseRules[rule.output].group
-      delete allRules[removed]?.assigned
-      if _.isString rule.input
-        allRules[rule.input]?.assigned = true
-      else _.forEach rule.input, (input) ->
+  updateAssigned = () ->
+    for checkRule of allRules
+      delete allRules[checkRule]?.assigned
+    for baseRuleName of $scope.baseRules
+      baseRule = allRules[baseRuleName]
+      if _.isString baseRule.input
+        allRules[baseRule.input]?.assigned = true
+      else _.forEach baseRule.input, (input) ->
         allRules[input]?.assigned = true
 
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    if field.config.advanced && !field.transform
-      field.transform = field.getTransformString $scope.mlsData.current.data_rules
+    if field.config.advanced
+      if !field.transform
+        field.transform = field.getTransformString $scope.mlsData.current.data_rules
     else
       field.transform = null
     $scope.saveRuleDebounced()
@@ -203,7 +223,7 @@ app.controller 'rmapsNormalizeCtrl',
   # Separate debounce/timeout for each rule
   saveFns = _.memoize((rule) ->
     _.debounce(_.partial(saveRule, rule), 2000)
-  , (rule) -> rule.output)
+  , (rule) -> if rule.list == 'base' then rule.output else rule.input)
 
   $scope.saveRuleDebounced = () ->
     saveFns($scope.fieldData.current)()

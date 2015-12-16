@@ -8,7 +8,8 @@ columns = {}
 _getColumns = (fileType, action, dataType) ->
   svc
   .getAll(data_source_id:'blackknight', data_source_type:'county', data_list_type: dataType)
-  .select('LongName')
+  .select('LongName', 'MetadataEntryID')
+  .orderBy('MetadataEntryID')
   .then (data) ->
     _.map(data, 'LongName')
   .then (cols) ->
