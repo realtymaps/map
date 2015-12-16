@@ -1,4 +1,4 @@
-section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
+section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
   .container
       h2 Payment Details
       p Nullam eros mi, mollis in sollicitudin non, tincidunt sed enim. Sed et felis metus, rhoncus ornare nibh. Ut at magna leo. Suspendisse egestas est ac dolor imperdiet pretium. 
@@ -19,7 +19,7 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
               
               .form-group
                 .label(for="card_number") Card Number:
-                  input.form-control(
+                  input.card-number-input.form-control(
                     tabindex=3
                     ng-model="user.card.number"
                     name="card_number"
@@ -30,9 +30,12 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                     spellcheck="off"
                     autocapitalize="off"
                     cc-number
-                    cc-type="cardType"
+                    cc-type="user.card.type"
                     cc-eager-type
                     placeholder="XXXX-XXXX-XXXX-XXXX")
+                  span.card(
+                    ng-show="chargeForm.card_number.$ccEagerType && chargeForm.card_number.$viewValue"
+                    ng-class="view.getCardClass(chargeForm.card_number.$ccEagerType)")
                   span(ng-show="chargeForm.card_number.$invalid && chargeForm.card_number.$ccEagerType")
                     label.control-label.has-error() Invalid Credit Card
                     
