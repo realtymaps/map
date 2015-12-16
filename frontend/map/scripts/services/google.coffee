@@ -1,10 +1,11 @@
 app = require '../app.coffee'
 {Point} = require '../../../../common/utils/util.geometries.coffee'
-{config} = require '../../../../common/config/routes.backend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'rmapsGoogleService', ($http) ->
 
-  _googleConfigPromise = $http.get(config.google).then ({data}) ->
+  _googleConfigPromise = $http.get(backendRoutes.config.google)
+  .then ({data}) ->
     data
 
   ConfigPromise: _googleConfigPromise

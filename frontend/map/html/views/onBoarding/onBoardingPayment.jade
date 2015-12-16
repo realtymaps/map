@@ -4,47 +4,99 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
       p Nullam eros mi, mollis in sollicitudin non, tincidunt sed enim. Sed et felis metus, rhoncus ornare nibh. Ut at magna leo. Suspendisse egestas est ac dolor imperdiet pretium. 
       
       .row
-        form.form-horizontal(role='form' name='userForm')
+        form.form-horizontal(role='form' name='chargeForm')
           .form-payment
-            .col-md-6.col-sm-6.col-xs-12
+            .col-md-3.col-sm-3.col-xs-12
               .form-group
-                .label First Name:
-                .col-lg-3
+                .label(for="first_name") First Name:
                   input.form-control(
+                    tabindex=1
+                    valid-method="'blur'"
                     name="first_name"
                     ng-model="user.first_name"
                     type='text'
                     validator="required,minlength=2")
+              
               .form-group
-                .label Card Number:
-                .col-lg-3
+                .label(for="card_number") Card Number:
                   input.form-control(
+                    tabindex=3
+                    ng-model="user.card.number"
                     name="card_number"
-                    ng-model="user.card_number"
+                    type="tel"
+                    x-autocompletetype="cc-number"
+                    autocompletetype="cc-number"
+                    autocorrect="off"
+                    spellcheck="off"
+                    autocapitalize="off"
+                    cc-number
+                    cc-type="cardType"
+                    cc-eager-type
+                    placeholder="XXXX-XXXX-XXXX-XXXX")
+                  span(ng-show="chargeForm.card_number.$invalid && chargeForm.card_number.$ccEagerType")
+                    label.control-label.has-error() Invalid Credit Card
+                    
+              .form-group
+                .label(for="card_exp_month") Exp Month:
+                .col-md-4
+                  input.form-control(
+                    tabindex=5
+                    placeholder="MM"
+                    ng-model="user.card.exp_month"
+                    cc-exp-month)
+
+              .form-group
+                .label Zip:
+                .col-md-5
+                  input.form-control(
+                    tabindex=7
+                    ng-model="user.zip"
+                    name="zip"
                     type='text'
-                    validator="required,minlength=2")
-                
-            
-            .col-md-6.col-sm-6.col-xs-12
+                    placeholder="XXXXX"
+                    validator="required,zipcode")
+                    
+              .form-group
+                .col-md-3
+                  input.btn.btn-primary(
+                    tabindex=8
+                    value='Continue' type='button' ng-click="charge()" validation-submit="chargeForm")            
+              .form-group
+                .col-md-3
+                  input.btn.btn-primary(
+                    tabindex=8
+                    value='Reset' type='button'
+                    validation-reset="chargeForm")            
+                    
+            .col-md-3.col-sm-3.col-xs-12
               .form-group
                 .label LastName:
-                .col-md-3
                   input.form-control(
+                    tabindex=2
                     name="last_name"
                     ng-model="user.last_name"
                     type='text'
                     validator="required,minlength=2")
-              .form-group
-                .label Zip:
-                .col-md-3
-                  input.form-control(
-                    ng-model="user.zip"
-                    name="zip"
-                    type='text' validator="required,zipcode")
                     
-            .form-group
-              .col-md-3
-                input.btn.btn-primary(
-                  value='Continue' type='button' ng-click="user.submit()" validation-submit="userForm")
-        
+              .form-group
+                .label(for="card_cvc_number") Security Code:
+                .col-lg-4
+                  input.form-control(
+                    tabindex=4
+                    ng-model="user.card.cvc"
+                    type='password'
+                    cc-cvc
+                    cc-type="ccForm.ccNumber.$ccType"
+                    placeholder="CVC"
+                    validator="required")
               
+              .form-group
+                .label(for="card_exp_year") Exp Year:
+                .col-md-5
+                  input.form-control(
+                    tabindex=6
+                    placeholder="YYYY"
+                    ng-model="user.card.exp_year"
+                    cc-exp-year
+                    full-year
+                    validator="required")

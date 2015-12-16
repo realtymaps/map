@@ -6,7 +6,7 @@ frontend and backend in sync
 apiBase = '/api'
 apiBaseMls = "#{apiBase}/mls"
 apiBaseMlsConfig = "#{apiBase}/mls_config"
-apiBaseDataRules = "#{apiBase}/rules"
+apiBaseConfig = "#{apiBase}/config"
 apiBaseDataSource = "#{apiBase}/data_source"
 apiBaseDataSourceLookups = "#{apiBase}/lookups"
 apiBaseUsers = "#{apiBase}/users"
@@ -23,9 +23,9 @@ apiBaseUsStates = "#{apiBase}/usStates"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
-apiBaseClients = "#{apiBaseSession}/clients"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
+
 
 
 module.exports =
@@ -121,9 +121,11 @@ module.exports =
   version:
     version: "#{apiBase}/version"
   config:
-    mapboxKey: "#{apiBase}/mapbox_key"
-    cartodb: "#{apiBase}/cartodb"
-    google: "#{apiBase}/google"
+    apiBase: apiBaseConfig
+    mapboxKey: "#{apiBaseConfig}/mapbox_key"
+    cartodb: "#{apiBaseConfig}/cartodb"
+    google: "#{apiBaseConfig}/google"
+    asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
   properties:
     filterSummary: "#{apiBase}/properties/filter_summary/"
     parcelBase: "#{apiBase}/properties/parcel_base/"

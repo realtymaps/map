@@ -10,10 +10,11 @@ sourcemaps = require 'gulp-sourcemaps'
 concat = require 'gulp-concat'
 onlyDirs = require '../util/onlyDirs'
 
-vendorPipe = require '../pipeline/scripts/vendor'
-vendorCssPipe = require '../pipeline/styles/vendor'
-vendorFontsPipe = require '../pipeline/fonts/vendor'
-vendorAssetsPipe = require '../pipeline/assets/vendor'
+vendorPipe = require '../pipeline/vendor.scripts'
+vendorCssPipe = require '../pipeline/vendor.styles'
+vendorFontsPipe = require '../pipeline/vendor.fonts'
+vendorAssetsPipe = require '../pipeline/vendor.assets'
+vendorJsonPipe = require '../pipeline/vendor.json'
 
 rework = require 'gulp-rework'
 rework_url = require 'rework-plugin-url'
@@ -39,6 +40,14 @@ gulp.task 'vendor_fonts', ->
   .pipe(onlyDirs es)
   .pipe(gulp.dest paths.destFull.fonts)
 
+gulp.task 'vendor_json', (done) ->
+  if vendorJsonPipe.length
+    return gulp.src(vendorJsonPipe, base: './bower_components')
+    .pipe plumber()
+    .pipe(onlyDirs es)
+    .pipe(gulp.dest paths.destFull.json)
+  done()
+
 gulp.task 'vendor_assets', ->
   gulp.src(vendorAssetsPipe)
   .pipe plumber()
@@ -51,4 +60,4 @@ gulp.task 'vendor_scripts', ->
   .pipe(concat('vendor.js'))
   .pipe(gulp.dest paths.destFull.scripts)
 
-gulp.task 'vendor', gulp.parallel 'vendor_scripts', 'vendor_css', 'vendor_fonts', 'vendor_assets'
+gulp.task 'vendor', gulp.parallel 'vendor_json', 'vendor_scripts', 'vendor_css', 'vendor_fonts', 'vendor_assets'
