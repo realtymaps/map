@@ -6,6 +6,13 @@ require '../../services/normalize.coffee'
 require '../../directives/listinput.coffee'
 require '../../factories/validatorBuilder.coffee'
 
+###
+    ****************************************************************************************
+    * When changing this file, look at county.coffee for possible redundant changes needed *
+    ****************************************************************************************
+###
+
+
 app.controller 'rmapsNormalizeCtrl',
 ['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal', 'adminConstants',
 ($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
@@ -216,7 +223,7 @@ app.controller 'rmapsNormalizeCtrl',
   # Separate debounce/timeout for each rule
   saveFns = _.memoize((rule) ->
     _.debounce(_.partial(saveRule, rule), 2000)
-  , (rule) -> rule.input)
+  , (rule) -> if rule.list == 'base' then rule.output else rule.input)
 
   $scope.saveRuleDebounced = () ->
     saveFns($scope.fieldData.current)()

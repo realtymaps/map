@@ -2,6 +2,11 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 require '../../directives/listinput.coffee'
 
+###
+    *******************************************************************************************
+    * When changing this file, look at normalize.coffee for possible redundant changes needed *
+    *******************************************************************************************
+###
 
 app.controller 'rmapsCountyCtrl',
 ($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
@@ -218,7 +223,7 @@ app.controller 'rmapsCountyCtrl',
   # Separate debounce/timeout for each rule
   saveFns = _.memoize((rule) ->
     _.debounce(_.partial(saveRule, rule), 2000)
-  , (rule) -> rule.input)
+  , (rule) -> if rule.list == 'base' then rule.output else rule.input)
 
   $scope.saveRuleDebounced = () ->
     saveFns($scope.fieldData.current)()
