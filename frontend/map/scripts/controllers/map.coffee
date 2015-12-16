@@ -21,10 +21,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   $log = nemSimpleLogger.spawn("map:controller")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
-  #ng-inits or inits
-  #must be defined pronto as they will be skipped if you try to hook them to factories
-  $scope.resultsInit = (resultsListId) ->
-    $scope.resultsListId = resultsListId
 
   $scope.init = (pageClass) ->
     $scope.pageClass = pageClass
@@ -110,6 +106,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
           rm_property_id: selectedResultId, 'all')
         .then (result) ->
+          return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
           $timeout () ->
             map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
           , 50

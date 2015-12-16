@@ -49,8 +49,8 @@ basicColumns = do ->
       'title_company_name', 'building_desc', 'building_design', 'development_name', 'equipment', 'garage_spaces', 'garage_desc',
       'heat', 'hoa_fee', 'hoa_fee_freq', 'list_agent_mui_id', 'list_agent_mls_id', 'list_agent_phone', 'list_agent_name',
       'selling_agent_mui_id', 'selling_agent_mls_id', 'selling_agent_phone', 'selling_agent_name', 'matrix_unique_id', 'mls_name',
-      'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage', 'depth_footage',
-      'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
+      'sewer', 'assessed_value', 'assessed_year', 'property_information', 'land_square_footage', 'lot_front_footage',
+      'depth_footage', 'rm_status', 'dupe_num', 'price', 'owner_name2', '\'Feature\' AS type'
     ].join(', ')
     # columns returned internally for snail pdf render lookups
     address: [
@@ -64,17 +64,24 @@ basicColumns = do ->
 
     notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title']
 
-    project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths', 'sqft', 'properties_selected']
+    project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
+      'sqft', 'properties_selected']
 
-    user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone', 'address_1', 'address_2', 'zip', 'city', 'parent_id']
+    user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
+      'address_1', 'address_2', 'zip', 'city', 'parent_id']
 
-    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles', 'map_position', 'map_results', 'favorites']
+    #all id, _id .. are not technically safe unless it is coming from session explicitly
+    profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles',
+      'map_position', 'map_results', 'favorites']
 
-    drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras']
+    drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
+      'neighbourhood_name', 'neighbourhood_details']
 
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret
 
+safeFromQuery =
+  profile: _.without basicColumns.profile, 'id', 'auth_user_id', 'parent_auth_user_id'
 
 joinColumns = do ->
   permission: [
@@ -156,6 +163,7 @@ joinColumnNames = do ->
 
 module.exports =
   basicColumns: basicColumns
+  safeFromQuery: safeFromQuery
   joinColumns: joinColumns
   joinColumnNames: joinColumnNames
   ageOrDaysFromStartToNow: ageOrDaysFromStartToNow

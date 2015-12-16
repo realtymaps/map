@@ -1,21 +1,38 @@
-div#search-field
-    form(ng-cloak ng-controller="SearchController")
-        button(class="btn btn-icon search-btn" ng-click="openSearchTools = !openSearchTools" )
-            span.icon.icon-magnify
-        div.search(ng-controller="DropdownCtrl" ng-class="openSearchTools ? 'opened' : ''")
-            div.search-content
-                div.search-type
-                    span(class="dropdown" dropdown on-toggle="toggled(open)")
-                        button(href='#search-type' class="dropdown-toggle" dropdown-toggle)
-                            span
-                                span.type
-                                    | {{searchType}}
-                            span.caret
-                        ul(class="dropdown-menu")
-                            li(ng-click="setSearchScope('Properties')")
-                                span.icon.icon-property
-                                | Properties
-                            li(ng-click="setSearchScope('Owners')")
-                                span.icon.icon-project
-                                | Owners
-                input(id="search" type="search" class="form-control" placeholder="Search")
+div.search-field
+  div(ng-cloak ng-controller="rmapsSearchCtrl")
+    button.btn.btn-icon.search-btn(ng-click="openSearchTools = !openSearchTools" )
+      span.icon.icon-magnify
+    div.search(ng-controller="DropdownCtrl" ng-class="openSearchTools ? 'opened' : ''")
+      div.search-content
+        div.search-type
+          span.dropdown(dropdown on-toggle="toggled(open)")
+            button.dropdown-toggle(href='#search-type' dropdown-toggle)
+              span
+                span.type
+                  | {{searchScope}}
+              span.caret
+            ul.dropdown-menu
+              li(ng-click="searchScope = 'Places'")
+                span.icon.icon-property
+                | Places
+              li(ng-click="searchScope = 'Owners'")
+                span.icon.icon-project
+                | Owners
+
+        input.search-input.form-control(
+          ng-show="searchScope == 'Owners'"
+          tooltip="{{searchTooltip}}"
+          tooltip-placement="bottom"
+          tooltip-popup-delay="500"
+          tooltip-close-popup-delay="500"
+          tooltip-enable="selectedFilters.ownerName.length > 0"
+          tooltip-trigger="keyup mouseenter focus"
+          placeholder="Enter a name"
+          ng-model="selectedFilters.ownerName")
+
+        input.search-input.form-control(
+          ng-show="searchScope == 'Places'"
+          g-places-autocomplete
+          placeholder="Enter an address or place"
+          ng-model="result.googlePlace"
+          ng-change="addressChange()")

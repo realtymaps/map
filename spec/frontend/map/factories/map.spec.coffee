@@ -1,33 +1,48 @@
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-
 mockRoutes = require '../fixtures/propertyData.coffee'
-qs = require 'qs'
 
 describe "rmapsMap factory", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module('rmapsMapApp')
 
     @mocks =
       options:
         json:
           center: _.extend Point(latitude: 26.221501806466513, longitude: -81.80125951766968), zoom: mockRoutes.zoom
 
+    @mockMapData =
+      whenReady: () ->
+      invalidateSize: () ->
+      getBounds: () ->
+        intersects: () ->
+          return false
+
       zoomThresholdMilli: 1000
 
     inject ($rootScope, rmapsMap, rmapsMainOptions, $httpBackend, digestor, rmapsMapToggles) =>
+      # Store variables for tests
       @$rootScope = $rootScope
       $rootScope.silenceRmapsControls = true
       @rmapsMapToggles = rmapsMapToggles
       @digestor = digestor
       @ctor = rmapsMap
+
+      # Construct the rmapsMap object to test
       @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
-      $httpBackend.when( 'GET', mockRoutes.geojsonPolys.route).respond( mockRoutes.geojsonPolys.response)
-      $httpBackend.when( 'GET', mockRoutes.clusterOrDefault.route).respond( mockRoutes.clusterOrDefault.response)
-      $httpBackend.when( 'GET', backendRoutes.config.google).respond( undefined )
+      $httpBackend.when( 'POST', backendRoutes.config.google).respond( undefined )
+      $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
+        data = JSON.parse dataString
+
+        console.log "Mock Filter Summary for type #{data.returnType}"
+        if data.returnType == 'clusterOrDefault'
+          return ['200', mockRoutes.filterSummary.clusterOrDefault]
+        else
+          return ['200', mockRoutes.filterSummary.geojsonPolys]
+      )
 
   it 'ctor exists', ->
     @ctor.should.be.ok
@@ -61,8 +76,10 @@ describe "rmapsMap factory", ->
         it 'has mocked clusterOrDefault response', ->
           @subject.hash = mockRoutes.hash
           @subject.mapState = mockRoutes.mapState
+          @subject.map = @mockMapData
           @subject.scope.Toggles = @rmapsMapToggles()
-            # showResults: true
+
+          # showResults: true
           promises = @subject.drawFilterSummary(true)
           @digestor.digest()
 
@@ -115,12 +132,12 @@ describe "rmapsMap factory", ->
 
       it 'no args', ->
         test = @subject.scope.refreshState()
-        test.should.be.equal qs.stringify @subject.getMapStateObj()
+        test.should.be.eql @subject.getMapStateObj()
 
       it 'args', ->
         arg = b: 'b'
         test = @subject.scope.refreshState(arg)
-        test.should.be.equal qs.stringify(angular.extend @subject.getMapStateObj(), arg )
+        test.should.be.eql angular.extend(@subject.getMapStateObj(), arg)
 
     describe 'draw', ->
       beforeEach ->

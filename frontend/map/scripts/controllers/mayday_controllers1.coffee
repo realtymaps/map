@@ -25,12 +25,6 @@ module.exports = (app) ->
   .controller 'CollapseCtrl', ($scope) ->
     $scope.isCollapsed = true
 
-  .controller 'SearchController', ($scope, $http) ->
-    $scope.searchType = 'Properties'
-
-    $scope.setSearchScope = (val) ->
-      $scope.searchType = val
-
   .controller 'rmapsMailCtrl', ($scope, $http) ->
     $scope.emailsArray = []
 

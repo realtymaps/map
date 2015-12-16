@@ -13,15 +13,15 @@ app.factory 'rmapsMapToggles', ($rootScope) ->
 
     @showAddresses = true
     @showPrices = true
-    @showNeighborhoodTap = false
+    @showNeighbourhoodTap = false
     @showNotes = false
     @propertiesInShapes = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
 
-    @enableNeighborhoodTap = () =>
-      @showNeighborhoodTap = true
+    @enableNeighbourhoodTap = () =>
+      @showNeighbourhoodTap = true
 
     @toggleNotes = () =>
       @showNotes = !@showNotes
@@ -72,6 +72,9 @@ app.factory 'rmapsMapToggles', ($rootScope) ->
 
     @togglePreviousLocation = ->
       _locationCb()
+
+    @setLocation = (location) ->
+      _locationCb?(location)
 
     if json?
       _.extend @, _.mapValues json, (val) ->

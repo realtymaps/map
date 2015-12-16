@@ -1,12 +1,9 @@
 cls = require 'continuation-local-storage'
 {NAMESPACE} = require "../../backend/config/config"
-patchNamespaceForPromise = require 'cls-bluebird'
-
 
 module.exports = () ->
 
   namespace = cls.createNamespace(NAMESPACE)
-  patchNamespaceForPromise namespace
   ctx = namespace.createContext()
   namespace.enter(ctx)
 

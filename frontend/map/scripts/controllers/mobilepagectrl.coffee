@@ -17,7 +17,7 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipa
       if profile = rmapsprincipal.getCurrentProfile()
         $scope.profile = profile
 
-        # Load the Project counts such as number of properties, neighborhoods, etc...
+        # Load the Project counts such as number of properties, neighbourhoods, etc...
         rmapsProjectsService.getProject profile.project_id
         .then (project) ->
           project.propertiesTotal = _.keys(project.properties_selected).length
