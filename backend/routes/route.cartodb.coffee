@@ -30,7 +30,7 @@ _getByFipsCode = (req, res, next, headersCb) ->
   Promise.try ->
     allParams = _.extend {}, req.params, req.query
 
-    validation.validateAndTransform(allParams, transforms)
+    validation.validateAndTransformRequest(allParams, transforms)
     .then (validParams) ->
       headersCb(validParams, res) if headersCb
       # logger.debug(req, true)

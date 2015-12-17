@@ -154,8 +154,9 @@ profiles = (req, res, next) ->
           transforms: [validators.integer()]
           required: true
 
-      validation.validateAndTransform(req.body, transforms)
+      validation.validateAndTransformRequest(req.body, transforms)
       .then (validBody) ->
+        validBody = _.omit validBody, (v, k) -> !req.body[k]?
         q = userSessionService.updateProfile(validBody, req.user.id)
         q.then ()->
           logger.debug 'SESSION: clearing profiles'
@@ -237,7 +238,7 @@ companyImage = (req, res, next) ->
         account_image_id:
           required: true
 
-      validation.validateAndTransform(req.params, transforms)
+      validation.validateAndTransformRequest(req.params, transforms)
       .then (validParams) ->
         getImage(req, res, next, {account_image_id: validParams.account_image_id}, 'company')
 
@@ -281,7 +282,7 @@ root = (req, res, next) ->
           ]
           required: true
 
-      validation.validateAndTransform(req.body, transforms)
+      validation.validateAndTransformRequest(req.body, transforms)
       .then (validBody) ->
         userSvc.update(req.session.userid, validBody, _safeRootFields)
         .then () ->
@@ -321,7 +322,7 @@ updatePassword = (req, res, next) ->
   transforms =
     password: validators.string(regex: config.VALIDATION.password)
 
-  validation.validateAndTransform(req.body, transforms)
+  validation.validateAndTransformRequest(req.body, transforms)
   .then (validBody) ->
     userSessionService.updatePassword(req.user, validBody.password)
     .then ->
@@ -337,7 +338,7 @@ emailIsUnique = (req, res, next) ->
       ]
       required: true
 
-  validation.validateAndTransform(req.body, transforms)
+  validation.validateAndTransformRequest(req.body, transforms)
   .then (validBody) ->
     res.json(true)
 

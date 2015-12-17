@@ -5,13 +5,13 @@ basePath = require '../basePath'
 {
 validators
 validateAndTransform
+validateAndTransformRequest
 DataValidationError
 defaultRequestTransforms
 falsyTransformsToNoop
 } = require "#{basePath}/utils/util.validation"
 
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
-
 
 describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
 
@@ -149,3 +149,13 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       ret.query.should.be.eql tForm
       ret.params.should.be.eql validators.noop
       expect(ret.body).to.not.be.ok
+
+describe 'utils/validation.validateAndTransformRequest()'.ns().ns('Backend'), ->
+  promiseIt "should omit missing parameters", () ->
+    [
+      expectResolve validateAndTransformRequest {a: 'abc'},
+        a: validators.string(forceUpperCase: true)
+        b: validators.float()
+      .then (values) ->
+        values.should.eql({a: 'ABC'})
+    ]
