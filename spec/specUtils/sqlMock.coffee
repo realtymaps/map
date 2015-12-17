@@ -37,12 +37,10 @@ class SqlMock
   ###
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
-
     if !@groupName?
       throw new Error('\'groupName\' is a required option for SqlMock class')
     if !@tableHandle?
       throw new Error('\'tableHandle\' is a required option for SqlMock class')
-
 
     @debug = @options.debug ? undefined
     @result = @options.result ? undefined
@@ -53,11 +51,6 @@ class SqlMock
       @_svc = @options.dbFn
       if @debug?
         console.log.cyan "dbFn set: #{@_svc.tableName}"
-
-    # if !@options.groupName?
-    #   throw new Error('\'groupName\' is a required option for SqlMock class')
-    # if !@options.tableHandle?
-    #   throw new Error('\'tableHandle\' is a required option for SqlMock class')
 
     # dynamic instance hooks for the mock sql calls
     @[@groupName] = @
