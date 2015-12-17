@@ -156,7 +156,6 @@ profiles = (req, res, next) ->
 
       validation.validateAndTransformRequest(req.body, transforms)
       .then (validBody) ->
-        validBody = _.omit validBody, (v, k) -> !req.body[k]?
         q = userSessionService.updateProfile(validBody, req.user.id)
         q.then ()->
           logger.debug 'SESSION: clearing profiles'
