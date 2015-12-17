@@ -21,6 +21,12 @@ desktop = "(min-width:" + md + ")"
 
 }
 
+/*
+ * Minimum allowable width of desktop page
+ */
+.mobile-page.desktop-view
+  min-width: xs;
+
 /*RWD helpers*/
 
 .hidden-xs
@@ -56,15 +62,15 @@ desktop = "(min-width:" + md + ")"
     display block!important
 
 .desktop-only
-  display none
-  @media desktop
-    display block!important
-  @media tablet
-    display block!important
-  @media mobileUp
-    display block!important
+  //display none
+  //@media desktop
+  //  display block!important
+  //@media tablet
+  //  display block!important
+  //@media mobileUp
+  //  display block!important
 
 .mobile-only
-  display none
-  @media mobile
-    display block!important
+  //display none
+  //@media mobile
+  //  display block!important
