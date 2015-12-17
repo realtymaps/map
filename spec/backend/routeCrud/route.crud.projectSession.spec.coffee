@@ -41,11 +41,11 @@ routeCrudToTest.__set__ 'userUtils', userUtils
 
 class TestServiceCrudProject extends ServiceCrudProject
   constructor: () ->
-    super sqlMock(groupName: 'user', tableHandle: 'project').dbFn()
+    super sqlMock('user', 'project').dbFn()
 
   #overide the generators so we can inject fresh mocks without destroying the singleton tables
   clientsFact: () ->
-    clientsSvcCrud = super sqlMock(groupName: 'auth', tableHandle: 'user').dbFn(), new ServiceCrud(sqlMock(groupName: 'auth', tableHandle: 'user').dbFn())
+    clientsSvcCrud = super sqlMock('auth', 'user').dbFn(), new ServiceCrud(sqlMock('auth', 'user').dbFn())
     # console.log.cyan  "clientsSvcCrud: #{clientsSvcCrud.dbFn().tableName}"
     # console.log.cyan  "clientsSvcCrud: joinCrud: #{clientsSvcCrud.joinCrud.dbFn().tableName}"
 
@@ -56,7 +56,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     toTestThenableCrudInstance clientsSvcCrud, clientResponses, undefined, true
 
   notesFact: () ->
-    noteSvcCrud = super sqlMock(groupName: 'user', tableHandle: 'notes').dbFn(), new ServiceCrud(sqlMock(groupName: 'user', tableHandle: 'project').dbFn())
+    noteSvcCrud = super sqlMock('user', 'notes').dbFn(), new ServiceCrud(sqlMock('user', 'project').dbFn())
     noteSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
@@ -67,7 +67,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     toTestThenableCrudInstance noteSvcCrud, notesResponses
 
   drawnShapesFact: () ->
-    drawSvcCrud = super(sqlMock(groupName: 'user', tableHandle: 'drawnShapes').dbFn())
+    drawSvcCrud = super(sqlMock('user', 'drawnShapes').dbFn())
     # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
     toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
 

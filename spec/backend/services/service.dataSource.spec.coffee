@@ -9,10 +9,7 @@ require 'should'
 describe 'service.dataSource.coffee', ->
   describe 'basic CRUD', ->
     beforeEach ->
-      @dsSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataSourceFields'
-
+      @dsSqlMock = new SqlMock 'config', 'dataSourceFields'
       svc.__get__('tables', @dsSqlMock)
 
       @query =
@@ -29,9 +26,7 @@ describe 'service.dataSource.coffee', ->
 
   describe 'getColumnList', ->
     beforeEach ->
-      @dsSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataSourceFields'
+      @dsSqlMock = new SqlMock 'config', 'dataSourceFields',
         result: [
           MetadataEntryID: 1
           LongName: 'a.long.name'
@@ -69,10 +64,7 @@ describe 'service.dataSource.coffee', ->
 
   describe 'getLookupTypes', ->
     beforeEach ->
-      @dsSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataSourceLookups'
-
+      @dsSqlMock = new SqlMock 'config', 'dataSourceLookups'
       svc.__set__('tables', @dsSqlMock)
 
       @query =

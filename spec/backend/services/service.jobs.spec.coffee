@@ -10,14 +10,9 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'history service', ->
     beforeEach () =>
-      @jobQueue_taskHistory = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'taskHistory'
+      @jobQueue_taskHistory = new SqlMock 'jobQueue', 'taskHistory'
 
-      @dbs_main = new SqlMock
-        groupName: 'dbs'
-        tableHandle: 'main'
-
+      @dbs_main = new SqlMock 'dbs', 'main'
       @tables =
         jobQueue:
           taskHistory: () =>
@@ -58,9 +53,7 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'history error service', ->
     beforeEach () =>
-      @jobQueue_subtaskErrorHistory = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'subtaskErrorHistory'
+      @jobQueue_subtaskErrorHistory = new SqlMock 'jobQueue', 'subtaskErrorHistory'
 
       @tables =
         jobQueue:
@@ -77,14 +70,9 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'task service', ->
     beforeEach () =>
-      @jobQueue_taskConfig = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'taskConfig'
-      @jobQueue_subtaskConfig = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'subtaskConfig'
-
+      @jobQueue_taskConfig = new SqlMock 'jobQueue', 'taskConfig'
       @jobQueue_taskConfig.tableName = "jq_task_config"
+      @jobQueue_subtaskConfig = new SqlMock 'jobQueue', 'subtaskConfig'
 
       @tables =
         jobQueue:
@@ -109,18 +97,10 @@ describe 'service.jobs.spec.coffee', ->
 
   describe 'health service', ->
     beforeEach ->
-      @jobQueue_taskHistory = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'taskHistory'
-      @jobQueue_dataLoadHistory = new SqlMock
-        groupName: 'jobQueue'
-        tableHandle: 'dataLoadHistory'
-      @property_combined = new SqlMock
-        groupName: 'property'
-        tableHandle: 'combined'
-      @dbs_main = new SqlMock
-        groupName: 'dbs'
-        tableHandle: 'main'
+      @jobQueue_taskHistory = new SqlMock 'jobQueue', 'taskHistory'
+      @jobQueue_dataLoadHistory = new SqlMock 'jobQueue', 'dataLoadHistory'
+      @property_combined = new SqlMock 'property', 'combined'
+      @dbs_main = new SqlMock 'dbs', 'main'
 
       @tables =
         jobQueue:

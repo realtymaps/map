@@ -8,10 +8,7 @@ SqlMock = require '../../specUtils/sqlMock.coffee'
 describe 'service.dataSourceRules.coffee', ->
   describe 'private api', ->
     beforeEach ->
-      @rulesTableSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataNormalization'
-
+      @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization'
       svc.__set__('tables', @rulesTableSqlMock)
       @_addRulesFn = svc.__get__('_addRules')
 
@@ -118,9 +115,7 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'rules', ->
     beforeEach ->
-      @rulesTableSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataNormalization'
+      @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
         result: [
           list: 'general'
           count: 1
@@ -238,14 +233,11 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'list rules', ->
     beforeEach ->
-      @rulesTableSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataNormalization'
+      @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
         result: [
           list: 'general'
           count: 1
         ]
-
       svc.__set__('tables', @rulesTableSqlMock)
 
       @query =
@@ -340,10 +332,7 @@ describe 'service.dataSourceRules.coffee', ->
 
   describe 'simple rule api', ->
     beforeEach ->
-      @rulesTableSqlMock = new SqlMock
-        groupName: 'config'
-        tableHandle: 'dataNormalization'
-
+      @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization'
       svc.__set__('tables', @rulesTableSqlMock)
 
       @query =
