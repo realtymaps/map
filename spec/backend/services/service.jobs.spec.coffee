@@ -95,16 +95,14 @@ describe 'service.jobs.spec.coffee', ->
 
       svc.__set__('tables', @tables)
 
-    # the TaskService class in service.jobs.coffee contains a hack that is difficult to test, here
+    # the TaskService class in service.jobs.coffee contains a hack that is difficult to test
     xit 'should query task service', (done) =>
       svc.tasks.getAll(name: "foo")#.then (d) =>
       @jobQueue_taskConfig.whereRawSpy.callCount.should.equal 1
       done()
 
-    # the delete() call isn't resolving for some reason
-    xit 'should delete subtasks', (done) =>
-      #Promise.resolve(svc.tasks.delete("foo")).then (p) =>
-      svc.tasks.delete("foo").then (d) =>
+    it 'should delete subtasks', (done) =>
+      svc.tasks.delete("foo").then () =>
         @jobQueue_subtaskConfig.deleteSpy.callCount.should.equal 1
         done()
 

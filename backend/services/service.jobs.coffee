@@ -7,6 +7,7 @@ crudService = require '../utils/crud/util.crud.service.helpers'
 jobQueue = require '../utils/util.jobQueue'
 dbs = require '../config/dbs'
 
+
 # makes sure task maintenance and counts are updated whenever we query for task data
 class JobService extends crudService.Crud
   getAll: (query = {}, doLogQuery = false) ->

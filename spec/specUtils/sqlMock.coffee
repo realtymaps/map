@@ -35,27 +35,29 @@ class SqlMock
 
   ###
 
-  constructor: (optionsOrDbFn) ->
-    if _.isFunction optionsOrDbFn
-      @_svc = optionsOrDbFn
-    else
-      @options = optionsOrDbFn
-      if !@options.groupName?
-        throw new Error('\'groupName\' is a required option for SqlMock class')
-      if !@options.tableHandle?
-        throw new Error('\'tableHandle\' is a required option for SqlMock class')
+  constructor: (@options = {}) ->
+    @debug = @options.debug ? undefined
+    @result = @options.result ? undefined
+    @error = @options.error ? undefined
+    @_svc = @options.dbFn ? undefined
 
-      # dynamic instance hooks for the mock sql calls
-      @[@options.groupName] = @
-      @[@options.tableHandle] = (trx) =>
-        if trx?
-          @commitSpy = sinon.spy(trx, 'commit')
-          @rollbackSpy = sinon.spy(trx, 'rollback')
-        return @
+    if @options.dbFn?
+      @_svc = @options.dbFn
+      if @debug?
+        console.log.cyan "dbFn set: #{@_svc.tableName}"
 
-    # spy on query-evaluators
-    @_thenSpy = sinon.spy(@, 'then')
-    @_catchSpy = sinon.spy(@, 'catch')
+    if !@options.groupName?
+      throw new Error('\'groupName\' is a required option for SqlMock class')
+    if !@options.tableHandle?
+      throw new Error('\'tableHandle\' is a required option for SqlMock class')
+
+    # dynamic instance hooks for the mock sql calls
+    @[@options.groupName] = @
+    @[@options.tableHandle] = (trx) =>
+      if trx?
+        @commitSpy = sinon.spy(trx, 'commit')
+        @rollbackSpy = sinon.spy(trx, 'rollback')
+      return @
 
     _sqlFns.forEach (name) =>
       # spy on query-operators
@@ -77,17 +79,11 @@ class SqlMock
     fn.tableName = @tableName
     fn
 
-  thenSpy: ->
-    @_thenSpy
+  setResult: (result) ->
+    @result = result
 
-  getThenCallback: (idx) ->
-    @_thenSpy.getCall(idx).args[0]
-
-  catchSpy: ->
-    @_catchSpy
-
-  getCatchCallback: (idx) ->
-    @_catchSpy.getCall(idx).args[0]
+  setError: (error) ->
+    @error = error
 
   init: () ->
     @initSvc()
@@ -98,18 +94,17 @@ class SqlMock
     @_queryArgChain = []
 
   initSvc: () ->
-    if @options? and @options.groupName == 'dbs' and @options.tableHandle == 'main'
+    if @options? and @options.groupName == 'dbs' and @options.tableHandle == 'main' # special case svc
+      if @debug?
+        console.log.cyan "hooking dbs.get('main') for service"
       @_svc = dbs.get('main')
     else
+      if @debug?
+        console.log.cyan "hooking tables.#{@options.groupName}.#{@options.tableHandle} for service"
+
       @_svc = tables[@options.groupName][@options.tableHandle] unless @_svc
       @tableName = @options?.tableHandle or @_svc.tableName
-      # console.log "\n\nbootstrap flag:"
-      # console.log @options.bootstrapFlag?
-      #if !@options.bootstrapFlag?
-        #console.log "\n\n#{@options.groupName} #{@options.tableHandle} bootstrapping..."
-      @_svc = @_svc()# unless @options.bootstrapFlag?
-      #else
-        #console.log "\n\n#{@options.groupName} #{@options.tableHandle} not bootstrapping..."
+      @_svc = @_svc()
     @_svc
 
   resetSpies: () ->
@@ -136,12 +131,33 @@ class SqlMock
     @_svc
 
   #### public evaluators ####
-  then: () ->
-    #map toString to some result
-    @
+  then: (handler) ->
+    if @error?
+      return Promise.reject(@error)
 
-  catch: (err) ->
-    @
+    if @debug?
+      console.log.cyan "resolving tables.#{@options.groupName}.#{@options.tableHandle} with #{@result}"
+    return Promise.resolve(@result).then handler
+
+  catch: (predicate, handler) ->
+    if @error?
+
+      if !handler?
+        handler = predicate
+        predicate = undefined
+
+      if @debug?
+        console.log.cyan "rejecting tables.#{@options.groupName}.#{@options.tableHandle} with #{@error}"
+
+      if predicate?
+        return Promise.reject(@error).catch predicate, handler
+      else
+        return Promise.reject(@error).catch handler
+
+    if @debug?
+      console.log.cyan "resolving UNCAUGHT error tables.#{@options.groupName}.#{@options.tableHandle} with #{@result}"
+
+    return Promise.resolve(@result)
 
   toString: () ->
     @_quickQuery().toString()
@@ -155,22 +171,16 @@ SqlMock.sqlMock = () ->
 
 _sqlFns.forEach (name) ->
   SqlMock::[name] = ->
-#    if @['tableHandle'] == 'subtaskConfig'
-    # if name == 'delete' or name == 'whereRaw' or name == 'del'
-    #   console.log "\n####### \n#{@options.tableHandle} is calling #{name}..."
-
-
-
+    if @debug
+      console.log.cyan "called #{@options.tableHandle} #{name}"
     @[name + 'Spy'](arguments...)
-    # if name == 'delete' or name == 'whereRaw' or name == 'del'
-    #   console.log "\n####### spy defined..."
+    if @debug
+      console.log.cyan "called #{@options.tableHandle} #{name}Spy"
     @_appendArgChain(name, arguments)
-    # if name == 'delete' or name == 'whereRaw' or name == 'del'
-    #   console.log "\n####### arg chained..."
-    # if @options.promiseFlag and name == 'delete'
-    #   console.log "\n####### promise incorporated"
-    #   #return () ->
-    #   return Promise.resolve(@)
+    if @debug
+      console.log.cyan "appended #{@options.tableHandle} #{name}"
+      console.log.cyan "arguments:"
+      console.log.cyan arguments
     @
 
 module.exports = SqlMock
