@@ -1,11 +1,11 @@
 section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
   .container
-    div(ng-if="showSteps")
-      a(ng-if="hasPrevStep" ng-click="goToPrevStep()")
+    div(ng-if="view.showSteps")
+      a(ng-if="view.hasPrevStep" ng-click="view.goToPrevStep()")
         .pull-left.fa.fa-chevron-left.fa-3x()
-      a(ng-if="hasNextStep" ng-click="goToNextStep()")
+      a(ng-if="view.hasNextStep" ng-click="view.goToNextStep()")
         .pull-right.fa.fa-chevron-right.fa-3x()
-      h3 Step {{currentStepId}} of {{steps.length}}
+      h3 Step {{view.currentStepId}} of {{view.steps.length}}
     
     div(ng-repeat="state in $state.get() | filter:{parent: 'onBoarding'}"
       ui-view="{{state.name}}"
