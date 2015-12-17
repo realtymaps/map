@@ -6,6 +6,7 @@ factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
 {IsIdObjError} = require '../errors/util.error.crud.coffee'
 clone = require 'clone'
+Promise = require 'bluebird'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
@@ -72,7 +73,11 @@ class Crud extends BaseObject
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery or @doLogQuery
+      Promise.try () =>
+        if _.isEmpty entity
+          [id]
+        else
+          fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery or @doLogQuery
     , true
 
   create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->

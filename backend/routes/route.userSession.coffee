@@ -134,10 +134,9 @@ updateState = (req, res, next) ->
     next(err)
 
 profiles = (req, res, next) ->
-  auth_user_id = req.session.userid
   methodExec req,
     GET: () ->
-      userSessionService.getProfiles(auth_user_id)
+      userSessionService.getProfiles(req.user.id)
       .then (result) ->
         res.json result
     PUT: () ->
@@ -150,6 +149,7 @@ profiles = (req, res, next) ->
         map_results: validators.object()
         auth_user_id: validators.integer()
         parent_auth_user_id: validators.integer()
+        properties_selected: validators.object()
         id:
           transforms: [validators.integer()]
           required: true
@@ -161,8 +161,6 @@ profiles = (req, res, next) ->
           logger.debug 'SESSION: clearing profiles'
           delete req.session.profiles#to force profiles refresh in cache
           updateCache(req, res, next)
-  .catch (err) ->
-    logger.error analyzeValue err
 
 newProject = (req, res, next) ->
 
