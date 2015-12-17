@@ -63,6 +63,13 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     payment.token = response.id
     payment
 
+  behaveLikeAngularValidation = (formField, rootForm) ->
+    fieldIsRequired = formField.$touched && formField.$invalid && !formField.$viewValue
+    attemptedSubmital = !rootForm.$pending && !formField.$touched
+    # if attemptedSubmital
+    #   formField.$invalid = true
+    fieldIsRequired or attemptedSubmital
+
   _.extend $scope,
     charge: ->
       stripe.card.createToken($scope.user.card)
@@ -82,6 +89,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
           $log.log 'Other error occurred, possibly with your API', err.message
 
     view:
+      doShowRequired: behaveLikeAngularValidation
       getCardClass: (typeStr) ->
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
