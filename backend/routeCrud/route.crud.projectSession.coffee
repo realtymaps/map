@@ -64,7 +64,7 @@ class ClientsCrud extends RouteCrud
 
       # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
       newUser.id = clientId
-      userSessionSvc.updatePassword newUser, 'Password$1'
+      userSessionSvc.updatePassword newUser, 'Password$1', false
 
     .then ->
       # TODO - TEMPORARY WORKAROUND - Look up permission ID from DB
@@ -80,7 +80,7 @@ class ClientsCrud extends RouteCrud
         user_id: newUser.id
         permission_id: authPermission.id
 
-      userSvc.permissions.create permission, null, ['user_id', 'permission_id'], @doLogQuery
+      userSvc.permissions.upsert permission, ['user_id', 'permission_id'], @doLogQuery
 
     .then ->
       newProfile =
