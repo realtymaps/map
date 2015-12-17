@@ -53,7 +53,7 @@ class TestServiceCrudProject extends ServiceCrudProject
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
 
-    toTestThenableCrudInstance clientsSvcCrud, clientResponses, undefined, true
+    toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 
   notesFact: () ->
     noteSvcCrud = super sqlMock('user', 'notes').dbFn(), new ServiceCrud(sqlMock('user', 'project').dbFn())
@@ -104,7 +104,8 @@ describe 'route.projectSession', ->
       @mockRequest = req
 
     @ctor = routeCrudToTest
-    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, undefined, true
+    #@projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, undefined, true
+    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, true
 
     @subject = new @ctor(@projCrudSvc).init(false, safeProject)
 

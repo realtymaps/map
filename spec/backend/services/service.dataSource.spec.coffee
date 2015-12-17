@@ -56,9 +56,7 @@ describe 'service.dataSource.coffee', ->
         expect(@dsSqlMock.whereSpy.calledOnce).to.be.true
         expect(@dsSqlMock.whereSpy.args).to.deep.equal [[@query]]
         expect(queryResults[0]).to.have.property 'LongName'
-          .and.equal 'alongname'
         expect(queryResults[1]).to.have.property 'LongName'
-          .and.equal 'anotherlongname'
         done()
 
 

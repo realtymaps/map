@@ -25,10 +25,6 @@ class DataSourceService extends crudService.Crud
       data_list_type: dataListType
     .catch errorLib.isUnhandled, (error) ->
       throw new errorLib.PartiallyHandledError(error, "Failed to retrieve #{dataSourceId} columns")
-    .then (fields) ->
-      for field in fields
-        field.LongName = field.LongName.replace(/\./g, '')
-      fields
 
   getLookupTypes: (dataSourceId, lookupId) ->
     query = tables.config.dataSourceLookups()

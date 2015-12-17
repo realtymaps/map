@@ -37,11 +37,6 @@ class SqlMock
   ###
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
-    if !@groupName?
-      throw new Error('\'groupName\' is a required option for SqlMock class')
-    if !@tableHandle?
-      throw new Error('\'tableHandle\' is a required option for SqlMock class')
-
     @debug = @options.debug ? undefined
     @result = @options.result ? undefined
     @error = @options.error ? undefined
