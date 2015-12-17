@@ -18,20 +18,21 @@ app.controller 'rmapsOnBoardingCtrl', ($scope, $state, rmapsOnBoardingOrder, rma
 
   $scope.goToNextStep = () ->
     step = $scope.orderSvc.getNextStep($scope.step)
-    $state.go step if step
+    $scope.updateState(step)
+    $state.go step
 
   $scope.goToPrevStep = () ->
     step = $scope.orderSvc.getPrevStep($scope.step)
-    $state.go step if step
+    $scope.updateState(step)
+    $state.go step
 
-  $scope.hasNextStep = () ->
-    $scope.orderSvc.getNextStep($scope.step)?
+  $scope.updateState =  (step) ->
+    $scope.step = step if step
+    $scope.hasNextStep = $scope.orderSvc.getNextStep($scope.step)?
+    $scope.hasPrevStep = $scope.orderSvc.getPrevStep($scope.step)?
+    $scope.currentStepId = $scope.orderSvc.getId($scope.step.replace(/Pro/g, '')) + 1
 
-  $scope.hasPrevStep = () ->
-    $scope.orderSvc.getPrevStep($scope.step)?
-
-  $scope.currentStepId = () ->
-    $scope.orderSvc.getId($scope.step.replace(/Pro/g, '')) + 1
+  $scope.updateState()
 
 app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log, rmapsOnBoardingOrderSelector) ->
   $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
@@ -48,11 +49,14 @@ app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log, rmapsOnBoarding
     submit: () ->
       svc = rmapsOnBoardingOrderSelector.getOrderSvc($scope.plan)
       $log.debug svc.name + ' selected'
-      $state.go svc.getStepName(0)
+      step = svc.getStepName(0)
+      $scope.updateState step
+      $state.go step
 
 app.controller 'rmapsOnBoardingPaymentCtrl',
 ($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
+
 
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
@@ -70,6 +74,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     fieldIsRequired or attemptedSubmital
 
   _.extend $scope,
+    showSteps: true
     charge: ->
       stripe.card.createToken($scope.user.card)
       .then (response) ->
@@ -93,5 +98,10 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope) ->
+app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log) ->
+  $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
+  $log.debug $scope
+
 app.controller 'rmapsOnBoardingVerifyCtrl', ($scope) ->
+  $log = $log.spawn("map:rmapsOnBoardingVerifyCtrl")
+  $log.debug $scope
