@@ -66,8 +66,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   behaveLikeAngularValidation = (formField, rootForm) ->
     fieldIsRequired = formField.$touched && formField.$invalid && !formField.$viewValue
     attemptedSubmital = !rootForm.$pending && !formField.$touched
-    # if attemptedSubmital
-    #   formField.$invalid = true
+    $scope.view.submittalClass = if attemptedSubmital then 'has-error' else ''
     fieldIsRequired or attemptedSubmital
 
   _.extend $scope,

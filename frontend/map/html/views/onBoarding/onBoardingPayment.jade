@@ -17,7 +17,7 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                     type='text'
                     validator="required,minlength=2")
               
-              .form-group.form-field
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label(for="card_number") Card Number:
                   input.card-number-input.form-control(
                     tabindex=3
@@ -40,10 +40,8 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                     label.control-label.has-error() Invalid Credit Card
                   span(ng-show="view.doShowRequired(chargeForm.card_number, chargeForm)")
                     label.control-label.has-error() Required!!
-                  //- span(ng-show="debug(chargeForm.card_number)")
                     
-                    
-              .form-group.form-field
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label(for="card_exp_month") Exp Month:
                 .col-md-4
                   input.form-control(
@@ -55,7 +53,7 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                     cc-exp-month)
                   span(ng-show="view.doShowRequired(chargeForm.card_exp_month, chargeForm)")
                     label.control-label.has-error() Required!!
-                  span(ng-show="chargeForm.card_exp_month.$invalid && chargeForm.card_exp_month.$viewValue && chargeForm.card_exp_month.$touched")
+                  span(ng-show="chargeForm.card_exp_month.$invalid && chargeForm.card_exp_month.$viewValue")
                     label.control-label.has-error() Invalid Credit Card Month
 
               .form-group.form-field
@@ -74,13 +72,13 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                   input.btn.btn-primary(
                     tabindex=8
                     value='Continue' type='button' ng-click="charge()" validation-submit="chargeForm")            
-                  span(ng-if="debug(chargeForm)")
-              .form-group
-                .col-md-3
-                  input.btn.btn-primary(
-                    tabindex=8
-                    value='Reset' type='button'
-                    validation-reset="chargeForm")            
+                  
+              //- .form-group
+              //-   .col-md-3
+              //-     input.btn.btn-primary(
+              //-       tabindex=8
+              //-       value='Reset' type='button'
+              //-       validation-reset="chargeForm")            
                     
             .col-md-3.col-sm-3.col-xs-12
               .form-group.form-field
@@ -92,7 +90,7 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                     type='text'
                     validator="required,minlength=2")
                     
-              .form-group.form-field
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label.col-lg-4(for="card_cvc") Security Code:
                   input.form-control(
                     tabindex=4
@@ -107,7 +105,7 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                   span(ng-show="chargeForm.card_cvc.$invalid && chargeForm.card_cvc.$viewValue")
                     label.control-label.has-error() Invalid CVC
               
-              .form-group.form-field
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label.col-md-5(for="card_exp_year") Exp Year:
                   input.form-control(
                     tabindex=6
@@ -119,5 +117,5 @@ section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
                     full-year)
                   span(ng-show="chargeForm.card_exp_month.$touched && chargeForm.card_exp_year.$invalid && !chargeForm.card_exp_year.$viewValue")
                     label.control-label.has-error() Required!!
-                  span(ng-show="chargeForm.card_exp_year.$invalid && chargeForm.card_exp_year.$viewValue && chargeForm.card_exp_month.$touched")
+                  span(ng-show="chargeForm.card_exp_year.$invalid && chargeForm.card_exp_year.$viewValue")
                     label.control-label.has-error() Invalid Credit Card Year
