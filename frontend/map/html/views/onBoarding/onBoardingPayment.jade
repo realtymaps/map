@@ -1,4 +1,4 @@
-section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
+section.white-page.onboarding.onboarding-payment.text-wrap(ng-cloak)
   .container
       h2 Payment Details
       p Nullam eros mi, mollis in sollicitudin non, tincidunt sed enim. Sed et felis metus, rhoncus ornare nibh. Ut at magna leo. Suspendisse egestas est ac dolor imperdiet pretium. 
@@ -7,7 +7,7 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
         form.form-horizontal(role='form' name='chargeForm')
           .form-payment
             .col-md-3.col-sm-3.col-xs-12
-              .form-group
+              .form-group.form-field
                 .label(for="first_name") First Name:
                   input.form-control(
                     tabindex=1
@@ -17,9 +17,9 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                     type='text'
                     validator="required,minlength=2")
               
-              .form-group
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label(for="card_number") Card Number:
-                  input.form-control(
+                  input.card-number-input.form-control(
                     tabindex=3
                     ng-model="user.card.number"
                     name="card_number"
@@ -30,22 +30,33 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                     spellcheck="off"
                     autocapitalize="off"
                     cc-number
-                    cc-type="cardType"
+                    cc-type="user.card.type"
                     cc-eager-type
                     placeholder="XXXX-XXXX-XXXX-XXXX")
-                  span(ng-show="chargeForm.card_number.$invalid && chargeForm.card_number.$ccEagerType")
+                  span.card(
+                    ng-show="chargeForm.card_number.$ccEagerType && chargeForm.card_number.$viewValue"
+                    ng-class="view.getCardClass(chargeForm.card_number.$ccEagerType)")
+                  span(ng-show="chargeForm.card_number.$invalid && chargeForm.card_number.$viewValue")
                     label.control-label.has-error() Invalid Credit Card
+                  span(ng-show="view.doShowRequired(chargeForm.card_number, chargeForm)")
+                    label.control-label.has-error() Required!!
                     
-              .form-group
+              .form-group.form-field(ng-class="view.submittalClass")
                 .label(for="card_exp_month") Exp Month:
                 .col-md-4
                   input.form-control(
+                    type="text"
+                    name="card_exp_month"
                     tabindex=5
                     placeholder="MM"
                     ng-model="user.card.exp_month"
                     cc-exp-month)
+                  span(ng-show="view.doShowRequired(chargeForm.card_exp_month, chargeForm)")
+                    label.control-label.has-error() Required!!
+                  span(ng-show="chargeForm.card_exp_month.$invalid && chargeForm.card_exp_month.$viewValue")
+                    label.control-label.has-error() Invalid Credit Card Month
 
-              .form-group
+              .form-group.form-field
                 .label Zip:
                 .col-md-5
                   input.form-control(
@@ -61,15 +72,16 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                   input.btn.btn-primary(
                     tabindex=8
                     value='Continue' type='button' ng-click="charge()" validation-submit="chargeForm")            
-              .form-group
-                .col-md-3
-                  input.btn.btn-primary(
-                    tabindex=8
-                    value='Reset' type='button'
-                    validation-reset="chargeForm")            
+                  
+              //- .form-group
+              //-   .col-md-3
+              //-     input.btn.btn-primary(
+              //-       tabindex=8
+              //-       value='Reset' type='button'
+              //-       validation-reset="chargeForm")            
                     
             .col-md-3.col-sm-3.col-xs-12
-              .form-group
+              .form-group.form-field
                 .label LastName:
                   input.form-control(
                     tabindex=2
@@ -78,25 +90,32 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                     type='text'
                     validator="required,minlength=2")
                     
-              .form-group
-                .label(for="card_cvc_number") Security Code:
-                .col-lg-4
+              .form-group.form-field(ng-class="view.submittalClass")
+                .label.col-lg-4(for="card_cvc") Security Code:
                   input.form-control(
                     tabindex=4
                     ng-model="user.card.cvc"
-                    type='password'
+                    type='text'
                     cc-cvc
-                    cc-type="ccForm.ccNumber.$ccType"
+                    cc-type="chargeForm.card_number.$ccType"
                     placeholder="CVC"
-                    validator="required")
+                    name="card_cvc")
+                  span(ng-show="view.doShowRequired(chargeForm.card_cvc, chargeForm)")
+                    label.control-label.has-error() Required!!
+                  span(ng-show="chargeForm.card_cvc.$invalid && chargeForm.card_cvc.$viewValue")
+                    label.control-label.has-error() Invalid CVC
               
-              .form-group
-                .label(for="card_exp_year") Exp Year:
-                .col-md-5
+              .form-group.form-field(ng-class="view.submittalClass")
+                .label.col-md-5(for="card_exp_year") Exp Year:
                   input.form-control(
                     tabindex=6
+                    name="card_exp_year"
+                    type='text'
                     placeholder="YYYY"
                     ng-model="user.card.exp_year"
                     cc-exp-year
-                    full-year
-                    validator="required")
+                    full-year)
+                  span(ng-show="chargeForm.card_exp_month.$touched && chargeForm.card_exp_year.$invalid && !chargeForm.card_exp_year.$viewValue")
+                    label.control-label.has-error() Required!!
+                  span(ng-show="chargeForm.card_exp_year.$invalid && chargeForm.card_exp_year.$viewValue")
+                    label.control-label.has-error() Invalid Credit Card Year
