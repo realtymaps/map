@@ -3,7 +3,6 @@ crudService = require '../utils/crud/util.crud.service.helpers'
 Promise = require 'bluebird'
 errorLib = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
-SqlMock = require '../../spec/specUtils/sqlMock'
 require '../config/promisify'
 
 
@@ -30,7 +29,6 @@ class DataSourceService extends crudService.Crud
       for field in fields
         field.LongName = field.LongName.replace(/\./g, '')
       fields
-    query
 
   getLookupTypes: (dataSourceId, lookupId) ->
     query = tables.config.dataSourceLookups()
