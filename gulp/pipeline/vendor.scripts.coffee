@@ -1,7 +1,4 @@
-path = require '../../../common/config/paths'
-
-log = require('gulp-util').log
-globDebug = require('../../debug/glob')
+path = require '../../common/config/paths'
 
 bowerFilesLoader = require('main-bower-files')
 
@@ -10,10 +7,6 @@ bower = bowerFilesLoader
   checkExistence: true
 #  debugging:true
 
-
-#globDebug bower, 'bower'
-
 pipeline = _.flatten([bower, path.lib.front.scripts + '/vendor/**/*.*'])
 
-#pipe.logToob "Vendor", pipeline
 module.exports = pipeline

@@ -3,7 +3,7 @@
   left 0
   width 100%
   padding 1%
-  
+
   *
   *:after
   *:before
@@ -11,3 +11,25 @@
 
   .nav > li > a
     padding: 5px 10px
+
+
+  .normalize-container
+    .typeahead
+      overflow-y: visible
+      z-index: 1
+      .dropdown-menu
+        background-color $white
+        background $white
+        box-shadow 0 0 0 $black_0
+        color $black
+        margin-top 0
+        width 100%
+        overflow hidden
+        border 1px solid $gray_lighter
+
+        li
+          a
+            color: $text_gray
+        li.active
+          a
+            color: $white

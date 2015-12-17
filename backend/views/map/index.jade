@@ -1,15 +1,19 @@
 extends ../_layout
 
 block customHead
-  link(rel='stylesheet', href='styles/map.css')
-  //- TODO: Move this to be loaded async, and/or use uiGmapGoogleMapsApi to load it
-  // SERVICE SHOULD BE IN ui-leaflet, or ui-leaflet plugin, we can steal this from ui-gmap
+  //TODO: angular-stripe, stripe-promisified, all expect Stipe to be loaded into DOM immediatley 
+  // to much of a PAIN to refactor
+  script(type='application/javascript' src="https://js.stripe.com/v2/")
+  //Attempted to load async but now `gPlacesAutocomplete` directive is the main blocker
+  //its entire design is synchronous
   script(src="#{google.mapsSdkUrl}")
+
   title RealtyMaps
-  meta(name='description', content='RealtyMaps')
+  meta(name='description' content='RealtyMaps')
 
 
 block content
+  link(rel='stylesheet' href='styles/map.css')
   .realtymaps-main(ui-view='' ng-controller="rmapsAppController" ng-class="{ 'is-subscriber': principal.isSubscriber(), 'is-editor': principal.isProjectEditor(), 'is-viewer': principal.isProjectViewer() }")
-  script(type='application/javascript', src='#{paths.destFull.bundle.map}')
-  script(type='application/javascript', src='#{paths.destFull.templates.map}')
+  script(type='application/javascript' src='#{paths.destFull.bundle.map}')
+  script(type='application/javascript' src='#{paths.destFull.templates.map}')
