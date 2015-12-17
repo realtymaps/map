@@ -33,6 +33,19 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       b: validators.float(max: 5.1)
     , DataValidationError
 
+  describe "transform.any", ->
+
+    it 'should pass if any validations in the "any" array pass validation, even if some fail', () ->
+      validateAndTransform {a: 'abc'},
+        a: transform: any: [validators.integer(), validators.string(forceUpperCase: true)]
+      .then (values) ->
+        values.should.eql(a: 'ABC')
+
+    it 'should fail if all validations in the "any" array fail validation', () ->
+      expectReject validateAndTransform {a: 'abc'},
+        a: transform: any: [validators.integer(),validators.object()]
+      , DataValidationError
+
   promiseIt 'should reject if a required parameter is undefined', () ->
     [
       expectResolve validateAndTransform {},

@@ -1,6 +1,5 @@
 _ = require 'lodash'
-logger = require '../config/logger'
-sessionHelper = require './util.session.helpers'
+profileUtil = require '../../common/utils/util.profile'
 httpStatus = require '../../common/utils/httpStatus'
 
 class CurrentProfileError extends Error
@@ -14,7 +13,7 @@ methodExec = (req, methods, next) ->
 
 currentProfile = (req) ->
   try
-    sessionHelper.currentProfile(req.session)
+    profileUtil.currentProfile(req.session)
   catch e
     throw new CurrentProfileError(e.message)
 

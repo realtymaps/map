@@ -94,40 +94,91 @@ img.manual-cluster{
   overflow: visible !important
 
   .price-marker
-    position: absolute;
+    position absolute
     font-size 12px
-    font-weight bold
     color $rmMainDarkBlue
-    // border  1px solid $rm-marker-border
     box-shadow 3px 3px 10px rgba(0,0,0, 0.4)
     //offset for centering pin on property
-    bottom 20px
-    left 25px
+    bottom 45px
+    left 30px
     min-width 60px
+    border 2px solid $rm-marker-border
+    border-radius 2px
 
     &:before
       position absolute
-      bottom:-15px;
+      bottom -18px
       left 0px
-      // border solid transparent
-      border:8px solid;
+      border 9px solid
       content ' '
       height 0
       width 0
-      // pointer-events none
-    &:before
-      border-color  $rm-marker-border transparent transparent $rm-marker-border
-      border-width 11px
+      left -2px
+    &:after
+      position absolute
+      bottom -14px
+      left 0px
+      border 7px solid
+      content ' '
+      height 0
+      width 0
+      left 0
 
     .price
-      padding 5px
+      padding 1px 7px
       text-align center
+      font-size 12px
+      color #FFF
+      letter-spacing .1em
+      font-weight 500
 
     .icons
       border-bottom 1px solid rgba(0, 0, 0, .3)
-      padding 2px
+      padding 0 2px
+      padding 0 2px
+      border-radius 2px
+      text-align center
+      font-size 18px
+      color $black_60
+
       .icon
-        height 16px
         width 50%
-        padding-left 10px
-        display inline-block
+        padding 5px
+        display inline
+
+    // These set the colors for the marker and border.  The before/after are for the triangle and its border.
+    &.label-sale-property
+      background-color $rm_forsale
+      border-color $rm_forsale_darker
+      &:before
+        border-color $rm_forsale_darker transparent transparent $rm_forsale_darker !important
+      &:after
+        border-color $rm_forsale transparent transparent $rm_forsale !important
+    &.label-pending-property
+      background-color $rm_pending
+      border-color $rm_pending_darker
+      &:before
+        border-color $rm_pending_darker transparent transparent $rm_pending_darker !important
+      &:after
+        border-color $rm_pending transparent transparent $rm_pending !important
+    &.label-sold-property
+      background-color $rm_sold
+      border-color $rm_sold_darker
+      &:before
+        border-color $rm_sold_darker transparent transparent $rm_sold_darker !important
+      &:after
+        border-color $rm_sold transparent transparent $rm_sold !important
+    &.label-notsale-property
+      background-color $rm_notforsale
+      border-color $rm_notforsale_darker
+      &:before
+        border-color $rm_notforsale_darker transparent transparent $rm_notforsale_darker !important
+      &:after
+        border-color $rm_notforsale transparent transparent $rm_notforsale !important
+    &.label-saved-property
+      background-color $rm_saved
+      border-color $rm_saved_darker
+      &:before
+        border-color $rm_saved_darker transparent transparent $rm_saved_darker !important
+      &:after
+        border-color $rm_saved transparent transparent $rm_saved !important

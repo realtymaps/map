@@ -4,11 +4,8 @@ auth = require '../utils/util.auth'
 {mergeHandles} = require '../utils/util.route.helpers'
 
 module.exports = mergeHandles routeCrud(usStates),
-  #STRICTLY FOR ADMIN, otherwise profiles are used by session
   root:
-    middleware: [
-      auth.requireLogin(redirectOnFail: true)
-    ]
+    middleware: []
   byId:
     middleware: [
       auth.requireLogin(redirectOnFail: true)

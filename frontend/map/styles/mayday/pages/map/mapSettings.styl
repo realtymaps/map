@@ -1,48 +1,40 @@
 $fnMakeMapSettings()
   .settings-list
-    min-width 350px
+    min-width 400px
+
     .blueArrow
       &:before
         left 15px
         right auto
+
     ul
       padding 10px 20px 0px
       list-style none
+
       li
         border none
         margin-bottom 10px
-        span.label
+
+        .label
           color $black
           font-size 14px
-        &.setPrice
-        &.setSqft
-        &.setAcres
-          select
-          input
-            max-width 40%
-        &.setListed
-        &.setClosePrice
-          select
-          input
-            max-width 35%
-        &.setOwner
-          input
-            width 100%
+          line-height 2
 
-    .setBeds.row
-    .setBath.row
-      .btn-group
-        display block
-        margin-right -4px
-    .btn-actions
-      overflow hidden
-      text-align center
-      .btn
-        position relative
-        width 100px
-        display inline-block
-        .caret
-          border-left 4px solid transparent
-          border-right 4px solid transparent
-          border-top 4px dashed
-          margin 0
+        .label:first-child
+          text-align left
+
+        input, label, select
+          color $black
+
+        label
+          &.active
+          &:hover
+            color $white
+          &.active
+            font-weight bold
+
+    .advanced
+      margin-top -15px
+      li:first-child
+        border-top 1px solid $gray_ligther
+        padding-top 12px

@@ -23,6 +23,7 @@ _sqlFns = [
   'whereRaw'
   'as'
   'from'
+  'orderBy'
 ]
 
 class SqlMock

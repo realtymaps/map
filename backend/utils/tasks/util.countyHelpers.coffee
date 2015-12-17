@@ -243,7 +243,10 @@ finalizeData = (subtask, id) ->
       tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
       for field in saleFields
         tax[field] = lastSale[field]
-    tax.shared_groups.sale = deedEntries
+    tax.shared_groups.sale = []
+    for deedInfo in deedEntries
+      tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
+      tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
     tables.property.combined()
     .insert(tax)

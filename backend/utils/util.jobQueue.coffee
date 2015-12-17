@@ -293,7 +293,7 @@ requeueManualTask = (taskName, initiator) ->
   cancelTask(taskName)
   .then () ->
     queueManualTask(taskName, initiator)
-        
+
 executeSubtask = (subtask) ->
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
@@ -623,17 +623,28 @@ runWorker = (queueName, id, quit=false) ->
 _runWorkerImpl = (queueName, prefix, quit) ->
   getQueuedSubtask(queueName)
   .then (subtask) ->
+    nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
       logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
-      executeSubtask(subtask)
-      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
-    else if quit
-      logger.debug "#{prefix} No subtask ready for execution; quiting."
-      Promise.resolve()
-    else
-      logger.debug "#{prefix} No subtask ready for execution; waiting..."
-      Promise.delay(30000) # poll again in 30 seconds
-      .then _runWorkerImpl.bind(null, queueName, prefix, quit)
+      return executeSubtask(subtask)
+      .then nextIteration
+
+    if !quit && logger.level != 'debug'
+      return Promise.delay(30000) # poll again in 30 seconds
+      .then nextIteration
+
+    tables.jobQueue.currentSubtasks()
+    .count('* as count')
+    .where(queue_name: queueName)
+    .whereNull('finished')
+    .then (moreSubtasks) ->
+      if !parseInt(moreSubtasks?[0]?.count)
+        logger.debug "#{prefix} Queue is empty; quitting worker."
+        Promise.resolve()
+      else
+        logger.debug "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
+        Promise.delay(30000) # poll again in 30 seconds
+        .then nextIteration
 
 # determines the start of the last time a task ran, or defaults to the Epoch (Jan 1, 1970) if
 # there are no runs found.  By default only considers successful runs.

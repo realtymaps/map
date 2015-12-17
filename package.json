@@ -206,6 +206,7 @@
   },
   "devDependencies": {
     "gulp-wrap-commonjs": "^0.1.13",
-    "rewire": "2.x"
+    "rewire": "2.x",
+    "stripe-debug": "^2.0.0"
   }
 }
