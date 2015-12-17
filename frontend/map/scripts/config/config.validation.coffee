@@ -56,19 +56,19 @@ app.config(($provide, $validationProvider) ->
     password:
       error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice!'
     required:
-      error: 'Required!!'
+      error: 'Required!'
     url:
-      error: 'Invlaid Url!'
+      error: 'Invalid Url!'
     optUrl:
-      error: 'Invlaid Url!'
+      error: 'Invalid Url!'
     email:
-      error: 'Invlaid Email!'
+      error: 'Invalid Email!'
     checkUniqueEmail:
       error: 'Email must be unique!'
     number:
-      error: 'Invlaid Number!'
+      error: 'Invalid Number!'
     optNumber:
-      error: 'Invlaid Number!'
+      error: 'Invalid Number!'
     minlength:
       error: 'This should be longer'
     optMinlength:
@@ -78,9 +78,9 @@ app.config(($provide, $validationProvider) ->
     optMaxlength:
       error: 'This should be shorter'
     phone:
-      error: 'Invlaid phone number!'
+      error: 'Invalid phone number!'
     optPhone:
-      error: 'Invlaid phone number!'
+      error: 'Invalid phone number!'
     address:
       error: 'Invalid addess.'
     zipcode:

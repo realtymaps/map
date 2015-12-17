@@ -153,7 +153,7 @@ class HasManyCrud extends Crud
     @joinCrud.create(arguments...)
 
   upsert: () ->
-    throw new Error 'Upsert not supported for multiple tables'
+    @joinCrud.upsert(arguments...)
 
   update: () ->
     @joinCrud.update(arguments...)
