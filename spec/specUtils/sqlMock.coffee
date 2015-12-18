@@ -133,7 +133,7 @@ class SqlMock
 
     if @debug?
       console.log.cyan "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
-    return Promise.resolve(@result).then handler
+    Promise.resolve(@result).then handler
 
   catch: (predicate, handler) ->
     if @error?

@@ -8,13 +8,13 @@ SqlMock = require './sqlMock'
 #wraps a crud instance to return all db functions as sql query or a sql payload object
 #TODO: Overwrite @dbFn with SqlMock
 toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
-  if doLog
-    logger.debug.green 'arguments:'
-    logger.debug.cyan "crudInstance.dbFn.tableName: #{crudInstance.dbFn.tableName}"
-    logger.debug.cyan "mockResponse: #{JSON.stringify(mockResponse)}"
-    logger.debug.cyan "doRetAsPromise: #{doRetAsPromise}"
-    logger.debug.green 'crudInstance.dbFn() instanceof SqlMock?'
-    logger.debug.cyan crudInstance.dbFn() instanceof SqlMock
+  # if doLog
+    # logger.debug.green 'arguments:'
+    # logger.debug.cyan "crudInstance.dbFn.tableName: #{crudInstance.dbFn.tableName}"
+    # logger.debug.cyan "mockResponse: #{JSON.stringify(mockResponse)}"
+    # logger.debug.cyan "doRetAsPromise: #{doRetAsPromise}"
+    # logger.debug.green 'crudInstance.dbFn() instanceof SqlMock?'
+    # logger.debug.cyan crudInstance.dbFn() instanceof SqlMock
 
   for fnName in dbFnCalls
     do (fnName) ->
@@ -28,7 +28,7 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
         if doLog
           logger.debug.green "#{fnName}: maybeSql, potentialKnexPromise:"
           logger.debug.cyan maybeSql
-          logger.debug.cyan potentialKnexPromise
+          logger.debug.red potentialKnexPromise
 
         if maybeSql != "[object Promise]"
           calledSql = maybeSql
