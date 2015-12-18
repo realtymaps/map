@@ -15,22 +15,22 @@
             .row
               input.form-control.name-input(ng-model="templateObj.mailCampaign.name")
             .row
-              .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")  
+              //- .template-stage-container(ng-class="applyTemplateClass('-wysiwyg')")  
+              .template-stage-container
                 .template-stage
-                  div.letter-editor(ng-class="applyTemplateClass('-body')")
+                  //- .letter-editor(ng-class="applyTemplateClass('-body')")
+                  .letter-editor
                     div(text-angular
                       rmaps-macro-helper
                       rmaps-macro-event-helper
                       name="wysiwyg"
+                      ta-default-wrap="span"
                       ta-text-editor-class="ta-letter-wrapper"
                       ta-html-editor-setup="htmlEditorSetup()"
                       ta-text-editor-setup="textEditorSetup()"
                       ng-model="data.htmlcontent"
                       ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
-
-
-          
           div.col-md-6
             tabset(justified="true")
               tab(heading="Text" active="true")

@@ -13,7 +13,6 @@ describe 'mailTemplateType service', ->
     it "passes sanity check", ->
       @svc.should.be.ok
       @svc.getDefaultHtml(@type).should.be.ok
-      @svc.getDefaultFinalStyle(@type).should.be.ok
 
     it "should have correct types", ->
       expect(@svc.getTypeNames()).to.include.members ['basicLetter']
