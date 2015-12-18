@@ -1,3 +1,8 @@
+
+// **************************************************************************************
+// * When changing this file, look at county.jade for possible redundant changes needed *
+// **************************************************************************************
+
 .normalize-container
 
   .row.mls-select
@@ -45,7 +50,7 @@
         ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
         ng-click="selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'output']") {{item.output}}
+        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
            'datatype-yn': item.type.name == 'boolean', \
@@ -76,7 +81,7 @@
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
         ng-repeat="item in fieldData.category.items")
-          span(ng-show="!item.unselectable") {{item.output}}
+          span(ng-show="!item.unselectable") {{item.input}}
           span(ng-show="item.unselectable") {{item.alias}}
           span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
            'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
@@ -102,7 +107,7 @@
             ng-click="item.unselectable || selectField(item)"
             rmaps-draggable="item" rmaps-draggable-collection="category.items"
             ng-repeat="item in category.items")
-              span(ng-show="!item.unselectable") {{item.output}}
+              span(ng-show="!item.unselectable") {{item.input}}
               span(ng-show="item.unselectable") {{item.alias}}
               span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
                'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
@@ -117,7 +122,7 @@
     .col-md-12.scroll(ng-show="fieldData.current.list != 'base'")
       .row
         .col-md-2 RETS Name:
-        .col-md-10 {{fieldData.current.output}}
+        .col-md-10 {{fieldData.current.input}}
       .row
         .col-md-2 Data Type:
         .col-md-10(ng-if="fieldData.current.type") {{fieldData.current.type.label}}
@@ -327,34 +332,34 @@
         .row
           .col-md-2 County and State
           .col-md-10
-            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['county'] }")
-              span(ng-show="fieldData.current.input['county']") {{fieldData.current.input['county']}}:
+            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.county }")
+              span(ng-show="fieldData.current.input.county") {{fieldData.current.input.county}}:
               span County
-              span.remove-icon(ng-show="fieldData.current.input['county']" ng-click="removeBaseInput('county')") X
-            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['stateCode'] }")
-              span(ng-show="fieldData.current.input['stateCode']") {{fieldData.current.input['stateCode']}}:
+              span.remove-icon(ng-show="fieldData.current.input.county" ng-click="removeBaseInput('county')") X
+            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateCode }")
+              span(ng-show="fieldData.current.input.stateCode") {{fieldData.current.input.stateCode}}:
               span State
-              span.remove-icon(ng-show="fieldData.current.input['stateCode']" ng-click="removeBaseInput('stateCode')") X
+              span.remove-icon(ng-show="fieldData.current.input.stateCode" ng-click="removeBaseInput('stateCode')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 County, State and Parcel
+          .col-md-2 County, State and ParcelId
           .col-md-10
-            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['county'] }")
-              span(ng-show="fieldData.current.input['county']") {{fieldData.current.input['county']}}:
+            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.county }")
+              span(ng-show="fieldData.current.input.county") {{fieldData.current.input.county}}:
               span County
-              span.remove-icon(ng-show="fieldData.current.input['county']" ng-click="removeBaseInput('county')") X
-            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['stateCode'] }")
-              span(ng-show="fieldData.current.input['stateCode']") {{fieldData.current.input['stateCode']}}:
+              span.remove-icon(ng-show="fieldData.current.input.county" ng-click="removeBaseInput('county')") X
+            .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateCode }")
+              span(ng-show="fieldData.current.input.stateCode") {{fieldData.current.input.stateCode}}:
               span State
-              span.remove-icon(ng-show="fieldData.current.input['stateCode']" ng-click="removeBaseInput('stateCode')") X
-            .field(rmaps-droppable="'parcelId'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input['parcelId'] }")
-              span(ng-show="fieldData.current.input['parcelId']") {{fieldData.current.input['parcelId']}}:
+              span.remove-icon(ng-show="fieldData.current.input.stateCode" ng-click="removeBaseInput('stateCode')") X
+            .field(rmaps-droppable="'apn'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.apn }")
+              span(ng-show="fieldData.current.input.apn") {{fieldData.current.input.apn}}:
               span Parcel
-              span.remove-icon(ng-show="fieldData.current.input['parcelId']" ng-click="removeBaseInput('parcelId')") X
+              span.remove-icon(ng-show="fieldData.current.input.apn" ng-click="removeBaseInput('apn')") X
 
       //- Generic
       .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market'].indexOf(fieldData.current.output) == -1")
@@ -365,16 +370,24 @@
               span(ng-show="fieldData.current.input") {{fieldData.current.input}}:
               span {{fieldData.current.alias}}
               span.remove-icon(ng-show="fieldData.current.input" ng-click="removeBase()") X
-        .row(ng-if="['hide_listing', 'hide_address'].indexOf(fieldData.current.output) != -1")
+        .row(ng-if="fieldData.current.type.name == 'boolean'")
           .col-md-2 Invert
           .col-md-4
             input(type="checkbox" ng-model="fieldData.current.config.invert" ng-change="updateRule()")
           .col-md-6.help Check this if the MLS 'yes' value means show (rather than hide)
-        .row(ng-if="['parcel_id'].indexOf(fieldData.current.output) != -1")
+        .row(ng-if="fieldData.current.output == 'parcel_id'")
           .col-md-2 Strip Formatting
           .col-md-4
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
+
+    .col-md-12.typeahead.scroll(ng-show="fieldData.current.type.name == 'datetime'")
+      .row
+        .col-md-2 Date Format
+        .col-md-4
+          input(type="text" ng-model="fieldData.current.config.format" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()" typeahead="format for format in dateFormats | filter:$viewValue" typeahead-min-length=0 typeahead-on-select="updateRule()")
+        .col-md-6.help Date formatting, as documented #{''}
+          a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
 
     .col-md-12.scroll
       .row.advanced
@@ -385,3 +398,9 @@
         .col-md-10
           textarea.transform(ng-model="fieldData.current.transform" ng-show="fieldData.current.config.advanced" ng-change="saveRuleDebounced()")
           textarea.transform(ng-bind="getTransform()" ng-show="!fieldData.current.config.advanced" disabled)
+
+    .col-md-12.scroll(ng-show="fieldData.current.list == 'base'")
+      .row.advanced
+        .col-md-2
+        .col-md-10
+          textarea.transform(ng-bind="JSON.stringify(fieldData.current.input)" disabled)

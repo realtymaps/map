@@ -2,11 +2,10 @@ logger = require '../config/logger'
 auth = require '../utils/util.auth'
 externalAccounts = require '../services/service.externalAccounts'
 cartodbConfig = require '../config/cartodb/cartodb'
-
+googleMapsConfig = require '../config/googleMaps'
 
 module.exports =
   mapboxKey:
-    method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       externalAccounts.getAccountInfo('mapbox')
@@ -14,14 +13,12 @@ module.exports =
         res.send accountInfo.api_key
 
   cartodb:
-    method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       cartodbConfig().then (config) ->
         res.send(config)
 
   google:
-    method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       externalAccounts.getAccountInfo('googlemaps')
@@ -32,3 +29,10 @@ module.exports =
           res.send MAPS: API_KEY: accountInfo.api_key
         else
           res.send null
+
+  asyncAPIs:
+    handle: (req, res, next) ->
+      #any js apis that need to be loaded async go here
+      res.send [
+        # googleMapsConfig.locals.mapsSdkUrl
+      ]

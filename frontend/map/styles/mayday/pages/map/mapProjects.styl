@@ -3,9 +3,9 @@ $fnMakeMapProjects()
     >button
       height 50px
       position relative
-      min-width 160px
+      width 220px
       @media (min-width: md)
-        min-width 220px
+        width 220px
       &:before
         content ""
         height 20px
@@ -29,6 +29,8 @@ $fnMakeMapProjects()
           text-align left
           display block
           color $black
+          overflow: hidden
+          text-overflow: ellipsis
 
   .projects-tools
     >.btn-group

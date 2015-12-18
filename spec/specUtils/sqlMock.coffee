@@ -15,6 +15,7 @@ _sqlFns = [
   'delete'
   'innerJoin'
   'count'
+  'orderBy'
 ]
 
 class SqlMock

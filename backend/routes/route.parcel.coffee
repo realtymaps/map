@@ -28,7 +28,7 @@ _handleRes = (ret, res, isStream = true) ->
 _getByFipsCode = (req, res, next, fn = getParcelJSON, isStream = true) -> Promise.try ->
   allParams = _.extend {}, req.params, req.query
 
-  validation.validateAndTransform(allParams, transforms)
+  validation.validateAndTransformRequest(allParams, transforms)
   .then (validParams) ->
     externalAccounts.getAccountInfo('digimaps')
     .then (creds) ->

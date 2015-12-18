@@ -3,9 +3,9 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
       h2 Get Verified
       p Nullam eros mi, mollis in sollicitudin non, tincidunt sed enim. Sed et felis metus, rhoncus ornare nibh. Ut at magna leo. Suspendisse egestas est ac dolor imperdiet pretium. 
       
-      .row
-        form.form-horizontal(role='form' name='userForm')
-          .form-payment
+      form.form-horizontal(role='form' name='userForm')
+        .form-payment
+          .row
             .col-md-6.col-sm-6.col-xs-12
               .form-group
                 .label Your MLS ID:
@@ -16,9 +16,11 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
                     type='text'
                     validator="required,minlength=2")
   
-            .form-group
-              .col-md-3
-                input.btn.btn-primary(
-                  value='Submit' type='button' ng-click="user.submit()" validation-submit="userForm")
+          .row
+            .col-md-6.col-sm-6.col-xs-12
+              .form-group
+                .col-md-3
+                  input.btn.btn-primary(
+                    value='Submit' type='button' ng-click="user.submit()" validation-submit="userForm")
         
               

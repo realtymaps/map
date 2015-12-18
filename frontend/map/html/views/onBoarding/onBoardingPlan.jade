@@ -26,29 +26,33 @@ section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
         
         form.form-horizontal(role='form' name='userForm')
           .form-plan
-            .form-group
-              .label Email:
-              .col-lg-3
-                input.form-control(
-                  name="email"
-                  ng-model="user.email"
-                  type='text'
-                  validator="email,required,checkUniqueEmail")
-            .form-group
-              .label Password:
-              .col-md-3
-                input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
-            .form-group
-              .label Confirm password:
-              .col-md-3
-                input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
-            .form-group
-              .label
-              .col-md-3
-                span(ng-if="pass.errorMsg")
-                  .label.has-error() {{pass.errorMsg}}
-            .form-group
-              .col-md-3
-                input.btn.btn-primary(
-                  value='Continue' type='button' ng-click="user.submit()" validation-submit="userForm")
-              
+            .row
+              .col-md-12.col-sm-12.col-xs-12
+                .form-group
+                  .label Email:
+                  .col-lg-3
+                    input.form-control(
+                      name="email"
+                      ng-model="user.email"
+                      type='text'
+                      validator="email,required,checkUniqueEmail")
+                .form-group
+                  .label Password:
+                  .col-md-3
+                    input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
+                .form-group
+                  .label Confirm password:
+                  .col-md-3
+                    input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
+                .form-group
+                  .label
+                  .col-md-3
+                    span(ng-if="pass.errorMsg")
+                      .label.has-error() {{pass.errorMsg}}
+            .row
+              .form-group
+                .col-md-12.col-sm-12.col-xs-12
+                  .col-md-3
+                    input.btn.btn-primary(
+                      value='Continue' type='button' ng-click="user.submit()" validation-submit="userForm")
+                  

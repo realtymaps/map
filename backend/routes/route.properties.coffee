@@ -9,12 +9,13 @@ addressService = require '../services/service.properties.addresses'
 profileService = require '../services/service.profiles'
 
 validation = require '../utils/util.validation'
-{validators, validateAndTransform} = validation
+{validators, validateAndTransformRequest} = validation
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
 {currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
 {basicColumns} = require '../utils/util.sql.columns'
+_ = require 'lodash'
 
 _transforms =
   bounds: validators.string()
@@ -44,7 +45,7 @@ _appendProjectId = (req, obj) ->
 
 captureMapFilterState =  (handleStr, saveState = true) -> (req, res, next) -> Promise.try () ->
   logger.debug "handle: #{handleStr}"
-  validateAndTransform req.body, _transforms
+  validateAndTransformRequest req.body, _transforms
   .then (body) ->
     {state} = body
     logger.debug body, true
