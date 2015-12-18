@@ -5,13 +5,13 @@ basePath = require '../basePath'
 {
 validators
 validateAndTransform
+validateAndTransformRequest
 DataValidationError
 defaultRequestTransforms
 falsyTransformsToNoop
 } = require "#{basePath}/utils/util.validation"
 
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
-
 
 describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
 
@@ -32,6 +32,19 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       a: validators.string(forceUpperCase: true)
       b: validators.float(max: 5.1)
     , DataValidationError
+
+  describe "transform.any", ->
+
+    it 'should pass if any validations in the "any" array pass validation, even if some fail', () ->
+      validateAndTransform {a: 'abc'},
+        a: transform: any: [validators.integer(), validators.string(forceUpperCase: true)]
+      .then (values) ->
+        values.should.eql(a: 'ABC')
+
+    it 'should fail if all validations in the "any" array fail validation', () ->
+      expectReject validateAndTransform {a: 'abc'},
+        a: transform: any: [validators.integer(),validators.object()]
+      , DataValidationError
 
   promiseIt 'should reject if a required parameter is undefined', () ->
     [
@@ -136,3 +149,13 @@ describe 'utils/validation.validateAndTransform()'.ns().ns('Backend'), ->
       ret.query.should.be.eql tForm
       ret.params.should.be.eql validators.noop
       expect(ret.body).to.not.be.ok
+
+describe 'utils/validation.validateAndTransformRequest()'.ns().ns('Backend'), ->
+  promiseIt "should omit missing parameters", () ->
+    [
+      expectResolve validateAndTransformRequest {a: 'abc'},
+        a: validators.string(forceUpperCase: true)
+        b: validators.float()
+      .then (values) ->
+        values.should.eql({a: 'ABC'})
+    ]

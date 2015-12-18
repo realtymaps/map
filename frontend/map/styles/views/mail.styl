@@ -10,7 +10,7 @@
     header.send-progress
       background-color $dark_white
       padding 10px 20px
-      border-bottom 1px solid $gray_ligther
+      border-bottom 1px solid $gray_lighter
       overflow hidden
       .pathway
         margin 0
@@ -29,28 +29,28 @@
       height 46px
       padding 0
       text-align center
-      
+
     .nav-tabs li button
       margin-top 7px
-      
+
     .btn.btn-default.active
       background-color #123d74
 
     .toolGroup
       width 370px
       margin auto
-      
+
       .btn-toolbar
         margin 0
       button
         margin 5px
         float right
         height 2.5em
-      
+
       .miscTools::before, .btn-toolbar::before
         display initial
         content initial
-        
+
       .miscTools::after, .btn-toolbar::after
         clear initial
 
@@ -64,21 +64,21 @@
       background-color #dbdee1
       border-radius 0
       font-style italic
-      
+
     .name-input:hover
       background-color #cacdd0
-          
+
     .select-recipients
       ul.recipients-list
         list-style none
         padding 0
         margin 0
         li
-          border-bottom 1px solid $gray_ligther
+          border-bottom 1px solid $gray_lighter
           padding 0
 
           .checkbox
-            border-bottom 1px solid $gray_ligther
+            border-bottom 1px solid $gray_lighter
             padding 20px 0
             margin 0
 
@@ -170,19 +170,44 @@
 
       label
         color #000
-      
+
       .fontTypeTools label.btn:not(.active)
         border 1px solid white
 
       .edit-template-content
         padding 20px
-        
+
       .edit-template-design
         padding 20px
-        
+
       .btn
         min-width 0
 
+// <<<<<<< HEAD
+// =======
+      .template-stage-container
+        position relative
+        overflow scroll
+        background-color $gray_lighter
+
+      .template-stage
+
+        .letter-editor
+          text-align left
+          margin auto
+          box-shadow 4px 4px 20px #888888
+
+        .macro-display
+          background-color #46b8f1
+          border-radius 3px
+          margin-left 2px
+          margin-right 2px
+        .macro-display-error
+          background-color red
+          border-radius 3px
+          margin-left 2px
+          margin-right 2px
+// >>>>> master
 
     .confirm
       .overview-template

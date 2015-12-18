@@ -20,7 +20,7 @@ auth = require '../utils/util.auth.coffee'
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
-{validators} = require '../utils/util.validation'
+{validators} = validation
 safeColumns = (require '../utils/util.sql.helpers').columns
 analyzeValue = require '../../common/utils/util.analyzeValue'
 
@@ -141,11 +141,26 @@ profiles = (req, res, next) ->
       .then (result) ->
         res.json result
     PUT: () ->
-      q = userSessionService.updateProfile(req.body)
-      q.then ()->
-        logger.debug 'SESSION: clearing profiles'
-        delete req.session.profiles#to force profiles refresh in cache
-        updateCache(req, res, next)
+      transforms =
+        account_image_id: validators.integer()
+        filters: validators.object()
+        favorites: validators.object()
+        map_toggles: validators.object()
+        map_position: validators.object()
+        map_results: validators.object()
+        auth_user_id: validators.integer()
+        parent_auth_user_id: validators.integer()
+        id:
+          transforms: [validators.integer()]
+          required: true
+
+      validation.validateAndTransformRequest(req.body, transforms)
+      .then (validBody) ->
+        q = userSessionService.updateProfile(validBody, req.user.id)
+        q.then ()->
+          logger.debug 'SESSION: clearing profiles'
+          delete req.session.profiles#to force profiles refresh in cache
+          updateCache(req, res, next)
   .catch (err) ->
     logger.error analyzeValue err
 
@@ -154,7 +169,7 @@ newProject = (req, res, next) ->
   throw new Error 'Error creating new project, name is required' unless req.body.name
 
   Promise.try () ->
-    profileService.getCurrent req.session
+    profileService.getCurrentSessionProfile req.session
 
   .then (profile) ->
     toSave = _.extend auth_user_id: req.user.id, req.body
@@ -224,7 +239,7 @@ companyImage = (req, res, next) ->
         account_image_id:
           required: true
 
-      validation.validateAndTransform(req.params, transforms)
+      validation.validateAndTransformRequest(req.params, transforms)
       .then (validParams) ->
         getImage(req, res, next, {account_image_id: validParams.account_image_id}, 'company')
 
@@ -268,7 +283,7 @@ root = (req, res, next) ->
           ]
           required: true
 
-      validation.validateAndTransform(req.body, transforms)
+      validation.validateAndTransformRequest(req.body, transforms)
       .then (validBody) ->
         userSvc.update(req.session.userid, validBody, _safeRootFields)
         .then () ->
@@ -308,7 +323,7 @@ updatePassword = (req, res, next) ->
   transforms =
     password: validators.string(regex: config.VALIDATION.password)
 
-  validation.validateAndTransform(req.body, transforms)
+  validation.validateAndTransformRequest(req.body, transforms)
   .then (validBody) ->
     userSessionService.updatePassword(req.user, validBody.password)
     .then ->
@@ -324,7 +339,7 @@ emailIsUnique = (req, res, next) ->
       ]
       required: true
 
-  validation.validateAndTransform(req.body, transforms)
+  validation.validateAndTransformRequest(req.body, transforms)
   .then (validBody) ->
     res.json(true)
 
@@ -382,5 +397,4 @@ module.exports =
 
   emailIsUnique:
     method: 'post'
-    middleware: auth.requireLogin(redirectOnFail: true)
     handle: emailIsUnique

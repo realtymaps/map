@@ -79,6 +79,24 @@ validateAndTransform = (params, definitions) -> Promise.try () ->
     Promise.props(promiseMap)
 
 ###
+  Does the same as validateAndTransform, but also removes all properties
+   from validated result that were originally undefined/null.
+  Useful for keeping API updates from nullifying values that weren't part of the request
+###
+validateAndTransformRequest = (params, definitions) ->
+  removeMissing = (params, req) ->
+    for k, v of params
+      if !req[k]?
+        delete params[k]
+      else if _.isObject(params[k]) and _.isObject(req[k])
+        params[k] = removeMissing params[k], req[k]
+    params
+
+  validateAndTransform arguments...
+  .then (valid) ->
+    removeMissing valid, params
+
+###
   Noop the default transforms for a Crud Request
 ###
 defaultRequestTransforms = (obj) ->
@@ -107,6 +125,7 @@ falsyTransformsToNoop = (transforms) ->
 
 module.exports =
   validateAndTransform: validateAndTransform
+  validateAndTransformRequest: validateAndTransformRequest
   DataValidationError: DataValidationError
   validators: validators
   doValidationSteps: doValidationSteps

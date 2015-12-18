@@ -2,8 +2,8 @@
 qs = require 'qs'
 mod = require '../module.coffee'
 
-mod.factory 'rmapsauthorization', ($rootScope, $location, rmapsprincipal, rmapsUrlHelpers) ->
-
+mod.factory 'rmapsauthorization', ($rootScope, $location, $log, rmapsprincipal, rmapsUrlHelpers) ->
+  $log = $log.spawn('map:rmapsauthorization')
   routes = rmapsUrlHelpers.getRoutes()
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
@@ -13,12 +13,14 @@ mod.factory 'rmapsauthorization', ($rootScope, $location, rmapsprincipal, rmapsU
       # then, send them to the signin route so they can log in
       $location.replace()
       $location.url routes.login + '?'+qs.stringify(next: desiredLocation)
+      $log.debug 'redirected to login'
       return
 
     if not rmapsprincipal.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
       $location.replace()
       $location.url routes.accessDenied
+      $log.debug 'redirected to accessDenied'
       return
 
     if goToLocation

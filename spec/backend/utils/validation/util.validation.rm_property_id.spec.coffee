@@ -13,28 +13,28 @@ describe 'utils/validation.validators.rm_property_id()'.ns().ns('Backend'), ->
       #noop
     return
 
-  promiseIt 'should resolve given a stateCode & county for fips lookup, a parcelId, and default 001', () ->
+  promiseIt 'should resolve given a stateCode & county for fips lookup, a APN, and default 001', () ->
     [
-      expectResolve(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', parcelId: '10001')).then (value) ->
+      expectResolve(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', apn: '10001')).then (value) ->
         value.should.equal('10003_10001_001')
     ]
 
-  promiseIt 'should resolve given a fipsCode, an apnUnformatted, and apnSequence', () ->
+  promiseIt 'should resolve given a fipsCode, an APN, and sequenceNumber', () ->
     [
-      expectResolve(validators.rm_property_id()(param, fipsCode: '10003', apnUnformatted: '10001', apnSequence: '001')).then (value) ->
-        value.should.equal('10003_10001_001')
+      expectResolve(validators.rm_property_id()(param, fipsCode: '10003', apn: '10001', sequenceNumber: '222')).then (value) ->
+        value.should.equal('10003_10001_222')
     ]
 
-  promiseIt 'should fail with invalid parcelId', () ->
+  promiseIt 'should fail with invalid APN', () ->
     [
-      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', parcelId: ''), DataValidationError)
-      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', parcelId: null), DataValidationError)
+      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', apn: ''), DataValidationError)
+      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', apn: null), DataValidationError)
       expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle'), DataValidationError)
     ]
 
   promiseIt 'should fail with invalid fipsCode', () ->
     [
-      expectReject(validators.rm_property_id()(param, stateCode: '', county: 'New Castle', parcelId: '10001'), DataValidationError)
-      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: '', parcelId: '10001'), DataValidationError)
-      expectReject(validators.rm_property_id()(param, fipsCode: '', parcelId: '10001'), DataValidationError)
+      expectReject(validators.rm_property_id()(param, stateCode: '', county: 'New Castle', apn: '10001'), DataValidationError)
+      expectReject(validators.rm_property_id()(param, stateCode: 'DE', county: '', apn: '10001'), DataValidationError)
+      expectReject(validators.rm_property_id()(param, fipsCode: '', apn: '10001'), DataValidationError)
     ]

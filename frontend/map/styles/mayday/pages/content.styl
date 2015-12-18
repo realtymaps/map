@@ -99,7 +99,7 @@
             &.active
               color c_light_blue
 
-    .mobile-view
+    .mobile-only
 
       header
         position absolute
@@ -329,9 +329,9 @@
 
 
   // COMMON
-  &.show-notes .content-section .content-section-container .mobile-view,
-  &.show-favorites .content-section .content-section-container .mobile-view,
-  &.show-neighbourhoods .content-section .content-section-container .mobile-view
+  &.show-notes .content-section .content-section-container .mobile-only,
+  &.show-favorites .content-section .content-section-container .mobile-only,
+  &.show-neighbourhoods .content-section .content-section-container .mobile-only
     header
       display flex
       align-items center
@@ -360,7 +360,7 @@
   &.show-favorites
     .content-section
       .content-section-container
-        .mobile-view
+        .mobile-only
           header
             .close
               opacity 1
@@ -382,7 +382,7 @@
   &.show-notes
     .content-section
       .content-section-container
-        .mobile-view
+        .mobile-only
           header
             .close
               opacity 1

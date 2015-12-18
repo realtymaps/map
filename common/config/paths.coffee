@@ -7,6 +7,7 @@ dest =
   styles: 'styles'
   fonts: 'fonts'
   assets: 'assets'
+  json: 'json'
   root: '_public/'
 
 getAssetCollection = (name) ->
@@ -53,6 +54,7 @@ module.exports =
     scripts: dest.root + dest.scripts
     styles: dest.root + dest.styles
     fonts: dest.root + dest.fonts
+    json: dest.root + dest.json
     index: dest.root + 'rmap.html'
     admin: dest.root + 'admin.html'
     bundle:

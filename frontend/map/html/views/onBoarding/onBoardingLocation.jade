@@ -1,0 +1,33 @@
+section.white-page.onboarding.onboarding-plan.text-wrap(ng-cloak)
+  .container
+      h2 Select your state and county
+      p Maecenas eu placerat ante. Fusce ut neque justo, et aliquet enim. In hac habitasse platea dictumst. Nullam commodo neque erat, vitae facilisis erat. Cras at mauris ut tortor vestibulum fringilla vel sed metus.
+      
+        form.form-horizontal(role='form' name='userForm')
+          .form-payment
+            .row
+              .col-md-6.col-sm-6.col-xs-12
+                .form-group
+                  .label State:
+                  .col-lg-6
+                    select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
+                      option(
+                        ng-repeat="s in us_states"
+                        ng-selected="{{s.id == company.us_state_id}}"
+                        value="{{s.id}}") {{s.code}} - {{s.name}}
+                
+              .col-md-6.col-sm-6.col-xs-12
+                .form-group
+                  .label County:
+                  .col-lg-6
+                    select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
+                      option(
+                        ng-repeat="s in us_states"
+                        ng-selected="{{s.id == company.us_state_id}}"
+                        value="{{s.id}}") {{s.code}} - {{s.name}}
+            .row
+              .col-md-6.col-sm-6.col-xs-12
+                .form-group
+                  .col-md-3
+                    input.btn.btn-primary(value='Done' type='button' ng-click="user.submit()" validation-submit="userForm")
+              

@@ -146,6 +146,23 @@
     border 1px solid $gray
     box-shadow 4px 4px 20px $black_50
 
+    input, textarea
+      width 90%
+      border 1px solid #ddd
+      padding 5px
+      &[disabled]
+        color #888
+        background-color #eee
+        cursor not-allowed
+
+    textarea
+      margin-top 20px
+      top 20px
+      font-family courier, fixed
+
+    .inputTextarea
+      margin-top -5px
+
   .scroll
     overflow-y scroll
     .row
@@ -158,21 +175,10 @@
     .row.advanced > :first-child
         text-align center
 
-    input, textarea
-      width 90%
-      border 1px solid #ddd
-      padding 5px
-      &[disabled]
-        color #888
-        background-color #eee
-        cursor not-allowed
-
     .btn
       padding 5px
       margin 5px
 
-    -webkit-transition  0.5s all linear
-    transition all linear 0.5s
     opacity 1
 
     .field
@@ -194,10 +200,6 @@
     .sep
       margin 12px
       font-weight bold
-
-    textarea
-      margin-top 20px
-      font-family courier, fixed
 
   .properties-container.ng-hide
     opacity 0

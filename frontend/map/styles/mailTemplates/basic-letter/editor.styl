@@ -1,0 +1,47 @@
+// stylings for wysiwyg editor to control look/feel of editor and associated text-angular components
+//  (which can depend on special values coming from the selected mailer-template values) without
+//  clobbering the styling of the content
+
+@import 'values'
+@import 'wysiwyg'
+$template-stage-margin = 1in
+
+
+.mail-wizard
+  .edit-template
+    .basicLetter-wysiwyg
+
+      .template-stage
+        left 0
+        top 0
+        right 0
+        bottom 0
+        padding-top ($template-stage-margin / 2)
+        background-color $gray_lighter
+        height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+        text-align center
+
+
+        .ta-letter-wrapper
+          // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
+          height ($page-height * $wysiwyg-scale-factor)
+          display block
+          width 100%
+          overflow auto
+          font-size 100%
+          line-height unset
+          background-color #ffffff
+
+        .letter-page:focus
+          border none
+
+        .ta-scroll-window > .ta-bind
+          padding: 0
+          height: (($page-height * $wysiwyg-scale-factor) - $template-stage-margin)
+
+        .ta-root
+          height (($page-height * $wysiwyg-scale-factor) + $template-stage-margin)
+
+        #recipient-address-window, #return-address-window
+          overflow hidden
+          background-color rgba(100,100,100,0.5)

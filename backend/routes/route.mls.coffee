@@ -72,7 +72,7 @@ module.exports =
         else
           validations =
             limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
-          validation.validateAndTransform(req.query, validations)
+          validation.validateAndTransformRequest(req.query, validations)
           .then (result) ->
             retsHelpers.getDataStream(mlsConfig, result.limit)
           .then (retsStream) ->

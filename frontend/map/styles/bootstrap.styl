@@ -108,7 +108,7 @@ main
     border-radius 0px 0px 3px 3px
     box-shadow 0 2px 2px $black_30
     li
-      border-bottom 1px solid $gray_ligther
+      border-bottom 1px solid $gray_lighter
       &:last-child
         border 0
       a
@@ -233,7 +233,7 @@ button
 
   &.btn-inactive
     background $white
-    border 1px solid $gray_ligther
+    border 1px solid $gray_lighter
     color $gray
 
     &:before
@@ -264,7 +264,7 @@ button
   &.btn-stamp
     width 100%
     line-height 600%
-    border 1px dashed $gray_ligther
+    border 1px dashed $gray_lighter
     background-color $dark_white
     color $gray
     border-radius 3px
@@ -428,7 +428,7 @@ ul.nav-tabs
             background none
     &:after
       content ''
-      border-bottom 1px solid $gray_ligther
+      border-bottom 1px solid $gray_lighter
       width 100%
       margin 0 -15px
 form
@@ -438,7 +438,7 @@ form
   .form-section
     overflow hidden
     margin-bottom 20px
-    border-top 1px solid $gray_ligther
+    border-top 1px solid $gray_lighter
     padding 10px
 
 p.required
@@ -469,6 +469,17 @@ p.required
   color $light_blue
   font-weight normal
   margin-bottom 10px
+
+.white-page
+  for num in (1...7)
+    h{num}
+      @extends .pageTitle
+
+  .page-header
+    color $light_blue
+
+  label, input
+    color $black
 
 .popover
   color $black
@@ -678,15 +689,15 @@ Place for our custom Theming of bootstrap
 
   &.label-saved-property
   /.label-saved-property
-    background-color $rm-property-save-yello
+    background-color $rm_saved
     color $white
     &:before
-      border-color $rm-property-save-yello transparent transparent $rm-property-save-yello !important
+      border-color $rm_saved transparent transparent $rm_saved !important
     &:hover
-      background-color $rm-saved-hover
+      background-color $rm_saved_hover
       &:before
-        color $rm-saved-hover
-        border-color $rm-saved-hover transparent transparent $rm-saved-hover !important
+        color $rm_saved_hover
+        border-color $rm_saved_hover transparent transparent $rm_saved_hover !important
 
   &.label-sale-property
   /.label-sale-property

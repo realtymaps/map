@@ -1,5 +1,5 @@
 $fnMakeSearchField()
-  #search-field
+  .search-field
     float right
     margin 0 20px 0 0
     button.search-btn
@@ -31,13 +31,13 @@ $fnMakeSearchField()
         z-index 0
 
       &.opened
-        width 280px
+        width 400px
         border-bottom 1px solid $light_blue
 
       .search-content
         display block
         float left
-        width 281px
+        width 400px
 
       .search-type
         float left
@@ -53,7 +53,7 @@ $fnMakeSearchField()
               padding 10px
               cursor pointer
               background $white
-              border-bottom 1px solid $gray_ligther
+              border-bottom 1px solid $gray_lighter
               color $black
               @extends .global-transition
               span.icon
@@ -65,6 +65,7 @@ $fnMakeSearchField()
                 color $white
 
           button
+            font-size 14px
             margin-right 3px
             position relative
             height 21px
@@ -88,10 +89,11 @@ $fnMakeSearchField()
                 border-right 5px solid transparent
                 border-top 5px dashed
                 z-index 0
-      input#search
+      input.search-input
+        font-size 13px
         background transparent
         float left
-        width auto
+        width 285px
         border-radius 0
         border 0 none
         height 21px

@@ -2,11 +2,18 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 require '../../directives/listinput.coffee'
 
+###
+    *******************************************************************************************
+    * When changing this file, look at normalize.coffee for possible redundant changes needed *
+    *******************************************************************************************
+###
 
 app.controller 'rmapsCountyCtrl',
 ($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
 
   $scope.$state = $state
+
+  $scope.JSON = JSON
 
   $scope.countyData =
     current: null
@@ -40,6 +47,12 @@ app.controller 'rmapsCountyCtrl',
     name: 'mortgage'
   ]
 
+  $scope.dateFormats = [
+    'YYYY-MM-DD'
+    'YYYYMMDD'
+    'MMDDYYYY'
+  ]
+
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
     $scope.categories = {}
     $scope.targetCategories = _.map rmapsParcelEnums.categories[dataSourceType][dataListType], (label, list) ->
@@ -59,7 +72,8 @@ app.controller 'rmapsCountyCtrl',
       ordering: category.length
       list: list
     idx = _.sortedIndex(category, rule, 'ordering')
-    category.splice idx, 0, allRules[rule.output] = rule
+    allRules[if list == 'base' then rule.output else rule.input] = rule
+    category.splice idx, 0, rule
 
   # Handles adding base rules
   addBaseRule = (rule) ->
@@ -79,10 +93,9 @@ app.controller 'rmapsCountyCtrl',
 
     # Create base rules that don't exist yet
     _.forEach $scope.baseRules, (rule, baseRulesKey) ->
-      output = rule.getOutput? && rule.getOutput() || baseRulesKey
-      if !allRules[output]
-        rule.output = output
-        addBaseRule rule
+      if !allRules[baseRulesKey]
+        rule.output = baseRulesKey
+        addBaseRule(rule)
 
     # Save base rules
     if 'base' of $scope.categories
@@ -96,6 +109,7 @@ app.controller 'rmapsCountyCtrl',
         _.extend rule, _.pick(field, ['DataType', 'Interpretation', 'LookupName'])
       else
         rule = field
+        rule.input = rule.LongName
         rule.output = rule.LongName
         addRule rule, 'unassigned'
 
@@ -104,14 +118,14 @@ app.controller 'rmapsCountyCtrl',
       validatorBuilder.buildDataRule rule
       true
     if 'base' of $scope.categories
-      _.forEach $scope.categories.base, (rule) -> updateAssigned(rule)
+      updateAssigned()
 
   # Show field options
   $scope.selectField = (field) ->
     if field.list != 'unassigned' && field.list != 'base'
       $scope.fieldData.category = _.find $scope.targetCategories, 'list', field.list
     $scope.fieldData.current = field
-    $scope.loadLookups(if field.list == 'base' then allRules[field.input] else field)
+    $scope.loadLookups(if field.list == 'base' then allRules[field.output] else field)
 
   $scope.loadLookups = (field) ->
     if field?._lookups
@@ -140,7 +154,7 @@ app.controller 'rmapsCountyCtrl',
       drag.model,
       from,
       to,
-      if idx != -1 then idx else 0
+      if idx != -1 then idx else drop.collection.length
     ).then () ->
       $scope.selectField(drag.model)
       $scope.$evalAsync()
@@ -149,8 +163,8 @@ app.controller 'rmapsCountyCtrl',
     field = $scope.fieldData.current
     key = drop.collection
     removed = field.input[key]
-    field.input[key] = drag.model.output
-    updateAssigned(field)
+    field.input[key] = drag.model.input
+    updateAssigned()
     updateBase(field, removed)
 
   # Remove base field input
@@ -166,7 +180,7 @@ app.controller 'rmapsCountyCtrl',
   $scope.onDropBase = (drag, drop, target) ->
     field = $scope.fieldData.current
     removed = field.input
-    field.input = drag.model.output
+    field.input = drag.model.input
     $scope.loadLookups(drag.model)
     updateBase(field, removed)
 
@@ -180,22 +194,25 @@ app.controller 'rmapsCountyCtrl',
     updateBase(field, removed)
 
   updateBase = (field, removed) ->
-    updateAssigned(field, removed)
+    updateAssigned()
     saveRule(field)
 
-  updateAssigned = (rule, removed) ->
-    if rule.output of $scope.baseRules && $scope.baseRules[rule.output].group
-      delete allRules[removed]?.assigned
-      if _.isString rule.input
-        allRules[rule.input]?.assigned = true
-      else _.forEach rule.input, (input) ->
+  updateAssigned = () ->
+    for checkRule of allRules
+      delete allRules[checkRule]?.assigned
+    for baseRuleName of $scope.baseRules
+      baseRule = allRules[baseRuleName]
+      if _.isString baseRule.input
+        allRules[baseRule.input]?.assigned = true
+      else _.forEach baseRule.input, (input) ->
         allRules[input]?.assigned = true
 
   # User input triggers this
   $scope.updateRule = () ->
     field = $scope.fieldData.current
-    if field.config.advanced && !field.transform
-      field.transform = field.getTransformString $scope.mlsData.current.data_rules
+    if field.config.advanced
+      if !field.transform
+        field.transform = field.getTransformString $scope.countyData.current.data_rules
     else
       field.transform = null
     $scope.saveRuleDebounced()
@@ -206,7 +223,7 @@ app.controller 'rmapsCountyCtrl',
   # Separate debounce/timeout for each rule
   saveFns = _.memoize((rule) ->
     _.debounce(_.partial(saveRule, rule), 2000)
-  , (rule) -> rule.output)
+  , (rule) -> if rule.list == 'base' then rule.output else rule.input)
 
   $scope.saveRuleDebounced = () ->
     saveFns($scope.fieldData.current)()

@@ -23,8 +23,7 @@ module.exports = (options = {}) ->
 
     if options.utcOffset
       datetime = datetime.utcOffset(options.utcOffset)
-      
+
     if options.dateOnly
       datetime = datetime.startOf('day')
     return datetime._d  # get the underlying date object
-   

@@ -2,8 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 logger  = require '../../config/logger'
-{getNamespace} = require 'continuation-local-storage'
-{NAMESPACE} = require '../../config/config'
+clsFactory = require '../util.cls'
 clone =  require 'clone'
 
 _errMsg = (thing) ->
@@ -33,7 +32,7 @@ module.exports = (options = {}) ->
     if !options?.toKey
       return Promise.reject new DataValidationError(_errMsg('toKey'), param, value)
 
-    space = getNamespace NAMESPACE
+    space = clsFactory().namespace
 
     firstRest = options.clsKey.firstRest('.')
     ret = clone(value) or {}
