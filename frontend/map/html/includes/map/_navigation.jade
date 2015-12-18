@@ -1,10 +1,10 @@
 .map-navigation
-  div.projects-tools.desktop-only
-    div.btn-group
+  div.projects-tools
+    div.btn-group.desktop-only
 
       include ./_buttons_drop_down.jade
 
-    div(class="btn-group" ng-class="{'':!isOpened,'opened':isOpened}")
+    div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
 
       include ./_projects.jade
 
