@@ -1,5 +1,5 @@
 #projects
-  .desktop-view
+  .desktop-only
     .inner
       .container
         header.row
@@ -56,7 +56,7 @@
                     span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                   td.col-md-1
                     button.btn.btn-white(ng-click="loadMap(project); $event.stopPropagation()") View Map
-  .mobile-view
+  .mobile-only
     header
     .inner
       .container

@@ -1,7 +1,7 @@
 include ../mixins/property/_propertyButtons.jade
 include ../mixins/property/_propertyAttributes.jade
 
-.desktop-view
+.desktop-only
   .results-container.navbar-below#results-slide(ng-show="Toggles.showResults")
     .filters
       span Sort By:
@@ -25,7 +25,7 @@ include ../mixins/property/_propertyAttributes.jade
             +propertyAttributes('property')
             +propertyButtons('property')
 
-.mobile-view
+.mobile-only
   #detail-card-tray(ng-controller="swipeTrayCtrl")
     #detail-card-container(ng-swipe-left="swipeLeft()" ng-swipe-right="swipeRight()")
       .detail-card(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
