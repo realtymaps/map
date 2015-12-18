@@ -1,4 +1,4 @@
-.draw-tools
+.draw-tools.desktop-only
     button.btn.btn-transparent.properties-in-shapes(
       ng-click="Toggles.togglePropertiesInShapes()"
       popover-placement="top"
@@ -6,7 +6,7 @@
       popover-trigger="mouseenter"
       ng-class="Toggles.propertiesInShapes ? 'on' : ''")
       span.icon.icon-markers-in-shapes
-      
+
     button(
       ng-controller="rmapsNeighbourhoodsModalCtrl"
       class="btn btn-transparent add-neighbour"

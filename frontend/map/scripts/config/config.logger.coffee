@@ -1,8 +1,6 @@
 app = require '../app.coffee'
 
-app.config ($provide, nemSimpleLoggerProvider) ->
-  $provide.decorator nemSimpleLoggerProvider.decorator...
-.config (nemDebugProvider) ->
+app.config (nemDebugProvider) ->
   debug = nemDebugProvider.debug
   debug.enable("map:*")
 .service 'rmapsMapTestLogger', (nemSimpleLogger) ->
