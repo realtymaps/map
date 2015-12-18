@@ -148,7 +148,7 @@ profiles = (req, res, next) ->
         map_toggles: validators.object()
         map_position: validators.object()
         map_results: validators.object()
-        # auth_user_id: validators.integer()
+        auth_user_id: validators.integer()
         parent_auth_user_id: validators.integer()
         id:
           transforms: [validators.integer()]
