@@ -1,5 +1,5 @@
 #notes.content-section-container(ng-class="{active:isActive('notes')}")
-    .desktop-view
+    .desktop-only
         header
             a(class="btn btn-default back" href="#map")
                 span.icon.icon-remove
@@ -25,7 +25,7 @@
                                     div.tools
                                         button(class="btn btn-link") Edit
                                         button(class="btn btn-link") Remove
-    .mobile-view
+    .mobile-only
         header
             a(class="subnav" href="#map")
                 | Add Notes

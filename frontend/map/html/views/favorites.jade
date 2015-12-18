@@ -1,6 +1,6 @@
 include ../includes/mixins/property/_propertyAttributes.jade
 #favorites.content-section-container(ng-class="{active:isActive('favorites')}")
-    .desktop-view
+    .desktop-only
         header
             a(class="btn btn-default back" href="#map")
                 span.icon.icon-remove
@@ -32,7 +32,7 @@ include ../includes/mixins/property/_propertyAttributes.jade
                                                 span.icon.icon-pin
                                                 span Pin to
                         hr
-    .mobile-view
+    .mobile-only
         header
             a(class="subnav" href="#map")
                 | Add Pin

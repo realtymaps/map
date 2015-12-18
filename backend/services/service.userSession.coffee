@@ -100,9 +100,10 @@ upsertImage = (entity, blob, tableFn = tables.auth.user) ->
 upsertCompanyImage = (entity, blob) ->
   upsertImage(entity,blob, tables.user.company)
 
-updatePassword = (user, password) ->
+updatePassword = (user, password, overwrite = true) ->
   createPasswordHash(password).then (password) ->
-    tables.auth.user().update(password:password)
+    toSet = if overwrite then password else tables.auth.user().raw("coalesce(password, '#{password}')")
+    tables.auth.user().update(password: toSet)
     .where(id: user.id)
 
 module.exports =

@@ -38,7 +38,7 @@ $fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
     display inline-block //default is block
     text-align center
     text-decoration none
-  
+
   &:hover
     color $rm-map-btn-icon-hover
 
@@ -48,7 +48,7 @@ $fnMakeLeafletDrawToolbar(xPositionOffset, yPositionOffset, multX, multY)
   height $defaultHeight
 
 .leaflet-draw-toolbar
-  @extend .desktop-view
+  @extend .desktop-only
 
   height $defaultHeight
   margin-top 12px
