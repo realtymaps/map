@@ -10,6 +10,7 @@ _sqlFns = [
   'select'
   'groupBy'
   'where'
+  'orWhere'
   'whereIn'
   'insert'
   'update'
