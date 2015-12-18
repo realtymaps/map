@@ -308,7 +308,7 @@ typeRules =
       name: 'nullify', options: @getOptions()
 
 _buildRule = (rule, defaults) ->
-  _.defaultsDeep rule, defaults, ruleDefaults
+  _.defaultsDeep rule, _.cloneDeep(defaults), ruleDefaults
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
