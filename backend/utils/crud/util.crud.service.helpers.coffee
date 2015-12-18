@@ -6,7 +6,6 @@ factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
 {IsIdObjError} = require '../errors/util.error.crud.coffee'
 clone = require 'clone'
-Promise = require 'bluebird'
 
 logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
