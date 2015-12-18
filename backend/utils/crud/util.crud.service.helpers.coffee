@@ -73,11 +73,7 @@ class Crud extends BaseObject
 
   update: (id, entity, safe, doLogQuery = false, fnExec = execQ) ->
     withSafeEntity entity, safe, (entity, safe) =>
-      Promise.try () =>
-        if _.isEmpty entity
-          [id]
-        else
-          fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery or @doLogQuery
+      fnExec @dbFn().where(@idObj(id)).returning(@idKey).update(entity), doLogQuery or @doLogQuery
     , true
 
   create: (entity, id, doLogQuery = false, safe, fnExec = execQ) ->
