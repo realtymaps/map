@@ -1,37 +1,35 @@
 ###global _:true, angular:true###
 app = require '../app.coffee'
 
-app.controller 'rmapsOnBoardingCtrl', ($scope, $state, rmapsOnBoardingOrder, rmapsGeoLocations, rmapsOnBoardingOrderSelector) ->
+app.controller 'rmapsOnBoardingCtrl', ($scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsGeoLocations, rmapsOnBoardingOrderSelector) ->
 
   rmapsGeoLocations.states().then (states) ->
     $scope.us_states = states
 
   step = $state.current.name
 
-  $scope.user = {} #constant model for all onBoardingCtrls to use to validate state
+  _.merge $scope,
+    user: {} #constant model for all onBoardingCtrls to use to validate state
+    view:
+      showSteps: $state.current.showSteps
+      step: step
+      goToNextStep: () ->
+        step = $scope.orderSvc.getNextStep($scope.view.step)
+        $scope.view.updateState(step)
+        $state.go step
+      goToPrevStep: () ->
+        step = $scope.orderSvc.getPrevStep($scope.view.step)
+        $scope.view.updateState(step)
+        $state.go step
 
-  $scope.showSteps = $state.current.showSteps
-
-  $scope.step = step
+      updateState:  (step) ->
+        $scope.view.step = step if step
+        $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
+        $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
+        $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(/Pro/g, '')) + 1
 
   rmapsOnBoardingOrderSelector.initScope($state, $scope)
-
-  $scope.goToNextStep = () ->
-    step = $scope.orderSvc.getNextStep($scope.step)
-    $state.go step if step
-
-  $scope.goToPrevStep = () ->
-    step = $scope.orderSvc.getPrevStep($scope.step)
-    $state.go step if step
-
-  $scope.hasNextStep = () ->
-    $scope.orderSvc.getNextStep($scope.step)?
-
-  $scope.hasPrevStep = () ->
-    $scope.orderSvc.getPrevStep($scope.step)?
-
-  $scope.currentStepId = () ->
-    $scope.orderSvc.getId($scope.step.replace(/Pro/g, '')) + 1
+  $scope.view.updateState()
 
 app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log, rmapsOnBoardingOrderSelector) ->
   $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
@@ -48,11 +46,15 @@ app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log, rmapsOnBoarding
     submit: () ->
       svc = rmapsOnBoardingOrderSelector.getOrderSvc($scope.plan)
       $log.debug svc.name + ' selected'
-      $state.go svc.getStepName(0)
+      step = svc.getStepName(0)
+      $scope.view.updateState step
+      $scope.view.showSteps = true
+      $state.go step
 
 app.controller 'rmapsOnBoardingPaymentCtrl',
 ($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
+
 
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
@@ -69,7 +71,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     $scope.view.submittalClass = if attemptedSubmital then 'has-error' else ''
     fieldIsRequired or attemptedSubmital
 
-  _.extend $scope,
+  _.merge $scope,
     charge: ->
       stripe.card.createToken($scope.user.card)
       .then (response) ->
@@ -79,8 +81,8 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
       .then (payment) ->
         $log.log 'successfully submitted payment for $', payment.amount
         payment
-        if $scope.hasNextStep
-          $scope.goToNextStep()
+        if $scope.view.hasNextStep
+          $scope.view.goToNextStep()
       .catch (err) ->
         if err.type and /^Stripe/.test(err.type)
           $log.log 'Stripe error: ', err.message
@@ -93,5 +95,10 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope) ->
+app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log) ->
+  $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
+  $log.debug $scope
+
 app.controller 'rmapsOnBoardingVerifyCtrl', ($scope) ->
+  $log = $log.spawn("map:rmapsOnBoardingVerifyCtrl")
+  $log.debug $scope
