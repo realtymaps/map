@@ -32,7 +32,8 @@ include ../mixins/property/_propertyAttributes.jade
       ng-class="trayPosition($index)"
       ng-click="cardClick($index, property)")
         .photo
-          i.fa.fa-home
+          .photo-overlay
+          ui-gmap-street-view-panorama(style="background-color:transparent;",focalcoord="property.geom_point_json",radius="50",imagestatus="streetViewPanorama.status",control="controls.streetView")
         .card-info
           .price(ng-if="property.price")
             span.price-label {{formatters.property.getPriceLabel(property.rm_status)}}&nbsp;
