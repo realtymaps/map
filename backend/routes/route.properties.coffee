@@ -48,10 +48,9 @@ captureMapFilterState =  (handleStr, saveState = true) -> (req, res, next) -> Pr
   validateAndTransformRequest req.body, _transforms
   .then (body) ->
     {state} = body
-    logger.debug body, true
-    state = _appendProjectId(req, state)
-    state.auth_user_id =  req.user.id
-    if saveState
+    if state? and saveState
+      _appendProjectId(req, state)
+      state.auth_user_id =  req.user.id
       profileService.updateCurrent(req.session, state, basicColumns.profile)
     body
   .then (body) ->
