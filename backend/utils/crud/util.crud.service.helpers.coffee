@@ -11,6 +11,7 @@ logQuery = (q, doLogQuery) ->
   logger.debug(q.toString()) if doLogQuery
 
 execQ = (q, doLogQuery) ->
+  # console.trace()
   logQuery q, doLogQuery
   q
 

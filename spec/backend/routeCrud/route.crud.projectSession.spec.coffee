@@ -45,7 +45,7 @@ class TestServiceCrudProject extends ServiceCrudProject
 
   #overide the generators so we can inject fresh mocks without destroying the singleton tables
   clientsFact: () ->
-    clientsSvcCrud = super sqlMock('auth', 'user').dbFn(), new ServiceCrud(sqlMock('auth', 'user').dbFn())
+    clientsSvcCrud = super sqlMock('auth', 'user').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
     # console.log.cyan  "clientsSvcCrud: #{clientsSvcCrud.dbFn().tableName}"
     # console.log.cyan  "clientsSvcCrud: joinCrud: #{clientsSvcCrud.joinCrud.dbFn().tableName}"
 
@@ -104,8 +104,7 @@ describe 'route.projectSession', ->
       @mockRequest = req
 
     @ctor = routeCrudToTest
-    #@projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, undefined, true
-    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, true
+    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject().init(false,false,false), projectResponses, false
 
     @subject = new @ctor(@projCrudSvc).init(false, safeProject)
 
