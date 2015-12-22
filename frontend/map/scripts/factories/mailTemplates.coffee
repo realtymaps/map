@@ -1,15 +1,11 @@
 app = require '../app.coffee'
 
-
 app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, $document, rmapsMailCampaignService, rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService) ->
   _doc = $document[0]
 
   class MailTemplate
     constructor: (@type) ->
       @defaultContent = rmapsMailTemplateTypeService.getDefaultHtml(@type)
-      @style = rmapsMailTemplateTypeService.getDefaultFinalStyle(@type)
-
-      @_setupWysiwygContent()
 
       @user =
         userID: null
@@ -48,22 +44,17 @@ app.factory 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
           phone: '(239) 877-7853'
           email: 'dan@mangrovebaynaples.com'
 
-
-    _setupWysiwygContent: () =>
-      $timeout () =>
-        rmapsMailTemplateTypeService.setUp(@type, _doc)
-
     _createPreviewHtml: () =>
-      #previewStyle = "body {box-shadow: 4px 4px 20px #888888;}"
-      #previewStyle = "body {margin: 20px;}"
-      previewStyle = "body {border: 1px solid black;}"
-      "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}#{previewStyle}</style></head><body>#{@mailCampaign.content}</body></html>"
-      # @_createLobHtml()
+      # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
+      fragStyles = require '../../styles/mailTemplates/template-frags.styl'
+      classStyles = require '../../styles/mailTemplates/template-classes.styl'
+      previewStyles = "body {border: 1px solid black;}"
+      "<html><head><title>#{@mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{@mailCampaign.content}</body></html>"
 
     _createLobHtml: () =>
-      letterDocument = new DOMParser().parseFromString @mailCampaign.content, 'text/html'
-      lobContent = rmapsMailTemplateTypeService.tearDown(@type, letterDocument)
-      "<html><head><title>#{@mailCampaign.name}</title><style>#{@style}</style></head><body>#{lobContent}</body></html>"
+      fragStyles = require '../../styles/mailTemplates/template-frags.styl'
+      classStyles = require '../../styles/mailTemplates/template-classes.styl'
+      "<html><head><title>#{@mailCampaign.name}</title><style>#{fragStyles}#{classStyles}</style></head><body class='letter-editor'>#{@mailCampaign.content}</body></html>"
 
     openPreview: () =>
       preview = $window.open "", "_blank"

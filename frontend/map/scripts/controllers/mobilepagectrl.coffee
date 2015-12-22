@@ -1,7 +1,23 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipal, rmapsProjectsService, rmapsClientsService) ->
+module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResponsiveView) ->
+  #
+  # Scope variables
+  #
+
   $scope.isMobileNavOpen = false
+
+  #
+  # Determine if this is Desktop or Mobile view
+  # Rules should match those defined in responsive.styl
+  #
+
+  $scope.mobileView = rmapsResponsiveView.isMobileView()
+  $scope.desktopView = rmapsResponsiveView.isDesktopView()
+
+  #
+  # Mobile Menu Events
+  #
 
   $scope.toggleMobileNav = (event) ->
     event.stopPropagation() if event
@@ -20,7 +36,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipa
         # Load the Project counts such as number of properties, neighbourhoods, etc...
         rmapsProjectsService.getProject profile.project_id
         .then (project) ->
-          project.propertiesTotal = _.keys(project.properties_selected).length
+          project.propertiesTotal = _.keys(project.properties_selected)?.length
+          project.favoritesTotal = _.keys(project.favorites)?.length
           $scope.project = project
 
         # If Editor, retrieve the clients for the project
@@ -48,6 +65,10 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, rmapsprincipa
     return if !$scope.isMobileNavOpen
     event.stopPropagation() if event
     $scope.isMobileNavOpen = false
+
+  #
+  # Mobile Menu Navigation - Handles closing menu if open
+  #
 
   $scope.goToState = (state, params, options) ->
     $scope.closeMobileNav()

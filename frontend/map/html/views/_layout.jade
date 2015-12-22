@@ -1,5 +1,5 @@
 div(ng-controller="MobilePageCtrl")
-  .mobile-page(ng-class="{' ':!isMobileNavOpen,'mobile-nav-open':isMobileNavOpen}")
+  .mobile-page(ng-class="{' ':!isMobileNavOpen,'mobile-nav-open':isMobileNavOpen, 'mobile-view': mobileView, 'desktop-view': desktopView }")
     include ../includes/_header
     #mobile-page-overlay(ng-if='isMobileNavOpen' ng-click='closeMobileNav($event)' ng-swipe-left='closeMobileNav($event)')
     block content

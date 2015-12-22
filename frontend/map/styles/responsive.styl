@@ -10,6 +10,23 @@ tablet = "(min-width:" + s + ") and (max-width:" + md-1 + ")"
 
 desktop = "(min-width:" + md + ")"
 
+/*
+ *  MARKER Classes to be used as parent selectors
+ */
+.desktop-view {
+
+}
+
+.mobile-view {
+
+}
+
+/*
+ * Minimum allowable width of desktop page
+ */
+.mobile-page.desktop-view
+  min-width: xs;
+
 /*RWD helpers*/
 
 .hidden-xs
@@ -44,16 +61,16 @@ desktop = "(min-width:" + md + ")"
   @media desktop
     display block!important
 
-.desktop-view
-  display none
-  @media desktop
-    display block!important
-  @media tablet
-    display block!important
-  @media mobileUp
-    display block!important
+.desktop-only
+  //display none
+  //@media desktop
+  //  display block!important
+  //@media tablet
+  //  display block!important
+  //@media mobileUp
+  //  display block!important
 
-.mobile-view
-  display none
-  @media mobile
-    display block!important
+.mobile-only
+  //display none
+  //@media mobile
+  //  display block!important

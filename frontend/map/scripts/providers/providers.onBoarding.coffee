@@ -58,7 +58,7 @@ app.provider 'rmapsOnBoardingOrderSelector', (rmapsOnBoardingOrderProvider, rmap
 
   @initScope = (plan, $scope) ->
     $scope.orderSvc = @getOrderSvc(plan)
-    $scope.steps = $scope.orderSvc.steps
+    $scope.view.steps = $scope.orderSvc.steps
     $scope
 
   @$get = =>

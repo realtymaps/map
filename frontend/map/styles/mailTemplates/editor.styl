@@ -1,0 +1,75 @@
+// stylings for wysiwyg editor to control look/feel of editor and associated text-angular components
+
+$template-stage-margin = 1.25in
+$wysiwyg-scale-factor = 0.7
+$page-height = 11in
+
+*, *:before, *:after
+  -webkit-box-sizing border-box
+  -moz-box-sizing border-box
+  box-sizing border-box
+
+.mail-wizard
+  .edit-template
+    .template-stage-container
+      position relative
+      overflow scroll
+      background-color $gray_ligther
+
+    .template-stage
+      left 0
+      top 0
+      right 0
+      bottom 0
+      padding-top ($template-stage-margin / 2)
+      padding-left ($template-stage-margin)
+      background-color $gray_ligther
+      height $page-height
+      margin-bottom $template-stage-margin
+      text-align center
+
+      .letter-editor
+        text-align left
+        // margin auto
+        box-shadow 4px 4px 20px #888888
+        zoom $wysiwyg-scale-factor
+
+        .wysiwygOnly
+          display block
+          pointer-events none
+
+      .macro-display
+        background-color #46b8f1
+        border-radius 3px
+        margin-left 2px
+        margin-right 2px
+
+      .macro-display-error
+        background-color red
+        border-radius 3px
+        margin-left 2px
+        margin-right 2px
+
+      .ta-letter-wrapper
+        // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
+        height @height
+        display block
+        width 100%
+        overflow auto
+        font-size 100%
+        line-height unset
+        background-color #ffffff
+
+      .letter-page:focus
+        border none
+
+      .ta-scroll-window > .ta-bind
+        padding 0
+        height @height
+      
+      .ta-root 
+        height @height
+        
+      #recipient-address-window, #return-address-window
+        overflow hidden
+        background-color rgba(100,100,100,0.5)
