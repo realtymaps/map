@@ -24,7 +24,7 @@ describe 'service.jobs.spec.coffee', ->
 
       _jobQueue = # nullifying the jobQueue.doMaintenance call used in JobService
         doMaintenance: () ->
-          _then = 
+          _then =
             then: (fn) =>
               fn()
           _then
@@ -45,10 +45,9 @@ describe 'service.jobs.spec.coffee', ->
     beforeEach ->
       @maintenanceSpy = sinon.spy(svc.__get__('jobQueue').doMaintenance)
 
-    it 'should query summary with doMaintenance', (done) ->
+    it 'should query summary with doMaintenance', () ->
       svc.summary.getAll().then (d) =>
         @maintenanceSpy.calledOnce.should.be.true
-        done()
 
 
   describe 'history error service', ->
@@ -89,10 +88,9 @@ describe 'service.jobs.spec.coffee', ->
       @jobQueue_taskConfig.whereRawSpy.callCount.should.equal 1
       done()
 
-    it 'should delete subtasks', (done) =>
+    it 'should delete subtasks', () =>
       svc.tasks.delete("foo").then () =>
         @jobQueue_subtaskConfig.deleteSpy.callCount.should.equal 1
-        done()
 
 
   describe 'health service', ->
@@ -177,8 +175,3 @@ describe 'service.jobs.spec.coffee', ->
       expect(@jobQueue_dataLoadHistory.whereSpy.args[0][0]).to.be.empty
 
       done()
-
-
-
-
-
