@@ -16,7 +16,7 @@ describe 'service.dataSource.coffee', ->
         data_source_id: 'blackknight'
         data_list_type: 'tax'
 
-    it 'should GET all data source fields', () ->
+    xit 'should GET all data source fields', () ->
       svc.getAll().then () =>
         expect(@dsSqlMock.toString()).to.contain('select * from "config_data_source_fields"')
         @dsSqlMock.selectSpy.calledOnce.should.be.true
