@@ -10,10 +10,10 @@ span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" drop
       span
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") {{pinnedTotal}} Pinned Properties
         a(ng-show="!pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") No Pinned Properties
-        span.results-btn(ng-click="unpinResults(); $event.stopPropagation()")
+        span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle
           span.action Results
-        span.results-btn(ng-click="pinResults(); $event.stopPropagation()")
+        span.results-btn(ng-click="pinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-plus-circle
           span.action Results
     .inner
