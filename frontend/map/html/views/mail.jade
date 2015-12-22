@@ -3,11 +3,10 @@
     .container
       header.row
         .col-md-8
-          h1.pageTitle Mailings
-          p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis fermentum blandit lacus, eget fringilla justo euismod in. In neque lacus, pretium at ligula vel, pharetra cursus massa.
-        div(class="col-md-4 text-right")
+          h1.pageTitle Mail Campaigns
+        .col-md-4.text-right
           .tools
-            input.search-box(type="search" ng-model="emailSearchQuery" placeholder="Search mailings")
+            input.search-box(type="search" ng-model="searchName" placeholder="Search mailings")
             span.divider
             button(class="btn btn-primary" ng-click="$state.go('editTemplate')") Create
       .row
@@ -15,12 +14,10 @@
           table(class="table table-hover")
             thead
               tr
-                th.select
-                  input(type="checkbox" name="selectAll")
                 th
                   span Title
                 th
-                  span Count
+                  span Recipients
                 th
                   span Type
                 th
@@ -28,17 +25,14 @@
                 th.col-md-1
                   span Date
             tbody
-              tr(ng-repeat="email in emailsArray | filter:emailSearchQuery")
-                td.select
-                  input(type="checkbox" name="selectGroup_{{$index}}")
+              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}")
                 td
-                  h4 {{email.title}}
-                  a(href="#group_details_{{$index}}" class="details" title="View group details") View group details
+                  h4 {{campaign.name}}
                 td
-                  span {{email.count}}
+                  span {{campaign.count}}
                 td
-                  span {{email.type}}
+                  span {{campaign.template_type}}
                 td
-                  span(class="{{email.status}}") {{email.status}}
+                  span(class="{{campaign.status}}") {{campaign.status}}
                 td.col-md-1
-                  span {{email.date | date:'MM/dd/yyyy'}}
+                  span {{campaign.submitted | date:'MM/dd/yyyy'}}
