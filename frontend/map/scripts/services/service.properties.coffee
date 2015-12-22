@@ -77,7 +77,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
 
-  _saveProperty = (model) ->
+  _saveProperty = (model, toggle = false) ->
     return if not model or not model.rm_property_id
     rm_property_id = model.rm_property_id
 
@@ -88,11 +88,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     if not prop
       _savedProperties[rm_property_id] = model
       model.savedDetails.isSaved = true
-      if !model.rm_status
-        service.getProperties model.rm_property_id, 'filter'
-        .then (result) ->
-          _.extend model, result.data[0]
-    else
+    else if toggle
       delete _savedProperties[rm_property_id]
       model.savedDetails.isSaved = false
 
@@ -107,13 +103,15 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     if not prop
       _favoriteProperties[rm_property_id] = model
       model.savedDetails.isFavorite = true
-      if !model.rm_status
-        service.getProperties model.rm_property_id, 'filter'
-        .then (result) ->
-          _.extend model, result.data[0]
     else
       delete _favoriteProperties[rm_property_id]
       model.savedDetails.isFavorite = false
+
+  _getDetails = (col = _savedProperties) ->
+    service.getProperties (_.pluck _.filter(col, (p) -> !p.rm_status?), 'rm_property_id'), 'filter'
+    .then (results) ->
+      for result in results
+        _.extend col[result.rm_property_id], result
 
   service =
 
@@ -150,8 +148,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     getProperties: (ids, columns) ->
       $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
-    saveProperty: (model) ->
-      _saveProperty model
+    saveProperty: (models) ->
+      if _.isArray models
+        _.each models, _saveProperty
+      else
+        _saveProperty models, true
+
+      _getDetails()
+
       $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
 
       #post state to database

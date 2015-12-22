@@ -36,7 +36,7 @@ _getDetailByPropertyId = (queryParams) ->
 
 _getDetailByPropertyIds = (queryParams) ->
 
-  query = sqlHelpers.select(propertyDetails(), queryParams.columns or 'detail')
+  query = sqlHelpers.select(propertyDetails(), 'filter')
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
 
   # logger.debug query.toString()

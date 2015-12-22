@@ -9,6 +9,8 @@ span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" drop
     .fixed-header
       span
         a(ui-sref="projectPins({id: selectedProject.project_id})") {{pinnedTotal}} Pinned Properties
+        a.icon-pin-results
+          i.fa.fa-plus.fa-2x(ng-click="pinResults($event)")
     .inner
       ul
         li(ng-repeat="property in pinnedProperties")
