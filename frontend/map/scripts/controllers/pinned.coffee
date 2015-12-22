@@ -20,12 +20,24 @@ app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, rmapsevents, rmapsprincip
     if _.isEmpty toPin
       toPin = _.keys $scope.map.markers.backendPriceCluster
 
+    return unless toPin.length
+
     toPin = _.map toPin, (p) -> rm_property_id: p
+
+    if confirm "Pin #{toPin.length} properties?"
+      rmapsPropertiesService.pinProperty toPin
+
+  $scope.unpinResults = ($event) ->
+    toPin = _.keys $scope.map.markers.filterSummary
+    if _.isEmpty toPin
+      toPin = _.keys $scope.map.markers.backendPriceCluster
 
     return unless toPin.length
 
-    if confirm "Pin #{toPin.length} properties?"
-      rmapsPropertiesService.saveProperty toPin
+    toPin = _.map toPin, (p) -> rm_property_id: p
+
+    if confirm "Unpin #{toPin.length} properties?"
+      rmapsPropertiesService.unpinProperty toPin
 
   $rootScope.$onRootScope rmapsevents.map.properties.pin, getPinned
   $rootScope.$onRootScope rmapsevents.map.properties.favorite, getFavorites
