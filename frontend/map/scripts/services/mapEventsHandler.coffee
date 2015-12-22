@@ -39,28 +39,13 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
       mouseover:null
       last: null
 
-    _handleHover = (model, lObject, type, layerName, eventName) ->
+    _handleHover = (model, lObject, type, layerName) ->
       return if !layerName or !type or !lObject
       if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
         rmapsLayerFormatters.MLS.setMarkerPriceOptions(model)
       if type == 'geojson'
-        if eventName == 'mouseout'
-          s = 's'
         opts = rmapsLayerFormatters.Parcels.getStyle(model, layerName)
         lObject.setStyle(opts)
-
-      #seems to be a google bug where mouse out is not always called
-    _handleMouseout = (model, maybeCaller) ->
-      if !model
-        return
-      model.isMousedOver = false
-
-      return if maybeCaller == 'results' #avoid recursion
-
-      mapCtrl.closeWindow() if mapCtrl.closeWindow?
-      _lastEvents.mouseover = null
-
-      $scope.formatters.results.mouseleave(null, model)
 
     _handleManualMarkerCluster = (model) ->
       if model.markerType == 'cluster'
@@ -85,52 +70,63 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
       ###
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
 
-        if _isMarker(type) and model?.markerType? and
-            (model.markerType == 'streetnum' or model.markerType == 'cluster') or
-            _lastEvents.mouseover?.rm_property_id == model.rm_property_id or
-            (originator == thisOriginator and maybeCaller?) #this has been called here b4 originally
-          # $log.debug '[BLOCKED] ' + events.targetInfo(event.originalEvent)
+        # Grab some details about the original event for logging
+        eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseover - no originalEvent'
+
+        if originator == thisOriginator and maybeCaller? # indicates recursion, bail
+          # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
+
+        if _lastEvents.mouseover?.rm_property_id == model.rm_property_id # Detect whether this is firing from previous marker
+          # $log.debug '[IGNORED:child] ' + eventInfo
+          return
+
+        if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster') # Ignore these types of markers
+          # $log.debug '[IGNORED:markertype] ' + eventInfo
+          return
+
+        $log.debug eventInfo
+
+        # Show popup
+        # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
+        if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+          mapCtrl.openWindow?(model, lObject)
+
+        # Update model
+        model.isMousedOver = true
         _lastEvents.mouseover = model
 
-        $log.debug events.targetInfo(event.originalEvent)
-
-        #not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-        if model.markerType != 'note'
-          return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-          mapCtrl.openWindow(model, lObject) if !maybeCaller && mapCtrl.openWindow?
-
-        model.isMousedOver = true
-
-        #_lastHovered catches the edge case where a mouseout event was somehow missed (html or leaflet bug?)
-        if _lastHovered? and _lastHovered?.model?.rm_property_id != model.rm_property_id
-          _lastHovered.model.isMousedOver = false
-          _handleMouseout(_lastHovered.model, maybeCaller)
-          _handleHover(_lastHovered.model, _lastHovered.lObject, _lastHovered.type, _lastHovered.layerName, 'mouseover-out')
-
-        _handleHover(model, lObject, type, layerName, 'mouseover')
-
-        _lastHovered = new _lastHoveredFactory(lObject, model, layerName, type)
-
-        if maybeCaller != 'results'
-          $scope.formatters.results.mouseenter(null, model)
+        # Update marker icon/style
+        _handleHover model, lObject, type, layerName
 
       mouseout: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
-        if event.originalEvent.relatedTarget?.className?.slice? or # Detect whether this is firing on a child element
-            (_isMarker(type) and model?.markerType? and
-            (model.markerType == 'streetnum' or model.markerType == 'cluster')  or
-            # _lastEvents.mouseout?.rm_property_id == model.rm_property_id or
-            (originator == thisOriginator and maybeCaller?)) #this has been called here b4 originally
-          # $log.debug '[BLOCKED]' + events.targetInfo(event.originalEvent)
+
+        # Grab some details about the original event for logging
+        eventInfo = if event?.originalEvent then events.targetInfo(event.originalEvent) else 'mouseout - no originalEvent'
+
+        if originator == thisOriginator and maybeCaller? # indicates recursion, bail
+          # $log.debug '[IGNORED:recursion] ' + eventInfo
           return
 
-        $log.debug events.targetInfo(event.originalEvent)
+        if event?.originalEvent?.relatedTarget?.className?.slice? # Detect whether this is firing on a child element
+          # $log.debug '[IGNORED:child] ' + eventInfo
+          return
 
-        _lastEvents.mouseout = model
+        if _isMarker(type) and (model?.markerType == 'streetnum' or model?.markerType == 'cluster') # Ignore these types of markers
+          # $log.debug '[IGNORED:markertype] ' + eventInfo
+          return
+
+        $log.debug eventInfo
+
+        # Close popup
+        mapCtrl.closeWindow?()
+
+        # Update model
+        model.isMousedOver = false
         _lastEvents.mouseover = null
 
-        _handleMouseout(model, maybeCaller)
-        _handleHover(model, lObject, type, layerName, 'mouseout')
+        # Update marker icon/style
+        _handleHover model, lObject, type, layerName
 
       click: (event, lObject, model, modelName, layerName, type) ->
         return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
