@@ -8,8 +8,8 @@ usrTableNames = require('../config/tableNames').user
 sqlHelpers = require '../utils/util.sql.helpers'
 userSvc = (require '../services/services.user').user.clone().init(false, true, 'singleRaw')
 profileSvc = (require '../services/services.user').profile
+userProfileSvc = (require '../services/services.user').user.profiles
 userUtils = require '../utils/util.user'
-
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
@@ -64,6 +64,7 @@ class ClientsCrud extends RouteCrud
 
       # TODO - TEMPORARY WORKAROUND for new client users until onboarding is complete.  Should be removed at that time
       newUser.id = clientId
+
       userSessionSvc.updatePassword newUser, 'Password$1', false
 
     .then ->
@@ -183,11 +184,22 @@ class ProjectRouteCrud extends RouteCrud
         projects
 
   byIdGET: (req, res, next) =>
+
     logger.debug @cloneRequest(req), true
 
     #so this is where bookshelf or objection.js would be much more concise
     super(req, res, next)
     .then (project) =>
+      if not project?
+        # Look for viewer profile
+        userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
+        .then (projects) ->
+          projects[0]
+      else
+        project
+    .then (project) =>
+      project.id  = project.project_id ? project.id
+      throw new Error('Project not found') unless project
       @clientsCrud.rootGET(req, res, next)
       .then (clients) ->
         project.clients = clients
@@ -201,6 +213,12 @@ class ProjectRouteCrud extends RouteCrud
       @drawnShapesCrud.rootGET(req, res, next)
       .then (drawnShapes) ->
         project.drawnShapes = drawnShapes
+        project
+    .then (project) =>
+      profileSvc.getAll project_id: req.params.id, true
+      .then (profiles) =>
+        favorites = _.reduce _.pluck(profiles, 'favorites'), _.merge
+        project.favorites = favorites
         project
 
   byIdDELETE: (req, res, next) ->

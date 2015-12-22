@@ -28,19 +28,19 @@ include mixins/_avatarMixin.jade
             div(ng-if="principal.isProjectEditor() && profile")
                 ul.nav.menu-options
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('properties')" class="properties" ng-class="{ active: isActive('properties') }")
+                        a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-pin
                             span.menu-label Pinned Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('notes')" class="notes" ng-class="{ active: isActive('notes') }")
+                        a.menu-link(ng-click="goToState('projectNotes', {id: project.id})" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('neighbourhoods')" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        a.menu-link(ng-click="goToState('projectNeighbourhoods', {id: project.id})" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
                             span.menu-label Neighbourhoods
                             span.menu-badge.count {{project.neighbourhoods.length}}
@@ -66,28 +66,28 @@ include mixins/_avatarMixin.jade
             div(ng-if="principal.isProjectViewer() && profile")
                 ul.nav.menu-options
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('neighbourhoods')" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
+                        a.menu-link(ng-click="goToState('projectNeighbourhoods', {id: project.id})" class="neighbourhoods" ng-class="{ active: isActive('neighbourhoods') }")
                             span.icon.menu-icon.icon-neighbourhood
                             span.menu-label Neighbourhoods
                             span.menu-badge.count {{project.neighbourhoods.length}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('properties')" class="properties" ng-class="{ active: isActive('properties') }")
+                        a.menu-link(ng-click="goToState('projectPins', {id: project.id})" class="properties" ng-class="{ active: isActive('properties') }")
                             span.icon.menu-icon.icon-property
                             span.menu-label Properties
                             span.menu-badge.count {{project.propertiesTotal}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('notes')" class="notes" ng-class="{ active: isActive('notes') }")
+                        a.menu-link(ng-click="goToState('projectNotes', {id: project.id})" class="notes" ng-class="{ active: isActive('notes') }")
                             span.icon.menu-icon.icon-note
                             span.menu-label Notes
                             span.menu-badge.count {{project.notes.length}}
 
                     li(ng-show="profile")
-                        a.menu-link(ng-click="goToState('favorites')" class="favorites" ng-class="{ active: isActive('favorites') }")
+                        a.menu-link(ng-click="goToState('projectFavorites', {id: project.id})" class="favorites" ng-class="{ active: isActive('favorites') }")
                             span.icon.menu-icon.icon-favorites
                             span.menu-label Favorites
-                            span.menu-badge.count {{project.favorites.length}}
+                            span.menu-badge.count {{project.favoritesTotal}}
 
         .bottom
             ul.nav
