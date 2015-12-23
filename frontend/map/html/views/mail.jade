@@ -17,6 +17,8 @@
                 th
                   span Title
                 th
+                  span Project
+                th
                   span Recipients
                 th
                   span Type
@@ -27,7 +29,9 @@
             tbody
               tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}")
                 td
-                  h4 {{campaign.name}}
+                  h4 {{campaign.campaign_name}}
+                td
+                  h4 {{campaign.project_name}}
                 td
                   span {{campaign.count}}
                 td

@@ -5,31 +5,26 @@ dbs = require '../config/dbs'
 db = dbs.get('main')
 
 class MailCrud extends crudService.ThenableCrud
-  getAll: (args...) ->
-    console.log "\n\n #### MailCrud..."
-    super(args...)
-    .join()
-    .then (data) ->
-      console.log "\n\ndata:"
-      console.log data
+  getAll: (query = {}, doLogQuery = false) ->
+    transaction = @dbFn()
+    tableName = @dbFn.tableName
 
-    # console.log Object.keys q
-    # q
+    @dbFn = () =>
+      ret = tables.mail.campaign().select(
+        '*',
+        db.raw("#{tables.mail.campaign.tableName}.name as campaign_name"),
+        db.raw("#{tables.user.project.tableName}.name as project_name"),
+        db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
+      )
+      .leftOuterJoin("#{tables.user.project.tableName}", () ->
+        this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
+      )
+      .where(query)
 
+      @dbFn = tables.mail.campaign
+      ret
+    @dbFn.tableName = tableName
+    super(query, doLogQuery)
 
-    # q = super(arguments)
-    # q.join(
-    #   tables.user.project()
-    #   .select(db.raw('name as project_name'))
-    # )
-    # .then (data) ->
-    #   console.log "\n\n #### data:"
-    #   console.log data
-    #   data
-    # q
-
-
-
-#instance = new crudService.ThenableCrud(tables.mail.campaign)
 instance = new MailCrud(tables.mail.campaign)
 module.exports = instance
