@@ -3,4 +3,5 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSenderInfoCtrl', ($rootScope, $scope, $state, rmapsprincipal) ->
+app.controller 'rmapsSenderInfoCtrl', ($rootScope, $scope, $state, $log, rmapsprincipal) ->
+  $log.debug "\n\n##### Sender Info"

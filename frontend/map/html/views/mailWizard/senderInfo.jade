@@ -1,0 +1,49 @@
+.sender-info
+    div.inner
+        div.container
+            h1.pageTitle Sender Info
+            form
+                div.row
+                    div.col-sm-8
+                        div.row
+                            div.col-sm-6
+                                div.form-group
+                                    label(for="sender_first_name") First Name
+                                    input(type="text" class="form-control" id="sender_first_name")
+                                div.form-group
+                                    label(for="sender_last_name") Last Name
+                                    input(type="text" class="form-control" id="sender_last_name")
+                                div.form-group
+                                    label(for="sender_email") Email
+                                    input(type="email" class="form-control" id="sender_email" placeholder="name@email.com")
+                                div.form-group
+                                    label(for="sender_phone_number") Phone Number
+                                    input(type="text" class="form-control" id="sender_phone_number")
+                                div.form-group
+                                    label(for="sender_photo") Your Photo
+                                    button(class="btn btn-stamp") + Add a Photo
+                            div.col-sm-6
+                                div.form-group
+                                    label(for="sender_company") Company
+                                    input(type="text" class="form-control" id="sender_company")
+                                div.form-group
+                                    label(for="sender_photo") Your Photo
+                                    button(class="btn btn-stamp") + Add a Photo
+                                div.form-group
+                                    label(for="sender_address_1") Address 1
+                                    input(type="text" class="form-control" id="sender_address_1")
+                                div.form-group
+                                    label(for="sender_address_2") Address 2
+                                    input(type="email" class="form-control" id="sender_address_2" placeholder="Apartment, suite, unit, building, floor")
+                                div.form-group
+                                    label(for="sender_city") City
+                                    input(type="text" class="form-control" id="sender_city")
+                                div.form-group
+                                    label(for="sender_state") State
+                                    div.select
+                                        select(class="form-control")
+                                            option(selected disabled) - Select State -
+                                            option Arizona
+                                            option New York
+                                            option Chicago
+                                            option California

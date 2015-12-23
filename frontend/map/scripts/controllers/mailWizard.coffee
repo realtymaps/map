@@ -4,11 +4,10 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsprincipal) ->
-  $log.debug "#### state:"
-  $log.debug $state
   $scope.step = $state.current.name
 
   $scope.steps = [
+    'senderInfo'
     'selectTemplate'
     'editTemplate'
   ]
