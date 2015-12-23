@@ -41,11 +41,11 @@ routeCrudToTest.__set__ 'userUtils', userUtils
 
 class TestServiceCrudProject extends ServiceCrudProject
   constructor: () ->
-    super sqlMock(tables.user.project).dbFn()
+    super sqlMock('user', 'project').dbFn()
 
   #overide the generators so we can inject fresh mocks without destroying the singleton tables
   clientsFact: () ->
-    clientsSvcCrud = super sqlMock(tables.auth.user).dbFn(), new ServiceCrud(sqlMock(tables.user.profile).dbFn())
+    clientsSvcCrud = super sqlMock('auth', 'user').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
     # console.log.cyan  "clientsSvcCrud: #{clientsSvcCrud.dbFn().tableName}"
     # console.log.cyan  "clientsSvcCrud: joinCrud: #{clientsSvcCrud.joinCrud.dbFn().tableName}"
 
@@ -53,10 +53,10 @@ class TestServiceCrudProject extends ServiceCrudProject
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
 
-    toTestThenableCrudInstance clientsSvcCrud, clientResponses, undefined, true
+    toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 
   notesFact: () ->
-    noteSvcCrud = super sqlMock(tables.user.notes).dbFn(), new ServiceCrud(sqlMock(tables.user.project).dbFn())
+    noteSvcCrud = super sqlMock('user', 'notes').dbFn(), new ServiceCrud(sqlMock('user', 'project').dbFn())
     noteSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
@@ -67,7 +67,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     toTestThenableCrudInstance noteSvcCrud, notesResponses
 
   drawnShapesFact: () ->
-    drawSvcCrud = super(sqlMock(tables.user.drawnShapes).dbFn())
+    drawSvcCrud = super(sqlMock('user', 'drawnShapes').dbFn())
     # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
     toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
 
@@ -104,7 +104,7 @@ describe 'route.projectSession', ->
       @mockRequest = req
 
     @ctor = routeCrudToTest
-    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject(), projectResponses, undefined, true
+    @projCrudSvc = toTestThenableCrudInstance new TestServiceCrudProject().init(false,false,false), projectResponses, false
 
     @subject = new @ctor(@projCrudSvc).init(false, safeProject)
 

@@ -18,7 +18,7 @@ twilioClientPromise = Promise.try () ->
     # make sure we know there wasn't twilio info available
     logger.warn 'Twilio login not found in environment.'
     throw NO_CLIENT_THROW
-
+twilioClientPromise.catch () -> # noop
 
 getSmsOptions = (to, subject, number) ->
   to = '+1'+to if '+' not in to

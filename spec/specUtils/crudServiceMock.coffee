@@ -2,14 +2,19 @@ basePath = require '../backend/basePath'
 logger = require "#{basePath}/config/logger"
 {dbFnCalls} = require "#{basePath}/utils/crud/util.crud.service.helpers"
 sinon = require 'sinon'
+SqlMock = require './sqlMock'
 # Promise = require 'bluebird'
 
 #wraps a crud instance to return all db functions as sql query or a sql payload object
 #TODO: Overwrite @dbFn with SqlMock
 toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
-  if doLog
-    logger.debug crudInstance, true
-    logger.debug "crudInstance: dbFn: #{crudInstance.dbFn}"
+  # if doLog
+    # logger.debug.green 'arguments:'
+    # logger.debug.cyan "crudInstance.dbFn.tableName: #{crudInstance.dbFn.tableName}"
+    # logger.debug.cyan "mockResponse: #{JSON.stringify(mockResponse)}"
+    # logger.debug.cyan "doRetAsPromise: #{doRetAsPromise}"
+    # logger.debug.green 'crudInstance.dbFn() instanceof SqlMock?'
+    # logger.debug.cyan crudInstance.dbFn() instanceof SqlMock
 
   for fnName in dbFnCalls
     do (fnName) ->
@@ -20,23 +25,29 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
         potentialKnexPromise = origFn.apply(crudInstance, arguments)
         maybeSql = potentialKnexPromise.toString()
 
-        # logger.debug.green maybeSql
-        # logger.debug.cyan potentialKnexPromise, true
+        if doLog
+          logger.debug.green "#{fnName}: maybeSql, potentialKnexPromise:"
+          logger.debug.cyan maybeSql
+          logger.debug.red potentialKnexPromise
 
         if maybeSql != "[object Promise]"
           calledSql = maybeSql
 
         unless mockResponse?[fnName]
+          if doLog
+            logger.debug.green "returning stub calledSql:"
+            logger.debug.cyan calledSql
           stub.returns(calledSql)
           return stub(arguments...)
 
         resp = mockResponse[fnName]
         stub.sqls.push calledSql
         if doLog
-          logger.debug.green stub.sqls
-          logger.debug.green "mockResponse[#{fnName}]"
-        logger.debug.red resp, true
-        logger.debug.red fnName
+          logger.debug.green 'stub.sqls, mockResponse, resp, fnName:'
+          logger.debug.cyan stub.sqls
+          logger.debug.cyan "mockResponse[#{fnName}]"
+          logger.debug.cyan resp, true
+          logger.debug.cyan fnName
         stub.returns(resp)
         # console.log arguments, true
         resp =  stub(arguments...)
