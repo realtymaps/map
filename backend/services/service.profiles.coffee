@@ -65,8 +65,8 @@ update = (profile, auth_user_id, safe = safeProfile) ->
 
   userProfileSvc.getById profile.id
   .then (profileProject) ->
-    if profileProject?
-      projectSvc.update profileProject.project_id, _.pick(profile, ['properties_selected'])
+    if profileProject? and !_.isEmpty(toUpdate = _.pick(profile, ['properties_selected']))
+      projectSvc.update profileProject.project_id, toUpdate
   .then () ->
     # logger.debug "profile update"
     # logger.debug profile, true

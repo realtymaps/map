@@ -36,7 +36,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
         # Load the Project counts such as number of properties, neighbourhoods, etc...
         rmapsProjectsService.getProject profile.project_id
         .then (project) ->
-          project.propertiesTotal = _.keys(project.properties_selected).length
+          project.propertiesTotal = _.keys(project.properties_selected)?.length
+          project.favoritesTotal = _.keys(project.favorites)?.length
           $scope.project = project
 
         # If Editor, retrieve the clients for the project

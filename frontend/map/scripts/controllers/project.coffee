@@ -75,11 +75,21 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
   $scope.loadProject = () ->
     rmapsProjectsService.getProject $state.params.id
     .then (project) ->
+
       # It is important to load property details before properties are added to scope to prevent template breaking
-      $scope.loadProperties project.properties_selected
-      .then (properties) ->
-        project.properties_selected = properties
-        project.propertiesTotal = _.keys(properties).length
+
+      if not _.isEmpty project.properties_selected
+        $scope.loadProperties project.properties_selected
+        .then (properties) ->
+          project.properties_selected = _.values(properties)
+          project.propertiesTotal = project.properties_selected.length
+
+      if not _.isEmpty project.favorites
+        $scope.loadProperties project.favorites
+        .then (properties) ->
+          $log.debug _.values properties
+          project.favorites = _.values(properties)
+          project.favoritesTotal = project.favorites.length
 
       project.properties_selected = null
 
