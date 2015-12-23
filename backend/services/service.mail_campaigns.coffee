@@ -6,22 +6,22 @@ db = dbs.get('main')
 
 class MailCrud extends crudService.ThenableCrud
   getAll: (query = {}, doLogQuery = false) ->
-    transaction = @dbFn()
+    transaction = @dbFn
     tableName = @dbFn.tableName
 
     @dbFn = () =>
-      ret = tables.mail.campaign().select(
+      ret = transaction().select(
         '*',
         db.raw("#{tables.mail.campaign.tableName}.name as campaign_name"),
         db.raw("#{tables.user.project.tableName}.name as project_name"),
         db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
       )
-      .leftOuterJoin("#{tables.user.project.tableName}", () ->
+      .leftJoin("#{tables.user.project.tableName}", () ->
         this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
       )
       .where(query)
 
-      @dbFn = tables.mail.campaign
+      @dbFn = transaction
       ret
     @dbFn.tableName = tableName
     super(query, doLogQuery)
