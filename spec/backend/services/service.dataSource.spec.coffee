@@ -9,18 +9,34 @@ require 'should'
 describe 'service.dataSource.coffee', ->
   describe 'basic CRUD', ->
     beforeEach ->
-      @dsSqlMock = new SqlMock 'config', 'dataSourceFields'
-      svc.__get__('tables', @dsSqlMock)
+      @config_dataSourceFields = new SqlMock 'config', 'dataSourceFields'
+      @config_dataSourceLookups = new SqlMock 'config', 'dataSourceLookups'
 
-      @query =
-        data_source_id: 'blackknight'
-        data_list_type: 'tax'
+      @tables =
+        config:
+          dataSourceFields: () =>
+            @config_dataSourceFields
+          dataSourceLookups: () =>
+            @config_dataSourceLookups
 
-    xit 'should GET all data source fields', () ->
-      svc.getAll().then () =>
-        expect(@dsSqlMock.toString()).to.contain('select * from "config_data_source_fields"')
-        @dsSqlMock.selectSpy.calledOnce.should.be.true
-        @dsSqlMock.whereSpy.called.should.be.false
+      # rewire modules used directly inside service logic
+      svc.__set__('tables', @tables)
+
+      # aquire service class to be tested
+      DataSourceServiceClass = svc.__get__('DataSourceService')
+
+      # create service instance to test on
+      dataSourceTest = new DataSourceServiceClass @config_dataSourceFields.dbFn(), "MetadataEntryID"
+
+      # reset module to this test instance
+      @dataSourceSvc = dataSourceTest
+
+    it 'should GET all data source fields', (done) ->
+      @dataSourceSvc.getAll().then () =>
+        expect(@config_dataSourceFields.toString()).to.contain('select * from "config_data_source_fields"')
+        expect(@config_dataSourceFields.selectSpy.calledOnce).to.be.false # no select is explicitly called in Crud class
+        expect(@config_dataSourceFields.whereSpy.calledOnce).to.be.true # we always do where() though
+        done()
 
 
   describe 'getColumnList', ->

@@ -55,6 +55,8 @@ class SqlMock
         @commitSpy = sinon.spy(trx, 'commit')
         @rollbackSpy = sinon.spy(trx, 'rollback')
       return @
+    @tableName = @tableHandle
+
 
     _sqlFns.forEach (name) =>
       # spy on query-operators
@@ -72,8 +74,12 @@ class SqlMock
 
   dbFn: () =>
     fn = () =>
+      if @debug?
+        console.log.cyan "dbFn of #{@groupName}.#{@tableHandle} invoked"
       @
     fn.tableName = @tableName
+    if @debug?
+      console.log.cyan "tablename: #{@tableName}"
     fn
 
   setResult: (result) ->

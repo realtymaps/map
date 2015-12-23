@@ -29,6 +29,7 @@ describe 'service.jobs.spec.coffee', ->
               fn()
           _then
 
+      # rewire modules used directly inside service logic
       svc.__set__('jobQueue', _jobQueue)
       svc.__set__('dbs', @mainDBS)
       svc.__set__('tables', @tables)
@@ -44,8 +45,18 @@ describe 'service.jobs.spec.coffee', ->
   describe 'history with doMaintenance', ->
     beforeEach ->
       @maintenanceSpy = sinon.spy(svc.__get__('jobQueue').doMaintenance)
+      @jobQueue_summary = new SqlMock 'jobQueue', 'summary'
 
-    xit 'should query summary with doMaintenance', () ->
+      # aquire service class to be tested
+      JobServiceClass = svc.__get__('JobService')
+
+      # create service instance to test on
+      jobTest = new JobServiceClass @jobQueue_summary.dbFn()
+
+      # reset module 'tasks' object to this test instance
+      svc.summary = jobTest
+
+    it 'should query summary with doMaintenance', () ->
       svc.summary.getAll().then (d) =>
         @maintenanceSpy.calledOnce.should.be.true
 
@@ -70,7 +81,6 @@ describe 'service.jobs.spec.coffee', ->
   describe 'task service', ->
     beforeEach () =>
       @jobQueue_taskConfig = new SqlMock 'jobQueue', 'taskConfig'
-      @jobQueue_taskConfig.tableName = "jq_task_config"
       @jobQueue_subtaskConfig = new SqlMock 'jobQueue', 'subtaskConfig'
 
       @tables =
@@ -80,17 +90,26 @@ describe 'service.jobs.spec.coffee', ->
           subtaskConfig: () =>
             @jobQueue_subtaskConfig
 
+      # rewire modules used directly inside service logic
       svc.__set__('tables', @tables)
 
-    # the TaskService class in service.jobs.coffee contains a hack that is difficult to test
-    xit 'should query task service', (done) =>
-      svc.tasks.getAll(name: "foo")#.then (d) =>
-      @jobQueue_taskConfig.whereRawSpy.callCount.should.equal 1
-      done()
+      # aquire service class to be tested
+      TaskServiceClass = svc.__get__('TaskService')
 
-    xit 'should delete subtasks', () =>
+      # create service instance to test on
+      tasksTest = new TaskServiceClass @jobQueue_taskConfig.dbFn()
+
+      # reset module 'tasks' object to this test instance
+      svc.tasks = tasksTest
+
+    it 'should query task service', (done) =>
+      svc.tasks.getAll(name: "foo").then (d) =>
+        expect(@jobQueue_taskConfig.whereRawSpy.callCount).to.equal 1
+        done()
+
+    it 'should delete subtasks', () =>
       svc.tasks.delete("foo").then () =>
-        @jobQueue_subtaskConfig.deleteSpy.callCount.should.equal 1
+        expect(@jobQueue_subtaskConfig.deleteSpy.callCount).to.equal 1
 
 
   describe 'health service', ->
