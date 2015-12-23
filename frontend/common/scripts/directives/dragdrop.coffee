@@ -28,7 +28,10 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
         angular.element(el).attr 'draggable', 'true'
 
         el.bind 'dragstart', (e) ->
+
+          # Firefox won't fire drag events without data
           e.dataTransfer.setData('text/plain', '')
+
           rmapsDragDrop.dragStart
             el: el
             model: scope.rmapsDraggable
