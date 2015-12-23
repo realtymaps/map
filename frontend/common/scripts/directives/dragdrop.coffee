@@ -28,6 +28,7 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
         angular.element(el).attr 'draggable', 'true'
 
         el.bind 'dragstart', (e) ->
+          e.dataTransfer.setData('text/plain', '')
           rmapsDragDrop.dragStart
             el: el
             model: scope.rmapsDraggable
