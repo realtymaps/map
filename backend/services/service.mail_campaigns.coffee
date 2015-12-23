@@ -11,12 +11,12 @@ class MailCrud extends crudService.ThenableCrud
 
     @dbFn = () =>
       ret = transaction().select(
-        '*',
+        "#{tables.mail.campaign.tableName}.*",
         db.raw("#{tables.mail.campaign.tableName}.name as campaign_name"),
         db.raw("#{tables.user.project.tableName}.name as project_name"),
         db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
       )
-      .leftJoin("#{tables.user.project.tableName}", () ->
+      .join("#{tables.user.project.tableName}", () ->
         this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
       )
       .where(query)
