@@ -77,21 +77,19 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
       _getPropertyData('filterSummary', hash, mapState, returnType, filters, cache)
       , http: {route: backendRoutes.properties.filterSummary })
 
-  _saveProperty = (model) ->
+  _saveProperty = (model, save = true) ->
     return if not model or not model.rm_property_id
     rm_property_id = model.rm_property_id
 
-    if !model.savedDetails
-      model.savedDetails = new rmapsProperty(rm_property_id)
+    model.savedDetails ?= new rmapsProperty(rm_property_id)
 
     prop = _savedProperties[rm_property_id]
-    if not prop
-      _savedProperties[rm_property_id] = model
+
+    if save
+      if not prop
+        _.extend model, _savedProperties[rm_property_id]
+        _savedProperties[rm_property_id] = model
       model.savedDetails.isSaved = true
-      if !model.rm_status
-        service.getProperties model.rm_property_id, 'filter'
-        .then (result) ->
-          _.extend model, result.data[0]
     else
       delete _savedProperties[rm_property_id]
       model.savedDetails.isSaved = false
@@ -107,13 +105,15 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     if not prop
       _favoriteProperties[rm_property_id] = model
       model.savedDetails.isFavorite = true
-      if !model.rm_status
-        service.getProperties model.rm_property_id, 'filter'
-        .then (result) ->
-          _.extend model, result.data[0]
     else
       delete _favoriteProperties[rm_property_id]
       model.savedDetails.isFavorite = false
+
+  _loadProperties = (col = _savedProperties) ->
+    service.getProperties (_.pluck _.filter(col, (p) -> !p.rm_status?), 'rm_property_id'), 'filter'
+    .then (response) ->
+      for result in response.data
+        _.extend col[result.rm_property_id], result
 
   service =
 
@@ -150,8 +150,32 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     getProperties: (ids, columns) ->
       $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
-    saveProperty: (model) ->
-      _saveProperty model
+    pinProperty: (models) ->
+      if _.isArray models
+        _.each models, (model) ->
+          _saveProperty model, true
+          true
+      else
+        _saveProperty models, true
+
+      _loadProperties()
+      .then () ->
+        $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
+
+      #post state to database
+      toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
+      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
+      _saveThrottler.invokePromise statePromise
+      statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
+
+    unpinProperty: (models) ->
+      if _.isArray models
+        _.each models, (model) ->
+          _saveProperty model, false
+          true
+      else
+        _saveProperty models, false
+
       $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
 
       #post state to database
