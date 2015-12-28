@@ -3,6 +3,11 @@
 $card-width = 325px
 $card-gutter = 8px
 
+$mobile-width-tiny = 320px
+$card-width-tiny = 280px
+
+$mobile-tiny = "(max-width: " + $mobile-width-tiny + ")"
+
 .mobile-view
   .leaflet-bottom
     margin-bottom: 110px;
@@ -36,15 +41,25 @@ $card-gutter = 8px
     border: solid 1px #666;
     border-bottom: none;
     padding: 5px;
+    overflow: hidden;
     transition: left 125ms ease;
+
+    @media $mobile-tiny
+      width: $card-width-tiny;
 
   .detail-card.tray-center
     display: block;
     left: "calc(50% - %s / 2)" % $card-width
 
+    @media $mobile-tiny
+      left: "calc(50% - %s / 2)" % $card-width-tiny
+
   .detail-card.tray-right
     display: block
     left: "calc(50% + %s / 2 + %s)" % ($card-width $card-gutter);
+
+    @media $mobile-tiny
+      left: "calc(50% + %s / 2 + %s)" % ($card-width-tiny $card-gutter);
 
     .photo-overlay
       display: block;
@@ -53,6 +68,9 @@ $card-gutter = 8px
     display: block
     left: "calc(50% - %s * 1.5 - %s)" % ($card-width $card-gutter);
 
+    @media $mobile-tiny
+      left: "calc(50% - %s * 1.5 - %s)" % ($card-width-tiny $card-gutter);
+
     .photo-overlay
       display: block;
 
@@ -60,9 +78,15 @@ $card-gutter = 8px
     display: block
     left: "calc(100% + %s + %s)" % ($card-width $card-gutter);
 
+    @media $mobile-tiny
+      left: "calc(100% + %s + %s)" % ($card-width-tiny $card-gutter);
+
   .detail-card.hidden-left
     display: block
     left: -1 * ($card-width + $card-gutter);
+
+    @media $mobile-tiny
+      left: -1 * ($card-width-tiny + $card-gutter);
 
   .property-img
     float left
@@ -135,3 +159,6 @@ $card-gutter = 8px
     .location
       color: $rm_attribute_lightest
 
+    .year_built
+      @media $mobile-tiny
+        display: none !important
