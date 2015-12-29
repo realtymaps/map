@@ -77,21 +77,12 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     .then (project) ->
 
       # It is important to load property details before properties are added to scope to prevent template breaking
-
-      if not _.isEmpty project.properties_selected
-        $scope.loadProperties project.properties_selected
+      toLoad = _.merge {}, project.properties_selected, project.favorites
+      if not _.isEmpty toLoad
+        $scope.loadProperties toLoad
         .then (properties) ->
-          project.properties_selected = _.values(properties)
-          project.propertiesTotal = project.properties_selected.length
-
-      if not _.isEmpty project.favorites
-        $scope.loadProperties project.favorites
-        .then (properties) ->
-          $log.debug _.values properties
-          project.favorites = _.values(properties)
-          project.favoritesTotal = project.favorites.length
-
-      project.properties_selected = null
+          project.properties_selected = _.pick properties, _.keys(project.properties_selected)
+          project.favorites = _.pick properties, _.keys(project.favorites)
 
       clientsService = new rmapsClientsService project.id unless clientsService
       $scope.loadClients()

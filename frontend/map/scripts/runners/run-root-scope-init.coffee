@@ -14,5 +14,6 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsprincipal, rmapsSpinne
   $rootScope.$stateParams = $stateParams
   $rootScope.Spinner = rmapsSpinner
   $rootScope.stateData = []
+  $rootScope._ = window._
 
   rmapsRunnerHelpers.setRegisterScopeData()
