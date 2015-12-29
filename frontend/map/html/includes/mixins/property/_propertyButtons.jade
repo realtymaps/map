@@ -13,5 +13,5 @@ mixin propertyButtons(resultName)
     button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
       i.fa.fa-sticky-note &nbsp;
 
-    button.snail(ng-click="formatters.property.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")
+    button.snail(ng-click="formatters.results.zoomTo(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")
       i.fa.fa-map-marker &nbsp;
