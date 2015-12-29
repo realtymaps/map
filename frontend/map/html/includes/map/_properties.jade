@@ -31,11 +31,10 @@ include ../mixins/property/_propertyAttributes.jade
       .detail-card(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
       ng-class="trayPosition($index)"
       ng-click="cardClick($index, property)")
-        .photo
-          i.fa.fa-home
+        .property-img
+          .status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
+          img(ng-src="{{formatters.property.google.StreetView.getUrl(property, 85, 85)}}" title="{{property.title}}")
         .card-info
-          .price(ng-if="property.price")
-            span.price-label {{formatters.property.getPriceLabel(property.rm_status)}}&nbsp;
-            | {{formatters.property.getPrice(property.price)}}
-          .address {{property.street_address_num}} {{property.street_address_name}} {{property.street_address_unit}}
-          .city-state-zip {{formatters.property.getCityStateZip(property)}}
+          a.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}" ng-class="{ 'pinned': formatters.property.isSavedResult(property) }")
+            span.icon.icon-pin
+          +propertyAttributes('property')

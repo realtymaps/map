@@ -1,5 +1,7 @@
 app = require '../app.coffee'
-app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, rmapsevents, rmapsprincipal, rmapsPropertiesService) ->
+_ = require 'lodash'
+
+app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsevents, rmapsprincipal, rmapsPropertiesService) ->
 
   getPinned = (event, pinned) ->
     $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
@@ -13,6 +15,50 @@ app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, rmapsevents, rmapsprincip
     getPinned()
     getFavorites()
 
+  $scope.pinResults = ($event) ->
+    toPin = $scope.formatters.results.getResultsArray()
+    console.log toPin
+
+    return unless toPin?.length
+
+    if toPin.length == 1
+      $scope.modalTitle = "Pin #{toPin.length} Property?"
+    else
+      $scope.modalTitle = "Pin #{toPin.length} Properties?"
+
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+
+    $scope.modalCancel = () ->
+      modalInstance.dismiss('cancel')
+
+    $scope.modalOk = () ->
+      modalInstance.dismiss('ok')
+      rmapsPropertiesService.pinProperty toPin
+
+  $scope.unpinResults = ($event) ->
+    toPin = $scope.formatters.results.getResultsArray()
+
+    return unless toPin?.length
+
+    if toPin.length == 1
+      $scope.modalTitle = "Unpin #{toPin.length} Property?"
+    else
+      $scope.modalTitle = "Unpin #{toPin.length} Properties?"
+
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+
+    $scope.modalCancel = () ->
+      modalInstance.dismiss('cancel')
+
+    $scope.modalOk = () ->
+      modalInstance.dismiss('ok')
+      rmapsPropertiesService.unpinProperty toPin
+
   $rootScope.$onRootScope rmapsevents.map.properties.pin, getPinned
   $rootScope.$onRootScope rmapsevents.map.properties.favorite, getFavorites
-

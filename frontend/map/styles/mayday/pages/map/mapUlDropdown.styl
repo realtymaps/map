@@ -8,7 +8,7 @@ $fnMakeMapUlDropdown()
       color $dark_blue
       font-size 12px
       font-weight bold
-      padding 15px
+      padding 12px
     .inner
       ul
         list-style none
@@ -19,7 +19,7 @@ $fnMakeMapUlDropdown()
           a
             display block
             overflow hidden
-            padding 10px
+            padding 12px
             span.enity
               position relative
               float left
@@ -47,23 +47,7 @@ $fnMakeMapUlDropdown()
                 font-size 18px
                 margin-right 10px
                 padding 8px
-            span.actions
-              width 20%
-              float right
-              opacity 0
-              transform scale(.2)
-              @extends .global-transition
-              .icon
-                display inline-block
-                font-size 20px
-                padding 7px
-                float right
-                &.icon-remove
-                  display none
 
-                &:hover
-                &:focus
-                  color $light_blue
 
           &:hover
           &:focus
@@ -72,3 +56,20 @@ $fnMakeMapUlDropdown()
             span.actions
               opacity 1
               transform scale(1)
+    span.actions
+      width 20%
+      float right
+      opacity 0
+      transform scale(.2)
+      @extends .global-transition
+      .icon
+        display inline-block
+        font-size 20px
+        padding 7px
+        float right
+        &.icon-remove
+          display none
+
+        &:hover
+        &:focus
+          color $light_blue

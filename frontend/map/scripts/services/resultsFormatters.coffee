@@ -11,30 +11,6 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
   leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
   limits = rmapsMainOptions.map
 
-  _resultOrModel = (result, model, resultsHash) ->
-    if result
-      return result
-    if !model or !model?.rm_property_id or !resultsHash
-      return undefined
-    resultsHash[model.rm_property_id]
-
-  _handleMouseEventToMap = (mapCtrl, eventName, result, model, resultsHash, originator) ->
-    event = window.event
-    result = _resultOrModel(result, model, resultsHash)
-    return unless result
-
-    if model != result and model.hasOwnProperty('isMousedOver')
-      result.isMousedOver = model.isMousedOver  #THIS IS important as the model is not always the same as the result (reference wise) rmaps ngReplacements
-
-    #need event, lObject, model, modelName, layerName, type
-    modelName = result.rm_property_id
-    layerName = if rmapsZoomLevel.isPrice(mapCtrl.scope.map.center.zoom) then 'filterSummary' else 'filterSummaryPoly'
-    originator = if originator? then originator else 'results'
-
-    payload = if layerName != 'filterSummaryPoly' then leafletDataMainMap.get(modelName) else leafletDataMainMap.get(modelName, layerName)
-    {lObject, type} = payload
-    mapCtrl.eventHandle[eventName](event, lObject, result, modelName, layerName, type, originator, 'results')
-
   class ResultsFormatter
 
     RESULTS_LIST_DEFAULT_LENGTH: 10
@@ -213,14 +189,6 @@ app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $stat
       else
         maybeFetchCb(false)
         @mapCtrl.scope.selectedResult = undefined
-
-    mouseenter: (result, model, originator) =>
-      _handleMouseEventToMap(@mapCtrl, 'mouseover', result, model, @mapCtrl.scope.results, originator)
-
-    mouseleave: (result, model, originator) =>
-      # return if @lastResultMouseLeave == (result or model)
-      # @lastResultMouseLeave = result or model
-      _handleMouseEventToMap(@mapCtrl, 'mouseout', result, model, @mapCtrl.scope.results, originator)
 
     clickSaveResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)

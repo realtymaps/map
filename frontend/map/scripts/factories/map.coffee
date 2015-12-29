@@ -91,7 +91,11 @@ app.factory 'rmapsMap',
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
-          saved = rmapsPropertiesService.saveProperty(model)
+          if model.savedDetails?.isSaved
+            saved = rmapsPropertiesService.unpinProperty(model)
+          else
+            saved = rmapsPropertiesService.pinProperty(model)
+
           rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
           lObject?.setIcon(new L.divIcon(model.icon))
           return unless saved
