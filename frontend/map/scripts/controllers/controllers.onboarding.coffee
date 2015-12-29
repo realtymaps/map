@@ -55,7 +55,6 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
 ($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
 
-
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
     delete payment.number
@@ -99,6 +98,6 @@ app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log) ->
   $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
   $log.debug $scope
 
-app.controller 'rmapsOnBoardingVerifyCtrl', ($scope) ->
+app.controller 'rmapsOnBoardingVerifyCtrl', ($scope, $log) ->
   $log = $log.spawn("map:rmapsOnBoardingVerifyCtrl")
   $log.debug $scope

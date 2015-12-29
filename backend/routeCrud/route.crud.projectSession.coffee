@@ -189,7 +189,7 @@ class ProjectRouteCrud extends RouteCrud
 
     #so this is where bookshelf or objection.js would be much more concise
     super(req, res, next)
-    .then (project) =>
+    .then (project) ->
       if not project?
         # Look for viewer profile
         userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
@@ -214,9 +214,9 @@ class ProjectRouteCrud extends RouteCrud
       .then (drawnShapes) ->
         project.drawnShapes = drawnShapes
         project
-    .then (project) =>
+    .then (project) ->
       profileSvc.getAll project_id: req.params.id, true
-      .then (profiles) =>
+      .then (profiles) ->
         favorites = _.reduce _.pluck(profiles, 'favorites'), _.merge
         project.favorites = favorites
         project
