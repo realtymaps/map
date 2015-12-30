@@ -182,8 +182,8 @@ class ProjectRouteCrud extends RouteCrud
         _.each projects, (project) ->
           project.drawnShapes = _.filter drawnShapes, project_id: project.id
         projects
-    .then (projects) ->
-      profileSvc.getAll project_id: _.pluck(projects, 'id'), true
+    .then (projects) =>
+      @svc.clients.getAll project_id: _.pluck(projects, 'id'), true
       .then (profiles) =>
         profilesIndex = _.groupBy profiles, 'project_id'
         _.each projects, (project) ->
@@ -221,8 +221,8 @@ class ProjectRouteCrud extends RouteCrud
       .then (drawnShapes) ->
         project.drawnShapes = drawnShapes
         project
-    .then (project) ->
-      profileSvc.getAll project_id: req.params.id, true
+    .then (project) =>
+      @svc.clients.getAll project_id: req.params.id, true
       .then (profiles) =>
         project.favorites = _.merge {}, _.pluck(profiles, 'favorites')...
 
