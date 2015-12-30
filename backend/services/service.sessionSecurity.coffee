@@ -59,16 +59,11 @@ ensureSessionCount = (req) -> Promise.try () ->
   if req.session.permissions['unlimited_logins']
     #logger.debug "ensureSessionCount for #{req.user.username}: unlimited logins allowed"
     return Promise.resolve()
-  maxLoginsPromise = keystore.cache.getValuesMap('max logins')
-  .then (maxLogins) ->
-    if req.session.groups['Premium Tier']
-      return maxLogins.premium
-    if req.session.groups['Standard Tier']
-      return maxLogins.standard
-    if req.session.groups['Basic Tier']
-      return maxLogins.basic
-    if req.session.groups['Free Tier']
-      return maxLogins.free
+  maxLoginsPromise = keystore.cache.getValuesMap('plans')
+  .then (plans) ->
+    plan =_.find plans, (plan) ->
+      !!req.session.groups[plan + ' Tier']
+    return plan.maxLogins
 
   sessionSecuritiesPromise = tables.auth.sessionSecurity()
   .whereNotExists () ->

@@ -37,10 +37,15 @@ app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmaps
         $state.go step, $scope.user
 
       updateState:  (step) ->
+        proRegEx = /Pro/g
         $scope.view.step = step if step
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
-        $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(/Pro/g, '')) + 1
+
+        #TODO: this should probably come from the backend
+        $scope.planAmount = if proRegEx.test $scope.view.step then 30 else 20
+
+        $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
 
   rmapsOnBoardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
@@ -60,13 +65,28 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
 ($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
 
+  _safePaymentFields = [
+    "amount"
+    "last4"
+    "brand"
+    "country"
+    "cvc_check"
+    "exp_month"
+    "exp_year"
+    "funding"
+  ]
+
+  _cleanReSubmit = () ->
+    #we might be resending the card info with user info changes
+    $scope.user.card = _.omit $scope.user.card, _safePaymentFields
+    delete $scope.user.card.token
+    $scope.user.card
+
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
-    delete payment.number
-    delete payment.cvc
-    delete payment.exp_month
-    delete payment.exp_year
+    payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
     payment.token = response.id
+    _.extend payment, _.pick response, _safePaymentFields
     payment
 
   behaveLikeAngularValidation = (formField, rootForm) ->
@@ -77,7 +97,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
 
   _.merge $scope,
     charge: ->
-      stripe.card.createToken($scope.user.card)
+      stripe.card.createToken(_cleanReSubmit())
       .then (response) ->
         $log.log 'token created for card ending in ', response.card.last4
         _.extend $scope.user, card: _cleanPayment(response)
