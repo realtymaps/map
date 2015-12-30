@@ -30,6 +30,7 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
       rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
         $scope.loadProjects()
+        rmapsprincipal.setIdentity response.data.identity
 
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
@@ -40,6 +41,8 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
       $scope.projects = projects
     .catch (error) ->
       $log.error error
+
+  $scope.deleteProject = rmapsProjectsService.delete
 
   $rootScope.registerScopeData () ->
     $scope.loadProjects()

@@ -121,6 +121,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     .then (identity) ->
       $scope.loadIdentity identity, Number($state.params.project_id)
 
+  $rootScope.$onRootScope rmapsevents.principal.login.success, (event, identity) ->
+    $scope.loadIdentity identity
+
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
