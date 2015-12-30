@@ -2,12 +2,17 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsGeoLocations, rmapsOnBoardingOrderSelector) ->
-
+app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
+rmapsPlansService, rmapsFipsCodes, rmapsUsStates) ->
 
   $log = $log.spawn("map:rmapsOnBoardingCtrl")
 
-  rmapsGeoLocations.states().then (states) ->
+  rmapsPlansService.getList().then (plans) ->
+    _.merge $scope,
+      view:
+        plans: plans
+
+  rmapsUsStates.getAll().then (states) ->
     $scope.us_states = states
 
   step = $state.current.name
@@ -41,25 +46,30 @@ app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmaps
         $scope.view.step = step if step
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
-
-        #TODO: this should probably come from the backend
-        $scope.planAmount = if proRegEx.test $scope.view.step then 30 else 20
-
+        currentPlan = if $scope.orderSvc.name then $scope.orderSvc.name else 'standard'
+        $scope.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
+
+    plan:
+      name: 'standard'
+
+      getSelected: (planStr) ->
+        if $scope.plan.name == planStr then 'selected' else 'select'
+
+      set: (newPlan) ->
+        $scope.plan.name = newPlan
+        if $scope.view?.plans?
+          $scope.plan.price = $scope.view.plans[newPlan]?.price
+          unless $scope.plan.price
+            $log.error 'invalid plan'
+
+        newPlan
 
   rmapsOnBoardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
 app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
   $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
-
-  $scope.plan = 'standard'
-
-  $scope.getSelected = (planStr) ->
-    if $scope.plan == planStr then 'selected' else 'select'
-
-  $scope.setPlan = (newPlan) ->
-    $scope.plan = newPlan
 
 app.controller 'rmapsOnBoardingPaymentCtrl',
 ($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
@@ -71,14 +81,15 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     "brand"
     "country"
     "cvc_check"
+    "funding"
     "exp_month"
     "exp_year"
-    "funding"
   ]
 
   _cleanReSubmit = () ->
     #we might be resending the card info with user info changes
-    $scope.user.card = _.omit $scope.user.card, _safePaymentFields
+    #note payment amount must be handled on backend only on actually charging
+    $scope.user.card = _.omit $scope.user.card, _safePaymentFields.slice(0, _safePaymentFields.indexOf "exp_month")
     delete $scope.user.card.token
     $scope.user.card
 
@@ -103,7 +114,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         _.extend $scope.user, card: _cleanPayment(response)
         $scope.user.card
       .then (safePayment) ->
-        $log.debug 'successfully submitted payment'
+        $log.debug 'successfully submitted payment to stripe not charged yet'
         $log.debug safePayment
         $scope.user.submit()
       .catch (err) ->
