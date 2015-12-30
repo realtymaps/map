@@ -225,6 +225,7 @@ class ProjectRouteCrud extends RouteCrud
       @svc.clients.getAll project_id: req.params.id, true
       .then (profiles) =>
         project.favorites = _.merge {}, _.pluck(profiles, 'favorites')...
+        project
 
   byIdDELETE: (req, res, next) ->
     super req, res, next
