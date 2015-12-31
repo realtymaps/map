@@ -3,7 +3,7 @@ app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
 app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
-rmapsPlansService, rmapsFipsCodes, rmapsUsStates) ->
+rmapsPlansService) ->
 
   $log = $log.spawn("map:rmapsOnBoardingCtrl")
 
@@ -11,9 +11,6 @@ rmapsPlansService, rmapsFipsCodes, rmapsUsStates) ->
     _.merge $scope,
       view:
         plans: plans
-
-  rmapsUsStates.getAll().then (states) ->
-    $scope.us_states = states
 
   step = $state.current.name
 
@@ -129,8 +126,19 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log) ->
+app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
   $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
+
+  rmapsUsStates.getAll().then (states) ->
+    $scope.us_states = states
+
+  $scope.$watch 'user.usStateCode', (usStateCode) ->
+    return unless usStateCode
+
+    rmapsFipsCodes.getAllByState usStateCode
+    .then (counties) ->
+      $scope.counties = counties
+
   $log.debug $scope
 
 app.controller 'rmapsOnBoardingVerifyCtrl', ($scope, $log) ->
