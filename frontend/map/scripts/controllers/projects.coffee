@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService) ->
+app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("map:projects")
   $log.debug 'projectsCtrl'
@@ -29,7 +29,6 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
       .then (response) ->
-        $scope.loadProjects()
         rmapsprincipal.setIdentity response.data.identity
 
   $scope.loadMap = (project) ->
@@ -42,7 +41,9 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     .catch (error) ->
       $log.error error
 
-  $scope.deleteProject = rmapsProjectsService.delete
-
   $rootScope.registerScopeData () ->
+    $scope.loadProjects()
+
+  # When a project is added via the map controls, this event will be fired
+  $rootScope.$onRootScope rmapsevents.principal.login.success, (event, identity) ->
     $scope.loadProjects()
