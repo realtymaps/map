@@ -1,18 +1,17 @@
 _ = require 'lodash'
 tables = require '../config/tables'
 logger = require '../config/logger'
-{profile, project} = require './services.user'
+{profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
+Promise = require 'bluebird'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
 safeNotes = sqlHelpers.columns.notes
 
-clientIdCol = joinColumns.client[0]
-projectId = "#{tables.user.project.tableName}.id"
 
 class DrawnShapesCrud extends ThenableCrud
   constructor: () ->
@@ -38,14 +37,12 @@ class ProjectCrud extends ThenableCrud
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud(dbFn, joinColumns.client, joinCrud, joinColumnNames.client.auth_user_id, undefined, clientIdCol)
+    thenableHasManyCrud dbFn, joinColumns.client, joinCrud, "#{tables.user.profile.tableName}.auth_user_id"
 
-  notesFact: (dbFn = tables.user.notes, joinCrud = project) ->
+  notesFact: (dbFn = tables.user.project, joinCrud = notes) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud(dbFn, joinColumns.notes, joinCrud,
-      projectId, "#{tables.user.notes.tableName}.project_id",
-      "#{tables.user.notes.tableName}.id")
+    thenableHasManyCrud dbFn, joinColumns.notes, joinCrud, "#{tables.user.notes.tableName}.project_id"
 
   drawnShapesFact: (dbFn = tables.user.drawnShapes) ->
     # logger.debug.cyan dbFn
@@ -63,40 +60,38 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-  delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
+  delete: (idObj, doLogQuery = true, entity, safe = safeProject, fnExec) ->
     @getById idObj, doLogQuery, entity, safe
-    .then sqlHelpers.singleRow
-    .then (project) ->
+    .then (project) =>
       throw new Error 'Project not found' unless project?
+
+      toRemove = auth_user_id: idObj.auth_user_id, project_id: project.id
+
+      promises = [
+        @notes.delete {}, doLogQuery, toRemove
+      ]
 
       # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
       if project.sandbox is true
-        logger.debug.yellow 'is sandbox'
-        @update project.id, properties_selected: {}, safeProject, doLogQuery
-        .then () =>
-          @clients.getAll idObj
-        .then (profiles) =>
-          profileReset =
-            filters: {}
-            map_results: {}
-            map_position: {}
+        promises.push @update project.id, properties_selected: {}, safeProject, doLogQuery
 
-          @clients.update profiles[0].id, profileReset, safeProfile, @doLogQuery
+        promises.push(
+          @clients.getAll project_id: project.id, auth_user_id: project.auth_user_id
+          .then (profiles) =>
+            profileReset =
+              filters: {}
+              map_results: {}
+              map_position: {}
+            @clients.update profiles[0].id, profileReset, safeProfile, doLogQuery
+        )
 
-        .then () =>
-          @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: idObj.auth_user_id, safeNotes
       else
-        logger.debug.yellow 'not sandbox'
-        @clients.delete {}, @doLogQuery,
-          logger.debug.yellow 'not sandbox clients delete'
-          _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.profile.project_id, project.id), safeProfile
-        .then () =>
-          @notes.delete {}, @doLogQuery,
-            logger.debug.yellow 'not sandbox notes delete'
-            _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.notes.project_id, project.id), safeNotes
-        .then () =>
-          logger.debug.yellow 'not sandbox project delete'
-          super idObj, doLogQuery, entity, safe, fnExec
+        promises.push super idObj, doLogQuery
+        promises.push @clients.delete {}, doLogQuery, toRemove
+
+      Promise.all promises
+      .then () ->
+        project.sandbox
 
 
 #temporary to not conflict with project
