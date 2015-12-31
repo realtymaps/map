@@ -30,7 +30,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   # If a new project is added on the dashboard or elsewhere, this event will fire
   $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
-    getProjects identity
+    $scope.loadIdentity identity
 
   getProjects = (identity) ->
     $scope.projects = _.values identity.profiles
@@ -61,6 +61,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     rmapsProfilesService.setCurrent $scope.selectedProject, project
     .then () ->
       $scope.selectedProject = project
+
+      $location.search 'project_id', project.id
 
       $rootScope.selectedFilters = {}
 
@@ -106,8 +108,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
-      if selectedResultId? and map?
+      if selectedResultId.match(/\w+_\w*_\w+/) and map?
         $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+        $location.search 'property_id', selectedResultId
 
         rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
           rm_property_id: selectedResultId, 'all')
@@ -119,6 +123,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           resultCenter = new Point(result.coordinates[1],result.coordinates[0])
           resultCenter.zoom = 18
           map.scope.map.center = resultCenter
+      else
+        $location.search 'property_id', undefined
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
