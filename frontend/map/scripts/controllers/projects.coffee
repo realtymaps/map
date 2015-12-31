@@ -28,8 +28,6 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
-      .then (response) ->
-        rmapsprincipal.setIdentity response.data.identity
 
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
@@ -44,6 +42,7 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
   $rootScope.registerScopeData () ->
     $scope.loadProjects()
 
-  # When a project is added via the map controls, this event will be fired
-  $rootScope.$onRootScope rmapsevents.principal.login.success, (event, identity) ->
+  # When a project is added elsewhere, this event will fire
+  $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
     $scope.loadProjects()
+

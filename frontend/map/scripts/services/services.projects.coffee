@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsProjectsService', ($http, $log) ->
+app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsprincipal, rmapsevents) ->
 
   _mockData = (project) ->
 
@@ -49,6 +49,9 @@ app.service 'rmapsProjectsService', ($http, $log) ->
 
   createProject: (project) ->
     $http.post backendRoutes.userSession.newProject, project
+    .then (response) ->
+      rmapsprincipal.setIdentity response.data.identity
+      $rootScope.$emit rmapsevents.principal.profile.add, response.data.identity
 
   delete: (project) ->
     $http.delete backendRoutes.projectSession.root + "/#{project.id}"

@@ -28,18 +28,23 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapssearchbox('mainMap')
 
+  # If a new project is added on the dashboard or elsewhere, this event will fire
+  $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
+    getProjects identity
+
+  getProjects = (identity) ->
+    $scope.projects = _.values identity.profiles
+    $scope.totalProjects = $scope.projects.length
+    _.each $scope.projects, (project) ->
+      project.totalProperties = (_.keys project.properties_selected)?.length
+      project.totalFavorites = (_.keys project.favorites)?.length
+
   $scope.loadIdentity = (identity, project_id) ->
     if not identity?.currentProfileId and not project_id
       $location.path(frontendRoutes.profiles)
     else
-      $scope.projects = _.values identity.profiles
-      $scope.totalProjects = $scope.projects.length
-      _.each $scope.projects, (project) ->
-        project.totalProperties = (_.keys project.properties_selected)?.length
-        project.totalFavorites = (_.keys project.favorites)?.length
-
+      getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
-
       $scope.loadProject projectToLoad
 
   $scope.loadProject = (project) ->
@@ -120,9 +125,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     rmapsprincipal.getIdentity()
     .then (identity) ->
       $scope.loadIdentity identity, Number($state.params.project_id)
-
-  $rootScope.$onRootScope rmapsevents.principal.login.success, (event, identity) ->
-    $scope.loadIdentity identity
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
