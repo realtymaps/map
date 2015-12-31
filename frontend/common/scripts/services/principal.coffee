@@ -23,7 +23,7 @@ mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
 
     # Send an event to notify that the user is now authenticated
     if _authenticated
-      $rootScope.$emit rmapsevents.principal.login.success
+      $rootScope.$emit rmapsevents.principal.login.success, identity
 
   unsetIdentity = () ->
     _identity = null
