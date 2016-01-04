@@ -1,5 +1,7 @@
-$fnMakeNav()
+.mobile-modal
   .navigation
+    font-size: 18px;
+
     .nav-toggle
       font-size 0
       display none
@@ -19,8 +21,7 @@ $fnMakeNav()
         margin 0
         float left
         a
-          color $gray
-          text-transform capitalize
+          color $rm-header-text
           line-height $navbarHeight
           padding 0 10px
           &:hover
@@ -31,20 +32,3 @@ $fnMakeNav()
             display: inline-block;
             padding: 0 10px;
             position: relative;
-
-        &.active
-          a
-            color $white
-            &:after
-              content ''
-              height 3px
-              background $light_blue
-              width 100%
-              position absolute
-              left 0
-              bottom 3px
-        &.inbox
-          a
-            span
-              @extends .notice-dot-blue
-

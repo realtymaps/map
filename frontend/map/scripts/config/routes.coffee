@@ -88,13 +88,13 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'
-  buildState 'projects'
-  buildState 'project'
-  buildState 'projectClients', parent: 'project'
-  buildState 'projectNotes', parent: 'project'
-  buildState 'projectFavorites', parent: 'project'
-  buildState 'projectNeighbourhoods', parent: 'project'
-  buildState 'projectPins', parent: 'project'
+  buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
+  buildState 'project', page: { title: 'Project' }, mobile: { modal: true }
+  buildState 'projectClients', parent: 'project', page: { title: 'My Clients' }, mobile: { modal: true }
+  buildState 'projectNotes', parent: 'project', page: { title: 'Notes' }, mobile: { modal: true }
+  buildState 'projectFavorites', parent: 'project', page: { title: 'Favorites' }, mobile: { modal: true }
+  buildState 'projectNeighbourhoods', parent: 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
+  buildState 'projectPins', parent: 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
