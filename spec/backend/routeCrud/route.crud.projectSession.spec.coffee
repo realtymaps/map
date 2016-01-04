@@ -153,6 +153,7 @@ describe 'route.projectSession', ->
         @subject.clientsCrud.svc.getAllStub.sqls[0].should.be.equal """
         select "user_profile"."id" as "id", "user_profile"."auth_user_id" as "auth_user_id",
          "user_profile"."parent_auth_user_id" as "parent_auth_user_id", "user_profile"."project_id" as "project_id",
+         "user_profile"."favorites" as "favorites",
          "auth_user"."email" as "email", "auth_user"."first_name" as "first_name", "auth_user"."last_name" as "last_name",
          "auth_user"."username" as "username", "auth_user"."address_1" as "address_1", "auth_user"."address_2" as "address_2",
          "auth_user"."city" as "city", "auth_user"."zip" as "zip",

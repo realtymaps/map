@@ -43,11 +43,11 @@
                     h4(ng-show="project.sandbox") Sandbox
                     a.details(title="View details") View Details
                   td
-                    a(ui-sref="projectPins({id: {{project.id}}})") {{project.propertiesTotal}}
+                    a(ui-sref="projectPins({id: {{project.id}}})") {{_.keys(project.properties_selected).length}}
                   td
                     a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{project.neighbourhoods.length}}
                   td
-                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{project.favorites.length}}
+                    a(ui-sref="projectFavorites({id: {{project.id}}})") {{_.keys(project.favorites).length}}
                   td
                     a(ui-sref="projectNotes({id: {{project.id}}})") {{project.notes.length}}
                   td

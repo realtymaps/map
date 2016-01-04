@@ -2,7 +2,7 @@ include ../../includes/mixins/property/_propertyAttributes.jade
 include ../../includes/mixins/property/_propertyButtons.jade
 
 .collapse-header
-  h2.title Favorites ({{project.favoritesTotal}})
+  h2.title Favorites ({{_.keys(project.favorites).length}})
 .row.repeat
   li.col-md-6(ng-repeat="property in project.favorites")
     .property-card

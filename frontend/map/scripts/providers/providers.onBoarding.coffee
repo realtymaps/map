@@ -21,14 +21,15 @@ app.provider 'rmapsOnBoardingOrder', () ->
     getStepName: (id) =>
       @getStep(id) + @name.toInitCaps()
 
-    getId: (name) ->
+    getId: (name) =>
+      name = name.replace(new RegExp(@name,'ig'),'')
       @steps.indexOf name
 
     getNextStep: (name, direction = 1) ->
       currentId = @getId name
       nextStepId = currentId + direction
       if @inBounds nextStepId
-        @getStep nextStepId
+        @getStepName nextStepId
 
     getPrevStep: (name) ->
       @getNextStep name, -1

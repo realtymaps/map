@@ -2,7 +2,7 @@ include ../../includes/mixins/property/_propertyAttributes.jade
 include ../../includes/mixins/property/_propertyButtons.jade
 
 .collapse-header
-  h2.title Pinned ({{project.propertiesTotal}})
+  h2.title Pinned ({{_.keys(project.properties_selected).length}})
 .row.repeat
   li.col-md-6(ng-repeat="property in project.properties_selected")
     .property-card

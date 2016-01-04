@@ -20,17 +20,12 @@ app.controller 'rmapsMapProjectsCtrl', ($scope, $state, $modal, $window, rmapsPr
       scope: $scope
       template: require('../../html/views/templates/modals/addProjects.jade')()
 
-    modalInstance.result.then (result) ->
-
     $scope.cancelModal = () ->
       modalInstance.dismiss('cancel')
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
-      .then (response) ->
-        rmapsprincipal.setIdentity response.data.identity
-        $scope.loadIdentity response.data.identity
 
   $scope.checkSubmit = (evt) ->
     if evt.keyCode == 13

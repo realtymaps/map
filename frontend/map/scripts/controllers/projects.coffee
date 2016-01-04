@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService) ->
+app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("map:projects")
   $log.debug 'projectsCtrl'
@@ -28,8 +28,6 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
-      .then (response) ->
-        $scope.loadProjects()
 
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
@@ -38,11 +36,13 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     rmapsProjectsService.getProjects()
     .then (projects) ->
       $scope.projects = projects
-      for project in projects
-        project.propertiesTotal = _.keys(project.properties_selected).length
-        project.favoritesTotal = _.keys(project.favorites).length
     .catch (error) ->
       $log.error error
 
   $rootScope.registerScopeData () ->
     $scope.loadProjects()
+
+  # When a project is added elsewhere, this event will fire
+  $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
+    $scope.loadProjects()
+
