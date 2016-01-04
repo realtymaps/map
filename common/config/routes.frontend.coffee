@@ -28,7 +28,7 @@ module.exports =
 
   mail:           'mail'
   mailWizard:     'mailWizard'
-  editTemplate:   '/editTemplate?templateType'
+  editTemplate:   '/editTemplate'
   selectTemplate: '/selectTemplate'
   senderInfo:     '/senderInfo'
 

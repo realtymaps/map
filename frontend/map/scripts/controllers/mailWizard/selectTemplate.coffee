@@ -10,8 +10,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, $log, rma
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
 
-  $scope.$parent.templateType = {}
-
   $scope.isEmptyCategory = () ->
     return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
 
@@ -22,4 +20,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, $log, rma
 
   $scope.selectTemplate = (idx) ->
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
-    $state.go($state.get('editTemplate'), {templateType: templateType}, { reload: true })
+    rmapsMailTemplate.setTemplateType(templateType)
+    $scope.$parent.nextStep()
+    #$state.go($state.get('editTemplate'), {templateType: templateType}, { reload: true })
