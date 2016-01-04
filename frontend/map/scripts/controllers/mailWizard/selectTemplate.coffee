@@ -22,4 +22,3 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $state, $log, rma
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
     rmapsMailTemplate.setTemplateType(templateType)
     $scope.$parent.nextStep()
-    #$state.go($state.get('editTemplate'), {templateType: templateType}, { reload: true })

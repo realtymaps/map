@@ -44,7 +44,7 @@
                                         .form-group
                                             label State
                                             .select
-                                                select.form-control(ng-model="templObj.senderData.address_state" ng-options="value.name for value in us_states track by value.code")
+                                                select.form-control(ng-model="templObj.senderData.address_state" ng-options="value.code as value.name for value in us_states")
                                                     option(selected disabled) - Select State -
                                     .col-sm-6
                                         .form-group

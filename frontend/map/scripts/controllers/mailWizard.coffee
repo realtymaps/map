@@ -12,9 +12,6 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapspr
     'editTemplate'
   ]
 
-  $log.debug "(mailWizard) rmapsMailTemplate.oid"
-  $log.debug rmapsMailTemplate.oid
-
   _changeStep = (next = 1) ->
     rmapsMailTemplate.save()
     thisStep = $scope.steps.indexOf $scope.step

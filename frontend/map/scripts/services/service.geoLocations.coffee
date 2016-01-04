@@ -11,8 +11,6 @@ app.service 'rmapsGeoLocations', ($log, $http, $q) ->
   _getStates = () ->
     $http.get(backendRoutes.us_states.root)
     .then ({data}) ->
-      $log.debug "\n######## STATE DATA:"
-      $log.debug data
       _stateData = data
       for state in _stateData
         _stateDataById[state.id] = state
