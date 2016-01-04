@@ -147,6 +147,14 @@ class ProjectRouteCrud extends RouteCrud
       query: validators.object isEmptyProtect: true
       body: bodyTransform
 
+    @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
+    @profilesCrud.doLogRequest = ['params', 'body']
+    @profilesCrud.rootGETTransforms =
+      params: [
+        validators.mapKeys id: "#{usrTableNames.profile}.project_id"
+        validators.reqId toKey: "#{usrTableNames.profile}.auth_user_id"
+      ]
+
     for route in ['byIdPUT', 'byIdDELETE']
       do (route) =>
         @drawnShapesCrud[route + 'Transforms'] =
@@ -164,7 +172,7 @@ class ProjectRouteCrud extends RouteCrud
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
       drawnShapes: @drawnShapesCrud.rootGET req, res, next
-      favorites: userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
+      favorites: @profilesCrud.rootGET req, res, next
     .then (props) =>
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
       _.each projects, (project) ->

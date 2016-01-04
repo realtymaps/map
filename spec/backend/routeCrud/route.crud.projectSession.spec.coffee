@@ -29,7 +29,7 @@ projectResponses =
   getById: [id:1, sandbox: false]
   delete: 1
 
-drawnShapesRsponses = notesResponses = clientResponses =
+drawnShapesRsponses = notesResponses = clientResponses = profilesResponses =
   delete: 1
   getAll: [{project_id:1, id:2}]
 
@@ -71,6 +71,17 @@ class TestServiceCrudProject extends ServiceCrudProject
     # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
     toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
 
+  profilesFact: () ->
+    profileSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
+    profileSvcCrud.resetSpies = () =>
+      @svc.resetSpies()
+      @joinCrud.svc.resetSpies()
+
+    # console.log.cyan  "profileSvcCrud: #{profileSvcCrud.dbFn().tableName}"
+    # console.log.cyan  "profileSvcCrud: joinCrud: #{profileSvcCrud.joinCrud.dbFn().tableName}"
+
+    toTestThenableCrudInstance profileSvcCrud, profilesResponses
+
 
   resetSpies: () ->
     #RESET UNDERLYING dbFn spies
@@ -78,6 +89,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     @clients.resetSpies()#(true, 'deleteStub')
     @notes.resetSpies()
     @drawnShapes.svc.resetSpies()
+    @profiles.svc.resetSpies()
 
   resetStubs: () ->
     #RESET SvcCrud Stubs
@@ -85,6 +97,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     @clients.resetStubs()#(true, 'deleteStub')
     @notes.resetStubs()
     @drawnShapes.resetStubs()
+    @profiles.resetStubs()
 
 
 

@@ -34,6 +34,14 @@ class ProjectCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
+  profilesFact: (dbFn = tables.user.project, joinCrud = profile) ->
+    # logger.debug.cyan dbFn
+    # logger.debug.cyan joinCrud
+    thenableHasManyCrud dbFn, joinColumns.profile, joinCrud,
+      "#{tables.user.profile.tableName}.project_id",
+      "#{tables.user.project.tableName}.id",
+      "#{tables.user.profile.tableName}.id"
+
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
@@ -63,6 +71,9 @@ class ProjectCrud extends ThenableCrud
 
     @drawnShapes = @drawnShapesFact().init(arguments...)
     # @drawnShapes.doLogQuery = true
+
+    @profiles = @profilesFact().init(arguments...)
+
     super(arguments...)
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
