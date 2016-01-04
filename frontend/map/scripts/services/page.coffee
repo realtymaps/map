@@ -34,7 +34,7 @@ app.provider 'rmapsPage', () ->
         modal: false
       }
 
-      back: () =>
+      back: () ->
         console.log 'rmapsPage.back()'
         $window.history.back()
 

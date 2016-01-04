@@ -67,13 +67,13 @@
                 h2.title {{project.name || "Sandbox"}}
                   i.fa.fa-chevron-right.pull-right(ng-click="loadMap(project); $event.stopPropagation()")
                 div.tools
-                    a(href="#/project/{{enity.id}}") Next
+                    a(ui-sref="project({id: {{project.id}}})") Next
                 ul.data
                   li
-                      a(href="#neighbourhoods") {{enity.neighbourhoods.length}} Neighbourhoods
+                      a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{enity.neighbourhoods.length}} Neighbourhoods
                   li
-                      a(href="#properties") {{enity.properties.length}} Properties
+                      a(ui-sref="projectPins({id: {{project.id}}})") {{enity.properties.length}} Properties
                   li
-                      a(href="#clients") {{enity.clients.length}} Clients
+                      a(ui-sref="projectClients({id: {{project.id}}})") {{enity.clients.length}} Clients
                   li
-                      a(href="#notes") {{enity.notes.length}} Notes
+                      a(ui-sref="projectNotes({id: {{project.id}}})") {{enity.notes.length}} Notes
