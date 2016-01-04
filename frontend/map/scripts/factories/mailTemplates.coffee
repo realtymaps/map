@@ -51,8 +51,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
 
   _procureSenderData = () ->
     if _senderIsSet()
-      $log.debug "\n\n######## _procureSenderData: (senderData exists) sender data:"
-      $log.debug senderData
       return $q.when senderData
 
     rmapsprincipal.getIdentity()
@@ -81,8 +79,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
   _getLobSenderData = (origSender) ->
     # https://lob.com/docs#addresses
     lobSenderData = _.cloneDeep origSender
-    $log.debug "\n\n#### lobSenderData:"
-    $log.debug lobSenderData
     lobSenderData.name = "#{lobSenderData.first_name} #{lobSenderData.last_name}"
     delete lobSenderData.first_name
     delete lobSenderData.last_name
