@@ -19,7 +19,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
   _user =
     userID: null
 
-  _type = ""
+  _templateType = ""
 
   _recipientData =
     property:
@@ -101,15 +101,22 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
     "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
 
+  _setTemplateType = (type) ->
+    _templateType = type
+    mailCampaign.content = rmapsMailTemplateTypeService.getHtml(_templateType)
+
+
 
 
 ##### PUBLIC
   senderData: senderData
   mailCampaign: mailCampaign
 
-  setTemplateType: (type) ->
-    mailCampaign.content = rmapsMailTemplateTypeService.getHtml(type)
+  templateType: _templateType
+  createPreviewHtml: _createPreviewHtml
+  createLobHtml: _createLobHtml
 
+  setTemplateType: _setTemplateType
   procureSenderData: _procureSenderData
   getSenderData: _getSenderData
   getContent: _getContent
