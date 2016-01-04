@@ -28,18 +28,23 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapssearchbox('mainMap')
 
+  # If a new project is added on the dashboard or elsewhere, this event will fire
+  $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
+    $scope.loadIdentity identity
+
+  getProjects = (identity) ->
+    $scope.projects = _.values identity.profiles
+    $scope.totalProjects = $scope.projects.length
+    _.each $scope.projects, (project) ->
+      project.totalProperties = (_.keys project.properties_selected)?.length
+      project.totalFavorites = (_.keys project.favorites)?.length
+
   $scope.loadIdentity = (identity, project_id) ->
     if not identity?.currentProfileId and not project_id
       $location.path(frontendRoutes.profiles)
     else
-      $scope.projects = _.values identity.profiles
-      $scope.totalProjects = $scope.projects.length
-      _.each $scope.projects, (project) ->
-        project.totalProperties = (_.keys project.properties_selected)?.length
-        project.totalFavorites = (_.keys project.favorites)?.length
-
+      getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
-
       $scope.loadProject projectToLoad
 
   $scope.loadProject = (project) ->
@@ -56,6 +61,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     rmapsProfilesService.setCurrent $scope.selectedProject, project
     .then () ->
       $scope.selectedProject = project
+
+      $location.search 'project_id', project.id
 
       $rootScope.selectedFilters = {}
 
@@ -101,8 +108,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
-      if selectedResultId? and map?
+      if selectedResultId.match(/\w+_\w*_\w+/) and map?
         $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+        $location.search 'property_id', selectedResultId
 
         rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
           rm_property_id: selectedResultId, 'all')
@@ -114,15 +123,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           resultCenter = new Point(result.coordinates[1],result.coordinates[0])
           resultCenter.zoom = 18
           map.scope.map.center = resultCenter
+      else
+        $location.search 'property_id', undefined
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
     rmapsprincipal.getIdentity()
     .then (identity) ->
       $scope.loadIdentity identity, Number($state.params.project_id)
-
-  $rootScope.$onRootScope rmapsevents.principal.login.success, (event, identity) ->
-    $scope.loadIdentity identity
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

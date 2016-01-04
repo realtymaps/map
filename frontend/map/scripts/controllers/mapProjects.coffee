@@ -26,8 +26,6 @@ app.controller 'rmapsMapProjectsCtrl', ($scope, $state, $modal, $window, rmapsPr
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
       rmapsProjectsService.createProject $scope.newProject
-      .then (response) ->
-        rmapsprincipal.setIdentity response.data.identity
 
   $scope.checkSubmit = (evt) ->
     if evt.keyCode == 13
