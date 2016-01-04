@@ -37,12 +37,18 @@ class ProjectCrud extends ThenableCrud
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud dbFn, joinColumns.client, joinCrud, "#{tables.user.profile.tableName}.auth_user_id"
+    thenableHasManyCrud dbFn, joinColumns.client, joinCrud,
+      "#{tables.user.profile.tableName}.auth_user_id",
+      "#{tables.auth.user.tableName}.id",
+      "#{tables.user.profile.tableName}.id"
 
   notesFact: (dbFn = tables.user.project, joinCrud = notes) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud dbFn, joinColumns.notes, joinCrud, "#{tables.user.notes.tableName}.project_id"
+    thenableHasManyCrud dbFn, joinColumns.notes, joinCrud,
+      "#{tables.user.notes.tableName}.project_id",
+      "#{tables.user.project.tableName}.id",
+      "#{tables.user.notes.tableName}.id"
 
   drawnShapesFact: (dbFn = tables.user.drawnShapes) ->
     # logger.debug.cyan dbFn
