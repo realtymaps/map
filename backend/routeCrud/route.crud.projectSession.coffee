@@ -159,26 +159,32 @@ class ProjectRouteCrud extends RouteCrud
 
     super arguments...
 
+  findProjectData: (projects, req, res, next) ->
+    Promise.props
+      clients: @clientsCrud.rootGET req, res, next
+      notes: @notesCrud.rootGET req, res, next
+      drawnShapes: @drawnShapesCrud.rootGET req, res, next
+      favorites: userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
+    .then (props) =>
+      grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
+      _.each projects, (project) ->
+        project.clients = grouped.clients[project.id] or []
+        project.notes = grouped.notes[project.id] or []
+        project.drawnShapes = grouped.drawnShapes[project.id] or []
+        project.favorites = _.merge {},
+          _.pluck(grouped.favorites[project.id], 'favorites')...,
+          _.pluck(project.clients, 'favorites')...
+      projects
+
   rootGET: (req, res, next) ->
     super req, res, next
     .then (projects) =>
       newReq = @cloneRequest(req)
       logger.debug "newReq: #{JSON.stringify newReq}"
       #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
-      _.extend newReq.params, id: _.pluck(projects, 'id')#set to id since it gets mapped to user_profile.project_id
+      _.extend newReq.params, id: _.pluck(projects, 'id') #set to id since it gets mapped to user_profile.project_id
 
-      Promise.props
-        clients: @clientsCrud.rootGET newReq, res, next
-        notes: @notesCrud.rootGET newReq, res, next
-        drawnShapes: @drawnShapesCrud.rootGET newReq, res, next
-      .then (props) =>
-        grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
-        _.each projects, (project) ->
-          project.clients = grouped.clients[project.id] or []
-          project.notes = grouped.notes[project.id] or []
-          project.drawnShapes = grouped.drawnShapes[project.id] or []
-          project.favorites = _.merge {}, _.pluck(project.clients, 'favorites')...
-        projects
+      @findProjectData projects, newReq, res, next
 
   byIdGET: (req, res, next) =>
     #so this is where bookshelf or objection.js would be much more concise
@@ -186,23 +192,17 @@ class ProjectRouteCrud extends RouteCrud
     .then (project) ->
       if not project?
         # Look for viewer profile
-        @svc.clients.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
-        .then (projects) ->
-          projects[0]
+        userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id
+        .then sqlHelpers.singleRow
       else
         project
     .then (project) =>
       throw new Error('Project not found') unless project
-      project.id  = project.project_id ? project.id
+      project.id = project.project_id ? project.id
 
-      Promise.props
-        clients: @clientsCrud.rootGET req, res, next
-        notes: @notesCrud.rootGET req, res, next
-        drawnShapes: @drawnShapesCrud.rootGET req, res, next
-      .then (props) ->
-        _.merge project, props
-        project.favorites = _.merge {}, _.pluck(project.clients, 'favorites')...
-        project
+      logger.debug JSON.stringify req.params
+      @findProjectData [project], req, res, next
+      .then sqlHelpers.singleRow
 
   byIdDELETE: (req, res, next) ->
     super req, res, next
