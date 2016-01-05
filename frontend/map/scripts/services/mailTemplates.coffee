@@ -1,7 +1,8 @@
+###global _:true###
 app = require '../app.coffee'
 
 app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
-rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
+rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   # is exposed for binding
   senderData = {}
@@ -55,7 +56,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsGeoLocations) ->
 
     rmapsprincipal.getIdentity()
     .then (identity) ->
-      rmapsGeoLocations.getState(identity.user.us_state_id)
+      rmapsUsStates.getById(identity.user.us_state_id)
       .then (state) ->
         _user.userId = identity.user.id
         mailCampaign.auth_user_id = identity.user.id
