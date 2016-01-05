@@ -4,7 +4,6 @@ sqlHelpers = require '../utils/util.sql.helpers'
 _ = require 'lodash'
 Promise = require "bluebird"
 memoize = require 'memoizee'
-config = require '../config/config'
 dbs = require '../config/dbs'
 
 

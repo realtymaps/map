@@ -49,7 +49,7 @@ class ClientsCrud extends RouteCrud
     Create the user for this email if it doesn't alreayd exist, and then give them a profile for current project
     If a new user is created,
   ###
-  rootPOST: (req, res, next) ->
+  rootPOST: (req, res) ->
     throw Error('User not logged in') unless req.user
     throw Error('Project ID required') unless req.params.id
 
@@ -94,7 +94,7 @@ class ClientsCrud extends RouteCrud
   ###
     Update user contact info - but only if the request came from the parent user
   ###
-  byIdPUT: (req, res, next) ->
+  byIdPUT: (req, res) ->
     @svc.getById req.params[@paramIdKey], @doLogQuery, parent_id: req.user.id, [ 'parent_id' ]
     .then (profile) =>
       throw new Error 'Client info cannot be modified' unless profile?
@@ -184,7 +184,7 @@ class ProjectRouteCrud extends RouteCrud
         projects
     .then (projects) =>
       @svc.clients.getAll project_id: _.pluck(projects, 'id'), true
-      .then (profiles) =>
+      .then (profiles) ->
         profilesIndex = _.groupBy profiles, 'project_id'
         _.each projects, (project) ->
           project.favorites = _.merge {}, _.pluck(profilesIndex[project.id], 'favorites')...
@@ -223,7 +223,7 @@ class ProjectRouteCrud extends RouteCrud
         project
     .then (project) =>
       @svc.clients.getAll project_id: req.params.id, true
-      .then (profiles) =>
+      .then (profiles) ->
         project.favorites = _.merge {}, _.pluck(profiles, 'favorites')...
         project
 

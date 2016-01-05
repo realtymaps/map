@@ -10,21 +10,21 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                 .form-group
                   .label State:
                   .col-lg-6
-                    select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
+                    select.form-control(ng-model="user.usStateCode" validator="required" name="userStateCode")
                       option(
-                        ng-repeat="s in us_states"
-                        ng-selected="{{s.id == company.us_state_id}}"
-                        value="{{s.id}}") {{s.code}} - {{s.name}}
+                        ng-repeat="entity in us_states"
+                        ng-selected="{{entity.code == user.us_state}}"
+                        value="{{entity.code}}") {{entity.code}} - {{entity.name}}
                 
               .col-md-6.col-sm-6.col-xs-12
                 .form-group
                   .label County:
                   .col-lg-6
-                    select.form-control(ng-model="company.us_state_id" validator="required" name="company_us_state_id")
+                    select.form-control(ng-model="user.fipsCode" validator="required" name="userFipsCode")
                       option(
-                        ng-repeat="s in us_states"
-                        ng-selected="{{s.id == company.us_state_id}}"
-                        value="{{s.id}}") {{s.code}} - {{s.name}}
+                        ng-repeat="entity in counties"
+                        ng-selected="{{entity.code == user.fipsCode}}"
+                        value="{{entity.code}}") {{entity.code}} - {{entity.county}}
             .row
               .col-md-6.col-sm-6.col-xs-12
                 .form-group
