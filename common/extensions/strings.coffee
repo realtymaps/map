@@ -43,7 +43,7 @@ String::toInitCaps = () ->
 
 if !String::startsWith
   String::startsWith = (searchString, position=0) ->
-    return @indexOf(searchString, position) == position
+    return @lastIndexOf(searchString, position) == position
 
 if !String::endsWith
   String::endsWith = (searchString, position) ->
