@@ -18,7 +18,7 @@ describe 'service.properties.parcels', ->
 
   # NOTE this is really an integration test
   # This is important as the database column naming is highly dependent!
-  xit 'getBaseParcelData returns valid geojson', (done) ->
+  it 'getBaseParcelData returns valid geojson', (done) ->
     @subject.getBaseParcelData mocks.map.state, mocks.map.filter
     .then (data) ->
       gjv.valid(data).should.be.ok
