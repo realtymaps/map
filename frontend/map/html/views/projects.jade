@@ -63,14 +63,14 @@
         .row
           .col-md-12
             ul.projects-list
-              li(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'" ui-sref="project({id: {{project.id}}})" ng-click="selectProject($index)")
-                h2.title {{project.name || "Sandbox"}}
-                  i.fa.fa-chevron-right.pull-right(ng-click="loadMap(project); $event.stopPropagation()")
+              li(ng-repeat="project in projects | filter: searchQuery | orderBy: 'name'")
+                h2.title(ng-click="loadMap(project); $event.stopPropagation()") {{project.name || "Sandbox"}}
+                  i.fa.fa-chevron-right.pull-right
                 div.tools
                     a(ui-sref="project({id: {{project.id}}})") Next
                 ul.data
                   li
-                      a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{enity.neighbourhoods.length}} Neighbourhoods
+                      a(ui-sref="projectNeighbourhoods({id: {{project.id}}})") {{enity.neighbourhoods.length}} Neighbourhoods!
                   li
                       a(ui-sref="projectPins({id: {{project.id}}})") {{enity.properties.length}} Properties
                   li
