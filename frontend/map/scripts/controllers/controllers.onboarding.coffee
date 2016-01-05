@@ -83,10 +83,12 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     "exp_year"
   ]
 
+  _reSubmitOmitFields = _safePaymentFields.slice(0, _safePaymentFields.indexOf "exp_month")
+
   _cleanReSubmit = () ->
     #we might be resending the card info with user info changes
     #note payment amount must be handled on backend only on actually charging
-    $scope.user.card = _.omit $scope.user.card, _safePaymentFields.slice(0, _safePaymentFields.indexOf "exp_month")
+    $scope.user.card = _.omit $scope.user.card, _reSubmitOmitFields
     delete $scope.user.card.token
     $scope.user.card
 
