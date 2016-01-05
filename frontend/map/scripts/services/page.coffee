@@ -17,8 +17,7 @@ app.provider 'rmapsPage', () ->
   #  //
   #  // Get an instance of a PageContext factory
   #  //
-  $get: ($rootScope, $window, $log) ->
-    $log.debug 'rmapsPage.$get'
+  $get: ($rootScope, $window, $state, $log) ->
     class RmapsPage
 
       #
@@ -34,12 +33,18 @@ app.provider 'rmapsPage', () ->
         modal: false
       }
 
-      back: () ->
-        console.log 'rmapsPage.back()'
-        $window.history.back()
+      #
+      # Navigation
+      #
+      historyLength: $window.history.length
+
+      back: () =>
+        if $window.history.length > @historyLength
+          $window.history.back()
+        else
+          $state.go 'map', {}, {reload: true}
 
       reset: () ->
-        $log.debug('PageContext reset')
         @mobile.modal = false
         @title = defaults.title
         @meta = defaults.meta
@@ -55,7 +60,6 @@ app.provider 'rmapsPage', () ->
     # State change listener to reset page data
     #
     $rootScope.$on "$stateChangeStart", (event, toState) ->
-      $log.debug "rmapsPage $stateChangeStart... prevented? #{event.defaultPrevented}"
       return if event.defaultPrevented
 
       if toState.url
