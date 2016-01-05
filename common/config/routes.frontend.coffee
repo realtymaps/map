@@ -28,8 +28,9 @@ module.exports =
 
   mail:           'mail'
   mailWizard:     'mailWizard'
-  editTemplate:   '/editTemplate?templateType'
-  selectTemplate:   '/selectTemplate'
+  editTemplate:   '/editTemplate'
+  selectTemplate: '/selectTemplate'
+  senderInfo:     '/senderInfo'
 
   avatar:         '/assets/avatar.svg'
   mocks:

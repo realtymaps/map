@@ -105,6 +105,7 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
   buildState 'mailWizard'
   buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'
+  buildState 'senderInfo', parent: 'mailWizard'
 
   buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false
