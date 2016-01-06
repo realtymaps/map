@@ -20,12 +20,9 @@ header.site-header
 .mobile-only
   header.mobile-modal(ng-if='rmapsPage.mobile.modal')
     .inner
-      nav.navigation.pull-left(role="navigation")
-        ul.nav
-          li
-            a(ng-click='rmapsPage.back($event)')
-              span
-                i.fa.fa-chevron-left
-          li.header-title
-            a
-              span {{rmapsPage.title}}
+      .mobile-modal-left
+        a(ng-click='rmapsPage.back($event)')
+          i.fa.fa-chevron-left
+      .mobile-modal-center
+        .mobile-modal-title {{rmapsPage.title}}
+      .mobile-modal-right

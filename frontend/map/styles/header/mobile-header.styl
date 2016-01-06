@@ -1,32 +1,31 @@
 .mobile-modal
-  .navigation
-    font-size: 18px;
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  font-size: 18px;
+  color: $rm-header-text;
+  line-height $navbarHeight
 
-    .nav-toggle
-      font-size 0
-      display none
-      position absolute
-      right 0
-      span
-        background url(/assets/base/icons/mobile_main_navigation.png) no-repeat center center transparent
-        width 44px
-        height 44px
-        display block
-        cursor pointer
+  a
+    color: $rm-header-text;
 
-    ul.nav
-      float left
-      li
-        display inline-block
-        margin 0
-        float left
-        a
-          color $rm-header-text
-          line-height $navbarHeight
-          padding 0 10px
-          &:hover
-          &:active
-          &:focus
-            background $black_0
-          span
-            display: inline-block;
+  .mobile-modal-center
+    margin: 0 auto;
+    width: calc(100% - 35px - 35px);
+
+  .mobile-modal-left
+    float: left;
+    width: 10%;
+    padding-left: 10px;
+
+  .mobile-modal-right
+    float: right;
+    width: 10%;
+    padding-right: 10px;
+
+  .mobile-modal-title
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-left: 10px;

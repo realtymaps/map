@@ -38,6 +38,12 @@ app.provider 'rmapsPage', () ->
       #
       historyLength: $window.history.length
 
+      #
+      # Accessors
+      #
+      setTitle: (value) ->
+        @title = value if value
+
       back: () =>
         if $window.history.length > @historyLength
           $window.history.back()
