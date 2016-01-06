@@ -1,15 +1,13 @@
 basePath = require '../backend/basePath'
-loggerLib = require "#{basePath}/config/logger"
+logger = require("#{basePath}/config/logger").spawn('test:crudServiceMock')
 {dbFnCalls} = require "#{basePath}/utils/crud/util.crud.service.helpers"
 sinon = require 'sinon'
 SqlMock = require './sqlMock'
 # Promise = require 'bluebird'
 
-logger = loggerLib.spawn('test:crudServiceMock')
+#logger = loggerLib.spawn('test:crudServiceMock')
 console.log "\n\n##### Logger keys:"
 console.log Object.keys(logger)
-
-
 logger.debug "\n\n##### (logger.debug) crudServiceMock evaluated"
 logger.log "\n\n##### (logger.log) crudServiceMock evaluated"
 console.log "\n\n##### (console.log) crudServiceMock evaluated"
