@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+ORIG_DIR=`pwd`
+
+#move to root project directory for all applications
+cd $SCRIPT_DIR/..
+echo 'PWD'
+
+
+fileName=${1?missing fileName}
+shift
+
+tableName=$fileName
+
+fileName="$(date +%F)__$fileName.sql"
+
+fileToReplace="./migrations/$fileName"
+
+#TODO: make this an arg or an external function to be called so we can pass different templates to this same gen code
+cp ./scripts/templates/new_table_template.sql $fileToReplace
+
+echo $fileToReplace
+
+find "$fileToReplace" -type f|xargs perl -pi -e 's/SOME_TABLE_RENAME/'"$tableName"'/g'

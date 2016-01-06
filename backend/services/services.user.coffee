@@ -23,6 +23,7 @@ _.extend toInit, _.pick tables.user, [
   'company'
   'accountImages'
   'drawnShapes'
+  'creditCards'
 ]
 
 manualInits = {

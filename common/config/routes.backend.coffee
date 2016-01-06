@@ -27,6 +27,8 @@ apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
+apiBaseEmailVerify = "#{apiBase}/EmailVerify"
+apiBaseOnboarding = "#{apiBase}/onBoarding"
 
 module.exports =
   views:
@@ -203,5 +205,11 @@ module.exports =
   plans:
     apiBase: apiBasePlans
     root: apiBasePlans
+  emailVerify:
+    apiBase: apiBaseEmailVerify
+    verify: "#{apiBaseEmailVerify}/:hash"
+  onboarding:
+    apiBase: apiBaseOnboarding
+    createUser: "#{apiBaseOnboarding}/createUser"
 
   # hirefire secret value set from within backend/config/config.coffee

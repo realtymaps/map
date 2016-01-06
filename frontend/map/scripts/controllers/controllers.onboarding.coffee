@@ -14,7 +14,7 @@ rmapsPlansService) ->
 
   step = $state.current.name
 
-  _.merge $scope, user: $stateParams,
+  _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
       submit: () ->
         $scope.view.showSteps = true
@@ -62,6 +62,9 @@ rmapsPlansService) ->
 
         newPlan
 
+  $log.debug "current user data"
+  $log.debug $scope.user
+
   rmapsOnBoardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
@@ -69,7 +72,7 @@ app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
   $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
 
 app.controller 'rmapsOnBoardingPaymentCtrl',
-($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
+($scope, $state, $log, $document, rmapsOnBoardService, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
 
   _safePaymentFields = [
@@ -96,7 +99,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     payment = angular.copy($scope.user.card)
     payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
     payment.token = response.id
-    _.extend payment, _.pick response, _safePaymentFields
+    _.extend payment, _.pick response.card, _safePaymentFields
     payment
 
   behaveLikeAngularValidation = (formField, rootForm) ->
