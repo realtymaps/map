@@ -45,7 +45,7 @@ class MlsConfigCrud extends crudService.ThenableCrud
 
   update: (id, entity) ->
     # as config options are added to the mls_config table, they need to be added here as well
-    super(id, entity, ['name', 'notes', 'active', 'listing_data', 'data_rules'])
+    super(id, entity, ['name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip'])
 
   updatePropertyData: (id, propertyData) ->
     @update(id, {listing_data: propertyData})

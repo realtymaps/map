@@ -48,6 +48,7 @@ app.controller 'rmapsMlsCtrl',
       propertySchemaDefaults: adminConstants.defaults.propertySchema
       configDefaults: adminConstants.defaults.otherConfig
       task: adminConstants.defaults.task
+    $scope.ui = adminConstants.ui
 
     # keep track of readable names
     $scope.fieldNameMap =
@@ -275,8 +276,7 @@ app.controller 'rmapsMlsCtrl',
     # test for whether all default values being used or not
     $scope.hasAllDefaultOtherConfig = () ->
       _.every(_.keys(adminConstants.defaults.otherConfig), (k) ->
-        # null is a valid field value
-        return (typeof $scope.mlsData.current[k] is 'undefined' or $scope.mlsData.current[k] is adminConstants.defaults.otherConfig[k])
+        return ($scope.mlsData.current[k] == adminConstants.defaults.otherConfig[k])
       )
 
     # test for whether MLS is ready and eligible for task activation and normalization
