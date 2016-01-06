@@ -43,7 +43,7 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
 
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
-  buildState 'map', reloadOnSearch: false,
+  buildState 'map', sticky: true, reloadOnSearch: false,
     params:
       project_id:
         value: null
