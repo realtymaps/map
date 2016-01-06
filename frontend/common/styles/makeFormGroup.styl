@@ -1,0 +1,17 @@
+$fnMakeFormGroup()
+  .form-group
+    margin-bottom 5px
+    &.form-field
+      min-height 69px
+
+    span
+      label
+        &.has-error
+          //begin angular-validaiton and angular-credit-card
+          //gets the validation errors to inline
+          display inline
+          //end angular-validaiton and angular-credit-card
+          white-space nowrap
+          overflow-x visible
+          padding-left 5px
+          text-align start
