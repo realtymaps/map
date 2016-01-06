@@ -6,7 +6,7 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 #   https://github.com/angular-ui/ui-router/wiki
 
 stateDefaults =
-  sticky: true
+  sticky: false
   loginRequired: true
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
