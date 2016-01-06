@@ -3,6 +3,7 @@ require '../../globals'
 Promise = require 'bluebird'
 require 'should'
 basePath = require '../basePath'
+logger = require "#{basePath}/config/logger"
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"
 ServiceCrud = CrudServiceHelpers.Crud
@@ -21,6 +22,8 @@ sinon = require 'sinon'
 require "#{basePath}/extensions"
 colorWrap = require 'color-wrap'
 colorWrap(console)
+
+logger.debug "\n\n##### route.crud.projectSession.spec evaluated"
 
 ServiceCrudProject = require "#{basePath}/services/service.user.project"
 
@@ -52,6 +55,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     clientsSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
+
 
     toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 

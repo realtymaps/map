@@ -7,8 +7,10 @@ beforeEach ->
 
   angular.module('rmapsCommon')
   .config (nemDebugProvider) ->
+    console.log "\n\n\n######## config debug at #{Date.now()}"
     debug = nemDebugProvider.debug
-    debug.enable("test:*")
+    # debug.enable("test:*")
+    debug.enable("-*")
 
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)

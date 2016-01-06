@@ -15,6 +15,12 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
+    # valid ENABLE namespace strings based on debug library specification: https://www.npmjs.com/package/debug#conventions
+    # BACKEND_ENABLE: process.env.LOG_BACKEND_ENABLE ? '*'
+    # FRONTEND_ENABLE: process.env.LOG_FRONTEND_ENABLE ? '*'
+    BACKEND_ENABLE: process.env.LOG_BACKEND_ENABLE ? '*'
+    FRONTEND_ENABLE: process.env.LOG_FRONTEND_ENABLE ? '*'
+
   DBS:
     MAIN:
       client: 'pg'

@@ -1,73 +1,66 @@
-winston = require('winston')
-fs = require('fs')
-stackTrace = require('stack-trace')
-path = require 'path'
-cluster = require 'cluster'
-colorWrap = require 'color-wrap'
-config = require('./config')
-logPath = config.LOGGING.PATH
-_ = require 'lodash'
+baselogger = require './baselogger'
+debug = require 'debug'
 
-if !fs.existsSync(logPath)
-  fs.openSync(logPath, 'w')
+_fns = ['debug', 'info', 'warn', 'error', 'log']
+LEVELS = {}
+for val, key in _fns
+  LEVELS[val] = key
 
-myCustomLevels =
-  levels:
-    route: 0
-    sql: 1
-    debug: 2
-    info: 3
-    warn: 4
-    error: 5
+_maybeExecLevel = (level, current, fn) ->
+  fn() if level >= current
 
-  colors:
-    route: 'grey'
-    sql: 'magenta'
-    debug: 'cyan'
-    info: 'green'
-    warn: 'yellow'
-    error: 'red'
+_isValidLogObject = (logObject) ->
+  isValid = false
+  return  isValid unless logObject
+  for val in _fns
+    isValid = logObject[val]? and typeof logObject[val] is 'function'
+    break unless isValid
+  isValid
 
-# console.info config.LOGGING.LEVEL
-logger = new (winston.Logger)(
-  transports: [
-    new (winston.transports.Console)
-      level: config.LOGGING.LEVEL
-      colorize: true
-      timestamp: true
-    new (winston.transports.File)
-      filename: logPath
-      level: config.LOGGING.LEVEL
-      timestamp: true
-  ]
-  levels: myCustomLevels.levels
-)
-winston.addColors myCustomLevels.colors
+###
+  Overide logObject.debug with a debug instance
+  see: https://github.com/visionmedia/debug/blob/master/Readme.md
+###
+_wrapDebug = (debugNS, logObject) ->
+  # define a new debug NS (which is to be used as handle for controlling logging verbosity)
+  debugInstance = debug(debugNS)
+  newLogger = {}
+  # for val in _fns
+  #   newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
 
+  for val in _fns
+    newLogger[val] = (msg) -> debugInstance(logObject[val](msg))
 
-if config.LOGGING.FILE_AND_LINE
-  for own level of myCustomLevels.levels
-    oldFunc = logger[level]
-    do (oldFunc) ->
-      logger[level] = () ->
-        trace = stackTrace.parse(new Error())  # this gets correct coffee line, where stackTrace.get() does not
-        args = Array.prototype.slice.call(arguments)
-        filename = path.basename(trace[1].getFileName(), '.coffee')
-        decorator = "[#{filename}:#{trace[1].getLineNumber()}]"
-        if cluster.worker?.id?
-          decorator = "<#{cluster.worker.id}>#{decorator}"
-        args.unshift(decorator)
-        oldFunc.apply(logger, args)
+  newLogger
 
+class Logger
+  constructor: (@baseLogObject) ->
+    console.log "\n\n#### Logger instantiated"
+    throw 'internalLogger undefined' unless @baseLogObject
+    throw '@$log is invalid' unless _isValidLogObject @baseLogObject
+    @doLog = true
+    logFns = {}
 
-unless logger.infoRoute
-  logger.infoRoute = (name, route) ->
-    logger.route "Route #{name} of: '#{route}' set"
+    for level in _fns
+      do (level) =>
+        logFns[level] = (msg) =>
+          if @doLog
+            _maybeExecLevel LEVELS[level], @currentLevel, =>
+              @$log[level](msg)
+        @[level] = logFns[level]
 
-logger.log 'debug', 'Log Levels: %j', logger.levels, {}
-logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+    @LEVELS = LEVELS
+    @currentLevel = LEVELS.error
 
-colorWrap logger, myCustomLevels.levels
+  spawn: (newInternalLoggerOrNS) =>
+    console.log "\n\n#### spawning logger #{newInternalLoggerOrNS}"
+    if typeof newInternalLoggerOrNS is 'string'
+      throw '@baseLogObject is invalid' unless _isValidLogObject @baseLogObject
+      unless debug
+        throw "cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library"
+      return _wrapDebug newInternalLoggerOrNS, @baseLogObject
+
+    new Logger(newInternalLoggerOrNS or baseLogger)
 
 
-module.exports = logger
+module.exports = new Logger(baselogger)
