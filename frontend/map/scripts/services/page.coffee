@@ -14,10 +14,12 @@ app.provider 'rmapsPage', () ->
   setDefaults: (pageSettings) ->
     angular.extend defaults, page
 
-  #  //
-  #  // Get an instance of a PageContext factory
-  #  //
+  #
+  #  Get an instance of rmapsPage
+  #
   $get: ($rootScope, $window, $state, $log) ->
+    $log = $log.spawn 'map:rmapsPage'
+
     class RmapsPage
 
       #
@@ -41,8 +43,10 @@ app.provider 'rmapsPage', () ->
       #
       # Accessors
       #
-      setTitle: (value) ->
-        @title = value if value
+      allowDynamicTitle: false
+
+      setDynamicTitle: (value) ->
+        @title = value if value and @allowDynamicTitle
 
       back: () =>
         if $window.history.length > @historyLength
@@ -73,13 +77,11 @@ app.provider 'rmapsPage', () ->
         page.reset()
 
         if toState.page
-          page.title = toState.page.title if toState.page.title
+          page.allowDynamicTitle = !!toState.page.dynamicTitle
+          page.title = toState.page.title if toState.page.title and !page.allowDynamicTitle
           page.meta = toState.page.meta if toState.page.meta
 
         if toState.mobile
           page.mobile.modal = toState.mobile.modal
-
-    # Initialize the service instance
-    page.reset()
 
     return page

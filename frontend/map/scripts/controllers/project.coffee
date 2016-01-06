@@ -90,7 +90,7 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
       $scope.project = project
 
       # Set the project name as the page title
-      rmapsPage.setTitle(project.name)
+      rmapsPage.setDynamicTitle(project.name)
 
   $scope.loadProperties = (properties) ->
     rmapsPropertiesService.getProperties _.keys(properties), 'filter'

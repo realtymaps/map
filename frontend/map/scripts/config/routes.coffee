@@ -89,7 +89,7 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
   buildState 'history'
   buildState 'properties'
   buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
-  buildState 'project', page: { title: 'Project' }, mobile: { modal: true }
+  buildState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
   buildState 'projectClients', parent: 'project', page: { title: 'My Clients' }, mobile: { modal: true }
   buildState 'projectNotes', parent: 'project', page: { title: 'Notes' }, mobile: { modal: true }
   buildState 'projectFavorites', parent: 'project', page: { title: 'Favorites' }, mobile: { modal: true }
