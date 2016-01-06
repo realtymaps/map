@@ -1,8 +1,8 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.us_states.root
 
-app.service 'rmapsUsStates', ($log, $http, $q) ->
+mod.service 'rmapsUsStates', ($log, $http, $q) ->
   $log = $log.spawn("map:rmapsUsStates")
 
   _stateData = {}

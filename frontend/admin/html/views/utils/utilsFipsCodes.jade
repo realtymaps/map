@@ -1,0 +1,26 @@
+h1 FipsCodes
+.row
+  .col-md-6.col-sm-6.col-xs-12
+    .form-group
+      .label State:
+      .col-lg-6
+        select.form-control(ng-model="location.usStateCode")
+          option(
+            ng-repeat="entity in us_states"
+            ng-selected="{{entity.code == user.us_state}}"
+            value="{{entity.code}}") {{entity.code}} - {{entity.name}}
+    
+  .col-md-6.col-sm-6.col-xs-12
+    .form-group
+      .label County:
+      .col-lg-6
+        select.form-control(ng-model="location.fipsCode")
+          option(
+            ng-repeat="entity in counties"
+            ng-selected="{{entity.code == user.fipsCode}}"
+            value="{{entity.code}}") {{entity.county}} - {{entity.code}}
+            
+  
+  .col-md-6.col-sm-6.col-xs-12
+    h2(ng-if="location.fipsCode")
+      div() FipsCode: {{location.fipsCode}}
