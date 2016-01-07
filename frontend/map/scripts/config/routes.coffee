@@ -102,7 +102,9 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
   buildState 'newEmail'
 
   buildState 'mail'
-  buildState 'mailWizard'
+  buildState 'mailWizard',
+    params: property_ids: null
+
   buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'
   buildState 'senderInfo', parent: 'mailWizard'
