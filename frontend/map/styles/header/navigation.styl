@@ -5,7 +5,6 @@ $fnMakeNav()
       display none
       position absolute
       right 0
-      @extends .visible-xs
       span
         background url(/assets/base/icons/mobile_main_navigation.png) no-repeat center center transparent
         width 44px
@@ -19,13 +18,11 @@ $fnMakeNav()
         display inline-block
         margin 0
         float left
-        @extends .global-transition
         a
           color $gray
           text-transform capitalize
           line-height $navbarHeight
           padding 0 10px
-          @extends .global-transition
           &:hover
           &:active
           &:focus
@@ -51,16 +48,3 @@ $fnMakeNav()
             span
               @extends .notice-dot-blue
 
-      @extends .hidden-xs
-      &.mobile-nav-open
-        @extends .visible-xs
-        @extends .slideFromTop
-        background $dark_blue_darker
-        float: none;
-        left: 0;
-        position: absolute;
-        top: 47px;
-        width: 100%;
-        li
-          display block
-          width 100%

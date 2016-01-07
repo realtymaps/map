@@ -1,12 +1,28 @@
 header.site-header
-  .inner
-    .container-fluid
-      include ./header/_burger
-      include ./header/_logo
-      include ./header/_navigation
-      div(ng-if="principal.isAuthenticated()")
-        include ./header/_notices
-        include ./header/_userblock
-        include ./header/_search
-      include ./header/_rightnav
+  .desktop-only
+    .inner
+      .container-fluid
+        include ./header/_logo
+        include ./header/_navigation
+        div(ng-if="principal.isAuthenticated()")
+          include ./header/_notices
+          include ./header/_userblock
+          include ./header/_search
+        include ./header/_rightnav
+  .mobile-only
+    .inner(ng-if='!rmapsPage.mobile.modal')
+      .container-fluid
+        include ./header/_burger
+        include ./header/_logo
+        div(ng-if="principal.isAuthenticated()")
+          include ./header/_search
 
+.mobile-only
+  header.mobile-modal(ng-if='rmapsPage.mobile.modal')
+    .inner
+      .mobile-modal-left
+        a(ng-click='rmapsPage.back($event)')
+          i.fa.fa-chevron-left
+      .mobile-modal-center
+        .mobile-modal-title {{rmapsPage.title}}
+      .mobile-modal-right
