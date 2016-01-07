@@ -5,7 +5,6 @@ httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
 profileService = require '../services/service.profiles'
-tables = require '../config/tables'
 userSvc = require('../services/services.user').user
 companySvc = require('../services/services.user').company
 projectSvc = require('../services/services.user').project
@@ -16,13 +15,12 @@ config = require '../config/config'
 {methodExec} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 auth = require '../utils/util.auth.coffee'
-{NotFoundError} = require '../utils/util.route.helpers'
 {parseBase64} = require '../utils/util.image'
 sizeOf = require 'image-size'
 validation = require '../utils/util.validation'
 {validators} = validation
 safeColumns = (require '../utils/util.sql.helpers').columns
-analyzeValue = require '../../common/utils/util.analyzeValue'
+emailTransforms = require('../utils/transforms/transforms.email')
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -273,13 +271,7 @@ root = (req, res, next) ->
           ]
           required: true
         website_url: validators.string(regex: config.VALIDATION.url)
-        email:
-          transform: [
-            validators.string(regex: config.VALIDATION.email)
-            validators.unique tableFn: tables.auth.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
-              email: value
-          ]
-          required: true
+        email: emailTransforms.email(req.user.id)
 
       validation.validateAndTransformRequest(req.body, transforms)
       .then (validBody) ->
@@ -326,20 +318,6 @@ updatePassword = (req, res, next) ->
     userSessionService.updatePassword(req.user, validBody.password)
     .then ->
       res.json(true)
-
-emailIsUnique = (req, res, next) ->
-  transforms =
-    email:
-      transform: [
-          validators.string(regex: config.VALIDATION.email)
-          validators.unique tableFn: tables.auth.user, id: req.user.id, name: 'email', clauseGenFn: (value) ->
-            email: value
-      ]
-      required: true
-
-  validation.validateAndTransformRequest(req.body, transforms)
-  .then (validBody) ->
-    res.json(true)
 
 module.exports =
   root:
@@ -392,7 +370,3 @@ module.exports =
     method: 'put'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: updatePassword
-
-  emailIsUnique:
-    method: 'post'
-    handle: emailIsUnique

@@ -6,27 +6,15 @@ creditCardsService = require('../services/services.user').creditCards
 creditCardCols = basicColumns.creditCards
 # auth = require '../utils/util.auth'
 {mergeHandles} = require '../utils/util.route.helpers'
-{validators} = require '../utils/util.validation'
+{validators, validateAndTransformRequest, falsyDefaultTransformsToNoop} = require '../utils/util.validation'
 logger = require '../config/logger'
 {handleQuery, wrapHandleRoutes} = require '../utils/util.route.helpers'
-{EMAIL_VERIFY, VALIDATION}= require '../config/config'
-{validateAndTransform, falsyDefaultTransformsToNoop} = require '../utils/util.validation'
-
-verifyTransforms =
-  params: validators.object isEmptyProtect: true
-  query:  validators.object isEmptyProtect: true
-  body:
-    password: validators.string(regex: VALIDATION.password)
-    card:
-      state: validators.object
-        subValidateSeparate:
-          account_image_id: validators.integer()
-
-verifyTransforms = falsyDefaultTransformsToNoop(verifyTransforms)
+{EMAIL_VERIFY}= require '../config/config'
+onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 
 handles = wrapHandleRoutes
-  createUser: (req, res) ->
-    validateAndTransform req, verifyTransforms
+  createUser: (req) ->
+    validateAndTransformRequest req, onboardingTransforms.verify
     .then (validReq) ->
       logger.debug.cyan validReq, true
       # handleQuery emailVerifyService(validReq.params.hash), res

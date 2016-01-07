@@ -1,4 +1,5 @@
 _ = require 'lodash'
+Promise = require 'bluebird'
 profileUtil = require '../../common/utils/util.profile'
 httpStatus = require '../../common/utils/httpStatus'
 DataValidationError = require '../utils/errors/util.error.dataValidation'

@@ -27,7 +27,7 @@ apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
-apiBaseEmailVerify = "#{apiBase}/EmailVerify"
+apiBaseEmail = "#{apiBase}/Email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
 
 module.exports =
@@ -53,7 +53,6 @@ module.exports =
     root: apiBaseSession
     companyRoot: "#{apiBaseSession}/company"
     updatePassword: "#{apiBaseSession}/password"
-    emailIsUnique: "#{apiBaseSession}/emailIsUnique"
   notesSession:
     apiBase: apiBaseNotes
     root: apiBaseNotes
@@ -205,9 +204,10 @@ module.exports =
   plans:
     apiBase: apiBasePlans
     root: apiBasePlans
-  emailVerify:
-    apiBase: apiBaseEmailVerify
-    verify: "#{apiBaseEmailVerify}/:hash"
+  email:
+    apiBase: apiBaseEmail
+    verify: "#{apiBaseEmail}/:hash"
+    isUnique: "#{apiBaseEmail}/isUnique"
   onboarding:
     apiBase: apiBaseOnboarding
     createUser: "#{apiBaseOnboarding}/createUser"

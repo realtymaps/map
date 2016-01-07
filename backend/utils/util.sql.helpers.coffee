@@ -2,6 +2,7 @@ _ = require 'lodash'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
+logger = require '../config/logger'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -157,11 +158,16 @@ expectSingleRow = (rows) -> Promise.try ->
   return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
-  tableFn()
+  query = tableFn()
   .where(whereClause)
-  .whereNot(id:id)
   .count()
-  .then singleRow
+
+  if id?
+    query.whereNot(id:id)
+
+  logger.debug query.toString()
+
+  query.then singleRow
   .then (row) ->
     if row.count > 0
       return Promise.reject new Error("#{name} already exists")
