@@ -24,7 +24,7 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                       option(
                         ng-repeat="entity in counties"
                         ng-selected="{{entity.code == user.fipsCode}}"
-                        value="{{entity.code}}") {{entity.code}} - {{entity.county}}
+                        value="{{entity.code}}") {{entity.county}} - {{entity.code}}
             .row
               .col-md-6.col-sm-6.col-xs-12
                 .form-group

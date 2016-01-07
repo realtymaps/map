@@ -28,7 +28,7 @@ apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
 apiBaseEmailVerify = "#{apiBase}/EmailVerify"
-apiBaseOnboarding = "#{apiBase}/onBoarding"
+apiBaseOnboarding = "#{apiBase}/onboarding"
 
 module.exports =
   views:

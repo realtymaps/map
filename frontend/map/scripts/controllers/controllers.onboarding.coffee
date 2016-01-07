@@ -2,10 +2,10 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
 rmapsPlansService) ->
 
-  $log = $log.spawn("map:rmapsOnBoardingCtrl")
+  $log = $log.spawn("map:rmapsOnboardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -65,15 +65,15 @@ rmapsPlansService) ->
   $log.debug "current user data"
   $log.debug $scope.user
 
-  rmapsOnBoardingOrderSelector.initScope($state, $scope)
+  rmapsOnboardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
-app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
-  $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
+app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
+  $log = $log.spawn("map:rmapsOnboardingPlanCtrl")
 
-app.controller 'rmapsOnBoardingPaymentCtrl',
-($scope, $state, $log, $document, rmapsOnBoardService, stripe, rmapsFaCreditCards) ->
-  $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
+app.controller 'rmapsOnboardingPaymentCtrl',
+($scope, $state, $log, $document, rmapsOnboardingService, stripe, rmapsFaCreditCards) ->
+  $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
     "amount"
@@ -131,8 +131,8 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
-  $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
+app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
+  $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
   $scope.$watch 'user.usStateCode', (usStateCode) ->
     return unless usStateCode
@@ -143,6 +143,6 @@ app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rma
 
   $log.debug $scope
 
-app.controller 'rmapsOnBoardingVerifyCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:rmapsOnBoardingVerifyCtrl")
+app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
+  $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope

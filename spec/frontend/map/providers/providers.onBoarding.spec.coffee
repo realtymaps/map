@@ -1,14 +1,14 @@
 ###global angular:true, inject:true###
-steps = ['onBoardingPayment', 'onBoardingVerify']
+steps = ['onboardingPayment', 'onboardingVerify']
 
-describe "rmapsOnBoardingProOrder", ->
+describe "rmapsOnboardingProOrder", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope,  rmapsOnBoardingProOrder) =>
+    inject ($rootScope,  rmapsOnboardingProOrder) =>
       @$rootScope = $rootScope
-      @subject = rmapsOnBoardingProOrder
+      @subject = rmapsOnboardingProOrder
 
   it 'subject exists', ->
     @subject.should.be.ok
