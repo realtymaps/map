@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 logger = require '../../config/logger'
-analyzeValue = require '../../../common/utils/util.analyzeValue'
+# analyzeValue = require '../../../common/utils/util.analyzeValue'
 
 doValidationSteps = (transform, param, value, index, length) -> Promise.try () ->
   if not transform
@@ -20,6 +20,8 @@ doValidationSteps = (transform, param, value, index, length) -> Promise.try () -
     return Promise.any promises #pick the first validation that works
   else
     # or just a singleton
+    unless _.isFunction transform
+      logger.debug transform, true
     return transform(param, value, index, length)
 
 module.exports = doValidationSteps

@@ -6,7 +6,7 @@ module.exports =
   verify: falsyDefaultTransformsToNoop
     params: validators.object isEmptyProtect: true
     query:  validators.object isEmptyProtect: true
-    body:
+    body: validators.object subValidateSeparate:
       password: validators.string(regex: VALIDATION.password)
       ###
         card: Object

@@ -17,7 +17,7 @@ handles = wrapHandleRoutes
   isUnique: (req) ->
     logger.debug "isUnique"
     transforms = emailTransforms.emailRequest(req.user?.id)
-    logger.debug.yellow transforms, true
+    logger.debug transforms, true
     validateAndTransformRequest(req, transforms)
     .then (validReq) ->
       logger.debug "isUnique: true"

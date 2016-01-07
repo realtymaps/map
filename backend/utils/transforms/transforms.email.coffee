@@ -1,6 +1,6 @@
 tables = require '../../config/tables'
 {VALIDATION, EMAIL_VERIFY} = require '../../config/config'
-{validators, falsyDefaultTransformsToNoop} = require '../util.validation'
+{validators} = require '../util.validation'
 
 email = (optUserId) ->
   transform: [
@@ -11,17 +11,16 @@ email = (optUserId) ->
   required: true
 
 emailRequest = (optUserId) ->
-  falsyDefaultTransformsToNoop
-    params: validators.object isEmptyProtect: true
-    query:  validators.object isEmptyProtect: true
-    body:
-      email: email(optUserId)
+  params: validators.object isEmptyProtect: true
+  query:  validators.object isEmptyProtect: true
+  body:   validators.object subValidateSeparate:
+    email: email(optUserId)
 
-emailVerifyRequest = falsyDefaultTransformsToNoop
-  params:
+emailVerifyRequest =
+  params: validators.object subValidateSeparate:
     hash:
-      required: true
       transform: [validators.string(minLength: EMAIL_VERIFY.HASH_MIN_LENGTH, maxLength:EMAIL_VERIFY.HASH_MIN_LENGTH)]
+      required: true
   query: validators.object isEmptyProtect: true
   body: validators.object isEmptyProtect: true
 

@@ -5,6 +5,7 @@ httpStatus = require '../../common/utils/httpStatus'
 DataValidationError = require '../utils/errors/util.error.dataValidation'
 {MissingVarError, UpdateFailedError} = require '../utils/errors/util.error.crud'
 ExpressResponse = require '../utils/util.expressResponse'
+logger = require '../config/logger'
 
 class CurrentProfileError extends Error
 class NotFoundError extends Error
