@@ -121,9 +121,9 @@
                     table.max-width
                       tr(ng-repeat="(field, default) in mlsData.configDefaults")
                         td
-                          label.data-label {{field}}
+                          label.data-label {{ui.otherConfig[field].label}}:
                         td.pad-left
-                          input(type="text" ng-model="mlsData.current[field]").form-control.input-lg
+                          input(type="{{ui.otherConfig[field].type}}" ng-model="mlsData.current[field]").form-control.input-lg
                         td.pad-left
                           button(ng-click="assignConfigDefault(mlsData.current, field)" ng-disabled="mlsData.current[field] === default").btn.btn-success Assign to Default: {{ default | emptyValueOutput }}
 
@@ -196,15 +196,19 @@
                 span.data-entry {{mlsData.task.active}}
 
             tr(ng-show="hasAllDefaultOtherConfig()").config-tr
-              td(colspan=2) Using default value for all other configuration options.
+              td(colspan=2)
+                label.data-label Using default value for all other configuration options.
 
             tr(ng-hide="hasAllDefaultOtherConfig()").config-tr
-              td(colspan=2) Non-default configuration options:
+              td(colspan=2)
+                label.data-label Using default value for all configuration options&nbsp;
+                  i except
+                  | :
 
 
-            tr(ng-repeat="(field, default) in mlsData.configDefaults" ng-show="mlsData.current[field] != default").config-tr
+            tr(ng-repeat="(field, default) in mlsData.configDefaults" ng-show="mlsData.current[field] != default")
               td
-                label.data-label {{field}}
+                label.data-label {{ui.otherConfig[field].label}}:
               td
                 span.data-entry {{mlsData.current[field] | emptyValueOutput }}
 

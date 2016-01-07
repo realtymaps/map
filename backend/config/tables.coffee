@@ -60,3 +60,7 @@ for groupName, groupConfig of module.exports
 
 module.exports.buildRawTableQuery = (tableName, args...) ->
   _buildQuery(dbs.get('raw_temp'), tableName)(args...)
+
+
+module.exports.buildQuery = (tableName, db = dbs.get('main')) ->
+  _buildQuery(db, tableName)

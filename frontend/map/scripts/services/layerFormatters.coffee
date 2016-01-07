@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'

@@ -15,11 +15,16 @@ admin =
       url: null
     propertySchema:
       listing_data: {'queryTemplate': _queryTemplate}
-    otherConfig: {}
+    otherConfig:
+      static_ip: false
     task:
       active: false
-
   dataSource:
     lookupThreshold: 50
+  ui:
+    otherConfig:
+      static_ip:
+        label: 'Use Static IP Address'
+        type: 'checkbox'
 
 app.constant 'adminConstants', admin

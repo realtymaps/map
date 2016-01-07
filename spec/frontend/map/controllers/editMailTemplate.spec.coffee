@@ -4,10 +4,6 @@ describe 'rmapsEditTemplateCtrl', ->
     angular.mock.module('rmapsMapApp')
   
     inject ($controller, $rootScope, $document, rmapsMailTemplate) =>
-      # $provide.value 'rmapsprincipal',
-      #   getIdentity: () ->
-      #     user:
-      #       id: 1
       @document = $document[0]
       @$controller = $controller
       @$rootScope = $rootScope
@@ -15,14 +11,7 @@ describe 'rmapsEditTemplateCtrl', ->
       @rmapsMailTemplate = rmapsMailTemplate
 
   describe 'controller behavior', ->
-    # lumping multiple tests on controller here so that we aren't re-evaluating controller over and over
-    it 'vetting controller logic', ->
-      templateType = 'basicLetter'
-      @scope.templateType = templateType
-      
+    it 'vetting controller logic', ->      
       controller = @$controller 'rmapsEditTemplateCtrl', { $scope: @scope }
-      expect(@scope.templateObj.type).to.eql templateType
+      expect(@scope.templObj).to.be.ok
 
-      xit 'ensures template class names are set correctly'
-      expect(@scope.applyTemplateClass()).to.eql "#{templateType}"
-      expect(@scope.applyTemplateClass('-body')).to.eql "#{templateType}-body"

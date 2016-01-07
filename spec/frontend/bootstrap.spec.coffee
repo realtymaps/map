@@ -52,6 +52,7 @@ beforeEach ->
     $httpBackend.when( 'GET', backendRoutes.config.cartodb).respond(500)
     $httpBackend.when( 'GET', backendRoutes.config.google).respond(500)
     $httpBackend.when( 'GET', backendRoutes.config.asyncAPIs).respond([])
+    $httpBackend.when( 'GET', backendRoutes.config.us_states).respond([])
 
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log

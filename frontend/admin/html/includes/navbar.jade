@@ -7,11 +7,8 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
         .navbar-header
           a(href="{{adminRoutes.index}}").navbar-brand.navbar-hide
             img(src="/assets/logo.png")
-      li
-        a(href="{{adminRoutes.urls.dataSource}}") Data Source
-
-      li
-        a(href="{{adminRoutes.urls.jobs}}") Jobs
+      li(ng-repeat="nav in navbarPages")
+        a(ui-sref="{{nav.state}}") {{nav.name}}
 
       li(ng-hide="$state.is('main')")
         +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")

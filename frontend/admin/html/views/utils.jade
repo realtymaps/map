@@ -1,0 +1,8 @@
+.utils.row
+  .col-md-1.menu
+    h5 Business Utilities
+    ul.nav.nav-pills.nav-stacked
+      li
+        a(ui-sref="utilsFipsCodes" ui-sref-opts="{reload: true}") FipsCodes
+  .col-md-11
+    div(ng-repeat="state in $state.get() | filter:{parent: 'utils'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)

@@ -20,13 +20,13 @@ apiBaseSession = "#{apiBase}/session"
 apiBaseJobs = "#{apiBase}/jobs"
 apiBaseCompanies = "#{apiBase}/companies"
 apiBaseUsStates = "#{apiBase}/usStates"
+apiBaseFipsCodes = "#{apiBase}/fipsCodes"
 apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
-
-
+apiBasePlans = "#{apiBase}/plans"
 
 module.exports =
   views:
@@ -110,6 +110,13 @@ module.exports =
     apiBase: apiBaseUsStates
     root: apiBaseUsStates
     byId: "#{apiBaseUsStates}/:id"
+  fipsCodes:
+    apiBase: apiBaseFipsCodes
+    root: apiBaseFipsCodes
+    byId: "#{apiBaseFipsCodes}/code/:code"
+    getAllByState: "#{apiBaseFipsCodes}/state/:state"
+    getAllByStateCounty: "#{apiBaseFipsCodes}/state/:state/county/:county"
+    getAllByStateLikeCounty: "#{apiBaseFipsCodes}/state/:state/like/county/:county"
   account_images:
     apiBase: apiBaseAccountImages
     root: apiBaseAccountImages
@@ -193,5 +200,8 @@ module.exports =
     apiBaseMailCampaigns: apiBaseMailCampaigns
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
+  plans:
+    apiBase: apiBasePlans
+    root: apiBasePlans
 
   # hirefire secret value set from within backend/config/config.coffee
