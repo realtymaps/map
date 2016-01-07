@@ -131,9 +131,6 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
 app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
   $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
 
-  rmapsUsStates.getAll().then (states) ->
-    $scope.us_states = states
-
   $scope.$watch 'user.usStateCode', (usStateCode) ->
     return unless usStateCode
 

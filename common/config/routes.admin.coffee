@@ -27,8 +27,7 @@ module.exports =
     login: '/admin/login'
     logout: '/admin/logout'
     jobs: '/admin/jobs'
+    utils: '/admin/utils'
     dataSource: '/admin/dataSource'
     authenticating: '/admin/authenticating'
     accessDenied: '/admin/accessDenied'
-
-

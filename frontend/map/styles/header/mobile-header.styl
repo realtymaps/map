@@ -1,0 +1,38 @@
+.mobile-modal
+  position: relative;
+  height: $navbarHeight;
+  width: 100%;
+  overflow: hidden;
+  font-size: 18px;
+  color: $rm-header-text;
+  line-height $navbarHeight
+
+  a
+    color: $rm-header-text;
+
+  .mobile-modal-center
+    margin: 0 auto;
+    width: calc(100% - 35px - 35px);
+    height: $navbarHeight;
+
+  .mobile-modal-left
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    padding-left: 10px;
+
+  .mobile-modal-right
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    padding-right: 10px;
+    text-align: right;
+
+  .mobile-modal-title
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    height: $navbarHeight;

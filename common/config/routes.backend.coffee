@@ -115,6 +115,8 @@ module.exports =
     root: apiBaseFipsCodes
     byId: "#{apiBaseFipsCodes}/code/:code"
     getAllByState: "#{apiBaseFipsCodes}/state/:state"
+    getAllByStateCounty: "#{apiBaseFipsCodes}/state/:state/county/:county"
+    getAllByStateLikeCounty: "#{apiBaseFipsCodes}/state/:state/like/county/:county"
   account_images:
     apiBase: apiBaseAccountImages
     root: apiBaseAccountImages
