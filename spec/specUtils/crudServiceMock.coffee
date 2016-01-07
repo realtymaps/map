@@ -77,7 +77,7 @@ toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
   crudInstance
 
 toTestThenableCrudInstance = (crudInstance, mockResponse, doLog) ->
-  logger.debug "\n\n##### toTestableCrudInstance"
+  #logger.debug "\n\n##### toTestableCrudInstance"
   toTestableCrudInstance(crudInstance, mockResponse, true, doLog)
 
 module.exports =

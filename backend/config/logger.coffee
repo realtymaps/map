@@ -28,16 +28,19 @@ _wrapDebug = (debugNS, logObject) ->
   # for val in _fns
   #   newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
 
+  # for val in _fns
+  #   newLogger[val] = (msg) -> debugInstance(logObject[val](msg))
+
   for val in _fns
-    newLogger[val] = (msg) -> debugInstance(logObject[val](msg))
+    newLogger[val] = debugInstance
 
   newLogger
 
 class Logger
   constructor: (@baseLogObject) ->
-    console.log "\n\n#### Logger instantiated"
+    #console.log "\n\n#### Logger instantiated"
     throw 'internalLogger undefined' unless @baseLogObject
-    throw '@$log is invalid' unless _isValidLogObject @baseLogObject
+    throw '@baseLogObject is invalid' unless _isValidLogObject @baseLogObject
     @doLog = true
     logFns = {}
 
@@ -46,14 +49,14 @@ class Logger
         logFns[level] = (msg) =>
           if @doLog
             _maybeExecLevel LEVELS[level], @currentLevel, =>
-              @$log[level](msg)
+              @baseLogObject[level](msg)
         @[level] = logFns[level]
 
     @LEVELS = LEVELS
     @currentLevel = LEVELS.error
 
   spawn: (newInternalLoggerOrNS) =>
-    console.log "\n\n#### spawning logger #{newInternalLoggerOrNS}"
+    #console.log "\n\n#### spawning logger #{newInternalLoggerOrNS}"
     if typeof newInternalLoggerOrNS is 'string'
       throw '@baseLogObject is invalid' unless _isValidLogObject @baseLogObject
       unless debug

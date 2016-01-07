@@ -1,4 +1,5 @@
 _ = require 'lodash'
+config = require '../../backend/config/routes.backend.coffee'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 
 
@@ -6,11 +7,10 @@ beforeEach ->
   window.isTest = true
 
   angular.module('rmapsCommon')
-  .config (nemDebugProvider) ->
-    console.log "\n\n\n######## config debug at #{Date.now()}"
-    debug = nemDebugProvider.debug
-    # debug.enable("test:*")
-    debug.enable("-*")
+  # .config (nemDebugProvider) ->
+  #   debug = nemDebugProvider.debug
+  #   # debug.enable("test:*")
+  #   debug.enable("*")
 
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)
