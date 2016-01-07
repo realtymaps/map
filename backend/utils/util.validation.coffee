@@ -1,6 +1,5 @@
 _ = require 'lodash'
-Promise = require 'bluebird'
-logger = require '../config/logger'
+#logger = require '../config/logger'
 DataValidationError = require './errors/util.error.dataValidation'
 loaders = require './util.loaders'
 path = require 'path'
@@ -56,6 +55,15 @@ falsyTransformsToNoop = (transforms) ->
 falsyDefaultTransformsToNoop = (transforms) ->
   falsyTransformsToNoop(defaultRequestTransforms(transforms))
 
+requireAllTransforms = (definitions) ->
+  for key, tran of definitions
+    if _.isFunction tran or _.isArray tran
+      definitions[key] =
+        transform: tran
+        required: true
+      continue
+    tran.required = true
+
 
 module.exports =
   validateAndTransform: validateAndTransform
@@ -67,3 +75,4 @@ module.exports =
   falsyTransformsToNoop:falsyTransformsToNoop
   defaultRequestTransforms : defaultRequestTransforms
   falsyDefaultTransformsToNoop: falsyDefaultTransformsToNoop
+  requireAllTransforms: requireAllTransforms

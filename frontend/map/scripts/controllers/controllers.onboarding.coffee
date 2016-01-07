@@ -76,6 +76,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
   $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
+    "id"
     "amount"
     "last4"
     "brand"
@@ -98,7 +99,6 @@ app.controller 'rmapsOnboardingPaymentCtrl',
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
     payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    payment.token = response.id
     _.extend payment, _.pick response.card, _safePaymentFields
     payment
 

@@ -6,10 +6,9 @@ creditCardsService = require('../services/services.user').creditCards
 creditCardCols = basicColumns.creditCards
 # auth = require '../utils/util.auth'
 {mergeHandles} = require '../utils/util.route.helpers'
-{validators, validateAndTransformRequest, falsyDefaultTransformsToNoop} = require '../utils/util.validation'
+{validateAndTransformRequest} = require '../utils/util.validation'
 logger = require '../config/logger'
-{handleQuery, wrapHandleRoutes} = require '../utils/util.route.helpers'
-{EMAIL_VERIFY}= require '../config/config'
+{wrapHandleRoutes} = require '../utils/util.route.helpers'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 
 handles = wrapHandleRoutes
