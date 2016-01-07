@@ -208,7 +208,6 @@ class ProjectRouteCrud extends RouteCrud
       throw new Error('Project not found') unless project
       project.id = project.project_id ? project.id
 
-      logger.debug JSON.stringify req.params
       @findProjectData [project], req, res, next
       .then sqlHelpers.singleRow
 

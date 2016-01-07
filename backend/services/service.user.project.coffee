@@ -77,39 +77,50 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
-  delete: (idObj, doLogQuery = true, entity, safe = safeProject, fnExec) ->
-    @getById idObj, doLogQuery, entity, safe
-    .then (project) =>
-      throw new Error 'Project not found' unless project?
+  delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
+    @profiles.getAll idObj, doLogQuery
+    .then sqlHelpers.singleRow
+    .then (profile) =>
+      throw new Error 'Project not found' unless profile?
 
-      toRemove = auth_user_id: idObj.auth_user_id, project_id: project.id
+      toRemove =
+        auth_user_id: idObj.auth_user_id
+        project_id: profile.project_id
 
-      promises = [
-        @notes.delete {}, doLogQuery, toRemove
-      ]
+      promises = []
 
-      # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
-      if project.sandbox is true
-        promises.push @update project.id, properties_selected: {}, safeProject, doLogQuery
+      # Remove notes in all cases
+      promises.push @notes.delete {}, doLogQuery, toRemove
 
-        promises.push(
-          @clients.getAll project_id: project.id, auth_user_id: project.auth_user_id
-          .then (profiles) =>
-            profileReset =
-              filters: {}
-              map_results: {}
-              map_position: {}
-            @clients.update profiles[0].id, profileReset, safeProfile, doLogQuery
-        )
+      # Remove shapes in all cases
+      promises.push @drawnShapes.delete {}, doLogQuery, toRemove
+
+      if profile.sandbox is true
+
+        reset =
+          filters: {}
+          map_results: {}
+          map_position: {}
+          properties_selected: {}
+
+        # Reset the sandbox (project fields)
+        promises.push @update profile.project_id, reset, safeProject, doLogQuery
+
+        # Reset the sandbox (profile fields)
+        promises.push @profiles.update profile.id, reset, safeProfile, doLogQuery
 
       else
-        promises.push super idObj, doLogQuery
-        promises.push @clients.delete {}, doLogQuery, toRemove
+        # Delete client profiles (not the users themselves)
+        promises.push @clients.delete {}, doLogQuery,
+          project_id: profile.project_id,
+          parent_auth_user_id: idObj.auth_user_id
+
+        # Delete the project itself
+        promises.push super id: profile.project_id, doLogQuery
 
       Promise.all promises
       .then () ->
-        project.sandbox
-
+        true
 
 #temporary to not conflict with project
 module.exports = ProjectCrud
