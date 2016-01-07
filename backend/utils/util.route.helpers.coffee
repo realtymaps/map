@@ -37,7 +37,7 @@ handleQuery = (q, res) ->
 
 handleRoute = (req, res, next, toExec) ->
   Promise.try () ->
-    toExec(req, res)
+    handleQuery toExec(req, res), res
   .catch DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
   .catch MissingVarError, (err) ->

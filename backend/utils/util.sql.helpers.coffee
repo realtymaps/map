@@ -158,12 +158,9 @@ expectSingleRow = (rows) -> Promise.try ->
   return rows[0]
 
 isUnique = (tableFn, whereClause, id, name = 'Entity') ->
-  query = tableFn()
-  .where(whereClause)
-  .count()
+  query = tableFn().where(whereClause).count()
 
-  if id?
-    query.whereNot(id:id)
+  query = query.whereNot(id:id) if id?
 
   logger.debug query.toString()
 
