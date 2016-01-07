@@ -32,6 +32,27 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
 
+  $scope.deleteProject = (project) ->
+    if project.sandbox
+      $scope.modalTitle = "Do you really want to clear your Sandbox?"
+    else
+      $scope.modalTitle = "Do you really want to delete \"#{project.name}\"?"
+
+    $scope.modalBody = "All notes, drawings, pins and favorites will be discarded"
+
+    modalInstance = $modal.open
+      animation: true
+      scope: $scope
+      template: require('../../html/views/templates/modals/confirm.jade')()
+
+    $scope.modalCancel = () ->
+      modalInstance.dismiss('cancel')
+
+    $scope.modalOk = () ->
+      modalInstance.dismiss('ok')
+      rmapsProjectsService.delete project
+
+
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()
     .then (projects) ->
@@ -45,4 +66,3 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
   # When a project is added elsewhere, this event will fire
   $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
     $scope.loadProjects()
-

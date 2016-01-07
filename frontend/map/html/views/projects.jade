@@ -56,6 +56,8 @@
                     span {{project.rm_inserted_time | date:'MM/dd/yyyy'}}
                   td.col-md-1
                     button.btn.btn-white(ng-click="loadMap(project); $event.stopPropagation()") View Map
+                  td.col-md-1
+                    button.btn.btn-white(ng-click="deleteProject(project); $event.stopPropagation()") Delete
   .mobile-only
     header
     .inner
