@@ -9,7 +9,7 @@ module.exports =
     body: validators.object subValidateSeparate: requireAllTransforms
       ###
         password: *************
-        email: "nemtcan@gmail.com"
+        email: "someAhole@gmail.com"
         fips_code: "12021"
         first_name: "nem"
         last_name: "mc"
