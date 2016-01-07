@@ -51,7 +51,7 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
       rmapsProjectsService.delete project
-
+      .then $scope.loadProjects
 
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()
