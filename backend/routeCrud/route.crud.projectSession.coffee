@@ -216,12 +216,11 @@ class ProjectRouteCrud extends RouteCrud
   byIdDELETE: (req, res, next) ->
     super req, res, next
     .then () ->
-      delete req?.session?.profiles #to force profiles refresh in cache
-      userUtils.cacheUserValues req
+      userUtils.cacheUserValues req, profiles: true # to force profiles refresh in cache
     .then () ->
       # Check if current profile was invalidated
       if not req.session.profiles[req.session.current_profile_id]?
-        req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true).id
+        req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
     .then () ->
       identity: userSessionSvc.getIdentity req

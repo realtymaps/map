@@ -10,21 +10,21 @@ permissionsService = require '../services/service.permissions'
 # to a user account, we will either need to explicitly refresh these values,
 # or we'll need to log out the user and let them get refreshed when they log
 # back in.
-cacheUserValues = (req) ->
+cacheUserValues = (req, reload = {}) ->
   promises = []
-  if not req.session.permissions
+  if not req.session.permissions or reload?.permissions
     logger.debug 'req.session.permissions'
     permissionsPromise = permissionsService.getPermissionsForUserId(req.user.id)
     .then (permissionsHash) ->
       req.session.permissions = permissionsHash
     promises.push permissionsPromise
-  if not req.session.groups
+  if not req.session.groups or reload?.groups
     logger.debug 'req.session.groups'
     groupsPromise = permissionsService.getGroupsForUserId(req.user.id)
     .then (groupsHash) ->
       req.session.groups = groupsHash
     promises.push groupsPromise
-  if not req.session.profiles
+  if not req.session.profiles or reload?.profiles
     logger.debug "req.session.profiles: #{req.user.id}"
     profilesPromise = userSessionService.getProfiles(req.user.id)
     .then (profiles) ->
