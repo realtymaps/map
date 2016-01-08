@@ -32,6 +32,7 @@ _findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () -
         continue
       newFolders["#{date}_#{action}"] ?= {date, action}
       newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
+      logger.debug("New blackknight directory found: #{newFolders["#{date}_#{action}"][type].path}")
     newFolders
 
 _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
@@ -59,6 +60,7 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
 
 _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
   if i >= drops.length
+    logger.debug "Finished processing all blackknight drops; no files found."
     # we've iterated over the whole list
     processInfo.dates[constants.LAST_COMPLETE_CHECK] = moment.utc().format('YYYYMMDD')
     return processInfo
@@ -78,6 +80,7 @@ _checkDropChain = (ftp, processInfo, newFolders, drops, i) -> Promise.try () ->
       # nothing in this folder, move on to the next thing in the drop
       return _checkDropChain(ftp, processInfo, newFolders, drops, i+1)
     # we found files!  resolve the results
+    logger.debug "Found blackknight files to process: #{drop.action}/#{drop.date}.  Refresh: #{processInfo[constants.REFRESH].length}, Update: #{processInfo[constants.UPDATE].length}, Delete: #{processInfo[constants.DELETE].length}."
     processInfo.hasFiles = true
     processInfo
 
@@ -118,9 +121,6 @@ checkFtpDrop = (subtask) ->
   defaults[constants.LAST_COMPLETE_CHECK] = '19700101'
   keystore.getValuesMap(constants.BLACKKNIGHT_PROCESS_DATES, defaultValues: defaults)
   .then (processDates) ->
-    # ##################################### TODO: debugging, remove this when done coding the blackknight task
-    processDates = defaults  ############## TODO: debugging, remove this when done coding the blackknight task
-    # ##################################### TODO: debugging, remove this when done coding the blackknight task
     externalAccounts.getAccountInfo('blackknight')
     .then (accountInfo) ->
       ftp.connect
@@ -128,6 +128,11 @@ checkFtpDrop = (subtask) ->
         user: accountInfo.username
         password: accountInfo.password
         autoReconnect: true
+      .catch (err) ->
+        if err.level == 'client-authentication'
+          throw new SoftFail('FTP authentication error')
+        else
+          throw err
     .then () ->
       _findNewFolders(ftp, constants.REFRESH, processDates)
     .then (newFolders) ->
@@ -205,7 +210,7 @@ deleteData = (subtask) ->
       else
         if subtask.data.dataType == constants.TAX
           # get validation for parcel_id
-          dataLoadHelpers.getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType, 'base', 'parcel_id')
+          dataLoadHelpers.getValidationInfo('county', 'blackknight', subtask.data.dataType, 'base', 'parcel_id')
           .then (validationInfo) ->
             Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
           .then (normalizedData) ->
@@ -221,7 +226,7 @@ deleteData = (subtask) ->
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
-            data_source_uuid: row['BK PID']
+            data_source_uuid: row['BKFS Internal PID']
           .whereNull('deleted')
           .update(deleted: subtask.batch_id)
     Promise.all promises

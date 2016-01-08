@@ -78,8 +78,12 @@ recordChangeCounts = (subtask) ->
         .update(deleted: subtask.batch_id)
     else if subtask.data.deletes == DELETE.INDICATED
       tables.property[subtask.data.dataType]()
+      .count('*')
       .where(subset)
       .where(deleted: subtask.batch_id)
+      .then (results) ->
+        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+JSON.stringify(results,null,2))
+        results[0].count
   # get a count of raw rows from all raw tables from this batch with rm_valid == false
   invalidPromise = _countInvalidRows(rawTableName, true)
   # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
@@ -104,7 +108,7 @@ recordChangeCounts = (subtask) ->
       .orWhere(deleted: subtask.batch_id)
       .where(subset)
       .count('*')
-    tables.jobQueue.dataLoadHistory()
+    blah = tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: rawTableName)
     .update
       invalid_rows: invalidCount
@@ -113,6 +117,8 @@ recordChangeCounts = (subtask) ->
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
       touched_rows: touchedSubquery
+    console.log("=================================== #{blah.toString()}")
+    blah
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
