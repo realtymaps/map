@@ -19,6 +19,10 @@ require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'
 
+coffeelint = require('coffeelint')
+coffeelint.reporter = require('browserify-coffeelint/node_modules/coffeelint-stylish').reporter
+coffeelint.configfinder = require('coffeelint/lib/configfinder')
+
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
@@ -61,13 +65,52 @@ browserifyTask = (app, watch = false) ->
     # This file acts like a .gitignore for excluding files from linter
     lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
 
+    lintAlert = false
+
     b = browserify config
-      .transform (file, overrideOptions = {}) ->
+      .transform (file, overrideOptions = {doEmitErrors: !watch}) ->
         if (lintIgnore.filter [file]).length == 0
           file += '.ignore'
-        browserify_coffeelint file, _.extend(overrideOptions, doEmitErrors: !watch)
-        .on 'error', ->
+
+        errorReport = coffeelint.getErrorReport()
+        fileOptions = coffeelint.configfinder.getConfig() or {}
+        options = _.defaults(overrideOptions, fileOptions)
+
+        errors = null
+
+        # Taken from browserify-coffeelint
+        transform = (buf, enc, next) ->
+          if file.substr(-7) == '.coffee'
+            errors = errorReport.lint(file, buf.toString(), options)
+            if errors.length != 0
+              coffeelint.reporter file, errors
+              if options.doEmitErrors and errorReport.hasError()
+                next new Error('coffeelint has errors')
+                return
+              if options.doEmitWarnings and _.any(errorReport.paths, (p) -> errorReport.pathHasWarning p)
+                next new Error('coffeelint has warnings')
+
+          @push buf
+          next()
+
+        flush = (next) ->
+          if errors?.length
+            _.each errors, (error) =>
+              {level, lineNumber, message, context} = error
+              log = if level is 'error' then 'error' else 'warn'
+              msg = "Coffeelint #{level} @ #{file}:#{lineNumber} #{message}".replace(/'/g, "\\'")
+              @push "console.#{log} '#{msg}'\n"
+
+            if not lintAlert
+              @push "alert 'LINT ERRORS SEE CONSOLE'"
+              lintAlert = true
+
+          next()
+
+        through transform, flush
+        .on 'error', (error) ->
           process.exit(1)
+
       #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
       #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post
       #  coffeelint.
