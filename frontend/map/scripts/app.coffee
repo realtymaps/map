@@ -3,7 +3,7 @@
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 
-appName = 'rmapsMapApp'
+appName = 'rmapsMapApp#{fail}'
 
 app = window.angular.module appName, [
   'rmapsCommon'
