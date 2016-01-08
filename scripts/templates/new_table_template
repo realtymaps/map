@@ -2,6 +2,13 @@
 
 set -e
 
+# intended usage `./scrips/templates/new_table_template credit_card`
+#
+# should output ./migrations/YYYY-MM-DD__credit_card.sql
+#
+# should replace all strings of SOME_TABLE_RENAME with credit_card
+
+
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 ORIG_DIR=`pwd`
 
