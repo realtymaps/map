@@ -19,18 +19,18 @@ describe 'service.user.notes', ->
       it 'ctor', ->
         @instance.dbFn.should.be.ok
       it 'getAll', ->
-        @instance.getAll().toString().should.equal """select  #{notesCols} from "#{@instance.dbFn.tableName}" """.trim()
+        @instance.getAll().toString().should.equal """select * from "#{@instance.dbFn.tableName}" """.trim()
 
       it 'getById', ->
         @instance.getById(1).toString()
-        .should.equal """select  #{notesCols} from "#{@instance.dbFn.tableName}" where "id" = '1'"""
+        .should.equal """select * from "#{@instance.dbFn.tableName}" where "id" = '1'"""
 
       #TODO Should this be flagged to fix?
       #this shows that count is returning more than most expected.. but it is not really being used.
       #an explicit dbFn for count might get better behavior, but is it worth it?
       it 'count', ->
         @instance.count(test:'test').toString()
-        .should.equal """select  #{notesCols}, count(*) from "#{@instance.dbFn.tableName}" where "test" = 'test'"""
+        .should.equal """select count(*) from "#{@instance.dbFn.tableName}" where "test" = 'test'"""
 
       describe 'update', ->
         it 'no safe', ->

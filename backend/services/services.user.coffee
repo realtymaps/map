@@ -23,17 +23,9 @@ _.extend toInit, _.pick tables.user, [
   'company'
   'accountImages'
   'drawnShapes'
+  'notes'
   'creditCards'
 ]
-
-manualInits = {
-  notes: tables.user
-}
-
-for tableName, tableVal of manualInits
-  toInit[tableName] = () ->
-    sqlHelpers.select(tableVal[tableName](), tableName)
-  toInit[tableName].tableName = tableVal[tableName].tableName #keep same interface
 
 for key, val of toInit
   module.exports[key] = crud(val)

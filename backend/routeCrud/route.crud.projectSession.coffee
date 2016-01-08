@@ -13,6 +13,7 @@ userUtils = require '../utils/util.user'
 # Needed for temporary create client user workaround until onboarding is completed
 userSessionSvc = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
+Promise = require 'bluebird'
 # End temporary
 
 safeProfile = sqlHelpers.columns.profile
@@ -126,7 +127,7 @@ class ProjectRouteCrud extends RouteCrud
     #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud.doLogRequest = ['params', 'body`']
+    @drawnShapesCrud.doLogRequest = ['params', 'body']
     @drawnShapesCrud.rootGETTransforms =
       params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
       query: validators.object isEmptyProtect: true
@@ -146,6 +147,14 @@ class ProjectRouteCrud extends RouteCrud
       query: validators.object isEmptyProtect: true
       body: bodyTransform
 
+    @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
+    @profilesCrud.doLogRequest = ['params', 'body']
+    @profilesCrud.rootGETTransforms =
+      params: [
+        validators.mapKeys id: "#{usrTableNames.profile}.project_id"
+        validators.reqId toKey: "#{usrTableNames.profile}.auth_user_id"
+      ]
+
     for route in ['byIdPUT', 'byIdDELETE']
       do (route) =>
         @drawnShapesCrud[route + 'Transforms'] =
@@ -158,85 +167,62 @@ class ProjectRouteCrud extends RouteCrud
 
     super arguments...
 
+  findProjectData: (projects, req, res, next) ->
+    Promise.props
+      clients: @clientsCrud.rootGET req, res, next
+      notes: @notesCrud.rootGET req, res, next
+      drawnShapes: @drawnShapesCrud.rootGET req, res, next
+      favorites: @profilesCrud.rootGET req, res, next
+    .then (props) =>
+      grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
+      _.each projects, (project) ->
+        project.clients = grouped.clients[project.id] or []
+        project.notes = grouped.notes[project.id] or []
+        project.drawnShapes = grouped.drawnShapes[project.id] or []
+        project.favorites = _.merge {},
+          _.pluck(grouped.favorites[project.id], 'favorites')...,
+          _.pluck(project.clients, 'favorites')...
+      projects
+
   rootGET: (req, res, next) ->
     super req, res, next
     .then (projects) =>
       newReq = @cloneRequest(req)
       logger.debug "newReq: #{JSON.stringify newReq}"
+
       #TODO: figure out how to do this as a transform (then cloneRequest will not be needed)
-      _.extend newReq.params, id: _.pluck(projects, 'id')#set to id since it gets mapped to user_profile.project_id
-      @clientsCrud.rootGET(newReq,res,next)
-      .then (clients) ->
-        _.each projects, (project) ->
-          project.clients = _.filter clients, project_id: project.id
-        projects
-    .then (projects) =>
-      @notesCrud.rootGET(req, res, next)
-      .then (notes) ->
-        _.each projects, (project) ->
-          project.notes = _.filter notes, project_id: project.id
-        projects
-    .then (projects) =>
-      @drawnShapesCrud.rootGET(req, res, next)
-      .then (drawnShapes) ->
-        _.each projects, (project) ->
-          project.drawnShapes = _.filter drawnShapes, project_id: project.id
-        projects
-    .then (projects) =>
-      @svc.clients.getAll project_id: _.pluck(projects, 'id'), true
-      .then (profiles) ->
-        profilesIndex = _.groupBy profiles, 'project_id'
-        _.each projects, (project) ->
-          project.favorites = _.merge {}, _.pluck(profilesIndex[project.id], 'favorites')...
-        projects
+      _.extend newReq.params, id: _.pluck(projects, 'id') #set to id since it gets mapped to user_profile.project_id
+
+      @findProjectData projects, newReq, res, next
 
   byIdGET: (req, res, next) =>
-
-    logger.debug @cloneRequest(req), true
-
     #so this is where bookshelf or objection.js would be much more concise
-    super(req, res, next)
+    super req, res, next
     .then (project) ->
       if not project?
         # Look for viewer profile
-        userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id, true
-        .then (projects) ->
-          projects[0]
+        userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id
+        .then sqlHelpers.singleRow
       else
         project
     .then (project) =>
-      project.id  = project.project_id ? project.id
       throw new Error('Project not found') unless project
-      @clientsCrud.rootGET(req, res, next)
-      .then (clients) ->
-        project.clients = clients
-        project
-    .then (project) =>
-      @notesCrud.rootGET(req, res, next)
-      .then (notes) ->
-        project.notes = notes
-        project
-    .then (project) =>
-      @drawnShapesCrud.rootGET(req, res, next)
-      .then (drawnShapes) ->
-        project.drawnShapes = drawnShapes
-        project
-    .then (project) =>
-      @svc.clients.getAll project_id: req.params.id, true
-      .then (profiles) ->
-        project.favorites = _.merge {}, _.pluck(profiles, 'favorites')...
-        project
+
+      project.id = project.project_id ? project.id
+
+      @findProjectData [project], req, res, next
+      .then sqlHelpers.singleRow
 
   byIdDELETE: (req, res, next) ->
     super req, res, next
-    .then (isSandBox) ->
-      if isSandBox
-        if req?.session?.profiles
-          delete req.session.profiles #to force profiles refresh in cache
-        userUtils.cacheUserValues req
-      isSandBox
-    .then (isSandBox) ->
+    .then () ->
+      userUtils.cacheUserValues req, profiles: true # to force profiles refresh in cache
+    .then () ->
+      # Check if current profile was invalidated
+      if not req.session.profiles[req.session.current_profile_id]?
+        req.session.current_profile_id = _.find(req.session.profiles, 'sandbox', true)?.id
       req.session.saveAsync()
-      true
+    .then () ->
+      identity: userSessionSvc.getIdentity req
 
 module.exports = ProjectRouteCrud
