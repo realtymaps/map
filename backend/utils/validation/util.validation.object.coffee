@@ -3,6 +3,7 @@ Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 logger = require '../../config/logger'
 validateAndTransform = require './util.impl.validateAndTransform'
+doValidationSteps = require './util.impl.doValidationSteps'
 
 module.exports = (options = {}) ->
   (param, values) -> Promise.try () ->
@@ -20,10 +21,19 @@ module.exports = (options = {}) ->
       return {}
     if options.isNullProtect && !_.isEmpty values
       return null
-    if options.subValidateSeparate or options.subValidateEach #(handle object or array)
+    if options.subValidateSeparate # or options.subValidateEach #(handle object or array)
       # subValidateSeparate can be an object of validations/transformations suitable for use in validateAndTransform()
       # (including arrays of iteratively applied functions).  Each validation/transformation in the object is applied to
       # the corresponding element of the object, and remaining elements are passed unchanged
-      validateAndTransform values, options.subValidateSeparate or options.subValidateEach
+      validateAndTransform values, options.subValidateSeparate
+
+    else if options.subValidateEach
+      # subValidateEach can be any validation/transformation suitable for use in validateAndTransform() (including
+      # an array of iteratively applied functions), except these validators are also passed the key as an additional
+      # parameter.  The validation/transformation is applied to each element of the object
+      allPromises = {}
+      for key, value of values
+        allPromises[key] = doValidationSteps(options.subValidateEach, param, value)
+      return Promise.props allPromises
     else
       return values
