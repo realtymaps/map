@@ -7,11 +7,17 @@ class FipsCodeService extends Crud
     # logger.debug.cyan dbFn, true
     super(dbFn, 'code')
 
+  mainQuery: (stateName) ->
+    @dbFn().where(state: stateName)
+
   getAllByState: (stateName) ->
-    @dbFn().where(state: stateName).then (results) ->
-      obj = {}
-      obj[stateName] = results.map (r) ->
-        delete r.state
-        r
+    @mainQuery(stateName)
+
+  getAllByStateCounty: (stateName, countyName) ->
+    @mainQuery(stateName).where(county: countyName)
+
+  getAllByStateLikeCounty: (countyName) ->
+    @mainQuery(stateName)
+    .where(stateName,'county','like', "%#{countyName}%")
 
 module.exports = new FipsCodeService()

@@ -1,9 +1,9 @@
-app = require '../app.coffee'
+mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.fipsCodes.root
 serviceName = 'rmapsFipsCodes'
 
-app.service serviceName, ($log, $http) ->
+mod.service serviceName, ($log, $http) ->
   $log = $log.spawn("map:#{serviceName}")
 
   @getAllByState = (stateName) ->

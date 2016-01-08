@@ -14,10 +14,11 @@ cloneRequest = (req) ->
   params: clone req.params
   query: clone req.query
   body: clone req.body
+  user: clone req.user
 
 route =
   cloneRequest: cloneRequest
-    
+
   ###
     Purpose is to extend some object to be used as the query clause of a query by a service.
     Most of the time this will be req.query to be used, However sometimes it could be req.body.

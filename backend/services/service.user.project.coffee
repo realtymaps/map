@@ -1,18 +1,17 @@
 _ = require 'lodash'
 tables = require '../config/tables'
 logger = require '../config/logger'
-{profile, project} = require './services.user'
+{profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
 {joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
+Promise = require 'bluebird'
 
 safeProject = sqlHelpers.columns.project
 safeProfile = sqlHelpers.columns.profile
 safeNotes = sqlHelpers.columns.notes
 
-clientIdCol = joinColumns.client[0]
-projectId = "#{tables.user.project.tableName}.id"
 
 class DrawnShapesCrud extends ThenableCrud
   constructor: () ->
@@ -35,17 +34,29 @@ class ProjectCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
 
+  profilesFact: (dbFn = tables.user.project, joinCrud = profile) ->
+    # logger.debug.cyan dbFn
+    # logger.debug.cyan joinCrud
+    thenableHasManyCrud dbFn, joinColumns.profile, joinCrud,
+      "#{tables.user.profile.tableName}.project_id",
+      "#{tables.user.project.tableName}.id",
+      "#{tables.user.profile.tableName}.id"
+
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud(dbFn, joinColumns.client, joinCrud, joinColumnNames.client.auth_user_id, undefined, clientIdCol)
+    thenableHasManyCrud dbFn, joinColumns.client, joinCrud,
+      "#{tables.user.profile.tableName}.auth_user_id",
+      "#{tables.auth.user.tableName}.id",
+      "#{tables.user.profile.tableName}.id"
 
-  notesFact: (dbFn = tables.user.notes, joinCrud = project) ->
+  notesFact: (dbFn = tables.user.project, joinCrud = notes) ->
     # logger.debug.cyan dbFn
     # logger.debug.cyan joinCrud
-    thenableHasManyCrud(dbFn, joinColumns.notes, joinCrud,
-      projectId, "#{tables.user.notes.tableName}.project_id",
-      "#{tables.user.notes.tableName}.id")
+    thenableHasManyCrud dbFn, joinColumns.notes, joinCrud,
+      "#{tables.user.notes.tableName}.project_id",
+      "#{tables.user.project.tableName}.id",
+      "#{tables.user.notes.tableName}.id"
 
   drawnShapesFact: (dbFn = tables.user.drawnShapes) ->
     # logger.debug.cyan dbFn
@@ -60,44 +71,56 @@ class ProjectCrud extends ThenableCrud
 
     @drawnShapes = @drawnShapesFact().init(arguments...)
     # @drawnShapes.doLogQuery = true
+
+    @profiles = @profilesFact().init(arguments...)
+
     super(arguments...)
 
   #(id, doLogQuery = false, entity, safe, fnExec = execQ) ->
   delete: (idObj, doLogQuery, entity, safe = safeProject, fnExec) ->
-    @getById idObj, doLogQuery, entity, safe
+    @profiles.getAll project_id: idObj.id, "#{tables.user.profile.tableName}.auth_user_id": idObj.auth_user_id, doLogQuery
     .then sqlHelpers.singleRow
-    .then (project) ->
-      throw new Error 'Project not found' unless project?
+    .then (profile) =>
+      throw new Error 'Project not found' unless profile?
 
-      # If this is the users's sandbox -- just reset to default/empty state and remove associated notes
-      if project.sandbox is true
-        logger.debug.yellow 'is sandbox'
-        @update project.id, properties_selected: {}, safeProject, doLogQuery
-        .then () =>
-          @clients.getAll idObj
-        .then (profiles) =>
-          profileReset =
-            filters: {}
-            map_results: {}
-            map_position: {}
+      toRemove =
+        auth_user_id: idObj.auth_user_id
+        project_id: profile.project_id
 
-          @clients.update profiles[0].id, profileReset, safeProfile, @doLogQuery
+      promises = []
 
-        .then () =>
-          @notes.delete {}, doLogQuery, project_id: project.id, auth_user_id: idObj.auth_user_id, safeNotes
+      # Remove notes in all cases
+      promises.push @notes.delete {}, doLogQuery, toRemove
+
+      # Remove shapes in all cases
+      promises.push @drawnShapes.delete {}, doLogQuery, toRemove
+
+      if profile.sandbox is true
+
+        reset =
+          filters: {}
+          map_results: {}
+          map_position: {}
+          properties_selected: {}
+
+        # Reset the sandbox (project fields)
+        promises.push @update profile.project_id, reset, safeProject, doLogQuery
+
+        # Reset the sandbox (profile fields)
+        promises.push @profiles.update profile.id, reset, safeProfile, doLogQuery
+
       else
-        logger.debug.yellow 'not sandbox'
-        @clients.delete {}, @doLogQuery,
-          logger.debug.yellow 'not sandbox clients delete'
-          _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.profile.project_id, project.id), safeProfile
-        .then () =>
-          @notes.delete {}, @doLogQuery,
-            logger.debug.yellow 'not sandbox notes delete'
-            _.set(auth_user_id: idObj.auth_user_id, joinColumnNames.notes.project_id, project.id), safeNotes
-        .then () =>
-          logger.debug.yellow 'not sandbox project delete'
-          super idObj, doLogQuery, entity, safe, fnExec
+        # Delete client profiles (not the users themselves)
+        promises.push @clients.delete {}, doLogQuery,
+          project_id: profile.project_id,
+          parent_auth_user_id: idObj.auth_user_id
 
+        # Delete the project itself
+        promises.push super id: profile.project_id, doLogQuery
+
+      Promise.all promises
+      .then () ->
+        true
 
 #temporary to not conflict with project
 module.exports = ProjectCrud

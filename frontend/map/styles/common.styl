@@ -65,7 +65,7 @@ p
   height 100%
   @extends .global-transition
 
-header.site-header
+header.site-header, header.mobile-modal
   display block
   position absolute
   z-index 2000
@@ -81,6 +81,8 @@ header.site-header
     float left
     width 100%
 
+header.site-header
+  .inner
     $fnMakeNav()
     $fnMakeSearchField()
     $fnMakeNotices()
