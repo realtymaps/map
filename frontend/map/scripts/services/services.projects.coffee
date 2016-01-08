@@ -51,10 +51,13 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsprincipal, rm
     $http.post backendRoutes.userSession.newProject, project
     .then (response) ->
       rmapsprincipal.setIdentity response.data.identity
-      $rootScope.$emit rmapsevents.principal.profile.add, response.data.identity
+      $rootScope.$emit rmapsevents.principal.profile.addremove, response.data.identity
 
   delete: (project) ->
     $http.delete backendRoutes.projectSession.root + "/#{project.id}"
+    .then (response) ->
+      rmapsprincipal.setIdentity response.data.identity
+      $rootScope.$emit rmapsevents.principal.profile.addremove, response.data.identity
 
   drawnShapes: (profile) ->
     rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)

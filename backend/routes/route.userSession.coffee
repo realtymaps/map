@@ -96,19 +96,7 @@ login = (req, res, next) -> Promise.try () ->
     next(err)
 
 identity = (req, res, next) ->
-  if req.user
-    # here we should probaby return some things from the user's profile as well, such as name
-    res.json
-      identity:
-        user: _.pick req.user, safeUserFields
-        permissions: req.session.permissions
-        groups: req.session.groups
-        environment: config.ENV
-        profiles: req.session.profiles
-        currentProfileId: req.session.current_profile_id
-  else
-    res.json
-      identity: null
+  res.json identity: userSessionService.getIdentity req
 
 updateCache = (req, res, next) ->
   userUtils.cacheUserValues(req)

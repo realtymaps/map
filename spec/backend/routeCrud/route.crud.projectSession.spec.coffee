@@ -29,7 +29,7 @@ projectResponses =
   getById: [id:1, sandbox: false]
   delete: 1
 
-drawnShapesRsponses = notesResponses = clientResponses =
+drawnShapesRsponses = notesResponses = clientResponses = profilesResponses =
   delete: 1
   getAll: [{project_id:1, id:2}]
 
@@ -56,7 +56,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 
   notesFact: () ->
-    noteSvcCrud = super sqlMock('user', 'notes').dbFn(), new ServiceCrud(sqlMock('user', 'project').dbFn())
+    noteSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'notes').dbFn())
     noteSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
@@ -71,6 +71,17 @@ class TestServiceCrudProject extends ServiceCrudProject
     # console.log.cyan  "drawSvcCrud: #{drawSvcCrud.dbFn().tableName}"
     toTestThenableCrudInstance drawSvcCrud, drawnShapesRsponses
 
+  profilesFact: () ->
+    profileSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
+    profileSvcCrud.resetSpies = () =>
+      @svc.resetSpies()
+      @joinCrud.svc.resetSpies()
+
+    # console.log.cyan  "profileSvcCrud: #{profileSvcCrud.dbFn().tableName}"
+    # console.log.cyan  "profileSvcCrud: joinCrud: #{profileSvcCrud.joinCrud.dbFn().tableName}"
+
+    toTestThenableCrudInstance profileSvcCrud, profilesResponses
+
 
   resetSpies: () ->
     #RESET UNDERLYING dbFn spies
@@ -78,6 +89,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     @clients.resetSpies()#(true, 'deleteStub')
     @notes.resetSpies()
     @drawnShapes.svc.resetSpies()
+    @profiles.svc.resetSpies()
 
   resetStubs: () ->
     #RESET SvcCrud Stubs
@@ -85,6 +97,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     @clients.resetStubs()#(true, 'deleteStub')
     @notes.resetStubs()
     @drawnShapes.resetStubs()
+    @profiles.resetStubs()
 
 
 
@@ -170,7 +183,7 @@ describe 'route.projectSession', ->
         obj = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
-        obj["#{usrTableNames.notes}.project_id"] = @mockRequest.params.id
+        obj["#{usrTableNames.notes}.project_id"] = [ @mockRequest.params.id ]
         @subject.notesCrud.svc.getAllStub.args[0][0].should.be.eql obj
         @subject.notesCrud.svc.getAllStub.args[0][1].should.be.eql false
         assert.isTrue @subject.notesCrud.svc.getAllStub.sqls.length > 0
@@ -178,9 +191,9 @@ describe 'route.projectSession', ->
           select "user_notes"."id" as "id", "user_notes"."auth_user_id" as "auth_user_id",
            "user_notes"."project_id" as "project_id", "user_notes"."rm_property_id" as "rm_property_id",
            "user_notes"."geom_point_json" as "geom_point_json", "user_notes"."comments" as "comments",
-           "user_notes"."text" as "text", "user_notes"."title" as "title" from "user_project"
-           inner join "user_notes" on "user_notes"."project_id" = "user_project"."id" where
-           "user_notes"."project_id" = '1'""".replace(/\n/g,'')
+           "user_notes"."text" as "text", "user_notes"."title" as "title" from "user_notes"
+           inner join "user_project" on "user_project"."id" = "user_notes"."project_id" where
+           "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
 
     it 'drawnShapes', ->
       @subject.rootGET(@mockRequest)
@@ -189,7 +202,7 @@ describe 'route.projectSession', ->
         params = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
-        params["#{usrTableNames.drawnShapes}.project_id"] = @mockRequest.params.id
+        params["#{usrTableNames.drawnShapes}.project_id"] = [ @mockRequest.params.id ]
         @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
         @subject.drawnShapesCrud.svc.getAllStub.args[0][1].should.be.eql false
         # assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
@@ -206,6 +219,7 @@ describe 'route.projectSession', ->
       @makeRequest
         session:
           saveAsync: -> Promise.resolve()
+          profiles: []
         user:
           id: 2
         params:
@@ -219,6 +233,5 @@ describe 'route.projectSession', ->
         @subject.clientsCrud.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
         assert.ok @subject.clientsCrud.svc.deleteStub.sqls
-        assert.notOk @subject.clientsCrud.svc.deleteStub.sqls.length
         @subject.notesCrud.svc.deleteStub.called.should.be.true
         @subject.svc.deleteStub.called.should.be.true
