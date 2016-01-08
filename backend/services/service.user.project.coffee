@@ -3,20 +3,20 @@ tables = require '../config/tables'
 logger = require '../config/logger'
 {profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
-{joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
+{basicColumns, joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
 Promise = require 'bluebird'
 
-safeProject = sqlHelpers.columns.project
-safeProfile = sqlHelpers.columns.profile
-safeNotes = sqlHelpers.columns.notes
+safeProject = basicColumns.project
+safeProfile = basicColumns.profile
+safeNotes = basicColumns.notes
 
 
 class DrawnShapesCrud extends ThenableCrud
   constructor: () ->
     super(arguments...)
-    @drawnShapeCols = sqlHelpers.columns.drawnShapes
+    @drawnShapeCols = basicColumns.drawnShapes
 
   init:() =>
     super arguments...

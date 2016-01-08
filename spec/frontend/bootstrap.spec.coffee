@@ -1,3 +1,4 @@
+###global angular:true###
 _ = require 'lodash'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 

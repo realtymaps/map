@@ -2,10 +2,10 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
 rmapsPlansService) ->
 
-  $log = $log.spawn("map:rmapsOnBoardingCtrl")
+  $log = $log.spawn("map:rmapsOnboardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -14,7 +14,7 @@ rmapsPlansService) ->
 
   step = $state.current.name
 
-  _.merge $scope, user: $stateParams,
+  _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
       submit: () ->
         $scope.view.showSteps = true
@@ -62,17 +62,21 @@ rmapsPlansService) ->
 
         newPlan
 
-  rmapsOnBoardingOrderSelector.initScope($state, $scope)
+  $log.debug "current user data"
+  $log.debug $scope.user
+
+  rmapsOnboardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
-app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
-  $log = $log.spawn("map:rmapsOnBoardingPlanCtrl")
+app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
+  $log = $log.spawn("map:rmapsOnboardingPlanCtrl")
 
-app.controller 'rmapsOnBoardingPaymentCtrl',
-($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
-  $log = $log.spawn("map:rmapsOnBoardingPaymentCtrl")
+app.controller 'rmapsOnboardingPaymentCtrl',
+($scope, $state, $log, $document, rmapsOnboardingService, stripe, rmapsFaCreditCards) ->
+  $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
+    "id"
     "amount"
     "last4"
     "brand"
@@ -95,8 +99,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
     payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    payment.token = response.id
-    _.extend payment, _.pick response, _safePaymentFields
+    _.extend payment, _.pick response.card, _safePaymentFields
     payment
 
   behaveLikeAngularValidation = (formField, rootForm) ->
@@ -128,8 +131,8 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
-  $log = $log.spawn("map:rmapsOnBoardingLocationCtrl")
+app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
+  $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
   $scope.$watch 'user.usStateCode', (usStateCode) ->
     return unless usStateCode
@@ -140,6 +143,6 @@ app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rma
 
   $log.debug $scope
 
-app.controller 'rmapsOnBoardingVerifyCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:rmapsOnBoardingVerifyCtrl")
+app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
+  $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope

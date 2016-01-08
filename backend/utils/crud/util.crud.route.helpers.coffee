@@ -4,7 +4,8 @@ logger = require '../../config/logger'
 BaseObject = require '../../../common/utils/util.baseObject'
 _ = require 'lodash'
 NamedError = require '../errors/util.error.named'
-{validateAndTransform, falsyTransformsToNoop, defaultRequestTransforms} = require '../util.validation'
+{validateAndTransform, defaultRequestTransforms, falsyDefaultTransformsToNoop} = require '../util.validation'
+{handleQuery} = require '../util.route.helpers'
 
 class Crud extends BaseObject
   constructor: (@svc, @paramIdKey = 'id', @name = 'Crud', @doLogRequest) ->
@@ -41,7 +42,7 @@ class Crud extends BaseObject
   validRequest: (req, crudMethodStr) =>
     specificTransforms = @[crudMethodStr + 'Transforms']
     for transforms in [@reqTransforms, specificTransforms]
-      falsyTransformsToNoop(defaultRequestTransforms(transforms)) if transforms?
+      falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
       logger.debug "#{@name}: root: tReq: #{JSON.stringify tReq}"
@@ -130,13 +131,7 @@ class HasManyCrud extends Crud
 
 wrapRoutesTrait = (baseKlass) ->
   class RoutesTrait extends baseKlass
-    handleQuery: (q, res) ->
-      #if we have a stream avail pipe it
-      if q?.stringify? and _.isFunction q.stringify
-        return q.stringify().pipe(res)
-
-      q.then (result) ->
-        res.json(result)
+    handleQuery: handleQuery
 
     root: (req, res, next) ->
       @handleQuery super(req, res, next), res

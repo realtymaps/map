@@ -49,5 +49,6 @@ module.exports =
     accountImages: 'user_account_images'
     notes: 'user_notes'
     drawnShapes: 'user_drawn_shapes'
+    creditCards: 'user_credit_cards'
   mail:
     campaign: 'user_mail_campaigns'

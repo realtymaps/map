@@ -78,6 +78,8 @@ base =
     OLD_TABLE_DAYS: 7
     SUBTASK_ERROR_DAYS: 90
     OLD_DELETE_MARKER_DAYS: 7
+  EMAIL_VERIFY:
+    HASH_MIN_LENGTH: 20
 
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
