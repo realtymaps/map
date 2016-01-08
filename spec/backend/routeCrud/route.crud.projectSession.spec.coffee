@@ -219,6 +219,7 @@ describe 'route.projectSession', ->
       @makeRequest
         session:
           saveAsync: -> Promise.resolve()
+          profiles: []
         user:
           id: 2
         params:
