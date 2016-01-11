@@ -1,9 +1,4 @@
 app = require '../app.coffee'
-# config = require '../../../../backend/config/config.coffee'
-# console.log "\n\n\n####### config.LOGGING.ENABLE:"
-# console.log config.LOGGING.ENABLE
-# debug = require 'debug'
-# logger = require '../../../../backend/config/logger.coffee'
 
 app.config (nemDebugProvider) ->
   debug = nemDebugProvider.debug
