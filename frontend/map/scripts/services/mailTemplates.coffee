@@ -67,7 +67,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           address_line1: identity.user.address_1
           address_line2: identity.user.address_2
           address_city: identity.user.city
-          address_state: state.code
+          address_state: state?.code
           address_zip: identity.user.zip
           phone: identity.user.work_phone
           email: identity.user.email
