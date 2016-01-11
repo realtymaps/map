@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 stringValidation = require './util.validation.string'
 objectValidation = require './util.validation.object'
-
+logger = require '../../config/logger'
 
 module.exports = (options = {}) ->
   composite = objectValidation(subValidateEach: stringValidation(options))
@@ -9,14 +9,15 @@ module.exports = (options = {}) ->
     if !value
       return null
 
-    strings = composite(param, value)
+    composite(param, value).then (strings) ->
+      logger.debug strings, true
 
-    parts = []
-    if strings.first
-      parts.push(strings.first)
-    if strings.middle
-      parts.push(strings.middle)
-    if strings.last
-      parts.push(strings.last)
+      parts = []
+      if strings.first
+        parts.push(strings.first)
+      if strings.middle
+        parts.push(strings.middle)
+      if strings.last
+        parts.push(strings.last)
 
-    return parts.join(' ')
+      return parts.join(' ')

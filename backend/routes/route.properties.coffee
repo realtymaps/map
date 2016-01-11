@@ -7,15 +7,12 @@ DrawnShapesFiltSvc = require '../services/service.properties.drawnShapes.filterS
 parcelService = require '../services/service.properties.parcels'
 addressService = require '../services/service.properties.addresses'
 profileService = require '../services/service.profiles'
-
-validation = require '../utils/util.validation'
-{validators, validateAndTransformRequest} = validation
+{validators, validateAndTransformRequest, DataValidationError} = require '../utils/util.validation'
 httpStatus = require '../../common/utils/httpStatus'
 ExpressResponse = require '../utils/util.expressResponse'
 {currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
 {basicColumns} = require '../utils/util.sql.columns'
-_ = require 'lodash'
 
 _transforms =
   bounds: validators.string()
@@ -63,7 +60,7 @@ handleRoute = (res, next, serviceCall) ->
     serviceCall()
   .then (data) ->
     res.json(data)
-  .catch validation.DataValidationError, (err) ->
+  .catch DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
   .catch CurrentProfileError, (err) ->
     next new ExpressResponse({profileIsNeeded: true,alert: {msg: err.message}}, httpStatus.BAD_REQUEST)

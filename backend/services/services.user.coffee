@@ -24,6 +24,7 @@ _.extend toInit, _.pick tables.user, [
   'accountImages'
   'drawnShapes'
   'notes'
+  'creditCards'
 ]
 
 for key, val of toInit
