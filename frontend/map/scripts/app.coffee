@@ -3,7 +3,7 @@
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 
-appName = 'rmapsMapApp#{fail}'
+appName = 'rmapsMapApp'
 
 app = window.angular.module appName, [
   'rmapsCommon'
@@ -34,7 +34,7 @@ app = window.angular.module appName, [
   'angularLoad'
 ]
 
-app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->
+app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) =>
 
   rmapsprincipal.getIdentity().then (identity) ->
     return unless identity
