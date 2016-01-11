@@ -34,7 +34,7 @@ app = window.angular.module appName, [
   'angularLoad'
 ]
 
-app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) =>
+app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->
 
   rmapsprincipal.getIdentity().then (identity) ->
     return unless identity
