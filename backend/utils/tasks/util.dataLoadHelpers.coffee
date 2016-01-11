@@ -398,12 +398,13 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 .where(raw_table_name: tableName)
                 .delete()
               .then () ->
-                promiseQuery dbs.get('raw_temp').schema.createTable tableName, (table) ->
+                createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
                   table.increments('rm_raw_id').notNullable()
                   table.boolean('rm_valid')
                   table.text('rm_error_msg')
                   for fieldName in event.payload
                     table.text(fieldName.replace(/\./g, ''))
+                promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
                 dbStream = streamQuery(copyStream.from(copyStart))
