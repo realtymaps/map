@@ -13,7 +13,7 @@ TaskImplementation = require './util.taskImplementation'
 dbs = require '../../config/dbs'
 
 
-NUM_ROWS_TO_PAGINATE = 500
+NUM_ROWS_TO_PAGINATE = 5000
 CORELOGIC_PROCESS_DATES = 'corelogic process dates'
 TAX = 'tax'
 DEED = 'deed'
@@ -122,7 +122,7 @@ loadRawData = (subtask) ->
 
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: CORELOGIC_PROCESS_DATES)
-    
+
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
     dataSourceId: 'corelogic'
