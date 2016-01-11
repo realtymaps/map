@@ -19,6 +19,7 @@ myCustomLevels =
     info: 3
     warn: 4
     error: 5
+    #log: 6
 
   colors:
     route: 'grey'

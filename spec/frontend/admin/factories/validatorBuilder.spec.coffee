@@ -5,6 +5,10 @@ describe 'rmapsAdminApp.validatorBuilder', ->
 
   beforeEach ->
     angular.mock.module 'rmapsAdminApp'
+    # console.log "\n\n######## this.amIGlobal:"
+    # console.log this.amIGlobal
+    # console.log "\n\n######## window.amIGlobal:"
+    # console.log window.amIGlobal
 
     inject (validatorBuilder) =>
       @validatorBuilder = validatorBuilder
