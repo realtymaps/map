@@ -50,7 +50,7 @@ app.config(($provide, $validationProvider) ->
       return true unless value
       value.length <= param;
     checkUniqueEmail: (value) ->
-      $http.post(backendRoutes.userSession.emailIsUnique, email: value)
+      $http.post(backendRoutes.email.isUnique, email: value)
 
   defaultMsg =
     password:

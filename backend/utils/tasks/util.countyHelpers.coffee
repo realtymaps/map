@@ -1,6 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
+{SoftFail} = require '../errors/util.error.jobQueue'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
 utilStreams = require '../util.streams'
@@ -40,6 +41,11 @@ loadRawData = (subtask, options) ->
       user: accountInfo.username
       password: accountInfo.password
       autoReconnect: true
+    .catch (err) ->
+      if err.level == 'client-authentication'
+        throw new SoftFail('FTP authentication error')
+      else
+        throw err
   .then () ->
     if options.sftp
       ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
@@ -49,6 +55,8 @@ loadRawData = (subtask, options) ->
         dataStream.pipe(fs.createWriteStream("/tmp/#{fileBaseName}.#{filetype}"))
         .on('finish', resolve)
         .on('error', reject)
+  .then () ->
+    ftp.logout()
 
   switch filetype
     when 'zip'
@@ -106,6 +114,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   update_type = base.update_type
   delete base.update_type
+  normalizedData.general ?= []
   normalizedData.general.unshift(name: 'Address', value: base.address)
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
@@ -113,7 +122,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   data =
     address: sqlHelpers.safeJsonArray(base.address)
     shared_groups:
-      general: normalizedData.general || []
+      general: normalizedData.general
       details: normalizedData.details || []
       sale: normalizedData.sale || []
       building: normalizedData.building || []

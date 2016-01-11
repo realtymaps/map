@@ -1,6 +1,11 @@
 _ = require 'lodash'
+Promise = require 'bluebird'
 profileUtil = require '../../common/utils/util.profile'
 httpStatus = require '../../common/utils/httpStatus'
+DataValidationError = require '../utils/errors/util.error.dataValidation'
+{MissingVarError, UpdateFailedError} = require '../utils/errors/util.error.crud'
+ExpressResponse = require '../utils/util.expressResponse'
+logger = require '../config/logger'
 
 class CurrentProfileError extends Error
 class NotFoundError extends Error
@@ -23,6 +28,34 @@ mergeHandles = (handles, config) ->
       handle: unless config[key].handle? then handles[key] else handles[config[key].handle]
   config
 
+handleQuery = (q, res) ->
+  #if we have a stream avail pipe it
+  if q?.stringify? and _.isFunction q.stringify
+    return q.stringify().pipe(res)
+
+  q.then (result) ->
+    res.json(result)
+
+handleRoute = (req, res, next, toExec) ->
+  Promise.try () ->
+    handleQuery toExec(req, res), res
+  .catch DataValidationError, (err) ->
+    next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
+  .catch MissingVarError, (err) ->
+    next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+  .catch UpdateFailedError, (err) ->
+    next new ExpressResponse(alert: {msg: err.message}, httpStatus.INTERNAL_SERVER_ERROR)
+  .catch (err) ->
+    logger.error err.stack or err.toString()
+    next(err)
+
+wrapHandleRoutes = (handles) ->
+  for key, origFn of handles
+    do (key, origFn) ->
+      handles[key] = (req, res, next) ->
+        handleRoute req, res, next, origFn
+  handles
+
 module.exports =
   methodExec: methodExec
   currentProfile: currentProfile
@@ -30,3 +63,6 @@ module.exports =
   badRequest: badRequest
   mergeHandles: mergeHandles
   NotFoundError: NotFoundError
+  handleQuery: handleQuery
+  handleRoute: handleRoute
+  wrapHandleRoutes: wrapHandleRoutes

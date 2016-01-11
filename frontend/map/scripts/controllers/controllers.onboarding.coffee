@@ -2,9 +2,8 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnBoardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
 rmapsPlansService) ->
-
   $log = $log.spawn("frontend:map:rmapsOnBoardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
@@ -14,7 +13,7 @@ rmapsPlansService) ->
 
   step = $state.current.name
 
-  _.merge $scope, user: $stateParams,
+  _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
       submit: () ->
         $scope.view.showSteps = true
@@ -62,7 +61,10 @@ rmapsPlansService) ->
 
         newPlan
 
-  rmapsOnBoardingOrderSelector.initScope($state, $scope)
+  $log.debug "current user data"
+  $log.debug $scope.user
+
+  rmapsOnboardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
 app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
@@ -73,6 +75,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   $log = $log.spawn("frontend:map:rmapsOnBoardingPaymentCtrl")
 
   _safePaymentFields = [
+    "id"
     "amount"
     "last4"
     "brand"
@@ -95,8 +98,7 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
     payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    payment.token = response.id
-    _.extend payment, _.pick response, _safePaymentFields
+    _.extend payment, _.pick response.card, _safePaymentFields
     payment
 
   behaveLikeAngularValidation = (formField, rootForm) ->

@@ -28,8 +28,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapssearchbox('mainMap')
 
-  # If a new project is added on the dashboard or elsewhere, this event will fire
-  $rootScope.$onRootScope rmapsevents.principal.profile.add, (event, identity) ->
+  # If a new project is added or removed on the dashboard or elsewhere, this event will fire
+  $rootScope.$onRootScope rmapsevents.principal.profile.addremove, (event, identity) ->
     $scope.loadIdentity identity
 
   getProjects = (identity) ->
@@ -41,7 +41,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   $scope.loadIdentity = (identity, project_id) ->
     if not identity?.currentProfileId and not project_id
-      $location.path(frontendRoutes.profiles)
+      $state.go 'profiles'
     else
       getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
@@ -62,7 +62,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     .then () ->
       $scope.selectedProject = project
 
-      $location.search 'project_id', project.id
+      $location.search 'project_id', project.project_id
 
       $rootScope.selectedFilters = {}
 
@@ -108,7 +108,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
-      if selectedResultId.match(/\w+_\w*_\w+/) and map?
+      if selectedResultId?.match(/\w+_\w*_\w+/) and map?
         $log.debug 'attempting to reinstate selectedResult', selectedResultId
 
         $location.search 'property_id', selectedResultId

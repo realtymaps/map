@@ -10,7 +10,7 @@ stateDefaults =
   loginRequired: true
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
-rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
+rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
 
   buildState = (name, overrides = {}) ->
     state =
@@ -50,33 +50,33 @@ rmapsOnBoardingOrderProvider, rmapsOnBoardingProOrderProvider) ->
         value: null
         squash: true
 
-  buildState 'onBoarding',
+  buildState 'onboarding',
     abstract: true
-    url: frontendRoutes.onBoarding
+    url: frontendRoutes.onboarding
     loginRequired: false
     permissionsRequired: false
 
-  buildState 'onBoardingPlan',
-    parent: 'onBoarding'
+  buildState 'onboardingPlan',
+    parent: 'onboarding'
     loginRequired: false
     permissionsRequired: false
     showSteps: false
 
-  rmapsOnBoardingOrderProvider.steps.forEach (boardingName) ->
+  rmapsOnboardingOrderProvider.steps.forEach (boardingName) ->
     buildState boardingName,
-      parent: 'onBoarding'
-      url: '/' + (rmapsOnBoardingOrderProvider.getId(boardingName) + 1)
+      parent: 'onboarding'
+      url: '/' + (rmapsOnboardingOrderProvider.getId(boardingName) + 1)
       loginRequired: false
       permissionsRequired: false
       showSteps: true
 
-  rmapsOnBoardingProOrderProvider.steps.forEach (boardingName) ->
+  rmapsOnboardingProOrderProvider.steps.forEach (boardingName) ->
     buildState boardingName + 'Pro',
-      parent: 'onBoarding'
+      parent: 'onboarding'
       controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
-      url: '/pro/' + (rmapsOnBoardingProOrderProvider.getId(boardingName) + 1)
+      url: '/pro/' + (rmapsOnboardingProOrderProvider.getId(boardingName) + 1)
       templateProvider: ($templateCache) ->
-        $templateCache.get "./views/onBoarding/#{boardingName}.jade"
+        $templateCache.get "./views/onboarding/#{boardingName}.jade"
       loginRequired: false
       permissionsRequired: false
       showSteps: true
