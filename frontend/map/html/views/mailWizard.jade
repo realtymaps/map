@@ -5,17 +5,16 @@
       button(class="btn btn-primary pull-right" ng-click="nextStep()") Next
       div.pathway
         ul
-          li(ng-class="{ active: step == 'recipient' }")
-            span Recipient
-          li(ng-class="{ active: step == 'senderInfo' }")
-            span Sender Info
-          li(ng-class="{ active: step == 'selectTemplate' }")
-            span Select Template
-          li(ng-class="{ active: step == 'editTemplate' }")
-            span Edit Template
-          li(ng-class="{ active: step == 'confirm' }")
-            span Confirm
+          li
+            a(ui-sref="recipientInfo") Recipients
+          li
+            a(ui-sref="senderInfo") Sender Info
+          li
+            a(ui-sref="selectTemplate") Select Template
+          li
+            a(ui-sref="editTemplate") Edit Template
+          li
+            a(ui-sref="confirm") Confirm
 
   .mail-wizard
     div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
-
