@@ -2,7 +2,7 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
 rmapsPlansService) ->
   $log = $log.spawn("frontend:map:rmapsOnBoardingCtrl")
 
@@ -13,7 +13,7 @@ rmapsPlansService) ->
 
   step = $state.current.name
 
-  _.merge $scope, user: $stateParams or {},
+  _.merge $scope, user: $stateParams,
     user: #constant model passed through all states
       submit: () ->
         $scope.view.showSteps = true
@@ -98,7 +98,8 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   _cleanPayment = (response) ->
     payment = angular.copy($scope.user.card)
     payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    _.extend payment, _.pick response.card, _safePaymentFields
+    payment.token = response.id
+    _.extend payment, _.pick response, _safePaymentFields
     payment
 
   behaveLikeAngularValidation = (formField, rootForm) ->
@@ -132,7 +133,8 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
 
 app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
   $log = $log.spawn("frontend:map:rmapsOnBoardingLocationCtrl")
-
+  rmapsUsStates.getAll().then (states) ->
+    $scope.us_states = states
   $scope.$watch 'user.usStateCode', (usStateCode) ->
     return unless usStateCode
 
