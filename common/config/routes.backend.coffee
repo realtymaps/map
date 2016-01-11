@@ -29,6 +29,7 @@ apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
 apiBaseEmail = "#{apiBase}/Email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
+apiBaseWebhooks = "#{apiBase}/webhooks"
 
 module.exports =
   views:
@@ -211,5 +212,9 @@ module.exports =
   onboarding:
     apiBase: apiBaseOnboarding
     createUser: "#{apiBaseOnboarding}/createUser"
+  webhooks:
+    apiBase: apiBaseWebhooks
+    stripe: "#{apiBaseWebhooks}/stripe"
+
 
   # hirefire secret value set from within backend/config/config.coffee

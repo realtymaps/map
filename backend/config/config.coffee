@@ -80,8 +80,10 @@ base =
     OLD_DELETE_MARKER_DAYS: 7
   EMAIL_VERIFY:
     HASH_MIN_LENGTH: 20
-
-
+  PAYMENT_PLAN:
+    TRIAL_PERIOD_DAYS: 30
+    LIVE_MODE: false
+    INTERVAL_COUNT: 1
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
   conString: base.DBS.MAIN.connection

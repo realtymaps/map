@@ -6,14 +6,15 @@ keystore = require "../services/service.keystore"
 moment = require 'moment'
 userService = userServices.user
 emailThreshMilliSeconds = null
+vero = require 'vero-promise'
 
 keystore.getValue('email_minutes', namespace: 'time_limits').then (val) ->
   emailThreshMilliSeconds = moment.duration(minutes:val).asMilliseconds()
 
-isValidWithinTime = (timestamp) ->
+_isValidWithinTime = (timestamp) ->
   !(Date.now() - timestamp >= emailThreshMilliSeconds)
 
-getUserByHash = (hash) ->
+_getUserByHash = (hash) ->
   userServices.dbFn().where(email_validation_hash: hash)
   .then expectSingleRow
 
@@ -21,10 +22,10 @@ validateHash = (hash) -> Promise.try () ->
   unless emailThreshMilliSeconds
     throw new MissingVarError("emailThreshMilliSeconds is not defined")
 
-  getUserByHash(hash)
+  _getUserByHash(hash)
   .then (user) ->
     return true if user.email_is_valid
-    return false unless isValidWithinTime(user.email_validation_hash_created_time)
+    return false unless _isValidWithinTime(user.email_validation_hash_created_time)
     user.email_is_valid = true
     user.email_validation_attempt += 1
     userService.dbFn()
@@ -36,5 +37,21 @@ validateHash = (hash) -> Promise.try () ->
         throw new UpdateFailedError("failed updating email_is_valid")
       true
 
+emailPlatform = do ->
+  # * `subscriptionStatus`  identify a user as 'paid or default or more' {[string]}.
+  #
+  # Returns the vero-promise response as Promise([user, event]).
+  signUp = (user, verifyUrl, subscriptionStatus) ->
+    vero.createUserAndTrackEvent(
+      userDBId, user.email, _.extend(
+        _.pick(user, [
+          'first_name'
+          'last_name'
+          'plan'
+          ]),
+        subscription_status: subscriptionStatus)
+    , 'New user email', { verify_url: verifyUrl })
 
-module.exports = validateHash
+module.exports =
+  validateHash: validateHash
+  emailPlatform: emailPlatform

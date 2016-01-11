@@ -16,6 +16,21 @@ rmapsPlansService) ->
 
   _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
+      plan:
+        name: 'standard'
+
+        getSelected: (planStr) ->
+          if $scope.user.plan.name == planStr then 'selected' else 'select'
+
+        set: (newPlan) ->
+          $scope.user.plan.name = newPlan
+          if $scope.view?.plans?
+            $scope.plan.price = $scope.view.plans[newPlan]?.price
+            unless $scope.plan.price
+              $log.error 'invalid plan'
+
+          newPlan
+
       submit: () ->
         $scope.view.showSteps = true
         if $scope.view.hasNextStep
@@ -46,21 +61,6 @@ rmapsPlansService) ->
         currentPlan = if $scope.orderSvc.name then $scope.orderSvc.name else 'standard'
         $scope.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
-
-    plan:
-      name: 'standard'
-
-      getSelected: (planStr) ->
-        if $scope.plan.name == planStr then 'selected' else 'select'
-
-      set: (newPlan) ->
-        $scope.plan.name = newPlan
-        if $scope.view?.plans?
-          $scope.plan.price = $scope.view.plans[newPlan]?.price
-          unless $scope.plan.price
-            $log.error 'invalid plan'
-
-        newPlan
 
   $log.debug "current user data"
   $log.debug $scope.user

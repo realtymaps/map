@@ -77,8 +77,6 @@ basicColumns = do ->
     drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
       'neighbourhood_name', 'neighbourhood_details']
 
-    creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
-
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret
 
