@@ -1,6 +1,6 @@
 _ = require 'lodash'
 path = require 'path'
-common =  require '../../common/config/commonConfig'
+common =  require '../../common/config/commonConfig.coffee'
 
 
 base =
@@ -15,11 +15,7 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    # valid ENABLE namespace strings based on debug library specification: https://www.npmjs.com/package/debug#conventions
-    # BACKEND_ENABLE: process.env.LOG_BACKEND_ENABLE ? '*'
-    # FRONTEND_ENABLE: process.env.LOG_FRONTEND_ENABLE ? '*'
-    BACKEND_ENABLE: process.env.LOG_BACKEND_ENABLE ? '*'
-    FRONTEND_ENABLE: process.env.LOG_FRONTEND_ENABLE ? '*'
+    ENABLE: process.env.LOG_ENABLE ? '-stylus:*,-frontend:*,-backend:*,-test:*'
 
   DBS:
     MAIN:
@@ -163,6 +159,6 @@ config = _.merge({}, base, environmentConfig[base.ENV])
 module.exports = config
 
 # have to set a secret backend-only route
-backendRoutes = require('../../common/config/routes.backend')
+backendRoutes = require('../../common/config/routes.backend.coffee')
 backendRoutes.hirefire =
   info: "/hirefire/#{config.HIREFIRE.API_KEY}/info"

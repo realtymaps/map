@@ -1,6 +1,8 @@
 _ = require 'lodash'
 
+
 describe 'rmapsAdminApp.validatorBuilder', ->
+
   beforeEach ->
     angular.mock.module 'rmapsAdminApp'
 

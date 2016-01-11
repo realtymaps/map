@@ -1,13 +1,15 @@
 app = require '../app.coffee'
-debug = require 'debug'
-logger = require '../../../../backend/config/logger'
+# config = require '../../../../backend/config/config.coffee'
+# console.log "\n\n\n####### config.LOGGING.ENABLE:"
+# console.log config.LOGGING.ENABLE
+# debug = require 'debug'
+# logger = require '../../../../backend/config/logger.coffee'
 
 app.config (nemDebugProvider) ->
-  #debug = nemDebugProvider.debug
-  debug.enable("map:*")
+  debug = nemDebugProvider.debug
 .service 'rmapsMapTestLogger', (nemSimpleLogger) ->
-  logger.spawn("test:map")
+  nemSimpleLogger.spawn("test:map")
 .service 'rmapsMapControlsLogger', (nemSimpleLogger) ->
-  logger.spawn("map:controls")
+  nemSimpleLogger.spawn("frontend:map:controls")
 .run ($log, rmapsMainOptions) ->
   $log.currentLevel = $log.LEVELS[rmapsMainOptions.map.options.logLevel]

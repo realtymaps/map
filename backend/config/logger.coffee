@@ -1,9 +1,11 @@
+config = require './config'
 baselogger = require './baselogger'
 debug = require 'debug'
 
-_fns = ['debug', 'info', 'warn', 'error', 'log']
+_utils = ['infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
+_levelFns = ['debug', 'info', 'warn', 'error', 'log']
 LEVELS = {}
-for val, key in _fns
+for val, key in _levelFns
   LEVELS[val] = key
 
 _maybeExecLevel = (level, current, fn) ->
@@ -12,7 +14,7 @@ _maybeExecLevel = (level, current, fn) ->
 _isValidLogObject = (logObject) ->
   isValid = false
   return  isValid unless logObject
-  for val in _fns
+  for val in _levelFns
     isValid = logObject[val]? and typeof logObject[val] is 'function'
     break unless isValid
   isValid
@@ -25,32 +27,28 @@ _wrapDebug = (debugNS, logObject) ->
   # define a new debug NS (which is to be used as handle for controlling logging verbosity)
   debugInstance = debug(debugNS)
   newLogger = {}
-  # for val in _fns
-  #   newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
-
-  # for val in _fns
-  #   newLogger[val] = (msg) -> debugInstance(logObject[val](msg))
-
-  for val in _fns
-    newLogger[val] = debugInstance
+  for val in _levelFns
+    newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
 
   newLogger
 
 class Logger
   constructor: (@baseLogObject) ->
-    #console.log "\n\n#### Logger instantiated"
-    throw 'internalLogger undefined' unless @baseLogObject
-    throw '@baseLogObject is invalid' unless _isValidLogObject @baseLogObject
-    @doLog = true
+    throw Error('internalLogger undefined') unless @baseLogObject
+    throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
     logFns = {}
 
-    for level in _fns
+    for level in _levelFns
       do (level) =>
         logFns[level] = (msg) =>
-          if @doLog
-            _maybeExecLevel LEVELS[level], @currentLevel, =>
-              @baseLogObject[level](msg)
+          _maybeExecLevel LEVELS[level], @currentLevel, =>
+            @baseLogObject[level](msg)
         @[level] = logFns[level]
+
+    for util in _utils
+      do (util) =>
+        @[util] = @baseLogObject[util]
+
 
     @LEVELS = LEVELS
     @currentLevel = LEVELS.error
@@ -58,12 +56,13 @@ class Logger
   spawn: (newInternalLoggerOrNS) =>
     #console.log "\n\n#### spawning logger #{newInternalLoggerOrNS}"
     if typeof newInternalLoggerOrNS is 'string'
-      throw '@baseLogObject is invalid' unless _isValidLogObject @baseLogObject
+      throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
       unless debug
-        throw "cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library"
+        throw Error("cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library")
       return _wrapDebug newInternalLoggerOrNS, @baseLogObject
 
     new Logger(newInternalLoggerOrNS or baseLogger)
 
+logger = new Logger(baselogger)
 
-module.exports = new Logger(baselogger)
+module.exports = logger
