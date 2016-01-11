@@ -19,7 +19,7 @@ ignore = require 'ignore'
 _ = require 'lodash'
 
 coffeelint = require('coffeelint')
-coffeelint.reporter = require('coffeelint-stylish')
+coffeelint.reporter = require('coffeelint-stylish').reporter
 coffeelint.configfinder = require('coffeelint/lib/configfinder')
 
 browserifyTask = (app, watch = false) ->
@@ -64,11 +64,8 @@ browserifyTask = (app, watch = false) ->
     # This file acts like a .gitignore for excluding files from linter
     lintIgnore = ignore().addIgnoreFile __dirname + '/../../.coffeelintignore'
 
-    lintAlert = false
-
     b = browserify config
       .transform (file, overrideOptions = {}) ->
-        console.log file
         if (lintIgnore.filter [file]).length == 0
           file += '.ignore'
 
@@ -87,9 +84,9 @@ browserifyTask = (app, watch = false) ->
             if errors.length != 0
               coffeelint.reporter file, errors
               if options.doEmitErrors and errorReport.hasError()
-                next new Error('coffeelint has errors')
+                next new Error(errors[0].message)
               if options.doEmitWarnings and _.any(errorReport.paths, (p) -> errorReport.pathHasWarning p)
-                next new Error('coffeelint has warnings')
+                next new Error(errors[0].message)
           @push buf
           next()
 
@@ -102,9 +99,7 @@ browserifyTask = (app, watch = false) ->
               log = if level is 'error' then 'error' else 'warn'
               msg = "Coffeelint #{level} @ #{file}:#{lineNumber} #{message}".replace(/'/g, "\\'")
               @push "console.#{log} '#{msg}'\n"
-
-            if not lintAlert
-              lintAlert = true
+              @push "alert window.lintAlert = 'LINT ERRORS SEE CONSOLE' if not window.lintAlert"
 
           next()
 
