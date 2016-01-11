@@ -7,12 +7,18 @@
           label
             input(type="radio" name="sendTo")
             i.fa.fa-check
-            span Send to property addresses - {{property.length}} total
+            span
+              div Send to property addresses
+              .total {{property.length}} total
           label
             input(type="radio" name="sendTo")
             i.fa.fa-check
-            span Send to owner addresses - {{owner.length}} total
+            span
+              div Send to owner addresses
+              .total {{owner.length}} total
           label
             input(type="radio" name="sendTo")
             i.fa.fa-check
-            span Send to both addresses - {{propertyAndOwner.length}} total
+            span
+              div Send to both addresses
+              .total {{propertyAndOwner.length}} total
