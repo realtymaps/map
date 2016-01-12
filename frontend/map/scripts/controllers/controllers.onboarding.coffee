@@ -3,7 +3,7 @@ app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
 app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
-rmapsPlansService) ->
+rmapsPlansService, rmapsOnboardingService) ->
 
   $log = $log.spawn("map:rmapsOnboardingCtrl")
 
@@ -38,6 +38,7 @@ rmapsPlansService) ->
         $log.debug("begin submitting user to onboarding service")
         $log.debug($scope.user)
         $log.debug("end submitting user to onboarding service")
+        rmapsOnboardingService.user.create($scope.user)
 
     view:
       showSteps: $state.current.showSteps
@@ -72,7 +73,7 @@ app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
   $log = $log.spawn("map:rmapsOnboardingPlanCtrl")
 
 app.controller 'rmapsOnboardingPaymentCtrl',
-($scope, $state, $log, $document, rmapsOnboardingService, stripe, rmapsFaCreditCards) ->
+($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
   $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
@@ -134,7 +135,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
   $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
-  $scope.$watch 'user.usStateCode', (usStateCode) ->
+  $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
 
     rmapsFipsCodes.getAllByState usStateCode
