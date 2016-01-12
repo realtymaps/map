@@ -9,6 +9,8 @@ exitCodes = require '../../../enums/enum.exitCodes'
 logger = require '../../../config/logger'
 _ = require 'lodash'
 
+#StripBootstrap
+
 dollarsToCents = (dollars) ->
   dollars * 100
 

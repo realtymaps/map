@@ -1,7 +1,8 @@
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 userService = require('../../services.user').user
+_ = require 'lodash'
 
-module.exports = (stripe) ->
+StripeCustomers = (stripe) ->
   # at this point a user should already be in auth_user
   create: (opts, extraDescription = '') ->
     onMissingArgsFail
@@ -10,18 +11,21 @@ module.exports = (stripe) ->
       safeCard: {val:opts.plan, required: true} #client side card info we can save to user_credit_cards
 
     token = opts.safeCard.id
+    {authUser, plan} = opts
 
     stripe.customers.create
       source: token
-      plan: opts.plan
-      description: opts.authUser.email + ' ' + extraDescription
+      plan: plan
+      description: authUser.email + ' ' + extraDescription
 
     .then (customer) ->
-      userService.update opts.authUser.id, stripe_customer_id: customer.id, ['stripe_customer_id']
-      .then (savedId) ->
-        if opts.authUser.id != savedId
-          throw new Error 'Invalid user update of stripe_customer_id. id mismatch!!'
-        customer
+      userService.update authUser.id, stripe_customer_id: customer.id, ['stripe_customer_id']
+      .then () ->
+        authUser: _.extend authUser, stripe_customer_id: customer.id
+        customer: customer
+
 
   get: (authUser) ->
     stripe.customers.retrieve authUser.stripe_customer_id
+
+module.exports = StripeCustomers

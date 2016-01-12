@@ -1,7 +1,7 @@
 _ = require 'lodash'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 
-module.exports = (vero) ->
+VeroUser = (vero) ->
 
   createOrUpdate = (opts) ->
     onMissingArgsFail
@@ -25,3 +25,5 @@ module.exports = (vero) ->
 
   createOrUpdate: createOrUpdate
   "delete": deleteMe
+
+module.exports = VeroUser

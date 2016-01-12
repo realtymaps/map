@@ -1,18 +1,24 @@
 _ = require 'lodash'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
+backendRoutes = require '../../../../common/config/routes.backend'
+{clsFullUrl} = require '../../../utils/util.route.helpers'
+logger = require '../../../config/logger'
 
-module.exports = (vero) ->
+emailRoutes = backendRoutes.email
+
+VeroEvents = (vero) ->
+
   createOrUpdate = require('./service.email.impl.vero.user')(vero)
 
-  # * `subscriptionStatus`  identify a user as 'paid or default or more' {[string]}.
-  #
   # Returns the vero-promise response as Promise([user, event]).
   signUp = (opts) ->
     onMissingArgsFail
-      verifyUrl: {val:opts.verifyUrl, required: true}
+      authUser: {val:opts.authUser, required: true}
 
-    {verifyUrl} = opts
-    delete opts.verifyUrl
+    {authUser} = opts
+
+    verifyUrl = clsFullUrl "#{emailRoutes.verify}/#{authUser.email_validation_hash}"
+    logger.debug.yellow verifyUrl
 
     createOrUpdate _.extend {}, opts,
       eventName: 'customer.subscription.new'
@@ -20,18 +26,19 @@ module.exports = (vero) ->
 
   _cancelPlan = (opts) ->
     onMissingArgsFail
-      cancelPlanUrl: {val:opts.cancelPlanUrl, required: true}
       authUser: {val:opts.authUser, required: true}
 
-    {cancelPlanUrl, eventName} = opts
+    {authUser, eventName} = opts
     delete opts.cancelPlanUrl
 
     createOrUpdate _.extend {}, opts,
       eventName: eventName
-      eventData: cancel_plan_url: authUser.cancel_email_hash
+        eventData: cancel_plan_url: authUser.cancel_email_hash
 
   trialEnding = (opts) ->
     _cancelPlan _.extend {}, opts, eventName: 'user.trial.ending'
 
   signUp: signUp
   trialEnding: trialEnding
+
+module.exports = VeroEvents

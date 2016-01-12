@@ -1,9 +1,10 @@
 Promise = require 'bluebird'
+_ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 {emailPlatform, cancelHash} = require '../../services.email'
 userService =  require('../../services.user').user
 
-module.exports = (stripe) ->
+StripeEvents =  (stripe) ->
   _eventHandles =
     "customer.subscription.created": (subscription, authUser) ->
       #TODO: Send out email notice that their subscription has been created
@@ -35,3 +36,5 @@ module.exports = (stripe) ->
       callEvent(validEvent)
 
   handle: handle
+
+module.exports = StripeEvents

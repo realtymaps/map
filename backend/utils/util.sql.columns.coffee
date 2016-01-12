@@ -68,7 +68,9 @@ basicColumns = do ->
       'sqft', 'properties_selected']
 
     user: ['username', 'password', 'first_name', 'last_name', 'email', 'cell_phone', 'work_phone',
-      'address_1', 'address_2', 'zip', 'city', 'parent_id']
+      'address_1', 'address_2', 'zip', 'city', 'parent_id', 'cancel_email_hash', 'stripe_customer_id'
+      'email_validation_hash_update_time', 'email_validation_attempt',
+      'email_validation_hash', 'email_is_valid']
 
     #all id, _id .. are not technically safe unless it is coming from session explicitly
     profile: ['id', 'auth_user_id', 'parent_auth_user_id', 'project_id', 'filters', 'map_toggles',

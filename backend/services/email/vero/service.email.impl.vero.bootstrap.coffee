@@ -6,8 +6,7 @@ logger = require '../../../config/logger'
 {EMAIL_PLATFORM} = require '../../../config/config'
 veroFactory = require 'vero-promise'
 
-
-module.exports = do () ->
+VeroBootstrap = do () ->
   Promise.try () ->
     getAccountInfo 'vero'
     .then ({other}) ->
@@ -23,3 +22,5 @@ module.exports = do () ->
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'
     process.exit exitCodes.EMAIL_INIT
+
+module.exports = VeroBootstrap

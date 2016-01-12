@@ -1,4 +1,5 @@
 Promise = require 'bluebird'
+randomstring = require 'randomstring'
 userServices = require '../services/services.user'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 keystore = require "../services/service.keystore"
@@ -40,7 +41,7 @@ cancelHash = do ->
   create: (authUser) ->
     userService.dbFn()
     .where id: authUser.id
-    .update cancel_email_hash: random.generate()
+    .update cancel_email_hash: randomstring.generate()
 
   getUser: (authUser) ->
     userService.dbFn()

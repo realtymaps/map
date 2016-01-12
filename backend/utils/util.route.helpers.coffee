@@ -2,10 +2,12 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 profileUtil = require '../../common/utils/util.profile'
 httpStatus = require '../../common/utils/httpStatus'
-DataValidationError = require '../utils/errors/util.error.dataValidation'
-{MissingVarError, UpdateFailedError} = require '../utils/errors/util.error.crud'
-ExpressResponse = require '../utils/util.expressResponse'
+DataValidationError = require './errors/util.error.dataValidation'
+{MissingVarError, UpdateFailedError} = require './errors/util.error.crud'
+ExpressResponse = require './util.expressResponse'
+url = require 'url'
 logger = require '../config/logger'
+clsFactory = require './util.cls'
 
 class CurrentProfileError extends Error
 class NotFoundError extends Error
@@ -56,6 +58,18 @@ wrapHandleRoutes = (handles) ->
         handleRoute req, res, next, origFn
   handles
 
+#http://stackoverflow.com/questions/10183291/how-to-get-the-full-url-in-express
+fullUrl = (req, pathname) ->
+  url.format
+    protocol: req.protocol,
+    host: req.get('host'),
+    pathname: pathname or req.originalUrl
+
+clsFullUrl = (pathname) ->
+  space = clsFactory().namespace
+  req = space.get 'req'
+  fullUrl req, pathname
+
 module.exports =
   methodExec: methodExec
   currentProfile: currentProfile
@@ -66,3 +80,5 @@ module.exports =
   handleQuery: handleQuery
   handleRoute: handleRoute
   wrapHandleRoutes: wrapHandleRoutes
+  fullUrl: fullUrl
+  clsFullUrl: clsFullUrl
