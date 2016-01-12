@@ -18,11 +18,11 @@ header.site-header
           include ./header/_search
 
 .mobile-only
-  header.mobile-modal(ng-if='rmapsPage.mobile.modal')
+  header.mobile-header(ng-if='rmapsPage.mobile.modal')
     .inner
-      .mobile-modal-left
+      .mobile-header-left
         a(ng-click='rmapsPage.back($event)')
           i.fa.fa-chevron-left
-      .mobile-modal-center
-        .mobile-modal-title {{rmapsPage.title}}
-      .mobile-modal-right
+      .mobile-header-center
+        .mobile-header-title {{rmapsPage.title}}
+      .mobile-header-right

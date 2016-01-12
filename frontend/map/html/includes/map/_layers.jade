@@ -1,26 +1,32 @@
 .layers-tools
-  button.toggle-active.btn.btn-transparent(popover-template="'LayersPopover'", popover-placement='right')
-    span.icon.icon-layers
-      script(type="text/ng-template" id="LayersPopover")
-        .filter-row
-          span.label Show
-          ul
-            li
-              button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
-            li
-              button.btn(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
-            li
-              button.btn(ng-click="Toggles.toggleNotes()" ng-class="{'btn-inactive' : !Toggles.showNotes }") Notes
-            li
-              button.btn(ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
-        .filter-row
-          span.label Status
-          ul
-            li
-              button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
-            li
-              button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
-            li
-              button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
-            li
-              button.btn.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
+  .desktop-only
+    button.toggle-active.btn.btn-transparent(popover-template="'LayersPopover'", popover-placement='right')
+      span.icon.icon-layers
+
+  .mobile-only
+    button.toggle-active.btn.btn-transparent(open-as-modal modal-template="LayersPopover" window-class="layers-modal mobile-modal-window" window-template-url="./includes/_mobile_modal_window.jade")
+      span.icon.icon-layers
+
+  script(type="text/ng-template" id="LayersPopover")
+    .filter-row
+      span.label Show
+      ul
+        li
+          button.btn(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
+        li
+          button.btn(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
+        li
+          button.btn(ng-click="Toggles.toggleNotes()" ng-class="{'btn-inactive' : !Toggles.showNotes }") Notes
+        li
+          button.btn(ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
+    .filter-row
+      span.label Status
+      ul
+        li
+          button.btn.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
+        li
+          button.btn.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
+        li
+          button.btn.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
+        li
+          button.btn.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
