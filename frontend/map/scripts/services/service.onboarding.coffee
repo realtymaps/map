@@ -1,7 +1,6 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
-
-apiBase = backendRoutes.onboarding.
+apiBase = backendRoutes.onboarding
 
 app.service 'rmapsOnboardingService', ($http) ->
 
