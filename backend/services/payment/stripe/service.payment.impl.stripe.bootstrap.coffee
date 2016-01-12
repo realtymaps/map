@@ -1,12 +1,12 @@
 Promise = require 'bluebird'
 stripeFactory = require 'stripe'
-{getAccountInfo} = require '../service.externalAccounts'
-{CriticalError} = require '../../utils/errors/util.errors.critical'
-{PAYMENT_PLAN} = require '../../config/config'
-plansService = require '../service.plans'
-{onMissingArgsFail} = require '../../utils/errors/util.errors.args'
-exitCodes = require '../../enums/enum.exitCodes'
-logger = require '../../config/logger'
+{getAccountInfo} = require '../../service.externalAccounts'
+{CriticalError} = require '../../../utils/errors/util.errors.critical'
+{PAYMENT_PLATFORM} = require '../../../config/config'
+plansService = require '../../service.plans'
+{onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
+exitCodes = require '../../../enums/enum.exitCodes'
+logger = require '../../../config/logger'
 _ = require 'lodash'
 
 dollarsToCents = (dollars) ->
@@ -21,18 +21,18 @@ createPlan = (stripe, planName, settings) ->
     interval: settings.interval
     metadata: settings
     name: planName
-    interval_count: PAYMENT_PLAN.INTERVAL_COUNT
-    currency: PAYMENT_PLAN.CURRENCY
+    interval_count: PAYMENT_PLATFORM.INTERVAL_COUNT
+    currency: PAYMENT_PLATFORM.CURRENCY
 
   if planName != 'free'
     _.extend plan,
-      trial_period_days: PAYMENT_PLAN.TRIAL_PERIOD_DAYS
+      trial_period_days: PAYMENT_PLATFORM.TRIAL_PERIOD_DAYS
 
   stripe.plans.create plan
   .catch (err) ->
-    logger.error "CRITICAL ERROR: OUR PAYMENT SYSTEM IS NOT SETUP CORRECTLY"
+    logger.error "CRITICAL ERROR: OUR PAYMENT PLATFORM IS NOT SETUP CORRECTLY"
     logger.error err, true
-    if PAYMENT_PLAN.LIVE_MODE
+    if PAYMENT_PLATFORM.LIVE_MODE
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'
     process.exit exitCodes.PAYMENT_INIT
@@ -60,12 +60,12 @@ initializePlans = (stripe) -> Promise.try () ->
   #don't wait on plan init kick off rest of api
   stripe
 
-module.exports = do () ->
+module.exports =
   getAccountInfo 'stripe'
   .then ({other}) ->
     throw new CriticalError('Stipe API_KEYS intialization failed.') unless other
     API_KEYS = other
-    apiKeyNameStr = if PAYMENT_PLAN.LIVE_MODE then 'live' else 'test'
+    apiKeyNameStr = if PAYMENT_PLATFORM.LIVE_MODE then 'live' else 'test'
     keyToUse = "secret_#{apiKeyNameStr}_api_key"
     logger.debug "using API_KEY prop: #{keyToUse} for backend stripe"
     secret_api_key = API_KEYS[keyToUse]

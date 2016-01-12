@@ -4,8 +4,8 @@ logger = require '../config/logger'
 {wrapHandleRoutes} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
 stripeTransforms = require '../utils/transforms/transforms.webhooks.stripe'
-{emailPlatform} = require '../services/services.email'
-paymentServices = require '../services/service.payment'
+# {emailPlatform} = require '../services/services.email'
+paymentServices = require '../services/services.payment'
 
 handles = wrapHandleRoutes
   #https://dashboard.stripe.com/account/webhooks

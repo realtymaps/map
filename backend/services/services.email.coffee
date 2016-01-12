@@ -6,7 +6,6 @@ keystore = require "../services/service.keystore"
 moment = require 'moment'
 userService = userServices.user
 emailThreshMilliSeconds = null
-vero = require 'vero-promise'
 
 keystore.getValue('email_minutes', namespace: 'time_limits').then (val) ->
   emailThreshMilliSeconds = moment.duration(minutes:val).asMilliseconds()
@@ -37,21 +36,7 @@ validateHash = (hash) -> Promise.try () ->
         throw new UpdateFailedError("failed updating email_is_valid")
       true
 
-emailPlatform = do ->
-  # * `subscriptionStatus`  identify a user as 'paid or default or more' {[string]}.
-  #
-  # Returns the vero-promise response as Promise([user, event]).
-  signUp = (user, verifyUrl, subscriptionStatus) ->
-    vero.createUserAndTrackEvent(
-      userDBId, user.email, _.extend(
-        _.pick(user, [
-          'first_name'
-          'last_name'
-          'plan'
-          ]),
-        subscription_status: subscriptionStatus)
-    , 'New user email', { verify_url: verifyUrl })
 
 module.exports =
   validateHash: validateHash
-  emailPlatform: emailPlatform
+  emailPlatform: require('./email/vero')
