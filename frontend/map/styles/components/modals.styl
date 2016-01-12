@@ -1,4 +1,4 @@
-.mobile-modal-window
+.mobile-modal-window.modal
 
   .modal-dialog
     position: absolute
@@ -10,4 +10,6 @@
     background-color $rm-mobile-modal-background
 
     .modal-content
-      margin-top: $navbarHeight
+      margin: '%s 0 0 0' % ($navbarHeight)
+      padding: 0
+      border-top: none
