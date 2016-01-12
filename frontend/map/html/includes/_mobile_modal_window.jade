@@ -6,9 +6,9 @@ ng-style="{'z-index': 1050 + index*10, display: 'block'}")
     header.mobile-header(ng-controller="OpenAsModalWindowController")
       .inner
         .mobile-header-left
-          a(ng-click='close()')
-            i.fa.fa-chevron-left
-        .mobile-header-center
           .mobile-header-title {{context.modalTitle}}
+        .mobile-header-center
         .mobile-header-right
+          a
+            i.closeicon(class="fa fa-times" ng-click="close()")
     .modal-content(modal-transclude)
