@@ -9,6 +9,6 @@ ng-style="{'z-index': 1050 + index*10, display: 'block'}")
           a(ng-click='close()')
             i.fa.fa-chevron-left
         .mobile-header-center
-          .mobile-header-title {{rmapsPage.title}}
+          .mobile-header-title {{context.modalTitle}}
         .mobile-header-right
     .modal-content(modal-transclude)
