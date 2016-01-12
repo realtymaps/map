@@ -1,15 +1,14 @@
 .modal(modal-render="{{$isRendered}}" tabindex="-1" role="dialog"
 modal-animation-class="fade"
 modal-in-class="in"
-ng-style="{'z-index': 1050 + index*10, display: 'block'}" ng-click="fireCloseEvent()")
-  div(ng-controller="OpenAsModalWindowController")
-    .modal-dialog(ng-class="size ? 'modal-' + size : ''")
-      header.mobile-header
-        .inner
-          .mobile-header-left
-            a(ng-click='fireCloseEvent()')
-              i.fa.fa-chevron-left
-          .mobile-header-center
-            .mobile-header-title {{rmapsPage.title}}
-          .mobile-header-right
-      .modal-content(modal-transclude)
+ng-style="{'z-index': 1050 + index*10, display: 'block'}")
+  .modal-dialog(ng-class="size ? 'modal-' + size : ''")
+    header.mobile-header(ng-controller="OpenAsModalWindowController")
+      .inner
+        .mobile-header-left
+          a(ng-click='close()')
+            i.fa.fa-chevron-left
+        .mobile-header-center
+          .mobile-header-title {{rmapsPage.title}}
+        .mobile-header-right
+    .modal-content(modal-transclude)

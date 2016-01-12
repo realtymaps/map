@@ -8,17 +8,16 @@ app.directive 'openAsModal', ($parse, $templateCache, $modal, $log) ->
     $log.debug "openAsModal - attr based"
 
     openModal = () ->
+      $log.debug "openModal() - #{scope.Toggles}"
       template = $templateCache.get(attrs.modalTemplate)
-      $log.debug "openAsModal template - #{template}"
 
       windowClass = 'open-as-modal'
       windowClass += " #{attrs.windowClass}" if attrs.windowClass
 
-      childScope = scope.$new false
-
       modal = $modal.open {
         animation: true
-        scope: childScope
+        scope: scope
+        controller: 'OpenAsModalWindowController'
         template: template
         windowClass: windowClass
         windowTemplateUrl: attrs.windowTemplateUrl
@@ -32,6 +31,6 @@ app.directive 'openAsModal', ($parse, $templateCache, $modal, $log) ->
       element.unbind 'click', openModal
 
 app.controller 'OpenAsModalWindowController', ($scope) ->
-  $scope.fireCloseEvent = () ->
+  $scope.close = () ->
     $scope.$emit 'rmapsOpenAsModal.close'
 
