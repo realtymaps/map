@@ -25,8 +25,8 @@ rmapsPlansService) ->
         set: (newPlan) ->
           $scope.user.plan.name = newPlan
           if $scope.view?.plans?
-            $scope.plan.price = $scope.view.plans[newPlan]?.price
-            unless $scope.plan.price
+            $scope.user.plan.price = $scope.view.plans[newPlan]?.price
+            unless $scope.user.plan.price
               $log.error 'invalid plan'
 
           newPlan
@@ -59,7 +59,7 @@ rmapsPlansService) ->
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
         currentPlan = if $scope.orderSvc.name then $scope.orderSvc.name else 'standard'
-        $scope.plan.set(currentPlan)
+        $scope.user.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
 
   $log.debug "current user data"
