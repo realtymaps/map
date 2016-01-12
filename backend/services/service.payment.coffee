@@ -6,4 +6,4 @@ stripeBootstrap = require './payment/service.payment.impl.stripe.bootstrap'
 module.exports = Promise.try () -> stripeBootstrap.then (stripe) ->
   logger.info 'backend stripe is bootsraped'
   customers: require('./payment/service.payment.impl.stripe.customers')(stripe)
-  event: require('./payment/service.payment.impl.stripe.events')(stripe)
+  events: require('./payment/service.payment.impl.stripe.events')(stripe)

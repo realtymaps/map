@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-stripeErrors = require '../utils/errors/util.errors.stripe'
+stripeErrors = require '../../utils/errors/util.errors.stripe'
 
 module.exports = (stripe) ->
   _eventHandles =

@@ -1,5 +1,5 @@
-{onMissingArgsFail} = require '../utils/errors/util.errors.args'
-userService = require('./services.user').user
+{onMissingArgsFail} = require '../../utils/errors/util.errors.args'
+userService = require('../services.user').user
 
 module.exports = (stripe) ->
   # at this point a user should already be in auth_user

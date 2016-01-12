@@ -5,7 +5,7 @@ logger = require '../config/logger'
 {validateAndTransformRequest} = require '../utils/util.validation'
 stripeTransforms = require '../utils/transforms/transforms.webhooks.stripe'
 {emailPlatform} = require '../services/services.email'
-paymentPlatform = require '../services/service.payment.platform'
+paymentServices = require '../services/service.payment'
 
 handles = wrapHandleRoutes
   #https://dashboard.stripe.com/account/webhooks
@@ -17,7 +17,7 @@ handles = wrapHandleRoutes
     .then (validReq) ->
       {body} = validReq
       logger.debug "valid stripe event: #{JSON.stringify validReq}"
-      paymentPlatform.event.handle(body)
+      paymentServices.events.handle(body)
 
 
 module.exports = mergeHandles handles,
