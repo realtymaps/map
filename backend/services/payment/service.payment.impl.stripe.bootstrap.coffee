@@ -65,7 +65,11 @@ module.exports = do () ->
   .then ({other}) ->
     throw new CriticalError('Stipe API_KEYS intialization failed.') unless other
     API_KEYS = other
-    stripeFactory(API_KEYS.secret_test_api_key) #or secret_live_api_key
+    apiKeyNameStr = if PAYMENT_PLAN.LIVE_MODE then 'live' else 'test'
+    keyToUse = "secret_#{apiKeyNameStr}_api_key"
+    logger.debug "using API_KEY prop: #{keyToUse} for backend stripe"
+    secret_api_key = API_KEYS[keyToUse]
+    stripeFactory(secret_api_key)
   .then initializePlans
   .then (stripe) ->
     stripe
