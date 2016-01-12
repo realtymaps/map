@@ -36,7 +36,17 @@ validateHash = (hash) -> Promise.try () ->
         throw new UpdateFailedError("failed updating email_is_valid")
       true
 
+cancelHash = do ->
+  create: (authUser) ->
+    userService.dbFn()
+    .where id: authUser.id
+    .update cancel_email_hash: random.generate()
+
+  getUser: (authUser) ->
+    userService.dbFn()
+    .where id: authUser.id, cancel_email_hash: authUser.cancel_email_hash
 
 module.exports =
+  cancelHash: cancelHash
   validateHash: validateHash
   emailPlatform: require('./email/vero')

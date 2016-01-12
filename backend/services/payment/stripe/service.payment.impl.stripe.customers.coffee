@@ -14,7 +14,7 @@ module.exports = (stripe) ->
     stripe.customers.create
       source: token
       plan: opts.plan
-      description: opts.authUser.email + extraDescription
+      description: opts.authUser.email + ' ' + extraDescription
 
     .then (customer) ->
       userService.update opts.authUser.id, stripe_customer_id: customer.id, ['stripe_customer_id']
