@@ -2,13 +2,12 @@ app = require '../app.coffee'
 
 
 app.config ($provide) ->
-  $provide.decorator 'taOptions', ['$log', '$document', 'taRegisterTool', '$delegate', '$timeout', 'textAngularManager', 'taTools', 'rmapsMainOptions', 'taSelection',
-  ($log, $document, taRegisterTool, taOptions, $timeout, textAngularManager, taTools, rmapsMainOptions, taSelection) ->
+  $provide.decorator 'taOptions', ($log, $document, taRegisterTool, $delegate, $timeout, textAngularManager, taTools, rmapsMainOptions, taSelection) ->
 
     # helps HTML5 compatibility, which uses css instead of deprecated tags like <font>
     $document[0].execCommand('styleWithCSS', false, true)
 
-    # taOptions.disableSanitizer = true
+    # $delegate.disableSanitizer = true
     if !rangy.createClassApplier?
       rangy.init()
     fontToolElements = {}
@@ -110,5 +109,4 @@ app.config ($provide) ->
     #           node = node.parentNode
     #         return false
 
-    return taOptions
-  ]
+    return $delegate

@@ -23,9 +23,8 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
 
     $timeout ->
       scope.editor = textAngularManager.retrieveEditor 'wysiwyg'
-      if scope.editor?.scope?
-        scope.editor.scope.$on 'rmaps-drag-end', (e, opts) ->
-          scope.macroAction.whenDropped e
+      scope.editor?.scope?.$on 'rmaps-drag-end', (e, opts) ->
+        scope.macroAction.whenDropped e
 
     $rootScope.$on 'rmaps-drag-end', (e) ->
       scope.editor.editorFunctions.focus()
