@@ -1,4 +1,4 @@
-.mobile-modal
+.mobile-header
   position: relative;
   height: $navbarHeight;
   width: 100%;
@@ -10,19 +10,25 @@
   a
     color: $rm-header-text;
 
-  .mobile-modal-center
+  i
+    font-size: 18px
+
+    &.closeicon
+      font-size: 25px
+
+  .mobile-header-center
     margin: 0 auto;
     width: calc(100% - 35px - 35px);
     height: $navbarHeight;
 
-  .mobile-modal-left
+  .mobile-header-left
     position: absolute;
     top: 0;
     left: 0;
     bottom: 0;
     padding-left: 10px;
 
-  .mobile-modal-right
+  .mobile-header-right
     position: absolute;
     top: 0;
     right: 0;
@@ -30,7 +36,7 @@
     padding-right: 10px;
     text-align: right;
 
-  .mobile-modal-title
+  .mobile-header-title
     width: 100%;
     overflow: hidden;
     white-space: nowrap;

@@ -361,7 +361,7 @@ _handleSubtaskError = (subtask, status, hard, error) ->
           if taskData == undefined
             logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
             return
-          logger.info("Retrying subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
+          logger.info("Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
