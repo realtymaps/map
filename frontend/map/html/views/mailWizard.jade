@@ -5,8 +5,8 @@
       button(class="btn btn-primary pull-right" ng-click="nextStep()") Next
       div.pathway
         ul
-          li(ng-class="{ active: step == 'recipient' }")
-            span Recipient
+          li(ng-class="{ active: step == 'recipientInfo' }")
+            span Recipients
           li(ng-class="{ active: step == 'senderInfo' }")
             span Sender Info
           li(ng-class="{ active: step == 'selectTemplate' }")
@@ -18,4 +18,3 @@
 
   .mail-wizard
     div(ng-repeat="state in $state.get() | filter:{parent: 'mailWizard'}", ui-view="{{state.name}}", ng-show="$state.includes(state.name)", ng-cloak)
-
