@@ -1,4 +1,3 @@
-###global _:true###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
@@ -49,8 +48,12 @@ app.config(($provide, $validationProvider) ->
     optMaxlength: (value, scope, element, attrs, param) ->
       return true unless value
       value.length <= param;
-    checkUniqueEmail: (value) ->
-      $http.post(backendRoutes.email.isUnique, email: value)
+    checkUniqueEmail: (value, scope, element, attrs, param) ->
+      config =
+        alerts: param != 'disableAlert'
+      $http.post(backendRoutes.email.isUnique, email: value, config)
+
+
 
   defaultMsg =
     password:

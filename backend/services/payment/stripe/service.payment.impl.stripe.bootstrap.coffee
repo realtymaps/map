@@ -43,9 +43,14 @@ createPlan = (stripe, planName, settings) ->
     created
 
 initializePlan = (stripe, planName, settings) ->
-  onMissingArgsFail
-    price: {val: settings.price, required: true}
-    interval: {val: settings.interval, required: true}
+  try
+    logger.debug "Attempting to initialize plan: #{planName}"
+    onMissingArgsFail
+      price: {val: settings.price, required: true}
+      interval: {val: settings.interval, required: true}
+  catch error
+    logger.error error
+    process.exit exitCodes.PAYMENT_INIT
 
   stripe.plans.retrieve planName
   .then () ->
@@ -54,7 +59,7 @@ initializePlan = (stripe, planName, settings) ->
   .catch () ->
     createPlan(stripe, planName, settings)
 
-initializePlans = (stripe) -> Promise.try () ->
+initializePlans = (stripe) ->
   #initialize all plans including aliases to avoid complications
   plansService.getAll().then (plans) ->
     for planName, settings of plans

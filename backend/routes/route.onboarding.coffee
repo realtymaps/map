@@ -33,7 +33,5 @@ handles = wrapHandleRoutes
           authUser: authUser
       #end transaction
 
-
-
 module.exports = mergeHandles handles,
-  createUser: {}
+  createUser: method: "post"

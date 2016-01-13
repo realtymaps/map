@@ -13,7 +13,8 @@ describe 'utils.errors.args', ->
     beforeEach ->
       @testObj =
         field1: 1
-        field2: 1
+        field2: 0 #can handle falsy
+        field3: false #can handle falsy
 
     it 'passes on all required field existence', ->
       {field1, field2} = @testObj
@@ -21,6 +22,7 @@ describe 'utils.errors.args', ->
       subject.onMissingArgsFail
         field1: val: field1, required: true
         field2: val: field2, required: true
+        field3: val: field2, required: true
 
     it 'fails on missing required field', ->
       {field1} = @testObj
