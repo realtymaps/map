@@ -48,7 +48,7 @@ loadRawData = (subtask, options) ->
         throw err
   .then () ->
     if options.sftp
-      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
+      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}", concurrency: 2)
     else
       ftp.get(subtask.data.path)
       .then (dataStream) -> new Promise (resolve, reject) ->
