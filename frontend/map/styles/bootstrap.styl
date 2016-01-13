@@ -544,12 +544,13 @@ label
     margin 16px 0
 
 
-@-moz-document url-prefix()
-  .modal
-    &.in
-    .modal-dialog
-      transform translateY(-50%) !important
-      top 50%
+// CLT 2016-01-12: commenting out due to issues with mobile modals and inconsistency of modal behavior in Firefox
+//@-moz-document url-prefix()
+//  .modal
+//    &.in
+//    .modal-dialog
+//      transform translateY(-50%) !important
+//      top 50%
 
 .modal-title, .modal-content, .modal-body, .modal-footer
   h1, h2, h3, h4, h5, h6, h7, span, p, div

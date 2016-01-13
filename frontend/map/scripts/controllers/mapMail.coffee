@@ -7,7 +7,7 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsPropertiesServi
     property_ids = _.keys rmapsPropertiesService.getSavedProperties()
 
     $scope.newMail =
-      project_ids: property_ids
+      property_ids: property_ids
 
     $scope.modalTitle = "Create Mail Campaign"
 
@@ -16,7 +16,7 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsPropertiesServi
 
       $scope.modalOk = () ->
         modalInstance.dismiss('save')
-        $state.go 'mailWizard', $scope.newMail
+        $state.go 'recipientInfo', $scope.newMail
 
       $scope.cancelModal = () ->
         modalInstance.dismiss('cancel')

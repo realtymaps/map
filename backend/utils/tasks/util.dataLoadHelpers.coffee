@@ -28,15 +28,6 @@ buildUniqueSubtaskName = (subtask, prefix='raw') ->
   parts.join('_')
 
 
-createRawTempTable = (tableName, fields) ->
-  dbs.get('raw_temp').schema.createTable tableName, (table) ->
-    table.increments('rm_raw_id').notNullable()
-    table.boolean('rm_valid')
-    table.text('rm_error_msg')
-    for fieldName in fields
-      table.text(fieldName.replace(/\./g, ''))
-
-
 _countInvalidRows = (tableName, assignedFalse) ->
   query = tables.buildRawTableQuery(tableName)
   .count('* AS count')
@@ -407,9 +398,13 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 .where(raw_table_name: tableName)
                 .delete()
               .then () ->
-                #promiseQuery(createRawTempTable(tableName, event.payload))
-                q = createRawTempTable(tableName, event.payload)
-                promiseQuery(q)
+                createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
+                  table.increments('rm_raw_id').notNullable()
+                  table.boolean('rm_valid')
+                  table.text('rm_error_msg')
+                  for fieldName in event.payload
+                    table.text(fieldName.replace(/\./g, ''))
+                promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
                 dbStream = streamQuery(copyStream.from(copyStart))
@@ -424,6 +419,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
           finish(err, reject, callback)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
+      logger.error("problem streaming to #{tableName}: #{err}")
       promiseQuery('ROLLBACK TRANSACTION')
       .then () ->
         tables.jobQueue.dataLoadHistory()
@@ -434,6 +430,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       .then () ->
         throw err
     .then (count) ->
+      promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
       promiseQuery('COMMIT TRANSACTION')
       .then () ->
         tables.jobQueue.dataLoadHistory()
@@ -445,7 +442,6 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
 
 module.exports =
   buildUniqueSubtaskName: buildUniqueSubtaskName
-  createRawTempTable: createRawTempTable
   recordChangeCounts: recordChangeCounts
   activateNewData: activateNewData
   getValidationInfo: getValidationInfo
