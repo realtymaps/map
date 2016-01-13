@@ -173,7 +173,7 @@ class ProjectRouteCrud extends RouteCrud
       notes: @notesCrud.rootGET req, res, next
       drawnShapes: @drawnShapesCrud.rootGET req, res, next
       favorites: @profilesCrud.rootGET req, res, next
-    .then (props) =>
+    .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'
       _.each projects, (project) ->
         project.clients = grouped.clients[project.id] or []
