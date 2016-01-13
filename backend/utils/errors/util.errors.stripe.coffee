@@ -1,6 +1,6 @@
-namedFactory = require './impl/util.error.impl.namedFactory'
+generators = require './impl/util.error.impl.generators'
 
-module.exports = namedFactory [
+module.exports = generators.named [
   'StripeCard'
   'RateLimit'
   'StripeInvalidRequest'

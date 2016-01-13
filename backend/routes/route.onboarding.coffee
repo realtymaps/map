@@ -9,29 +9,31 @@ logger = require '../config/logger'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 emailServices = require '../services/services.email'
 paymentServices = require '../services/services.payment'
-userService = require('../services/services.user').user
 {basicColumns} = require '../utils/util.sql.columns'
-
+tables = require '../config/tables'
+_ = require 'lodash'
+{expectSingleRow} = require '../utils/util.sql.helpers'
+{transaction} = require '../config/dbs'
 
 handles = wrapHandleRoutes
   createUser: (req) ->
     validateAndTransformRequest req, onboardingTransforms.verify
     .then (validReq) ->
       logger.debug.cyan validReq, true
-      #TODO make this one atomic transaction might need to use dbs.getKnex
-      #begin transaction
-      userService.create validReq.body, undefined, true, basicColumns.user
-      .then (id) ->
-        userService.getById(id)
-      .then (authUser) ->
-        paymentServices.customers.create
-          authUser: authUser
-          plan: validReq.body.plan.name
-          safeCard: validReq.body.card
-      .then ({authUser}) ->
-        emailServices.events.signUp
-          authUser: authUser
-      #end transaction
+      transaction 'main', (trx) ->
+        tables.auth.user(trx).returning("id").insert _.pick validReq.body, basicColumns.user
+        .then (id) ->
+          tables.auth.user(trx).select(basicColumns.user...).where id: id
+        .then expectSingleRow
+        .then (authUser) ->
+          paymentServices.customers.create
+            trx: trx
+            authUser: authUser
+            plan: validReq.body.plan.name
+            safeCard: validReq.body.card
+        .then ({authUser}) ->
+          emailServices.events.signUp
+            authUser: authUser
 
 module.exports = mergeHandles handles,
   createUser: method: "post"

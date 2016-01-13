@@ -87,6 +87,8 @@ base =
     CURRENCY: 'usd'
   EMAIL_PLATFORM:
     LIVE_MODE: false
+    MAX_RETRIES: 4
+    RETRY_DELAY_MILLI: 2000
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
   conString: base.DBS.MAIN.connection

@@ -1,7 +1,7 @@
 _ = require 'lodash'
-namedFactory = require './impl/util.error.impl.namedFactory'
+generators = require './impl/util.error.impl.generators'
 
-errors = namedFactory [
+errors = generators.named [
   'InvalidArgument'
 ]
 onMissingArgsFail = (argsObj) ->

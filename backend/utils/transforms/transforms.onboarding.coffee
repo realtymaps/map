@@ -34,10 +34,10 @@ module.exports =
       ###
       card: validators.object subValidateSeparate: requireAllTransforms
         id: validators.string(minLength: 28)
-        brand: validators.string(minLength: 2)
-        country: validators.string(minLength: 2)
-        cvc_check: validators.string(minLength: 2)
-        exp_month: [validators.string(minLength: 2, allowNumber: true), validators.integer()]
-        exp_year: [validators.string(minLength: 4, allowNumber: true), validators.integer()]
-        funding: validators.string(minLength: 2) #should we force credit?
-        last4: validators.string(minLength: 4)
+        # brand: validators.string(minLength: 2)
+        # country: validators.string(minLength: 2)
+        # cvc_check: validators.string(minLength: 2)
+        # exp_month: [validators.string(minLength: 2, allowNumber: true), validators.integer()]
+        # exp_year: [validators.string(minLength: 4, allowNumber: true), validators.integer()]
+        # funding: validators.string(minLength: 2) #should we force credit?
+        # last4: validators.string(minLength: 4)

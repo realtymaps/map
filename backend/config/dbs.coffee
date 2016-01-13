@@ -21,7 +21,7 @@ _knexShutdown = (db, name) ->
     logger.error "!!! '#{name}' database shutdown error: #{error}"
     Promise.reject(error)
 
-    
+
 _barePgShutdown = () ->
   new Promise (resolve, reject) ->
     logger.info "... attempting bare pg database shutdown ..."
@@ -50,13 +50,13 @@ shutdown = () ->
     logger.error 'all databases shut down (?), some with errors.'
     Promise.reject(error)
 
-    
+
 getKnex = (dbName) ->
   if !connectedDbs[dbName]?
     connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
   connectedDbs[dbName]
 
-  
+
 getPlainClient = (dbName, handler) ->
   dbConfig = config.DBS[dbName.toUpperCase()]
   client = new pg.Client(dbConfig.connection)
@@ -70,9 +70,16 @@ getPlainClient = (dbName, handler) ->
       client.end()
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
-      
+
+transaction = (dbName, queryCb) ->
+  getKnex(dbName).transaction (trx) ->
+    queryCb(trx)
+    .then trx.commit
+    .catch trx.rollback
+
 
 module.exports =
   shutdown: shutdown
   get: getKnex
   getPlainClient: getPlainClient
+  transaction: transaction
