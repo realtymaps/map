@@ -1,0 +1,15 @@
+.modal(modal-render="{{$isRendered}}" tabindex="-1" role="dialog"
+modal-animation-class="fade"
+modal-in-class="in"
+ng-style="{'z-index': 1050 + index*10, display: 'block'}")
+  .modal-dialog(ng-class="size ? 'modal-' + size : ''")
+    header.mobile-header.mobile-header-modal(ng-controller="OpenAsModalWindowController")
+      .inner
+        .mobile-header-left
+          .mobile-header-title {{context.modalTitle}}
+        .mobile-header-center
+        .mobile-header-right
+          a
+            i.closeicon(class="fa fa-times" ng-click="close()")
+    .mobile-modal-content-scroll
+      .modal-content(modal-transclude)
