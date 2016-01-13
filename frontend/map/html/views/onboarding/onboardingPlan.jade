@@ -41,11 +41,11 @@ section.white-page.onboarding.onboarding-user.plan.ng-cloak
                 .form-group
                   .label Password:
                   .col-md-3
-                    input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
+                    input.form-control(name="password" ng-change="user.passwordChange()" ng-model="user.password" type='password' validator="password")
                 .form-group
                   .label Confirm password:
                   .col-md-3
-                    input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
+                    input.form-control(name="confirmPassword" ng-change="user.passwordChange()" ng-model="user.confirmPassword" type='password' validator="password")
                 .form-group
                   .label
                   .col-md-3

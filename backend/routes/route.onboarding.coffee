@@ -7,8 +7,12 @@ logger = require '../config/logger'
 logger = require '../config/logger'
 {wrapHandleRoutes} = require '../utils/util.route.helpers'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
-emailServices = require '../services/services.email'
-paymentServices = require '../services/services.payment'
+emailServices = null
+paymentServices = null
+require('../services/services.email').emailPlatform.then (svc) ->
+  emailServices = svc
+require('../services/services.payment').then (svc) ->
+  paymentServices = svc
 {basicColumns} = require '../utils/util.sql.columns'
 tables = require '../config/tables'
 _ = require 'lodash'
@@ -18,29 +22,32 @@ _ = require 'lodash'
 
 handles = wrapHandleRoutes
   createUser: (req) ->
-    req = _.pick req, ['body', 'params', 'query']
-    logger.debug req, true
+    return throw new Error "OnBoarding API not ready" if !emailServices or !paymentServices
+    # req = _.pick req, ['body', 'params', 'query']
+    # logger.debug req, true
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
-      logger.debug.cyan validReq, true
+      # logger.debug.cyan validReq, true
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         logger.debug "will insert user entity of:"
         logger.debug entity, true
-        q = tables.auth.user(trx).returning("id").insert entity
         logger.debug "inserting new user"
-        logger.debug q.toString()
-        q.then (id) ->
-          logger.debug "new user inserted SUCCESS"
-          tables.auth.user(trx).select(basicColumns.user...).where id: id
+        tables.auth.user(trx).returning("id").insert entity
+        .then (id) ->
+          logger.debug "new user (#{id}) inserted SUCCESS"
+          tables.auth.user(trx).select(basicColumns.user.concat(["id"])...).where id: parseInt id
         .then expectSingleRow
         .then (authUser) ->
+          logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
           paymentServices.customers.create
             trx: trx
             authUser: authUser
             plan: validReq.body.plan.name
             safeCard: validReq.body.card
         .then (payload) ->
+          {authUser} = payload
+          logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
           emailServices.events.signUp
             authUser: payload.authUser
           .catch SignUpError, (error) ->

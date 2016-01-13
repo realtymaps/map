@@ -73,11 +73,10 @@ getPlainClient = (dbName, handler) ->
 transaction = (dbName, queryCb, postCatchCb) ->
   getKnex(dbName).transaction (trx) ->
     queryCb(trx)
-    .then trx.commit
-    .catch () ->
-      trx.rollback()
-      logger.debug 'transaction reverted'
-      postCatchCb() if postCatchCb?
+    .catch (err) ->
+      logger.debug "transaction reverted: #{err}"
+      postCatchCb(err) if postCatchCb?
+      throw err
 
 
 module.exports =

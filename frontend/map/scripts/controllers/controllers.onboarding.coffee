@@ -16,6 +16,11 @@ rmapsPlansService, rmapsOnboardingService) ->
 
   _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
+      passwordChange: ->
+        if @password != @confirmPassword
+          @errorMsg = 'passwords do not match!'
+        else
+          delete @errorMsg
       plan:
         name: 'standard'
 
