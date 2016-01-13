@@ -1,4 +1,3 @@
-Promise = require 'bluebird'
 stripeFactory = require 'stripe'
 {getAccountInfo} = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'

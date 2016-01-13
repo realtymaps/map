@@ -134,6 +134,7 @@ module.exports =
     mapboxKey: "#{apiBaseConfig}/mapbox_key"
     cartodb: "#{apiBaseConfig}/cartodb"
     google: "#{apiBaseConfig}/google"
+    stripe: "#{apiBaseConfig}/stripe"
     asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
   properties:
     filterSummary: "#{apiBase}/properties/filter_summary/"
