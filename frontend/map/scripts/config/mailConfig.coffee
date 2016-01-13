@@ -30,8 +30,6 @@ app.config ($provide) ->
 
             $log.debug "\n\n### sel:"
             $log.debug sel
-            $log.debug "### sel (taSelection):"
-            $log.debug sel2
             $log.debug "### r:"
             $log.debug r
 
@@ -65,9 +63,9 @@ app.config ($provide) ->
 
             # doesn't seem to really do anything, but might be needed to get above to work
             $timeout () =>
-              @$editor().updateSelectedStyles(sel) # best (but failing) attempt to update toolbar buttons to correct active state
-              @$apply()
-              @$editor().$apply()
+              this.$editor().updateSelectedStyles(sel) # best (but failing) attempt to update toolbar buttons to correct active state
+              this.$apply()
+              this.$editor().$apply()
 
 
           activeState: (el) ->
