@@ -3,7 +3,7 @@ require '../../globals'
 Promise = require 'bluebird'
 require 'should'
 basePath = require '../basePath'
-logger = require "#{basePath}/config/logger"
+logger = require("#{basePath}/config/logger").spawn('test:route.crud.projectSession.spec.coffee')
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"
 ServiceCrud = CrudServiceHelpers.Crud
@@ -21,9 +21,8 @@ usrTableNames = tableNames.user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
 colorWrap = require 'color-wrap'
-colorWrap(console)
+colorWrap(logger)
 
-logger.debug "\n\n##### route.crud.projectSession.spec evaluated"
 
 ServiceCrudProject = require "#{basePath}/services/service.user.project"
 
@@ -146,7 +145,7 @@ describe 'route.projectSession', ->
       .then (projects) =>
         @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
-        console.log @subject.svc.getAllStub.args[0], true
+        logger.debug.green @subject.svc.getAllStub.args[0], true
         @subject.svc.getAllStub.args[0][0].should.be.eql
           id:1
           auth_user_id: 2
@@ -166,7 +165,7 @@ describe 'route.projectSession', ->
         obj.parent_auth_user_id = @mockRequest.user.id
         obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
         @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
-        console.log @subject.clientsCrud.svc.getAllStub.sqls[0]
+        logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
         @subject.clientsCrud.svc.getAllStub.sqls[0].should.be.equal """
         select "user_profile"."id" as "id", "user_profile"."auth_user_id" as "auth_user_id",
          "user_profile"."parent_auth_user_id" as "parent_auth_user_id", "user_profile"."project_id" as "project_id",

@@ -6,16 +6,9 @@ backendRoutes = require '../../common/config/routes.backend.coffee'
 
 beforeEach ->
   window.isTest = true
-  # this.amIGlobal = true
-  # window.amIGlobal = true
-
-  # inject (_nemSimpleLoggerProvider_) =>
-  #   @nemSimpleLogger = _nemSimpleLoggerProvider_
 
   angular.module('rmapsCommon')
   .config (nemDebugProvider) ->
-    console.log "\n\ninjected nemSimpleLogger:"
-    console.log @nemSimpleLogger
     debug = nemDebugProvider.debug
     debug.enable(config.LOGGING.ENABLE)
 
@@ -66,16 +59,10 @@ beforeEach ->
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
 
-
   angular.module('rmapsMapApp')
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
 
-  # this.amIGlobal = true
-  # window.amIGlobal = true
   angular.module('rmapsAdminApp')
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
-
-afterEach ->
-  #window.moduleName = null

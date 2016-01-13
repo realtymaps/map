@@ -1,8 +1,12 @@
+_ = require 'lodash'
 config = require './config'
+colorWrap = require 'color-wrap'
 baselogger = require './baselogger'
 debug = require 'debug'
+debug.enable(config.LOGGING.ENABLE)
 
-_utils = ['infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
+
+_utils = ['functions', 'infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
 _levelFns = ['debug', 'info', 'warn', 'error', 'log']
 LEVELS = {}
 for val, key in _levelFns
@@ -47,14 +51,16 @@ class Logger
 
     for util in _utils
       do (util) =>
-        @[util] = @baseLogObject[util]
-
+        if @baseLogObject.hasOwnProperty(util)
+          if _.isFunction(@baseLogObject[util])
+            @[util] = @baseLogObject[util].bind(@baseLogObject)
+          else
+            @[util] = @baseLogObject[util]
 
     @LEVELS = LEVELS
     @currentLevel = LEVELS.error
 
   spawn: (newInternalLoggerOrNS) =>
-    #console.log "\n\n#### spawning logger #{newInternalLoggerOrNS}"
     if typeof newInternalLoggerOrNS is 'string'
       throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
       unless debug

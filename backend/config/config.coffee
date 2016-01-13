@@ -15,7 +15,9 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    ENABLE: process.env.LOG_ENABLE ? '-stylus:*,-frontend:*,-backend:*,-test:*'
+    # ENABLE: process.env.LOG_ENABLE ? '-*,-stylus:*,-frontend:*,-backend:*,-test:*'  # not suitable because the * takes precedent
+    # ENABLE: process.env.LOG_ENABLE ? '-(?!(backend:|frontend:))*'  # doesn't work b/c i dont know, `debug` uses js Regexp
+    ENABLE: process.env.LOG_ENABLE ? '-*'
 
   DBS:
     MAIN:

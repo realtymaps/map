@@ -19,7 +19,7 @@ app.run ($rootScope) ->
   ]
   return
 
-module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider, nemSimpleLogger) ->
+module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
   buildState = (name, overrides = {}) ->
     state =
       name:         name
