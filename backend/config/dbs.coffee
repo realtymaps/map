@@ -3,7 +3,6 @@ pg = require 'pg'
 Promise = require 'bluebird'
 config = require './config'
 logger = require './logger'
-{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 do require '../../common/config/dbChecker.coffee'
 _ = require 'lodash'
 
@@ -71,11 +70,14 @@ getPlainClient = (dbName, handler) ->
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
 
-transaction = (dbName, queryCb) ->
+transaction = (dbName, queryCb, postCatchCb) ->
   getKnex(dbName).transaction (trx) ->
     queryCb(trx)
     .then trx.commit
-    .catch trx.rollback
+    .catch () ->
+      trx.rollback()
+      logger.debug 'transaction reverted'
+      postCatchCb() if postCatchCb?
 
 
 module.exports =

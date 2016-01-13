@@ -4,6 +4,7 @@ backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
 logger = require '../../../config/logger'
 {EMAIL_PLATFORM} = require '../../../config/config'
+{SignUpError} = require '../../../utils/errors/util.errors.vero'
 
 emailRoutes = backendRoutes.email
 
@@ -13,9 +14,6 @@ VeroEvents = (vero) ->
 
   # Returns the vero-promise response as Promise([user, event]).
   signUp = (opts, attempt = 0) ->
-    if attempt >= EMAIL_PLATFORM.MAX_RETRIES
-      logger.error "MAX_RETRIES reached for signUp for new user"
-      return
     onMissingArgsFail
       authUser: {val:opts.authUser, required: true}
 
@@ -31,8 +29,12 @@ VeroEvents = (vero) ->
       logger.error "signUp error!"
       logger.error err
 
+      if attempt >= EMAIL_PLATFORM.MAX_RETRIES - 1
+        logger.error "MAX_RETRIES reached for signUp for new user"
+        throw new SignUpError(opts)
+
       setTimeout ->
-        signUp opts, attempt++
+        signUp opts, attempt++, err
       , EMAIL_PLATFORM.RETRY_DELAY_MILLI
 
   _cancelPlan = (opts) ->

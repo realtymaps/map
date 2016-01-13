@@ -1,4 +1,5 @@
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
+{CustomerCreateFailed} = require '../../../utils/errors/util.errors.stripe'
 tables = require '../../../config/tables'
 logger = require '../../../config/logger'
 _ = require 'lodash'
@@ -46,6 +47,7 @@ StripeCustomers = (stripe) ->
         customer: customer
       .catch (error) ->
         handleStripeDisaster error, customer
+        throw new CustomerCreateFailed(error) #rethrow so any db stuff is also reverted
 
   get = (authUser) ->
     stripe.customers.retrieve authUser.stripe_customer_id

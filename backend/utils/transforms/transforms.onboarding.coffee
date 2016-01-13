@@ -3,7 +3,7 @@
 emailTransforms = require('./transforms.email')
 
 module.exports =
-  verify:
+  createUser:
     params: validators.object isEmptyProtect: true
     query: validators.object isEmptyProtect: true
     body: validators.object subValidateSeparate: requireAllTransforms
@@ -21,6 +21,9 @@ module.exports =
       fips_code: validators.string(minLength: 5)
       first_name: validators.string(minLength: 2)
       last_name: validators.string(minLength: 2)
+
+      plan: validators.object subValidateSeparate: requireAllTransforms
+        name: validators.string(minLength: 3)
       ###
         card: Object
           id: "tok_17QgRs2eZvKYlo2CEpUvnwk3" ALIAS token

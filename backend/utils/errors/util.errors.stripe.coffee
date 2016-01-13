@@ -7,4 +7,5 @@ module.exports = generators.named [
   'StripeAPI'
   'StripeConnection'
   'StripeAuthentication'
+  'CustomerCreateFailed'
 ]

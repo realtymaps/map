@@ -14,15 +14,24 @@ tables = require '../config/tables'
 _ = require 'lodash'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {transaction} = require '../config/dbs'
+{SignUpError} = require '../utils/errors/util.errors.vero'
 
 handles = wrapHandleRoutes
   createUser: (req) ->
-    validateAndTransformRequest req, onboardingTransforms.verify
+    req = _.pick req, ['body', 'params', 'query']
+    logger.debug req, true
+    validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
       logger.debug.cyan validReq, true
       transaction 'main', (trx) ->
-        tables.auth.user(trx).returning("id").insert _.pick validReq.body, basicColumns.user
-        .then (id) ->
+        entity = _.pick validReq.body, basicColumns.user
+        logger.debug "will insert user entity of:"
+        logger.debug entity, true
+        q = tables.auth.user(trx).returning("id").insert entity
+        logger.debug "inserting new user"
+        logger.debug q.toString()
+        q.then (id) ->
+          logger.debug "new user inserted SUCCESS"
           tables.auth.user(trx).select(basicColumns.user...).where id: id
         .then expectSingleRow
         .then (authUser) ->
@@ -31,9 +40,14 @@ handles = wrapHandleRoutes
             authUser: authUser
             plan: validReq.body.plan.name
             safeCard: validReq.body.card
-        .then ({authUser}) ->
+        .then (payload) ->
           emailServices.events.signUp
-            authUser: authUser
+            authUser: payload.authUser
+          .catch SignUpError, (error) ->
+            logger.info "SignUp Failed, reverting Payment Customer"
+            paymentServices.customers.remove payload
+            throw error #rethrow error so transaction is reverted
+
 
 module.exports = mergeHandles handles,
   createUser: method: "post"
