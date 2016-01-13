@@ -35,8 +35,10 @@ module.exports =
           funding: "credit"
           last4: "4242"
       ###
-      card: validators.object subValidateSeparate: requireAllTransforms
+      token: validators.object subValidateSeparate: requireAllTransforms
         id: validators.string(minLength: 28)
+        card: validators.object subValidateSeparate: requireAllTransforms
+          id: validators.string(minLength: 28)
         # brand: validators.string(minLength: 2)
         # country: validators.string(minLength: 2)
         # cvc_check: validators.string(minLength: 2)

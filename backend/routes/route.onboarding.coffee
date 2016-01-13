@@ -44,7 +44,7 @@ handles = wrapHandleRoutes
             trx: trx
             authUser: authUser
             plan: validReq.body.plan.name
-            safeCard: validReq.body.card
+            token: validReq.body.token
         .then (payload) ->
           {authUser} = payload
           logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"

@@ -28,9 +28,9 @@ StripeCustomers = (stripe) ->
       trx: {val:opts.trx, required: true}
       authUser: {val:opts.authUser, required: true}
       plan: {val:opts.plan, required: true}
-      safeCard: {val:opts.plan, required: true} #client side card info we can save to user_credit_cards
+      token: {val:opts.token, required: true} #client side card info we can save to user_credit_cards
 
-    token = opts.safeCard.id
+    token = opts.token.id
     {authUser, plan, trx} = opts
 
     stripe.customers.create

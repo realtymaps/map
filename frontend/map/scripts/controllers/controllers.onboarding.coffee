@@ -102,11 +102,9 @@ app.controller 'rmapsOnboardingPaymentCtrl',
     delete $scope.user.card.token
     $scope.user.card
 
-  _cleanPayment = (response) ->
-    payment = angular.copy($scope.user.card)
-    payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    _.extend payment, _.pick response.card, _safePaymentFields
-    payment
+  _cleanToken = (token) ->
+    token.card = _.omit token.card, ["number", "cvc", "exp_month", "exp_year", "amount"]
+    token
 
   behaveLikeAngularValidation = (formField, rootForm) ->
     fieldIsRequired = formField.$touched && formField.$invalid && !formField.$viewValue
@@ -117,9 +115,9 @@ app.controller 'rmapsOnboardingPaymentCtrl',
   _.merge $scope,
     charge: ->
       stripe.card.createToken(_cleanReSubmit())
-      .then (response) ->
-        $log.log 'token created for card ending in ', response.card.last4
-        _.extend $scope.user, card: _cleanPayment(response)
+      .then (token) ->
+        $log.log 'token created for card ending in ', token.card.last4
+        _.extend $scope.user, token: _cleanToken(token)
         $scope.user.card
       .then (safePayment) ->
         $log.debug 'successfully submitted payment to stripe not charged yet'
