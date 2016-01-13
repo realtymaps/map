@@ -58,20 +58,24 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   count = 0
   outputStream = through2.obj()
   splitStream = split()
+  done = false
   finish = (err) ->
+    if done
+      return
+    done = true
     if err
       outputStream.write(type: 'error', payload: err)
     else
       outputStream.write(type: 'done', payload: count)
     outputStream.end()
-    splitStream.removeAllListeners()
+    #splitStream.removeAllListeners()
   inputStream.on('error', finish)
   splitStream.on('error', finish)
   splitStream.on('end', finish)
   outputStream.write(type: 'delimiter', payload: delimiter)
 
   lineHandler = (line) ->
-    if !line
+    if done || !line
       # hide empty lines
       return
     count++

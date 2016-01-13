@@ -419,6 +419,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
           finish(err, reject, callback)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
+      logger.error("problem streaming to #{tableName}: #{err}")
       promiseQuery('ROLLBACK TRANSACTION')
       .then () ->
         tables.jobQueue.dataLoadHistory()
