@@ -4,7 +4,7 @@ _ = require 'lodash'
 createModalDirective = ($parse, $templateCache, $modal, $log, OpenAsModalWindowContext, options) ->
   restrict: 'A'
   link: (scope, element, attrs) ->
-    $log = $log.spawn 'map:openAsModal'
+#    $log = $log.spawn 'map:openAsModal'
 
     # Open a modal window when the element is clicked
     openModal = () ->
