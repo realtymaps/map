@@ -90,8 +90,10 @@ loadRawData = (subtask, options) ->
 
   dataStreamPromise
   .then (localFilePath) ->
-    logger.info("Finished extracting file: /tmp/#{fileBaseName}")
+    logger.info("Finished extracting file: /tmp/#{fileBaseName}.#{filetype} to #{localFilePath}")
     fs.createReadStream(localFilePath)
+  .catch (err) ->
+    throw new SoftFail(err.toString())
   .then (rawDataStream) ->
     dataLoadHistory =
       data_source_id: options.dataSourceId

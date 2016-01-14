@@ -1,19 +1,23 @@
 Promise = require 'bluebird'
+randomstring = require 'randomstring'
 userServices = require '../services/services.user'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 keystore = require "../services/service.keystore"
-{MissingVarError, UpdateFailedError} = require '../utils/errors/util.error.crud'
+{MissingVarError, UpdateFailedError} = require '../utils/errors/util.errors.crud'
 moment = require 'moment'
 userService = userServices.user
 emailThreshMilliSeconds = null
 
+makeEmailHash = () ->
+  randomstring.generate()
+
 keystore.getValue('email_minutes', namespace: 'time_limits').then (val) ->
   emailThreshMilliSeconds = moment.duration(minutes:val).asMilliseconds()
 
-isValidWithinTime = (timestamp) ->
+_isValidWithinTime = (timestamp) ->
   !(Date.now() - timestamp >= emailThreshMilliSeconds)
 
-getUserByHash = (hash) ->
+_getUserByHash = (hash) ->
   userServices.dbFn().where(email_validation_hash: hash)
   .then expectSingleRow
 
@@ -21,10 +25,10 @@ validateHash = (hash) -> Promise.try () ->
   unless emailThreshMilliSeconds
     throw new MissingVarError("emailThreshMilliSeconds is not defined")
 
-  getUserByHash(hash)
+  _getUserByHash(hash)
   .then (user) ->
     return true if user.email_is_valid
-    return false unless isValidWithinTime(user.email_validation_hash_created_time)
+    return false unless _isValidWithinTime(user.email_validation_hash_created_time)
     user.email_is_valid = true
     user.email_validation_attempt += 1
     userService.dbFn()
@@ -36,5 +40,18 @@ validateHash = (hash) -> Promise.try () ->
         throw new UpdateFailedError("failed updating email_is_valid")
       true
 
+cancelHash =
+  create: (authUser) ->
+    userService.dbFn()
+    .where id: authUser.id
+    .update cancel_email_hash: makeEmailHash()
 
-module.exports = validateHash
+  getUser: (authUser) ->
+    userService.dbFn()
+    .where id: authUser.id, cancel_email_hash: authUser.cancel_email_hash
+
+module.exports =
+  makeEmailHash: makeEmailHash
+  cancelHash: cancelHash
+  validateHash: validateHash
+  emailPlatform: require('./email/vero')

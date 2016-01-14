@@ -1,0 +1,24 @@
+.recipient-info
+  .inner
+    .container
+      h1.pageTitle Recipients
+      form
+        .send-to
+          label
+            input(type="radio" name="sendTo")
+            i.fa.fa-check
+            span
+              div Send to property addresses
+              .total {{property.length}} total
+          label
+            input(type="radio" name="sendTo")
+            i.fa.fa-check
+            span
+              div Send to owner addresses
+              .total {{owner.length}} total
+          label
+            input(type="radio" name="sendTo")
+            i.fa.fa-check
+            span
+              div Send to both addresses
+              .total {{propertyAndOwner.length}} total

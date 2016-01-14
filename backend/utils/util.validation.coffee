@@ -57,12 +57,13 @@ falsyDefaultTransformsToNoop = (transforms) ->
 
 requireAllTransforms = (definitions) ->
   for key, tran of definitions
-    if _.isFunction tran or _.isArray tran
+    if _.isFunction tran #TODO handle arrays
       definitions[key] =
         transform: tran
         required: true
       continue
     tran.required = true
+  definitions
 
 
 module.exports =

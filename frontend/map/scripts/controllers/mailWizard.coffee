@@ -6,7 +6,10 @@ module.exports = app
 app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsprincipal, rmapsMailTemplate) ->
   $scope.step = $state.current.name
 
+  $scope.property_ids = $state.params.property_ids
+
   $scope.steps = [
+    'recipientInfo'
     'senderInfo'
     'selectTemplate'
     'editTemplate'
