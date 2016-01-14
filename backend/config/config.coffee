@@ -15,8 +15,9 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    # ENABLE: process.env.LOG_ENABLE ? '-(?!(backend:|frontend:))*'  #  `debug` uses js Regexp, so unsure why this no work
-    ENABLE: process.env.LOG_ENABLE ? ''  #  'frontend:*,backend:*,test:*'
+    # for the debug namespace definition LOG_ENABLE, do not use the `-` identifier that is documented in the `debug` library!
+    # That functionality is botched because of a low level dependency in `enabled` library.
+    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
 
   DBS:
     MAIN:
