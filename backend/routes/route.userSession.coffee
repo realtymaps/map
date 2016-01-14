@@ -24,6 +24,7 @@ emailTransforms = require('../utils/transforms/transforms.email')
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
+
 safeUserFields = [
   'cell_phone'
   'email'

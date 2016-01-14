@@ -49,13 +49,21 @@ class Logger
             @baseLogObject[level](msg)
         @[level] = logFns[level]
 
+    # delegation of both member funcs and member structs from this class to the baseLogObject
     for util in _utils
       do (util) =>
-        if @baseLogObject.hasOwnProperty(util)
-          if _.isFunction(@baseLogObject[util])
-            @[util] = @baseLogObject[util].bind(@baseLogObject)
-          else
-            @[util] = @baseLogObject[util]
+        if _.isFunction(@baseLogObject[util])
+          @[util] = (args...) ->
+            return @baseLogObject[util](args...)
+        else
+          Object.defineProperty @, util,
+            get: () =>
+              return @baseLogObject[util]
+            set: (value) =>
+              @baseLogObject[util] = value
+            enumerable: false,
+            # writable: true
+            # value: 'static'
 
     @LEVELS = LEVELS
     @currentLevel = LEVELS.error
