@@ -8,7 +8,7 @@
           .tools
             input.search-box(type="search" ng-model="searchName" placeholder="Search mailings")
             span.divider
-            button(class="btn btn-primary" ng-click="$state.go('editTemplate')") Create
+            button(ng-controller="rmapsMapMailCtrl" class="btn btn-primary" ng-click="addMail()") Create
       .row
         .col-md-12
           table(class="table table-hover")
@@ -31,9 +31,9 @@
                 td
                   h4 {{campaign.campaign_name}}
                 td
-                  h4 {{campaign.project_name}}
+                  h4 {{campaign.project_name || 'sandbox'}}
                 td
-                  span {{campaign.count}}
+                  span {{campaign.recipients.length}}
                 td
                   span {{campaign.template_type}}
                 td

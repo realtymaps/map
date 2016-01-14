@@ -24,3 +24,6 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $state, $log, rmap
       $scope.propertyAndOwner = _.values _.defaults $scope.property, $scope.owner
       $scope.property = _.values $scope.property
       $scope.owner = _.values $scope.owner
+
+  $scope.changeRecipients = () ->
+    $scope.mailCampaign.recipients = $scope[$scope.recipientType]

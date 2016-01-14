@@ -5,19 +5,19 @@
       form
         .send-to
           label
-            input(type="radio" name="sendTo")
+            input(type="radio" name="sendTo" ng-model="mailCampaign.recipientType" value="property" ng-change="changeRecipients()")
             i.fa.fa-check
             span
               div Send to property addresses
               .total {{property.length}} total
           label
-            input(type="radio" name="sendTo")
+            input(type="radio" name="sendTo" ng-model="mailCampaign.recipientType" value="owner" ng-change="changeRecipients()")
             i.fa.fa-check
             span
               div Send to owner addresses
               .total {{owner.length}} total
           label
-            input(type="radio" name="sendTo")
+            input(type="radio" name="sendTo" ng-model="mailCampaign.recipientType" value="propertyAndOwner" ng-change="changeRecipients()")
             i.fa.fa-check
             span
               div Send to both addresses

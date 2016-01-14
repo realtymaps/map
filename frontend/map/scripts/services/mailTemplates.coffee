@@ -4,6 +4,7 @@ app = require '../app.coffee'
 app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
 rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
+  $log = $log.spawn 'map:mailTemplate'
   # is exposed for binding
   senderData = {}
   mailCampaign =
@@ -15,17 +16,8 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     lob_content: null
     project_id: 1
     sender_info: null
-
-  # private structures
-  _user =
-    userID: null
-
-  _templateType = ""
-
-  _recipientData =
-    property:
-      rm_property_id = ''
-    recipient:
+    recipients: [
+      rm_property_id: '00000_00000000000_000'
       name: 'Dan Sexton'
       address_line1: 'Paradise Realty of Naples'
       address_line2: '201 Goodlette Rd S'
@@ -34,6 +26,13 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
       address_zip: '34102'
       phone: '(239) 877-7853'
       email: 'dan@mangrovebaynaples.com'
+    ]
+
+  # private structures
+  _user =
+    userID: null
+
+  _templateType = ""
 
   _getContent = () ->
     if !mailCampaign.content?
@@ -133,14 +132,22 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     promise
     .then (sender) ->
       mailCampaign.sender_info = _getLobSenderData(sender)
-      # if !mailCampaign.id?
-      #   delete mailCampaign.id
-      #   op = rmapsMailCampaignService.create(mailCampaign)
-      # else
-      #   op = rmapsMailCampaignService.update(mailCampaign)
-      op = rmapsMailCampaignService.create(mailCampaign)
-      op # put? upsert?
-      .then () ->
+      mailCampaign.recipients = JSON.stringify mailCampaign.recipients
+      if not mailCampaign.id?
+        delete mailCampaign.id
+        profile = rmapsprincipal.getCurrentProfile()
+        mailCampaign.project_id = profile.project_id
+
+        op = rmapsMailCampaignService.create(mailCampaign)
+        .then (response) ->
+          $log.debug response
+          mailCampaign.id = response[0]
+      else
+        op = rmapsMailCampaignService.update(mailCampaign)
+        .then (reponse) ->
+          $log.debug response
+
+      op.then () ->
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
 
   quote: () ->
@@ -148,7 +155,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
       $rootScope.lobData =
         content: _createLobHtml()
         macros: {'name': 'Justin'}
-        recipient: _recipientData.recipient
+        recipient: mailCampaign.recipients[0]
         sender: lobSenderData
       $rootScope.modalControl = {}
       $modal.open
