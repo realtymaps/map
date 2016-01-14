@@ -8,6 +8,9 @@ moment = require 'moment'
 userService = userServices.user
 emailThreshMilliSeconds = null
 
+makeEmailHash = () ->
+  randomstring.generate()
+
 keystore.getValue('email_minutes', namespace: 'time_limits').then (val) ->
   emailThreshMilliSeconds = moment.duration(minutes:val).asMilliseconds()
 
@@ -37,17 +40,18 @@ validateHash = (hash) -> Promise.try () ->
         throw new UpdateFailedError("failed updating email_is_valid")
       true
 
-cancelHash = do ->
+cancelHash =
   create: (authUser) ->
     userService.dbFn()
     .where id: authUser.id
-    .update cancel_email_hash: randomstring.generate()
+    .update cancel_email_hash: makeEmailHash()
 
   getUser: (authUser) ->
     userService.dbFn()
     .where id: authUser.id, cancel_email_hash: authUser.cancel_email_hash
 
 module.exports =
+  makeEmailHash: makeEmailHash
   cancelHash: cancelHash
   validateHash: validateHash
   emailPlatform: require('./email/vero')

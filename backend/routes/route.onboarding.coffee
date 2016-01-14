@@ -9,7 +9,8 @@ logger = require '../config/logger'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 emailServices = null
 paymentServices = null
-require('../services/services.email').emailPlatform.then (svc) ->
+{makeEmailHash, emailPlatform} = require('../services/services.email')
+emailPlatform.then (svc) ->
   emailServices = svc
 require('../services/services.payment').then (svc) ->
   paymentServices = svc
@@ -19,6 +20,7 @@ _ = require 'lodash'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {transaction} = require '../config/dbs'
 {SignUpError} = require '../utils/errors/util.errors.vero'
+encryptor =  require '../config/encryptor'
 
 handles = wrapHandleRoutes
   createUser: (req) ->
@@ -27,9 +29,13 @@ handles = wrapHandleRoutes
     # logger.debug req, true
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
+
       # logger.debug.cyan validReq, true
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
+        entity.email_validation_hash = makeEmailHash()
+        entity.password = encryptor.encrypt entity.password
+
         logger.debug "will insert user entity of:"
         logger.debug entity, true
         logger.debug "inserting new user"
@@ -45,14 +51,14 @@ handles = wrapHandleRoutes
             authUser: authUser
             plan: validReq.body.plan.name
             token: validReq.body.token
-        .then (payload) ->
-          {authUser} = payload
+        .then ({authUser, customer}) ->
           logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
           emailServices.events.signUp
-            authUser: payload.authUser
-          .catch SignUpError, (error) ->
+            authUser: authUser
+            plan: validReq.body.plan.name
+          .catch (error) ->
             logger.info "SignUp Failed, reverting Payment Customer"
-            paymentServices.customers.remove payload
+            paymentServices.customers.remove customer
             throw error #rethrow error so transaction is reverted
 
 

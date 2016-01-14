@@ -8,9 +8,17 @@ StripeCustomers = (stripe) ->
 
   remove = (customer) ->
     onMissingArgsFail
-      id: {val:customer.trx, required: true}
+      id: {val:customer.id, required: true}
 
     stripe.customers.del customer.id
+    .then () ->
+      logger.info "Success: removal of customer #{customer.id}"
+    .catch (error) ->
+      logger.info "ERROR: removal of customer #{customer.id}"
+      logger.error error
+      #TODO: removal failed so add it to clean up JOB TASK
+      throw error
+
 
   handleStripeDisaster = (originalError, customer) ->
     logger.error 'Some Error workflow error has ocurred with stripe. Therefore a customer must be backed out.'
