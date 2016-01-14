@@ -27,17 +27,18 @@
                       ta-html-editor-setup="htmlEditorSetup()"
                       ta-text-editor-setup="textEditorSetup()"
                       ng-model="data.htmlcontent"
-                      ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
+                      ta-target-toolbars="fontSizeToolbar")
+                      //- ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
           div.col-md-6
             tabset(justified="true")
-              tab(heading="Text" active="true")
+              tab(heading="Text Options" active="true")
                 div.edit-template-design
-                  div.form-section
-                    h4
-                      | Font Family
-                    text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools"
-                      ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
+                  //- div.form-section
+                  //-   h4
+                  //-     | Font Family
+                  //-   text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools"
+                  //-     ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
 
                   div.form-section
                     h4
@@ -47,29 +48,36 @@
 
                   div.form-section
                     h4
-                      | Font Color
-                    text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" 
-                      ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
-
-                  div.form-section
-                    h4
-                      | Text Features
-                    text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group"
-                      ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
-
-              tab(heading="Macros")
-                div.edit-template-design
-                  div.form-section
-                    h4
-                      | Drag &amp; Drop Macro
+                      | Macros
                     div(ng-repeat="macro in macros" rmaps-draggable="macro")
                       label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
 
-              tab(heading="Images")
-                div.edit-template-design
-                  div.form-section
-                    h4
-                      | Insert Image
-                    div
-                      label Insert Image
+
+                  //- div.form-section
+                  //-   h4
+                  //-     | Font Color
+                  //-   text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" 
+                  //-     ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
+
+                  //- div.form-section
+                  //-   h4
+                  //-     | Text Features
+                  //-   text-angular-toolbar(name="featureToolbar" ta-toolbar-group-class="btn-group"
+                  //-     ta-toolbar="[['bold','italics','underline'],['ul','ol']]")
+
+              //- tab(heading="Macros")
+              //-   div.edit-template-design
+              //-     div.form-section
+              //-       h4
+              //-         | Drag &amp; Drop Macro
+              //-       div(ng-repeat="macro in macros" rmaps-draggable="macro")
+              //-         label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
+
+              //- tab(heading="Images")
+              //-   div.edit-template-design
+              //-     div.form-section
+              //-       h4
+              //-         | Insert Image
+              //-       div
+              //-         label Insert Image
 
