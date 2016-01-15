@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsprincipal) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsprincipal, rmapsMailTemplate) ->
 
   $scope.addMail = () ->
     profile = rmapsprincipal.getCurrentProfile()
@@ -19,7 +19,8 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsprincipal) ->
 
       $scope.modalOk = () ->
         modalInstance.dismiss('save')
-        $state.go 'recipientInfo', $scope.newMail
+        rmapsMailTemplate.create $scope.newMail
+        $state.go 'recipientInfo'
 
       $scope.cancelModal = () ->
         modalInstance.dismiss('cancel')

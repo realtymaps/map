@@ -23,7 +23,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
     thisStep = $scope.steps.indexOf $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return
-    $state.go($state.get(newStep), {}, { reload: true })
+    $state.go($state.get(newStep))
 
   $scope.nextStep = () ->
     _changeStep(1)

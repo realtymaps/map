@@ -7,32 +7,38 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   $log = $log.spawn 'map:mailTemplate'
   # is exposed for binding
   senderData = {}
-  mailCampaign =
-    auth_user_id: null
-    name: 'New Mailing'
-    count: 0
-    status: 'pending'
-    content: null
-    lob_content: null
-    project_id: 1
-    sender_info: null
-    recipients: [
-      rm_property_id: '00000_00000000000_000'
-      name: 'Dan Sexton'
-      address_line1: 'Paradise Realty of Naples'
-      address_line2: '201 Goodlette Rd S'
-      address_city: 'Naples'
-      address_state: 'FL'
-      address_zip: '34102'
-      phone: '(239) 877-7853'
-      email: 'dan@mangrovebaynaples.com'
-    ]
+  mailCampaign = {}
+
+  create = (newMail = {}) ->
+    defaults =
+      auth_user_id: null
+      name: 'New Mailing'
+      count: 0
+      status: 'pending'
+      content: null
+      lob_content: null
+      project_id: 1
+      sender_info: null
+      template_type: ""
+      recipients: [
+        rm_property_id: '00000_00000000000_000'
+        name: 'Dan Sexton'
+        address_line1: 'Paradise Realty of Naples'
+        address_line2: '201 Goodlette Rd S'
+        address_city: 'Naples'
+        address_state: 'FL'
+        address_zip: '34102'
+        phone: '(239) 877-7853'
+        email: 'dan@mangrovebaynaples.com'
+      ]
+
+    _.defaults newMail, defaults
+
+  create()
 
   # private structures
   _user =
     userID: null
-
-  _templateType = ""
 
   _getContent = () ->
     if !mailCampaign.content?
@@ -98,17 +104,13 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
 
   _setTemplateType = (type) ->
-    _templateType = type
-    mailCampaign.content = rmapsMailTemplateTypeService.getHtml(_templateType)
-
-
-
+    mailCampaign.template_type = type
+    mailCampaign.content = rmapsMailTemplateTypeService.getHtml(type)
 
 ##### PUBLIC
   senderData: senderData
   mailCampaign: mailCampaign
 
-  templateType: _templateType
   createPreviewHtml: _createPreviewHtml
   createLobHtml: _createLobHtml
 
@@ -137,8 +139,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     promise
     .then (sender) ->
       mailCampaign.sender_info = _getLobSenderData(sender)
-      mailCampaign.recipients = JSON.stringify mailCampaign.recipients
-      console.log JSON.stringify mailCampaign
       if not mailCampaign.id?
         delete mailCampaign.id
         profile = rmapsprincipal.getCurrentProfile()
@@ -146,7 +146,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
         op = rmapsMailCampaignService.create(mailCampaign)
         .then ({data}) ->
-          $log.debug data
           mailCampaign.id = data[0]
           $log.debug "campaign #{mailCampaign.id} created"
           $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
