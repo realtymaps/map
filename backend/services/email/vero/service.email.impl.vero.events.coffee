@@ -10,8 +10,10 @@ logger = require '../../../config/logger'
 emailRoutes = backendRoutes.email
 
 # makeVeroEvent = (stripeEvent) ->
-#   stripeEvent.toInitCaps()
-#   .replace(/\./g, ' ').replace(/_/g, ' ')
+#   stripeEvent
+#   #.toInitCaps()
+#   .replace(/\./g, '_')
+#   #.replace(/_/g, ' ')
 
 trialEndingEvent = 'customer.subscription.trial_will_end'
 customerCreatedEvent = 'customer.subscription.created'
