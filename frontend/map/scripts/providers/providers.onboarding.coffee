@@ -6,7 +6,8 @@ app.provider 'rmapsOnboardingOrder', () ->
     constructor: (@steps = [
       'onboardingPayment'
       'onboardingLocation'
-    ], @name = '') ->
+      'onboardingFinishYay'
+    ], @name = '', @submitStepName = 'onboardingLocation') ->
       @clazz = OnBoardingOrder
 
     inBounds: (id) ->
@@ -43,7 +44,8 @@ app.provider 'rmapsOnboardingProOrder', (rmapsOnboardingOrderProvider) ->
   new rmapsOnboardingOrderProvider.clazz [
     'onboardingPayment'
     'onboardingVerify'
-  ], 'pro'
+    'onboardingFinishYay'
+  ], 'pro', 'onboardingVerify'
 
 app.provider 'rmapsOnboardingOrderSelector', (rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
   @getPlanFromState = ($state) ->
