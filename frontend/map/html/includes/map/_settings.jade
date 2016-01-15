@@ -87,16 +87,27 @@
   script(type="text/ng-template" id="SettingsModalMobile")
     .settings-modal-mobile(ng-controller="rmapsFiltersMobileCtrl")
       .list
-        .item
+        .item.settings-row
           .settings-header Price
-          .settings-value ${{translateStep(priceSlider.min)}} - ${{translateStep(priceSlider.max)}}
+          .settings-value ${{translatePrice(priceSlider.min)}} - ${{translatePrice(priceSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="priceSlider.min" rz-slider-high="priceSlider.max" rz-slider-options="priceSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-        .item
-          .settings-header Price
-          .settings-value ${{humanizeStep(priceSliderTemp.min)}} - ${{humanizeStep(priceSliderTemp.max)}}
+
+        .item.settings-row
+          .settings-header Sq Ft
+          .settings-value {{translateSize(sizeSlider.min)}} - {{translateSize(sizeSlider.max)}}
           .settings-slider
-            rzslider(rz-slider-model="priceSliderTemp.min" rz-slider-high="priceSliderTemp.max" rz-slider-options="priceSliderTemp.options" rz-slider-tpl-url="SettingsSliderTemplate")
+            rzslider(rz-slider-model="sizeSlider.min" rz-slider-high="sizeSlider.max" rz-slider-options="sizeSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+        .item.settings-row
+          .settings-left
+            button.settings-button
+              i.icon-minus
+          .settings-right
+            button.settings-button
+              i.icon-plus
+          .settings-center
+            .settings-label 5 Days on Market
 
   script(type="text/ng-template" id="SettingsSliderTemplate")
     include _settingsSliderTemplate.html

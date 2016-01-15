@@ -1,8 +1,10 @@
+@import "../../../common.styl"
+
 .settings-modal-mobile
 
-  .item
-    padding-left: 40px;
-    padding-right: 40px;
+  .item.settings-row
+    $fnClearfix()
+    padding: 16px 37px;
 
   .settings-header
     font-size: 16px;
@@ -16,8 +18,32 @@
     text-align: center;
 
   .settings-label
-    font-size: 25px;
+    text-align: center;
+    font-size: 18px;
     color: $rm-mobile-settings-label-color;
+
+  .settings-left
+    float: left;
+
+  .settings-center
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    left: 0;
+    width: 100%;
+
+  .settings-right
+    float: right;
+    text-align: right;
+
+  .settings-button
+    width: 32px;
+    height: 32px;
+    background-color: white;
+    color: $rm-mobile-settings-control-color;
+    border: solid 1px $rm-mobile-settings-control-color;
+    border-radius: 2px;
+    -moz-border-radius: 2px;
 
   .settings-slider
     rzslider
