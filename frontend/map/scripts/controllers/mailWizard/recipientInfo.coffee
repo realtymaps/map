@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $state, $log, rmapsPropertiesService) ->
+app.controller 'rmapsRecipientInfoCtrl', ($scope, $log, rmapsPropertiesService) ->
   $log = $log.spawn 'mail:recipient'
 
   $scope.property = []

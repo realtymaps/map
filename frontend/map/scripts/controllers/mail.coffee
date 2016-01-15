@@ -14,7 +14,7 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsprincipa
     rmapsprincipal.getIdentity()
     .then (identity) ->
       $log.debug 'getting campaign list'
-      rmapsMailCampaignService.getList auth_user_id: identity.id
+      rmapsMailCampaignService.get auth_user_id: identity.id
       .then (list) ->
         $scope.mailCampaigns = list
 

@@ -122,6 +122,11 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     preview = $window.open "", "_blank"
     preview.document.write _createPreviewHtml()
 
+  load: (campaignId) ->
+    rmapsMailCampaignService.get id: campaignId
+    .then (campaigns) ->
+      mailCampaign = campaigns[0] if campaigns.length
+
   save: () ->
     promise = null
     if !_senderIsSet() # sender must be set at least with defaults in order to save campaign
@@ -133,22 +138,22 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     .then (sender) ->
       mailCampaign.sender_info = _getLobSenderData(sender)
       mailCampaign.recipients = JSON.stringify mailCampaign.recipients
+      console.log JSON.stringify mailCampaign
       if not mailCampaign.id?
         delete mailCampaign.id
         profile = rmapsprincipal.getCurrentProfile()
         mailCampaign.project_id = profile.project_id
 
         op = rmapsMailCampaignService.create(mailCampaign)
-        .then (response) ->
-          $log.debug response
-          mailCampaign.id = response[0]
+        .then ({data}) ->
+          $log.debug data
+          mailCampaign.id = data[0]
+          $log.debug "campaign #{mailCampaign.id} created"
+          $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
       else
         op = rmapsMailCampaignService.update(mailCampaign)
-        .then (reponse) ->
-          $log.debug response
-
-      op.then () ->
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+        .then ({data}) ->
+          $log.debug "campaign #{data.id} updated"
 
   quote: () ->
     _getLobSenderData().then (lobSenderData) ->
