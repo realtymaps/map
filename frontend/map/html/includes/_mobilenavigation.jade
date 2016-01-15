@@ -4,7 +4,7 @@ include mixins/_avatarMixin.jade
     .inner
         #mobile-nav-header
             a.closeicon
-                i(class="fa fa-times fa-2x" ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
+                i.icon-close(ng-class="{'mobile-nav-open':isMobileNavOpen}" ng-click="closeMobileNav($event)")
 
             div(ng-click="closeMobileNav($event)")
                     include ./header/_logo

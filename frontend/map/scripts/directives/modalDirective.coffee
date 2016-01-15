@@ -4,7 +4,7 @@ _ = require 'lodash'
 app.directive 'openAsModal', ($parse, $templateCache, $modal, $log, OpenAsModalWindowContext) ->
   restrict: 'A'
   link: (scope, element, attrs) ->
-    $log = $log.spawn 'map:openAsModal'
+    $log = $log.spawn 'frontend:map:openAsModal'
     $log.debug "openAsModal - attr based"
 
     openModal = () ->

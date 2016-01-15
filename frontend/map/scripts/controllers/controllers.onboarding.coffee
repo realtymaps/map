@@ -2,9 +2,10 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnBoardingOrder, rmapsOnBoardingOrderSelector,
-rmapsPlansService) ->
-  $log = $log.spawn("frontend:map:rmapsOnBoardingCtrl")
+app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
+rmapsPlansService, rmapsOnboardingService) ->
+
+  $log = $log.spawn("frontend:map:rmapsOnboardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -13,8 +14,28 @@ rmapsPlansService) ->
 
   step = $state.current.name
 
-  _.merge $scope, user: $stateParams,
+  _.merge $scope, user: $stateParams or {},
     user: #constant model passed through all states
+      passwordChange: ->
+        if @password != @confirmPassword
+          @errorMsg = 'passwords do not match!'
+        else
+          delete @errorMsg
+      plan:
+        name: 'standard'
+
+        getSelected: (planStr) ->
+          if $scope.user.plan.name == planStr then 'selected' else 'select'
+
+        set: (newPlan) ->
+          $scope.user.plan.name = newPlan
+          if $scope.view?.plans?
+            $scope.user.plan.price = $scope.view.plans[newPlan]?.price
+            unless $scope.user.plan.price
+              $log.error 'invalid plan'
+
+          newPlan
+
       submit: () ->
         $scope.view.showSteps = true
         if $scope.view.hasNextStep
@@ -22,6 +43,7 @@ rmapsPlansService) ->
         $log.debug("begin submitting user to onboarding service")
         $log.debug($scope.user)
         $log.debug("end submitting user to onboarding service")
+        rmapsOnboardingService.user.create($scope.user)
 
     view:
       showSteps: $state.current.showSteps
@@ -43,23 +65,8 @@ rmapsPlansService) ->
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
         currentPlan = if $scope.orderSvc.name then $scope.orderSvc.name else 'standard'
-        $scope.plan.set(currentPlan)
+        $scope.user.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
-
-    plan:
-      name: 'standard'
-
-      getSelected: (planStr) ->
-        if $scope.plan.name == planStr then 'selected' else 'select'
-
-      set: (newPlan) ->
-        $scope.plan.name = newPlan
-        if $scope.view?.plans?
-          $scope.plan.price = $scope.view.plans[newPlan]?.price
-          unless $scope.plan.price
-            $log.error 'invalid plan'
-
-        newPlan
 
   $log.debug "current user data"
   $log.debug $scope.user
@@ -67,12 +74,12 @@ rmapsPlansService) ->
   rmapsOnboardingOrderSelector.initScope($state, $scope)
   $scope.view.updateState()
 
-app.controller 'rmapsOnBoardingPlanCtrl', ($scope, $state, $log) ->
-  $log = $log.spawn("frontend:map:rmapsOnBoardingPlanCtrl")
+app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
+  $log = $log.spawn("frontend:map:rmapsOnboardingPlanCtrl")
 
-app.controller 'rmapsOnBoardingPaymentCtrl',
-($scope, $state, $log, $document, rmapsStripeService, stripe, rmapsFaCreditCards) ->
-  $log = $log.spawn("frontend:map:rmapsOnBoardingPaymentCtrl")
+app.controller 'rmapsOnboardingPaymentCtrl',
+($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
+  $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
     "id"
@@ -95,12 +102,9 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
     delete $scope.user.card.token
     $scope.user.card
 
-  _cleanPayment = (response) ->
-    payment = angular.copy($scope.user.card)
-    payment = _.omit payment, ["number", "cvc", "exp_month", "exp_year", "amount"]
-    payment.token = response.id
-    _.extend payment, _.pick response, _safePaymentFields
-    payment
+  _cleanToken = (token) ->
+    token.card = _.omit token.card, ["number", "cvc", "exp_month", "exp_year", "amount"]
+    token
 
   behaveLikeAngularValidation = (formField, rootForm) ->
     fieldIsRequired = formField.$touched && formField.$invalid && !formField.$viewValue
@@ -111,9 +115,9 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
   _.merge $scope,
     charge: ->
       stripe.card.createToken(_cleanReSubmit())
-      .then (response) ->
-        $log.log 'token created for card ending in ', response.card.last4
-        _.extend $scope.user, card: _cleanPayment(response)
+      .then (token) ->
+        $log.log 'token created for card ending in ', token.card.last4
+        _.extend $scope.user, token: _cleanToken(token)
         $scope.user.card
       .then (safePayment) ->
         $log.debug 'successfully submitted payment to stripe not charged yet'
@@ -131,11 +135,10 @@ app.controller 'rmapsOnBoardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rmapsUsStates) ->
-  $log = $log.spawn("frontend:map:rmapsOnBoardingLocationCtrl")
-  rmapsUsStates.getAll().then (states) ->
-    $scope.us_states = states
-  $scope.$watch 'user.usStateCode', (usStateCode) ->
+app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
+  $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
+
+  $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
 
     rmapsFipsCodes.getAllByState usStateCode
@@ -144,6 +147,6 @@ app.controller 'rmapsOnBoardingLocationCtrl', ($scope, $log, rmapsFipsCodes, rma
 
   $log.debug $scope
 
-app.controller 'rmapsOnBoardingVerifyCtrl', ($scope, $log) ->
-  $log = $log.spawn("frontend:map:rmapsOnBoardingVerifyCtrl")
+app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
+  $log = $log.spawn("frontend:map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope

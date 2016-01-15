@@ -1,5 +1,5 @@
 # auth = require '../utils/util.auth'
-emailVerifyService = require '../services/service.emailVerify'
+emailServices = require '../services/services.email'
 {mergeHandles} = require '../utils/util.route.helpers'
 logger = require '../config/logger'
 {wrapHandleRoutes} = require '../utils/util.route.helpers'
@@ -12,7 +12,7 @@ handles = wrapHandleRoutes
     validateAndTransformRequest req, emailTransforms.emailVerifyRequest
     .then (validReq) ->
       logger.debug.cyan validReq, true
-      emailVerifyService(validReq.params.hash)
+      emailServices.validateHash(validReq.params.hash)
 
   isUnique: (req) ->
     logger.debug "isUnique"

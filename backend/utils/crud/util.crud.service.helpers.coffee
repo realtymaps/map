@@ -4,7 +4,7 @@ logger = require '../../config/logger'
 {singleRow} = require '../util.sql.helpers'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
-{IsIdObjError} = require '../errors/util.error.crud.coffee'
+{IsIdObjError} = require '../errors/util.errors.crud.coffee'
 clone = require 'clone'
 
 logQuery = (q, doLogQuery) ->
