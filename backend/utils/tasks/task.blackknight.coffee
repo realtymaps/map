@@ -1,6 +1,7 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
+{SoftFail} = require '../errors/util.error.jobQueue'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'

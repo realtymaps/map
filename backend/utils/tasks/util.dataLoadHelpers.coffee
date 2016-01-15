@@ -374,24 +374,29 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       # stream the results into a COPY FROM query
       delimiter = null
       dbStream = null
-      finish = (promiseValue, promiseCallback, streamCallback) ->
-        promiseCallback(promiseValue)
-        objectStream.unpipe(dbStreamer)
+      donePayload = null
+      dbStreamer = null
+      hadError = false
+      onError = (err) ->
+        reject(err)
+        dbStreamer.unpipe(dbStream)
         dbStream.write('\\.\n')
         dbStream.end()
-        dbStreamer.end()
-        streamCallback()
-      dbStreamer = through2.obj (event, encoding, callback) ->
+        hadError = true
+      dbStreamTransform = (event, encoding, callback) ->
         try
           switch event.type
             when 'data'
-              dbStream.write(utilStreams.pgStreamEscape(event.payload))
-              dbStream.write('\n')
+              this.push(utilStreams.pgStreamEscape(event.payload))
+              this.push('\n')
               callback()
             when 'delimiter'
               delimiter = event.payload
               callback()
             when 'columns'
+              columns = []
+              for fieldName in event.payload
+                columns.push fieldName.replace(/\./g, '')
               promiseQuery(dbs.get('raw_temp').schema.dropTableIfExists(tableName))
               .then () ->
                 tables.jobQueue.dataLoadHistory()
@@ -402,21 +407,30 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                   table.increments('rm_raw_id').notNullable()
                   table.boolean('rm_valid')
                   table.text('rm_error_msg')
-                  for fieldName in event.payload
-                    table.text(fieldName.replace(/\./g, ''))
+                  for fieldName in columns
+                    table.text(fieldName)
                 promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
               .then () ->
-                copyStart = "COPY \"#{tableName}\" (\"#{event.payload.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
+                copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
                 dbStream = streamQuery(copyStream.from(copyStart))
+                dbStreamer.pipe(dbStream)
                 callback()
             when 'done'
-              finish(event.payload, resolve, callback)
+              donePayload = event.payload
+              callback()
             when 'error'
-              finish(event.payload, reject, callback)
+              onError(event.payload)
+              callback()
             else
               callback()
         catch err
-          finish(err, reject, callback)
+          onError(err)
+          callback()
+      dbStreamer = through2.obj dbStreamTransform, (callback) ->
+        this.push('\\.\n')
+        callback()
+        if !hadError
+          resolve(donePayload)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{tableName}: #{err}")

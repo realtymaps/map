@@ -48,7 +48,7 @@ loadRawData = (subtask, options) ->
         throw err
   .then () ->
     if options.sftp
-      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}", concurrency: 4)
+      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
     else
       ftp.get(subtask.data.path)
       .then (dataStream) -> new Promise (resolve, reject) ->
@@ -56,7 +56,6 @@ loadRawData = (subtask, options) ->
         .on('finish', resolve)
         .on('error', reject)
   .then () ->
-    logger.info("Finished downloading file: /tmp/#{fileBaseName}.#{filetype}")
     ftp.logout()
 
   switch filetype
@@ -90,7 +89,6 @@ loadRawData = (subtask, options) ->
 
   dataStreamPromise
   .then (localFilePath) ->
-    logger.info("Finished extracting file: /tmp/#{fileBaseName}.#{filetype} to #{localFilePath}")
     fs.createReadStream(localFilePath)
   .catch (err) ->
     throw new SoftFail(err.toString())
@@ -106,7 +104,6 @@ loadRawData = (subtask, options) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->
-    logger.info("Finished streaming to table: #{rawTableName}")
     try
       # try to clean up after ourselves
       rimraf.async("/tmp/#{fileBaseName}*")
