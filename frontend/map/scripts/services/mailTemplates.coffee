@@ -50,19 +50,19 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     rmapsprincipal.getIdentity()
     .then (identity) ->
       rmapsUsStates.getById(identity.user.us_state_id)
-    .then (state) ->
-      mailCampaign.auth_user_id = identity.user.id
-      mailCampaign.sender_info =
-        first_name: identity.user.first_name
-        last_name: identity.user.last_name
-        company: null
-        address_line1: identity.user.address_1
-        address_line2: identity.user.address_2
-        address_city: identity.user.city
-        address_state: state?.code
-        address_zip: identity.user.zip
-        phone: identity.user.work_phone
-        email: identity.user.email
+      .then (state) ->
+        mailCampaign.auth_user_id = identity.user.id
+        mailCampaign.sender_info =
+          first_name: identity.user.first_name
+          last_name: identity.user.last_name
+          company: null
+          address_line1: identity.user.address_1
+          address_line2: identity.user.address_2
+          address_city: identity.user.city
+          address_state: state?.code
+          address_zip: identity.user.zip
+          phone: identity.user.work_phone
+          email: identity.user.email
 
   _getLobSenderData = (origSender) ->
     # https://lob.com/docs#addresses
