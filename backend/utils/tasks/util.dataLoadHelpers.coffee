@@ -374,13 +374,16 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       # stream the results into a COPY FROM query
       delimiter = null
       dbStream = null
-      finish = (promiseValue, promiseCallback) ->
-        promiseCallback(promiseValue)
-        objectStream.unpipe(dbStreamer)
+      donePayload = null
+      dbStreamer = null
+      hadError = false
+      onError = (err) ->
+        reject(err)
+        dbStreamer.unpipe(dbStream)
         dbStream.write('\\.\n')
         dbStream.end()
-        dbStreamer.end()
-      dbStreamer = through2.obj (event, encoding, callback) ->
+        hadError = true
+      dbStreamTransform = (event, encoding, callback) ->
         try
           switch event.type
             when 'data'
@@ -409,19 +412,25 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 promiseQuery(createRawTable.toString().replace('"rm_raw_id" serial primary key,', '"rm_raw_id" serial,'))
               .then () ->
                 copyStart = "COPY \"#{tableName}\" (\"#{columns.join('", "')}\") FROM STDIN WITH (ENCODING 'UTF8', NULL '', DELIMITER '#{delimiter}')"
-                dbStreamer.pipe streamQuery(copyStream.from(copyStart))
+                dbStream = streamQuery(copyStream.from(copyStart))
+                dbStreamer.pipe(dbStream)
                 callback()
             when 'done'
-              finish(event.payload, resolve)
+              donePayload = event.payload
               callback()
             when 'error'
-              finish(event.payload, reject)
+              onError(event.payload)
               callback()
             else
               callback()
         catch err
-          finish(err, reject)
+          onError(err)
           callback()
+      dbStreamer = through2.obj dbStreamTransform, (callback) ->
+        this.push('\\.\n')
+        callback()
+        if !hadError
+          resolve(donePayload)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{tableName}: #{err}")

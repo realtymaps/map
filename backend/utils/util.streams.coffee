@@ -57,26 +57,17 @@ geoJsonFormatter = (toMove, deletes) ->
 delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   count = 0
   splitStream = split()
-  done = false
   doPreamble = true
 
   if !columnsHandler
     columnsHandler = (headers) -> headers.split(delimiter)  # generic handler
 
-  finish = (err) ->
-    if done
-      return
-    done = true
-    if err
-      this.push(type: 'error', payload: err)
-    else
-      this.push(type: 'done', payload: count)
-    splitStream.unpipe(outputStream)
-    outputStream.end()
+  onError = (err) ->
+    outputStream.write(type: 'error', payload: err)
   lineHandler = (line, encoding, callback) ->
-    if done || !line
+    if !line
       # hide empty lines
-      return
+      return callback()
     if doPreamble
       doPreamble = false
       this.push(type: 'delimiter', payload: delimiter)
@@ -87,11 +78,12 @@ delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
       this.push(type: 'columns', payload: columnsHandler)
     count++
     this.push(type: 'data', payload: line)
+    callback()
 
-  inputStream.on('error', finish)
-  splitStream.on('error', finish)
+  inputStream.on('error', onError)
+  splitStream.on('error', onError)
   outputStream = through2.obj lineHandler, (callback) ->
-    finish()
+    this.push(type: 'done', payload: count)
     callback()
   inputStream.pipe(splitStream).pipe(outputStream)
 
