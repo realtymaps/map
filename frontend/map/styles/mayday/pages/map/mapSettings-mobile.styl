@@ -1,18 +1,70 @@
 .settings-modal-mobile
 
+  .item
+    padding-left: 40px;
+    padding-right: 40px;
+
   .settings-header
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 500;
     text-align: center;
+    color: $rm-mobile-settings-header-color;
 
   .settings-value
-    font-size: 14px;
-    color: blue;
+    font-size: 12px;
+    color: $rm-mobile-settings-value-color;
     text-align: center;
 
   .settings-label
     font-size: 25px;
-    color: lightblue;
+    color: $rm-mobile-settings-label-color;
 
-  .rz-bubble
-    display: none;
+  .settings-slider
+    rzslider
+      margin: 25px 0 15px 0;
+
+    .rz-bubble
+      display: none;
+
+    .rz-bar-wrapper
+      padding-top: 10px;
+
+    .rz-bar
+      height: 12px;
+      background-color: $rm-slider-bar-color;
+
+      &.rz-selection
+        background-color: $rm-slider-bar-selected-color;
+
+    .rz-pointer
+      width: 23px;
+      height: 28px;
+      -moz-border-radius: 2px;
+      border-radius: 2px;
+      background-color: white;
+      border: solid 1px $rm-slider-handle-color;
+
+    .rz-pointer:after
+      display: none;
+
+    .settings-slider-handle
+    .settings-slider-handle:before
+    .settings-slider-handle:after
+      background-color: $rm-slider-handle-color;
+      width: 2px;
+      height: 12px;
+      content: '';
+
+    .settings-slider-handle
+      position: relative;
+      margin-left: 9px;
+      margin-top: 7px;
+
+      &:before
+        position: absolute;
+        right: 4px;
+
+      &:after
+        position: absolute;
+        left: 4px;
+

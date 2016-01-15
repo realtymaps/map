@@ -18,8 +18,10 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.steps = steps
 
   $scope.priceSlider =
-    min: 0
-    max: steps.length - 1
+#    min: 0
+#    max: steps.length - 1
+    min: 25
+    max: steps.length - 25
     options:
       floor: 0,
       ceil: 10000000
