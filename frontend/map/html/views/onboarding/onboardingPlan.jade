@@ -1,4 +1,4 @@
-section.white-page.onboarding.onboarding-plan(ng-cloak)
+section.white-page.onboarding.onboarding-user.plan.ng-cloak
   .container
       h1.page-header Welcome!
       
@@ -9,18 +9,18 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
         .col-md-6.col-sm-6.col-xs-12
           p Standard
           p Do you see any Teletubbies in here? Do you see a slender plastic tag clipped to my shirt with my name printed on it? Do you see a little Asian child with a blank expression on his face sitting outside on a mechanical helicopter that shakes when you put quarters in it? No? Well, that's what you see at a toy store. And you must think you're in a toy store, because you're here shopping for an infant named Jeb.
-          p Price: {{view.plans.standard.priceFormatted}}
+          p Price: {{view.user.plan.standard.priceFormatted}}
           button.btn.btn-primary(
-            ng-click="plan.set('standard')"
-            ng-bind="plan.getSelected('standard')"
+            ng-click="user.plan.set('standard')"
+            ng-bind="user.plan.getSelected('standard')"
           )
         .col-md-6.col-sm-6.col-xs-12
           p Pro
           p Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus ac magna non augue porttitor scelerisque ac id diam. Mauris elit velit, lobortis sed interdum at, vestibulum vitae libero. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-          p Price: {{view.plans.pro.priceFormatted}}
+          p Price: {{view.user.plan.pro.priceFormatted}}
           button.btn.btn-primary(
-            ng-click="plan.set('pro')"
-            ng-bind="plan.getSelected('pro')"
+            ng-click="user.plan.set('pro')"
+            ng-bind="user.plan.getSelected('pro')"
           )
       .row
         h2 Sign up to start your free month
@@ -37,15 +37,15 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
                       name="email"
                       ng-model="user.email"
                       type='text'
-                      validator="email,required,checkUniqueEmail")
+                      validator="email,required,checkUniqueEmail=disableAlert")
                 .form-group
                   .label Password:
                   .col-md-3
-                    input.form-control(name="password" ng-change="pass.change()" ng-model="pass.password" type='password' validator="password")
+                    input.form-control(name="password" ng-change="user.passwordChange()" ng-model="user.password" type='password' validator="password")
                 .form-group
                   .label Confirm password:
                   .col-md-3
-                    input.form-control(name="confirmPassword" ng-change="pass.change()" ng-model="pass.confirmPassword" type='password' validator="password")
+                    input.form-control(name="confirmPassword" ng-change="user.passwordChange()" ng-model="user.confirmPassword" type='password' validator="password")
                 .form-group
                   .label
                   .col-md-3

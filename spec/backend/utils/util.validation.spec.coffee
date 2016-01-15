@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 basePath = require '../basePath'
-
+_ = require 'lodash'
 
 {
 validators
@@ -9,6 +9,7 @@ validateAndTransformRequest
 DataValidationError
 defaultRequestTransforms
 falsyTransformsToNoop
+requireAllTransforms
 } = require "#{basePath}/utils/util.validation"
 
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
@@ -159,3 +160,19 @@ describe 'utils/validation.validateAndTransformRequest()'.ns().ns('Backend'), ->
       .then (values) ->
         values.should.eql({a: 'ABC'})
     ]
+
+describe 'requireAllTransforms', ->
+  it 'should add required field of true to all fields', ->
+    obj =
+      test1: () ->
+      test2: () ->
+
+    allRequiredTforms = requireAllTransforms obj
+
+    _.keys(allRequiredTforms).should.have.lengthOf(2)
+
+    for key, val of allRequiredTforms
+      # console.log key
+      val.required.should.be.ok
+      val.transform.should.be.ok
+      (val.transform == obj[key]).should.be.ok

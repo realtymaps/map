@@ -1,0 +1,28 @@
+.mobile-modal-window.modal
+  .modal-dialog
+    position: absolute
+    top: 0
+    bottom: 0
+    left: 0
+    right: 0
+    margin: 0
+    background-color $rm-mobile-modal-background
+
+    // Fixed positioning of the modal header won't work if a transform is applied to the dialog
+    transform: none
+    -webkit-transform: none
+
+    .mobile-modal-content-scroll
+      position: absolute
+      top: $navbarHeight
+      left: 0
+      right: 0
+      bottom: 0
+      overflow-x auto
+
+    .modal-content
+      padding: 0
+      border-top: none
+
+    .mobile-header.mobile-header-modal
+      position: fixed;
