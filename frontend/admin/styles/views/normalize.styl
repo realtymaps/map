@@ -166,10 +166,15 @@
   .scroll
     overflow-y scroll
     .row
+      padding 1em 0
+      line-height 1em
+
+    .row:not(.lookup)
       height 3em
       > div
         top 50%
         transform translateY(-50%)
+
     .row:nth-child(even)
       background-color #eee
     .row.advanced > :first-child
