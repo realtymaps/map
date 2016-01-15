@@ -5,8 +5,6 @@ app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   $log = $log.spawn 'map:mailTemplate'
-  # is exposed for binding
-  senderData = {}
   mailCampaign = null
 
   campaignDefaults =
@@ -29,10 +27,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   create()
 
-  # private structures
-  _user =
-    userID: null
-
   _getCampaign = () ->
     mailCampaign
 
@@ -50,40 +44,30 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   _setRecipients = (recipients) ->
     mailCampaign.recipients = recipients
 
-  _senderIsSet = () ->
-    return (Object.keys(senderData).length > 0)
-
-  _procureSenderData = () ->
-    if _senderIsSet()
-      return $q.when senderData
+  _getSenderData = () ->
+    return $q.when mailCampaign.sender_info if !_.isEmpty mailCampaign.sender_info
 
     rmapsprincipal.getIdentity()
     .then (identity) ->
       rmapsUsStates.getById(identity.user.us_state_id)
-      .then (state) ->
-        _user.userId = identity.user.id
-        mailCampaign.auth_user_id = identity.user.id
-        senderData =
-          first_name: identity.user.first_name
-          last_name: identity.user.last_name
-          company: null
-          address_line1: identity.user.address_1
-          address_line2: identity.user.address_2
-          address_city: identity.user.city
-          address_state: state?.code
-          address_zip: identity.user.zip
-          phone: identity.user.work_phone
-          email: identity.user.email
-
-        senderData
-
-  _getSenderData = () ->
-    _procureSenderData()
+    .then (state) ->
+      mailCampaign.auth_user_id = identity.user.id
+      mailCampaign.sender_info =
+        first_name: identity.user.first_name
+        last_name: identity.user.last_name
+        company: null
+        address_line1: identity.user.address_1
+        address_line2: identity.user.address_2
+        address_city: identity.user.city
+        address_state: state?.code
+        address_zip: identity.user.zip
+        phone: identity.user.work_phone
+        email: identity.user.email
 
   _getLobSenderData = (origSender) ->
     # https://lob.com/docs#addresses
     lobSenderData = _.cloneDeep origSender
-    lobSenderData.name = "#{lobSenderData.first_name} #{lobSenderData.last_name}"
+    lobSenderData.name = "#{lobSenderData.first_name ? ''} #{lobSenderData.last_name ? ''}".trim()
     delete lobSenderData.first_name
     delete lobSenderData.last_name
     lobSenderData
@@ -112,7 +96,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   setTemplateType: _setTemplateType
   setRecipients: _setRecipients
-  procureSenderData: _procureSenderData
   getSenderData: _getSenderData
   getContent: _getContent
   setContent: _setContent
@@ -128,16 +111,9 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
       mailCampaign = campaigns[0] if campaigns.length
 
   save: () ->
-    promise = null
-    if !_senderIsSet() # sender must be set at least with defaults in order to save campaign
-      promise = _procureSenderData()
-    else
-      promise = $q.when(senderData)
-
-    promise
-    .then (sender) ->
+    _getSenderData()
+    .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
-      toSave.sender_info = _getLobSenderData(sender)
       toSave.recipients = JSON.stringify toSave.recipients
 
       if not toSave.id?
