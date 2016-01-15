@@ -384,8 +384,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
         try
           switch event.type
             when 'data'
-              escaped = utilStreams.pgStreamEscape(event.payload)
-              this.push(escaped)
+              this.push(utilStreams.pgStreamEscape(event.payload))
               this.push('\n')
               callback()
             when 'delimiter'
