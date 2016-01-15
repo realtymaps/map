@@ -29,13 +29,13 @@
                 th.col-md-1
                   span Sent
             tbody
-              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="mailWizard({id:campaign.id})")
+              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="mailWizard({id:campaign.id})" ui-sref-opts="{reload: true}")
                 td
                   h4 {{campaign.name}}
                 td
                   h4 {{campaign.project_name || 'Sandbox'}}
                 td
-                  span {{campaign.recipients.length}}
+                  span {{campaign.recipients.length || 0}}
                 td
                   span {{campaign.template_type}}
                 td

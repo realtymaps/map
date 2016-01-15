@@ -7,10 +7,6 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
   $log = $log.spawn 'map:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
 
-  $scope.mailTemplate = rmapsMailTemplate
-
-  $scope.property_ids = $state.params.property_ids
-
   $scope.steps = [
     'recipientInfo'
     'senderInfo'
@@ -19,7 +15,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
   ]
 
   _changeStep = (next = 1) ->
-    $scope.mailTemplate.save()
+    rmapsMailTemplate.save()
     thisStep = $scope.steps.indexOf $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return

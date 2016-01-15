@@ -2,7 +2,7 @@
   .inner
     .container
       h1.pageTitle Recipients
-      form
+      form(ng-show="mailCampaign.property_ids.length > 0")
         .send-to
           label
             input(type="radio" name="sendTo" ng-model="mailCampaign.recipientType" value="property" ng-change="changeRecipients()")
@@ -22,3 +22,12 @@
             span
               div Send to both addresses
               .total {{propertyAndOwner.length}} total
+
+      form(ng-show="!mailCampaign.property_ids.length")
+        .send-to
+          label
+            input(disabled type="radio" checked)
+            i.fa.fa-check
+            span
+              div Send to previously selected addresses
+              .total {{mailCampaign.recipients.length}} total
