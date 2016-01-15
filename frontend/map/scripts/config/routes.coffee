@@ -101,7 +101,7 @@ rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
 
   buildState 'mail'
   buildState 'mailWizard',
-    params: property_ids: null
+    sticky: true
 
   buildState 'selectTemplate', parent: 'mailWizard'
   buildState 'editTemplate', parent: 'mailWizard'

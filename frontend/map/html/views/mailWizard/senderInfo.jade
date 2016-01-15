@@ -9,45 +9,45 @@
                             .col-sm-6
                                 .form-group
                                     label First Name
-                                    input.form-control(type="text" ng-model="templObj.senderData.first_name")
+                                    input.form-control(type="text" ng-model="senderData.first_name")
                                 .form-group
                                     label Last Name
-                                    input.form-control(type="text" ng-model="templObj.senderData.last_name")
+                                    input.form-control(type="text" ng-model="senderData.last_name")
                                 .form-group
                                     label Email
-                                    input.form-control(type="email" ng-model="templObj.senderData.email" placeholder="name@email.com")
+                                    input.form-control(type="email" ng-model="senderData.email" placeholder="name@email.com")
                                 .form-group
                                     label Phone Number
-                                    input.form-control(type="text" ng-model="templObj.senderData.phone")
+                                    input.form-control(type="text" ng-model="senderData.phone")
                                 //- div.form-group
                                 //-     label(for="sender_photo") Your Photo
                                 //-     button(class="btn btn-stamp") + Add a Photo
                             .col-sm-6
                                 .form-group
                                     label Company
-                                    input.form-control(type="text" ng-model="templObj.senderData.company")
+                                    input.form-control(type="text" ng-model="senderData.company")
                                 //- div.form-group
                                 //-     label(for="sender_photo") Your Photo
                                 //-     button(class="btn btn-stamp") + Add a Photo
                                 .form-group
                                     label Address 1
-                                    input.form-control(type="text" ng-model="templObj.senderData.address_line1")
+                                    input.form-control(type="text" ng-model="senderData.address_line1")
                                 .form-group
                                     label Address 2
-                                    input.form-control(type="email" ng-model="templObj.senderData.address_line2" placeholder="Apartment, suite, unit, building, floor")
+                                    input.form-control(type="email" ng-model="senderData.address_line2" placeholder="Apartment, suite, unit, building, floor")
                                 .form-group
                                     label City
-                                    input.form-control(type="text" ng-model="templObj.senderData.address_city")
+                                    input.form-control(type="text" ng-model="senderData.address_city")
 
                                 .row
                                     .col-sm-6
                                         .form-group
                                             label State
                                             .select
-                                                select.form-control(ng-model="templObj.senderData.address_state" ng-options="value.code as value.name for value in us_states")
+                                                select.form-control(ng-model="senderData.address_state" ng-options="value.code as value.name for value in us_states")
                                                     option(selected disabled) - Select State -
                                     .col-sm-6
                                         .form-group
                                             label Zip
-                                            input.form-control(type="text" ng-model="templObj.senderData.address_zip")
+                                            input.form-control(type="text" ng-model="senderData.address_zip")
 

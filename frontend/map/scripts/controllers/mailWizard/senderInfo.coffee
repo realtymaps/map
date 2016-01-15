@@ -3,14 +3,13 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSenderInfoCtrl', ($rootScope, $scope, $state, $log, $timeout, rmapsprincipal, rmapsUsStates, rmapsMailTemplate) ->
+app.controller 'rmapsSenderInfoCtrl', ($rootScope, $scope, rmapsUsStates, rmapsMailTemplate) ->
   $scope.us_states = []
 
-  $scope.templObj = rmapsMailTemplate
-
   $rootScope.registerScopeData () ->
-    rmapsMailTemplate.procureSenderData()
+    rmapsMailTemplate.getSenderData()
     .then (senderData) ->
-      $scope.templObj.senderData = senderData
-      rmapsUsStates.getAll().then (states) ->
-        $scope.us_states = states
+      $scope.senderData = senderData
+
+    rmapsUsStates.getAll().then (states) ->
+      $scope.us_states = states

@@ -6,7 +6,7 @@ describe 'mailTemplate service', ->
 
   beforeEach ->
     angular.mock.module('rmapsMapApp')
-  
+
     inject (rmapsMailTemplate) =>
       @type = 'basicLetter'
       @template = rmapsMailTemplate
@@ -14,9 +14,9 @@ describe 'mailTemplate service', ->
   describe 'templateObj', ->
     it "tests valid basicLetter", ->
       expect(@template).to.be.ok
-      expect(@template.mailCampaign.content).to.not.exist
+      expect(@template.getCampaign().content).to.not.exist
       @template.setTemplateType(@type)
-      expect(@template.mailCampaign.content).to.have.length.above 0
+      expect(@template.getCampaign().content).to.have.length.above 0
 
     it 'returns createPreviewHtml', ->
       @template.setTemplateType(@type)

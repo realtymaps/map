@@ -8,7 +8,7 @@
           .tools
             input.search-box(type="search" ng-model="searchName" placeholder="Search mailings")
             span.divider
-            button(class="btn btn-primary" ng-click="$state.go('editTemplate')") Create
+            button(ng-controller="rmapsMapMailCtrl" class="btn btn-primary" ng-click="addMail()") Create
       .row
         .col-md-12
           table(class="table table-hover")
@@ -18,25 +18,29 @@
                   span Title
                 th
                   span Project
-                th
+                th.col-md-1
                   span Recipients
                 th
                   span Type
-                th
+                th.col-md-1
                   span Status
                 th.col-md-1
-                  span Date
+                  span Created
+                th.col-md-1
+                  span Sent
             tbody
-              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}")
+              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="mailWizard({id:campaign.id})" ui-sref-opts="{reload: true}")
                 td
-                  h4 {{campaign.campaign_name}}
+                  h4 {{campaign.name}}
                 td
-                  h4 {{campaign.project_name}}
+                  h4 {{campaign.project_name || 'Sandbox'}}
                 td
-                  span {{campaign.count}}
+                  span {{campaign.recipients.length || 0}}
                 td
                   span {{campaign.template_type}}
                 td
                   span(class="{{campaign.status}}") {{campaign.status}}
                 td.col-md-1
-                  span {{campaign.submitted | date:'MM/dd/yyyy'}}
+                  span {{campaign.rm_inserted_time | date:'MM/dd/yyyy'}}
+                td.col-md-1
+                  span {{(campaign.submitted | date:'MM/dd/yyyy') || 'never'}}

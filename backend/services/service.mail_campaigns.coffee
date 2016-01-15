@@ -12,7 +12,6 @@ class MailCrud extends crudService.ThenableCrud
     @dbFn = () =>
       ret = transaction().select(
         "#{tables.mail.campaign.tableName}.*",
-        db.raw("#{tables.mail.campaign.tableName}.name as campaign_name"),
         db.raw("#{tables.user.project.tableName}.name as project_name"),
         db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
       )
@@ -26,5 +25,5 @@ class MailCrud extends crudService.ThenableCrud
     @dbFn.tableName = tableName
     super(query, doLogQuery)
 
-instance = new MailCrud(tables.mail.campaign)
+instance = new MailCrud(tables.mail.campaign).init(false,false,false)
 module.exports = instance

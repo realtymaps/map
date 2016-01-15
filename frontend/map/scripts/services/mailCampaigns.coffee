@@ -6,7 +6,7 @@ app.service 'rmapsMailCampaignService', ($log, $http) ->
 
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
-  getList: (query) ->
+  get: (query) ->
     $http.get mailAPI, cache: false, params: query
     .then ({data}) ->
       data
