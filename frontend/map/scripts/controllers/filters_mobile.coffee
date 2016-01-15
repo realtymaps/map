@@ -18,10 +18,17 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.steps = steps
 
   $scope.priceSlider =
-#    min: 0
-#    max: steps.length - 1
-    min: 25
-    max: steps.length - 25
+    min: 0
+    max: steps.length - 1
+    options:
+      floor: 0,
+      ceil: 10000000
+      stepsArray: steps
+      hideLimitLabels: true
+
+  $scope.priceSliderTemp =
+    min: 0
+    max: steps.length - 1
     options:
       floor: 0,
       ceil: 10000000
@@ -30,6 +37,20 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
 
   $scope.translateStep = (index) ->
     value = $filter('number')(steps[index], 0)
+    if index == steps.length - 1
+      value += '+'
+
+    return value
+
+  $scope.humanizeStep = (index) ->
+    value = steps[index]
+    if value >= 1000000
+      value = value / 1000000
+      value += 'M'
+    else if value >= 1000
+      value = value / 1000
+      value += 'K'
+
     if index == steps.length - 1
       value += '+'
 

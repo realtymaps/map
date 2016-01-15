@@ -92,6 +92,11 @@
           .settings-value ${{translateStep(priceSlider.min)}} - ${{translateStep(priceSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="priceSlider.min" rz-slider-high="priceSlider.max" rz-slider-options="priceSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+        .item
+          .settings-header Price
+          .settings-value ${{humanizeStep(priceSliderTemp.min)}} - ${{humanizeStep(priceSliderTemp.max)}}
+          .settings-slider
+            rzslider(rz-slider-model="priceSliderTemp.min" rz-slider-high="priceSliderTemp.max" rz-slider-options="priceSliderTemp.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
   script(type="text/ng-template" id="SettingsSliderTemplate")
     include _settingsSliderTemplate.html
