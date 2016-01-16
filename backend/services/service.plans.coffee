@@ -1,6 +1,9 @@
 keystore = require '../services/service.keystore'
+groupTable =  require('../config/tables').auth.group
 clone = require 'clone'
 numeral = require 'numeral'
+logger = require '../config/logger'
+{expectSingleRow} = require '../utils/util.sql.helpers'
 
 getAll = () ->
   keystore.cache.getValuesMap('plans')
@@ -13,5 +16,22 @@ getAll = () ->
         plans[val.alias] = copy
     plans
 
+getPlanId = (planName, trx) ->
+  planName = planName.toLowerCase()
+  getAll().then (plans) ->
+    planObj = plans[planName]
+
+    q = groupTable(trx)
+    .where 'name', 'ilike', "%#{planName}%"
+    .orWhere 'name', 'ilike', "%#{planObj.alias.toLowerCase()}%"
+
+
+    logger.debug q.toString()
+
+    q.then expectSingleRow
+    .then (result) ->
+      result.id
+
 module.exports =
   getAll: getAll
+  getPlanId: getPlanId

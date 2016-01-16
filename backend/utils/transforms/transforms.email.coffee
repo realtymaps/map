@@ -19,7 +19,7 @@ emailRequest = (optUserId) ->
 emailVerifyRequest =
   params: validators.object subValidateSeparate:
     hash:
-      transform: [validators.string(minLength: EMAIL_VERIFY.HASH_MIN_LENGTH, maxLength:EMAIL_VERIFY.HASH_MIN_LENGTH)]
+      transform: [validators.string(minLength: EMAIL_VERIFY.HASH_MIN_LENGTH)]
       required: true
   query: validators.object isEmptyProtect: true
   body: validators.object isEmptyProtect: true

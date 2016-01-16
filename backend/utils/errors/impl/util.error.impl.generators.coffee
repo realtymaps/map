@@ -10,17 +10,18 @@ generator = (errorTypes, factory) ->
       errors[name] = factory(name)
   errors
 
-namedFactory = (name)  ->
+namedFactory = (name) ->
   class WrappedError extends NamedError
     constructor: (args...) ->
       super(name, args...)
 
-payloadFactory = (name)  ->
+payloadFactory = (name) ->
   class WrappedError extends PayloadError
     constructor: (payload, args...) ->
       super(payload, name, args...)
 
 module.exports = do ->
+
   named: (errorTypes) ->
     generator(errorTypes, namedFactory)
 
