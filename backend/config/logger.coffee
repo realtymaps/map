@@ -1,73 +1,82 @@
-winston = require('winston')
-fs = require('fs')
-stackTrace = require('stack-trace')
-path = require 'path'
-cluster = require 'cluster'
-colorWrap = require 'color-wrap'
-config = require('./config')
-logPath = config.LOGGING.PATH
 _ = require 'lodash'
-
-if !fs.existsSync(logPath)
-  fs.openSync(logPath, 'w')
-
-myCustomLevels =
-  levels:
-    route: 0
-    sql: 1
-    debug: 2
-    info: 3
-    warn: 4
-    error: 5
-
-  colors:
-    route: 'grey'
-    sql: 'magenta'
-    debug: 'cyan'
-    info: 'green'
-    warn: 'yellow'
-    error: 'red'
-
-# console.info config.LOGGING.LEVEL
-logger = new (winston.Logger)(
-  transports: [
-    new (winston.transports.Console)
-      level: config.LOGGING.LEVEL
-      colorize: true
-      timestamp: true
-    new (winston.transports.File)
-      filename: logPath
-      level: config.LOGGING.LEVEL
-      timestamp: true
-  ]
-  levels: myCustomLevels.levels
-)
-winston.addColors myCustomLevels.colors
+config = require './config'
+colorWrap = require 'color-wrap'
+baselogger = require './baselogger'
+debug = require 'debug'
+debug.enable(config.LOGGING.ENABLE)
 
 
-if config.LOGGING.FILE_AND_LINE
-  for own level of myCustomLevels.levels
-    oldFunc = logger[level]
-    do (oldFunc) ->
-      logger[level] = () ->
-        trace = stackTrace.parse(new Error())  # this gets correct coffee line, where stackTrace.get() does not
-        args = Array.prototype.slice.call(arguments)
-        filename = path.basename(trace[1].getFileName(), '.coffee')
-        decorator = "[#{filename}:#{trace[1].getLineNumber()}]"
-        if cluster.worker?.id?
-          decorator = "<#{cluster.worker.id}>#{decorator}"
-        args.unshift(decorator)
-        oldFunc.apply(logger, args)
+_utils = ['functions', 'infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
+_levelFns = ['debug', 'info', 'warn', 'error', 'log']
+LEVELS = {}
+for val, key in _levelFns
+  LEVELS[val] = key
 
+_maybeExecLevel = (level, current, fn) ->
+  fn() if level >= current
 
-unless logger.infoRoute
-  logger.infoRoute = (name, route) ->
-    logger.route "Route #{name} of: '#{route}' set"
+_isValidLogObject = (logObject) ->
+  isValid = false
+  return  isValid unless logObject
+  for val in _levelFns
+    isValid = logObject[val]? and typeof logObject[val] is 'function'
+    break unless isValid
+  isValid
 
-logger.log 'debug', 'Log Levels: %j', logger.levels, {}
-logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+###
+  Overide logObject.debug with a debug instance
+  see: https://github.com/visionmedia/debug/blob/master/Readme.md
+###
+_wrapDebug = (debugNS, logObject) ->
+  # define a new debug NS (which is to be used as handle for controlling logging verbosity)
+  debugInstance = debug(debugNS)
+  newLogger = {}
+  for val in _levelFns
+    newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
 
-colorWrap logger, myCustomLevels.levels
+  newLogger
 
+class Logger
+  constructor: (@baseLogObject) ->
+    throw Error('internalLogger undefined') unless @baseLogObject
+    throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
+    logFns = {}
+
+    for level in _levelFns
+      do (level) =>
+        logFns[level] = (msg) =>
+          _maybeExecLevel LEVELS[level], @currentLevel, =>
+            @baseLogObject[level](msg)
+        @[level] = logFns[level]
+
+    # delegation of both member funcs and member structs from this class to the baseLogObject
+    for util in _utils
+      do (util) =>
+        if _.isFunction(@baseLogObject[util])
+          @[util] = (args...) ->
+            return @baseLogObject[util](args...)
+        else
+          Object.defineProperty @, util,
+            get: () =>
+              return @baseLogObject[util]
+            set: (value) =>
+              @baseLogObject[util] = value
+            enumerable: false,
+            # writable: true
+            # value: 'static'
+
+    @LEVELS = LEVELS
+    @currentLevel = LEVELS.error
+
+  spawn: (newInternalLoggerOrNS) =>
+    if typeof newInternalLoggerOrNS is 'string'
+      throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
+      unless debug
+        throw Error("cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library")
+      return _wrapDebug newInternalLoggerOrNS, @baseLogObject
+
+    new Logger(newInternalLoggerOrNS or baseLogger)
+
+logger = new Logger(baselogger)
 
 module.exports = logger

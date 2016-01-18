@@ -43,7 +43,7 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
 leafletIterators, toastr, $log) ->
 
   linker = rmapsMapEventsLinkerService
-  $log = $log.spawn("map:rmapsMapNotesTapCtrlLogger")
+  $log = $log.spawn("frontend:map:rmapsMapNotesTapCtrlLogger")
   createFromModal = $scope.create
 
   $scope.$on '$destroy', ->
@@ -98,7 +98,7 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsPopupLoad
   leafletData.getDirectiveControls('mainMap').then (controls) ->
     directiveControls = controls
 
-  $log = $log.spawn("map:notes")
+  $log = $log.spawn("frontend:map:notes")
 
   _.merge $scope,
     map:

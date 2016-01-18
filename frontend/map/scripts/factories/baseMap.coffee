@@ -11,7 +11,7 @@ _mapClassContainerName = 'angular-leaflet-map'
 _mapDrawEvents = ['resize','moveend', 'zoomend']
 
 module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leafletData, rmapsNgLeafletHelpers) ->
-  $log = nemSimpleLogger.spawn("map:baseFactory")
+  $log = nemSimpleLogger.spawn("frontend:map:baseFactory")
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
       settings =

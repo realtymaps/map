@@ -1,6 +1,7 @@
 'use strict'
 
 require '../../../common/extensions/strings.coffee'
+require '../../../common/extensions/angular.coffee'
 require '../../common/scripts/factories/gridController.coffee'
 
 appName = 'rmapsAdminApp'

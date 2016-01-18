@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:route.userSession')
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
@@ -25,7 +25,6 @@ emailTransforms = require('../utils/transforms/transforms.email')
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
-logger.functions auth
 
 safeUserFields = [
   'cell_phone'

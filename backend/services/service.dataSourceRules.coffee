@@ -1,9 +1,10 @@
 _ = require 'lodash'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:service.dataSourceRules')
 dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 require 'should'
+
 
 _getRules = (query) ->
   tables.config.dataNormalization()

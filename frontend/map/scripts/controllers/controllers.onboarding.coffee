@@ -5,7 +5,7 @@ app = require '../app.coffee'
 app.controller 'rmapsOnboardingCtrl', ($q, $log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
 rmapsPlansService, rmapsOnboardingService) ->
 
-  $log = $log.spawn("map:rmapsOnboardingCtrl")
+  $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -79,11 +79,11 @@ rmapsPlansService, rmapsOnboardingService) ->
   $scope.view.updateState()
 
 app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
-  $log = $log.spawn("map:rmapsOnboardingPlanCtrl")
+  $log = $log.spawn("frontend:map:rmapsOnboardingPlanCtrl")
 
 app.controller 'rmapsOnboardingPaymentCtrl',
 ($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
-  $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
+  $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
     "id"
@@ -140,7 +140,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
-  $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
+  $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
 
   $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
@@ -152,9 +152,9 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
   $log.debug $scope
 
 app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
+  $log = $log.spawn("frontend:map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope
 
 app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log) ->
-  $log = $log.spawn("map:rmapsOnboardingFinishYayCtrl")
+  $log = $log.spawn("frontend:map:rmapsOnboardingFinishYayCtrl")
   $scope.view.showSteps = false
