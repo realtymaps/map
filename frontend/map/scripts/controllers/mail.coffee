@@ -18,5 +18,10 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsprincipa
       .then (list) ->
         $scope.mailCampaigns = list
 
+  $scope.deleteCampaign = (campaign) ->
+    rmapsMailCampaignService.remove campaign.id
+    .then () ->
+      _.remove $scope.mailCampaigns, 'id', campaign.id
+
   $rootScope.registerScopeData () ->
     $scope.loadMailCampaigns()
