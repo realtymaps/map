@@ -21,6 +21,7 @@ validation = require '../utils/util.validation'
 {validators} = validation
 safeColumns = (require '../utils/util.sql.helpers').columns
 emailTransforms = require('../utils/transforms/transforms.email')
+{InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.args'
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -69,8 +70,11 @@ login = (req, res, next) -> Promise.try () ->
   .catch (err) ->
     logger.debug "failed authentication: #{err}"
     return false
+  .then (user) -> Promise.try ->
+    userSessionService.verifyValidAccount(user)
   .then (user) ->
     if not user
+      logger.debug "user undefined"
       return next new ExpressResponse(alert: {
         msg: 'Email and/or password does not match our records.'
         id: alertIds.loginFailure
@@ -89,9 +93,6 @@ login = (req, res, next) -> Promise.try () ->
         sessionSecurityService.createNewSeries(req, res, !!req.body.remember_me)
       .then () ->
         identity(req, res, next)
-  .catch (err) ->
-    logger.error "unexpected error during login(): #{err}"
-    next(err)
 
 identity = (req, res, next) ->
   res.json identity: userSessionService.getIdentity req

@@ -13,6 +13,9 @@ handles = wrapHandleRoutes
     .then (validReq) ->
       logger.debug.cyan validReq, true
       emailServices.validateHash(validReq.params.hash)
+    .then (bool) ->
+      if bool
+        "account validated via email"
 
   isUnique: (req) ->
     logger.debug "isUnique"

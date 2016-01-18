@@ -61,21 +61,25 @@ ensureSessionCount = (req) -> Promise.try () ->
     return Promise.resolve()
   maxLoginsPromise = keystore.cache.getValuesMap('plans')
   .then (plans) ->
-    plan =_.find plans, (plan) ->
-      !!req.session.groups[plan + ' Tier']
-    return plan.maxLogins
-
-  sessionSecuritiesPromise = tables.auth.sessionSecurity()
-  .whereNotExists () ->
-    tables.auth.session()
-    .select(1)
+    # logger.debug req.session.groups, true
+    plan =_.find Object.keys(plans), (plan) ->
+      !!req.session.groups[plan.toInitCaps() + ' Tier']
+    plan.maxLogins
+    
+  q = tables.auth.sessionSecurity().whereNotExists () ->
+    @select(1).from(tables.auth.session.tableName)
     .where(sid: "#{tables.auth.sessionSecurity.tableName}.session_id")
   .delete()
-  .then () ->
+
+  # logger.debug q.toString()
+
+  sessionSecuritiesPromise = q.then () ->
     tables.auth.sessionSecurity()
     .where(user_id: req.user.id)
   .then (sessionSecurities=[]) ->
     sessionSecurities
+
+
 
   Promise.join maxLoginsPromise, sessionSecuritiesPromise, (maxLogins, sessionSecurities) ->
     if maxLogins <= sessionSecurities.length
