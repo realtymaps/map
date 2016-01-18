@@ -66,7 +66,7 @@ class Logger
             # value: 'static'
 
     @LEVELS = LEVELS
-    @currentLevel = LEVELS.error
+    @currentLevel = LEVELS[config.LOGGING.LEVEL]
 
   spawn: (newInternalLoggerOrNS) =>
     if typeof newInternalLoggerOrNS is 'string'
