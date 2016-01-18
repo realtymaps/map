@@ -11,7 +11,7 @@
         p {{note.text}}
     .col-md-2
       .note-date
-        | Apr 10
+        | {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
       .tools
         button.btn.btn-link(ng-click="update(note)") Edit
         button.btn.btn-link(ng-click="remove(note, true)") Remove
