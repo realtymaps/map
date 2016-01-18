@@ -37,8 +37,8 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsprincipal, rm
       _.each projects, _mockData
       projects
 
-  getProject: (id) ->
-    $http.get backendRoutes.projectSession.root + "/#{id}"
+  getProject: (id, cache = false) ->
+    $http.get backendRoutes.projectSession.root + "/#{id}", cache: cache
     .then (response) ->
       project = response.data
       _mockData project

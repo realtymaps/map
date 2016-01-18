@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 notesTemplate = do require '../../html/views/templates/modals/note.jade'
+confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 mapId = 'mainMap'
 originator = 'map'
 popupTemplate = require '../../html/includes/map/_notesPopup.jade'
@@ -35,8 +36,20 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
       $scope.createModal(note).then (note) ->
         _signalUpdate rmapsNotesService.update note
 
-    remove: (note) ->
-      _signalUpdate rmapsNotesService.remove note.id
+    remove: (note, confirm = false) ->
+      if confirm
+        modalInstance = $modal.open
+          scope: $scope
+          template: confirmTemplate
+
+        $scope.showCancelButton = true
+        $scope.modalTitle = "Remove note \"#{note.title}\"?"
+        $scope.modalCancel = modalInstance.dismiss
+        $scope.modalOk = () ->
+          modalInstance.close()
+          _signalUpdate rmapsNotesService.remove note.id
+      else
+        _signalUpdate rmapsNotesService.remove note.id
 
 .controller 'rmapsMapNotesTapCtrl',
 ($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
