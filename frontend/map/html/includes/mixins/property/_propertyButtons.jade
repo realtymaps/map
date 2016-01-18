@@ -7,7 +7,7 @@ mixin propertyButtons(resultName)
     button.pinto(ng-click="formatters.results.clickSaveResultFromList(#{resultName}, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isSavedResult(#{resultName}) ? 'Unpin' : 'Pin'}}")
       span.icon.icon-pin
 
-    button.send(ng-controller="rmapsMailCtrl" ng-click="formatters.property.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
+    button.send(ng-click="formatters.property.sendSnail(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Mail")
       span.icon.icon-send_email
 
     button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(#{resultName}); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")

@@ -27,11 +27,11 @@ module.exports =
   onboardingPlan: '/plan'
 
   mail:           'mail'
-  mailWizard:     'mailWizard'
-  editTemplate:   '/editTemplate'
-  selectTemplate: '/selectTemplate'
+  mailWizard:     'mailWizard?id'
+  recipientInfo:  '/recipientInfo'
   senderInfo:     '/senderInfo'
-  recipientInfo:     '/recipientInfo'
+  selectTemplate: '/selectTemplate'
+  editTemplate:   '/editTemplate'
 
   avatar:         '/assets/avatar.svg'
   mocks:

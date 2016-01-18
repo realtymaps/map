@@ -1,11 +1,11 @@
-###global _:true, angular:true###
+###global _:true###
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnboardingCtrl', ($log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($q, $log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
 rmapsPlansService, rmapsOnboardingService) ->
 
-  $log = $log.spawn("frontend:map:rmapsOnboardingCtrl")
+  $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
 
   rmapsPlansService.getList().then (plans) ->
     _.merge $scope,
@@ -38,12 +38,16 @@ rmapsPlansService, rmapsOnboardingService) ->
 
       submit: () ->
         $scope.view.showSteps = true
-        if $scope.view.hasNextStep
-          return $scope.view.goToNextStep()
-        $log.debug("begin submitting user to onboarding service")
-        $log.debug($scope.user)
-        $log.debug("end submitting user to onboarding service")
-        rmapsOnboardingService.user.create($scope.user)
+        promise = $q.resolve()
+        if $scope.orderSvc.submitStepName == step
+          $log.debug("begin submitting user to onboarding service")
+          $log.debug($scope.user)
+          $log.debug("end submitting user to onboarding service")
+          promise = rmapsOnboardingService.user.create($scope.user)
+
+        promise.then () ->
+          if $scope.view.hasNextStep
+            return $scope.view.goToNextStep()
 
     view:
       showSteps: $state.current.showSteps
@@ -150,3 +154,7 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
 app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope
+
+app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log) ->
+  $log = $log.spawn("frontend:map:rmapsOnboardingFinishYayCtrl")
+  $scope.view.showSteps = false

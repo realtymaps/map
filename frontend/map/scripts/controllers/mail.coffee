@@ -4,6 +4,8 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsprincipal, rmapsMailCampaignService) ->
+  $log = $log.spawn 'map:mailCampaigns'
+  $log.debug 'rmapsMailCtrl'
   $scope.mailCampaigns = []
 
   $scope.searchName = ''
@@ -11,7 +13,8 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsprincipa
   $scope.loadMailCampaigns = () ->
     rmapsprincipal.getIdentity()
     .then (identity) ->
-      rmapsMailCampaignService.getList auth_user_id: identity.id
+      $log.debug 'getting campaign list'
+      rmapsMailCampaignService.get auth_user_id: identity.id
       .then (list) ->
         $scope.mailCampaigns = list
 
