@@ -25,17 +25,17 @@ base =
       connection: process.env.MAIN_DATABASE_URL
       pool:
         min: 2
-        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        max: if process.env.JQ_QUEUE_NAME then 4 else 10
         # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 10*60*1000
+        pingTimeout: 20*60*1000
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
       pool:
         min: 2
-        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        max: if process.env.JQ_QUEUE_NAME then 4 else 0
         # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 10*60*1000
+        pingTimeout: 20*60*1000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
