@@ -25,7 +25,13 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
 
   $scope.archiveProject = (project, evt) ->
     evt.stopPropagation()
-    rmapsProjectsService.update id: project.project_id, archived: !project.archived
+    rmapsProjectsService.update project.id, archived: !project.archived
+    .then () ->
+      project.archived = !project.archived
+
+  $scope.resetProject = (project) ->
+    if confirm 'Clear all filters, saved properties, and notes?'
+      rmapsProjectsService.delete id: project.id
 
   $scope.removeClient = (client) ->
     clientsService.remove client
