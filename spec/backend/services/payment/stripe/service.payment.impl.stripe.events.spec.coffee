@@ -12,7 +12,6 @@ Case = require 'case'
 subject.__set__ 'clsFullUrl', (arg) -> arg
 SqlMock = require '../../../../specUtils/sqlMock'
 
-tables = subject.__get__ 'tables'
 mockAuthUser =
   id: 1
   first_name: "Bo"
@@ -23,7 +22,7 @@ mockAuthUser =
 
 mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
 
-tables.auth.user = mockUserTable.dbFn()
+subject.__set__ 'userTable', mockUserTable.dbFn()
 
 jsonString = "../../../fixtures/services/stripe/:file.json"
 

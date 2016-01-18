@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 {emailPlatform, cancelHash} = require '../../services.email'
-tables = require '../../../config/tables'
+userTable = require('../../../config/tables').auth.user
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
 customerSubscriptionDeleted
@@ -46,7 +46,7 @@ StripeEvents = (stripe) ->
       unless customer
         logger.debug subscription, true
 
-      q = tables.auth.user().where(stripe_customer_id: customer)
+      q = userTable().where(stripe_customer_id: customer)
       # logger.debug q.toString()
 
       q.then expectSingleRow
