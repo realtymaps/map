@@ -53,7 +53,7 @@ _getRetsClient = (loginUrl, username, password, static_ip, handler) ->
       throw error
   .finally () ->
     setTimeout (() -> _getRetsClientInternal.deleteRef(loginUrl, username, password, static_ip)), 60000
-    
+
 getDatabaseList = (serverInfo) ->
   externalAccounts.getAccountInfo(serverInfo.id)
   .then (creds) ->
@@ -153,7 +153,7 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
         streamIteration = () ->
           new Promise (resolve, reject) ->
             resolved = false
-            _getRetsClient mlsInfo.url, mlsInfo.username, mlsInfo.password, mlsInfo.static_ip, (retsClientIteration) ->
+            _getRetsClient creds.url, creds.username, creds.password, mlsInfo.static_ip, (retsClientIteration) ->
               new Promise (resolve2, reject2) ->
                 retsStream = retsClientIteration.search.stream.query(mlsInfo.listing_data.db, mlsInfo.listing_data.table, momentThreshold, options, true)
                 retsStream.pipe(resultStream, end: false)
