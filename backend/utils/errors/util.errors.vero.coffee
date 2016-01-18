@@ -1,7 +1,12 @@
 generators = require './impl/util.error.impl.generators'
 
 module.exports = generators.payload [
-  'SignUp'
+  'SubscriptionSignUp'
+  'SubscriptionCreated'
+  'SubscriptionVerified'
+  'SubscriptionDeleted'
+  'SubscriptionUpdated'
+  'SubscriptionTrialEnded'
   'CancelPlan'
   'Critical'
   'InitCritical'
