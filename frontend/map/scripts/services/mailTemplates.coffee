@@ -64,7 +64,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           phone: identity.user.work_phone
           email: identity.user.email
 
-  _getLobSenderData = (origSender) ->
+  _getLobSenderData = (origSender = {}) ->
     # https://lob.com/docs#addresses
     lobSenderData = _.cloneDeep origSender
     lobSenderData.name = "#{lobSenderData.first_name ? ''} #{lobSenderData.last_name ? ''}".trim()
@@ -132,17 +132,18 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           $log.debug "campaign #{data[0]} updated"
 
   quote: () ->
-    _getLobSenderData().then (lobSenderData) ->
-      $rootScope.lobData =
-        content: _createLobHtml()
-        macros: {'name': 'Justin'}
-        recipient: mailCampaign.recipients[0]
-        sender: lobSenderData
-      $rootScope.modalControl = {}
-      $modal.open
-        template: require('../../html/views/templates/modal-snailPrice.tpl.jade')()
-        controller: 'rmapsModalSnailPriceCtrl'
-        scope: $rootScope
-        keyboard: false
-        backdrop: 'static'
-        windowClass: 'snail-modal'
+    $log.debug mailCampaign
+    lobSenderData = _getLobSenderData()
+    $rootScope.lobData =
+      content: _createLobHtml()
+      macros: {'name': 'Justin'}
+      recipient: mailCampaign.recipients[0]
+      sender: lobSenderData
+    $rootScope.modalControl = {}
+    $modal.open
+      template: require('../../html/views/templates/modal-snailPrice.tpl.jade')()
+      controller: 'rmapsModalSnailPriceCtrl'
+      scope: $rootScope
+      keyboard: false
+      backdrop: 'static'
+      windowClass: 'snail-modal'
