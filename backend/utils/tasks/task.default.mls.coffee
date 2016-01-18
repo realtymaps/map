@@ -12,7 +12,7 @@ _ = require 'lodash'
 # NOTE: This file a default task definition used for MLSs that have no special cases
 
 
-NUM_ROWS_TO_PAGINATE = 5000
+NUM_ROWS_TO_PAGINATE = 2500
 
 
 loadRawData = (subtask) ->
