@@ -23,7 +23,7 @@ getColumns = (fileType, action, dataType) -> Promise.try () ->
 
 
 module.exports =
-  NUM_ROWS_TO_PAGINATE: 5000
+  NUM_ROWS_TO_PAGINATE: 2500
   BLACKKNIGHT_PROCESS_DATES: 'blackknight process dates'
   TAX: 'tax'
   DEED: 'deed'
