@@ -29,6 +29,7 @@ rmapsPlansService, rmapsOnboardingService) ->
 
         set: (newPlan) ->
           $scope.user.plan.name = newPlan
+          rmapsOnboardingOrderSelector.initScope(newPlan, $scope)
           if $scope.view?.plans?
             $scope.user.plan.price = $scope.view.plans[newPlan]?.price
             unless $scope.user.plan.price
@@ -68,7 +69,8 @@ rmapsPlansService, rmapsOnboardingService) ->
         $scope.view.step = step if step
         $scope.view.hasNextStep = $scope.orderSvc.getNextStep($scope.view.step)?
         $scope.view.hasPrevStep = $scope.orderSvc.getPrevStep($scope.view.step)?
-        currentPlan = if $scope.orderSvc.name then $scope.orderSvc.name else 'standard'
+        aPlan = $scope.orderSvc.name or $scope.user.plan.name
+        currentPlan = aPlan or 'standard'
         $scope.user.plan.set(currentPlan)
         $scope.view.currentStepId = $scope.orderSvc.getId($scope.view.step.replace(proRegEx, '')) + 1
 
@@ -141,6 +143,9 @@ app.controller 'rmapsOnboardingPaymentCtrl',
 
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
+
+  rmapsFipsCodes.getAllMlsCodes().then (mlsCodes) ->
+    $scope.mlsCodes = mlsCodes
 
   $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode

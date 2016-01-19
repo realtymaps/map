@@ -55,16 +55,23 @@ falsyTransformsToNoop = (transforms) ->
 falsyDefaultTransformsToNoop = (transforms) ->
   falsyTransformsToNoop(defaultRequestTransforms(transforms))
 
-requireAllTransforms = (definitions) ->
+requireAllTransforms = (definitions, excludes) ->
   for key, tran of definitions
     if _.isFunction tran #TODO handle arrays
-      definitions[key] =
-        transform: tran
-        required: true
+      if !tran.notRequired and (!excludes? or excludes.indexOf(key) < 0)
+        definitions[key] =
+          transform: tran
+          required: true
+
+      if tran.notRequired
+        delete tran.notRequired
       continue
     tran.required = true
   definitions
 
+notRequired = (transform) ->
+  transform.notRequired = true
+  transform
 
 module.exports =
   validateAndTransform: validateAndTransform
@@ -77,3 +84,4 @@ module.exports =
   defaultRequestTransforms : defaultRequestTransforms
   falsyDefaultTransformsToNoop: falsyDefaultTransformsToNoop
   requireAllTransforms: requireAllTransforms
+  notRequired: notRequired

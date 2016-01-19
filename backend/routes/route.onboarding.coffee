@@ -30,7 +30,7 @@ handles = wrapHandleRoutes
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
 
-      # logger.debug.cyan validReq, true
+      # console.log.cyan validReq.body, true
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
@@ -56,6 +56,20 @@ handles = wrapHandleRoutes
             logger.debug "new user (#{id}) inserted SUCCESS"
             tables.auth.user(trx).select(basicColumns.user.concat(["id"])...).where id: parseInt id
           .then expectSingleRow
+          .then (authUser) ->
+            {fips_code, mls_code} = validReq.body
+            if !fips_code and !mls_code
+              throw new Error("fips_code or mls_code required for user location restrictions.")
+            if fips_code
+              tables.auth.m2m_user_locations(trx)
+              .insert(auth_user_id: authUser.id, fips_code: validReq.body.fips_code)
+              .then ->
+                authUser
+            if mls_code
+              tables.auth.m2m_user_mls(trx)
+              .insert(auth_user_id: authUser.id, mls_code: validReq.body.mls_code)
+              .then ->
+                authUser
           .then (authUser) ->
             logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
             paymentServices.customers.create

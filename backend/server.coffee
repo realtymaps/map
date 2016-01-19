@@ -1,6 +1,7 @@
 config = require './config/config'
 
 require '../common/extensions/strings'
+require './extensions/console'
 require './config/promisify'
 require './extensions'
 

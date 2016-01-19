@@ -1,4 +1,4 @@
-{validators, requireAllTransforms} = require '../util.validation'
+{validators, requireAllTransforms, notRequired} = require '../util.validation'
 {VALIDATION}= require '../../config/config'
 emailTransforms = require('./transforms.email')
 
@@ -18,7 +18,8 @@ module.exports =
       ###
       password: validators.string(regex: VALIDATION.password)
       email: emailTransforms
-      fips_code: validators.string(minLength: 5)
+      fips_code: notRequired validators.string(minLength: 5)
+      mls_code:  notRequired validators.string(minLength: 2)
       first_name: validators.string(minLength: 2)
       last_name: validators.string(minLength: 2)
 
