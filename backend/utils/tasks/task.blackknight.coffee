@@ -238,7 +238,7 @@ normalizeData = (subtask) ->
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
   .then (result) ->
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName}: done with normalizeData subtask")
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done with normalizeData subtask")
     result
 
 finalizeDataPrep = (subtask) ->
