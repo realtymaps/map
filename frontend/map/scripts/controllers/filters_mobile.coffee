@@ -10,8 +10,6 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   MAX_SIZE = 10000
   MAX_DOM = 365
 
-  console.log "Selected Filters !!! #{$scope.selectedFilters}"
-
   #initialize values for filter options in the select tags
   $scope.filterValues = rmapsFilters.values
 
@@ -19,111 +17,91 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.bedsMin = $scope.selectedFilters.bedsMin || 0
   $scope.bathsMin = $scope.selectedFilters.bathsMin || 0
 
+  #
+  # Create slider step arrays
+  #
+  initStepsArray = (minValue, maxValue, startIncrement, breakpoint, endIncrement) ->
+    stepsA = (step for step in [minValue .. breakpoint] by startIncrement)
+    stepsB = (step for step in [breakpoint + endIncrement .. maxValue] by endIncrement)
+
+    stepsA.concat stepsB
+
+  priceSteps = initStepsArray 0, MAX_PRICE, 10000, 1000000, 250000
+  sizeSteps = initStepsArray 0, MAX_SIZE, 100, 5000, 500
+  domSteps = initStepsArray 0, MAX_DOM, 1, 180, 5
+
+  #
   # Create slider options
-
-
-  # Generate the steps array with $10k steps up to $1m then $250k steps after
-  stepsA = (step for step in [0 .. 1000000] by 10000)
-  stepsB = (step for step in [1250000 .. MAX_PRICE] by 250000)
-
-  steps = stepsA.concat stepsB
-  $scope.steps = steps
-
   #
-  # Set up price slider and use previously set min/max values
-  #
-  priceMin = $scope.selectedFilters.priceMin
-  if priceMin
-    priceMin = 1 * priceMin.replace(/[$,]/g, '')
-  else
-    priceMin = 0
+  initSliderConfig = (minValue, maxValue, steps, presetMin, presetMax) ->
+    # Filter the user filter values for $ and , characters
+    if presetMin
+      presetMin = 1 * presetMin.replace(/[$,]/g, '')
+    else
+      presetMin = minValue
 
-  priceMax = $scope.selectedFilters.priceMax
-  if priceMax
-    priceMax = 1 * priceMax.replace(/[$,]/g, '')
-  else
-    priceMax = MAX_PRICE
+    if presetMax
+      presetMax = 1 * presetMax.replace(/[$,]/g, '')
+    else
+      presetMax = maxValue
 
-  stepMin = 0
-  stepMinIdx = 0
-  stepMax = -1
-  stepMaxIdx = -1
-  for step, idx in steps
-    if step <= priceMin
-      stepMin = step
-      stepMinIdx = idx
+    # Find the closest step values lower than the existing min and higher than the existing max
+    stepMin = 0
+    stepMinIdx = 0
+    stepMax = -1
+    stepMaxIdx = -1
+    for step, idx in steps
+      if step <= presetMin
+        stepMin = step
+        stepMinIdx = idx
 
-    if step >= priceMax and stepMax == -1
-      stepMax = step
-      stepMaxIdx = idx
+      if step >= presetMax and stepMax == -1
+        stepMax = step
+        stepMaxIdx = idx
 
-  stepMaxIdx = steps.length - 1 if stepMax == -1
+    stepMaxIdx = steps.length - 1 if stepMax == -1
 
-  $scope.priceSlider =
-    min: stepMinIdx
-    max: stepMaxIdx
-    options:
-      floor: 0,
-      ceil: MAX_PRICE
-      stepsArray: steps
-      hideLimitLabels: true
+    return {
+      min: stepMinIdx
+      max: stepMaxIdx
+      options:
+        floor: minValue,
+        ceil: maxValue
+        stepsArray: steps
+        hideLimitLabels: true
+    }
 
-  #
-  # Set up Size slider and use any previously set min/max values
-  #
-  sizeMin = $scope.selectedFilters.sizeMin
-  if sizeMin
-    sizeMin = 1 * sizeMin.replace(/[$,]/g, '')
-  else
-    sizeMin = 0
-
-  sizeMax = $scope.selectedFilters.sizeMax
-  if sizeMax
-    sizeMax = 1 * sizeMax.replace(/[$,]/g, '')
-  else
-    sizeMax = MAX_SIZE
-
-  $scope.sizeSlider =
-    min: 0
-    max: MAX_SIZE
-    options:
-      floor: 0,
-      ceil: MAX_SIZE
-      step: 50
-      hideLimitLabels: true
-
-  $scope.domSlider =
-    min: 0
-    max: MAX_DOM
-    options:
-      floor: 0,
-      ceil: MAX_DOM
-      step: 1
-      hideLimitLabels: true
+  $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
+  $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
+  $scope.domSlider = initSliderConfig 0, MAX_DOM, domSteps, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
   $timeout () ->
     $scope.$broadcast 'rzSliderForceRender'
 
+  #
+  # Display step value to user
+  #
+
   $scope.translatePrice = (index) ->
-    value = $filter('number')(steps[index], 0)
-    if index == steps.length - 1
+    value = $filter('number')(priceSteps[index], 0)
+    if index == priceSteps.length - 1
       value += '+'
 
     return value
 
-  $scope.translateSize = (value) ->
-    formatted = $filter('number')(value, 0)
-    if value == MAX_SIZE
-      formatted += '+'
+  $scope.translateSize = (index) ->
+    value = $filter('number')(sizeSteps[index], 0)
+    if index == sizeSteps.length - 1
+      value += '+'
 
-    return formatted
+    return value
 
-  $scope.translateDom = (value) ->
-    formatted = $filter('number')(value, 0)
-    if value == MAX_DOM
-      formatted += '+'
+  $scope.translateDom = (index) ->
+    value = $filter('number')(domSteps[index], 0)
+    if index == domSteps.length - 1
+      value += '+'
 
-    return formatted
+    return value
 
   #
   # Events
@@ -137,11 +115,31 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     $scope.bathsMin = $scope.bathsMin + incr
     $scope.bathsMin = 0 if $scope.bathsMin < 0
 
-  # Options for the price slider
+  #
+  # Apply the filter changes to the map results
+  #
   $scope.apply = () ->
-    $log.debug "Apply changes"
-    $scope.selectedFilters.priceMin = "" + steps[$scope.priceSlider.min]
-    $scope.selectedFilters.priceMax = "" + steps[$scope.priceSlider.max]
+    # If the slider has been set at the maximum value,
+    # delete the current filter max so the filter will not have an upper bound
+
+    $scope.selectedFilters.priceMin = "" + priceSteps[$scope.priceSlider.min]
+    if $scope.priceSlider.max < priceSteps.length - 1
+      $scope.selectedFilters.priceMax = "" + priceSteps[$scope.priceSlider.max]
+    else
+      delete $scope.selectedFilters.priceMax
+
+    $scope.selectedFilters.sqftMin = "" + sizeSteps[$scope.sizeSlider.min]
+    if $scope.sizeSlider.max < sizeSteps.length - 1
+      $scope.selectedFilters.sqftMax = "" + sizeSteps[$scope.sizeSlider.max]
+    else
+      delete $scope.selectedFilters.sqftMax
+
+    $scope.selectedFilters.listedDaysMin = "" + domSteps[$scope.domSlider.min]
+    if $scope.domSlider.max < domSteps.length - 1
+      $scope.selectedFilters.listedDaysMax = "" + domSteps[$scope.domSlider.max]
+    else
+      delete $scope.selectedFilters.listedDaysMax
+
     $scope.selectedFilters.bedsMin = $scope.bedsMin
     $scope.selectedFilters.bathsMin = $scope.bathsMin
 
