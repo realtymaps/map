@@ -16,44 +16,29 @@ lobPromise = Promise.try () ->
     promisify.lob(live)
     { test, live }
 
-filterLobResponseErrors = (res) ->
-  if 'errors' not of res
-    return
-  errorList = _.cloneDeep res.errors
-  anError = errorList.pop()
-  msg = "#{anError.message}"
-  while anError = errorList.pop()
-    msg = "#{msg}, #{anError.message}"
-  msg = "#{msg}, Placeholder Msg"
-  throw new Error(msg) # throw it up for Express to handle
-
-createNewLobObject = (Lob, userId, data) -> Promise.try () ->
-  Lob.addresses.createAsync(data.recipient)
-  .then (lobResponse) ->
-    filterLobResponseErrors(lobResponse)
-    lobResponse
-  .then (lobResponse) ->
-    logger.debug "created #{Lob.rm_type} Lob.addresses: #{JSON.stringify(lobResponse, null, 2)}"
-    lobResponse.id
+checkLobResponseErrors = (res) ->
+  return if not res.errors?.length
+  msg = _.pluck res.errors, 'message'
+  msg = msg.reverse().join(', ')
+  throw new Error("LOB returned error(s): #{msg}")
 
 sendJob = (Lob, userId, data) -> Promise.try () ->
-  createNewLobObject(Lob, userId, data)
-  .then (address) ->
+  Lob.addresses.createAsync(data.recipient)
+  .then (lobResponse) ->
+    checkLobResponseErrors(lobResponse)
+    logger.debug "created #{Lob.rm_type} Lob.addresses: #{JSON.stringify(lobResponse, null, 2)}"
+
     Lob.letters.createAsync
       description: data.description
-      #to: address.id
       to: data.recipient
       from: data.sender
       file: data.content
-      #file: rawLetterContent2
-      #data: data.macros
       data: {'name': 'Justin'}
       color: true
       template: true
+
   .then (lobResponse) ->
-    filterLobResponseErrors(lobResponse)
-    lobResponse
-  .then (lobResponse) ->
+    checkLobResponseErrors(lobResponse)
     logger.debug "created #{Lob.rm_type} Lob.letters: #{JSON.stringify(lobResponse, null, 2)}"
     lobResponse
 
@@ -64,6 +49,7 @@ module.exports =
       sendJob(lob.test, userId, data)
       .then (lobResponse) ->
         lobResponse.price
+
   sendSnailMail: (userId, data) ->
     lobPromise
     .then (lob) ->
