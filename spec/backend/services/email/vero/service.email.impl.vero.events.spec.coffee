@@ -32,7 +32,7 @@ describe "service.email.impl.vero.events", ->
       @promise
 
     it "is called", ->
-      @vero.createUserAndTrackEvent.called.should.be.ok
+      @vero.createUserAndTrackEvent.called.should.be.ok()
 
     it "id" , ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
@@ -63,7 +63,7 @@ describe "service.email.impl.vero.events", ->
       @promise
 
     it "is called", ->
-      @vero.createUserAndTrackEvent.called.should.be.ok
+      @vero.createUserAndTrackEvent.called.should.be.ok()
 
     it "id" , ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
@@ -99,7 +99,7 @@ describe "service.email.impl.vero.events", ->
         @promise
 
       it "is called", ->
-        @vero.createUserAndTrackEvent.called.should.be.ok
+        @vero.createUserAndTrackEvent.called.should.be.ok()
 
       it "id" , ->
         @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email

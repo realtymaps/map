@@ -55,8 +55,8 @@ describe "service.payment.impl.stripe.events", ->
       @promise
 
     it "called", ->
-      @stripe.events.retrieve.called.should.be.ok
-      @emailEvents.subscriptionVerified.called.should.be.ok
+      @stripe.events.retrieve.called.should.be.ok()
+      @emailEvents.subscriptionVerified.called.should.be.ok()
 
     it 'opts', ->
       @emailEvents.subscriptionVerified.args[0][0].should.be.eql
@@ -75,8 +75,8 @@ describe "service.payment.impl.stripe.events", ->
       @promise
 
     it "called", ->
-      @stripe.events.retrieve.called.should.be.ok
-      @emailEvents.subscriptionDeleted.called.should.be.ok
+      @stripe.events.retrieve.called.should.be.ok()
+      @emailEvents.subscriptionDeleted.called.should.be.ok()
 
     it 'opts', ->
       @emailEvents.subscriptionDeleted.args[0][0].should.be.eql
@@ -95,8 +95,8 @@ describe "service.payment.impl.stripe.events", ->
       @promise
 
     it "called", ->
-      @stripe.events.retrieve.called.should.be.ok
-      @emailEvents.subscriptionUpdated.called.should.be.ok
+      @stripe.events.retrieve.called.should.be.ok()
+      @emailEvents.subscriptionUpdated.called.should.be.ok()
 
     it 'opts', ->
       @emailEvents.subscriptionUpdated.args[0][0].should.be.eql
@@ -115,8 +115,8 @@ describe "service.payment.impl.stripe.events", ->
       @promise
 
     it "called", ->
-      @stripe.events.retrieve.called.should.be.ok
-      @emailEvents.subscriptionTrialEnding.called.should.be.ok
+      @stripe.events.retrieve.called.should.be.ok()
+      @emailEvents.subscriptionTrialEnding.called.should.be.ok()
 
     it 'opts', ->
       @emailEvents.subscriptionTrialEnding.args[0][0].should.be.eql
