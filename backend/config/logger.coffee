@@ -79,4 +79,6 @@ class Logger
 
 logger = new Logger(baselogger)
 
+colorWrap(logger)
+
 module.exports = logger

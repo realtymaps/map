@@ -1,6 +1,13 @@
-generators = require './impl/util.error.impl.generators'
+NamedError = require './util.error.named'
 
-module.exports = generators.named [
-  'ValidateEmail'
-  'ValidateEmailHashTimedOut'
-]
+class ValidateEmailError extends NamedError
+  constructor: (args...) ->
+    super('ValidateEmail', args...)
+
+class ValidateEmailHashTimedOutError extends NamedError
+  constructor: (args...) ->
+    super('ValidateEmailHashTimedOut', args...)
+
+module.exports =
+  ValidateEmailError:ValidateEmailError
+  ValidateEmailHashTimedOutError: ValidateEmailHashTimedOutError
