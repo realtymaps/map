@@ -101,20 +101,20 @@
 
         .item.settings-row
           .settings-left
-            button.settings-button(ng-click="changeBeds(-1)")
+            button.button.settings-button(ng-click="changeBeds(-1)")
               i.icon-minus
           .settings-right
-            button.settings-button(ng-click="changeBeds(1)")
+            button.button.settings-button(ng-click="changeBeds(1)")
               i.icon-plus
           .settings-center
             .settings-label {{bedsMin}} Bedrooms
 
         .item.settings-row
           .settings-left
-            button.settings-button(ng-click="changeBaths(-1)")
+            button.button.settings-button(ng-click="changeBaths(-1)")
               i.icon-minus
           .settings-right
-            button.settings-button(ng-click="changeBaths(1)")
+            button.button.settings-button(ng-click="changeBaths(1)")
               i.icon-plus
           .settings-center
             .settings-label {{bathsMin}} Bathrooms
@@ -125,8 +125,8 @@
           .settings-slider
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
-        .item.settings-row
-             button(ng-click="apply()") Apply Filters
+      footer.mobile-footer.mobile-footer-modal
+        button.button.button-full.button-action(ng-click="apply()") Apply Filters
 
   script(type="text/ng-template" id="SettingsSliderTemplate")
     include _settingsSliderTemplate.html

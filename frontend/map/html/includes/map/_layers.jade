@@ -35,13 +35,13 @@
     .list
       .item-divider Show
       .item
-        button.btn.button.button-block(ng-click="Toggles.toggleAddresses()" ng-class="{'btn-inactive' : !Toggles.showAddresses }") Address
-        button.btn.button.button-block(ng-click="Toggles.togglePrices()" ng-class="{'btn-inactive' : !Toggles.showPrices }") Price
-        button.btn.button.button-block(ng-click="Toggles.toggleNotes()" ng-class="{'btn-inactive' : !Toggles.showNotes }") Notes
-        button.btn.button.button-block(ng-click="Toggles.toggleMail()" ng-class="{'btn-inactive' : !Toggles.showMail }") Sent Mail
+        button.button.button-block(ng-click="Toggles.toggleAddresses()" ng-class="{'button-inactive' : !Toggles.showAddresses }") Address
+        button.button.button-block(ng-click="Toggles.togglePrices()" ng-class="{'button-inactive' : !Toggles.showPrices }") Price
+        button.button.button-block(ng-click="Toggles.toggleNotes()" ng-class="{'button-inactive' : !Toggles.showNotes }") Notes
+        button.button.button-block(ng-click="Toggles.toggleMail()" ng-class="{'button-inactive' : !Toggles.showMail }") Sent Mail
       .item-divider Status
       .item
-        button.btn.button.button-block.btn-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'btn-inactive' : !selectedFilters.forSale }") For Sale
-        button.btn.button.button-block.btn-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'btn-inactive' : !selectedFilters.pending }") Pending
-        button.btn.button.button-block.btn-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'btn-inactive' : !selectedFilters.sold }") Sold
-        button.btn.button.button-block.btn-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'btn-inactive' : !selectedFilters.notForSale }") Off Market
+        button.button.button-block.button-forsale(ng-click="selectedFilters.forSale = !selectedFilters.forSale" ng-class="{'button-inactive' : !selectedFilters.forSale }") For Sale
+        button.button.button-block.button-pending(ng-click="selectedFilters.pending = !selectedFilters.pending" ng-class="{'button-inactive' : !selectedFilters.pending }") Pending
+        button.button.button-block.button-sold(ng-click="selectedFilters.sold = !selectedFilters.sold" ng-class="{'button-inactive' : !selectedFilters.sold }") Sold
+        button.btn.button.button-block.button-offmarket(ng-click="selectedFilters.notForSale = !selectedFilters.notForSale" ng-class="{'button-inactive' : !selectedFilters.notForSale }") Off Market

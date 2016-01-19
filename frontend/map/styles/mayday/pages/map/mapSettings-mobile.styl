@@ -1,6 +1,11 @@
 @import "../../../common.styl"
 
 .settings-modal-mobile
+  height: 100%;
+  width: 100%;
+
+  .list
+    padding-bottom: 42px; // account for scrolling over the footer button
 
   .item.settings-row
     $fnClearfix()
@@ -43,11 +48,12 @@
   .settings-button
     width: 32px;
     height: 32px;
+    margin: 0;
+    padding: 0;
     background-color: white;
-    color: $rm-mobile-settings-control-color;
-    border: solid 1px $rm-mobile-settings-control-color;
-    border-radius: 2px;
-    -moz-border-radius: 2px;
+
+  .settings-apply
+      margin-bottom: 0
 
   .settings-slider
     rzslider

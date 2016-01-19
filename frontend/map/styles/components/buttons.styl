@@ -1,13 +1,47 @@
+@import "../bootstrap.styl"
+
 $rm-button-height = 40px
 
 .button
-  text-align: center
-  min-height $rm-button-height
-  text-overflow: ellipsis
-  line-height: $rm-button-height
+  //min-height $rm-button-height
+  //line-height: $rm-button-height
   margin-bottom: 10px;
-  border-radius: 0
+  padding: 10px;
+  text-align: center
+  text-overflow: ellipsis
+  color: $rm-mobile-settings-control-color;
+  border: solid 1px $rm-mobile-settings-control-color;
+  border-radius: 2px;
+  -moz-border-radius: 2px;
 
-.button-block
-  display: block
-  width: 100%
+  &.button-block
+    display: block
+    width: 100%
+
+  &.button-full
+    display: block
+    width: 100%
+
+  &.button-action
+    color: white;
+    background-color: $rm-mobile-settings-value-color;
+    margin: 0;
+
+  //
+  // Button Colors
+  //
+
+  &.button-forsale
+    @extend .btn.btn-forsale;
+
+  &.button-pending
+    @extend .btn.btn-pending;
+
+  &.button-sold
+    @extend .btn.btn-sold;
+
+  &.button-offmarket
+    @extend .btn.btn-offmarket;
+
+  &.button-inactive
+    @extend .btn.btn-inactive;
