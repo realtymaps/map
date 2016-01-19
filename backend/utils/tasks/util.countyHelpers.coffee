@@ -66,20 +66,26 @@ loadRawData = (subtask, options) ->
       .then () ->
         fs.mkdirAsync("/tmp/#{fileBaseName}")
       .then () -> new Promise (resolve, reject) ->
-        fs.createReadStream("/tmp/#{fileBaseName}.zip")
-        .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
-        .on('close', resolve)
-        .on('error', reject)
+        try
+          fs.createReadStream("/tmp/#{fileBaseName}.zip")
+          .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+          .on('close', resolve)
+          .on('error', reject)
+        catch err
+          reject new SoftFail(err.toString())
       .then () ->
         "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
     when 'gz'
       dataStreamPromise = dataStreamPromise
       .then () -> new Promise (resolve, reject) ->
-        fs.createReadStream("/tmp/#{fileBaseName}.gz")
-        .pipe(zlib.createGunzip())
-        .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
-        .on('close', resolve)
-        .on('error', reject)
+        try
+          fs.createReadStream("/tmp/#{fileBaseName}.gz")
+          .pipe(zlib.createGunzip())
+          .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
+          .on('close', resolve)
+          .on('error', reject)
+        catch err
+          reject new SoftFail(err.toString())
       .then () ->
         "/tmp/#{fileBaseName}"
     else
@@ -90,7 +96,7 @@ loadRawData = (subtask, options) ->
   dataStreamPromise
   .then (localFilePath) ->
     fs.createReadStream(localFilePath)
-  .catch (err) ->
+  .catch isUnhandled, (err) ->
     throw new SoftFail(err.toString())
   .then (rawDataStream) ->
     dataLoadHistory =
