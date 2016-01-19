@@ -194,7 +194,8 @@ describe 'route.projectSession', ->
           select "user_notes"."id" as "id", "user_notes"."auth_user_id" as "auth_user_id",
            "user_notes"."project_id" as "project_id", "user_notes"."rm_property_id" as "rm_property_id",
            "user_notes"."geom_point_json" as "geom_point_json", "user_notes"."comments" as "comments",
-           "user_notes"."text" as "text", "user_notes"."title" as "title" from "user_notes"
+           "user_notes"."text" as "text", "user_notes"."title" as "title", "user_notes"."rm_modified_time" as "rm_modified_time",
+           "user_notes"."rm_inserted_time" as "rm_inserted_time" from "user_notes"
            inner join "user_project" on "user_project"."id" = "user_notes"."project_id" where
            "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
 

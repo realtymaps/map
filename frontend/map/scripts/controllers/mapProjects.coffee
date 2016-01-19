@@ -32,7 +32,8 @@ app.controller 'rmapsMapProjectsCtrl', ($scope, $state, $modal, $window, rmapsPr
       $scope.saveProject()
 
   $scope.archiveProject = (project) ->
-    rmapsProjectsService.update id: project.project_id, archived: !project.archived
+    project.archived = !project.archived
+    rmapsProjectsService.update project.project_id, _.pick project, 'archived'
     .then () ->
       $scope.projectDropdown.isOpen = false
 
