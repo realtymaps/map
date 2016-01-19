@@ -1,13 +1,14 @@
-_ = require 'lodash'
-generators = require './impl/util.error.impl.generators'
+NamedError = require './util.error.named'
 
-errors = generators.named [
-  'InvalidArgument'
-]
+class InvalidArgumentError extends NamedError
+  constructor: (args...) ->
+    super('InvalidArgument', args...)
+
 onMissingArgsFail = (argsObj) ->
   for key, obj of argsObj
     if obj?.required && !obj?.val?
-      throw new errors.InvalidArgumentError(obj.error or "argument (#{key}) is undefined and required")
+      throw new InvalidArgumentError(obj.error or "argument (#{key}) is undefined and required")
 
-module.exports = _.extend errors,
+module.exports =
+  InvalidArgumentError: InvalidArgumentError
   onMissingArgsFail: onMissingArgsFail
