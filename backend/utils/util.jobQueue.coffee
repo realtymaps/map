@@ -16,7 +16,14 @@ keystore = require '../services/service.keystore'
 TaskImplementation = require './tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 {HardFail, SoftFail} = require './errors/util.error.jobQueue'
-dataLoadHelpers = require './tasks/util.dataLoadHelpers'
+
+
+# TODO: delete this
+buildUniqueSubtaskName = (subtask, prefix='raw') ->
+  parts = [prefix, subtask.batch_id, subtask.task_name, subtask.data.dataType]
+  if subtask.data.rawTableSuffix
+    parts.push(subtask.data.rawTableSuffix)
+  parts.join('_')
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -308,7 +315,7 @@ executeSubtask = (subtask) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .then () ->
       if subtask.name == 'blackknight_normalizeData'
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done executing subtask")
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{buildUniqueSubtaskName(subtask)}: done executing subtask")
     .then () ->
       tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
@@ -317,7 +324,7 @@ executeSubtask = (subtask) ->
         finished: dbs.get('main').raw('NOW()')
     .then () ->
       if subtask.name == 'blackknight_normalizeData'
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done marking subtask success")
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{buildUniqueSubtaskName(subtask)}: done marking subtask success")
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
