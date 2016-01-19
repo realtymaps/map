@@ -1,7 +1,18 @@
-generators = require './impl/util.error.impl.generators'
+NamedError = require './util.error.named'
 
-module.exports = generators.named [
-  'IsIdObj'
-  'MissingVar'
-  'UpdateFailed'
-]
+class IsIdObjError extends NamedError
+  constructor: (args...) ->
+    super('IsIdObj', args...)
+
+class MissingVarError extends NamedError
+  constructor: (args...) ->
+    super('MissingVar', args...)
+
+class UpdateFailedError extends NamedError
+  constructor: (args...) ->
+    super('UpdateFailed', args...)
+
+module.exports =
+  IsIdObjError:IsIdObjError
+  MissingVarError: MissingVarError
+  UpdateFailedError: UpdateFailedError
