@@ -16,6 +16,7 @@ keystore = require '../services/service.keystore'
 TaskImplementation = require './tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 {HardFail, SoftFail} = require './errors/util.error.jobQueue'
+dataLoadHelpers = require './tasks/util.dataLoadHelpers'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -303,41 +304,48 @@ executeSubtask = (subtask) ->
     started: dbs.get('main').raw('NOW()')
   .then () ->
     TaskImplementation.getTaskCode(subtask.task_name)
-    .then (taskImpl) ->
-      subtaskPromise = taskImpl.executeSubtask(subtask)
-      .then () ->
-        tables.jobQueue.currentSubtasks()
-        .where(id: subtask.id)
-        .update
-          status: 'success'
-          finished: dbs.get('main').raw('NOW()')
-      if subtask.kill_timeout_seconds?
-        subtaskPromise = subtaskPromise
-        .timeout(subtask.kill_timeout_seconds*1000)
-        .catch Promise.TimeoutError, _handleSubtaskError.bind(null, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
+  .then (taskImpl) ->
+    subtaskPromise = taskImpl.executeSubtask(subtask)
+    .then () ->
+      if subtask.name == 'blackknight_normalizeData'
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done executing subtask")
+    .then () ->
+      tables.jobQueue.currentSubtasks()
+      .where(id: subtask.id)
+      .update
+        status: 'success'
+        finished: dbs.get('main').raw('NOW()')
+    .then () ->
+      if subtask.name == 'blackknight_normalizeData'
+        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done marking subtask success")
+    if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
-      .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
-      .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
-      .catch PartiallyHandledError, _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
-      .catch isUnhandled, (err) ->
-        logger.error("Unexpected error caught during job execution: #{err.stack||err}")
-        _handleSubtaskError(subtask, 'infrastructure fail', true, err)
-      .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
+      .timeout(subtask.kill_timeout_seconds*1000)
+      .catch Promise.TimeoutError, _handleSubtaskError.bind(null, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
+    subtaskPromise = subtaskPromise
+    .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
+    .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
+    .catch PartiallyHandledError, _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
+    .catch isUnhandled, (err) ->
+      logger.error("Unexpected error caught during job execution: #{err.stack||err}")
+      _handleSubtaskError(subtask, 'infrastructure fail', true, err)
+    .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
+      sendNotification
+        subject: 'major db interaction problem'
+        subtask: subtask
+        error: err
+      throw err
+    if subtask.warn_timeout_seconds?
+      doNotification = () ->
         sendNotification
-          subject: 'major db interaction problem'
+          subject: 'subtask: long run warning'
           subtask: subtask
-          error: err
-        throw err
-      if subtask.warn_timeout_seconds?
-        warnTimeout = setTimeout () ->
-          sendNotification
-            subject: 'subtask: long run warning'
-            subtask: subtask
-            error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
-        subtaskPromise = subtaskPromise
-        .finally () ->
-          clearTimeout(warnTimeout)
-      return subtaskPromise
+          error: "subtask has been running for longer than #{subtask.warn_timeout_seconds} seconds"
+      warnTimeout = setTimeout(doNotification, subtask.warn_timeout_seconds)
+      subtaskPromise = subtaskPromise
+      .finally () ->
+        clearTimeout(warnTimeout)
+    return subtaskPromise
 
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->

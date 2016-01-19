@@ -237,6 +237,9 @@ normalizeData = (subtask) ->
     dataSourceId: 'blackknight'
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
+  .then (result) ->
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName}: done with normalizeData subtask")
+    result
 
 finalizeDataPrep = (subtask) ->
   Promise.map subtask.data.sources, (source) ->
