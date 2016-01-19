@@ -282,7 +282,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
     console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName}: done with normalizeData join")
     result
 
-  _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
+_updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row
   tables.property[dataType]()
   .select('*')
