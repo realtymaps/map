@@ -64,14 +64,24 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           phone: identity.user.work_phone
           email: identity.user.email
 
-  _getLobSenderData = (origSender = {}) ->
+  _getLobSenderData = () ->
     # https://lob.com/docs#addresses
-    lobSenderData = _.cloneDeep origSender
+    lobSenderData = _.cloneDeep mailCampaign.sender_info
     lobSenderData.name = "#{lobSenderData.first_name ? ''} #{lobSenderData.last_name ? ''}".trim()
     delete lobSenderData.first_name
     delete lobSenderData.last_name
     lobSenderData
 
+  _getLobRecipientData = () ->
+    return null unless mailCampaign.recipients?.length
+    _.map mailCampaign.recipients, (r) ->
+      r = _.mapValues r, (v) -> v || ""
+      name: r.name ? "Bob McBob"
+      address_line1: "#{r.street_address_num} #{r.street_address_name}"
+      address_line2: " #{r.street_address_unit}"
+      address_city: "#{r.city}"
+      address_state: "#{r.state}"
+      address_zip: "#{r.zip}"
 
   _createPreviewHtml = () ->
     # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
@@ -133,12 +143,11 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   quote: () ->
     $log.debug mailCampaign
-    lobSenderData = _getLobSenderData()
     $rootScope.lobData =
       content: _createLobHtml()
       macros: {'name': 'Justin'}
-      recipient: mailCampaign.recipients[0]
-      sender: lobSenderData
+      recipient: _getLobRecipientData()?[0]
+      sender: _getLobSenderData()
     $rootScope.modalControl = {}
     $modal.open
       template: require('../../html/views/templates/modal-snailPrice.tpl.jade')()
