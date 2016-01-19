@@ -100,34 +100,33 @@
             rzslider(rz-slider-model="sizeSlider.min" rz-slider-high="sizeSlider.max" rz-slider-options="sizeSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
         .item.settings-row
-          .settings-left
-            button.settings-button
-              i.icon-minus
-          .settings-right
-            button.settings-button
-              i.icon-plus
-          .settings-center
-            .settings-label 5 Days on Market
+          .settings-header Days on Market
+          .settings-value {{translateDom(domSlider.min)}} - {{translateDom(domSlider.max)}}
+          .settings-slider
+            rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
         .item.settings-row
           .settings-left
-            button.settings-button
+            button.settings-button(ng-click="changeBeds(-1)")
               i.icon-minus
           .settings-right
-            button.settings-button
+            button.settings-button(ng-click="changeBeds(1)")
               i.icon-plus
           .settings-center
-            .settings-label 2 Bedrooms
+            .settings-label {{bedsMin}} Bedrooms
 
         .item.settings-row
           .settings-left
-            button.settings-button
+            button.settings-button(ng-click="changeBaths(-1)")
               i.icon-minus
           .settings-right
-            button.settings-button
+            button.settings-button(ng-click="changeBaths(1)")
               i.icon-plus
           .settings-center
-            .settings-label 2 Bathrooms
+            .settings-label {{bathsMin}} Bathrooms
+
+         .item.settings-row
+           button(ng-click="apply()") Apply Filters
 
   script(type="text/ng-template" id="SettingsSliderTemplate")
     include _settingsSliderTemplate.html
