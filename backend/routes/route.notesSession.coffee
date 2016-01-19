@@ -12,6 +12,10 @@ bodyTransform =
   validators.object
     subValidateSeparate:
       geom_point_json: validators.geojson(toCrs:true)
+      text: validators.string(minLength: 10)
+      title: validators.string()
+      rm_property_id: validators.string()
+      project_id: validators.integer()
 
 ###
 TODO: SPECS to double check security for notes permissions to notes owners
