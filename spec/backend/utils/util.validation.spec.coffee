@@ -1,6 +1,10 @@
+require("chai").should()
 Promise = require 'bluebird'
 basePath = require '../basePath'
 _ = require 'lodash'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 {
 validators
@@ -175,4 +179,3 @@ describe 'requireAllTransforms', ->
       # console.log key
       val.required.should.be.ok
       val.transform.should.be.ok
-      (val.transform == obj[key]).should.be.ok

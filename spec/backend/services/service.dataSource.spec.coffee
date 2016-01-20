@@ -4,7 +4,7 @@ svc = rewire '../../../backend/services/service.dataSource.coffee'
 tables = require '../../../backend/config/tables'
 SqlMock = require '../../specUtils/sqlMock'
 {expect, assert} = require 'chai'
-require 'should'
+require('chai').should()
 
 describe 'service.dataSource.coffee', ->
   describe 'basic CRUD', ->

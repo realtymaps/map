@@ -1,7 +1,6 @@
-require '../../globals'
-{assert} = require('chai')
+{assert, } = require('chai')
+require('chai').should()
 Promise = require 'bluebird'
-require 'should'
 basePath = require '../basePath'
 logger = require("#{basePath}/config/logger").spawn('test:route.crud.projectSession.spec.coffee')
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
@@ -234,8 +233,6 @@ describe 'route.projectSession', ->
     it 'clients', ->
       @subject.byIdDELETE(@mockRequest)
       .then =>
-        @subject.clientsCrud.svc.deleteStub.called.should.be.true
+        @subject.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
         assert.ok @subject.clientsCrud.svc.deleteStub.sqls
-        @subject.notesCrud.svc.deleteStub.called.should.be.true
-        @subject.svc.deleteStub.called.should.be.true

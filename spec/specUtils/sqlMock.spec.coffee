@@ -1,5 +1,5 @@
 subject = require './sqlMock'
-require 'should'
+require('chai').should()
 {expect, assert} = require 'chai'
 instance = null
 

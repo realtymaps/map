@@ -1,4 +1,4 @@
-require '../../../globals'
+require("chai").should()
 Promise = require 'bluebird'
 _ = require 'lodash'
 {SoftFail, HardFail} = require '../../../../backend/utils/errors/util.error.jobQueue'

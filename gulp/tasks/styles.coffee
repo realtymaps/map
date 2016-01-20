@@ -53,7 +53,7 @@ stylesWatch = (app) ->
   # Just for nicer gulp out
   stylesFn.displayName = 'styles'
 
-  console.log watchPaths
+  # console.log watchPaths
 
   watcher = gulp.watch watchPaths, conf.chokidarOpts, stylesFn
 

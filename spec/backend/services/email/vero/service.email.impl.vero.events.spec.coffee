@@ -1,4 +1,4 @@
-require 'should'
+require('chai').should()
 sinon = require 'sinon'
 Promise = require 'bluebird'
 basePath = require '../../../basePath'
@@ -19,7 +19,7 @@ describe "service.email.impl.vero.events", ->
     @authUser =
       first_name: "Bo"
       last_name: "Jackson"
-      email: "boknows@gmail.com"
+      email: ".nows@gmail.com"
       email_validation_hash: "radarIsJammed"
       cancel_email_hash: "terminated"
 
@@ -32,7 +32,7 @@ describe "service.email.impl.vero.events", ->
       @promise
 
     it "is called", ->
-      @vero.createUserAndTrackEvent.called.should.be.ok()
+      @vero.createUserAndTrackEvent.called.should.be.ok
 
     it "id" , ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
@@ -63,7 +63,7 @@ describe "service.email.impl.vero.events", ->
       @promise
 
     it "is called", ->
-      @vero.createUserAndTrackEvent.called.should.be.ok()
+      @vero.createUserAndTrackEvent.called.should.be.ok
 
     it "id" , ->
       @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email
@@ -99,7 +99,7 @@ describe "service.email.impl.vero.events", ->
         @promise
 
       it "is called", ->
-        @vero.createUserAndTrackEvent.called.should.be.ok()
+        @vero.createUserAndTrackEvent.called.should.be.ok
 
       it "id" , ->
         @vero.createUserAndTrackEvent.args[0][0].should.be.eql @authUser.email

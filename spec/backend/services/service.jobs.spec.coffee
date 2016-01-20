@@ -1,3 +1,6 @@
+sinon = require 'sinon'
+{expect,should} = require("chai")
+should()
 Promise = require 'bluebird'
 _ = require 'lodash'
 knex = require 'knex'
@@ -45,6 +48,7 @@ describe 'service.jobs.spec.coffee', ->
   describe 'history with doMaintenance', ->
     beforeEach ->
       @maintenanceSpy = sinon.spy(svc.__get__('jobQueue').doMaintenance)
+      svc.__set__('jobQueue', doMaintenance: @maintenanceSpy)
       @jobQueue_summary = new SqlMock 'jobQueue', 'summary'
 
       # aquire service class to be tested
@@ -58,7 +62,7 @@ describe 'service.jobs.spec.coffee', ->
 
     it 'should query summary with doMaintenance', () ->
       svc.summary.getAll().then (d) =>
-        @maintenanceSpy.calledOnce.should.be.true
+        @maintenanceSpy.called.should.be.true
 
 
   describe 'history error service', ->
