@@ -27,3 +27,8 @@ class MailCrud extends crudService.ThenableCrud
 
 instance = new MailCrud(tables.mail.campaign).init(false,false,false)
 module.exports = instance
+
+
+
+
+   
