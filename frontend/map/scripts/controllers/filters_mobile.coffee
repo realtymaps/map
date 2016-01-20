@@ -103,6 +103,9 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
 
     return value
 
+  $scope.translateNumeric = (value) ->
+    return (value || "0") + "+"
+
   #
   # Events
   #

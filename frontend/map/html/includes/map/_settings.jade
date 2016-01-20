@@ -107,7 +107,7 @@
             button.button.settings-button(ng-click="changeBeds(1)")
               i.icon-plus
           .settings-center
-            .settings-label {{bedsMin}} Bedrooms
+            .settings-label {{translateNumeric(bedsMin)}} Bedrooms
 
         .item.settings-row
           .settings-left
@@ -117,7 +117,7 @@
             button.button.settings-button(ng-click="changeBaths(1)")
               i.icon-plus
           .settings-center
-            .settings-label {{bathsMin}} Bathrooms
+            .settings-label {{translateNumeric(bathsMin)}} Bathrooms
 
         .item.settings-row
           .settings-header Days on Market
