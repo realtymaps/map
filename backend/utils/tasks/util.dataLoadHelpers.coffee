@@ -275,11 +275,11 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
     .then (result) ->
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName}: done processing rows")
+      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done processing rows")
       result
   Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
   .then (result) ->
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName}: done with normalizeData join")
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done with normalizeData join")
     result
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->

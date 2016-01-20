@@ -1,79 +1,132 @@
-span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
-  button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(dropdown-toggle)
-    span.icon.icon-settings
-  .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
-    h4.title Property Filters
-    ul
-      li.setPrice.row
-        span.label.col-md-3 Price
-        .col-md-4
-          input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="Minimum")
-        span.col-md-1.label to
-        .col-md-4
-          input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="Maximum")
+.settings-tool
+  .desktop-only
+    span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
+      button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(dropdown-toggle)
+        span.icon.icon-settings
+      .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
+        h4.title Property Filters
+        ul
+          li.setPrice.row
+            span.label.col-md-3 Price
+            .col-md-4
+              input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMin" placeholder="Minimum")
+            span.col-md-1.label to
+            .col-md-4
+              input.form-control(type="text" numeral format="$0,0" ng-model="selectedFilters.priceMax" placeholder="Maximum")
 
-      li.setBeds.row
-        span.label.col-md-3 Beds
-        .col-md-9
-          .btn-group
-            label.btn.btn-white.btn-radio(
-              ng-class="{active: selectedFilters.bedsMin == c.value}"
-              ng-repeat="c in filterValues.beds | filter: { value: '' }"
-              ng-model="selectedFilters.bedsMin"
-              btn-radio="{{c.value}}"
-              uncheckable) {{c.name}}
+          li.setBeds.row
+            span.label.col-md-3 Beds
+            .col-md-9
+              .btn-group
+                label.btn.btn-white.btn-radio(
+                  ng-class="{active: selectedFilters.bedsMin == c.value}"
+                  ng-repeat="c in filterValues.beds | filter: { value: '' }"
+                  ng-model="selectedFilters.bedsMin"
+                  btn-radio="{{c.value}}"
+                  uncheckable) {{c.name}}
 
-      li.setBath.row
-        span.label.col-md-3 Baths
-        .col-md-9
-          .btn-group
-            label.btn.btn-white.btn-radio(
-              ng-class="{active: selectedFilters.bathsMin == c.value}"
-              ng-repeat="c in filterValues.baths | filter: { value: '' }"
-              ng-model="selectedFilters.bathsMin"
-              btn-radio="{{c.value}}"
-              uncheckable) {{c.name}}
+          li.setBath.row
+            span.label.col-md-3 Baths
+            .col-md-9
+              .btn-group
+                label.btn.btn-white.btn-radio(
+                  ng-class="{active: selectedFilters.bathsMin == c.value}"
+                  ng-repeat="c in filterValues.baths | filter: { value: '' }"
+                  ng-model="selectedFilters.bathsMin"
+                  btn-radio="{{c.value}}"
+                  uncheckable) {{c.name}}
 
-      li.setSqft.row
-        span.label.col-md-3 Sqft
-        .col-md-4
-          input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="Minimum")
-        span.col-md-1.label to
-        .col-md-4
-          input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="Maximum")
+          li.setSqft.row
+            span.label.col-md-3 Sqft
+            .col-md-4
+              input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMin" placeholder="Minimum")
+            span.col-md-1.label to
+            .col-md-4
+              input.form-control(type="text" numeral format="0,0" ng-model="selectedFilters.sqftMax" placeholder="Maximum")
 
-      li.setAcres.row
-        span.label.col-md-3 Acres
-        .col-md-4
-          select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
-        span.col-md-1.label to
-        .col-md-4
-          select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
+          li.setAcres.row
+            span.label.col-md-3 Acres
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.acresMin" ng-options='c.value as c.name for c in filterValues.acresValues')
+            span.col-md-1.label to
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
 
-    ul
-      li.showAdvanced.row
-        span.label.col-md-12
-          span(ng-show="showAdvanced" ng-click="showAdvanced = !showAdvanced") Hide Advanced Filters ▼
-          span(ng-show="!showAdvanced" ng-click="showAdvanced = !showAdvanced") Show Advanced Filters ▲
+        ul
+          li.showAdvanced.row
+            span.label.col-md-12
+              span(ng-show="showAdvanced" ng-click="showAdvanced = !showAdvanced") Hide Advanced Filters ▼
+              span(ng-show="!showAdvanced" ng-click="showAdvanced = !showAdvanced") Show Advanced Filters ▲
 
-    ul.advanced(ng-show="showAdvanced")
-      li.setOwner.row
-        span.label.col-md-3 Owner Name
-        .col-md-9
-          input.form-control(type="text" ng-model="selectedFilters.ownerName")
+        ul.advanced(ng-show="showAdvanced")
+          li.setOwner.row
+            span.label.col-md-3 Owner Name
+            .col-md-9
+              input.form-control(type="text" ng-model="selectedFilters.ownerName")
 
-      li.setListed.row
-        span.label.col-md-3 Listed Days
-        .col-md-4
-          select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
-        span.col-md-1.label to
-        .col-md-4
-          select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
+          li.setListed.row
+            span.label.col-md-3 Listed Days
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.listedDaysMin" ng-options='c.value as c.name for c in filterValues.listedDays')
+            span.col-md-1.label to
+            .col-md-4
+              select.form-control(ng-model="selectedFilters.listedDaysMax" ng-options='c.value as c.name for c in filterValues.listedDays')
 
-      li.setClosePrice.row
-        span.label.col-md-3 Close Price
-        .col-md-4
-          input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
-        span.col-md-1.label to
-        .col-md-4
-          input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
+          li.setClosePrice.row
+            span.label.col-md-3 Close Price
+            .col-md-4
+              input.form-control(ng-model="selectedFilters.closePriceMin" type="text" numeral format="$0,0" placeholder="Minimum")
+            span.col-md-1.label to
+            .col-md-4
+              input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
+
+  .mobile-only
+    button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
+      span.icon.icon-settings
+
+  script(type="text/ng-template" id="SettingsModalMobile")
+    .settings-modal-mobile(ng-controller="rmapsFiltersMobileCtrl")
+      .list
+        .item.settings-row
+          .settings-header Price
+          .settings-value ${{translatePrice(priceSlider.min)}} - ${{translatePrice(priceSlider.max)}}
+          .settings-slider
+            rzslider(rz-slider-model="priceSlider.min" rz-slider-high="priceSlider.max" rz-slider-options="priceSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+        .item.settings-row
+          .settings-header Sq Ft
+          .settings-value {{translateSize(sizeSlider.min)}} - {{translateSize(sizeSlider.max)}}
+          .settings-slider
+            rzslider(rz-slider-model="sizeSlider.min" rz-slider-high="sizeSlider.max" rz-slider-options="sizeSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+        .item.settings-row
+          .settings-left
+            button.button.settings-button(ng-click="changeBeds(-1)")
+              i.icon-minus
+          .settings-right
+            button.button.settings-button(ng-click="changeBeds(1)")
+              i.icon-plus
+          .settings-center
+            .settings-label {{translateNumeric(bedsMin)}} Bedrooms
+
+        .item.settings-row
+          .settings-left
+            button.button.settings-button(ng-click="changeBaths(-1)")
+              i.icon-minus
+          .settings-right
+            button.button.settings-button(ng-click="changeBaths(1)")
+              i.icon-plus
+          .settings-center
+            .settings-label {{translateNumeric(bathsMin)}} Bathrooms
+
+        .item.settings-row
+          .settings-header Days on Market
+          .settings-value {{translateDom(domSlider.min)}} - {{translateDom(domSlider.max)}}
+          .settings-slider
+            rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+
+      footer.mobile-footer.mobile-footer-modal
+        button.button.button-full.button-action(ng-click="apply()") Apply Filters
+
+  script(type="text/ng-template" id="SettingsSliderTemplate")
+    include _settingsSliderTemplate.html
