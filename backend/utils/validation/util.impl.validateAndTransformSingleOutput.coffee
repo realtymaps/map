@@ -22,6 +22,6 @@ module.exports = (params, output, definition) -> Promise.try () ->
   .then (transformed) ->
     # check for required value
     if required && !transformed?
-      return Promise.reject new DataValidationError('required', output, undefined)
+      throw new DataValidationError('required', output, undefined)
     else
       return transformed
