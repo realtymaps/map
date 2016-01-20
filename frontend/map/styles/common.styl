@@ -258,10 +258,17 @@ $fnTextOverflow(dimension)
   position: relative
 
 /*http://stackoverflow.com/questions/211383/which-method-of-clearfix-is-best*/
-$fnClearFix()
-  content:"";
-  display:table;
-  clear:both;
+$fnClearfix()
+  zoom:1; /* For IE 6/7 (trigger hasLayout) */
+
+  &:before
+  &:after
+    content:"";
+    display:table;
+
+  &:after {
+    clear:both;
+  }
 
 for num in 5 10 15 20 25 30 35 40 45 50
   for where in left right top bottom
