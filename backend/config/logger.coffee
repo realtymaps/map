@@ -66,7 +66,7 @@ class Logger
             # value: 'static'
 
     @LEVELS = LEVELS
-    @currentLevel = LEVELS.error
+    @currentLevel = LEVELS[config.LOGGING.LEVEL]
 
   spawn: (newInternalLoggerOrNS) =>
     if typeof newInternalLoggerOrNS is 'string'
@@ -78,5 +78,7 @@ class Logger
     new Logger(newInternalLoggerOrNS or baseLogger)
 
 logger = new Logger(baselogger)
+
+colorWrap(logger)
 
 module.exports = logger

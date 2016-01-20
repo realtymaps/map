@@ -1,8 +1,10 @@
-require '../../../globals'
 {Crud, HasManyCrud, hasManyCrud, ThenableCrud} = require '../../../../backend/utils/crud/util.crud.service.helpers'
 tables = require '../../../../backend/config/tables'
 userServices = require '../../../../backend/services/services.user'
 Promise = require 'bluebird'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 tables.auth.permission() # calling this to bootstrap the tables queries; see tables.coffee
 

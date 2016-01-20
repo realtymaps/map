@@ -1,0 +1,8 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+source $SCRIPT_DIR/app/syncVars
+coffee -e "require('./backend/simulateHirefire').jobQueue.cancelAllRunningTasks(true, 'canceled', true).then () -> process.exit(0)"

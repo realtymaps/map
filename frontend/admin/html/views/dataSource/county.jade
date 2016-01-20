@@ -19,7 +19,7 @@
 
   .row.panel(cg-busy="countyLoading" ng-show="countyData.current && countyData.dataListType")
 
-    .close-icon(ng-click="showGrid=!showGrid") ☰
+    .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
 
     .col-md-2.list-container
       h4 Filters
@@ -34,6 +34,7 @@
 
     .col-md-2.list-container
       h4 {{countyData.dataSourceType.name}}, {{countyData.dataListType.name}}
+      .i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .placeholder-field(ng-hide="fieldData.totalCount > 0")

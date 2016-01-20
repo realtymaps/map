@@ -1,6 +1,8 @@
+{expect, should} = require "chai"
+should()
+sinon = require "sinon"
 Promise = require 'bluebird'
 _ = require 'lodash'
-require '../../../globals'
 basePath = require '../../basePath'
 {Crud, HasManyRouteCrud, wrapRoutesTrait} = require "#{basePath}/utils/crud/util.crud.route.helpers"
 crudSvc = require "#{basePath}/utils/crud/util.crud.service.helpers"
@@ -181,12 +183,12 @@ describe 'util.crud.route.helpers', ->
 
     it 'rootGET', ->
       @subject.rootGET @mockQuery
-
-      stub = @stubbedSvc.getAll
-      stub.calledOnce.should.be.ok
-      stub.calledWith
-        crappy:
-          id: 'testId'
+      .then =>
+        stub = @stubbedSvc.getAll
+        stub.calledOnce.should.be.ok
+        stub.calledWith
+          crappy:
+            id: 'testId'
 
   describe 'wrapRoutesTrait', ->
     beforeEach ->

@@ -1,4 +1,5 @@
-require '../../../globals'
+{expect,should} =require("chai")
+should()
 Promise = require 'bluebird'
 _ = require 'lodash'
 NamedError = require '../../../../backend/utils/errors/util.error.named'

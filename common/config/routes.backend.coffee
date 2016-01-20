@@ -27,7 +27,7 @@ apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
-apiBaseEmail = "#{apiBase}/Email"
+apiBaseEmail = "#{apiBase}/email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 

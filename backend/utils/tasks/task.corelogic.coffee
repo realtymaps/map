@@ -13,7 +13,7 @@ TaskImplementation = require './util.taskImplementation'
 dbs = require '../../config/dbs'
 
 
-NUM_ROWS_TO_PAGINATE = 5000
+NUM_ROWS_TO_PAGINATE = 2500
 CORELOGIC_PROCESS_DATES = 'corelogic process dates'
 TAX = 'tax'
 DEED = 'deed'

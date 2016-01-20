@@ -1,6 +1,6 @@
 basePath = require '../basePath'
 Encryptor = require "#{basePath}/utils/util.encryptor"
-
+require("chai").should()
 
 # tests below come from the official NIST definitions for AES-256-CTR; see page 57 of
 # http://csrc.nist.gov/publications/nistpubs/800-38a/sp800-38a.pdf
@@ -26,11 +26,11 @@ describe 'utils/encryptor'.ns().ns('Backend'), () ->
       '2b0930daa23de94ce87017ba2d84988d'
       'dfc9c58db67aada613c2dd08457941a6'
     ].join('') + '$'
-  
+
     it 'should encrypt input as per NIST documentation', () ->
       encryptor.encrypt(plaintext, null, initVector)
       .should.equal(payload)
-    
+
     it 'should decrypt back to input as per NIST documentation', () ->
       encryptor.decrypt(payload)
       .should.equal(plaintext)

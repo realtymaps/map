@@ -1,24 +1,32 @@
 _ = require 'lodash'
-generators = require './impl/util.error.impl.generators'
-generatedErrors = generators.named [
-  'IsIdObj'
-  'MissingVar'
-  'UpdateFailed'
-]
-
+NamedError = require './util.error.named'
 PartiallyHandledError = require('./util.error.partiallyHandledError').PartiallyHandledError
+
+class IsIdObjError extends NamedError
+  constructor: (args...) ->
+    super('IsIdObj', args...)
+
+class MissingVarError extends NamedError
+  constructor: (args...) ->
+    super('MissingVar', args...)
+
+class UpdateFailedError extends NamedError
+  constructor: (args...) ->
+    super('UpdateFailed', args...)
+
 class RouteCrudError extends PartiallyHandledError # used for ezcrud
   constructor: (args...) ->
-    @name = 'CrudError'
+    @name = 'RouteCrudError'
     super(args...)
 
 class ServiceCrudError extends PartiallyHandledError # used for ezcrud
   constructor: (args...) ->
-    @name = 'ServiceError'
+    @name = 'ServiceCrudError'
     super(args...)
 
-
 module.exports =
-  _.extend generatedErrors,
-    RouteCrudError: RouteCrudError
-    ServiceCrudError: ServiceCrudError
+  IsIdObjError: IsIdObjError
+  MissingVarError: MissingVarError
+  UpdateFailedError: UpdateFailedError
+  RouteCrudError: RouteCrudError
+  ServiceCrudError: ServiceCrudError

@@ -1,8 +1,10 @@
 Promise = require 'bluebird'
 basePath = require '../../basePath'
+require("chai").should()
+{expect} = require("chai")
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
-{expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
+{expectResolve, expectReject} = require('../../../specUtils/promiseUtils')
 
 
 describe 'Backend utils/validation.validators.geojson()', () ->

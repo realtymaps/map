@@ -193,6 +193,12 @@ app.controller 'rmapsCountyCtrl',
     delete field.config.map
     updateBase(field, removed)
 
+  $scope.hideUnassigned = () ->
+    unassigned = _.find($scope.targetCategories, 'list', 'unassigned')
+    hidden = _.find($scope.targetCategories, 'list', 'hidden')
+    toMove = _.filter unassigned.items, 'list', 'unassigned'
+    unassigned.loading = hidden.loading = normalizeService.moveUnassigned toMove, hidden
+
   updateBase = (field, removed) ->
     updateAssigned()
     saveRule(field)

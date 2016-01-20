@@ -1,4 +1,4 @@
-require 'should'
+require('chai').should()
 # expect = require 'expect'
 basePath = require '../../basePath'
 subject = require "#{basePath}/utils/errors/util.errors.args"

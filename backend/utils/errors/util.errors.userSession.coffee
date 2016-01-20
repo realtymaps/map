@@ -1,6 +1,13 @@
-generators = require './impl/util.error.impl.generators'
+NamedError = require './util.error.named'
 
-module.exports = generators.named [
-  'InActiveUser'
-  'InValidEmail'
-]
+class InActiveUserError extends NamedError
+  constructor: (args...) ->
+    super('InActiveUser', args...)
+
+class InValidEmailError extends NamedError
+  constructor: (args...) ->
+    super('InValidEmail', args...)
+
+module.exports =
+  InActiveUserError:InActiveUserError
+  InValidEmailError: InValidEmailError
