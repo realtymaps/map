@@ -263,12 +263,13 @@ normalizeData = (subtask, options) -> Promise.try () ->
         rm_raw_id: row.rm_raw_id
         up_to_date: startTime
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+      .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
-      .then () ->
-        tables.buildRawTableQuery(rawTableName)
-        .where(rm_raw_id: row.rm_raw_id)
-        .update(rm_valid: true)
+#      .then () ->
+#        tables.buildRawTableQuery(rawTableName)
+#        .where(rm_raw_id: row.rm_raw_id)
+#        .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
         tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
