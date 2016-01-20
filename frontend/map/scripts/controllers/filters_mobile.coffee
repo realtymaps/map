@@ -75,8 +75,14 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
   $scope.domSlider = initSliderConfig 0, MAX_DOM, domSteps, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
-  $timeout () ->
-    $scope.$broadcast 'rzSliderForceRender'
+  $timeout (() ->
+    $log.debug ">>> recalc view dimensions"
+    $scope.$broadcast 'reCalcViewDimensions'
+    $timeout (() ->
+      $log.debug ">>> force slider render"
+      $scope.$broadcast 'rzSliderForceRender'
+      , 10)
+    , 10)
 
   #
   # Display step value to user
