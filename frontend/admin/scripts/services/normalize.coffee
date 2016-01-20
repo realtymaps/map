@@ -37,6 +37,15 @@ app.factory 'rmapsNormalizeService', ($log, Restangular) ->
       .then () ->
         _.forEach listTo.items, (item, ordering) -> item.ordering = ordering
 
+    moveUnassigned: (rules, listTo, idx) ->
+      return unless rules?.length
+      listTo.items.splice idx, 0, rules...
+      @createListRules listTo.list, listTo.items
+      .then () ->
+        _.forEach listTo.items, (item, ordering) ->
+          item.ordering = ordering
+          item.list = listTo.list
+
     createListRules: (list, rules) ->
       @endpoint.one(list).customPUT _.map(rules, @_formatRule)
 

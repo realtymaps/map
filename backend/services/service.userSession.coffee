@@ -7,9 +7,9 @@ keystore = require '../services/service.keystore'
 {singleRow} = require '../utils/util.sql.helpers'
 profileSvc = require './service.profiles'
 accountImagesSvc = require('./services.user').accountImages
-{NotFoundError} =  require '../utils/util.route.helpers'
 tables = require '../config/tables'
 config = require '../config/config'
+userSessionErrors = require '../utils/errors/util.errors.userSession'
 
 _getUser = (attributes) ->
   tables.auth.user()
@@ -138,8 +138,19 @@ getIdentity = (req) ->
   else
     null
 
+verifyValidAccount = (user) ->
+  return unless user
+  return user if user.is_superuser
+  if !user.email_is_valid
+    throw new userSessionErrors.InValidEmailError("User's email has not been verified.")
+  if !user.is_active
+    throw new userSessionErrors.InActiveUserError("User is not valid due to inactive account.")
+  user
+
 module.exports =
+  createPasswordHash: createPasswordHash
   verifyPassword: verifyPassword
+  verifyValidAccount: verifyValidAccount
   getProfile: profileSvc.getFirst
   updateCurrentProfile: profileSvc.updateCurrent
   updateProfile: profileSvc.update

@@ -4,9 +4,9 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsPropertiesService, rmapsPage) ->
+app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsPropertiesService, rmapsPage, rmapsevents) ->
   $scope.activeView = 'project'
-  $log = $log.spawn("map:projects")
+  $log = $log.spawn("frontend:map:projects")
   $log.debug 'projectCtrl'
 
   $scope.formatters =
@@ -25,7 +25,13 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
 
   $scope.archiveProject = (project, evt) ->
     evt.stopPropagation()
-    rmapsProjectsService.archive project
+    rmapsProjectsService.update project.id, archived: !project.archived
+    .then () ->
+      project.archived = !project.archived
+
+  $scope.resetProject = (project) ->
+    if confirm 'Clear all filters, saved properties, and notes?'
+      rmapsProjectsService.delete id: project.id
 
   $scope.removeClient = (client) ->
     clientsService.remove client
@@ -75,7 +81,6 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
   $scope.loadProject = () ->
     rmapsProjectsService.getProject $state.params.id
     .then (project) ->
-
       # It is important to load property details before properties are added to scope to prevent template breaking
       toLoad = _.merge {}, project.properties_selected, project.favorites
       if not _.isEmpty toLoad
@@ -103,6 +108,9 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     clientsService.getAll()
     .then (clients) ->
       $scope.project.clients = clients
+
+  $rootScope.$onRootScope rmapsevents.notes, () ->
+    $scope.loadProject() unless !$state.params.id
 
   $rootScope.registerScopeData () ->
     $scope.loadProject()

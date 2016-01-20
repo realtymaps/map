@@ -166,10 +166,15 @@
   .scroll
     overflow-y scroll
     .row
+      padding 1em 0
+      line-height 1em
+
+    .row:not(.lookup)
       height 3em
       > div
         top 50%
         transform translateY(-50%)
+
     .row:nth-child(even)
       background-color #eee
     .row.advanced > :first-child
@@ -222,8 +227,10 @@
     @extend .clickable-icon
     z-index 1
     position absolute
-    right 15px
-    top 15px
+    right 10px
+    top 12px
+    &.fa
+      font-size 125%
 
   .close-fieldData-icon
     @extend .clickable-icon

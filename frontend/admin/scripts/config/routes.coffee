@@ -20,7 +20,6 @@ app.run ($rootScope) ->
   return
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider) ->
-
   buildState = (name, overrides = {}) ->
     state =
       name:         name
@@ -33,7 +32,6 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
     if !state.template
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
-        console.debug 'loading template:', templateName
         $templateCache.get templateName
 
     if state.parent

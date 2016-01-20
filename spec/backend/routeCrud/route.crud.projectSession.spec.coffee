@@ -3,6 +3,7 @@ require '../../globals'
 Promise = require 'bluebird'
 require 'should'
 basePath = require '../basePath'
+logger = require("#{basePath}/config/logger").spawn('test:route.crud.projectSession.spec.coffee')
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"
 ServiceCrud = CrudServiceHelpers.Crud
@@ -20,7 +21,8 @@ usrTableNames = tableNames.user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
 colorWrap = require 'color-wrap'
-colorWrap(console)
+colorWrap(logger)
+
 
 ServiceCrudProject = require "#{basePath}/services/service.user.project"
 
@@ -52,6 +54,7 @@ class TestServiceCrudProject extends ServiceCrudProject
     clientsSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
+
 
     toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 
@@ -142,7 +145,7 @@ describe 'route.projectSession', ->
       .then (projects) =>
         @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
-        console.log @subject.svc.getAllStub.args[0], true
+        logger.debug.green @subject.svc.getAllStub.args[0], true
         @subject.svc.getAllStub.args[0][0].should.be.eql
           id:1
           auth_user_id: 2
@@ -162,7 +165,7 @@ describe 'route.projectSession', ->
         obj.parent_auth_user_id = @mockRequest.user.id
         obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
         @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
-        console.log @subject.clientsCrud.svc.getAllStub.sqls[0]
+        logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
         @subject.clientsCrud.svc.getAllStub.sqls[0].should.be.equal """
         select "user_profile"."id" as "id", "user_profile"."auth_user_id" as "auth_user_id",
          "user_profile"."parent_auth_user_id" as "parent_auth_user_id", "user_profile"."project_id" as "project_id",
@@ -191,7 +194,8 @@ describe 'route.projectSession', ->
           select "user_notes"."id" as "id", "user_notes"."auth_user_id" as "auth_user_id",
            "user_notes"."project_id" as "project_id", "user_notes"."rm_property_id" as "rm_property_id",
            "user_notes"."geom_point_json" as "geom_point_json", "user_notes"."comments" as "comments",
-           "user_notes"."text" as "text", "user_notes"."title" as "title" from "user_notes"
+           "user_notes"."text" as "text", "user_notes"."title" as "title", "user_notes"."rm_modified_time" as "rm_modified_time",
+           "user_notes"."rm_inserted_time" as "rm_inserted_time" from "user_notes"
            inner join "user_project" on "user_project"."id" = "user_notes"."project_id" where
            "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
 

@@ -2,38 +2,73 @@ Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
 {emailPlatform, cancelHash} = require '../../services.email'
-userService =  require('../../services.user').user
+userTable = require('../../../config/tables').auth.user
+{expectSingleRow} = require '../../../utils/util.sql.helpers'
+{customerSubscriptionCreated
+customerSubscriptionDeleted
+customerSubscriptionUpdated
+customerSubscriptionTrialWillEnd} = require '../../../enums/enum.payment.events'
+logger = require '../../../config/logger'
 
-StripeEvents =  (stripe) ->
-  _eventHandles =
-    "customer.subscription.created": (subscription, authUser) ->
-      #TODO: Send out email notice that their subscription has been created
-    "customer.subscription.deleted": (subscription, authUser) ->
-      #TODO: Send out email notice that their subscription has been deleted
-    "customer.subscription.updated": (subscription, authUser) ->
-      #TODO: Send out email notice that their subscription has been updated
-    "customer.subscription.trial_will_end": (subscription, authUser) ->
-      #TODO: Send out email notice that they will be getting charged via vero
-      emailPlatform.then (platform) ->
-        platform.trialEnding
-          authUser: authUser
+emailPlatform.then (platform) ->
+  emailPlatform = platform
+
+StripeEvents = (stripe) ->
+  _eventHandles = {}
+  _eventHandles[customerSubscriptionCreated] = (subscription, authUser) ->
+    logger.debug "stripe handling #{customerSubscriptionCreated}"
+    emailPlatform.events.subscriptionVerified
+      authUser: authUser
+      plan: subscription.data.object.plan.name
+
+  _eventHandles[customerSubscriptionDeleted] = (subscription, authUser) ->
+    logger.debug "stripe handling #{customerSubscriptionDeleted}"
+    emailPlatform.events.subscriptionDeleted
+      authUser: authUser
+      plan: subscription.data.object.plan.name
+
+  _eventHandles[customerSubscriptionUpdated] = (subscription, authUser) ->
+    logger.debug "stripe handling #{customerSubscriptionUpdated}"
+    emailPlatform.events.subscriptionUpdated
+      authUser: authUser
+      plan: subscription.data.object.plan.name
+
+  _eventHandles[customerSubscriptionTrialWillEnd] = (subscription, authUser) ->
+    logger.debug "stripe handling #{customerSubscriptionTrialWillEnd}"
+    emailPlatform.events.subscriptionTrialEnding
+      authUser: authUser
+      plan: subscription.data.object.plan.name
 
   _eventHandles = _.mapValues _eventHandles, (origFunction) ->
     (subscription) -> Promise.try () ->
-      userService.getById subscription.customer
+      {customer} = subscription.data.object
+      logger.debug "Attempting to get auth_user that has a stipe customer id of #{customer}"
+      unless customer
+        logger.debug subscription, true
+
+      q = userTable().where(stripe_customer_id: customer)
+      # logger.debug q.toString()
+
+      q.then expectSingleRow
       .then (authUser) ->
         origFunction subscription, authUser
 
-  verify = (eventObj) ->
+  _verify = (eventObj) ->
     stripe.events.retrieve eventObj.id
 
   handle = (eventObj) -> Promise.try () ->
     callEvent = _eventHandles[eventObj.type]
     unless callEvent?
       throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
-    verify(eventObj).then (validEvent) ->
+
+    _verify(eventObj).then (validEvent) ->
       #TODO: this could be moved to validation itself validation.stripe namespace: 'events'
       callEvent(validEvent)
+      .catch (err) ->
+        #TODO: maybe rethink this
+        #We need stripe to move on as an account might have been deleted
+        logger.error "Swallowing Error"
+        logger.error err?.message
 
   handle: handle
 

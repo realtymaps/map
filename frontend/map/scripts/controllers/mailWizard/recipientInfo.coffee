@@ -2,15 +2,17 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $state, $log, rmapsPropertiesService) ->
-  $log = $log.spawn 'mail:recipient'
+app.controller 'rmapsRecipientInfoCtrl', ($scope, $log, rmapsPropertiesService, rmapsMailTemplate) ->
+  $log = $log.spawn 'map:recipientInfo'
+
+  $scope.mailCampaign = rmapsMailTemplate.getCampaign()
 
   $scope.property = []
   $scope.owner = []
   $scope.propertyAndOwner = []
 
-  if $scope.property_ids?.length
-    rmapsPropertiesService.getProperties $scope.property_ids, 'filter'
+  if not $scope.mailCampaign.recipients?.length and $scope.mailCampaign.property_ids?.length
+    rmapsPropertiesService.getProperties $scope.mailCampaign.property_ids, 'filter'
     .then ({data}) ->
       for detail, i in data
         data[i] = detail = _.omit detail, _.isEmpty
@@ -24,3 +26,6 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $state, $log, rmap
       $scope.propertyAndOwner = _.values _.defaults $scope.property, $scope.owner
       $scope.property = _.values $scope.property
       $scope.owner = _.values $scope.owner
+
+  $scope.changeRecipients = () ->
+    rmapsMailTemplate.setRecipients $scope[$scope.mailCampaign.recipientType]

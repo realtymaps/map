@@ -25,7 +25,10 @@ coffeelint.configfinder = require('coffeelint/lib/configfinder')
 browserifyTask = (app, watch = false) ->
   #straight from gulp , https://github.com/gulpjs/gulp/blob/master/docs/recipes/browserify-with-globs.md
   # gulp expects tasks to return a stream, so we create one here.
-  inputGlob = [paths.frontendCommon.root + 'scripts/**/*.coffee', paths[app].root + 'scripts/**/*.coffee']
+  extGlobs = ['js', 'coffee'].map (ext) ->
+    [paths.frontendCommon.root + 'scripts/**/*.' + ext, paths[app].root + 'scripts/**/*.' + ext]
+
+  inputGlob = extGlobs.reduce (prev, curr) -> prev.concat curr
   outputName = app + '.bundle.js'
   startTime = ''
 

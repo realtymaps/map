@@ -19,7 +19,7 @@
 
   .row.panel(cg-busy="countyLoading" ng-show="countyData.current && countyData.dataListType")
 
-    .close-icon(ng-click="showGrid=!showGrid") ☰
+    .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
 
     .col-md-2.list-container
       h4 Filters
@@ -34,6 +34,7 @@
 
     .col-md-2.list-container
       h4 {{countyData.dataSourceType.name}}, {{countyData.dataListType.name}}
+      .i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
       .field-container(
       rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
         .placeholder-field(ng-hide="fieldData.totalCount > 0")
@@ -168,7 +169,7 @@
         .col-md-2 Too many values to show.
         .col-md-2
           .btn.btn-primary(ng-click="fieldData.current.lookups = fieldData.current._lookups") See all {{fieldData.current._lookups.length}} values anyway?
-      .row(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
+      .row.lookup(ng-if="fieldData.current.type.name == 'string'" ng-repeat="lookup in fieldData.current.lookups")
         .col-md-2 {{lookup.LongValue}}
         .col-md-2
           input(type="text" placeholder="Display value" ng-model="fieldData.current.config.choices[lookup.LongValue]" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")

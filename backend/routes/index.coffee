@@ -8,6 +8,9 @@ validation = require '../utils/util.validation'
 ExpressResponse = require '../utils/util.expressResponse'
 status = require '../../common/utils/httpStatus'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+{InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.userSession'
+{ValidateEmailHashTimedOutError} = require '../utils/errors/util.errors.email'
+
 config = require '../config/config'
 uuid = require '../utils/util.uuid'
 cls = require 'continuation-local-storage'
@@ -40,8 +43,12 @@ module.exports = (app) ->
         .catch isUnhandled, (error) ->
           throw new PartiallyHandledError(error)
         .catch (error) ->
-          if isCausedBy(validation.DataValidationError, error)
+          if isCausedBy(validation.DataValidationError, error) or
+          isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
+          if isCausedBy(InValidEmailError, error) or
+          isCausedBy(InActiveUserError, error)
+            returnStatus = status.UNAUTHORIZED
           else
             returnStatus = status.INTERNAL_SERVER_ERROR
           next new ExpressResponse

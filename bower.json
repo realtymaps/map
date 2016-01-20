@@ -45,7 +45,8 @@
     "angular-stripe": "~4.2.8",
     "angular-validation": "git://github.com/nmccready/angular-validation#master",
     "angularjs-slider": "~2.4.0",
-    "angular-numeraljs": "~1.2.0"
+    "angular-numeraljs": "~1.2.0",
+    "gl-matrix": "~2.3.1"
   },
   "overrides": {
     "angular-busy": {

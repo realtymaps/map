@@ -1,6 +1,6 @@
 _ = require 'lodash'
 path = require 'path'
-common =  require '../../common/config/commonConfig'
+common =  require '../../common/config/commonConfig.coffee'
 
 
 base =
@@ -15,23 +15,27 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
+    # for the debug namespace definition LOG_ENABLE, do not use the `-` identifier that is documented in the `debug` library!
+    # That functionality is botched because of a low level dependency in `enabled` library.
+    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
+
   DBS:
     MAIN:
       client: 'pg'
       connection: process.env.MAIN_DATABASE_URL
       pool:
         min: 2
-        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        max: if process.env.JQ_QUEUE_NAME then 4 else 10
         # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 10*60*1000
+        pingTimeout: 20*60*1000
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
       pool:
-        min: 2
-        max: if process.env.JQ_QUEUE_NAME then 8 else 10
+        min: if process.env.JQ_QUEUE_NAME then 2 else 0
+        max: if process.env.JQ_QUEUE_NAME then 4 else 2
         # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 10*60*1000
+        pingTimeout: 20*60*1000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
@@ -166,6 +170,6 @@ config = _.merge({}, base, environmentConfig[base.ENV])
 module.exports = config
 
 # have to set a secret backend-only route
-backendRoutes = require('../../common/config/routes.backend')
+backendRoutes = require('../../common/config/routes.backend.coffee')
 backendRoutes.hirefire =
   info: "/hirefire/#{config.HIREFIRE.API_KEY}/info"

@@ -1,6 +1,7 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
+{SoftFail} = require '../errors/util.error.jobQueue'
 tables = require '../../config/tables'
 logger = require '../../config/logger'
 sqlHelpers = require '../util.sql.helpers'
@@ -236,6 +237,9 @@ normalizeData = (subtask) ->
     dataSourceId: 'blackknight'
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
+  .then (result) ->
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{dataLoadHelpers.buildUniqueSubtaskName(subtask)}: done with normalizeData subtask")
+    result
 
 finalizeDataPrep = (subtask) ->
   Promise.map subtask.data.sources, (source) ->

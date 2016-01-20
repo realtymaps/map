@@ -1,5 +1,6 @@
 ###global angular:true###
 _ = require 'lodash'
+config = require '../../backend/config/config.coffee'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 
 
@@ -9,7 +10,7 @@ beforeEach ->
   angular.module('rmapsCommon')
   .config (nemDebugProvider) ->
     debug = nemDebugProvider.debug
-    debug.enable("test:*")
+    debug.enable(config.LOGGING.ENABLE)
 
   .config ($provide, nemSimpleLoggerProvider) ->
     $provide.value('$log', console)
@@ -58,7 +59,10 @@ beforeEach ->
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
 
-
   angular.module('rmapsMapApp')
+  .run ($log) ->
+    $log.currentLevel = $log.LEVELS.log
+
+  angular.module('rmapsAdminApp')
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log

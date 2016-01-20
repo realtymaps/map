@@ -19,8 +19,8 @@ tables = require '../config/tables'
 _ = require 'lodash'
 {expectSingleRow} = require '../utils/util.sql.helpers'
 {transaction} = require '../config/dbs'
-{SignUpError} = require '../utils/errors/util.errors.vero'
-encryptor =  require '../config/encryptor'
+{createPasswordHash} =  require '../services/service.userSession'
+{getPlanId} = require '../services/service.plans'
 
 handles = wrapHandleRoutes
   createUser: (req) ->
@@ -34,32 +34,44 @@ handles = wrapHandleRoutes
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
-        entity.password = encryptor.encrypt entity.password
+        createPasswordHash entity.password
+        .then (password) ->
+          entity.password = password
 
-        logger.debug "will insert user entity of:"
-        logger.debug entity, true
-        logger.debug "inserting new user"
-        tables.auth.user(trx).returning("id").insert entity
-        .then (id) ->
-          logger.debug "new user (#{id}) inserted SUCCESS"
-          tables.auth.user(trx).select(basicColumns.user.concat(["id"])...).where id: parseInt id
-        .then expectSingleRow
-        .then (authUser) ->
-          logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-          paymentServices.customers.create
-            trx: trx
-            authUser: authUser
-            plan: validReq.body.plan.name
-            token: validReq.body.token
-        .then ({authUser, customer}) ->
-          logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-          emailServices.events.signUp
-            authUser: authUser
-            plan: validReq.body.plan.name
-          .catch (error) ->
-            logger.info "SignUp Failed, reverting Payment Customer"
-            paymentServices.customers.remove customer
-            throw error #rethrow error so transaction is reverted
+          logger.debug "will insert user entity of:"
+          logger.debug entity, true
+          logger.debug "inserting new user"
+          tables.auth.user(trx).returning("id").insert entity
+          .then (id) ->
+            getPlanId(validReq.body.plan.name, trx)
+            .then (groupId) ->
+              logger.debug "planId/groupId: #{groupId}"
+              logger.debug "auth_user_id: #{id}"
+              #give plan / group permissions
+              tables.auth.m2m_user_group(trx)
+              .insert user_id: parseInt(id), group_id: parseInt(groupId)
+              .then ->
+                id
+          .then (id) ->
+            logger.debug "new user (#{id}) inserted SUCCESS"
+            tables.auth.user(trx).select(basicColumns.user.concat(["id"])...).where id: parseInt id
+          .then expectSingleRow
+          .then (authUser) ->
+            logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
+            paymentServices.customers.create
+              trx: trx
+              authUser: authUser
+              plan: validReq.body.plan.name
+              token: validReq.body.token
+          .then ({authUser, customer}) ->
+            logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
+            emailServices.events.subscriptionSignUp
+              authUser: authUser
+              plan: validReq.body.plan.name
+            .catch (error) ->
+              logger.info "SignUp Failed, reverting Payment Customer"
+              paymentServices.customers.remove customer
+              throw error #rethrow error so transaction is reverted
 
 
 module.exports = mergeHandles handles,

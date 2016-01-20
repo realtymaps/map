@@ -48,7 +48,7 @@ loadRawData = (subtask, options) ->
         throw err
   .then () ->
     if options.sftp
-      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}", concurrency: 4)
+      ftp.fastGet(subtask.data.path, "/tmp/#{fileBaseName}.#{filetype}")
     else
       ftp.get(subtask.data.path)
       .then (dataStream) -> new Promise (resolve, reject) ->
@@ -56,7 +56,6 @@ loadRawData = (subtask, options) ->
         .on('finish', resolve)
         .on('error', reject)
   .then () ->
-    logger.info("Finished downloading file: /tmp/#{fileBaseName}.#{filetype}")
     ftp.logout()
 
   switch filetype
@@ -67,20 +66,26 @@ loadRawData = (subtask, options) ->
       .then () ->
         fs.mkdirAsync("/tmp/#{fileBaseName}")
       .then () -> new Promise (resolve, reject) ->
-        fs.createReadStream("/tmp/#{fileBaseName}.zip")
-        .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
-        .on('close', resolve)
-        .on('error', reject)
+        try
+          fs.createReadStream("/tmp/#{fileBaseName}.zip")
+          .pipe unzip.Extract path: "/tmp/#{fileBaseName}"
+          .on('close', resolve)
+          .on('error', reject)
+        catch err
+          reject new SoftFail(err.toString())
       .then () ->
         "/tmp/#{fileBaseName}/#{path.basename(subtask.data.path, '.zip')}.txt"
     when 'gz'
       dataStreamPromise = dataStreamPromise
       .then () -> new Promise (resolve, reject) ->
-        fs.createReadStream("/tmp/#{fileBaseName}.gz")
-        .pipe(zlib.createGunzip())
-        .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
-        .on('close', resolve)
-        .on('error', reject)
+        try
+          fs.createReadStream("/tmp/#{fileBaseName}.gz")
+          .pipe(zlib.createGunzip())
+          .pipe fs.createWriteStream("/tmp/#{fileBaseName}")
+          .on('close', resolve)
+          .on('error', reject)
+        catch err
+          reject new SoftFail(err.toString())
       .then () ->
         "/tmp/#{fileBaseName}"
     else
@@ -90,9 +95,8 @@ loadRawData = (subtask, options) ->
 
   dataStreamPromise
   .then (localFilePath) ->
-    logger.info("Finished extracting file: /tmp/#{fileBaseName}.#{filetype} to #{localFilePath}")
     fs.createReadStream(localFilePath)
-  .catch (err) ->
+  .catch isUnhandled, (err) ->
     throw new SoftFail(err.toString())
   .then (rawDataStream) ->
     dataLoadHistory =
@@ -106,7 +110,6 @@ loadRawData = (subtask, options) ->
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, "failed to load #{subtask.task_name} data for update")
   .finally () ->
-    logger.info("Finished streaming to table: #{rawTableName}")
     try
       # try to clean up after ourselves
       rimraf.async("/tmp/#{fileBaseName}*")

@@ -56,42 +56,36 @@ geoJsonFormatter = (toMove, deletes) ->
 
 delimitedTextToObjectStream = (inputStream, delimiter, columnsHandler) ->
   count = 0
-  outputStream = through2.obj()
   splitStream = split()
-  done = false
-  finish = (err) ->
-    if done
-      return
-    done = true
-    if err
-      outputStream.write(type: 'error', payload: err)
-    else
-      outputStream.write(type: 'done', payload: count)
-    outputStream.end()
-    #splitStream.removeAllListeners()
-  inputStream.on('error', finish)
-  splitStream.on('error', finish)
-  splitStream.on('end', finish)
-  outputStream.write(type: 'delimiter', payload: delimiter)
+  doPreamble = true
 
-  lineHandler = (line) ->
-    if done || !line
-      # hide empty lines
-      return
-    count++
-    outputStream.write(type: 'data', payload: line)
   if !columnsHandler
     columnsHandler = (headers) -> headers.split(delimiter)  # generic handler
-  if _.isArray(columnsHandler)
-    outputStream.write(type: 'columns', payload: columnsHandler)
-    splitStream.on('data', lineHandler)
-  else
-    splitStream.once 'data', (headerLine) ->
-      columns = columnsHandler(headerLine)
-      outputStream.write(type: 'columns', payload: columns)
-      splitStream.on('data', lineHandler)
-  inputStream.pipe(splitStream)
-  outputStream
+
+  onError = (err) ->
+    outputStream.write(type: 'error', payload: err)
+  lineHandler = (line, encoding, callback) ->
+    if !line
+      # hide empty lines
+      return callback()
+    if doPreamble
+      doPreamble = false
+      this.push(type: 'delimiter', payload: delimiter)
+      if !_.isArray(columnsHandler)
+        columns = columnsHandler(line)
+        this.push(type: 'columns', payload: columns)
+        return callback()
+      this.push(type: 'columns', payload: columnsHandler)
+    count++
+    this.push(type: 'data', payload: line)
+    callback()
+
+  inputStream.on('error', onError)
+  splitStream.on('error', onError)
+  outputStream = through2.obj lineHandler, (callback) ->
+    this.push(type: 'done', payload: count)
+    callback()
+  inputStream.pipe(splitStream).pipe(outputStream)
 
 
 module.exports =

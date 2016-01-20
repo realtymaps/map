@@ -62,7 +62,7 @@ basicColumns = do ->
     #cartodb will only save it as 0 / 1 so we might as well keep the size smaller with 0/1
     cartodb_parcel: ['0 as is_active', '0 as num_updates', ].concat(_parcel).join(', ')
 
-    notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title']
+    notes: _commonProjectCols.concat ['rm_property_id', 'geom_point_json', 'comments', 'text', 'title', 'rm_modified_time', 'rm_inserted_time']
 
     project: ['id', 'auth_user_id', 'archived', 'sandbox', 'name', 'minPrice', 'maxPrice', 'beds', 'baths',
       'sqft', 'properties_selected']
@@ -78,6 +78,10 @@ basicColumns = do ->
 
     drawnShapes: _commonProjectCols.concat ['geom_point_json', 'geom_polys_raw', 'shape_extras',
       'neighbourhood_name', 'neighbourhood_details']
+
+    creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
+
+    mailCampaigns: ['id', 'auth_user_id', 'project_id', 'lob_batch_id', 'name', 'count', 'status', 'content', 'template_type', 'submitted', 'sender_info', 'lob_content', 'recipients']
 
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret

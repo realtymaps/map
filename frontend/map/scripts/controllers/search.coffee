@@ -3,7 +3,7 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 _ = require 'lodash'
 
 module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsevents) ->
-  $log = $log.spawn("map:search")
+  $log = $log.spawn("frontend:map:search")
 
   $scope.searchScope = 'Places'
 
