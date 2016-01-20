@@ -1,7 +1,6 @@
 hack = require '../../../common/utils/webpackHack.coffee'
-unless window?
-  require '../../globals.coffee'
-
+{expect,should} =require("chai")
+should()
 
 describe "util.geometries", ->
   before ->

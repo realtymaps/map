@@ -1,3 +1,4 @@
+require("chai").should()
 sqlHelpers = require '../utils/util.sql.helpers'
 Promise = require 'bluebird'
 logger = require '../config/logger'

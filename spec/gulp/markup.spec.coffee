@@ -1,3 +1,4 @@
+require("chai").should()
 subject = require '../../gulp/tasks/markup'
 _testCb = null
 

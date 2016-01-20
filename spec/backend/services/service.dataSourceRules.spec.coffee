@@ -3,6 +3,8 @@ rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.dataSourceRules.coffee'
 tables = require '../../../backend/config/tables'
 SqlMock = require '../../specUtils/sqlMock.coffee'
+{should, expect} = require "chai"
+should()
 
 
 describe 'service.dataSourceRules.coffee', ->
@@ -38,7 +40,7 @@ describe 'service.dataSourceRules.coffee', ->
         data_type: "tax"
       ]
 
-    it 'should have valid _addRules insert query, without a given order count', (done) ->
+    it 'should have valid _addRules insert query, without a given order count', () ->
       expectedInsertRules = [
         config:
           DataType: "Int"
@@ -69,10 +71,10 @@ describe 'service.dataSourceRules.coffee', ->
 
       expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
       expect(@rulesTableSqlMock.insertSpy.calledWith(expectedInsertRules)).to.be.true
-      done()
 
 
-    it 'should have valid _addRules insert query, with a given order count', (done) ->
+
+    it 'should have valid _addRules insert query, with a given order count', () ->
       count = [
         list: 'general'
         count: 1
@@ -110,7 +112,7 @@ describe 'service.dataSourceRules.coffee', ->
 
       expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
       expect(@rulesTableSqlMock.insertSpy.calledWith(expectedInsertRules)).to.be.true
-      done()
+
 
 
   describe 'rules', ->
@@ -140,13 +142,13 @@ describe 'service.dataSourceRules.coffee', ->
         list: 'general'
       ]
 
-    it 'should have valid getRules query', (done) ->
+    it 'should have valid getRules query', () ->
       svc.getRules(@query.data_source_id, @query.data_source_type, @query.data_type).then (queryResults) =>
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.calledWith(@query)).to.be.true
-        done()
 
-    it 'should have valid createRules query', (done) ->
+
+    it 'should have valid createRules query', () ->
       calledWithArgs = [
         [
           [
@@ -172,63 +174,53 @@ describe 'service.dataSourceRules.coffee', ->
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.insertSpy.args).to.deep.equal calledWithArgs
-        done()
 
-    it 'should have valid putRules query', (done) ->
-      calledWithArgs = [
-        [
-          [
-            config:
-              DataType:"Int"
-              nullZero:true
-            output:"Int Param"
-            input:"\"\""
-            required:false
-            data_source_type:"county"
-            data_type:"tax"
-            list:"general"
-            data_source_id:"CoreLogic"
-            ordering:0
-          ]
-        ]
-      ]
+
+    it 'should have valid putRules query', () ->
+      calledWithArgs =
+        config:
+          DataType:"Int"
+          nullZero:true
+        output:"Int Param"
+        input:"\"\""
+        required:false
+        data_source_type:"county"
+        data_type:"tax"
+        list:"general"
+        data_source_id:"CoreLogic"
+        ordering:0
 
       svc.__with__('dbs', SqlMock.dbs)(
         =>
           expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax'"""
-
           svc.putRules(@query.data_source_id, @query.data_source_type, @query.data_type, @rules)
           .then (queryResults) =>
             # @rulesTableSqlMock.insertSpy.calledOnce).to.be.false
             expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.commitSpy.calledOnce).to.be.true
-            @rulesTableSqlMock.insertSpy.calledWith(calledWithArgs).should.be.true
-            done()
+            @rulesTableSqlMock.insertSpy.args[0][0][0].should.be.eql calledWithArgs
       )
 
-    it 'should have valid deleteRules query', (done) ->
+    it 'should have valid deleteRules query', () ->
       expectedQuery = """delete from "config_data_normalization" where "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax'"""
 
       svc.deleteRules(@query.data_source_id, @query.data_source_type, @query.data_type)
       .then (queryResults) =>
         expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
         expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
-        done()
 
-    it 'should have valid result', (done) ->
+    it 'should have valid result', () ->
       @rulesTableSqlMock.setResult 1
       svc.deleteRules(@query.data_source_id, @query.data_source_type, @query.data_type)
       .then (queryResults) =>
         expect(queryResults).to.be.true
-        done()
 
-    it 'should have invalid result', (done) ->
+    it 'should have invalid result', () ->
       @rulesTableSqlMock.setResult -1
       svc.deleteRules(@query.data_source_id, @query.data_source_type, @query.data_type)
       .then (queryResults) =>
         expect(queryResults).to.be.false
-        done()
 
 
   describe 'list rules', ->
@@ -257,7 +249,7 @@ describe 'service.dataSourceRules.coffee', ->
         data_type: "tax"
       ]
 
-    it 'should have valid getListRules query', (done) ->
+    it 'should have valid getListRules query', () ->
       expectedQuery = """select * from "config_data_normalization" where""" +
       """ "data_source_id" = 'CoreLogic' and "data_source_type" = 'county' and "data_type" = 'tax' and "list" = 'general'"""
 
@@ -265,9 +257,8 @@ describe 'service.dataSourceRules.coffee', ->
         @rulesTableSqlMock.toString().should.equal expectedQuery
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
-        done()
 
-    it 'should have valid createListRules query', (done) ->
+    it 'should have valid createListRules query', () ->
       calledWithArgs = [
         [
           [
@@ -289,11 +280,10 @@ describe 'service.dataSourceRules.coffee', ->
         expect(@rulesTableSqlMock.selectSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.groupBySpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
-        expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true 
+        expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.insertSpy.args).to.deep.equal calledWithArgs
-        done()
 
-    it 'should have valid putListRules query', (done) ->
+    it 'should have valid putListRules query', () ->
       calledWithArgs = [
         [
           [
@@ -320,14 +310,13 @@ describe 'service.dataSourceRules.coffee', ->
             expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.insertSpy.args).to.deep.equal calledWithArgs
             expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
-            done()
+
       )
 
-    it 'should have valid deleteListRules query', (done) ->
+    it 'should have valid deleteListRules query', () ->
       svc.deleteListRules(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list).then (queryResults) =>
         expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
         expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
-        done()
 
 
   describe 'simple rule api', ->
@@ -353,23 +342,23 @@ describe 'service.dataSourceRules.coffee', ->
         data_type: "tax"
       ]
 
-    it 'should have valid getRule query', (done) ->
+    it 'should have valid getRule query', () ->
       @rulesTableSqlMock.setResult @rules
-      svc.getRule(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @query.ordering).then (queryResults) =>        
+      svc.getRule(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @query.ordering).then (queryResults) =>
         expect(queryResults).to.equal @rules[0]
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
-        done()
 
-    it 'should have valid updateRule query', (done) ->
+
+    it 'should have valid updateRule query', () ->
       svc.updateRule(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @query.ordering, @rules[0]).then (queryResults) =>
         expect(@rulesTableSqlMock.updateSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.updateSpy.args).to.deep.equal [[_.extend(@rules[0], @query)]]
         expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
         expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
-        done()
 
-    it 'should have valid deleteRule query', (done) ->
+
+    it 'should have valid deleteRule query', () ->
       svc.__with__('dbs', SqlMock.dbs)(
         =>
 
@@ -380,5 +369,5 @@ describe 'service.dataSourceRules.coffee', ->
             expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
-            done()
+
       )

@@ -1,4 +1,3 @@
-require '../../globals'
 notesSvc = require('../../../backend/services/services.user').notes
 Promise = require 'bluebird'
 sqlHelpers = require '../../../backend/utils/util.sql.helpers'
