@@ -1,6 +1,9 @@
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.cartodb'
 Promise = require 'bluebird'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 FAKE_API_KEY = 'fake key'
 FAKE_API_KEY_TO_US = 'fake key to us'

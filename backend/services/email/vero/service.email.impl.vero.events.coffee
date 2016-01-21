@@ -5,27 +5,64 @@ backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
 logger = require '../../../config/logger'
 {EMAIL_PLATFORM} = require '../../../config/config'
-{SignUpError} = require '../../../utils/errors/util.errors.vero'
+{SubscriptionSignUpError
+SubscriptionCreatedError
+SubscriptionDeletedError
+SubscriptionUpdatedError
+SubscriptionVerifiedError
+SubscriptionTrialEndedError} = require '../../../utils/errors/util.errors.vero'
+paymentEvents = require '../../../enums/enum.payment.events'
 
 emailRoutes = backendRoutes.email
 
-# makeVeroEvent = (stripeEvent) ->
-#   stripeEvent
-#   #.toInitCaps()
-#   .replace(/\./g, '_')
-#   #.replace(/_/g, ' ')
+inErrorSupportPhrase = """
+PS:
 
-trialEndingEvent = 'customer.subscription.trial_will_end'
-customerCreatedEvent = 'customer.subscription.created'
-
+If this was not initiated by you or feel this is in error please contact [contact me] (support@realtymaps.com) .
+"""
 
 VeroEvents = (vero) ->
 
   {createOrUpdate} = require('./service.email.impl.vero.user')(vero)
 
+  _requireAuthUser = (opts) -> Promise.try () ->
+    onMissingArgsFail
+      authUser: {val:opts.authUser, required: true}
+
+  _cancelPlan = (opts) -> Promise.try () ->
+    _requireAuthUser(opts)
+    {authUser, eventName} = opts
+    delete opts.cancelPlanUrl
+
+    cancelPlanUrl = clsFullUrl emailRoutes.cancelPlan.replace(":cancelPlan", authUser.cancel_email_hash)
+    createOrUpdate _.extend {}, opts,
+      eventName: eventName
+      eventData:
+        cancel_plan_url: cancelPlanUrl
+        in_error_support_phrase: inErrorSupportPhrase
+
+  _callAndRetry = (opts, attempt = 0, ErrorClazz, recallFn, promise) ->
+    logger.debug.cyan "#{recallFn.name} ATTEMPT: #{attempt}"
+
+    promise
+    .catch (err) ->
+      logger.error "#{recallFn.name} error!"
+      logger.error err
+
+      if attempt >= EMAIL_PLATFORM.MAX_RETRIES - 1
+        logger.error "MAX_RETRIES reached for #{recallFn.name}"
+        #add to a JobQueue task to complete later?
+        throw new ErrorClazz(opts)
+
+      setTimeout ->
+        recallFn opts, attempt++
+      , EMAIL_PLATFORM.RETRY_DELAY_MILLI
+
+
   # Returns the vero-promise response as Promise([user, event]).
-  signUp = (opts, attempt = 0) -> Promise.try () ->
-    logger.debug.cyan "SIGNUP ATTEMPT: #{attempt}"
+  subscriptionSignUp = (opts, attempt) -> Promise.try () ->
+    @name = "subscriptionSignUp"
+
     onMissingArgsFail
       authUser: {val:opts.authUser, required: true}
 
@@ -36,37 +73,53 @@ VeroEvents = (vero) ->
     logger.debug "VERIFY URL"
     logger.debug.yellow verifyUrl
 
-    createOrUpdate _.extend {}, opts,
-      eventName: customerCreatedEvent
-      eventData: verify_url: verifyUrl
-    .catch (err) ->
-      logger.error "signUp error!"
-      logger.error err
+    _callAndRetry opts, attempt, SubscriptionSignUpError, subscriptionSignUp,
+      createOrUpdate _.extend {}, opts,
+        eventName: paymentEvents.customerSubscriptionCreated
+        eventData:
+          verify_url: verifyUrl
+          in_error_support_phrase: inErrorSupportPhrase
 
-      if attempt >= EMAIL_PLATFORM.MAX_RETRIES - 1
-        logger.error "MAX_RETRIES reached for signUp for new user"
-        throw new SignUpError(opts)
 
-      setTimeout ->
-        signUp opts, attempt++, err
-      , EMAIL_PLATFORM.RETRY_DELAY_MILLI
+  subscriptionTrialEnding = (opts, attempt) -> Promise.try () ->
+    @name = "subscriptionTrialEnding"
+    logger.debug "handling vero #{@name}"
+    _callAndRetry opts, attempt, SubscriptionTrialEndedError, subscriptionTrialEnding,
+      _cancelPlan _.extend {}, opts,
+        eventName: paymentEvents.customerSubscriptionTrialWillEnd
 
-  _cancelPlan = (opts) -> Promise.try () ->
-    onMissingArgsFail
-      authUser: {val:opts.authUser, required: true}
+  #Purpose To send a Welcome Email stating that the account validation was successful
+  subscriptionVerified = (opts, attempt) ->
+    @name = "subscriptionVerified"
+    logger.debug "handling vero #{@name}"
+    _callAndRetry opts, attempt, SubscriptionVerifiedError, subscriptionVerified,
+      createOrUpdate _.extend {}, opts,
+        eventName: paymentEvents.customerSubscriptionVerified
+        eventData:
+          in_error_support_phrase: inErrorSupportPhrase
 
-    {authUser, eventName} = opts
-    delete opts.cancelPlanUrl
+  subscriptionUpdated = (opts, attempt) ->
+    @name = "subscriptionUpdated"
+    logger.debug "handling vero #{@name}"
+    _callAndRetry opts, attempt, SubscriptionUpdatedError, subscriptionUpdated,
+      createOrUpdate _.extend {}, opts,
+        eventName: paymentEvents.customerSubscriptionUpdated
+        eventData:
+          in_error_support_phrase: inErrorSupportPhrase
 
-    createOrUpdate _.extend {}, opts,
-      eventName: eventName
-        eventData: cancel_plan_url: authUser.cancel_email_hash
+  subscriptionDeleted = (opts, attempt) ->
+    @name = "subscriptionDeleted"
+    logger.debug "handling vero #{@name}"
+    _callAndRetry opts, attempt, SubscriptionDeletedError, subscriptionDeleted,
+      createOrUpdate _.extend {}, opts,
+        eventName: paymentEvents.customerSubscriptionDeleted
+        eventData:
+          in_error_support_phrase: inErrorSupportPhrase
 
-  trialEnding = (opts) -> Promise.try () ->
-    _cancelPlan _.extend {}, opts, eventName: trialEndingEvent
-
-  signUp: signUp
-  trialEnding: trialEnding
-  # makeVeroEvent: makeVeroEvent
+  subscriptionSignUp: subscriptionSignUp
+  subscriptionVerified: subscriptionVerified
+  subscriptionTrialEnding: subscriptionTrialEnding
+  subscriptionUpdated: subscriptionUpdated
+  subscriptionDeleted: subscriptionDeleted
 
 module.exports = VeroEvents

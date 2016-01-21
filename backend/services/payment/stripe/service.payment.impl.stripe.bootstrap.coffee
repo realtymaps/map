@@ -66,9 +66,14 @@ initializePlans = (stripe) ->
   #don't wait on plan init kick off rest of api
   stripe
 
-module.exports =
-  getAccountInfo 'stripe'
-  .then ({other}) ->
+module.exports = do ->
+  promise = if process.env.CIRCLECI then Promise.resolve(
+    other:
+      secret_test_api_key: ''
+      secret_live_api_key: ''
+    ) else getAccountInfo 'stripe'
+
+  promise.then ({other}) ->
     throw new CriticalError('Stipe API_KEYS intialization failed.') unless other
     API_KEYS = other
     apiKeyNameStr = if PAYMENT_PLATFORM.LIVE_MODE then 'live' else 'test'

@@ -1,7 +1,13 @@
-_ = require 'lodash'
-generators = require './impl/util.error.impl.generators'
+NamedError = require './util.error.named'
 
-module.exports = generators.named [
-  'Critical'
-  'InitCritical'
-]
+class CriticalError extends NamedError
+  constructor: (args...) ->
+    super('Critical', args...)
+
+class InitCriticalError extends NamedError
+  constructor: (args...) ->
+    super('InitCritical', args...)
+
+module.exports =
+  CriticalError:CriticalError
+  InitCriticalError: InitCriticalError

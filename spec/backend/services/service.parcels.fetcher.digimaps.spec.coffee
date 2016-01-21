@@ -2,6 +2,9 @@ rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.parcels.fetcher.digimaps'
 Promise = require 'bluebird'
 {StringStream} = require '../../../backend/utils/util.streams'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 describe 'service.digimaps', ->
   beforeEach ->

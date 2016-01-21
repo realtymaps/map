@@ -34,6 +34,8 @@
                     span Created
                   th.col-md-1
                     span
+                  th.col-md-1
+                    span
               tbody
                 tr(ng-repeat="project in projects | filter: searchQuery | orderBy: ['-sandbox', 'name']")
                   td.select

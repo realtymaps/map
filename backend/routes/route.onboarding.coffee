@@ -65,7 +65,7 @@ handles = wrapHandleRoutes
               token: validReq.body.token
           .then ({authUser, customer}) ->
             logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-            emailServices.events.signUp
+            emailServices.events.subscriptionSignUp
               authUser: authUser
               plan: validReq.body.plan.name
             .catch (error) ->

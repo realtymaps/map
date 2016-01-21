@@ -1,4 +1,7 @@
 require '../../../common/extensions/strings.coffee'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 describe "extensions > String".ns().ns('Common'), ->
   describe 'contains', ->

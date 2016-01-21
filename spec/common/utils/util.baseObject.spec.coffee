@@ -1,5 +1,8 @@
 BaseObject = require '../../../common/utils/util.baseObject.coffee'
 _ = require 'lodash'
+require("chai").should()
+{expect} = require("chai")
+sinon = require 'sinon'
 
 class Animal extends BaseObject
   speak: ->

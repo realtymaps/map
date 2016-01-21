@@ -255,25 +255,33 @@ normalizeData = (subtask, options) -> Promise.try () ->
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   # get start time for "last updated" stamp
   startTimePromise = jobQueue.getLastTaskStartTime(subtask.task_name, false)
-  Promise.join rowsPromise, validationPromise, startTimePromise, (rows, validationInfo, startTime) ->
-    Promise.each rows, (row, index, length) ->
+  doNormalization = (rows, validationInfo, startTime) ->
+    processRow = (row, index, length) ->
       stats =
         data_source_id: options.dataSourceId
         batch_id: subtask.batch_id
         rm_raw_id: row.rm_raw_id
         up_to_date: startTime
       Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
+      .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
-      .then () ->
-        tables.buildRawTableQuery(rawTableName)
-        .where(rm_raw_id: row.rm_raw_id)
-        .update(rm_valid: true)
+#      .then () ->
+#        tables.buildRawTableQuery(rawTableName)
+#        .where(rm_raw_id: row.rm_raw_id)
+#        .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
         tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
-
+    Promise.each(rows, processRow)
+    .then (result) ->
+      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done processing rows")
+      result
+  Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
+  .then (result) ->
+    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done with normalizeData join")
+    result
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row

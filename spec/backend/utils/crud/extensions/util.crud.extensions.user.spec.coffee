@@ -1,4 +1,4 @@
-should = require 'should'
+should = require('chai').should()
 mainSubject = require ('../../../../../backend/utils/crud/extensions/util.crud.extension.user.coffee')
 dummyReq = null
 

@@ -7,7 +7,7 @@ logFile = require '../util/logFile'
 es = require 'event-stream'
 
 require 'chai'
-require 'should'
+require('chai').should()
 
 runMocha = (files, reporter = 'dot', done) ->
   gulp.src files, read: false
@@ -32,6 +32,9 @@ gulp.task 'commonSpec', (done) ->
 
 gulp.task 'gulpSpec', (done) ->
   runMocha  'spec/gulp/**/*spec*', undefined, done
+
+gulp.task 'gulpDebugSpec', (done) ->
+  runMocha "spec/gulp/**/*spec*", 'spec', done
 
 gulp.task 'mocha', gulp.series 'backendSpec'
 

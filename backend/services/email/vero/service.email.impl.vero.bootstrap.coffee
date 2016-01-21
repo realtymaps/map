@@ -8,8 +8,9 @@ veroFactory = require 'vero-promise'
 
 VeroBootstrap = do () ->
   Promise.try () ->
-    getAccountInfo 'vero'
-    .then ({other}) ->
+    promise = if process.env.CIRCLECI then Promise.resolve(other: auth_token: '') else getAccountInfo 'vero'
+
+    promise.then ({other}) ->
       API_KEYS = other
       throw new CriticalError('vero API_KEYS intialization failed.') unless other
       vero = veroFactory(API_KEYS.auth_token)
