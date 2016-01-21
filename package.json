@@ -51,7 +51,7 @@
     "coffeeify": "git://github.com/jnordberg/coffeeify.git#6c5a9958e45349f2226f58d8e7fd6880c54413b8",
     "coffeelint": "1.11.1",
     "coffeelint-stylish": "^0.1.2",
-    "color-wrap": "0.0.2",
+    "color-wrap": "^0.0.3",
     "colors": "^1.1.2",
     "combined-stream2": "^1.1.1",
     "compression": "1.1.x",

@@ -30,7 +30,6 @@ _savedPropertiesQuery = (limit, filters, missingProperties) ->
   query = sqlHelpers.select(tables.property.propertyDetails(), 'filter', false)
 
   if limit
-    #logger.sql("PropertyDetails is being limited to: #{limit}")
     query.limit(limit)
 
   sqlHelpers.whereIn(query, 'rm_property_id', missingProperties)
@@ -38,10 +37,7 @@ _savedPropertiesQuery = (limit, filters, missingProperties) ->
   query
 
 _maybeMergeSavedProperties = (state, filters, filteredProperties, limit) ->
-  if !state?.properties_selected ||
-      _.keys(state.properties_selected).length == 0 ||
-      !filters?.bounds?
-#        logger.sql "BAIL"
+  if !state?.properties_selected || _.keys(state.properties_selected).length == 0 || !filters?.bounds?
     return filteredProperties
 
   missingProperties = _getMissingProperties(state, filteredProperties)

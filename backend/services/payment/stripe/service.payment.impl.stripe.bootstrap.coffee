@@ -5,7 +5,7 @@ stripeFactory = require 'stripe'
 plansService = require '../../service.plans'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 exitCodes = require '../../../enums/enum.exitCodes'
-logger = require '../../../config/logger'
+logger = require('../../../config/logger').spawn('backend:stripe')
 _ = require 'lodash'
 
 #StripBootstrap

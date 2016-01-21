@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
-logger  = require '../../config/logger'
+logger = require('../../config/logger').spawn('backend:validation:localStore')
 clsFactory = require '../util.cls'
 clone =  require 'clone'
 
