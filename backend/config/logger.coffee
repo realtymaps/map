@@ -49,23 +49,30 @@ if !_isValidLogObject(baselogger)
   throw Error('baselogger is invalid')
 
 
+_debugCache = {}
+
+
 class Logger
   constructor: (namespace, showDebugFileAndLine) ->
 
     if !namespace || typeof namespace != 'string'
       throw new Error('invalid logging namespace')
 
+    # need to cache debugInstance in order to get consistent color; this could be considered a bug in the debug module
+    if !_debugCache[namespace]?
+      _debugCache[namespace] = debug(namespace)
+    debugInstance = _debugCache[namespace]
+
     ###
       Overide logObject.debug with a debug instance
       namespace is to be used as handle for controlling logging verbosity
       see: https://github.com/visionmedia/debug/blob/master/Readme.md
     ###
-    debugInstance = debug(namespace)
-
     if showDebugFileAndLine
       @debug = _decorateOutput(debugInstance)
     else
       @debug = debugInstance
+
     for level in _levelFns
       if config.LOGGING.FILE_AND_LINE
         @[level] = _decorateOutput(baselogger[level], baselogger)
