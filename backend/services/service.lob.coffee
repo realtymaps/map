@@ -11,7 +11,6 @@ lobPromise = Promise.try () ->
   externalAccounts.getAccountInfo('lob')
   .then (accountInfo) ->
     test = new LobFactory(accountInfo.other.test_api_key)
-    logger.info accountInfo.other.test_api_key
     test.rm_type = 'test'
     promisify.lob(test)
     live = new LobFactory(accountInfo.api_key)

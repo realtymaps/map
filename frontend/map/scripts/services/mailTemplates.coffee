@@ -142,7 +142,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           $log.debug "campaign #{data[0]} updated"
 
   quote: () ->
-    $log.debug mailCampaign
     $rootScope.lobData =
       content: _createLobHtml()
       macros: {'name': 'Justin'}
