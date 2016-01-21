@@ -62,8 +62,8 @@ module.exports.lob = (Lob) ->
     for key,val of submodule
       if typeof(val) != 'function'
         continue
-      submodule[key+'Async'] = Promise.promisify(val, submodule)
-
+      submodule[key+'Async'] = Promise.promisify(val)
+  Lob
 
 _ = require 'lodash'
 memoize = require 'memoizee'
