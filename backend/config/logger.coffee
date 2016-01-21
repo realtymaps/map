@@ -72,22 +72,7 @@ class Logger
       throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
       unless debug
         throw Error("cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library")
-      # TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
-      # TODO: return colorWrap(_wrapDebug(newInternalLoggerOrNS, @baseLogObject), ['debug'])
-      newLogger = _wrapDebug(newInternalLoggerOrNS, @baseLogObject)
-      colorWrap(newLogger, ['debug'])
-      return newLogger
-    # TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
-    # TODO: colorWrap(new Logger(newInternalLoggerOrNS or baseLogger), ['debug'])
-    newLogger = new Logger(newInternalLoggerOrNS or baseLogger)
-    colorWrap(newLogger, ['debug'])
-    newLogger
+      return colorWrap(_wrapDebug(newInternalLoggerOrNS, @baseLogObject), ['debug'])
+    colorWrap(new Logger(newInternalLoggerOrNS or baseLogger), ['debug'])
 
-# TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
-# TODO: module.exports = colorWrap(new Logger(baselogger))
-
-logger = new Logger(baselogger).spawn('__OMGWTFBBQ____YOU_SHOULD_BE_USING_SPAWN____OMGWTFBBQ__')
-
-colorWrap(logger)
-
-module.exports = logger
+module.exports = colorWrap(new Logger(baselogger).spawn('__OMGWTFBBQ____YOU_SHOULD_BE_USING_SPAWN____OMGWTFBBQ__'))
