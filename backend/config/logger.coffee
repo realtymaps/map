@@ -50,7 +50,7 @@ if !_isValidLogObject(baselogger)
 
 
 class Logger
-  constructor: (namespace, showDebugFileAndLine=true) ->
+  constructor: (namespace, showDebugFileAndLine) ->
 
     if !namespace || typeof namespace != 'string'
       throw new Error('invalid logging namespace')
