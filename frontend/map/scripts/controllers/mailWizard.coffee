@@ -32,3 +32,5 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
       rmapsMailTemplate.load($state.params.id)
       .then () ->
         $state.go 'senderInfo'
+    else
+      $state.go 'mail', reload: true

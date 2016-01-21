@@ -1,7 +1,7 @@
 _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:routes:crud:projectSession')
 usrTableNames = require('../config/tableNames').user
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'

@@ -42,7 +42,7 @@ generateErrorHandler = (actionMsg) ->
   (err) ->
     if err instanceof ExpressResponse
       return err
-    console.error(analyzeValue(err))
+    # console.error(analyzeValue(err))
     if _.isArray err
       return new ExpressResponse
         errmsg:

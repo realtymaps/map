@@ -17,6 +17,7 @@ then
     export PGBOUNCER_LOG_CONNECTIONS=0  # no
     export PGBOUNCER_LOG_DISCONNECTIONS=0  # no
     export PGBOUNCER_LOG_POOLER_ERRORS=1  # yes
+    export PGBOUNCER_STATS_PERIOD=3600
 
     bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
 else

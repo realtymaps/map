@@ -2,7 +2,7 @@ querystring = require 'querystring'
 Promise = require 'bluebird'
 _ = require 'lodash'
 
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:auth')
 config = require '../config/config'
 userSessionService = require '../services/service.userSession'
 permissionsService = require '../services/service.permissions'
