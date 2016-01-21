@@ -4,6 +4,8 @@ Promise = require 'bluebird'
 LobFactory = require 'lob'
 logger = require '../config/logger'
 _ = require 'lodash'
+config = require '../config/config'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 lobPromise = Promise.try () ->
   externalAccounts.getAccountInfo('lob')
@@ -16,55 +18,42 @@ lobPromise = Promise.try () ->
     promisify.lob(live)
     { test, live }
 
-filterLobResponseErrors = (res) ->
-  if 'errors' not of res
-    return
-  errorList = _.cloneDeep res.errors
-  anError = errorList.pop()
-  msg = "#{anError.message}"
-  while anError = errorList.pop()
-    msg = "#{msg}, #{anError.message}"
-  msg = "#{msg}, Placeholder Msg"
-  throw new Error(msg) # throw it up for Express to handle
+createLetters = (Lob, userId, data) -> Promise.try () ->
+  if !_.isArray(data.recipients)
+    throw new PartiallyHandledError("recipients must be an array")
 
-createNewLobObject = (Lob, userId, data) -> Promise.try () ->
-  Lob.addresses.createAsync(data.recipient)
-  .then (lobResponse) ->
-    filterLobResponseErrors(lobResponse)
-    lobResponse
-  .then (lobResponse) ->
-    logger.debug "created #{Lob.rm_type} Lob.addresses: #{JSON.stringify(lobResponse, null, 2)}"
-    lobResponse.id
+  Promise.map data.recipients, (recipient) ->
+    logger.debug "LOB-#{Lob.rm_type} new letter to: #{JSON.stringify(recipient, null, 2)}"
 
-sendJob = (Lob, userId, data) -> Promise.try () ->
-  createNewLobObject(Lob, userId, data)
-  .then (address) ->
     Lob.letters.createAsync
       description: data.description
-      #to: address.id
-      to: data.recipient
+      to: recipient
       from: data.sender
       file: data.content
-      #file: rawLetterContent2
-      #data: data.macros
-      data: {'name': 'Justin'}
+      data: { userId }
       color: true
       template: true
-  .then (lobResponse) ->
-    filterLobResponseErrors(lobResponse)
-    lobResponse
-  .then (lobResponse) ->
-    logger.debug "created #{Lob.rm_type} Lob.letters: #{JSON.stringify(lobResponse, null, 2)}"
-    lobResponse
+
+    .catch isUnhandled, (err) ->
+      lobError = new Error(err.message)
+      throw new PartiallyHandledError(err, "LOB[#{Lob.rm_type}] API responded #{err.status_code}")
+
+    .then (lobResponse) ->
+      lobResponse
 
 module.exports =
-  getPriceQuote: (userId, data) -> Promise.try () ->
+  getPriceQuote: (userId, data) ->
     lobPromise
     .then (lob) ->
-      sendJob(lob.test, userId, data)
-      .then (lobResponse) ->
-        lobResponse.price
+      createLetters lob.test, userId, data
+    .then (lobResponses) ->
+      _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
+        total + Number(price)
+
   sendSnailMail: (userId, data) ->
     lobPromise
     .then (lob) ->
-      sendJob(lob.live, userId, data)
+      throw new Error("Refusing to send snail mail from non-production environment") unless config.ENV == 'production'
+      createLetters lob.live, userId, data
+    .then (lobResponses) ->
+      lobResponses
