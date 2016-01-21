@@ -25,7 +25,6 @@ rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
     if !state.template && !state.templateProvider
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
-        console.debug "state: #{name} template: #{templateName} controller: " + (state.controller or state.views["#{name}@#{state.parent}"]?.controller)
         $templateCache.get templateName
 
     if state.parent

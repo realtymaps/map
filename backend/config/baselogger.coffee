@@ -13,13 +13,10 @@ if !fs.existsSync(logPath)
 
 myCustomLevels =
   levels:
-    route: 0
-    sql: 1
-    debug: 2
-    info: 3
-    warn: 4
-    error: 5
-    #log: 6
+    debug: 0
+    info: 1
+    warn: 2
+    error: 3
 
   colors:
     route: 'grey'
@@ -46,6 +43,10 @@ logger = new (winston.Logger)(
 winston.addColors myCustomLevels.colors
 
 
+getFileAndLine = (trace, index, extension = '.coffee') ->
+  filename: path.basename(trace[index].getFileName(), extension)
+  lineNumber: trace[index].getLineNumber()
+
 if config.LOGGING.FILE_AND_LINE
   for own level of myCustomLevels.levels
     oldFunc = logger[level]
@@ -53,20 +54,20 @@ if config.LOGGING.FILE_AND_LINE
       logger[level] = () ->
         trace = stackTrace.parse(new Error())  # this gets correct coffee line, where stackTrace.get() does not
         args = Array.prototype.slice.call(arguments)
-        filename = path.basename(trace[1].getFileName(), '.coffee')
-        decorator = "[#{filename}:#{trace[1].getLineNumber()}]"
+        info = getFileAndLine(trace, 4)
+        if info.lineNumber == 18 && info.filename == 'index.js'
+          info = getFileAndLine(trace, 5)
+        if info.filename.endsWith('.js')
+          info = getFileAndLine(trace, 1)
+        decorator = "[#{info.filename}:#{info.lineNumber}]"
         if cluster.worker?.id?
           decorator = "<#{cluster.worker.id}>#{decorator}"
         args.unshift(decorator)
         oldFunc.apply(logger, args)
 
 
-unless logger.infoRoute
-  logger.infoRoute = (name, route) ->
-    logger.route "Route #{name} of: '#{route}' set"
-
-logger.log 'debug', 'Log Levels: %j', logger.levels, {}
-logger.log 'debug', 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+logger.debug 'Log Levels: %j', logger.levels, {}
+logger.debug 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
 
 colorWrap logger, myCustomLevels.levels
 

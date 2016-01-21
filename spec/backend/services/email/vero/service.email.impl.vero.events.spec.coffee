@@ -115,7 +115,6 @@ describe "service.email.impl.vero.events", ->
 
       it "eventName" , ->
         name = 'customer' + Case.pascal testName
-        console.log "name: #{name}"
         @vero.createUserAndTrackEvent.args[0][3].should.be.eql paymentEvents[name]
 
       it "eventData" , ->

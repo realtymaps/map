@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 backendRoutes = require '../../../../common/config/routes.backend'
 {clsFullUrl} = require '../../../utils/util.route.helpers'
-logger = require '../../../config/logger'
+logger = require('../../../config/logger').spawn('backend:vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 {SubscriptionSignUpError
 SubscriptionCreatedError

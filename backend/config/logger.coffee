@@ -6,7 +6,7 @@ debug = require 'debug'
 debug.enable(config.LOGGING.ENABLE)
 
 
-_utils = ['functions', 'infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
+_utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
 _levelFns = ['debug', 'info', 'warn', 'error', 'log']
 LEVELS = {}
 for val, key in _levelFns
@@ -33,7 +33,6 @@ _wrapDebug = (debugNS, logObject) ->
   newLogger = {}
   for val in _levelFns
     newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
-
   newLogger
 
 class Logger
@@ -73,9 +72,19 @@ class Logger
       throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
       unless debug
         throw Error("cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library")
-      return _wrapDebug newInternalLoggerOrNS, @baseLogObject
+      # TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
+      # TODO: return colorWrap(_wrapDebug(newInternalLoggerOrNS, @baseLogObject), ['debug'])
+      newLogger = _wrapDebug(newInternalLoggerOrNS, @baseLogObject)
+      colorWrap(newLogger, ['debug'])
+      return newLogger
+    # TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
+    # TODO: colorWrap(new Logger(newInternalLoggerOrNS or baseLogger), ['debug'])
+    newLogger = new Logger(newInternalLoggerOrNS or baseLogger)
+    colorWrap(newLogger, ['debug'])
+    newLogger
 
-    new Logger(newInternalLoggerOrNS or baseLogger)
+# TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
+# TODO: module.exports = colorWrap(new Logger(baselogger))
 
 logger = new Logger(baselogger)
 

@@ -33,7 +33,7 @@ _findNewFolders = (ftp, action, processDates, newFolders={}) -> Promise.try () -
         continue
       newFolders["#{date}_#{action}"] ?= {date, action}
       newFolders["#{date}_#{action}"][type] = {path: "/Managed_#{action}/#{dir.name}", type: type, date: date, action: action}
-      logger.info("New blackknight directory found: #{newFolders["#{date}_#{action}"][type].path}")
+      logger.info("New blackknight directory found: #{newFolders[date+'_'+action][type].path}")
     newFolders
 
 _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->

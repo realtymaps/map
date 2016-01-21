@@ -1,6 +1,6 @@
 {methodExec} = require '../util.route.helpers'
 factory = require '../util.factory'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('backend:crud:routeHelpers')
 BaseObject = require '../../../common/utils/util.baseObject'
 _ = require 'lodash'
 NamedError = require '../errors/util.error.named'
