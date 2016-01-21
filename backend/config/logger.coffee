@@ -86,7 +86,7 @@ class Logger
 # TODO: the 3 lines below can be replaced (once my PR gets merged to color-wrap) with:
 # TODO: module.exports = colorWrap(new Logger(baselogger))
 
-logger = new Logger(baselogger)
+logger = new Logger(baselogger).spawn('__OMGWTFBBQ____YOU_SHOULD_BE_USING_SPAWN____OMGWTFBBQ__')
 
 colorWrap(logger)
 
