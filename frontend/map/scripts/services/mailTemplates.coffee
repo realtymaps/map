@@ -74,14 +74,14 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   _getLobRecipientData = () ->
     return null unless mailCampaign.recipients?.length
+
     _.map mailCampaign.recipients, (r) ->
-      r = _.mapValues r, (v) -> v || ""
-      name: r.name ? "Bob McBob"
-      address_line1: "#{r.street_address_num} #{r.street_address_name}"
-      address_line2: " #{r.street_address_unit}"
-      address_city: "#{r.city}"
-      address_state: "#{r.state}"
-      address_zip: "#{r.zip}"
+      name: r.name ? "Current Resident"
+      address_line1: "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
+      address_line2: r.street_address_unit ? ''
+      address_city: r.city ? ''
+      address_state: r.state ? ''
+      address_zip: r.zip ? ''
 
   _createPreviewHtml = () ->
     # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
@@ -146,7 +146,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     $rootScope.lobData =
       content: _createLobHtml()
       macros: {'name': 'Justin'}
-      recipient: _getLobRecipientData()?[0]
+      recipients: _getLobRecipientData()
       sender: _getLobSenderData()
     $rootScope.modalControl = {}
     $modal.open
