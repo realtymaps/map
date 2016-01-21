@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:digimaps:parcelFetcher')
 _ = require 'lodash'
 moment = require 'moment'
 PromiseFtp = require 'promise-ftp'

@@ -28,6 +28,8 @@
                   span Created
                 th.col-md-1
                   span Sent
+                th.col-md-1
+
             tbody
               tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="mailWizard({id:campaign.id})" ui-sref-opts="{reload: true}")
                 td
@@ -44,3 +46,7 @@
                   span {{campaign.rm_inserted_time | date:'MM/dd/yyyy'}}
                 td.col-md-1
                   span {{(campaign.submitted | date:'MM/dd/yyyy') || 'never'}}
+                td.col-md-1
+                  span {{(campaign.submitted | date:'MM/dd/yyyy') || 'never'}}
+                td.col-md-1
+                  button.btn.btn-white(ng-click="deleteCampaign(campaign); $event.stopPropagation()") Delete

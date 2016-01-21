@@ -10,6 +10,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService,
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
 
+  $scope.campaign = rmapsMailTemplate.getCampaign()
+
   $scope.isEmptyCategory = () ->
     return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
 

@@ -313,6 +313,7 @@ executeSubtask = (subtask) ->
     TaskImplementation.getTaskCode(subtask.task_name)
   .then (taskImpl) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
+    .cancellable()
     .then () ->
       if subtask.name == 'blackknight_normalizeData'
         console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{buildUniqueSubtaskName(subtask)} ##{subtask.data.i}: done executing subtask")

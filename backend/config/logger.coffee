@@ -4,81 +4,97 @@ colorWrap = require 'color-wrap'
 baselogger = require './baselogger'
 debug = require 'debug'
 debug.enable(config.LOGGING.ENABLE)
+stackTrace = require('stack-trace')
+cluster = require 'cluster'
+path = require 'path'
 
 
-_utils = ['functions', 'infoRoute', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
-_levelFns = ['debug', 'info', 'warn', 'error', 'log']
-LEVELS = {}
-for val, key in _levelFns
-  LEVELS[val] = key
+_utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
+_levelFns = ['info', 'warn', 'error', 'log']
 
-_maybeExecLevel = (level, current, fn) ->
-  fn() if level >= current
 
 _isValidLogObject = (logObject) ->
-  isValid = false
-  return  isValid unless logObject
+  if !logObject?
+    return false
   for val in _levelFns
-    isValid = logObject[val]? and typeof logObject[val] is 'function'
-    break unless isValid
-  isValid
+    if !logObject[val]? || typeof logObject[val] != 'function'
+      return false
+  return true
 
-###
-  Overide logObject.debug with a debug instance
-  see: https://github.com/visionmedia/debug/blob/master/Readme.md
-###
-_wrapDebug = (debugNS, logObject) ->
-  # define a new debug NS (which is to be used as handle for controlling logging verbosity)
-  debugInstance = debug(debugNS)
-  newLogger = {}
-  for val in _levelFns
-    newLogger[val] = if val == 'debug' then debugInstance else logObject[val]
+_getFileAndLine = (trace, index) ->
+  fileinfo = path.parse(trace[index].getFileName())
+  if fileinfo.name == 'index'
+    filename = "#{path.basename(fileinfo.dir)}/index"
+  else
+    filename = fileinfo.name
+  filename: filename
+  lineNumber: trace[index].getLineNumber()
 
-  newLogger
+_decorateOutput = (func, bindThis) ->
+  (args...) ->
+    trace = stackTrace.parse(new Error())  # this gets correct coffee line, where stackTrace.get() does not
+    info = _getFileAndLine(trace, 1)
+    if info.filename == 'color-wrap/index'
+      info = _getFileAndLine(trace, 2)
+    decorator = "[#{info.filename}:#{info.lineNumber}]"
+    if cluster.worker?.id?
+      decorator = "<#{cluster.worker.id}>#{decorator}"
+    args.unshift(decorator)
+    func.apply(bindThis, args)
+
+
+if !baselogger
+  throw Error('internalLogger undefined')
+if !_isValidLogObject(baselogger)
+  throw Error('baselogger is invalid')
+
+
+_debugCache = {}
+
 
 class Logger
-  constructor: (@baseLogObject) ->
-    throw Error('internalLogger undefined') unless @baseLogObject
-    throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
-    logFns = {}
+  constructor: (namespace, showDebugFileAndLine) ->
+
+    if !namespace || typeof namespace != 'string'
+      throw new Error('invalid logging namespace')
+
+    # need to cache debugInstance in order to get consistent color; this could be considered a bug in the debug module
+    if !_debugCache[namespace]?
+      _debugCache[namespace] = debug(namespace)
+    debugInstance = _debugCache[namespace]
+
+    ###
+      Overide logObject.debug with a debug instance
+      namespace is to be used as handle for controlling logging verbosity
+      see: https://github.com/visionmedia/debug/blob/master/Readme.md
+    ###
+    if showDebugFileAndLine
+      @debug = _decorateOutput(debugInstance)
+    else
+      @debug = debugInstance
 
     for level in _levelFns
-      do (level) =>
-        logFns[level] = (msg) =>
-          _maybeExecLevel LEVELS[level], @currentLevel, =>
-            @baseLogObject[level](msg)
-        @[level] = logFns[level]
+      if config.LOGGING.FILE_AND_LINE
+        @[level] = _decorateOutput(baselogger[level], baselogger)
+      else
+        @[level] = baselogger[level].bind(baselogger)
 
     # delegation of both member funcs and member structs from this class to the baseLogObject
     for util in _utils
       do (util) =>
-        if _.isFunction(@baseLogObject[util])
-          @[util] = (args...) ->
-            return @baseLogObject[util](args...)
+        if _.isFunction(baselogger[util])
+          @[util] = baselogger[util].bind(baselogger)
         else
           Object.defineProperty @, util,
-            get: () =>
-              return @baseLogObject[util]
-            set: (value) =>
-              @baseLogObject[util] = value
-            enumerable: false,
-            # writable: true
-            # value: 'static'
+            get: () ->
+              return baselogger[util]
+            set: (value) ->
+              baselogger[util] = value
+            enumerable: false
 
-    @LEVELS = LEVELS
-    @currentLevel = LEVELS[config.LOGGING.LEVEL]
+    colorWrap(@)
 
-  spawn: (newInternalLoggerOrNS) =>
-    if typeof newInternalLoggerOrNS is 'string'
-      throw Error('@baseLogObject is invalid') unless _isValidLogObject @baseLogObject
-      unless debug
-        throw Error("cannot create '#{newInternalLoggerOrNS}' logging namespace - unable to find valid debug library")
-      return _wrapDebug newInternalLoggerOrNS, @baseLogObject
+  spawn: (args...) ->
+    return new Logger(args...)
 
-    new Logger(newInternalLoggerOrNS or baseLogger)
-
-logger = new Logger(baselogger)
-
-colorWrap(logger)
-
-module.exports = logger
+module.exports = new Logger("backend:__default_namespace__")
