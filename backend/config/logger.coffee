@@ -36,8 +36,6 @@ _decorateOutput = (func, bindThis) ->
     info = _getFileAndLine(trace, 1)
     if info.filename == 'color-wrap/index'
       info = _getFileAndLine(trace, 2)
-    if info.filename == 'color-wrap/index'
-      console.log(JSON.stringify(trace,null,2))
     decorator = "[#{info.filename}:#{info.lineNumber}]"
     if cluster.worker?.id?
       decorator = "<#{cluster.worker.id}>#{decorator}"
