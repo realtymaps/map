@@ -17,6 +17,12 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.bedsMin = $scope.selectedFilters.bedsMin || 0
   $scope.bathsMin = $scope.selectedFilters.bathsMin || 0
 
+  # Dirty tracking
+  $scope.dirty = false
+
+  markDirty = () ->
+    $scope.dirty = true
+
   #
   # Create slider step arrays
   #
@@ -69,6 +75,7 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
         ceil: maxValue
         stepsArray: steps
         hideLimitLabels: true
+        onChange: markDirty
     }
 
   $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
@@ -76,10 +83,8 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.domSlider = initSliderConfig 0, MAX_DOM, domSteps, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
 
   $timeout (() ->
-    $log.debug ">>> recalc view dimensions"
     $scope.$broadcast 'reCalcViewDimensions'
     $timeout (() ->
-      $log.debug ">>> force slider render"
       $scope.$broadcast 'rzSliderForceRender'
       , 10)
     , 10)
@@ -119,15 +124,19 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   $scope.changeBeds = (incr) ->
     $scope.bedsMin = $scope.bedsMin + incr
     $scope.bedsMin = 0 if $scope.bedsMin < 0
+    markDirty()
 
   $scope.changeBaths = (incr) ->
     $scope.bathsMin = $scope.bathsMin + incr
     $scope.bathsMin = 0 if $scope.bathsMin < 0
+    markDirty()
 
   #
   # Apply the filter changes to the map results
   #
   $scope.apply = () ->
+    return if !$scope.dirty
+
     # If the slider has been set at the maximum value,
     # delete the current filter max so the filter will not have an upper bound
 

@@ -86,6 +86,8 @@
 
   script(type="text/ng-template" id="SettingsModalMobile")
     .settings-modal-mobile(ng-controller="rmapsFiltersMobileCtrl")
+      //mobile-header-buttons
+      //  div.button.button-block @
       .list
         .item.settings-row
           .settings-header Price
@@ -126,7 +128,7 @@
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
 
       footer.mobile-footer.mobile-footer-modal
-        button.button.button-full.button-action(ng-click="apply()") Apply Filters
+        button.button.button-full.button-action(ng-click="apply()" ng-class="{ 'disabled': !dirty }") Apply Filters
 
   script(type="text/ng-template" id="SettingsSliderTemplate")
     include _settingsSliderTemplate.html
