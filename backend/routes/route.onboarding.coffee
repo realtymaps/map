@@ -60,16 +60,16 @@ handles = wrapHandleRoutes
             {fips_code, mls_code} = validReq.body
             if !fips_code and !mls_code
               throw new Error("fips_code or mls_code required for user location restrictions.")
+            promise = null
             if fips_code
-              tables.auth.m2m_user_locations(trx)
+              promise = tables.auth.m2m_user_locations(trx)
               .insert(auth_user_id: authUser.id, fips_code: validReq.body.fips_code)
-              .then ->
-                authUser
             if mls_code
-              tables.auth.m2m_user_mls(trx)
+              promise = tables.auth.m2m_user_mls(trx)
               .insert(auth_user_id: authUser.id, mls_code: validReq.body.mls_code)
-              .then ->
-                authUser
+
+            promise.then () -> authUser
+
           .then (authUser) ->
             logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
             paymentServices.customers.create
