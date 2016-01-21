@@ -80,6 +80,8 @@ _rules =
     price:
       alias: 'Price'
       type: name: 'currency'
+      config:
+        nullZero: true
 
     close_date:
       alias: 'Close Date'
@@ -191,7 +193,7 @@ _rules =
         required: true
         input: {}
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
 
       owner_name_2:
@@ -199,7 +201,7 @@ _rules =
         required: true
         input: {}
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
 
     deed:

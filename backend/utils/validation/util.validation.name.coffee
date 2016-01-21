@@ -10,7 +10,9 @@ module.exports = (options = {}) ->
       return null
 
     composite(param, value).then (strings) ->
-      #logger.debug strings, true
+
+      if strings.full
+        return strings.full
 
       parts = []
       if strings.first
