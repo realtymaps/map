@@ -1,37 +1,47 @@
-logger = require('../../config/logger').spawn("backend:ezcrud")
+logger = require('../../config/logger').spawn('backend:ezcrud.service')
 BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../util.errors.crud').ServiceCrudError
-{singleRow} = require '../util.sql.helpers'
 _ = require 'lodash'
 factory = require '../util.factory'
 
 logger.debug "\n\n######## ezcrud service evaluated"
 
-# logQuery = (q, doLogQuery) ->
-#   logger.debug(q.toString()) if doLogQuery
-
-# execQ = (q, doLogQuery) ->
-#   logQuery q, doLogQuery
-#   q
 
 class Crud extends BaseObject
-  constructor: (@dbFn, @idKey = 'id', options = {}) ->
+  constructor: (@dbFn, options = {}) ->
     # small one-liner for debug log func that respects debug option
-    @debug = (msg) -> (options.debug ? false) and logger.debug "#{msg}"
+    @debug = (msg) -> (options.debug ? false) and logger.debug "ServiceCrud: #{msg}"
     @returnKnex = options.returnKnex ? false
+    @idKey = options.idKey ? 'id'
     unless _.isFunction @dbFn
       throw new ServiceCrudError('dbFn must be a knex function')
     @debug "Crud service instance made with options: #{options}"
 
-  knex: () ->
-    @returnKnex = true
-    @debug "Set to return knex object"
+  # In order to leverage centralized transaction handling (error catching etc) transactions
+  #   should be routed through this helper method.
+  # As things may grow on this class, this can hold any shared, central logic pertinent to the 'custom' scheme
+  #   that we develop in the future
+  custom: (transaction) ->
+    @debug "Using custom transaction"
+    @_wrapTransaction transaction
+
+  # intermediate function to flag _wrapTransaction to return unevaluated knex
+  exposeKnex: () ->
+    @returnKnexTempFlag = true
+    @debug "Flagged to return knex object"
     @
 
+  # centralized handling, such as catching errors, for all queries including custom ones
   _wrapTransaction: (transaction) ->
     @debug transaction.toString()
-    if @returnKnex then transaction else transaction
+
+    # return an objectified handle to knex obj if flagged
+    if @returnKnex or @returnKnexTempFlag
+      @returnKnexTempFlag = false
+      return {knex: transaction} # exposes unevaluated knex
+
+    # evaluate
     .then (result) ->
       @debug result
       result
@@ -39,36 +49,37 @@ class Crud extends BaseObject
       @debug error
       throw new ServiceCrudError(error, "Error evaluating query: #{transaction}")
 
-  getAll: () ->
-    @debug "getAll()"
-    _wrapTransaction @dbFn()
-    #execQ @dbFn()
+  getAll: (options = {}) ->
+    @debug "getAll(), options=#{options}"
+    @_wrapTransaction options.transaction ? @dbFn()
 
-  create: (entity) ->
-    _wrapTransaction @dbFn().returning(@idKey).insert(entity)
+  create: (entity, options = {}) ->
+    @debug "create(), entity=#{entity}, options=#{options}"
+    @_wrapTransaction options.transaction ? @dbFn().returning(@idKey).insert(entity)
 
-  getById: (id, entity) ->
+  getById: (id, entity, options = {}) ->
+    @debug "getById(), id=#{id}, entity=#{entity}, options=#{options}"
+    if options.transaction?
+      return @_wrapTransaction options.transaction
     throw new ServiceCrudError("#{@dbFn.tableName}: #{idKey} is required") unless id?
-    where = @dbFn()
+    transaction = @dbFn().where("#{@idKey}": id)
     _.each entity, (val, key) ->
       if _.isArray val
-        where = where.whereIn(key, val)
-    where = where.where(_.omit(query, _.isArray))
-    _wrapTransaction where
-    # execQ @dbFn().where(id: id)
+        transaction = transaction.whereIn(key, val)
+    transaction = transaction.where(_.omit(entity, _.isArray))
+    @_wrapTransaction transaction
 
-  #here down return thenables to be consistent on service returns for single items
-  update: (id, entity) -> # safe = [] ?
-    @debug "update(), id: #{id}, entity: #{entity}"
-    _wrapTransaction @dbFn.where("#{@idKey}": id).update(entity)
+  update: (id, entity, options = {}) -> # safe = [] ?
+    @debug "update(), id=#{id}, entity=#{entity}, options=#{options}"
+    @_wrapTransaction options.transaction ? @dbFn.where("#{@idKey}": id).update(entity)
 
-  upsert: (id, entity) ->
-    @debug "upsert(), id: #{id}, entity: #{entity}"
-    _wrapTransaction @dbFn.insert(_.extend {"#{@idkey}": id}, entity) # 
+  upsert: (id, entity, options = {}) ->
+    @debug "upsert(), id=#{id}, entity=#{entity}, options=#{options}"
+    @_wrapTransaction options.transaction ? @dbFn.insert(_.extend {"#{@idkey}": id}, entity)
 
-  delete: (id) ->
-    @debug "delete(), id: #{id}"
-    _wrapTransaction @dbFn.where(id: id).delete()
+  delete: (id, entity, options = {}) ->
+    @debug "delete(), id=#{id}, options=#{options}"
+    @_wrapTransaction options.transaction ? @dbFn.where(_.extend {"#{@idkey}": id}, entity).delete()
 
   # base: () ->
   #   super([Crud,@].concat(_.toArray arguments)...)
@@ -107,8 +118,8 @@ Many times returning the query itself is sufficent so it can be piped (MUCH bett
 #   delete: (id, doLogQuery = false) ->
 #     singleResultBoolean super(id, doLogQuery)
 
-module.exports =
-  Crud: Crud
-  crud: factory(Crud)
+module.exports = Crud
+  # Crud: Crud
+
   # ThenableCrud: ThenableCrud
   # thenableCrud: factory(ThenableCrud)
