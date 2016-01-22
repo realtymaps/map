@@ -9,7 +9,8 @@ app.provider 'rmapsOnboardingOrder', () ->
       'onboardingFinishYay'
     ], @name = '', @submitStepName = 'onboardingLocation') ->
       @clazz = OnBoardingOrder
-
+      @submitStepName += @name.toInitCaps()
+      
     inBounds: (id) ->
       id >= 0 and id < @steps.length
 
@@ -43,9 +44,10 @@ app.provider 'rmapsOnboardingOrder', () ->
 app.provider 'rmapsOnboardingProOrder', (rmapsOnboardingOrderProvider) ->
   new rmapsOnboardingOrderProvider.clazz [
     'onboardingPayment'
-    'onboardingVerify'
+    'onboardingLocation'
+    # 'onboardingVerify'
     'onboardingFinishYay'
-  ], 'pro', 'onboardingVerify'
+  ], 'pro', 'onboardingLocation'#'onboardingVerify'
 
 app.provider 'rmapsOnboardingOrderSelector', (rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
   @getPlanFromState = ($state) ->

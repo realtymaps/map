@@ -20,4 +20,14 @@ class FipsCodeService extends Crud
     @mainQuery(stateName)
     .where(stateName,'county','like', "%#{countyName}%")
 
+  getByMlsCode: (mlsCode) ->
+    lookup.mlsFipsCodes()
+    .select('fips_code', 'county')
+    .where 'mls', "ilike", mlsCode
+
+  getAllMlsCodes: () ->
+    lookup.mlsFipsCodes()
+    .distinct('mls')
+    .select('mls')
+
 module.exports = new FipsCodeService()
