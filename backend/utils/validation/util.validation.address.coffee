@@ -13,7 +13,7 @@ module.exports = (options = {}) ->
       strength: 0
 
     if value.careOf
-      result.lines.push("c/o #{value.careOf}")
+      result.lines.push("c/o #{value.careOf.toInitCaps()}")
       result.strength += 3
       result.careOf = true
 
