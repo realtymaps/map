@@ -80,6 +80,8 @@ _rules =
     price:
       alias: 'Price'
       type: name: 'currency'
+      config:
+        nullZero: true
 
     close_date:
       alias: 'Close Date'
@@ -191,7 +193,7 @@ _rules =
         required: true
         input: {}
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
 
       owner_name_2:
@@ -199,7 +201,7 @@ _rules =
         required: true
         input: {}
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
 
     deed:
@@ -266,11 +268,6 @@ _rules =
 # we'll keep this around just in case something comes along that needs this)
 _noBase = []
 
-getBaseRules = (dataSourceType, dataListType) ->
-  if dataListType in _noBase
-    return {}
-  _.merge _.cloneDeep(_rules.common), _rules[dataSourceType][dataListType]
-
 # RETS/MLS rule defaults for each data type
 typeRules =
   Int:
@@ -308,7 +305,12 @@ typeRules =
       name: 'nullify', options: @getOptions()
 
 _buildRule = (rule, defaults) ->
-  _.defaultsDeep rule, _.cloneDeep(defaults), ruleDefaults
+  _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
+
+getBaseRules = (dataSourceType, dataListType) ->
+  if dataListType in _noBase
+    return {}
+  _.merge _.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType][dataListType])
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]

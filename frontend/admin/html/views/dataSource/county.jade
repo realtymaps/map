@@ -69,9 +69,6 @@
         rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
         cg-busy="fieldData.category.loading")
         .field(
-        class="base unselectable"
-        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.output }}
-        .field(
         ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
         ng-click="item.unselectable || selectField(item)"
         rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
@@ -94,9 +91,6 @@
         ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
           .expand-icon(ng-click="expanded = !expanded" ng-show="category.items.length > 5")
           .field-list
-            .field(
-            class="base unselectable"
-            ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.output }}
             .field(
             ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
             ng-click="item.unselectable || selectField(item)"
@@ -279,32 +273,50 @@
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 First and Last Name
+          .col-md-2 Name
           .col-md-10
             .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.first }")
               span(ng-show="fieldData.current.input.first") {{fieldData.current.input.first}}:
               span First Name
               span.remove-icon(ng-show="fieldData.current.input.first" ng-click="removeBaseInput('first')") X
+            .field(rmaps-droppable="'middle'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.middle }")
+              span(ng-show="fieldData.current.input.middle") {{fieldData.current.input.middle}}:
+              span Middle Name (optional)
+              span.remove-icon(ng-show="fieldData.current.input.middle" ng-click="removeBaseInput('middle')") X
             .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.last }")
               span(ng-show="fieldData.current.input.last") {{fieldData.current.input.last}}:
               span Last Name
               span.remove-icon(ng-show="fieldData.current.input.last" ng-click="removeBaseInput('last')") X
+            span.sep OR
+            .field(rmaps-droppable="'full'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.full }")
+              span(ng-show="fieldData.current.input.full") {{fieldData.current.input.full}}:
+              span Full Name
+              span.remove-icon(ng-show="fieldData.current.input.full" ng-click="removeBaseInput('full')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'owner_name_2'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 First and Last Name
+          .col-md-2 Name
           .col-md-10
             .field(rmaps-droppable="'first'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.first }")
               span(ng-show="fieldData.current.input.first") {{fieldData.current.input.first}}:
               span First Name
               span.remove-icon(ng-show="fieldData.current.input.first" ng-click="removeBaseInput('first')") X
+            .field(rmaps-droppable="'middle'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.middle }")
+              span(ng-show="fieldData.current.input.middle") {{fieldData.current.input.middle}}:
+              span Middle Name (optional)
+              span.remove-icon(ng-show="fieldData.current.input.middle" ng-click="removeBaseInput('middle')") X
             .field(rmaps-droppable="'last'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.last }")
               span(ng-show="fieldData.current.input.last") {{fieldData.current.input.last}}:
               span Last Name
               span.remove-icon(ng-show="fieldData.current.input.last" ng-click="removeBaseInput('last')") X
+            span.sep OR
+            .field(rmaps-droppable="'full'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.full }")
+              span(ng-show="fieldData.current.input.full") {{fieldData.current.input.full}}:
+              span Full Name
+              span.remove-icon(ng-show="fieldData.current.input.full" ng-click="removeBaseInput('full')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
@@ -344,7 +356,7 @@
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
 
-    .col-md-12.typeahead.scroll(ng-show="fieldData.current.type.name == 'datetime'")
+    .col-md-12.typeahead.scroll(ng-if="fieldData.current.type.name == 'datetime'")
       .row
         .col-md-2 Date Format
         .col-md-4
