@@ -122,29 +122,55 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   base = dataLoadHelpers.getValues(normalizedData.base || [])
   update_type = base.update_type
   delete base.update_type
-  normalizedData.general ?= []
-  normalizedData.general.unshift(name: 'Address', value: base.address)
   ungrouped = _.omit(rawData, usedKeys)
   if _.isEmpty(ungrouped)
     ungrouped = null
-  data =
-    address: sqlHelpers.safeJsonArray(base.address)
-    shared_groups:
-      general: normalizedData.general
-      details: normalizedData.details || []
-      sale: normalizedData.sale || []
-      building: normalizedData.building || []
-      taxes: normalizedData.taxes || []
-      lot: normalizedData.lot || []
-      location: normalizedData.location || []
-      restrictions: normalizedData.restrictions || []
-    subscriber_groups:
-      owner: normalizedData.owner || []
-      deed: normalizedData.deed || []
+  if dataType == 'tax'
+    group1 = 'general'
+    group2 = 'owner'
+  else if dataType == 'deed'
+    group1 = 'deed'
+    group2 = 'owner'
+  else if dataType == 'mortgage'
+    group1 = 'mortgage'
+    group2 = 'mortgage'
+  normalizedData[group1] ?= []
+  normalizedData[group2] ?= []
+  normalizedData[group1].unshift(name: 'Address', value: base.address)
+  normalizedData[group2].unshift(name: "Owner 1", value: base.owner_name)
+  normalizedData[group2].unshift(name: "Owner 2", value: base.owner_name_2)
+  normalizedData[group2].unshift(name: "Owner's Address", value: base.owner_address)
+  if dataType == 'tax'
+    data =
+      shared_groups:
+        general: normalizedData.general
+        details: normalizedData.details || []
+        sale: normalizedData.sale || []
+        building: normalizedData.building || []
+        taxes: normalizedData.taxes || []
+        lot: normalizedData.lot || []
+        location: normalizedData.location || []
+        restrictions: normalizedData.restrictions || []
+      subscriber_groups:
+        owner: normalizedData.owner || []
+        deed: normalizedData.deed || []
+        mortgage: normalizedData.mortgage || []
+  else if dataType == 'deed'
+    data =
+      shared_groups: {}
+      subscriber_groups:
+        owner: normalizedData.owner
+        deed: normalizedData.deed
+  else if dataType == 'mortgage'
+    data =
+      shared_groups: {}
+      subscriber_groups:
+        mortgage: normalizedData.mortgage
+  commonData =
     hidden_fields: dataLoadHelpers.getValues(normalizedData.hidden || [])
     ungrouped_fields: ungrouped
     deleted: if update_type == 'D' then stats.batch_id else null
-  _.extend base, stats, data
+  _.extend base, stats, data, commonData
 
 
 finalizeData = (subtask, id) ->
@@ -252,7 +278,7 @@ finalizeData = (subtask, id) ->
 
     # now that we have an ordered sales history, overwrite that into the tax record
 
-    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address']
+    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
     tax.subscriber_groups.mortgage = mortgageEntries
     lastSale = deedEntries.pop()
     if lastSale?
