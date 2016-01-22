@@ -49,11 +49,21 @@ app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
   controller: 'mobileHeaderController'
   priority: 1000
 
-app.directive 'mobileHeaderButtonRight', ($log) ->
-  restrict: 'EAC'
-  require: '^mobileHeader',
-  priority: 999
-  link: ($scope, $element, $attrs, mobileHeaderController) ->
-    $log.debug '!!! Button target'
-    mobileHeaderController.registerTargetElement('right', $element)
+createMobileHeaderButtonDirective = (type) ->
+  return {
+    restrict: 'EAC'
+    require: '^mobileHeader',
+    priority: 999
+    link: ($scope, $element, $attrs, mobileHeaderController) ->
+      mobileHeaderController.registerTargetElement(type, $element)
+  }
+
+app.directive 'mobileHeaderButtonRight', () ->
+  createMobileHeaderButtonDirective('right')
+
+app.directive 'mobileHeaderButtonLeft', () ->
+  createMobileHeaderButtonDirective('left')
+
+app.directive 'mobileHeaderButtonCenter', () ->
+  createMobileHeaderButtonDirective('center')
 

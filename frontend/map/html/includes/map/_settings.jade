@@ -87,8 +87,7 @@
   script(type="text/ng-template" id="SettingsModalMobile")
     .settings-modal-mobile(ng-controller="rmapsFiltersMobileCtrl")
       mobile-header-buttons
-        a(ng-click="reset()") Reset
-        span |
+          a.settings-header-button(ng-click="reset()" ng-class="{ 'disabled': !dirty }") Reset
       .list
         .item.settings-row
           .settings-header Price
