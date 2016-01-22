@@ -37,19 +37,10 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   domSteps = initStepsArray 0, MAX_DOM, 1, 180, 5
 
   #
-  # Create slider options
+  # Set Slider default values from pre-selected filters
   #
-  initSliderConfig = (minValue, maxValue, steps, presetMin, presetMax) ->
-    # Filter the user filter values for $ and , characters
-    if presetMin
-      presetMin = 1 * presetMin.replace(/[$,]/g, '')
-    else
-      presetMin = minValue
-
-    if presetMax
-      presetMax = 1 * presetMax.replace(/[$,]/g, '')
-    else
-      presetMax = maxValue
+  setSliderMinMax = (config, presetMin, presetMax) ->
+    steps = config.options.stepsArray
 
     # Find the closest step values lower than the existing min and higher than the existing max
     stepMin = 0
@@ -67,16 +58,38 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
 
     stepMaxIdx = steps.length - 1 if stepMax == -1
 
-    return {
-      min: stepMinIdx
-      max: stepMaxIdx
+    config.min = stepMinIdx
+    config.max = stepMaxIdx
+
+  #
+  # Create slider options
+  #
+
+  initSliderConfig = (minValue, maxValue, steps, presetMin, presetMax) ->
+    # Filter the user filter values for $ and , characters
+    if presetMin
+      presetMin = 1 * presetMin.replace(/[$,]/g, '')
+    else
+      presetMin = minValue
+
+    if presetMax
+      presetMax = 1 * presetMax.replace(/[$,]/g, '')
+    else
+      presetMax = maxValue
+
+    config =
+      min: minValue
+      max: maxValue
       options:
         floor: minValue,
         ceil: maxValue
         stepsArray: steps
         hideLimitLabels: true
         onChange: markDirty
-    }
+
+    setSliderMinMax config, presetMin, presetMax
+
+    return config
 
   $scope.priceSlider = initSliderConfig 0, MAX_PRICE, priceSteps, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
   $scope.sizeSlider = initSliderConfig 0, MAX_SIZE, sizeSteps, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
@@ -132,7 +145,14 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     markDirty()
 
   $scope.reset = () ->
-    $log.debug "Reset Mobile Filters"
+    $scope.bedsMin = $scope.selectedFilters.bedsMin || 0
+    $scope.bathsMin = $scope.selectedFilters.bathsMin || 0
+
+    setSliderMinMax $scope.priceSlider, $scope.selectedFilters.priceMin, $scope.selectedFilters.priceMax
+    setSliderMinMax $scope.sizeSlider, $scope.selectedFilters.sqftMin, $scope.selectedFilters.sqftMax
+    setSliderMinMax $scope.domSlider, $scope.selectedFilters.listedDaysMin, $scope.selectedFilters.listedDaysMax
+
+    $scope.dirty = false
 
   #
   # Apply the filter changes to the map results
