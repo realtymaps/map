@@ -70,7 +70,7 @@
         cg-busy="fieldData.category.loading")
         .field(
         class="base unselectable"
-        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.output }} {{ item.alias }}
+        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
         .field(
         ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
         ng-click="item.unselectable || selectField(item)"
