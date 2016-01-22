@@ -275,13 +275,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-    .then (result) ->
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done processing rows")
-      result
   Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
-  .then (result) ->
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done with normalizeData join")
-    result
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row

@@ -315,17 +315,11 @@ executeSubtask = (subtask) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
-      if subtask.name == 'blackknight_normalizeData'
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{buildUniqueSubtaskName(subtask)} ##{subtask.data.i}: done executing subtask")
-    .then () ->
       tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
         finished: dbs.get('main').raw('NOW()')
-    .then () ->
-      if subtask.name == 'blackknight_normalizeData'
-        console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{buildUniqueSubtaskName(subtask)} ##{subtask.data.i}: done marking subtask success")
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
