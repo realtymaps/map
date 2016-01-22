@@ -131,6 +131,9 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     $scope.bathsMin = 0 if $scope.bathsMin < 0
     markDirty()
 
+  $scope.reset = () ->
+    $log.debug "Reset Mobile Filters"
+
   #
   # Apply the filter changes to the map results
   #
