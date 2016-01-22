@@ -8,20 +8,21 @@ app.factory 'mobileHeaderContext', ($log) ->
     registerHeader: (headerId, controller) ->
       @_headers[headerId] = controller
 
-    setButtons: (headerId, type, html) ->
+    setButtons: (headerId, type, transclude) ->
       header = @_headers[headerId]
 
       if !header
         $log.error "No Mobile Header controller available for id #{headerId}"
         return
 
-      header.setButtons type, html
+      header.setButtons type, transclude
 
   return new MobileHeaderContextManager
 
 app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $log, mobileHeaderContext) ->
   $log.debug "!!! Mobile Header Controller - class: '#{$element[0].className}'"
   class MobileHeaderController
+    _targets: {}
 
     constructor: () ->
       $log.debug ">>> constructor - class: '#{$element[0].className}'"
@@ -29,9 +30,16 @@ app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $l
 
       $scope.buttons = { }
 
-    setButtons : (type, html) ->
+    setButtons : (type, transclude) ->
       $log.debug "!!! Set buttons of type '#{type}'"
-      $scope.buttons[type] = html
+#      $scope.buttons[type] = transclude
+
+      if @_targets[type]
+        transclude (buttonClone, buttonScope) =>
+          @_targets[type].append buttonClone
+
+    registerTargetElement: (type, targetElement) ->
+      @_targets[type] = targetElement;
 
   return new MobileHeaderController
 
@@ -40,4 +48,12 @@ app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
   restrict: 'E'
   controller: 'mobileHeaderController'
   priority: 1000
+
+app.directive 'mobileHeaderButtonRight', ($log) ->
+  restrict: 'EAC'
+  require: '^mobileHeader',
+  priority: 999
+  link: ($scope, $element, $attrs, mobileHeaderController) ->
+    $log.debug '!!! Button target'
+    mobileHeaderController.registerTargetElement('right', $element)
 
