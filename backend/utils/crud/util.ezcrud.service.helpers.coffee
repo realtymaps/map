@@ -1,22 +1,75 @@
+util = require 'util'
 logger = require('../../config/logger').spawn('backend:ezcrud.service')
 BaseObject = require '../../../common/utils/util.baseObject'
-isUnhandled = require('../errors/util.partiallyHandledError').isUnhandled
-ServiceCrudError = require('../util.errors.crud').ServiceCrudError
+isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
+ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
 factory = require '../util.factory'
-
-logger.debug "\n\n######## ezcrud service evaluated"
 
 
 class Crud extends BaseObject
   constructor: (@dbFn, options = {}) ->
     # small one-liner for debug log func that respects debug option
-    @debug = (msg) -> (options.debug ? false) and logger.debug "ServiceCrud: #{msg}"
+    @debug = (msg) -> (options.debug ? false) and logger.debug "######## ServiceCrud: #{msg}"
+    # reteurnKnex flag activates the CRUD handlers below to return a {knex: <transaction>} object
     @returnKnex = options.returnKnex ? false
-    @idKey = options.idKey ? 'id'
+    # idKeys format here helps multi-pk support
+    @idKeys = options.idKeys ? ['id']
+    @idKeys = [@idKeys] unless _.isArray @idKeys
     unless _.isFunction @dbFn
       throw new ServiceCrudError('dbFn must be a knex function')
-    @debug "Crud service instance made with options: #{options}"
+    @debug "Crud service instance made with options: #{util.inspect(options, false, 0)}"
+
+  # Static function that produces an upsert query string given ids and entity of model.
+  # This exposes upsert query string for any other modules to use if desired and only
+  # requires ids and entity as objects (idobj helps for support on multi-id pks)
+  @getUpsertQueryString: (idObj, entityObj, tableName) ->
+    # "pre-process" data, stringify any JSON data
+    for k,v of entityObj
+      entity[k] = JSON.stringify(v) if _.isObject v
+
+    # some string processing to help give us good query values:
+    #   util.inspect gives good array repr of entity values that can be used for sql values
+    #   substring out non-JSON field brackets (to avoid risk removing brackets from json arrays)
+    idKeys = "#{_.keys(idObj)}"
+    entityKeys = "#{_.keys(entityObj)}"
+    allKeys = "#{idKeys},#{entityKeys}"
+
+    idValues = "#{util.inspect(_.values(idObj))}"
+    idValues = idValues.substring(1,idValues.length-1)
+    entityValues = "#{util.inspect(_.values(entityObj))}"
+    entityValues = entityValues.substring(1,entityValues.length-1)
+    allValues = "#{idValues},#{entityValues}"
+
+    # postgresql template for raw query
+    # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
+    qstr = """
+     INSERT INTO
+       #{tableName}
+       (#{allKeys}) 
+     VALUES
+       (#{allValues}) 
+     ON CONFLICT
+       (#{idKeys}) 
+     DO UPDATE SET
+       (#{entityKeys}) = (#{entityValues}) 
+    """
+
+    # "post-process" data, sanitize the resulting string above suitable as raw query
+    qstr = qstr.replace(/\n/g,'')
+    qstr
+
+  # helpers for query / id mgmt
+  _getIdObj: (sourceObj) ->
+    keys = _.merge(_.zipObject(@idKeys), _.pick(sourceObj, @idKeys))
+    @debug "_getIdObj(), keys=#{JSON.stringify(keys)}"
+    keys
+
+  _hasIdKeys: (testObj) ->
+    @debug "_hasIdKeys:"
+    @debug "idKeys=#{@idKeys}"
+    @debug "testObj=#{testObj}"
+    _.every @idKeys, _.partial(_.has, testObj)
 
   # In order to leverage centralized transaction handling (error catching etc) transactions
   #   should be routed through this helper method.
@@ -29,7 +82,7 @@ class Crud extends BaseObject
   # intermediate function to flag _wrapTransaction to return unevaluated knex
   exposeKnex: () ->
     @returnKnexTempFlag = true
-    @debug "Flagged to return knex object"
+    @debug "Flagged to return knex object, use `.knex` handle of returned object"
     @
 
   # centralized handling, such as catching errors, for all queries including custom ones
@@ -42,84 +95,52 @@ class Crud extends BaseObject
       return {knex: transaction} # exposes unevaluated knex
 
     # evaluate
-    .then (result) ->
-      @debug result
+    transaction.then (result) =>
+      # @debug "Number of rows in result: #{result.length}" if result.length?
+      # @debug "One row, result: #{util.inspect(result,false,1)}" unless result.length != 1
       result
-    .catch isUnhandled, (error) ->
+    .catch isUnhandled, (error) =>
       @debug error
       throw new ServiceCrudError(error, "Error evaluating query: #{transaction}")
 
-  getAll: (options = {}) ->
-    @debug "getAll(), options=#{options}"
-    @_wrapTransaction options.transaction ? @dbFn()
+  getAll: (query = {}, options = {}) ->
+    @debug "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    @_wrapTransaction options.transaction ? @dbFn().where(query)
 
-  create: (entity, options = {}) ->
-    @debug "create(), entity=#{entity}, options=#{options}"
-    @_wrapTransaction options.transaction ? @dbFn().returning(@idKey).insert(entity)
+  create: (query, options = {}) ->
+    @debug "create(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    @_wrapTransaction options.transaction ? @dbFn().insert(query)
 
-  getById: (id, entity, options = {}) ->
-    @debug "getById(), id=#{id}, entity=#{entity}, options=#{options}"
-    if options.transaction?
-      return @_wrapTransaction options.transaction
-    throw new ServiceCrudError("#{@dbFn.tableName}: #{idKey} is required") unless id?
-    transaction = @dbFn().where("#{@idKey}": id)
-    _.each entity, (val, key) ->
-      if _.isArray val
-        transaction = transaction.whereIn(key, val)
-    transaction = transaction.where(_.omit(entity, _.isArray))
-    @_wrapTransaction transaction
+  # implies restrictions and forces on id matches
+  getById: (query, options = {}) =>
+    # allow `query` to represent a single, simple num/str id
+    query = {"#{@idKeys[0]}": query} unless _.isObject query or @idkeys.length > 1
+    @debug "getById(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
+    @_wrapTransaction options.transaction ? @dbFn().where @_getIdObj query
 
-  update: (id, entity, options = {}) -> # safe = [] ?
-    @debug "update(), id=#{id}, entity=#{entity}, options=#{options}"
-    @_wrapTransaction options.transaction ? @dbFn.where("#{@idKey}": id).update(entity)
+  update: (query, options = {}) ->
+    @debug "update(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    throw new ServiceCrudError("update on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
+    ids = @_getIdObj query
+    entity = _.omit query, @idKeys
+    @debug "ids: #{JSON.stringify(ids)}"
+    @debug "entity: #{JSON.stringify(entity)}"
+    @_wrapTransaction options.transaction ? @dbFn().where(@_getIdObj query).update(_.omit query, @idKeys)
 
-  upsert: (id, entity, options = {}) ->
-    @debug "upsert(), id=#{id}, entity=#{entity}, options=#{options}"
-    @_wrapTransaction options.transaction ? @dbFn.insert(_.extend {"#{@idkey}": id}, entity)
+  upsert: (query, options = {}) ->
+    @debug "upsert(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    throw new ServiceCrudError("upsert on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
+    ids = @_getIdObj query
+    entity = _.omit query, @idKeys
+    @debug "ids: #{JSON.stringify(ids)}"
+    @debug "entity: #{JSON.stringify(entity)}"
 
-  delete: (id, entity, options = {}) ->
-    @debug "delete(), id=#{id}, options=#{options}"
-    @_wrapTransaction options.transaction ? @dbFn.where(_.extend {"#{@idkey}": id}, entity).delete()
+    upsertQueryString = Crud.getUpsertQueryString ids, entity, @dbFn.tableName
+    @_wrapTransaction options.transaction ? @dbFn().raw upsertQueryString
 
-  # base: () ->
-  #   super([Crud,@].concat(_.toArray arguments)...)
-###
-NOTICE this really restricts how the crud is used!
-Many times ThenableCrud should not even be instantiated until the
-route layer where you know that you will definatley want a response totally in memory.
-Many times returning the query itself is sufficent so it can be piped (MUCH better on memory)!
-###
-# singleResultBoolean = (q) ->
-#   q.then (result) ->
-#     unless doRowCount
-#       return result == 1
-#     result.rowCount == 1
-#   .catch isUnhandled, (error) ->
-#     throw new PartiallyHandledError(error)
-
-# class ThenableCrud extends Crud
-#   getAll: (doLogQuery = false) ->
-#     super(doLogQuery)
-#     .then (data) ->
-#       data
-#     .catch isUnhandled, (error) ->
-#       throw new PartiallyHandledError(error)
-
-#   getById: (id, doLogQuery = false) ->
-#     singleRow super(id,doLogQuery)
-
-#   #here down return thenables to be consistent on service returns for single items
-#   update: (id, entity, safe = [], doLogQuery = false) ->
-#     singleResultBoolean super(id, entity, safe, doLogQuery)
-
-#   create: (entity, id, doLogQuery = false) ->
-#     singleResultBoolean super(entity, id, doLogQuery), true
-
-#   delete: (id, doLogQuery = false) ->
-#     singleResultBoolean super(id, doLogQuery)
+  delete: (query, options = {}) ->
+    @debug "delete(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
+    @_wrapTransaction options.transaction ? @dbFn().where(query).delete()
 
 module.exports = Crud
-  # Crud: Crud
-
-  # ThenableCrud: ThenableCrud
-  # thenableCrud: factory(ThenableCrud)

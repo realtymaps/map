@@ -1,7 +1,8 @@
 _ = require 'lodash'
+util = require 'util'
 retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:routes:mls')
 mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
@@ -15,7 +16,10 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
+      #mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
+        mlsConfig = mlsConfig[0]
+        logger.debug "MlsConfig: #{util.inspect(mlsConfig,false,1)}"
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -32,6 +36,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
+        mlsConfig = mlsConfig[0]
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -48,6 +53,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
+        mlsConfig = mlsConfig[0]
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -64,6 +70,7 @@ module.exports =
     handle:(req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
+        mlsConfig = mlsConfig[0]
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -114,6 +121,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
+        mlsConfig = mlsConfig[0]
         if !mlsConfig
           next new ExpressResponse
             alert:

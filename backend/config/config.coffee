@@ -17,7 +17,7 @@ base =
     FILE_AND_LINE: false
     # for the debug namespace definition LOG_ENABLE, do not use the `-` identifier that is documented in the `debug` library!
     # That functionality is botched because of a low level dependency in `enabled` library.
-    ENABLE: process.env.LOG_ENABLE ? 'backend:ezcrud*'  # 'frontend:*,backend:*,test:*'
+    ENABLE: process.env.LOG_ENABLE ? 'backend:service:mls_config,backend:ezcrud*,backend:routes:mls'  # 'frontend:*,backend:*,test:*'
 
   DBS:
     MAIN:
