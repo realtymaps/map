@@ -4,6 +4,7 @@ _ = require 'lodash'
 app.directive 'mobileHeaderButtons', ($parse, $templateCache, $modal, $log, mobileHeaderContext) ->
   restrict: 'E'
   transclude: true
+  scope:
+    buttonType: '@'
   controller: ($scope, $element, $attrs, $transclude) ->
-    $log.debug "!!! Mobile Header Buttons Controller - class: '#{$element[0].className}'"
-    mobileHeaderContext.setButtons "global", "right", $transclude
+    mobileHeaderContext.setButtons $scope.headerId || 'mobile-header', $scope.buttonType || 'right', $transclude

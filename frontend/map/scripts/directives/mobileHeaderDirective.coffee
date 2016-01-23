@@ -20,15 +20,14 @@ app.factory 'mobileHeaderContext', ($log) ->
   return new MobileHeaderContextManager
 
 app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $log, mobileHeaderContext) ->
-  $log.debug "!!! Mobile Header Controller - class: '#{$element[0].className}'"
   class MobileHeaderController
     _targets: {}
 
     constructor: () ->
-      $log.debug ">>> constructor - class: '#{$element[0].className}'"
-      mobileHeaderContext.registerHeader "global", @
-
       $scope.buttons = { }
+
+    init: (headerId) ->
+      mobileHeaderContext.registerHeader headerId, @
 
     setButtons : (type, transclude) ->
       $log.debug "!!! Set buttons of type '#{type}'"
@@ -48,6 +47,10 @@ app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
   restrict: 'E'
   controller: 'mobileHeaderController'
   priority: 1000
+  scope:
+    headerId: '@'
+  link: ($scope, $element, $attrs, controller) ->
+    controller.init($scope.headerId || 'mobile-header')
 
 createMobileHeaderButtonDirective = (type) ->
   return {
