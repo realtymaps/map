@@ -1,14 +1,12 @@
-require 'chai'
+require('chai').should()
 sinon = require 'sinon'
 Promise = require 'bluebird'
 basePath = require '../../../basePath'
-commonPath = require '../../../commonPath'
 rewire = require 'rewire'
 emailEvents = rewire "#{basePath}/services/email/vero/service.email.impl.vero.events"
 subject = rewire "#{basePath}/services/payment/stripe/service.payment.impl.stripe.events"
 paymentEvents = require "#{basePath}/enums/enum.payment.events"
-emailRoutes = require("#{commonPath}/config/routes.backend").email
-Case = require 'case'
+
 subject.__set__ 'clsFullUrl', (arg) -> arg
 SqlMock = require '../../../../specUtils/sqlMock'
 _ = require "lodash"
@@ -21,15 +19,15 @@ mockAuthUser =
   email_validation_hash: "radarIsJammed"
   cancel_email_hash: "terminated"
 
-mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
-
-subject.__set__ 'userTable', mockUserTable.dbFn()
 
 jsonString = "../../../fixtures/services/stripe/:file.json"
 
 describe "service.payment.impl.stripe.events", ->
 
   beforeEach ->
+
+    mockUserTable = new SqlMock 'auth', 'user', result: [mockAuthUser]
+    subject.__set__ 'userTable', mockUserTable.dbFn()
 
     @stripe =
       events:
