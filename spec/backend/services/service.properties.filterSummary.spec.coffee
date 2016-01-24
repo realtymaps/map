@@ -17,7 +17,7 @@ describe 'service.properties.filterSummary', ->
 
   # NOTE this is really an integration test
   # This is important as the database column naming is highly dependent!
-  xit 'geojsonPolys returns valid geojson', (done) ->
+  it 'geojsonPolys returns valid geojson', (done) ->
     @subject.getFilterSummary mocks.map.state, mocks.map.filter
     .then (data) ->
       gjv.valid(data).should.be.ok
