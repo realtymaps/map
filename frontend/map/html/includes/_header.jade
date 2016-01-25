@@ -18,7 +18,7 @@ header.site-header
           include ./header/_search
 
 .mobile-only
-  header.mobile-header(ng-if='rmapsPage.mobile.modal')
+  mobile-header.mobile-site-header(ng-if='rmapsPage.mobile.modal')
     .inner
       .mobile-header-left
         a(ng-click='rmapsPage.back($event)')
@@ -26,3 +26,4 @@ header.site-header
       .mobile-header-center
         .mobile-header-title {{rmapsPage.title}}
       .mobile-header-right
+        div(ng-bind-html="buttons['right']")

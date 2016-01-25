@@ -3,13 +3,16 @@ modal-animation-class="fade"
 modal-in-class="in"
 ng-style="{'z-index': 1050 + index*10, display: 'block'}")
   .modal-dialog(ng-class="size ? 'modal-' + size : ''")
-    header.mobile-header.mobile-header-modal(ng-controller="OpenAsModalWindowController")
-      .inner
+    mobile-header.mobile-header-modal
+      .inner(ng-controller="OpenAsModalWindowController")
         .mobile-header-left
+          mobile-header-button-left
           .mobile-header-title {{context.modalTitle}}
         .mobile-header-center
+          mobile-header-button-center
         .mobile-header-right
-          a
+          mobile-header-button-right
+          a.mobile-header-close
             i.icon-close(class="fa fa-times" ng-click="close()")
     .mobile-modal-content-scroll
       .modal-content(modal-transclude)
