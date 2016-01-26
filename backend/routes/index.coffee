@@ -1,5 +1,5 @@
 logger = require('../config/logger').spawn('backend:routes:index')
-auth = require '../utils/util.auth'
+loggerAnal = require('../config/logger').spawn('backend:routes:index:anal')
 loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
@@ -34,7 +34,7 @@ wrappedCLS = (req, res, promisFnToWrap) ->
 
 module.exports = (app) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    # logger.debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
+    loggerAnal.debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
