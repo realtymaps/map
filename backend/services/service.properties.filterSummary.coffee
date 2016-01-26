@@ -94,7 +94,6 @@ _validateAndTransform = (state, rawFilters, localTransforms) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
-
   if _isOnlyPinned(rawFilters) && _isNothingPinned(state)
     # we know there is absolutely nothing to select, GTFO before we do any real work
     logger.debug 'GTFO'
