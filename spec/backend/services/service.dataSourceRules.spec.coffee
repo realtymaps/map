@@ -1,7 +1,6 @@
 _ = require 'lodash'
 rewire = require 'rewire'
 svc = rewire '../../../backend/services/service.dataSourceRules.coffee'
-tables = require '../../../backend/config/tables'
 SqlMock = require '../../specUtils/sqlMock.coffee'
 {should, expect} = require "chai"
 should()
@@ -118,9 +117,9 @@ describe 'service.dataSourceRules.coffee', ->
   describe 'rules', ->
     beforeEach ->
       @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
-        result: [
-          list: 'general'
-          count: 1
+        results: [
+          [list: 'general', count: 1]
+          [list: 'general', count: 1]
         ]
 
       svc.__set__('tables', @rulesTableSqlMock)
@@ -226,9 +225,9 @@ describe 'service.dataSourceRules.coffee', ->
   describe 'list rules', ->
     beforeEach ->
       @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
-        result: [
-          list: 'general'
-          count: 1
+        results: [
+          [list: 'general', count: 1]
+          [list: 'general', count: 1]
         ]
       svc.__set__('tables', @rulesTableSqlMock)
 

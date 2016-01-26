@@ -17,5 +17,5 @@ done
 if [[ "$IS_DEBUG" == "true" ]]; then
   mocha --debug-brk --compilers coffee:coffee-script/register $@
 else
-  mocha --compilers coffee:coffee-script/register $@
+  mocha --reporter spec --compilers coffee:coffee-script/register $@
 fi

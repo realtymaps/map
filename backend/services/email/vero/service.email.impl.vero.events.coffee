@@ -6,7 +6,6 @@ backendRoutes = require '../../../../common/config/routes.backend'
 logger = require('../../../config/logger').spawn('backend:vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 {SubscriptionSignUpError
-SubscriptionCreatedError
 SubscriptionDeletedError
 SubscriptionUpdatedError
 SubscriptionVerifiedError

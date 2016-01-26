@@ -1,7 +1,7 @@
 Promise = require 'bluebird'
 _ = require 'lodash'
 stripeErrors = require '../../../utils/errors/util.errors.stripe'
-{emailPlatform, cancelHash} = require '../../services.email'
+{emailPlatform} = require '../../services.email'
 userTable = require('../../../config/tables').auth.user
 {expectSingleRow} = require '../../../utils/util.sql.helpers'
 {customerSubscriptionCreated
@@ -54,15 +54,18 @@ StripeEvents = (stripe) ->
         origFunction subscription, authUser
 
   _verify = (eventObj) ->
+    # console.log.magenta "_verify"
     stripe.events.retrieve eventObj.id
 
   handle = (eventObj) -> Promise.try () ->
     callEvent = _eventHandles[eventObj.type]
     unless callEvent?
       throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
-
     _verify(eventObj).then (validEvent) ->
+      # console.log.magenta "POST _verify"
       #TODO: this could be moved to validation itself validation.stripe namespace: 'events'
+      # console.log.magenta "calling #{eventObj.type}"
+      # console.log _eventHandles, true
       callEvent(validEvent)
       .catch (err) ->
         #TODO: maybe rethink this

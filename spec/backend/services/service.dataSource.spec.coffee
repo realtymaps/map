@@ -42,14 +42,25 @@ describe 'service.dataSource.coffee', ->
   describe 'getColumnList', ->
     beforeEach ->
       @dsSqlMock = new SqlMock 'config', 'dataSourceFields',
-        result: [
-          MetadataEntryID: 1
-          LongName: 'a.long.name'
-          SystemName: 'A Long Name'
-        ,
-          MetadataEntryID: 2
-          LongName: 'another.long.name'
-          SystemName: 'Another Long Name'
+        results: [
+          [
+            MetadataEntryID: 1
+            LongName: 'a.long.name'
+            SystemName: 'A Long Name'
+          ,
+            MetadataEntryID: 2
+            LongName: 'another.long.name'
+            SystemName: 'Another Long Name'
+          ],
+          [
+            MetadataEntryID: 1
+            LongName: 'a.long.name'
+            SystemName: 'A Long Name'
+          ,
+            MetadataEntryID: 2
+            LongName: 'another.long.name'
+            SystemName: 'Another Long Name'
+          ]
         ]
 
       svc.__set__('tables', @dsSqlMock)
