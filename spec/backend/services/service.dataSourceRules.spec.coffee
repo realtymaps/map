@@ -117,9 +117,10 @@ describe 'service.dataSourceRules.coffee', ->
   describe 'rules', ->
     beforeEach ->
       @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
+        debug: false
         results: [
-          [list: 'general', count: 1]
-          [list: 'general', count: 1]
+          [list: 'general', count: 1],  # first part of transaction via select query supplying "count"
+          [rowCount: 1]  # second part of transaction via insert query supplying "rowCount"
         ]
 
       svc.__set__('tables', @rulesTableSqlMock)
@@ -226,8 +227,8 @@ describe 'service.dataSourceRules.coffee', ->
     beforeEach ->
       @rulesTableSqlMock = new SqlMock 'config', 'dataNormalization',
         results: [
-          [list: 'general', count: 1]
-          [list: 'general', count: 1]
+          [list: 'general', count: 1],  # first part of transaction via select query supplying "count"
+          [rowCount: 1]  # second part of transaction via insert query supplying "rowCount"
         ]
       svc.__set__('tables', @rulesTableSqlMock)
 
