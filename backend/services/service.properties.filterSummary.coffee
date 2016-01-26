@@ -5,7 +5,7 @@ indexBy = require '../../common/utils/util.indexByWLength'
 Point = require('../../common/utils/util.geometries').Point
 sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:service:filterSummary')
 propMerge = require '../utils/util.properties.merge'
 {toLeafletMarker} =  require('../utils/crud/extensions/util.crud.extension.user').route
 _ = require 'lodash'
@@ -94,11 +94,6 @@ _validateAndTransform = (state, rawFilters, localTransforms) ->
   # note this is looking at the pre-transformed status filter
   # logger.debug.cyan rawFilters?.state?.filters?.status
   # logger.debug.green state?.properties_selected
-
-  rawFilters.state =
-    filters:
-      status:
-        rawFilters.status
 
   if _isOnlyPinned(rawFilters) && _isNothingPinned(state)
     # we know there is absolutely nothing to select, GTFO before we do any real work
