@@ -211,73 +211,11 @@ finalizeData = (subtask, id) ->
     tax = dataLoadHelpers.finalizeEntry(taxEntries)
     tax.data_source_type = 'county'
     _.extend(tax, parcel[0])
-    ###
-    currentSale = []
-    priorSale = []
-    for field in tax.sale
-      if field.name.startsWith('Prior ')
-        field.name = field.slice(6)
-        priorSale.push(field)
-      else
-        currentSale.push(field)
-    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address']
-    current = _.pick(tax, saleFields)
-    current.subscriber_groups = _.pick(tax.subscriber_groups, 'owner', 'deed')
-    current.shared_groups = {sale: currentSale}
-    delete tax.subscriber_groups.owner
-    delete tax.subscriber_groups.deed
-    delete tax.shared_groups.sale
-    prior = _.pick(tax, _.map(saleFields, (fieldName) -> "prior_#{fieldName}"))
-    prior.subscriber_groups = {}
-    prior.shared_groups = {sale: priorSale}
-    for field in _.map(saleFields, (fieldName) -> "prior_#{fieldName}")
-      delete tax[field]
-    salesHistory = []
-    if deedEntries.length
-      while deed = deedEntries.pop()
-        if deed.close_date.getTime() > current.close_date.getTime()
-          salesHistory.push(deed)
-        else if deed.close_date.getTime() == current.close_date.getTime()
-          # merge them, they're the same sale
-          _listExtend(deed.subscriber_groups.owner, current.subscriber_groups.owner)
-          _listExtend(deed.subscriber_groups.deed, current.subscriber_groups.deed)
-          _listExtend(deed.shared_groups.sale, current.shared_groups.sale)
-          salesHistory.push(deed)
-          current = null
-          break
-        else
-          # insert the current tax sale into the list and then pick back up with the prior tax sale
-          salesHistory.push(current)
-          deedEntries.push(deed)
-          current = null
-          break
-      if current != null
-        # we never found a spot to insert, so go ahead and put them both in
-        salesHistory.push(current, prior)
-      else
-        # now do sort of the same thing for prior
-        while deed = deedEntries.pop()
-          if deed.close_date.getTime() > prior.close_date.getTime()
-            salesHistory.push(deed)
-          else if deed.close_date.getTime() == prior.close_date.getTime()
-            # we would merge them, but prior has nothing to add
-            salesHistory.push(deed)
-            break
-          else
-            salesHistory.push(prior)
-            salesHistory.push(deed)
-            break
-        # through any remaining deeds in
-        salesHistory.concat(deedEntries)
-    else
-      salesHistory = [current, prior]
-    ###
 
     # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
     # TODO: static data fields?
 
     # now that we have an ordered sales history, overwrite that into the tax record
-
     saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
     tax.subscriber_groups.mortgage = mortgageEntries
     lastSale = deedEntries.pop()
@@ -293,6 +231,70 @@ finalizeData = (subtask, id) ->
 
     tables.property.combined()
     .insert(tax)
+
+
+###
+# old finalizeData code from corelogic
+currentSale = []
+priorSale = []
+for field in tax.sale
+  if field.name.startsWith('Prior ')
+    field.name = field.slice(6)
+    priorSale.push(field)
+  else
+    currentSale.push(field)
+saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address']
+current = _.pick(tax, saleFields)
+current.subscriber_groups = _.pick(tax.subscriber_groups, 'owner', 'deed')
+current.shared_groups = {sale: currentSale}
+delete tax.subscriber_groups.owner
+delete tax.subscriber_groups.deed
+delete tax.shared_groups.sale
+prior = _.pick(tax, _.map(saleFields, (fieldName) -> "prior_#{fieldName}"))
+prior.subscriber_groups = {}
+prior.shared_groups = {sale: priorSale}
+for field in _.map(saleFields, (fieldName) -> "prior_#{fieldName}")
+  delete tax[field]
+salesHistory = []
+if deedEntries.length
+  while deed = deedEntries.pop()
+    if deed.close_date.getTime() > current.close_date.getTime()
+      salesHistory.push(deed)
+    else if deed.close_date.getTime() == current.close_date.getTime()
+      # merge them, they're the same sale
+      _listExtend(deed.subscriber_groups.owner, current.subscriber_groups.owner)
+      _listExtend(deed.subscriber_groups.deed, current.subscriber_groups.deed)
+      _listExtend(deed.shared_groups.sale, current.shared_groups.sale)
+      salesHistory.push(deed)
+      current = null
+      break
+    else
+      # insert the current tax sale into the list and then pick back up with the prior tax sale
+      salesHistory.push(current)
+      deedEntries.push(deed)
+      current = null
+      break
+  if current != null
+    # we never found a spot to insert, so go ahead and put them both in
+    salesHistory.push(current, prior)
+  else
+    # now do sort of the same thing for prior
+    while deed = deedEntries.pop()
+      if deed.close_date.getTime() > prior.close_date.getTime()
+        salesHistory.push(deed)
+      else if deed.close_date.getTime() == prior.close_date.getTime()
+        # we would merge them, but prior has nothing to add
+        salesHistory.push(deed)
+        break
+      else
+        salesHistory.push(prior)
+        salesHistory.push(deed)
+        break
+    # through any remaining deeds in
+    salesHistory.concat(deedEntries)
+else
+  salesHistory = [current, prior]
+###
 
 
 ###
