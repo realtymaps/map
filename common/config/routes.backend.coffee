@@ -138,6 +138,7 @@ module.exports =
     google: "#{apiBaseConfig}/google"
     stripe: "#{apiBaseConfig}/stripe"
     asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
+    debugLevels: "#{apiBaseConfig}/debugLevels"
   properties:
     filterSummary: "#{apiBase}/properties/filter_summary/"
     parcelBase: "#{apiBase}/properties/parcel_base/"
