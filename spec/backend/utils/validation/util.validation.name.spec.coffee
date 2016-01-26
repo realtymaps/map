@@ -11,10 +11,29 @@ param = 'fake'
 
 describe 'utils/validation.validators.object()'.ns().ns('Backend'), ->
 
-  it 'should resolve basic object', () ->
+  it 'should work with just first and last', () ->
     testObj =
       first: 'John'
       last: 'Travolta'
 
     expectResolve(subject()(param, testObj)).then (value) ->
-      value.should.equal("#{testObj.first} #{testObj.last}")
+      value.should.equal("John Travolta")
+
+  it 'should include middle if given', () ->
+    testObj =
+      first: 'John'
+      middle: 'Wilkes'
+      last: 'Booth'
+
+    expectResolve(subject()(param, testObj)).then (value) ->
+      value.should.equal("John Wilkes Booth")
+
+  it 'should just use full if given, even if other parts are available', () ->
+    testObj =
+      full: 'Madonna'
+      middle: 'Louise'
+      last: 'Ciccone'
+      full: 'Madonna'
+
+    expectResolve(subject()(param, testObj)).then (value) ->
+      value.should.equal("Madonna")

@@ -62,15 +62,6 @@ _rules =
       valid: () ->
         @input.apn && (@input.fipsCode || (@input.stateCode && @input.county))
 
-    address:
-      alias: 'Address'
-      input: {}
-      group: 'general'
-      type: name: 'address'
-      valid: () ->
-        @input.city && @input.state && (@input.zip || @input.zip9) &&
-        ((@input.streetName && @input.streetNum) || @input.streetFull)
-
     parcel_id:
       alias: 'Parcel ID'
       required: true
@@ -80,6 +71,8 @@ _rules =
     price:
       alias: 'Price'
       type: name: 'currency'
+      config:
+        nullZero: true
 
     close_date:
       alias: 'Close Date'
@@ -90,6 +83,15 @@ _rules =
       data_source_uuid:
         alias: 'MLS Number'
         required: true
+
+      address:
+        alias: 'Address'
+        input: {}
+        group: 'general'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
       fips_code:
         alias: 'FIPS code'
@@ -165,6 +167,15 @@ _rules =
           @input.batchid
         type: name: 'data_source_uuid'
 
+      address:
+        alias: 'Address'
+        input: {}
+        group: 'general'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
+
       fips_code:
         alias: 'FIPS code'
         type: name: 'fips'
@@ -190,17 +201,28 @@ _rules =
         alias: 'Owner 1'
         required: true
         input: {}
+        group: 'owner'
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
 
       owner_name_2:
         alias: 'Owner 2'
         required: true
         input: {}
+        group: 'owner'
         valid: () ->
-          @input.first && @input.last
+          @input.first && @input.last || @input.full
         type: name: 'name'
+
+      owner_address:
+        alias: "Owner's Address"
+        input: {}
+        group: 'owner'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
     deed:
       data_source_uuid:
@@ -216,10 +238,20 @@ _rules =
         type: name: 'fips'
         required: true
 
+      address:
+        alias: 'Address'
+        input: {}
+        group: 'deed'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
+
       owner_name:
         alias: 'Owner 1'
         required: true
         input: {}
+        group: 'owner'
         valid: () ->
           @input.first && @input.last
         type: name: 'name'
@@ -228,9 +260,19 @@ _rules =
         alias: 'Owner 2'
         required: true
         input: {}
+        group: 'owner'
         valid: () ->
           @input.first && @input.last
         type: name: 'name'
+
+      owner_address:
+        alias: "Owner's Address"
+        input: {}
+        group: 'owner'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
 
     mortgage:
       data_source_uuid:
@@ -246,10 +288,20 @@ _rules =
         type: name: 'fips'
         required: true
 
+      address:
+        alias: 'Address'
+        input: {}
+        group: 'mortgage'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
+
       owner_name:
         alias: 'Owner 1'
         required: true
         input: {}
+        group: 'mortgage'
         valid: () ->
           @input.first && @input.last
         type: name: 'name'
@@ -258,18 +310,23 @@ _rules =
         alias: 'Owner 2'
         required: true
         input: {}
+        group: 'mortgage'
         valid: () ->
           @input.first && @input.last
         type: name: 'name'
 
+      owner_address:
+        alias: "Owner's Address"
+        input: {}
+        group: 'mortgage'
+        type: name: 'address'
+        valid: () ->
+          @input.city && @input.state && (@input.zip || @input.zip9) &&
+            ((@input.streetName && @input.streetNum) || @input.streetFull)
+
 # no lists currently have no base filters, but deed used to, so
 # we'll keep this around just in case something comes along that needs this)
 _noBase = []
-
-getBaseRules = (dataSourceType, dataListType) ->
-  if dataListType in _noBase
-    return {}
-  _.merge _.cloneDeep(_rules.common), _rules[dataSourceType][dataListType]
 
 # RETS/MLS rule defaults for each data type
 typeRules =
@@ -308,7 +365,12 @@ typeRules =
       name: 'nullify', options: @getOptions()
 
 _buildRule = (rule, defaults) ->
-  _.defaultsDeep rule, _.cloneDeep(defaults), ruleDefaults
+  _.defaultsDeep rule, _.cloneDeep(defaults), _.cloneDeep(ruleDefaults)
+
+getBaseRules = (dataSourceType, dataListType) ->
+  if dataListType in _noBase
+    return {}
+  _.merge _.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType][dataListType])
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]

@@ -8,12 +8,18 @@ module.exports = (options = {}) ->
     if !value
       return null
 
-    result = []
-    result.strength = 0
+    result =
+      lines: []
+      strength: 0
+
+    if value.careOf
+      result.lines.push("c/o #{value.careOf.toInitCaps()}")
+      result.strength += 3
+      result.careOf = true
 
     if !value.showStreetInfo? || value.showStreetInfo
       if value.streetFull
-        result.push value.streetFull.toInitCaps()
+        result.lines.push value.streetFull.toInitCaps()
         result.strength += 20
       else
         if value.streetNum
@@ -45,16 +51,16 @@ module.exports = (options = {}) ->
           streetParts = []
         if nameParts
           streetParts = streetParts.concat(nameParts)
-          result.push streetParts.join(' ').toInitCaps()
+          result.lines.push streetParts.join(' ').toInitCaps()
         else
           result.strength = 0
 
         if value.unit
           result.strength += 10
-          result.push value.unit
+          result.lines.push value.unit
         else if value.unitNum
           result.strength += 5
-          result.push "Unit #{value.unitNum}"
+          result.lines.push "Unit #{value.unitNum}"
 
     cityParts = []
 
@@ -79,7 +85,7 @@ module.exports = (options = {}) ->
         cityParts.push("#{zip}-#{value.zip4}")
 
 
-    result.push cityParts.join(' ')
+    result.lines.push cityParts.join(' ')
 
 
     minStrength = options.minStrength ? 10

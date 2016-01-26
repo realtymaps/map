@@ -39,7 +39,8 @@ class SqlMock
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
     @debug = @options.debug ? undefined
-    @result = @options.result ? undefined
+    @setResult(@options.result ? undefined) unless @options.results
+    @setResults(@options.results ? undefined) unless @options.result
     @error = @options.error ? undefined
     @_svc = @options.dbFn ? undefined
 
@@ -57,6 +58,7 @@ class SqlMock
       return @
     @tableName = @tableHandle
 
+    @returningsSpy = sinon.spy()
 
     _sqlFns.forEach (name) =>
       # spy on query-operators
@@ -83,7 +85,19 @@ class SqlMock
     fn
 
   setResult: (result) ->
-    @result = result
+    @setResults [result]
+
+  setResults: (results = []) ->
+    if !_.isArray results
+      throw new Error "Results must be of type Array."
+    @results = results.reverse() #be like a queue
+
+  getResult: ->
+    if @results.length
+      ret = @results.pop()
+      # console.log.magenta "returning!!!!!!"
+      # console.log.magenta ret, true
+      return ret
 
   setError: (error) ->
     @error = error
@@ -140,7 +154,7 @@ class SqlMock
 
     if @debug?
       console.log.cyan "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
-    Promise.resolve(@result).then handler
+    Promise.resolve(@getResult()).then handler
 
   catch: (predicate, handler) ->
     if @error?
@@ -160,7 +174,7 @@ class SqlMock
     if @debug?
       console.log.cyan "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
 
-    return Promise.resolve(@result)
+    return Promise.resolve(@getResult())
 
   toString: () ->
     @_quickQuery().toString()
@@ -168,6 +182,9 @@ class SqlMock
   toSQL: () ->
     @_quickQuery().toSQL()
 
+  returning: () ->
+    @returningsSpy(arguments...)
+    @
 
 SqlMock.sqlMock = () ->
   new SqlMock arguments...

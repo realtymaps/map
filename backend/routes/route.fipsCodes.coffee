@@ -23,6 +23,19 @@ class FipsCodesCrud extends RouteCrud
           required: true
           transform: [validators.string(minLength:2)]
 
+    @getByMlsCodeTransforms =
+      params:
+        mls_code:
+          required: true
+          transform: [validators.string(minLength:2)]
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+
+    @getAllMlsCodesTransforms =
+      params: validators.object isEmptyProtect: true
+      query: validators.object isEmptyProtect: true
+      body: validators.object isEmptyProtect: true
+
     super(true, ['state', 'count', 'code'])
 
   getAllByState: (req, res) =>
@@ -40,6 +53,16 @@ class FipsCodesCrud extends RouteCrud
     .then (validReq) =>
       @handleQuery @svc.getAllByStateLikeCounty(validReq.params.state), res
 
+  getByMlsCode: (req, res) =>
+    @validRequest req, 'getByMlsCode'
+    .then (validReq) =>
+      @handleQuery @svc.getByMlsCode(validReq.params.mls_code), res
+
+  getAllMlsCodes: (req, res) =>
+    @validRequest req, 'getAllMlsCodes'
+    .then (validReq) =>
+      @handleQuery @svc.getAllMlsCodes(), res
+
 module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
   root:
     middleware: [auth.requireLogin(redirectOnFail: true)]
@@ -48,3 +71,5 @@ module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
   getAllByStateCounty: {}
   getAllByState: {}
   getAllByStateLikeCounty: {}
+  getByMlsCode: {}
+  getAllMlsCodes: {}

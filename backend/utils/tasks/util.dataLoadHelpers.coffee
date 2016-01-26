@@ -228,7 +228,7 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
           for validationDefinition in validationList
             # generally, don't count the 'base' fields as being used, but we do for 'address' and 'status', as the source
             # fields for those don't have to be explicitly reused
-            if validationDefinition.list != 'base' || validationDefinition.output == 'address' || validationDefinition.output == 'status_display'
+            if validationDefinition.list != 'base' || validationDefinition.output in ['address', 'status_display']
               usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
             else if validationDefinition.output == 'days_on_market'
               # explicitly exclude these keys from diff, because they are derived values based on date
@@ -238,11 +238,11 @@ getValidationInfo = (dataSourceType, dataSourceId, dataType, listName, fieldName
           for validationDefinition in validationList
             # generally, don't count the 'base' fields as being used, but we do for 'address', as the source
             # fields for those don't have to be explicitly reused
-            if validationDefinition.list != 'base' || validationDefinition.output == 'address'
+            if validationDefinition.list != 'base' || validationDefinition.output in ['address', 'owner_address', 'owner_name', 'owner_name_2']
               usedKeys = usedKeys.concat(_getUsedInputFields(validationDefinition))
       return {validationMap: validationMap, usedKeys: usedKeys, diffExcludeKeys: diffExcludeKeys}
-# memoize it to cache js evals, but only for up to (a bit less than) 15 minutes at a time
-getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 850000)
+# memoize it to cache js evals, but only for up to ~24 hours at a time
+getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 24*60*60*1000)
 
 
 # normalizes data from the raw data table into the permanent data table
@@ -275,13 +275,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
-    .then (result) ->
-      console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done processing rows")
-      result
   Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
-  .then (result) ->
-    console.log("@@@@@@@@@@@@@@@@@@@@@@@@@ #{rawTableName} ##{subtask.data.i}: done with normalizeData join")
-    result
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row
@@ -367,6 +361,7 @@ finalizeEntry = (entries) ->
   delete entry.rm_modified_time
   entry.prior_entries = sqlHelpers.safeJsonArray(entries)
   entry.address = sqlHelpers.safeJsonArray(entry.address)
+  entry.owner_address = sqlHelpers.safeJsonArray(entry.owner_address)
   entry.change_history = sqlHelpers.safeJsonArray(entry.change_history)
   entry.update_source = entry.data_source_id
   entry

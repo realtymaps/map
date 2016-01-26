@@ -14,6 +14,7 @@ DataValidationError
 defaultRequestTransforms
 falsyTransformsToNoop
 requireAllTransforms
+notRequired
 } = require "#{basePath}/utils/util.validation"
 
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
@@ -179,3 +180,37 @@ describe 'requireAllTransforms', ->
       # console.log key
       val.required.should.be.ok
       val.transform.should.be.ok
+
+  it 'should add not require excludes', ->
+    obj =
+      test1: () ->
+      test2: () ->
+
+    allRequiredTforms = requireAllTransforms obj, ['test2']
+
+    _.keys(allRequiredTforms).should.have.lengthOf(2)
+
+
+    allRequiredTforms.test1.transform.should.be.a('function')
+    allRequiredTforms.test1.required.should.be.true
+    allRequiredTforms.test2.should.be.a('function')
+    expect(allRequiredTforms.test2.required).to.not.be.ok
+
+  it 'should add not require via notRequired', ->
+    obj =
+      test1: () ->
+      test2: notRequired () ->
+
+    console.log obj, true
+    
+    allRequiredTforms = requireAllTransforms obj
+
+    console.log allRequiredTforms, true
+
+    _.keys(allRequiredTforms).should.have.lengthOf(2)
+
+
+    allRequiredTforms.test1.transform.should.be.a('function')
+    allRequiredTforms.test1.required.should.be.true
+    allRequiredTforms.test2.should.be.a('function')
+    expect(allRequiredTforms.test2.required).to.not.be.ok

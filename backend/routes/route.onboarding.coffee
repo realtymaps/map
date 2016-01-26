@@ -1,7 +1,4 @@
-# _ = require 'lodash'
-# tables = require '../config/tables'
-logger = require '../config/logger'
-# auth = require '../utils/util.auth'
+logger = require('../config/logger').spawn("backend:route.onboarding")
 {mergeHandles} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
 logger = require '../config/logger'
@@ -22,30 +19,46 @@ _ = require 'lodash'
 {createPasswordHash} =  require '../services/service.userSession'
 {getPlanId} = require '../services/service.plans'
 
+submitPaymentPlan = ({plan, token, authUser, trx}) ->
+  logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
+  paymentServices.customers.create
+    trx: trx
+    authUser: authUser
+    plan: plan
+    token: token
+
+submitEmail = ({authUser, plan, customer}) ->
+  logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
+  emailServices.events.subscriptionSignUp
+    authUser: authUser
+    plan: plan
+  .catch (error) ->
+    logger.info "SignUp Failed, reverting Payment Customer"
+    paymentServices.customers.remove customer
+    throw error #rethrow error so transaction is reverted
+
 handles = wrapHandleRoutes
   createUser: (req) ->
     return throw new Error "OnBoarding API not ready" if !emailServices or !paymentServices
     # req = _.pick req, ['body', 'params', 'query']
-    # logger.debug req, true
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
-
-      # logger.debug.cyan validReq, true
+      {plan, token, fips_code, mls_code} = validReq.body
+      plan = plan.name
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
         createPasswordHash entity.password
         .then (password) ->
+          # console.log.magenta "password"
           entity.password = password
 
-          logger.debug "will insert user entity of:"
-          logger.debug entity, true
-          logger.debug "inserting new user"
           tables.auth.user(trx).returning("id").insert entity
           .then (id) ->
-            getPlanId(validReq.body.plan.name, trx)
+            # console.log.magenta "inserted user"
+            getPlanId(plan, trx)
             .then (groupId) ->
-              logger.debug "planId/groupId: #{groupId}"
+              # console.log.magenta "planId/groupId: #{groupId}"
               logger.debug "auth_user_id: #{id}"
               #give plan / group permissions
               tables.auth.m2m_user_group(trx)
@@ -54,24 +67,27 @@ handles = wrapHandleRoutes
                 id
           .then (id) ->
             logger.debug "new user (#{id}) inserted SUCCESS"
-            tables.auth.user(trx).select(basicColumns.user.concat(["id"])...).where id: parseInt id
+            tables.auth.user(trx).select(basicColumns.user.concat(["id"])...)
+            .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
-            logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-            paymentServices.customers.create
-              trx: trx
-              authUser: authUser
-              plan: validReq.body.plan.name
-              token: validReq.body.token
+            if !fips_code and !mls_code
+              throw new Error("fips_code or mls_code required for user location restrictions.")
+            promise = null
+            if fips_code
+              promise = tables.auth.m2m_user_locations(trx)
+              .insert(auth_user_id: authUser.id, fips_code: fips_code)
+            if mls_code
+              promise = tables.auth.m2m_user_mls(trx)
+              .insert(auth_user_id: authUser.id, mls_code: mls_code)
+
+            promise.then () -> authUser
+
+          .then (authUser) ->
+            submitPaymentPlan {plan, token, authUser, trx}
           .then ({authUser, customer}) ->
-            logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
-            emailServices.events.subscriptionSignUp
-              authUser: authUser
-              plan: validReq.body.plan.name
-            .catch (error) ->
-              logger.info "SignUp Failed, reverting Payment Customer"
-              paymentServices.customers.remove customer
-              throw error #rethrow error so transaction is reverted
+            submitEmail {authUser, plan, customer}
+
 
 
 module.exports = mergeHandles handles,

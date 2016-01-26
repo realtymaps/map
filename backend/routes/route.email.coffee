@@ -11,7 +11,7 @@ handles = wrapHandleRoutes
   verify: (req) ->
     validateAndTransformRequest req, emailTransforms.emailVerifyRequest
     .then (validReq) ->
-      logger.debug.cyan validReq, true
+      # logger.debug.cyan validReq, true
       emailServices.validateHash(validReq.params.hash)
     .then (bool) ->
       if bool
@@ -20,7 +20,7 @@ handles = wrapHandleRoutes
   isUnique: (req) ->
     logger.debug "isUnique"
     transforms = emailTransforms.emailRequest(req.user?.id)
-    logger.debug transforms, true
+    # logger.debug transforms, true
     validateAndTransformRequest(req, transforms)
     .then (validReq) ->
       logger.debug "isUnique: true"

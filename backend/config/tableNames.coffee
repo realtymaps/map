@@ -12,6 +12,7 @@ module.exports =
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
     fipsCodes: 'lookup_fips_codes'
+    mlsFipsCodes: 'lookup_mls_fips_code'
   property:
     listing: 'data_normal_listing'
     tax: 'data_normal_tax'
@@ -42,6 +43,8 @@ module.exports =
     m2m_user_permission: 'auth_m2m_user_permissions'
     m2m_user_group: 'auth_m2m_user_groups'
     m2m_group_permission: 'auth_m2m_group_permissions'
+    m2m_user_locations: 'auth_m2m_user_locations'
+    m2m_user_mls: 'auth_m2m_user_mls'
   user:
     profile: 'user_profile'
     project: 'user_project'

@@ -1,5 +1,29 @@
 section.white-page.onboarding.onboarding-plan(ng-cloak)
   .container
+    div(ng-if="user.plan.name === 'pro'")
+      h2 Select your MLS CODE
+      p Maecenas eu placerat ante. Fusce ut neque justo, et aliquet enim. In hac habitasse platea dictumst. Nullam commodo neque erat, vitae facilisis erat. Cras at mauris ut tortor vestibulum fringilla vel sed metus.
+      
+        form.form-horizontal(role='form' name='userForm')
+          .form-payment
+            .row
+              .col-md-6.col-sm-6.col-xs-12
+                .form-group
+                  .label State:
+                  .col-lg-6
+                    select.form-control(ng-model="user.mls_code" validator="required" name="userMlsCode")
+                      option(
+                        ng-repeat="entity in mlsCodes"
+                        ng-selected="{{entity.mls == user.mls_code}}"
+                        value="{{entity.mls}}") {{entity.mls}}
+                
+            .row
+              .col-md-6.col-sm-6.col-xs-12
+                .form-group
+                  .col-md-3
+                    input.btn.btn-primary(value='Done' type='button' ng-click="user.submit()" validation-submit="userForm")
+                    
+    div(ng-if="user.plan.name === 'standard'")
       h2 Select your state and county
       p Maecenas eu placerat ante. Fusce ut neque justo, et aliquet enim. In hac habitasse platea dictumst. Nullam commodo neque erat, vitae facilisis erat. Cras at mauris ut tortor vestibulum fringilla vel sed metus.
       
