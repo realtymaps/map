@@ -6,7 +6,7 @@ DataValidationError = require './errors/util.error.dataValidation'
 {MissingVarError, UpdateFailedError} = require './errors/util.errors.crud'
 ExpressResponse = require './util.expressResponse'
 url = require 'url'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:util.route.helpers')
 clsFactory = require './util.cls'
 
 class CurrentProfileError extends Error
@@ -21,8 +21,8 @@ methodExec = (req, methods, next) ->
 currentProfile = (req) ->
   try
     profileUtil.currentProfile(req.session)
-  catch e
-    throw new CurrentProfileError(e.message)
+  catch error
+    throw new CurrentProfileError(error.message)
 
 mergeHandles = (handles, config) ->
   for key of config

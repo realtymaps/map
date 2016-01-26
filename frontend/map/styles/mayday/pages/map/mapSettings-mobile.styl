@@ -1,15 +1,27 @@
 @import "../../../common.styl"
 
+.mobile-header-right
+  .settings-header-button
+    margin-right: 5px;
+    padding-right: 15px;
+    border-right: solid 1px $rm-header_separators
+
 .settings-modal-mobile
   height: 100%;
   width: 100%;
 
   .list
     padding-bottom: 42px; // account for scrolling over the footer button
+    width: 100%;
 
   .item.settings-row
     $fnClearfix()
     padding: 16px 37px;
+    width: 100%
+    background-color: white;
+
+  .button-action
+    height: 55px;
 
   .settings-header
     font-size: 16px;
@@ -18,7 +30,7 @@
     color: $rm-mobile-settings-header-color;
 
   .settings-value
-    font-size: 12px;
+    font-size: 15px;
     color: $rm-mobile-settings-value-color;
     text-align: center;
 

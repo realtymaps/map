@@ -45,3 +45,12 @@ $rm-button-height = 40px
 
   &.button-inactive
     @extend .btn.btn-inactive;
+
+  //
+  // Disabled
+  //
+  &.disabled,
+  &[disabled],
+  fieldset[disabled] &
+    cursor: not-allowed
+    opacity: 0.60

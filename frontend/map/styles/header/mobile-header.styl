@@ -1,4 +1,4 @@
-.mobile-header
+mobile-header
   position: relative;
   height: $navbarHeight;
   width: 100%;
@@ -8,7 +8,15 @@
   line-height $navbarHeight
 
   a
+  a:hover
+  a:focus
     color: $rm-header-text;
+
+  a.mobile-header-close
+    display: inline-block;
+    height: 50px;
+    width: 30px;
+    text-align: center;
 
   i
     font-size: 18px
@@ -36,9 +44,19 @@
     padding-right: 10px;
     text-align: right;
 
+    mobile-header-button-right
+      display: inline-block;
+
   .mobile-header-title
     width: 100%;
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
     height: $navbarHeight;
+
+  //
+  // Disabled
+  //
+  .disabled
+    cursor: not-allowed
+    opacity: 0.60
