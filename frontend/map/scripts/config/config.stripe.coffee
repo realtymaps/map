@@ -1,12 +1,12 @@
 app = require '../app.coffee'
-routes = require '../../../../common/config/routes.backend.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {defer} = require '../../../../backend/extensions/promise.coffee' #TODO move to common
 
 _stripeKeysDeferred = defer()
 _stripeKeysPromise = _stripeKeysDeferred.promise
 
 app.run ($http) ->
-  $http.get routes.config.stripe
+  $http.get backendRoutes.config.stripe
   .then ({data}) ->
     _stripeKeysDeferred.resolve data
   .catch _stripeKeysDeferred.reject

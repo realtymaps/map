@@ -15,9 +15,7 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    # for the debug namespace definition LOG_ENABLE, do not use the `-` identifier that is documented in the `debug` library!
-    # That functionality is botched because of a low level dependency in `enabled` library.
-    ENABLE: process.env.LOG_ENABLE ? 'backend:service:dataSource,backend:spec:SqlMock'  # 'frontend:*,backend:*,test:*'
+    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
 
   DBS:
     MAIN:
