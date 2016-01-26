@@ -6,5 +6,8 @@ mod.config ($provide, nemSimpleLoggerProvider) ->
 .run (nemDebug, $http, $log) ->
   $log = $log.spawn("frontend:common:run:loggerSetup")
   $http.get(backendRoutes.config.debugLevels).then ({data}) ->
+    unless typeof data == 'string'
+      $log.error "debugLevels: #{JSON.stringify data}"
+      return
     nemDebug.enable data
     $log.debug "enabled: #{data} debug log levels."
