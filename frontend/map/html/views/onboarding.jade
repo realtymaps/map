@@ -3,8 +3,6 @@ section.white-page.onboarding.onboarding-plan(ng-cloak)
     div(ng-if="view.showSteps")
       a(ng-if="view.hasPrevStep" ng-click="view.goToPrevStep()")
         .pull-left.fa.fa-chevron-left.fa-3x()
-      a(ng-if="view.hasNextStep" ng-click="view.goToNextStep()")
-        .pull-right.fa.fa-chevron-right.fa-3x()
       h3 Step {{view.currentStepId}} of {{view.steps.length}}
     
     div(ng-repeat="state in $state.get() | filter:{parent: 'onboarding'}"

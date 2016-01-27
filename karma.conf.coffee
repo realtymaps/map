@@ -63,12 +63,11 @@ module.exports = (config) ->
       'spec/fixtures/*.html'
       'spec/fixtures/*.json'
       'spec/frontend/bootstrap.spec.coffee'
-      'spec/common/**/*spec.coffee'
-      'spec/frontend/**/*spec.coffee'
-      #do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
       {pattern:'frontend/**/*coffee', included: false}
       {pattern:'common/**/*coffee', included: false}
       {pattern:'spec/**/*coffee', included: false}
+      # 'spec/common/**/*spec.coffee'
+      'spec/frontend/**/*spec.coffee'
     ]
 
     # list of files to exclude
