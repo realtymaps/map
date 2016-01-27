@@ -8,6 +8,7 @@ config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 LobErrors = require '../utils/errors/util.errors.lob.coffee'
+logger = require('../config/logger').spawn('service:lob')
 
 LOB_LETTER_DEFAULTS =
   color: true
@@ -69,7 +70,7 @@ createLetter = (letter) ->
 
     throw new Error("Refusing to use LOB-live API from #{config.ENV}") unless config.ENV == 'production'
 
-    console.log "#{JSON.stringify letter, null, 2}"
+    logger.debug "#{JSON.stringify letter, null, 2}"
     lob.live.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
 
     .catch isUnhandled, handleError('test')
@@ -79,7 +80,7 @@ createLetterTest = (letter) ->
   .then (lob) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
-    console.log "#{JSON.stringify letter, null, 2}"
+    logger.debug "#{JSON.stringify letter, null, 2}"
     lob.test.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
 
     .catch isUnhandled, handleError('live')

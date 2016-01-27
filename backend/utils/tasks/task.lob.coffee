@@ -8,6 +8,7 @@ TaskImplementation = require './util.taskImplementation'
 lobSvc = require '../../services/service.lob'
 LobErrors = require '../errors/util.errors.lob'
 {isCausedBy} = require '../errors/util.error.partiallyHandledError'
+logger = require('../../config/logger').spawn('task:lob')
 
 findLetters = (subtask) ->
   tables.mail.letters()
@@ -29,76 +30,75 @@ findLetters = (subtask) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
 
 sendLetter = (subtask) ->
-  tables.jobQueue.currentSubtasks().where(name:'lob_createLetter').then ([subtask]) ->
+  letter = subtask.data
 
-    letter = subtask.data
+  logger.debug "#{JSON.stringify letter}"
 
-    console.log "#{JSON.stringify letter}"
+  lobSvc.createLetterTest letter
 
-    lobSvc.createLetterTest letter
+  .catch isCausedBy(LobErrors.LobRateLimitError), (error) ->
+    tables.mail.letters()
+    .update
+      lob_response: error
+      status: 'error-transient'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
+    throw new HardFail("Lob API rate limit exceeded")
 
-    .catch isCausedBy(LobErrors.LobRateLimitError), (error) ->
-      tables.mail.letters()
-      .update
-        lob_response: error
-        status: 'error-transient'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
-      throw new HardFail("Lob API rate limit exceeded")
+  .catch isCausedBy(LobErrors.LobUnauthorizedError), (error) ->
+    tables.mail.letters()
+    .update
+      lob_response: error
+      status: 'error-transient'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
 
-    .catch isCausedBy(LobErrors.LobUnauthorizedError), (error) ->
-      tables.mail.letters()
-      .update
-        lob_response: error
-        status: 'error-transient'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+    throw new HardFail("Lob API access denied - check configuration/keys")
 
-      throw new HardFail("Lob API access denied - check configuration/keys")
+  .catch isCausedBy(LobErrors.LobForbiddenError), (error) ->
+    tables.mail.letters()
+    .update
+      lob_response: error
+      status: 'error-transient'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
 
-    .catch isCausedBy(LobErrors.LobForbiddenError), (error) ->
-      tables.mail.letters()
-      .update
-        lob_response: error
-        status: 'error-transient'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+    throw new HardFail("Lob API access denied - check configuration/keys")
 
-      throw new HardFail("Lob API access denied - check configuration/keys")
+  .catch isCausedBy(LobErrors.LobBadRequestError), (error) ->
+    tables.mail.letters()
+    .update
+      lob_response: error
+      status: 'error-invalid'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
 
-    .catch isCausedBy(LobErrors.LobBadRequestError), (error) ->
-      tables.mail.letters()
-      .update
-        lob_response: error
-        status: 'error-invalid'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+    throw new SoftFail("Lob API bad request/input")
 
-      throw new SoftFail("Lob API bad request/input")
+  .catch isCausedBy(LobErrors.LobServerError), (error) ->
+    tables.mail.letters()
+    .update
+      lob_response: error
+      status: 'error-transient'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
 
-    .catch isCausedBy(LobErrors.LobServerError), (error) ->
-      tables.mail.letters()
-      .update
-        lob_response: error
-        status: 'error-transient'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+    throw new SoftFail("Lob API server error - retry later")
 
-      throw new SoftFail("Lob API server error - retry later")
-
-    .then (lobResponse) ->
-      tables.mail.letters()
-      .update
-        lob_response: lobResponse
-        status: 'sent'
-        retries: letter.retries + 1
-      .where
-        id: letter.id
+  .then (lobResponse) ->
+    logger.debug "#{JSON.stringify lobResponse, null, 2}"
+    tables.mail.letters()
+    .update
+      lob_response: lobResponse
+      status: 'sent'
+      retries: letter.retries + 1
+    .where
+      id: letter.id
 
 subtasks =
   findLetters: findLetters
