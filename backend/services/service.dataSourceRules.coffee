@@ -1,5 +1,5 @@
 _ = require 'lodash'
-logger = require('../config/logger').spawn('backend:service.dataSourceRules')
+logger = require('../config/logger').spawn('service.dataSourceRules')
 dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'

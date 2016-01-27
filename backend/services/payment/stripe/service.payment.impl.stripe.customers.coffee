@@ -1,7 +1,7 @@
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 {CustomerCreateFailed} = require '../../../utils/errors/util.errors.stripe'
 tables = require '../../../config/tables'
-logger = require('../../../config/logger').spawn('backend:stripe')
+logger = require('../../../config/logger').spawn('stripe')
 _ = require 'lodash'
 
 StripeCustomers = (stripe) ->

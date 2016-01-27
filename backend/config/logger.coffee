@@ -7,6 +7,7 @@ debug.enable(config.LOGGING.ENABLE)
 stackTrace = require('stack-trace')
 cluster = require 'cluster'
 path = require 'path'
+memoize = require 'memoizee'
 
 
 _utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
@@ -44,34 +45,36 @@ _decorateOutput = (func, bindThis) ->
 
 
 if !baselogger
-  throw Error('internalLogger undefined')
+  throw Error('baselogger undefined')
 if !_isValidLogObject(baselogger)
   throw Error('baselogger is invalid')
 
 
-_debugCache = {}
+# cache logger results so we get consistent coloring
+_getLogger = (namespace, showDebugFileAndLine) ->
+  new Logger(namespace, showDebugFileAndLine)
+_getLogger = memoize(_getLogger)
 
 
 class Logger
-  constructor: (namespace, showDebugFileAndLine) ->
+  constructor: (@namespace, showDebugFileAndLine) ->
 
-    if !namespace || typeof namespace != 'string'
+    if !@namespace || typeof @namespace != 'string'
       throw new Error('invalid logging namespace')
 
-    # need to cache debugInstance in order to get consistent color; this could be considered a bug in the debug module
-    if !_debugCache[namespace]?
-      _debugCache[namespace] = debug(namespace)
-    debugInstance = _debugCache[namespace]
-
+    if @namespace == 'backend'
+      maybeAugmentedNamespace = 'backend:__default_namespace__'
+    else
+      maybeAugmentedNamespace = 'backend'
     ###
       Overide logObject.debug with a debug instance
       namespace is to be used as handle for controlling logging verbosity
       see: https://github.com/visionmedia/debug/blob/master/Readme.md
     ###
     if showDebugFileAndLine
-      @debug = _decorateOutput(debugInstance)
+      @debug = _decorateOutput(debug(maybeAugmentedNamespace))
     else
-      @debug = debugInstance
+      @debug = debug(maybeAugmentedNamespace)
 
     for level in _levelFns
       if config.LOGGING.FILE_AND_LINE
@@ -94,7 +97,10 @@ class Logger
 
     colorWrap(@)
 
-  spawn: (args...) ->
-    return new Logger(args...)
+  spawn: (subNamespace, showDebugFileAndLine) ->
+    _getLogger("#{@namespace}:#{subNamespace}", showDebugFileAndLine)
 
-module.exports = new Logger("backend:__default_namespace__")
+  isEnabled: (subNamespace) ->
+    debug.enabled("#{@namespace}:#{subNamespace}")
+
+module.exports = _getLogger("backend")

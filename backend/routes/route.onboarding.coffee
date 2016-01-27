@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn("backend:route.onboarding")
+logger = require('../config/logger').spawn("route.onboarding")
 {mergeHandles} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
 logger = require '../config/logger'

@@ -1,6 +1,4 @@
-logger = require('../config/logger').spawn('backend:routes:index')
-loggerRouteInit = require('../config/logger').spawn('backend:routes:index:init')
-loggerCls = require('../config/logger').spawn('backend:routes:index:cls')
+logger = require('../config/logger').spawn('routes:index')
 loaders = require '../utils/util.loaders'
 _ = require 'lodash'
 path = require 'path'
@@ -31,11 +29,11 @@ wrappedCLS = (req, res, promisFnToWrap) ->
   promisFnToWrap()
   .finally ->
     namespace.exit(ctx)
-    loggerCls.debug 'CLS: Context exited'
+    logger.spawn('cls').debug 'CLS: Context exited'
 
 module.exports = (app) ->
   for route in _.sortBy(loaders.loadRouteOptions(__dirname), 'order') then do (route) ->
-    loggerRouteInit.debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
+    logger.spawn('init').debug "route: #{route.moduleId}.#{route.routeId} intialized (#{route.method})"
     #DRY HANDLE FOR CATCHING COMMON PROMISE ERRORS
     wrappedHandle = (req,res, next) ->
       wrappedCLS req,res, ->
