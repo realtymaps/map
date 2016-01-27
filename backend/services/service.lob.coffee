@@ -6,6 +6,26 @@ logger = require '../config/logger'
 _ = require 'lodash'
 config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+tables = require '../config/tables'
+LobErrors = require '../utils/errors/util.errors.lob.coffee'
+
+LOB_LETTER_DEFAULTS =
+  color: true
+  template: true
+
+LOB_LETTER_FIELDS = [
+   'to'
+   'from'
+   'color'
+   'file'
+   'data'
+   'double_sided'
+   'template'
+   'extra_service'
+   'return_envelope'
+   'perforated_page'
+   'metadata'
+]
 
 lobPromise = Promise.try () ->
   externalAccounts.getAccountInfo('lob')
@@ -18,42 +38,99 @@ lobPromise = Promise.try () ->
     promisify.lob(live)
     { test, live }
 
-createLetters = (Lob, userId, data) -> Promise.try () ->
-  if !_.isArray(data.recipients)
-    throw new PartiallyHandledError("recipients must be an array")
+handleError = (env) -> (err) ->
+  lobError = new Error(err.message)
+  msg = "LOB-#{env} API responded #{err.status_code}"
+  if err.status_code == 401
+    throw new LobErrors.LobUnauthorizedError(lobError, msg)
+  else if err.status_code = 403
+    throw new LobErrors.LobForbiddenError(lobError, msg)
+  else if err.status_code = 404
+    throw new LobErrors.LobNotFoundError(lobError, msg)
+  else if err.status_code = 422
+    throw new LobErrors.LobBadRequestError(lobError, msg)
+  else if err.status_code = 429
+    throw new LobErrors.LobRateLimitError(lobError, msg)
+  else if err.status_code = 500
+    throw new LobErrors.LobServerError(lobError, msg)
 
-  Promise.map data.recipients, (recipient) ->
-    logger.debug "LOB-#{Lob.rm_type} new letter to: #{JSON.stringify(recipient, null, 2)}"
+_getAddress = (r) ->
+  name: r.name ? (if (r.first_name || r.last_name) then "#{r.first_name ? ''} #{r.last_name ? ''}" else "Current Resident")
+  address_line1: r.address_line1 ? "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
+  address_line2: r.address_line2 ? r.street_address_unit ? ''
+  address_city: r.address_city ? r.city ? ''
+  address_state: r.address_state ? r.state ? ''
+  address_zip: r.address_zip ? r.zip ? ''
 
-    Lob.letters.createAsync
-      description: data.description
-      to: recipient
-      from: data.sender
-      file: data.content
-      data: { userId }
-      color: true
-      template: true
+createLetter = (letter) ->
+  lobPromise
+  .then (lob) ->
+    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
+
+    throw new Error("Refusing to use LOB-live API from #{config.ENV}") unless config.ENV == 'production'
+
+    console.log "#{JSON.stringify letter, null, 2}"
+    lob.live.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
+
+    .catch isUnhandled, handleError('test')
+
+createLetterTest = (letter) ->
+  lobPromise
+  .then (lob) ->
+    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
+
+    console.log "#{JSON.stringify letter, null, 2}"
+    lob.test.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
+
+    .catch isUnhandled, handleError('live')
+
+sendCampaign = (campaignId, userId) ->
+
+  tables.mail.campaign()
+  .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
+  .where(id: campaignId, auth_user_id: userId)
+  .then ([campaign]) ->
+    throw new Error("campaign #{campaignId} not found") unless campaign
+    throw new Error("campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'") unless campaign.status == 'ready'
+    throw new Error("campaign #{campaignId} has invalid recipients") unless _.isArray campaign?.recipients
+
+    logger.debug "Creating #{campaign.recipients.length} letters for campaign #{campaignId}"
+
+    tables.mail.letters()
+    .insert _.map campaign.recipients, (recipient) ->
+      auth_user_id: userId
+      user_mail_campaign_id: campaignId
+      address_to: _getAddress recipient
+      address_from: _getAddress campaign.sender_info
+      file: campaign.content
+      status: 'ready'
+      options:
+        data: { campaignId, userId }
+        description: campaign.name
 
     .catch isUnhandled, (err) ->
-      lobError = new Error(err.message)
-      throw new PartiallyHandledError(err, "LOB[#{Lob.rm_type}] API responded #{err.status_code}")
+      throw new PartiallyHandledError(err, "failed to create letters for campaign #{campaignId}")
 
-    .then (lobResponse) ->
-      lobResponse
+    tables.mail.campaign()
+    .update(status: 'sending')
+    .where(id: campaignId, auth_user_id: userId)
+    .catch isUnhandled, (err) ->
+      throw new PartiallyHandledError(err, "failed to set status for campaign #{campaignId}")
+
+getPriceQuote = (userId, data) ->
+  lobPromise
+  .then (lob) ->
+    throw new Error("recipients must be an array") unless _.isArray data?.recipients
+    Promise.map data.recipients, (recipient) ->
+      letter = _.clone data
+      letter.to = recipient
+      createLetterTest letter
+  .then (lobResponses) ->
+    _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
+      total + Number(price)
 
 module.exports =
-  getPriceQuote: (userId, data) ->
-    lobPromise
-    .then (lob) ->
-      createLetters lob.test, userId, data
-    .then (lobResponses) ->
-      _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
-        total + Number(price)
-
-  sendSnailMail: (userId, data) ->
-    lobPromise
-    .then (lob) ->
-      throw new Error("Refusing to send snail mail from non-production environment") unless config.ENV == 'production'
-      createLetters lob.live, userId, data
-    .then (lobResponses) ->
-      lobResponses
+  getPriceQuote: getPriceQuote
+  createLetter: createLetter
+  createLetterTest: createLetterTest
+  sendCampaign: sendCampaign
