@@ -3,6 +3,7 @@ config = require './config'
 colorWrap = require 'color-wrap'
 baselogger = require './baselogger'
 debug = require 'debug'
+console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ #{config.LOGGING.ENABLE}")
 debug.enable(config.LOGGING.ENABLE)
 stackTrace = require('stack-trace')
 cluster = require 'cluster'
@@ -53,7 +54,7 @@ if !_isValidLogObject(baselogger)
 # cache logger results so we get consistent coloring
 _getLogger = (namespace, showDebugFileAndLine) ->
   new Logger(namespace, showDebugFileAndLine)
-_getLogger = memoize(_getLogger)
+_getLogger = memoize(_getLogger, primitive: true)
 
 
 class Logger
@@ -64,8 +65,9 @@ class Logger
 
     if @namespace == 'backend'
       maybeAugmentedNamespace = 'backend:__default_namespace__'
+      showDebugFileAndLine = true
     else
-      maybeAugmentedNamespace = 'backend'
+      maybeAugmentedNamespace = @namespace
     ###
       Overide logObject.debug with a debug instance
       namespace is to be used as handle for controlling logging verbosity
