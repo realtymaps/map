@@ -3,7 +3,6 @@ config = require './config'
 colorWrap = require 'color-wrap'
 baselogger = require './baselogger'
 debug = require 'debug'
-console.log("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ #{config.LOGGING.ENABLE}")
 debug.enable(config.LOGGING.ENABLE)
 stackTrace = require('stack-trace')
 cluster = require 'cluster'
