@@ -99,11 +99,9 @@ describe "route.onboarding", ->
 
       it 'on resolve transaction resolves', ->
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          console.log "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
-          console.log "EMAIL CALLED"
           Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)
@@ -115,11 +113,9 @@ describe "route.onboarding", ->
       it 'on reject error transaction catches', ->
 
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          console.log "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
-          console.log "EMAIL CALLED"
           Promise.reject()
 
 
@@ -129,11 +125,9 @@ describe "route.onboarding", ->
 
       it 'on resolve transaction resolves', ->
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
-          console.log "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
-          console.log "EMAIL CALLED"
           Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)
