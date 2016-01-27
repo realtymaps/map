@@ -1,4 +1,5 @@
 _ = require 'lodash'
+logger = require('../config/logger').spawn('backend:service:dataSource')
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 
@@ -39,4 +40,3 @@ class DataSourceService extends ServiceCrud
 
 module.exports = new DataSourceService tables.config.dataSourceFields,
   idKey: "MetadataEntryID"
-  debug: true

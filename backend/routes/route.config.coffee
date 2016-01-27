@@ -1,11 +1,17 @@
-logger = require '../config/logger'
+logger = require('../config/logger').spawn("backend:route.config")
 auth = require '../utils/util.auth'
 externalAccounts = require '../services/service.externalAccounts'
 cartodbConfig = require '../config/cartodb/cartodb'
 googleMapsConfig = require '../config/googleMaps'
+config = require '../config/config'
 _ = require 'lodash'
 
 module.exports =
+  debugLevels:
+    handle: (req, res, next) ->
+      logger.info "sending config.LOGGING.ENABLE: #{config.LOGGING.ENABLE}"
+      res.send config.LOGGING.ENABLE
+
   mapboxKey:
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->

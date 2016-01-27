@@ -239,7 +239,7 @@ normalizeData = (subtask) ->
     buildRecord: countyHelpers.buildRecord
 
 finalizeDataPrep = (subtask) ->
-  Promise.map subtask.data.sources, (source) ->
+  Promise.map ['deed', 'tax', 'mortgage'], (source) ->
     tables.property[source]()
     .select('rm_property_id')
     .where(batch_id: subtask.batch_id)

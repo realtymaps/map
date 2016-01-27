@@ -3,6 +3,7 @@ tables = require '../../backend/config/tables'
 sinon = require 'sinon'
 colorWrap = require 'color-wrap'
 colorWrap(console)
+logger = require('../../backend/config/logger').spawn('backend:spec:SqlMock')
 Promise = require 'bluebird'
 dbs = require '../../backend/config/dbs'
 
@@ -38,7 +39,7 @@ class SqlMock
   ###
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
-    @debug = @options.debug ? undefined
+    @debug = (msg) -> (@options.debug ? false) and logger.debug "SqlMock: #{msg}"
     @setResult(@options.result ? undefined) unless @options.results
     @setResults(@options.results ? undefined) unless @options.result
     @error = @options.error ? undefined
@@ -46,8 +47,7 @@ class SqlMock
 
     if @options.dbFn?
       @_svc = @options.dbFn
-      if @debug?
-        console.log.cyan "dbFn set: #{@_svc.tableName}"
+      @debug "dbFn set: #{@_svc.tableName}"
 
     # dynamic instance hooks for the mock sql calls
     @[@groupName] = @
@@ -76,18 +76,17 @@ class SqlMock
 
   dbFn: () =>
     fn = () =>
-      if @debug?
-        console.log.cyan "dbFn of #{@groupName}.#{@tableHandle} invoked"
+      @debug "dbFn of #{@groupName}.#{@tableHandle} invoked"
       @
     fn.tableName = @tableName
-    if @debug?
-      console.log.cyan "tablename: #{@tableName}"
+    @debug "tablename: #{@tableName}"
     fn
 
   setResult: (result) ->
     @setResults [result]
 
   setResults: (results = []) ->
+    @debug "setting results #{JSON.stringify(results)}"
     if !_.isArray results
       throw new Error "Results must be of type Array."
     @results = results.reverse() #be like a queue
@@ -95,8 +94,7 @@ class SqlMock
   getResult: ->
     if @results.length
       ret = @results.pop()
-      # console.log.magenta "returning!!!!!!"
-      # console.log.magenta ret, true
+      @debug "sending result, leaving #{@results.length} results in queue"
       return ret
 
   setError: (error) ->
@@ -112,13 +110,10 @@ class SqlMock
 
   initSvc: () ->
     if @groupName == 'dbs' and @tableHandle == 'main' # special case svc
-      if @debug?
-        console.log.cyan "hooking dbs.get('main') for service"
+      @debug "hooking dbs.get('main') for service"
       @_svc = dbs.get('main')
     else
-      if @debug?
-        console.log.cyan "hooking tables.#{@groupName}.#{@tableHandle} for service"
-
+      @debug "hooking tables.#{@groupName}.#{@tableHandle} for service"
       @_svc = tables[@groupName][@tableHandle] unless @_svc
       @tableName = @_svc.tableName or @tableHandle
       @_svc = @_svc()
@@ -151,9 +146,7 @@ class SqlMock
   then: (handler) ->
     if @error?
       return Promise.reject(@error)
-
-    if @debug?
-      console.log.cyan "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
+    @debug "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
     Promise.resolve(@getResult()).then handler
 
   catch: (predicate, handler) ->
@@ -171,9 +164,7 @@ class SqlMock
       else
         return Promise.reject(@error).catch handler
 
-    if @debug?
-      console.log.cyan "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
-
+    @debug "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
     return Promise.resolve(@getResult())
 
   toString: () ->
@@ -191,16 +182,13 @@ SqlMock.sqlMock = () ->
 
 _sqlFns.forEach (name) ->
   SqlMock::[name] = ->
-    if @debug
-      console.log.cyan "called #{@tableHandle} #{name}"
+    @debug "called #{@tableHandle} #{name}"
+
     @[name + 'Spy'](arguments...)
-    if @debug
-      console.log.cyan "called #{@tableHandle} #{name}Spy"
+    @debug "called #{@tableHandle} #{name}Spy"
+
     @_appendArgChain(name, arguments)
-    if @debug
-      console.log.cyan "appended #{@tableHandle} #{name}"
-      console.log.cyan "arguments:"
-      console.log.cyan arguments
+    @debug "appended #{@tableHandle} #{name} to chain"
     @
 
 module.exports = SqlMock

@@ -88,8 +88,9 @@ module.exports = (options = {}) ->
     result.lines.push cityParts.join(' ')
 
 
-    minStrength = options.minStrength ? 10
+    minStrength = options.minStrength ? 20
     if result.strength < minStrength
-      throw new DataValidationError("not enough address info provided; minStrength: #{minStrength} vs strength: #{result.strength}", param, value)
+      #throw new DataValidationError("not enough address info provided; minStrength: #{minStrength} vs strength: #{result.strength}", param, value)
+      return null
 
     return result
