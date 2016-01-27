@@ -3,6 +3,8 @@ gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()
 
+verbose = !!process.env.VERBOSE_BUILD
+
 gulp.task 'minify-css', ->
   gulp.src paths.destFull.styles + '/*.css'
   .pipe $.minifyCss
@@ -13,7 +15,7 @@ gulp.task 'minify-css', ->
   .pipe gulp.dest paths.destFull.styles
   .pipe $.size
     title: paths.dest.root
-    showFiles: true
+    showFiles: verbose
 
 gulp.task 'minify-js', ->
   gulp.src paths.destFull.scripts + '/*.js'
@@ -23,6 +25,6 @@ gulp.task 'minify-js', ->
   .pipe gulp.dest paths.destFull.scripts
   .pipe $.size
     title: paths.dest.root
-    showFiles: true
+    showFiles: verbose
 
 gulp.task 'minify', gulp.parallel 'minify-js', 'minify-css'

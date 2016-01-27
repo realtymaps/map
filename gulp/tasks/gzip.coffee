@@ -2,6 +2,8 @@ gulp = require 'gulp'
 paths = require '../../common/config/paths'
 $ = require('gulp-load-plugins')()
 
+verbose = !!process.env.VERBOSE_BUILD
+
 gulp.task 'gzip', ->
   gulp.src(paths.dest.root + '**/*')
   .pipe $.gzip
@@ -10,4 +12,4 @@ gulp.task 'gzip', ->
   .pipe(gulp.dest(paths.dest.root))
   .pipe $.size
     title: paths.dest.root
-    showFiles: true
+    showFiles: verbose
