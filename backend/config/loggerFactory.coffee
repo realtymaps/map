@@ -69,7 +69,7 @@ _getLogger = memoize(_getLogger, primitive: true)
 class Logger
   constructor: (@base, @namespace) ->
 
-    if !@namespace || typeof @namespace != 'string'
+    if !@namespace? || typeof @namespace != 'string'
       throw new Error('invalid logging namespace')
 
     if @namespace == ''
