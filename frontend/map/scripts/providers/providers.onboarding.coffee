@@ -52,6 +52,7 @@ app.provider 'rmapsOnboardingProOrder', (rmapsOnboardingOrderProvider) ->
 
 app.provider 'rmapsOnboardingOrderSelector', (rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
   @getPlanFromState = ($state) ->
+    return unless $state
     if /pro/i.test($state.current.name)
       'pro'
 

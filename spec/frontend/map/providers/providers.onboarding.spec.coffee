@@ -77,3 +77,61 @@ describe "rmapsOnboardingOrder", ->
 
       it 'non existant name', ->
         expect(@subject.getPrevStep('junk')).to.not.be.ok
+
+
+describe "rmapsOnboardingOrderSelector", ->
+  beforeEach ->
+    angular.mock.module 'rmapsMapApp'
+
+    inject ($rootScope, rmapsOnboardingOrderSelector, rmapsOnboardingOrder, rmapsOnboardingProOrder) =>
+      @$rootScope = $rootScope
+      @subject = rmapsOnboardingOrderSelector
+      @rmapsOnboardingOrderProvider = rmapsOnboardingOrder
+      @rmapsOnboardingProOrderProvider = rmapsOnboardingProOrder
+
+  describe "getPlanFromState" , ->
+    it 'is pro', ->
+      expect(@subject.getPlanFromState current: name: 'crapPro').to.be.eql 'pro'
+
+    describe 'not pro', ->
+      it 'string', ->
+        expect(@subject.getPlanFromState current: name: '').to.not.be.ok
+
+      it 'undefined', ->
+        expect(@subject.getPlanFromState current: name: undefined).to.not.be.ok
+
+  describe "getOrderSvc" , ->
+    describe 'state', ->
+      it 'is pro', ->
+        expect(@subject.getOrderSvc current: name: 'crapPro').to.be.equal @rmapsOnboardingProOrderProvider
+
+      describe 'not pro', ->
+        it 'string', ->
+          expect(@subject.getOrderSvc current: name: '').to.be.equal @rmapsOnboardingOrderProvider
+
+        it 'undefined', ->
+          expect(@subject.getOrderSvc current: name: undefined).to.be.equal @rmapsOnboardingOrderProvider
+
+    describe 'string', ->
+      it 'is pro', ->
+        expect(@subject.getOrderSvc 'pro').to.be.equal @rmapsOnboardingProOrderProvider
+
+      describe 'not pro', ->
+        it 'string', ->
+          expect(@subject.getOrderSvc '').to.be.equal @rmapsOnboardingOrderProvider
+
+        it 'undefined', ->
+          expect(@subject.getOrderSvc()).to.be.equal @rmapsOnboardingOrderProvider
+
+  describe "initScope", ->
+    describe 'is pro', ->
+      before ->
+        @mockScope =
+          view: {}
+        @subject.initScope 'pro', @mockScope
+
+      it 'has correct orderSvc', ->
+        @mockScope.orderSvc.name.should.be.eql 'pro'
+
+      it 'has correct steps', ->
+        @mockScope.view.steps.should.be.eql @rmapsOnboardingProOrderProvider.steps
