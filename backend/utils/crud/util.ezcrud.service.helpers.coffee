@@ -1,5 +1,5 @@
 util = require 'util'
-logger = require('../../config/logger').spawn('backend:ezcrud.service')
+logger = require('../../config/logger').spawn('backend:ezcrud:service')
 BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
@@ -7,10 +7,13 @@ _ = require 'lodash'
 factory = require '../util.factory'
 
 
-class Crud extends BaseObject
+class ServiceCrud extends BaseObject
   constructor: (@dbFn, options = {}) ->
-    # small one-liner for debug log func that respects debug option
-    @debug = (msg) -> (options.debug ? false) and logger.debug "######## ServiceCrud: #{msg}"
+    @debug = () ->
+    if options.debugNS and _.isString options.debugNS
+      @debugLogger = logger.spawn options.debugNS
+      @debug = (msg) => @debugLogger.debug msg
+
     # reteurnKnex flag activates the CRUD handlers below to return a {knex: <transaction>} object
     @returnKnex = options.returnKnex ? false
     # idKeys format here helps multi-pk support
@@ -96,8 +99,6 @@ class Crud extends BaseObject
 
     # evaluate
     transaction.then (result) =>
-      # @debug "Number of rows in result: #{result.length}" if result.length?
-      # @debug "One row, result: #{util.inspect(result,false,1)}" unless result.length != 1
       result
     .catch isUnhandled, (error) =>
       @debug error
@@ -136,11 +137,11 @@ class Crud extends BaseObject
     @debug "ids: #{JSON.stringify(ids)}"
     @debug "entity: #{JSON.stringify(entity)}"
 
-    upsertQueryString = Crud.getUpsertQueryString ids, entity, @dbFn.tableName
+    upsertQueryString = ServiceCrud.getUpsertQueryString ids, entity, @dbFn.tableName
     @_wrapTransaction options.transaction ? @dbFn().raw upsertQueryString
 
   delete: (query, options = {}) ->
     @debug "delete(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
     @_wrapTransaction options.transaction ? @dbFn().where(query).delete()
 
-module.exports = Crud
+module.exports = ServiceCrud

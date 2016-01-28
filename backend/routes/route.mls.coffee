@@ -1,5 +1,6 @@
 _ = require 'lodash'
 util = require 'util'
+{expectSingleRow} = require '../utils.util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('backend:routes:mls')
@@ -18,7 +19,7 @@ module.exports =
       mlsConfigService.getById(req.params.mlsId)
       #mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
-        mlsConfig = mlsConfig[0]
+        mlsConfig = expectSingleRow mlsConfig
         logger.debug "MlsConfig: #{util.inspect(mlsConfig,false,1)}"
         if !mlsConfig
           next new ExpressResponse
@@ -36,7 +37,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
-        mlsConfig = mlsConfig[0]
+        mlsConfig = expectSingleRow mlsConfig
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -53,7 +54,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
-        mlsConfig = mlsConfig[0]
+        mlsConfig = expectSingleRow mlsConfig
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -70,7 +71,7 @@ module.exports =
     handle:(req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
-        mlsConfig = mlsConfig[0]
+        mlsConfig = expectSingleRow mlsConfig
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -121,7 +122,7 @@ module.exports =
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
       .then (mlsConfig) ->
-        mlsConfig = mlsConfig[0]
+        mlsConfig = expectSingleRow mlsConfig
         if !mlsConfig
           next new ExpressResponse
             alert:

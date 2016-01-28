@@ -14,7 +14,7 @@ describe 'util.ezcrud.service.helpers', ->
       dbFn = () =>
         @sqlMock
 
-      @serviceCrud = new ServiceCrud(dbFn)
+      @serviceCrud = new ServiceCrud(dbFn, {debugNS:'ezcrud:service'})
       @query =
         id: 1
         lorem: "ipsum"

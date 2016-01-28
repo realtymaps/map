@@ -13,7 +13,7 @@ class MlsConfigCrud extends RouteCrud
     @custom @svc.updateServerInfo(req.params.id, req.body), res
 
 
-module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService,{debug: true}),
+module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),
   root:
     methods: ['get', 'post']
     middleware: [

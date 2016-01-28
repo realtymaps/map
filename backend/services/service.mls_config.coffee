@@ -28,8 +28,6 @@ class MlsConfigCrud extends ServiceCrud
     transaction.where(query)
     super(query, transaction: transaction)
     .map (mlsConfig) ->
-      logger.debug "\n\n#### getAll(), mlsConfig:"
-      logger.debug mlsConfig
       externalAccounts.getAccountInfo(mlsConfig.id)
       .then (accountInfo) ->
         mlsConfig.url = accountInfo.url
@@ -106,5 +104,5 @@ class MlsConfigCrud extends ServiceCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
 
 
-instance = new MlsConfigCrud tables.config.mls, {debug: true}
+instance = new MlsConfigCrud tables.config.mls
 module.exports = instance
