@@ -9,6 +9,7 @@ config = require '../config/config'
 tables = require '../config/tables'
 LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
+dbs = require('../config/dbs')
 
 LOB_LETTER_DEFAULTS =
   color: true
@@ -87,36 +88,37 @@ createLetterTest = (letter) ->
 
 sendCampaign = (campaignId, userId) ->
 
-  tables.mail.campaign()
-  .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
-  .where(id: campaignId, auth_user_id: userId)
-  .then ([campaign]) ->
-    throw new Error("campaign #{campaignId} not found") unless campaign
-    throw new Error("campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'") unless campaign.status == 'ready'
-    throw new Error("campaign #{campaignId} has invalid recipients") unless _.isArray campaign?.recipients
-
-    logger.debug "Creating #{campaign.recipients.length} letters for campaign #{campaignId}"
-
-    tables.mail.letters()
-    .insert _.map campaign.recipients, (recipient) ->
-      auth_user_id: userId
-      user_mail_campaign_id: campaignId
-      address_to: _getAddress recipient
-      address_from: _getAddress campaign.sender_info
-      file: campaign.content
-      status: 'ready'
-      options:
-        data: { campaignId, userId }
-        description: campaign.name
-
-    .catch isUnhandled, (err) ->
-      throw new PartiallyHandledError(err, "failed to create letters for campaign #{campaignId}")
-
-    tables.mail.campaign()
-    .update(status: 'sending')
+  dbs.get('main').transaction (tx) ->
+    tables.mail.campaign(tx)
+    .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
     .where(id: campaignId, auth_user_id: userId)
-    .catch isUnhandled, (err) ->
-      throw new PartiallyHandledError(err, "failed to set status for campaign #{campaignId}")
+    .then ([campaign]) ->
+      throw new Error("campaign #{campaignId} not found") unless campaign
+      throw new Error("campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'") unless campaign.status == 'ready'
+      throw new Error("campaign #{campaignId} has invalid recipients") unless _.isArray campaign?.recipients
+
+      logger.debug "Creating #{campaign.recipients.length} letters for campaign #{campaignId}"
+
+      tables.mail.letters(tx)
+      .insert _.map campaign.recipients, (recipient) ->
+        auth_user_id: userId
+        user_mail_campaign_id: campaignId
+        address_to: _getAddress recipient
+        address_from: _getAddress campaign.sender_info
+        file: campaign.content
+        status: 'ready'
+        options:
+          data: { campaignId, userId }
+          description: campaign.name
+
+      .catch isUnhandled, (err) ->
+        throw new PartiallyHandledError(err, "failed to create letters for campaign #{campaignId}")
+
+      tables.mail.campaign(tx)
+      .update(status: 'sending')
+      .where(id: campaignId, auth_user_id: userId)
+      .catch isUnhandled, (err) ->
+        throw new PartiallyHandledError(err, "failed to set status for campaign #{campaignId}")
 
 getPriceQuote = (userId, data) ->
   lobPromise
