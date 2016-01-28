@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn("backend:route.config")
+logger = require('../config/logger').spawn("route.config")
 auth = require '../utils/util.auth'
 externalAccounts = require '../services/service.externalAccounts'
 cartodbConfig = require '../config/cartodb/cartodb'

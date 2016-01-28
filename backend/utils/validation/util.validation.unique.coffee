@@ -2,15 +2,14 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
 {isUnique} = require '../../utils/util.sql.helpers'
-# logger = require '../../config/logger'
-# logName = "backend:validation.isUnique"
+# logger = require('../../config/logger').spawn("validation:isUnique")
 
 module.exports = (options = {}) ->
-  # logger.debug logName + " created"
+  # logger.debug "created"
   # logger.debug.cyan options, true
   _.required options, ['tableFn', 'clauseGenFn', 'id'], true
   (param, value) -> Promise.try () ->
-    # logger.debug logName + " Called"
+    # logger.debug "called"
     # logger.debug param, true
     # logger.debug "value: #{value}"
     if !value?

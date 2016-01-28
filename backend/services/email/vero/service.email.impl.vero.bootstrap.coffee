@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 {getAccountInfo} = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
 exitCodes = require '../../../enums/enum.exitCodes'
-logger = require('../../../config/logger').spawn('backend:vero')
+logger = require('../../../config/logger').spawn('vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 veroFactory = require 'vero-promise'
 

@@ -1,5 +1,5 @@
 _ = require 'lodash'
-logger = require('../config/logger').spawn('backend:service:dataSource')
+logger = require('../config/logger').spawn('service:dataSource')
 crudService = require '../utils/crud/util.crud.service.helpers'
 Promise = require 'bluebird'
 errorLib = require '../utils/errors/util.error.partiallyHandledError'

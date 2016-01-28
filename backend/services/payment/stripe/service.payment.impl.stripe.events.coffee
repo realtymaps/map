@@ -8,7 +8,7 @@ userTable = require('../../../config/tables').auth.user
 customerSubscriptionDeleted
 customerSubscriptionUpdated
 customerSubscriptionTrialWillEnd} = require '../../../enums/enum.payment.events'
-logger = require('../../../config/logger').spawn('backend:stripe')
+logger = require('../../../config/logger').spawn('stripe')
 
 emailPlatform.then (platform) ->
   emailPlatform = platform
