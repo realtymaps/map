@@ -15,4 +15,4 @@ if (not config.DBS.MAIN.connection) and
   logger.error 'Database connection strings required! fatal and exiting!'
   require('../../backend/config/dbs').shutdown()
   process.exit 1
-dded commen
+
