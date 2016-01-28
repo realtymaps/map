@@ -1,36 +1,32 @@
 gulp = require 'gulp'
-Karma = require('karma').Server
-open  = require 'gulp-open'
 {log} = require 'gulp-util'
 _ = require 'lodash'
+karmaKick = require 'karma-kickoff'
+argv = require('yargs').argv
 
-karmaConf = require.resolve('../../karma.conf.coffee')
-
-karmaRunner = (done, options = {singleRun: true}, conf = karmaConf) ->
-  log '-- Karma Setup --'
-  _.extend options,
-    configFile: conf
-  try
-    server = new Karma options, (code) ->
-      log "Karma Callback Code: #{code}"
-      done(code)
-    server.start()
-  catch e
-    log "KARMA ERROR: #{e}"
-    done(e)
+opts =
+  configFile: '../../karma.conf.coffee'
+  logFn: log
 
 gulp.task 'karma', (done) ->
-  karmaRunner done,
+  karmaKick done, _.extend {}, opts,
     reporters:['dots', 'coverage']
     singleRun: true
 
 gulp.task 'karmaMocha', (done) ->
-  karmaRunner(done)
+  karmaKick(done, opts)
+
+gulp.task 'karmaFiles', (done) ->
+  karmaKick done, _.extend {}, opts,
+    appendFiles: argv.files.split(',')
+    lengthToPop: 2
+    singleRun: true
+
 ###
   EASY TO DEBUG IN BROWSER
 ###
 gulp.task 'karmaChrome', (done) ->
-  karmaRunner done,
+  karmaKick done, _.extend {}, opts,
     singleRun: false
     autoWatch: true
     reporters: ['mocha']
@@ -42,14 +38,15 @@ gulp.task 'karmaChrome', (done) ->
 gulp.task 'frontendSpec', gulp.series 'karma'
 
 gulp.task 'karmaNoCoverage', (done) ->
-  karmaRunner (code) ->
+  karmaKick (code) ->
     done(code)
     process.exit code #hack this should not need to be here
   ,
-    reporters: ['dots', 'junit']
-    junitReporter:
-      outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
-      suite: 'realtymaps'
-      useBrowserName: true
+    _.extend {}, opts,
+      reporters: ['dots', 'junit']
+      junitReporter:
+        outputDir: process.env.CIRCLE_TEST_REPORTS ? 'junit'
+        suite: 'realtymaps'
+        useBrowserName: true
 
 gulp.task 'frontendNoCoverageSpec', gulp.series 'karmaNoCoverage'

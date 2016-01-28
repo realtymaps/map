@@ -1,5 +1,3 @@
-
-pak =  require('./package.json')
 istanbul = require('istanbul')
 
 module.exports = (config) ->
@@ -27,7 +25,14 @@ module.exports = (config) ->
       #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
-      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs', ["browserify-istanbul",{ "ignore": ["spec/**/*"]}]]
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs',
+        ["browserify-istanbul",
+          ignore: ["spec/**/*"]
+          #https://github.com/karma-runner/karma-coverage/issues/157#issuecomment-160555004
+          #fixes the text karma-coverage error
+          instrumenterConfig: { embedSource: true }
+        ]
+      ]
       # extensions: ['.coffee', '.js']
 
 
@@ -63,12 +68,11 @@ module.exports = (config) ->
       'spec/fixtures/*.html'
       'spec/fixtures/*.json'
       'spec/frontend/bootstrap.spec.coffee'
-      'spec/common/**/*spec.coffee'
-      'spec/frontend/**/*spec.coffee'
-      #do not include those specs for jasmine html runner by karma kama_jasmine_runner.html
       {pattern:'frontend/**/*coffee', included: false}
       {pattern:'common/**/*coffee', included: false}
       {pattern:'spec/**/*coffee', included: false}
+      # 'spec/common/**/*spec.coffee'
+      'spec/frontend/**/*spec.coffee'
     ]
 
     # list of files to exclude

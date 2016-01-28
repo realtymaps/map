@@ -6,6 +6,7 @@ basePath = require '../basePath'
 SqlMock = require '../../specUtils/sqlMock'
 
 onboardingRoute = rewire "#{basePath}/routes/route.onboarding"
+logger = require("#{basePath}/config/logger").spawn('test:backend:route.onboarding')
 
 subject = null
 # onboardingRoute.__set__ 'mergeHandles', ->
@@ -48,14 +49,14 @@ describe "route.onboarding", ->
 
     @transaction = (dbName, trxQueryCb) =>
       Promise.try () ->
-        # console.log.cyan "trxQueryCb!!!!!!!!!!!!!!!!!!"
+        # logger.debug.cyan "trxQueryCb!!!!!!!!!!!!!!!!!!"
         trxQueryCb({})
       .then () =>
-        # console.log.magenta "THEN!!!!!!!!!!!!!!!!!!"
+        # logger.debug.magenta "THEN!!!!!!!!!!!!!!!!!!"
         @transactionThenStub()
       .catch (error) =>
-        # console.log.yellow error
-        # console.log.magenta "CATCH!!!!!!!!!!!!!!!!!!"
+        # logger.debug.yellow error
+        # logger.debug.magenta "CATCH!!!!!!!!!!!!!!!!!!"
         @transactionCatchStub()
     onboardingRoute.__set__ 'wrapHandleRoutes', (handles) ->
       handles
@@ -99,9 +100,11 @@ describe "route.onboarding", ->
 
       it 'on resolve transaction resolves', ->
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
+          logger.debug "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
+          logger.debug "EMAIL CALLED"
           Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)
@@ -113,9 +116,11 @@ describe "route.onboarding", ->
       it 'on reject error transaction catches', ->
 
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
+          logger.debug "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
+          logger.debug "EMAIL CALLED"
           Promise.reject()
 
 
@@ -125,9 +130,11 @@ describe "route.onboarding", ->
 
       it 'on resolve transaction resolves', ->
         onboardingRoute.__set__ 'submitPaymentPlan', () ->
+          logger.debug "PAYMENT CALLED"
           Promise.resolve(authUser:{}, customer:{})
 
         onboardingRoute.__set__ 'submitEmail', () ->
+          logger.debug "EMAIL CALLED"
           Promise.resolve()
 
         subject.createUser(@mockReq, @res, @next)

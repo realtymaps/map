@@ -3,11 +3,21 @@ config = require './config'
 colorWrap = require 'color-wrap'
 baselogger = require './baselogger'
 debug = require 'debug'
-debug.enable(config.LOGGING.ENABLE)
 stackTrace = require('stack-trace')
 cluster = require 'cluster'
 path = require 'path'
 memoize = require 'memoizee'
+
+
+names = config.LOGGING.ENABLE.split(/[, ]/g)
+for name,i in names
+  if name.endsWith('*')
+    continue
+  else if name.endsWith(':')
+    names[i] = name+'*'
+  else
+    names[i] = name+':*'
+debug.enable(names.join(','))
 
 
 _utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
@@ -62,8 +72,10 @@ class Logger
     if !@namespace || typeof @namespace != 'string'
       throw new Error('invalid logging namespace')
 
-    if @namespace == 'backend'
-      maybeAugmentedNamespace = 'backend:__default_namespace__'
+    if !@namespace.endsWith(':')
+      @namespace += ':'
+    if @namespace == 'backend:'
+      maybeAugmentedNamespace = 'backend:__default_namespace__:'
       showDebugFileAndLine = true
     else
       maybeAugmentedNamespace = @namespace
@@ -99,9 +111,10 @@ class Logger
     colorWrap(@)
 
   spawn: (subNamespace, showDebugFileAndLine) ->
-    _getLogger("#{@namespace}:#{subNamespace}", showDebugFileAndLine)
+    _getLogger(@namespace+subNamespace, showDebugFileAndLine)
 
   isEnabled: (subNamespace) ->
-    debug.enabled("#{@namespace}:#{subNamespace}")
+    suffix = if !subNamespace.endsWith(':') then ':' else ''
+    debug.enabled(@namespace+subNamespace+suffix)
 
 module.exports = _getLogger("backend")
