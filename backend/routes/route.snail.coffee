@@ -72,7 +72,7 @@ module.exports =
     method: 'post'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      lobService.sendSnailMail req.user.id, req.body
+      lobService.sendCampaign req.params.campaign_id, req.user.id
       .then () ->
         new ExpressResponse({})
       .catch generateErrorHandler('send your mailing')

@@ -55,3 +55,4 @@ module.exports =
     creditCards: 'user_credit_cards'
   mail:
     campaign: 'user_mail_campaigns'
+    letters: 'user_mail_letters'

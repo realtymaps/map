@@ -4,9 +4,10 @@ backendRoutes = require '../../../../../common/config/routes.backend.coffee'
 httpStatus = require '../../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 
-app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location, $log) ->
+app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location, $log, lobData) ->
 
   $scope.$interpolate = $interpolate
+  $scope.modalControl = {}
   $scope.statuses =
     error: 0
     fetching: 1
@@ -39,14 +40,14 @@ app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $locati
 
   $scope.modalControl.status = $scope.statuses.fetching
 
-  handlePost(backendRoutes.snail.quote, $scope.lobData, alerts:false)
+  handlePost(backendRoutes.snail.quote, lobData, alerts:false)
   .success (data) ->
     $scope.messageData.price = data.price
     $scope.modalControl.status = $scope.statuses.asking
 
   $scope.send = () ->
     $scope.modalControl.status = $scope.statuses.sending
-    handlePost(backendRoutes.snail.send, $scope.lobData, alerts:false)
+    handlePost("/api/snail/send/#{lobData.campaign.id}", lobData, alerts:false)
     .success () ->
       $scope.modalControl.status = $scope.statuses.sent
 

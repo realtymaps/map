@@ -142,16 +142,16 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
           $log.debug "campaign #{data[0]} updated"
 
   quote: () ->
-    $rootScope.lobData =
-      content: _createLobHtml()
-      macros: {'name': 'Justin'}
-      recipients: _getLobRecipientData()
-      sender: _getLobSenderData()
-    $rootScope.modalControl = {}
     $modal.open
       template: require('../../html/views/templates/modal-snailPrice.tpl.jade')()
       controller: 'rmapsModalSnailPriceCtrl'
-      scope: $rootScope
       keyboard: false
       backdrop: 'static'
       windowClass: 'snail-modal'
+      resolve:
+        lobData: ->
+          campaign: _getCampaign()
+          file: _createLobHtml()
+          macros: name: 'Justin'
+          recipients: _getLobRecipientData()
+          from: _getLobSenderData()
