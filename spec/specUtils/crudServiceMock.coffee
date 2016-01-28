@@ -1,5 +1,5 @@
 basePath = require '../backend/basePath'
-logger = require("../../specUtils/logger").spawn('crudServiceMock')
+logger = require("./logger").spawn('crudServiceMock')
 {dbFnCalls} = require "#{basePath}/utils/crud/util.crud.service.helpers"
 sinon = require 'sinon'
 SqlMock = require './sqlMock'
