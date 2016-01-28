@@ -10,7 +10,7 @@ app.provider 'rmapsOnboardingOrder', () ->
     ], @name = '', @submitStepName = 'onboardingLocation') ->
       @clazz = OnBoardingOrder
       @submitStepName += @name.toInitCaps()
-      
+
     inBounds: (id) ->
       id >= 0 and id < @steps.length
 
@@ -29,6 +29,7 @@ app.provider 'rmapsOnboardingOrder', () ->
 
     getNextStep: (name, direction = 1) ->
       currentId = @getId name
+      return unless currentId >= 0
       nextStepId = currentId + direction
       if @inBounds nextStepId
         @getStepName nextStepId
