@@ -1,7 +1,7 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 DataValidationError = require '../errors/util.error.dataValidation'
-logger = require('../../config/logger').spawn('backend:validation:localStore')
+logger = require('../../config/logger').spawn('validation:localStore')
 clsFactory = require '../util.cls'
 clone =  require 'clone'
 
@@ -22,7 +22,7 @@ _errMsg = (thing) ->
 # Returns the mapped object.
 module.exports = (options = {}) ->
   (param, value) -> Promise.try () ->
-    logger.debug "localStore: #{JSON.stringify options}"
+    logger.debug "#{JSON.stringify options}"
     if !options?
       return Promise.reject new DataValidationError(_errMsg('options'), param, value)
 

@@ -3,7 +3,7 @@ path = require 'path'
 loaders = require './util.loaders'
 Promise = require 'bluebird'
 sqlHelpers = require './util.sql.helpers'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('jobQueue')
 analyzeValue = require '../../common/utils/util.analyzeValue'
 _ = require 'lodash'
 {notification} = require './util.notifications.coffee'
@@ -127,7 +127,7 @@ queueManualTask = (taskName, initiator) ->
           queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  logger.debug "Queueing task for batchId #{batchId}: #{task.name}"
+  logger.spawn("task:#{task.name}").debug "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -182,7 +182,7 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
     # need to make sure we don't continue to queue subtasks if the task has errored in some way
     if taskData == undefined
       # return an array indicating we queued 0 subtasks
-      logger.debug "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
+      logger.spawn("task:#{subtasks[0].task_name}").debug "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
       return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
       queueSubtask(transaction, batchId, taskData, subtask)
@@ -223,10 +223,10 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       # need to make sure we don't queue the subtask if the task has errored in some way
       if taskData == undefined
         # return 0 to indicate we queued 0 subtasks
-        logger.debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
+        logger.spawn("task:#{subtask.task_name}").debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
       suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
-      logger.debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
+      logger.spawn("task:#{subtask.task_name}").debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
           singleSubtask = _.clone(subtask)
@@ -252,6 +252,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           return 1
 
 cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
+  logger.spawn("manual").debug("Canceling all tasks -- forget:#{forget}, status:#{status}, withPrejudice:#{withPrejudice}")
   tables.jobQueue.taskHistory()
   .where
     current: true
@@ -270,7 +271,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
 cancelTask = (taskName, status='canceled', withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  logger.info("Cancelling task: #{taskName}")
+  logger.info("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
   dbs.get('main').transaction (transaction) ->
     tables.jobQueue.taskHistory(transaction)
     .where
@@ -295,10 +296,11 @@ cancelTask = (taskName, status='canceled', withPrejudice=false) ->
         status: 'canceled'
         finished: dbs.get('main').raw('NOW()')
       .then (count) ->
-        logger.debug("Canceled #{count} subtasks of #{taskName}.")
+        logger.spawn("task:#{taskName}").debug("Canceled #{count} subtasks of #{taskName}.")
 
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator) ->
+  logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
   cancelTask(taskName)
   .then () ->
     queueManualTask(taskName, initiator)
@@ -507,6 +509,7 @@ _updateTaskCounts = (transaction) ->
   transaction.select(dbs.get('main').raw('jq_update_task_counts()'))
 
 doMaintenance = () ->
+  logger.spawn("maintenance").debug('Doing maintenance')
   _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
@@ -628,10 +631,11 @@ runWorker = (queueName, id, quit=false) ->
     prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
   else
     prefix = "<#{queueName}-#{id}>"
-  logger.debug "#{prefix} worker starting..."
+  logger.spawn("queue:#{queueName}").debug "#{prefix} worker starting..."
   _runWorkerImpl(queueName, prefix, quit)
 
 _runWorkerImpl = (queueName, prefix, quit) ->
+  logger.spawn("queue:#{queueName}").debug("#{prefix} Getting next subtask...")
   getQueuedSubtask(queueName)
   .then (subtask) ->
     nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
@@ -640,7 +644,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       return executeSubtask(subtask)
       .then nextIteration
 
-    if !quit && logger.level != 'debug'
+    if !quit && logger.isEnabled("queue:#{queueName}")
       return Promise.delay(30000) # poll again in 30 seconds
       .then nextIteration
 
@@ -650,10 +654,10 @@ _runWorkerImpl = (queueName, prefix, quit) ->
     .whereNull('finished')
     .then (moreSubtasks) ->
       if !parseInt(moreSubtasks?[0]?.count)
-        logger.debug "#{prefix} Queue is empty; quitting worker."
+        logger.spawn("queue:#{queueName}").debug "#{prefix} Queue is empty; quitting worker."
         Promise.resolve()
       else
-        logger.debug "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
+        logger.spawn("queue:#{queueName}").debug "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
         Promise.delay(30000) # poll again in 30 seconds
         .then nextIteration
 

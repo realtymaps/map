@@ -1,5 +1,5 @@
 _ = require 'lodash'
-logger = require('../../config/logger').spawn('backend:crud:serviceHelpers')
+logger = require('../../config/logger').spawn('crud:serviceHelpers')
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
 {singleRow} = require '../util.sql.helpers'
 factory = require '../util.factory'

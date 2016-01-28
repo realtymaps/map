@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 
-logger = require('../config/logger').spawn('backend:route.userSession')
+logger = require('../config/logger').spawn('route.userSession')
 httpStatus = require '../../common/utils/httpStatus'
 sessionSecurityService = require '../services/service.sessionSecurity'
 userSessionService = require '../services/service.userSession'
