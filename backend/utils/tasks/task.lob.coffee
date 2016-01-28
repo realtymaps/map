@@ -77,7 +77,7 @@ sendLetter = (subtask) ->
     .where
       id: letter.id
 
-    throw new SoftFail("Lob API bad request/input")
+    # Do not throw in this case, since the address is probably undeliverable
 
   .catch isCausedBy(LobErrors.LobServerError), (error) ->
     tables.mail.letters()
