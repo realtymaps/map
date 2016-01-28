@@ -1,6 +1,6 @@
 _ = require 'lodash'
 BaseObject = require '../../common/utils/util.baseObject'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:service:jobs')
 Promise = require 'bluebird'
 tables = require '../config/tables'
 crudService = require '../utils/crud/util.crud.service.helpers'

@@ -1,6 +1,6 @@
 _ = require 'lodash'
 util = require 'util'
-{expectSingleRow} = require '../utils.util.sql.helpers'
+{expectSingleRow} = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('backend:routes:mls')
@@ -17,10 +17,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      #mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        mlsConfig = expectSingleRow mlsConfig
-        logger.debug "MlsConfig: #{util.inspect(mlsConfig,false,1)}"
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -36,8 +33,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        mlsConfig = expectSingleRow mlsConfig
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -53,8 +49,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        mlsConfig = expectSingleRow mlsConfig
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -70,8 +65,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle:(req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        mlsConfig = expectSingleRow mlsConfig
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -121,8 +115,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
-        mlsConfig = expectSingleRow mlsConfig
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:

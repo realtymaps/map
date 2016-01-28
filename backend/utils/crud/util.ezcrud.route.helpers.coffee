@@ -41,7 +41,7 @@ class RouteCrud
 
   exec: (req, crudMethodStr) =>
     @debug req.originalUrl if req.originalUrl
-    @validRequest(req, crudMethodStr).then (tReq) =>
+    @validRequest(req, crudMethodStr).then (tReq) ->
       tReq
 
   # allows leveraging centralized route handling if desired

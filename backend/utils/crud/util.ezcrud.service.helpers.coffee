@@ -10,7 +10,8 @@ factory = require '../util.factory'
 class ServiceCrud extends BaseObject
   constructor: (@dbFn, options = {}) ->
     @debug = () ->
-    if options.debugNS and _.isString options.debugNS
+    if options.debugNS? and _.isString options.debugNS
+      console.log "debugNS: #{options.debugNS}"
       @debugLogger = logger.spawn options.debugNS
       @debug = (msg) => @debugLogger.debug msg
 
@@ -98,7 +99,7 @@ class ServiceCrud extends BaseObject
       return {knex: transaction} # exposes unevaluated knex
 
     # evaluate
-    transaction.then (result) =>
+    transaction.then (result) ->
       result
     .catch isUnhandled, (error) =>
       @debug error
