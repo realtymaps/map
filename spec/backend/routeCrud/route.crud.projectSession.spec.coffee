@@ -2,7 +2,7 @@
 require('chai').should()
 Promise = require 'bluebird'
 basePath = require '../basePath'
-logger = require("#{basePath}/config/logger").spawn('test:route.crud.projectSession.spec.coffee')
+logger = require("../../specUtils/logger").spawn('route.crud.projectSession')
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"
 ServiceCrud = CrudServiceHelpers.Crud
@@ -19,8 +19,6 @@ tables = require "#{basePath}/config/tables"
 usrTableNames = tableNames.user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
-colorWrap = require 'color-wrap'
-colorWrap(logger)
 
 
 ServiceCrudProject = require "#{basePath}/services/service.user.project"
