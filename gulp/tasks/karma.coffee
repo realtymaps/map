@@ -18,7 +18,7 @@ gulp.task 'karmaMocha', (done) ->
 
 gulp.task 'karmaFiles', (done) ->
   karmaKick done, _.extend {}, opts,
-    appendFiles: argv.files
+    appendFiles: argv.files.split(',')
     lengthToPop: 2
     singleRun: true
 
