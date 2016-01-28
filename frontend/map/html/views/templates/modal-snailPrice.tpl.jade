@@ -8,5 +8,5 @@
 
 .modal-footer
   button.btn.btn-primary(ng-if="modalControl.status == statuses.asking", ng-click="send()") Send Snail Mail
-  button.btn.btn-warning(ng-if="modalControl.status < statuses.sending", ng-click="$dismiss('cancel')") Cancel
+  button.btn.btn-warning(ng-if="modalControl.status < statuses.sending || message.troubleshooting", ng-click="$dismiss('cancel')") Cancel
   button.btn.btn-info(ng-if="modalControl.status >= statuses.sent", ng-click="done()") Go back to the map
