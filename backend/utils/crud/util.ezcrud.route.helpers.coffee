@@ -1,6 +1,6 @@
 util = require 'util'
 _ = require 'lodash'
-logger = require('../../config/logger').spawn('backend:ezcrud:route')
+logger = require('../../config/logger').spawn('ezcrud:route')
 {methodExec, handleQuery} = require '../util.route.helpers'
 factory = require '../util.factory'
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError

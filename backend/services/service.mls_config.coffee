@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('backend:service:mls_config')
+logger = require('../config/logger').spawn('service:mls_config')
 externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
@@ -9,7 +9,7 @@ jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
 
 
-class MlsConfigCrud extends ServiceCrud
+class MlsConfigService extends ServiceCrud
 
   getAll: (query = {}) ->
     transaction = @dbFn()
@@ -104,5 +104,5 @@ class MlsConfigCrud extends ServiceCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
 
 
-instance = new MlsConfigCrud tables.config.mls
+instance = new MlsConfigService tables.config.mls
 module.exports = instance

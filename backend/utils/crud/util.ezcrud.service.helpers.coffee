@@ -1,5 +1,5 @@
 util = require 'util'
-logger = require('../../config/logger').spawn('backend:ezcrud:service')
+logger = require('../../config/logger').spawn('ezcrud:service')
 BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
@@ -11,7 +11,6 @@ class ServiceCrud extends BaseObject
   constructor: (@dbFn, options = {}) ->
     @debug = () ->
     if options.debugNS? and _.isString options.debugNS
-      console.log "debugNS: #{options.debugNS}"
       @debugLogger = logger.spawn options.debugNS
       @debug = (msg) => @debugLogger.debug msg
 

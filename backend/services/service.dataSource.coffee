@@ -1,5 +1,5 @@
 _ = require 'lodash'
-logger = require('../config/logger').spawn('backend:service:dataSource')
+logger = require('../config/logger').spawn('service:dataSource')
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 tables = require '../config/tables'
 
