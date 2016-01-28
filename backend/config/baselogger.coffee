@@ -37,8 +37,8 @@ logger = new (winston.Logger)(
 winston.addColors myCustomLevels.colors
 
 
-logger.debug 'Log Levels: %j', logger.levels, {}
-logger.debug 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
+#logger.debug 'Log Levels: %j', logger.levels, {}
+#logger.debug 'Log Transport Levels: %j', _.map(logger.transports, (t) -> t.level), {}
 
 
 module.exports = logger

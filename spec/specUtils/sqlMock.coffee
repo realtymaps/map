@@ -3,7 +3,7 @@ tables = require '../../backend/config/tables'
 sinon = require 'sinon'
 colorWrap = require 'color-wrap'
 colorWrap(console)
-logger = require('../../backend/config/logger').spawn('spec:SqlMock')
+logger = require("./logger").spawn('SqlMock')
 Promise = require 'bluebird'
 dbs = require '../../backend/config/dbs'
 
