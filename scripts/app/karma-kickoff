@@ -1,3 +1,0 @@
-#!/bin/bash
-set -e
-./node_modules/karma-kickoff/bin/karma-kickoff "$@"
