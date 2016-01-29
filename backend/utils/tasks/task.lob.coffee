@@ -139,7 +139,7 @@ updateLetters = (subtask) ->
 getLetter = (subtask) ->
   letter = subtask.data
 
-  if not letter.uuid
+  if not letter?.uuid
     logger.debug "Letter #{letter.id} has no uuid!"
     return tables.mail.letters()
     .update
@@ -152,7 +152,7 @@ getLetter = (subtask) ->
     date_created:
       gte: created_date
     metadata:
-      uuid: letter.options.metadata.uuid # unique identifier we generated
+      uuid: letter.uuid # unique identifier we generated
 
   .then ({data}) ->
     # In this case we know the letter was recieved by LOB so we can mark it sent
