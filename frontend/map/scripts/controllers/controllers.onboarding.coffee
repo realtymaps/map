@@ -55,7 +55,8 @@ rmapsPlansService, rmapsOnboardingService) ->
       step: step
       goToNextStep: () ->
         step = $scope.orderSvc.getNextStep($scope.view.step)
-        return unless step
+        unless step
+          $log.error("step undefined")
         $scope.view.updateState(step)
         $state.go step, $scope.user
 

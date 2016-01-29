@@ -29,7 +29,6 @@ app.provider 'rmapsOnboardingOrder', () ->
 
     getNextStep: (name, direction = 1) ->
       currentId = @getId name
-      return unless currentId >= 0
       nextStepId = currentId + direction
       if @inBounds nextStepId
         @getStepName nextStepId
