@@ -3,7 +3,7 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../util.jobQueue'
 {SoftFail} = require '../errors/util.error.jobQueue'
 tables = require '../../config/tables'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('task:blackknight')
 sqlHelpers = require '../util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
 externalAccounts = require '../../services/service.externalAccounts'
@@ -163,9 +163,9 @@ checkFtpDrop = (subtask) ->
         deletes = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.DELETE], constants.DELETE)
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH)
         update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE)
-        finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_finalizeDataPrep", {}, true)
+        #finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_finalizeDataPrep", {}, true)
         activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_activateNewData", {deletes: dataLoadHelpers.DELETE.INDICATED}, true)
-        fileProcessing = Promise.join deletes, refresh, update, finalizePrep, activate, () ->  # empty handler
+        fileProcessing = Promise.join deletes, refresh, update, activate, () ->  # empty handler
       else
         fileProcessing = Promise.resolve()
       dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'blackknight_saveProcessDates', dates: processInfo.dates, true)
@@ -237,7 +237,18 @@ normalizeData = (subtask) ->
     dataSourceId: 'blackknight'
     dataSourceType: 'county'
     buildRecord: countyHelpers.buildRecord
+  .then (successes) ->
+    if successes.length == 0
+      logger.debug('No successful data updates from normalize subtask: '+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
+      return
+    jobQueue.queueSubsequentSubtask null, subtask, successes, constants.NUM_ROWS_TO_PAGINATE, "blackknight_finalizeData",
+      cause: subtask.data.dataType
+      i: subtask.data.i
+      of: subtask.data.of
+      rawTableSuffix: subtask.data.rawTableSuffix
+      count: successes.length
 
+###
 finalizeDataPrep = (subtask) ->
   Promise.map ['deed', 'tax', 'mortgage'], (source) ->
     tables.property[source]()
@@ -247,6 +258,7 @@ finalizeDataPrep = (subtask) ->
       _.pluck(ids, 'rm_property_id')
   .then (lists) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.union(lists), constants.NUM_ROWS_TO_PAGINATE, "blackknight_finalizeData")
+###
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, countyHelpers.finalizeData.bind(null, subtask)
@@ -280,7 +292,6 @@ subtasks =
   deleteData: deleteData
   normalizeData: normalizeData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
-  finalizeDataPrep: finalizeDataPrep
   finalizeData: finalizeData
   activateNewData: dataLoadHelpers.activateNewData
 

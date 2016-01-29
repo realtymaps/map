@@ -2,7 +2,7 @@ _ = require 'lodash'
 coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:utils:sql.helpers')
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25

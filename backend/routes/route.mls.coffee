@@ -1,7 +1,9 @@
 _ = require 'lodash'
+util = require 'util'
+{expectSingleRow} = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('backend:routes:mls')
 mlsConfigService = require '../services/service.mls_config'
 validation = require '../utils/util.validation'
 auth = require '../utils/util.auth'
@@ -15,7 +17,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -31,7 +33,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -47,7 +49,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -63,7 +65,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle:(req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:
@@ -113,7 +115,7 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       mlsConfigService.getById(req.params.mlsId)
-      .then (mlsConfig) ->
+      .then ([mlsConfig]) ->
         if !mlsConfig
           next new ExpressResponse
             alert:

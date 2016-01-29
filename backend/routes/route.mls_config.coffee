@@ -1,16 +1,16 @@
 _ = require 'lodash'
 mlsConfigService = require '../services/service.mls_config'
 auth = require '../utils/util.auth'
-crudHelpers = require '../utils/crud/util.crud.route.helpers'
+RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 
 
-class MlsConfigCrud extends crudHelpers.RouteCrud
+class MlsConfigCrud extends RouteCrud
   updatePropertyData: (req, res, next) =>
-    @handleQuery @svc.updatePropertyData(req.params.id, req.body), res
+    @custom @svc.updatePropertyData(req.params.id, req.body), res
 
   updateServerInfo: (req, res, next) =>
-    @handleQuery @svc.updateServerInfo(req.params.id, req.body), res
+    @custom @svc.updateServerInfo(req.params.id, req.body), res
 
 
 module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),
