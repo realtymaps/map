@@ -4,7 +4,7 @@ dbs = require '../config/dbs'
 
 db = dbs.get('main')
 
-class MailCrud extends crudService.ThenableCrud
+class MailService extends crudService.ThenableCrud
   getAll: (query = {}, doLogQuery = false) ->
     transaction = @dbFn
     tableName = @dbFn.tableName
@@ -25,5 +25,5 @@ class MailCrud extends crudService.ThenableCrud
     @dbFn.tableName = tableName
     super(query, doLogQuery)
 
-instance = new MailCrud(tables.mail.campaign).init(false,false,false)
+instance = new MailService(tables.mail.campaign).init(false,false,false)
 module.exports = instance

@@ -1,15 +1,17 @@
 dataSourceService = require '../services/service.dataSource'
 auth = require '../utils/util.auth'
-crudHelpers = require '../utils/crud/util.crud.route.helpers'
+RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 
 
-class DataSourceCrud extends crudHelpers.RouteCrud
+class DataSourceCrud extends RouteCrud
   getColumnList: (req, res) =>
-    @handleQuery @svc.getColumnList(req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType), res
+    data = @svc.getColumnList req.params.dataSourceId, req.params.dataSourceType, req.params.dataListType
+    @custom data, res
 
   getLookupTypes: (req, res) =>
-    @handleQuery @svc.getLookupTypes(req.params.dataSourceId, req.params.lookupId), res
+    data = @svc.getLookupTypes req.params.dataSourceId, req.params.lookupId
+    @custom data, res
 
 
 module.exports = routeHelpers.mergeHandles new DataSourceCrud(dataSourceService),

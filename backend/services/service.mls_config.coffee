@@ -1,41 +1,32 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:mls_config')
 externalAccounts = require '../services/service.externalAccounts'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
-crudService = require '../utils/crud/util.crud.service.helpers'
+ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 jobService = require './service.jobs'
 jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
 
 
-class MlsConfigCrud extends crudService.ThenableCrud
+class MlsConfigService extends ServiceCrud
 
-  getAll: (query = {}, doLogQuery = false) ->
+  getAll: (query = {}) ->
+    transaction = @dbFn()
     # schemaReady enacts a filter to return only mls configs with completed listing_data
     if query?.schemaReady?
       if query.schemaReady == 'true'
 
-        # extend our dbFn to account for specialized "where" query on the base dbFn
-        transaction = @dbFn()
-        tableName = @dbFn.tableName
-        @dbFn = () =>
-          # for "schemaReady" to be true, the listing_data json fields
-          # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
-          ret = transaction
-          .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
-          .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
-          ret.raw = transaction.raw
-
-          # when this extended dbFn executes, it spits out the extended query but resets itself to the original base listed here
-          @dbFn = tables.config.mls
-          ret
-
-        @dbFn.tableName = tableName
+        # for "schemaReady" to be true, the listing_data json fields
+        # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
+        transaction
+        .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
+        .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
+        .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
+        .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
       delete query.schemaReady
-    super(query, doLogQuery)
+    transaction.where(query)
+    super(query, transaction: transaction)
     .map (mlsConfig) ->
       externalAccounts.getAccountInfo(mlsConfig.id)
       .then (accountInfo) ->
@@ -43,12 +34,12 @@ class MlsConfigCrud extends crudService.ThenableCrud
         mlsConfig.username = accountInfo.username
         mlsConfig
 
-  update: (id, entity) ->
+  update: (query) ->
     # as config options are added to the mls_config table, they need to be added here as well
-    super(id, entity, ['name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip'])
+    super(_.pick(query, ['id', 'name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip']))
 
   updatePropertyData: (id, propertyData) ->
-    @update(id, {listing_data: propertyData})
+    @update({id: id, listing_data: propertyData})
 
   # Privileged
   updateServerInfo: (id, serverInfo) ->
@@ -61,19 +52,21 @@ class MlsConfigCrud extends crudService.ThenableCrud
     .then (result) ->
       result == 1
     .catch isUnhandled, (error) ->
-      throw new PartiallyHandledError(error)
+      throw new PartiallyHandledError(error, "Error updating external account for MLS: #{id}")
 
   # Privileged
-  create: (entity, id) ->
-    entity = _.omit(entity, ['url', 'username', 'password'])
-    entity.id = id
+  create: (query) ->
+    @debug "create() query: #{JSON.stringify(query)}"
+    entity = _.omit(query, ['url', 'username', 'password'])
+    @debug "create() entity: #{JSON.stringify(entity)}"
+    entity.id = query.id
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
-    super(entity,id)
+    super(entity)
     .then () ->
       accountInfo = _.pick(entity, ['url', 'username', 'password'])
-      accountInfo.name = id
+      accountInfo.name = entity.id
       externalAccounts.insertAccountInfo(accountInfo)
     .then () ->
       # prepare a queue task for this new MLS
@@ -111,5 +104,5 @@ class MlsConfigCrud extends crudService.ThenableCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
 
 
-instance = new MlsConfigCrud(tables.config.mls)
+instance = new MlsConfigService tables.config.mls
 module.exports = instance
