@@ -10,6 +10,7 @@ tables = require '../config/tables'
 LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
+uuid = require 'node-uuid'
 
 LOB_LETTER_DEFAULTS =
   color: true
@@ -57,7 +58,7 @@ handleError = (env) -> (err) ->
     throw new LobErrors.LobServerError(lobError, msg)
 
 _getAddress = (r) ->
-  name: r.name ? (if (r.first_name || r.last_name) then "#{r.first_name ? ''} #{r.last_name ? ''}" else "Current Resident")
+  name: r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()
   address_line1: r.address_line1 ? "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
   address_line2: r.address_line2 ? r.street_address_unit ? ''
   address_city: r.address_city ? r.city ? ''
@@ -69,7 +70,8 @@ createLetter = (letter) ->
   .then (lob) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
-    throw new Error("Refusing to use LOB-live API from #{config.ENV}") unless config.ENV == 'production'
+    if config.ENV != 'production'
+      throw new Error("Refusing to use LOB-live API from #{config.ENV}")
 
     logger.debug "#{JSON.stringify letter, null, 2}"
     lob.live.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
@@ -93,23 +95,44 @@ sendCampaign = (campaignId, userId) ->
     .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
     .where(id: campaignId, auth_user_id: userId)
     .then ([campaign]) ->
-      throw new Error("campaign #{campaignId} not found") unless campaign
-      throw new Error("campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'") unless campaign.status == 'ready'
-      throw new Error("campaign #{campaignId} has invalid recipients") unless _.isArray campaign?.recipients
+      if not campaign
+        throw new Error("campaign #{campaignId} not found")
+
+      if campaign.status != 'ready'
+        throw new Error("campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'")
+
+      if not _.isArray campaign?.recipients
+        throw new Error("campaign #{campaignId} has invalid recipients")
 
       logger.debug "Creating #{campaign.recipients.length} letters for campaign #{campaignId}"
 
       tables.mail.letters(tx)
       .insert _.map campaign.recipients, (recipient) ->
+        address_to = _getAddress recipient
+        address_from = _getAddress campaign.sender_info
+
         auth_user_id: userId
         user_mail_campaign_id: campaignId
-        address_to: _getAddress recipient
-        address_from: _getAddress campaign.sender_info
+        address_to: address_to
+        address_from: address_from
         file: campaign.content
         status: 'ready'
+        description: campaign.name
         options:
-          data: { campaignId, userId }
-          description: campaign.name
+          metadata: { campaignId, userId, uuid: uuid.v1() }
+          data:
+            recipient_name: address_to.name
+            recipient_address_line1: address_to.address_line1
+            recipient_address_line2: address_to.address_line2
+            recipient_city: address_to.address_city
+            recipient_state: address_to.address_state
+            recipient_zip: address_to.address_zip
+            sender_name: address_from.name
+            sender_address_line1: address_from.address_line1
+            sender_address_line2: address_from.address_line2
+            sender_city: address_from.address_city
+            sender_state: address_from.address_state
+            sender_zip: address_from.address_zip
 
       .catch isUnhandled, (err) ->
         throw new PartiallyHandledError(err, "failed to create letters for campaign #{campaignId}")
