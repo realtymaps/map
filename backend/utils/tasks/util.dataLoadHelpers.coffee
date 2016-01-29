@@ -247,6 +247,7 @@ getValidationInfo = memoize.promise(getValidationInfo, primitive: true, maxAge: 
 
 # normalizes data from the raw data table into the permanent data table
 normalizeData = (subtask, options) -> Promise.try () ->
+  successes = []
   rawTableName = buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   rowsPromise = tables.buildRawTableQuery(rawTableName)
@@ -266,16 +267,20 @@ normalizeData = (subtask, options) -> Promise.try () ->
       .cancellable()
       .then options.buildRecord.bind(null, stats, validationInfo.usedKeys, row, subtask.data.dataType)
       .then _updateRecord.bind(null, stats, validationInfo.diffExcludeKeys, subtask.data.dataType)
-#      .then () ->
-#        tables.buildRawTableQuery(rawTableName)
-#        .where(rm_raw_id: row.rm_raw_id)
-#        .update(rm_valid: true)
+      .then (rm_property_id) ->
+        successes.push(rm_property_id)
+      #.then () ->
+      #  tables.buildRawTableQuery(rawTableName)
+      #  .where(rm_raw_id: row.rm_raw_id)
+      #  .update(rm_valid: true)
       .catch validation.DataValidationError, (err) ->
         tables.buildRawTableQuery(rawTableName)
         .where(rm_raw_id: row.rm_raw_id)
         .update(rm_valid: false, rm_error_msg: err.toString())
     Promise.each(rows, processRow)
   Promise.join(rowsPromise, validationPromise, startTimePromise, doNormalization)
+  .then () ->
+    successes
 
 _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () ->
   # check for an existing row
@@ -307,6 +312,8 @@ _updateRecord = (stats, diffExcludeKeys, dataType, updateRow) -> Promise.try () 
         data_source_uuid: updateRow.data_source_uuid
         data_source_id: updateRow.data_source_id
       .update(updateRow)
+  .then () ->
+    updateRow.rm_property_id
 
 
 getValues = (list, target) ->
