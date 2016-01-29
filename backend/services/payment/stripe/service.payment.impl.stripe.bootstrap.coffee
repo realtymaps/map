@@ -8,7 +8,7 @@ exitCodes = require '../../../enums/enum.exitCodes'
 logger = require('../../../config/logger').spawn('stripe')
 _ = require 'lodash'
 
-#StripBootstrap
+#StripeBootstrap
 
 dollarsToCents = (dollars) ->
   dollars * 100
