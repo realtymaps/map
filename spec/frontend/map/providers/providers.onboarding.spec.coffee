@@ -65,8 +65,8 @@ describe "rmapsOnboardingOrder", ->
           nextStep = if index < array.length then array[index + 1] else undefined
           expect(@subject.getNextStep(name)).to.be.eql nextStep
 
-      it 'non existant name', ->
-        expect(@subject.getNextStep('junk')).to.not.be.ok
+      it 'non existant name returns first step', ->
+        expect(@subject.getNextStep('junk')).to.be.eql 'onboardingPayment'
 
     describe 'getPrevStep', ->
       array = [ 'onboardingPayment', 'onboardingLocation','onboardingFinishYay']
