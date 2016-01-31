@@ -1,5 +1,5 @@
 tables = require '../../config/tables'
-{PartiallyHandledError} = require '../errors/util.error.partiallyHandledError'
+{TaskNotImplemented} = require '../errors/util.error.jobQueue'
 Promise = require 'bluebird'
 memoize = require 'memoizee'
 
@@ -16,11 +16,11 @@ _getTaskCode = (taskName) ->
       .then (mlsConfigs) ->
         if mlsConfigs?[0]?
           return require("./task.default.mls")
-        throw new PartiallyHandledError(err, "can't find code for task with name: #{taskName}")
+        throw new TaskNotImplemented(err, "can't find code for task with name: #{taskName}")
 
 
 class TaskImplementation
-  
+
   constructor: (@subtasks, @ready) ->
     @name = 'TaskImplementation'
 
@@ -30,7 +30,7 @@ class TaskImplementation
     if !(subtaskBaseName of @subtasks)
       throw new Error("Can't find subtask code for #{subtask.name}")
     @subtasks[subtaskBaseName](subtask)
-    
+
   initialize: (transaction, batchId, task) ->
     tables.jobQueue.subtaskConfig(transaction)
     .where
@@ -39,8 +39,7 @@ class TaskImplementation
     .then (subtasks) ->
       if !subtasks.length
         return 0
-      jobQueue = require '../util.jobQueue'
-      jobQueue.queueSubtasks(transaction, batchId, subtasks)
+      require('../util.jobQueue').queueSubtasks(transaction, batchId, subtasks)
     .then (count) ->
       if count == 0
         throw new Error("0 subtasks enqueued for #{task.name}")
