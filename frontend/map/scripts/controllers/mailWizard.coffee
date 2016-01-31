@@ -1,12 +1,12 @@
+util = require 'util'
 app = require '../app.coffee'
 _ = require 'lodash'
 
 module.exports = app
 
 app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplate) ->
-  $log = $log.spawn 'frontend:map:mailWizard'
+  $log = $log.spawn 'frontend:mail:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
-
   $scope.steps = [
     'recipientInfo'
     'senderInfo'
@@ -14,9 +14,12 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
     'editTemplate'
   ]
 
+  _getStep = (name) ->
+    $scope.steps.indexOf name
+
   _changeStep = (next = 1) ->
     rmapsMailTemplate.save()
-    thisStep = $scope.steps.indexOf $state.current.name
+    thisStep = _getStep $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return
     $state.go($state.get(newStep))
@@ -27,11 +30,19 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
   $scope.prevStep = () ->
     _changeStep(-1)
 
+  $rootScope.registerScopeData () ->
+    step = _getStep($state.current.name)
+    $log.debug "state.current.name: #{$state.current.name}"
+    $log.debug "intended wizard step: #{step}"
+    $log.debug "getCampaign().id:  #{rmapsMailTemplate.getCampaign().id}"
 
-  # $rootScope.registerScopeData () ->
-  #   if $state.params.id
-  #     rmapsMailTemplate.load($state.params.id)
-  #     .then () ->
-  #       $state.go 'senderInfo'
-  #   else
-  #     $state.go 'mail', reload: true
+    # if getting a param.id, load it and goto senderInfo
+    if $state.params.id
+      rmapsMailTemplate.load($state.params.id)
+      .then () ->
+        $log.debug "$state.go 'senderInfo'..."
+        $state.go 'senderInfo'
+
+    # send user straight to mail list page if trying to make invalid req to wizard step
+    else if step != 0 and not rmapsMailTemplate.getCampaign().id
+      $state.go 'mail', {}, {reload: true}
