@@ -6,8 +6,9 @@ svc = require '../../services/service.dataSource'
 columns = {}
 
 _getColumns = (fileType, action, dataType) ->
-  svc
+  svc.exposeKnex()
   .getAll(data_source_id:'blackknight', data_source_type:'county', data_list_type: dataType)
+  .knex
   .select('LongName', 'MetadataEntryID')
   .orderBy('MetadataEntryID')
   .then (data) ->
