@@ -15,7 +15,7 @@ keystore = require '../services/service.keystore'
 {PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 TaskImplementation = require './tasks/util.taskImplementation'
 dbs = require '../config/dbs'
-{HardFail, SoftFail} = require './errors/util.error.jobQueue'
+{HardFail, SoftFail, TaskNotImplemented} = require './errors/util.error.jobQueue'
 
 
 # TODO: delete this
@@ -100,6 +100,8 @@ queueReadyTasks = () -> Promise.try () ->
       .then (readyTasks=[]) ->
         Promise.map readyTasks, (task) ->
           queueTask(transaction, batchId, task, '<scheduler>')
+          .catch TaskNotImplemented, (err) ->
+            logger.error "#{err}"
 
 queueManualTask = (taskName, initiator) ->
   if !taskName
