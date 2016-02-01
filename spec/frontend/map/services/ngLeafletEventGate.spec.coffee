@@ -1,7 +1,7 @@
 
 describe 'NgLeafletEventGate', ->
   beforeEach ->
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
     inject ($rootScope, digestor, rmapsNgLeafletEventGate) =>
       @$rootScope = $rootScope
       @digestor = digestor

@@ -14,8 +14,8 @@ map = undefined
 
 module.exports = app
 
-app.controller 'rmapsMapFactoryCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
-  rmapsMainOptions, rmapsMapFactoryToggles, rmapsPrincipalService, rmapsevents, rmapsProjectsService, rmapsProfilesService
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
+  rmapsMainOptions, rmapsMapTogglesFactory, rmapsPrincipalService, rmapsevents, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
 
   $log = nemSimpleLogger.spawn("frontend:map:controller")
@@ -91,7 +91,7 @@ app.controller 'rmapsMapFactoryCtrl', ($scope, $rootScope, $location, $timeout, 
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
           $scope.map.center.zoom = Number map_position.zoom
-        $scope.rmapsMapFactoryToggles = new rmapsMapTogglesFactory(project.map_toggles)
+        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
       else
         if map_position?
           if map_position.center? and
@@ -103,7 +103,7 @@ app.controller 'rmapsMapFactoryCtrl', ($scope, $rootScope, $location, $timeout, 
           if map_position.zoom?
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
-        rmapsMainOptions.map.toggles = new rmapsMapFactoryToggles(project.map_toggles)
+        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
         map = new rmapsMapFactory($scope)
 
       selectedResultId = $state.params.property_id or project.map_results?.selectedResultId

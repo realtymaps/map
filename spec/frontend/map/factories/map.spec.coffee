@@ -5,7 +5,7 @@ mockRoutes = require '../fixtures/propertyData.coffee'
 describe "rmapsMapFactory factory", ->
   beforeEach ->
 
-    angular.mock.module('rmapsMapFactoryApp')
+    angular.mock.module('rmapsMapApp')
 
     @mocks =
       options:
@@ -25,7 +25,7 @@ describe "rmapsMapFactory factory", ->
       # Store variables for tests
       @$rootScope = $rootScope
       $rootScope.silenceRmapsControls = true
-      @rmapsMapFactoryToggles = rmapsMapTogglesFactory
+      @rmapsMapTogglesFactory = rmapsMapTogglesFactory
       @digestor = digestor
       @ctor = rmapsMapFactory
 
@@ -77,7 +77,7 @@ describe "rmapsMapFactory factory", ->
           @subject.hash = mockRoutes.hash
           @subject.mapState = mockRoutes.mapState
           @subject.map = @mockMapData
-          @subject.scope.Toggles = @rmapsMapFactoryToggles()
+          @subject.scope.Toggles = @rmapsMapTogglesFactory()
 
           # showResults: true
           promises = @subject.drawFilterSummary(true)
@@ -143,7 +143,7 @@ describe "rmapsMapFactory factory", ->
       beforeEach ->
         @subject.hash = mockRoutes.hash
         @subject.mapState = mockRoutes.mapState
-        @subject.scope.Toggles = @rmapsMapFactoryToggles()
+        @subject.scope.Toggles = @rmapsMapTogglesFactory()
 
       afterEach ->
         @subject.map = null

@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapFactoryMailCtrl', ($scope, $state, $modal, rmapsPrincipalService, rmapsMailTemplateService) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsPrincipalService, rmapsMailTemplateService) ->
 
   $scope.addMail = () ->
     profile = rmapsPrincipalService.getCurrentProfile()

@@ -8,7 +8,7 @@ describe 'rmapsMacro directive tests', ->
 
 
   beforeEach ->
-    angular.mock.module('rmapsMapFactoryApp')
+    angular.mock.module('rmapsMapApp')
   
     inject (_$compile_, _$rootScope_, _$document_) =>
       @document = _$document_[0]

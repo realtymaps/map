@@ -19,13 +19,13 @@ _wrapGeomPointJson = (obj) ->
 app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsevents, rmapsLayerFormattersService, rmapsMainOptions,
-  rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFactoryFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapFactoryTestLoggerService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
+  rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapTestLoggerService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
 
     limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("frontend:map:factory")
-    testLogger = rmapsMapFactoryTestLoggerService
+    testLogger = rmapsMapTestLoggerService
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -113,7 +113,7 @@ app.factory 'rmapsMapFactory',
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
 
         #BEGIN SCOPE EXTENDING /////////////////////////////////////////////////////////////////////////////////////////
-        @eventHandle = rmapsMapFactoryEventsHandlerService(@)
+        @eventHandle = rmapsMapEventsHandlerService(@)
         _.merge @scope,
           streetViewPanorama:
             status: 'OK'
@@ -125,7 +125,7 @@ app.factory 'rmapsMapFactory',
 
           map:
             getNotes: () ->
-              $q.resolve() #place holder for rmapsMapFactoryNotesCtrl so we can access it here in this parent directive
+              $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
 
             layers:
               overlays: _overlays($log)
@@ -155,7 +155,7 @@ app.factory 'rmapsMapFactory',
 
           formatters:
             results: new rmapsResultsFormatterService(self)
-            property: new rmapsPropertyFactoryFormatterService()
+            property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
           changeZoom: (increment) ->
@@ -247,7 +247,7 @@ app.factory 'rmapsMapFactory',
 
             mapZoom = @scope.map.center.zoom
 
-            if rmapsZoomLevelService.isParcel(mapZoom) or rmapsZoomLevel.isAddressParcel(mapZoom)
+            if rmapsZoomLevelService.isParcel(mapZoom) or rmapsZoomLevelService.isAddressParcel(mapZoom)
 
               if rmapsZoomLevelService.isAddressParcel mapZoom
                 if rmapsZoomLevelService.isBeyondCartoDb mapZoom

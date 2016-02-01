@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapFactoryProjectsCtrl', ($scope, $state, $modal, $window, rmapsProjectsService, rmapsPrincipalService) ->
+app.controller 'rmapsMapProjectsCtrl', ($scope, $state, $modal, $window, rmapsProjectsService, rmapsPrincipalService) ->
 
   $scope.projectDropdown = isOpen: false
 

@@ -9,7 +9,7 @@ controllerName = "#{domainName}Ctrl"
 #TODO: get colors from color palette
 
 app.controller "rmaps#{controllerName}", (
-$rootScope, $scope, $log, rmapsMapFactoryEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
+$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsevents) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("frontend:map:#{controllerName}")
@@ -67,7 +67,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
 
     lMap.addLayer(drawnItems)
 
-    _linker = rmapsMapFactoryEventsLinkerService
+    _linker = rmapsMapEventsLinkerService
     _it = leafletIterators
 
     _endDrawAction = () ->

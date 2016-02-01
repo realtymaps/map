@@ -58,7 +58,7 @@ beforeEach ->
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
 
-  angular.module('rmapsMapFactoryApp')
+  angular.module('rmapsMapApp')
   .run ($log) ->
     $log.currentLevel = $log.LEVELS.log
 

@@ -4,7 +4,7 @@ app = require '../app.coffee'
 ###
 
 domainName = 'NgLeafletEventGate'
-app.service 'rmaps' + domainName, (nemSimpleLogger, rmapsMapFactoryEventEnums) ->
+app.service 'rmaps' + domainName, (nemSimpleLogger, rmapsMapEventEnums) ->
   $log = nemSimpleLogger.spawn("frontend:map:#{domainName}")
   _disabledEvents = {}
 
@@ -34,13 +34,13 @@ app.service 'rmaps' + domainName, (nemSimpleLogger, rmapsMapFactoryEventEnums) -
   isDisabledEvent: _getEvent
 
   disableMapCommonEvents: (mapId) ->
-    _disableEvent(mapId, rmapsMapFactoryEventEnums.map.click)
-    _disableEvent(mapId, rmapsMapFactoryEventEnums.marker.click)
-    _disableEvent(mapId, rmapsMapFactoryEventEnums.geojson.click)
-    _disableEvent(mapId, rmapsMapFactoryEventEnums.window.mouseover)
+    _disableEvent(mapId, rmapsMapEventEnums.map.click)
+    _disableEvent(mapId, rmapsMapEventEnums.marker.click)
+    _disableEvent(mapId, rmapsMapEventEnums.geojson.click)
+    _disableEvent(mapId, rmapsMapEventEnums.window.mouseover)
 
   enableMapCommonEvents: (mapId) ->
-    _enableEvent(mapId, rmapsMapFactoryEventEnums.map.click)
-    _enableEvent(mapId, rmapsMapFactoryEventEnums.marker.click)
-    _enableEvent(mapId, rmapsMapFactoryEventEnums.geojson.click)
-    _enableEvent(mapId, rmapsMapFactoryEventEnums.window.mouseover)
+    _enableEvent(mapId, rmapsMapEventEnums.map.click)
+    _enableEvent(mapId, rmapsMapEventEnums.marker.click)
+    _enableEvent(mapId, rmapsMapEventEnums.geojson.click)
+    _enableEvent(mapId, rmapsMapEventEnums.window.mouseover)

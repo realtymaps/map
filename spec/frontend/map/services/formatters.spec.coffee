@@ -1,8 +1,8 @@
-testScope = 'FormattersService'
+testScope = 'rmapsFormattersService'
 
 describe testScope, ->
   beforeEach ->
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
     angular.mock.module 'uiGmapgoogle-maps.mocks'
     angular.mock.module 'uiGmapgoogle-maps'
 
@@ -14,7 +14,7 @@ describe testScope, ->
       @apiMock.mockEvent()
     ]
 
-    inject ['$rootScope', testScope.ns(),
+    inject ['$rootScope', testScope,
       ($rootScope, Formatters) =>
         @$rootScope = $rootScope
         @subject = Formatters

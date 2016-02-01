@@ -51,12 +51,12 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
       else
         _signalUpdate rmapsNotesService.remove note.id
 
-.controller 'rmapsMapFactoryNotesTapCtrl',
-($scope, rmapsMapFactoryEventsLinkerService, rmapsNgLeafletEventGate,
+.controller 'rmapsMapNotesTapCtrl',
+($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
 leafletIterators, toastr, $log) ->
 
-  linker = rmapsMapFactoryEventsLinkerService
-  $log = $log.spawn("frontend:map:rmapsMapFactoryNotesTapCtrlLogger")
+  linker = rmapsMapEventsLinkerService
+  $log = $log.spawn("frontend:map:rmapsMapNotesTapCtrlLogger")
   createFromModal = $scope.create
 
   $scope.$on '$destroy', ->
@@ -98,12 +98,12 @@ leafletIterators, toastr, $log) ->
 
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
-.controller 'rmapsMapFactoryNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
-rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapFactoryEventsLinkerService) ->
+.controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
+rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapEventsLinkerService) ->
 
   setMarkerNotesOptions = rmapsLayerFormattersService.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormattersService.setDataOptions
-  linker = rmapsMapFactoryEventsLinkerService
+  linker = rmapsMapEventsLinkerService
   directiveControls = null
   popup = rmapsPopupLoaderService
   markersUnSubs = null

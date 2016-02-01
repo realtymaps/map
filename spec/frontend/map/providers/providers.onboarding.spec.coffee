@@ -4,7 +4,7 @@
 describe "rmapsOnboardingOrder", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
 
     inject ($rootScope, rmapsOnboardingOrder) =>
       @$rootScope = $rootScope
@@ -81,7 +81,7 @@ describe "rmapsOnboardingOrder", ->
 
 describe "rmapsOnboardingOrderSelector", ->
   beforeEach ->
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
 
     inject ($rootScope, rmapsOnboardingOrderSelector, rmapsOnboardingOrder, rmapsOnboardingProOrder) =>
       @$rootScope = $rootScope

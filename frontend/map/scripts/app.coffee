@@ -3,7 +3,7 @@
 require '../../../common/extensions/strings.coffee'
 require '../../../common/extensions/angular.coffee'
 
-appName = 'rmapsMapFactoryApp'
+appName = 'rmapsMapApp'
 
 app = window.angular.module appName, [
   'angular-data.DSCacheFactory'

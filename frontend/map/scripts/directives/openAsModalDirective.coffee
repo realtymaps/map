@@ -65,8 +65,8 @@ app.controller 'OpenAsModalWindowCtrl', ($scope, rmapsOpenAsModalWindowContextFa
     rmapsOpenAsModalWindowContextFactory.modal.close()
 
 app.factory 'rmapsOpenAsModalWindowContextFactory', () ->
-  class rmapsOpenAsModalWindowContextFactory
+  class OpenAsModalWindowContextFactory
     modalTitle: null
 
-  return new rmapsOpenAsModalWindowContextFactory
+  return new OpenAsModalWindowContextFactory
 

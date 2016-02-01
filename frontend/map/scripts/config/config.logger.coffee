@@ -1,8 +1,8 @@
 app = require '../app.coffee'
 
-app.service 'rmapsMapFactoryTestLoggerService', (nemSimpleLogger) ->
+app.service 'rmapsMapTestLoggerService', (nemSimpleLogger) ->
   nemSimpleLogger.spawn("test:map")
-.service 'rmapsMapFactoryControlsLogger', (nemSimpleLogger) ->
+.service 'rmapsMapControlsLogger', (nemSimpleLogger) ->
   nemSimpleLogger.spawn("frontend:map:controls")
 .run ($log, rmapsMainOptions) ->
   $log.currentLevel = $log.LEVELS[rmapsMainOptions.map.options.logLevel]

@@ -6,11 +6,11 @@ describe "ResultsFormatter", ->
           zoomThresh:
             addressParcel: 18
 
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
     angular.mock.module "uiGmapgoogle-maps.mocks"
     angular.mock.module "uiGmapgoogle-maps"
 
-    inject ['$rootScope', 'GoogleApiMock', 'ResultsFormatter'.ns(),
+    inject ['$rootScope', 'GoogleApiMock', 'rmapsResultsFormatterService',
       ($rootScope, GoogleApiMock, ResultsFormatter) =>
         scope = $rootScope.$new()
         (new GoogleApiMock).initAll()

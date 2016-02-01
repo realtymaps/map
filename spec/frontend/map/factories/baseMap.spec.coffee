@@ -3,7 +3,7 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 describe "BaseMapCtrl", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
 
     @mocks =
       options:

@@ -5,7 +5,7 @@ sinon = require 'sinon'
 describe "rmapsFilterManagerService", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
 
     inject ($rootScope, rmapsFilterManagerService, rmapsevents, digestor, $httpBackend) =>
       @$rootScope = $rootScope

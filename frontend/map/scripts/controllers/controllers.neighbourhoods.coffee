@@ -44,7 +44,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
       delete model.properties.neighbourhood_details
       _signalUpdate drawnShapesSvc.update model
 
-.controller 'rmapsMapFactoryNeighbourhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+.controller 'rmapsMapNeighbourhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
   leafletIterators, toastr, $log, rmapsevents) ->
 
   createFromModal = $scope.create
@@ -53,8 +53,8 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
   Once it goes out of context for that specific job it should be destroyed.
   ###
 
-  linker = rmapsMapFactoryEventsLinkerService
-  $log = $log.spawn("frontend:map:rmapsMapFactoryNeighbourhoodsTapCtrl")
+  linker = rmapsMapEventsLinkerService
+  $log = $log.spawn("frontend:map:rmapsMapNeighbourhoodsTapCtrl")
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -77,8 +77,8 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
     createFromModal(model).finally ->
       _destroy()
 
-.controller 'rmapsMapFactoryNeighbourhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsProjectsService,
-rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMapFactoryEventsLinkerService) ->
+.controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsProjectsService,
+rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMapEventsLinkerService) ->
 
   ###
     Anything long term statewise goes here.

@@ -3,7 +3,7 @@ priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/_price
 describe "rmapsLayerFormattersService", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapFactoryApp'
+    angular.mock.module 'rmapsMapApp'
 
     inject ($rootScope,  rmapsLayerFormattersService, rmapsstylusVariables) =>
       @$rootScope = $rootScope

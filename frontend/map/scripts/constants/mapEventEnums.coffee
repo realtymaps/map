@@ -16,4 +16,4 @@ obj = _.zipObject ['map','window', 'marker', 'geojson', 'drawnShapes']
 for key, val of obj
   obj[key] = _eventsToObj key
 
-app.constant 'rmapsMapFactoryEventEnums', obj
+app.constant 'rmapsMapEventEnums', obj
