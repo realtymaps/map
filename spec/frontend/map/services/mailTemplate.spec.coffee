@@ -7,9 +7,9 @@ describe 'mailTemplate service', ->
   beforeEach ->
     angular.mock.module('rmapsMapApp')
 
-    inject (rmapsMailTemplate) =>
+    inject (rmapsMailTemplateService) =>
       @type = 'basicLetter'
-      @template = rmapsMailTemplate
+      @template = rmapsMailTemplateService
 
   describe 'templateObj', ->
     it "tests valid basicLetter", ->

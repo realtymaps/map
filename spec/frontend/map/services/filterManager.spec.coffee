@@ -2,15 +2,15 @@ qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
 
-describe "rmapsFilterManager", ->
+describe "rmapsFilterManagerService", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsFilterManager, rmapsevents, digestor, $httpBackend) =>
+    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend) =>
       @$rootScope = $rootScope
-      @rmapsevents =  rmapsevents
-      @subject = rmapsFilterManager
+      @rmapsEventConstants =  rmapsEventConstants
+      @subject = rmapsFilterManagerService
       @digestor = digestor
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity)
@@ -22,7 +22,7 @@ describe "rmapsFilterManager", ->
       @subject.should.be.ok
 
 
-    describe 'rmapsevents.map.filters.updated', ->
+    describe 'rmapsEventConstants.map.filters.updated', ->
 
       it 'is emited on update', (done) ->
 
@@ -30,7 +30,7 @@ describe "rmapsFilterManager", ->
         @digestor.digest()
 
         spyCb = sinon.spy @$rootScope, '$emit'
-        @$rootScope.$onRootScope @rmapsevents.map.filters.updated, (event, filters) ->
+        @$rootScope.$onRootScope @rmapsEventConstants.map.filters.updated, (event, filters) ->
           expect(filters).to.eql status: ['for sale']
           done()
 

@@ -11,5 +11,5 @@ for key,value of colorScheme
   # value just in case (and to aid troubleshooting)
   variables[key] = colorPalette[value]||value
 
-app.constant 'rmapsstylusVariables',
+app.constant 'rmapsStylusConstants',
   variables

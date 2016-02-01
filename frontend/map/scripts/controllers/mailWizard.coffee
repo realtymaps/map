@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplate) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplateService) ->
   $log = $log.spawn 'frontend:mail:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -18,7 +18,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
     $scope.steps.indexOf name
 
   _changeStep = (next = 1) ->
-    rmapsMailTemplate.save()
+    rmapsMailTemplateService.save()
     thisStep = _getStep $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return
@@ -34,15 +34,15 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
     step = _getStep($state.current.name)
     $log.debug "state.current.name: #{$state.current.name}"
     $log.debug "intended wizard step: #{step}"
-    $log.debug "getCampaign().id:  #{rmapsMailTemplate.getCampaign().id}"
+    $log.debug "getCampaign().id:  #{rmapsMailTemplateService.getCampaign().id}"
 
     # if getting a param.id, load it and goto senderInfo
     if $state.params.id
-      rmapsMailTemplate.load($state.params.id)
+      rmapsMailTemplateService.load($state.params.id)
       .then () ->
         $log.debug "$state.go 'senderInfo'..."
         $state.go 'senderInfo'
 
     # send user straight to mail list page if trying to make invalid req to wizard step
-    else if step != 0 and not rmapsMailTemplate.getCampaign().id
+    else if step != 0 and not rmapsMailTemplateService.getCampaign().id
       $state.go 'mail', {}, {reload: true}

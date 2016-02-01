@@ -3,4 +3,4 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsConfirmCtrl', ($rootScope, $scope, $state, rmapsprincipal) ->
+app.controller 'rmapsConfirmCtrl', ($rootScope, $scope, $state, rmapsPrincipalService) ->

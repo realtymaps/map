@@ -1,7 +1,7 @@
 mod = require '../module.coffee'
 loadingCount = 0
 
-mod.service 'rmapsSpinner', ($log) ->
+mod.service 'rmapsSpinnerService', ($log) ->
 
   incrementLoadingCount: (logMessage, delta=1) ->
     loadingCount += delta

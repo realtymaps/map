@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsResponsiveView', ($window) ->
+app.service 'rmapsResponsiveViewService', ($window) ->
   xs        = 768
   mobile = "(max-width: #{xs - 1}px)"
   mobileMQL = $window.matchMedia mobile

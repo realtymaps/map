@@ -16,16 +16,16 @@ _wrapGeomPointJson = (obj) ->
 ###
   Our Main Map Implementation
 ###
-app.factory 'rmapsMap',
-  (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMap,
-  rmapsPropertiesService, rmapsevents, rmapsLayerFormatters, rmapsMainOptions,
-  rmapsFilterManager, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsZoomLevel,
-  rmapsPopupLoader, leafletData, rmapsControls, rmapsRendering, rmapsMapTestLogger, rmapsMapEventsHandlerService, rmapsprincipal) ->
+app.factory 'rmapsMapFactory',
+  (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
+  rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
+  rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapTestLoggerService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
 
     limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("frontend:map:factory")
-    testLogger = rmapsMapTestLogger
+    testLogger = rmapsMapTestLoggerService
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -35,7 +35,7 @@ app.factory 'rmapsMap',
         else
           position = $scope.previousCenter
 
-        position.zoom = position.zoom ? rmapsZoomLevel.getZoom($scope) ? 14
+        position.zoom = position.zoom ? rmapsZoomLevelService.getZoom($scope) ? 14
         $scope.map.center = NgLeafletCenter position
         $scope.$evalAsync()
 
@@ -43,7 +43,7 @@ app.factory 'rmapsMap',
         toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
-    class Map extends rmapsBaseMap
+    class Map extends rmapsBaseMapFactory
       baseIsLoaded = false
 
       constructor: ($scope) ->
@@ -52,7 +52,7 @@ app.factory 'rmapsMap',
 
         _initToggles $scope, limits.toggles
 
-        $scope.zoomLevelService = rmapsZoomLevel
+        $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
         leafletData.getMap('mainMap').then (map) =>
@@ -80,14 +80,14 @@ app.factory 'rmapsMap',
 
         @singleClickCtrForDouble = 0
 
-        [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
+        [rmapsEventConstants.map.filters.updated, rmapsEventConstants.map.mainMap.redraw].forEach (eventName) =>
           $rootScope.$onRootScope eventName, =>
             @redraw()
 
-        $rootScope.$onRootScope rmapsevents.map.center, (evt, location) ->
+        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) ->
           $scope.Toggles.setLocation location
 
-        @layerFormatter = rmapsLayerFormatters
+        @layerFormatter = rmapsLayerFormattersService
 
         @saveProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
@@ -96,7 +96,7 @@ app.factory 'rmapsMap',
           else
             saved = rmapsPropertiesService.pinProperty(model)
 
-          rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
+          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
           lObject?.setIcon(new L.divIcon(model.icon))
           return unless saved
           saved.then (savedDetails) =>
@@ -105,7 +105,7 @@ app.factory 'rmapsMap',
         @favoriteProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle
           saved = rmapsPropertiesService.favoriteProperty(model)
-          rmapsLayerFormatters.MLS.setMarkerPriceOptions(model, @scope)
+          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
           lObject?.setIcon(new L.divIcon(model.icon))
           saved
 
@@ -143,19 +143,19 @@ app.factory 'rmapsMap',
           #TODO: Redesign this
           controls:
             custom: [
-              rmapsControls.NavigationControl scope: $scope #this is very hackish angular
-              rmapsControls.PropertiesControl scope: $scope #this is very hackish angular
-              rmapsControls.LayerControl scope: $scope
+              rmapsControlsService.NavigationControl scope: $scope #this is very hackish angular
+              rmapsControlsService.PropertiesControl scope: $scope #this is very hackish angular
+              rmapsControlsService.LayerControl scope: $scope
               self.zoomBox
-              rmapsControls.LocationControl scope: $scope
-              rmapsControls.DrawtoolsControl scope: $scope
+              rmapsControlsService.LocationControl scope: $scope
+              rmapsControlsService.DrawtoolsControl scope: $scope
             ]
 
 
 
           formatters:
-            results: new rmapsResultsFormatter(self)
-            property: new rmapsPropertyFormatter()
+            results: new rmapsResultsFormatterService(self)
+            property: new rmapsPropertyFormatterService()
 
           dragZoom: {}
           changeZoom: (increment) ->
@@ -172,7 +172,7 @@ app.factory 'rmapsMap',
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not rmapsZoomLevel.isParcel(@scope.map.center.zoom)
+        if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
           @scope.map.markers.addresses = {}
           @scope.map.markers.notes = []
           _.each @scope.map.geojson, (val) ->
@@ -222,7 +222,7 @@ app.factory 'rmapsMap',
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
-        filters = rmapsFilterManager.getFilters()
+        filters = rmapsFilterManagerService.getFilters()
         # $log.debug filters
         unless filters?.status?
           @clearFilterSummary()
@@ -247,20 +247,20 @@ app.factory 'rmapsMap',
 
             mapZoom = @scope.map.center.zoom
 
-            if rmapsZoomLevel.isParcel(mapZoom) or rmapsZoomLevel.isAddressParcel(mapZoom)
+            if rmapsZoomLevelService.isParcel(mapZoom) or rmapsZoomLevelService.isAddressParcel(mapZoom)
 
-              if rmapsZoomLevel.isAddressParcel mapZoom
-                if rmapsZoomLevel.isBeyondCartoDb mapZoom
+              if rmapsZoomLevelService.isAddressParcel mapZoom
+                if rmapsZoomLevelService.isBeyondCartoDb mapZoom
                   zoomLvl = 'addressParcelBeyondCartoDB'
                 else
                   zoomLvl = 'addressParcel'
 
-              else if rmapsZoomLevel.isParcel mapZoom
+              else if rmapsZoomLevelService.isParcel mapZoom
                 zoomLvl = 'parcel'
 
-              overlays?.parcels?.visible = not rmapsZoomLevel.isBeyondCartoDb mapZoom
+              overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb mapZoom
               Toggles.showPrices = false
-              Toggles.showAddresses = rmapsZoomLevel.isAddressParcel mapZoom
+              Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel mapZoom
               overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
               @handleGeoJsonResults(filters, cache)
@@ -281,8 +281,8 @@ app.factory 'rmapsMap',
       redraw: (cache = true) =>
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
-        if (rmapsZoomLevel.isAddressParcel(@scope.map.center.zoom, @scope) or
-             rmapsZoomLevel.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
+        if (rmapsZoomLevelService.isAddressParcel(@scope.map.center.zoom, @scope) or
+             rmapsZoomLevelService.isParcel(@scope.map.center.zoom)) and rmapsZoomLevelService.isBeyondCartoDb(@scope.map.center.zoom)
           testLogger.debug 'isAddressParcel'
           promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
@@ -294,7 +294,7 @@ app.factory 'rmapsMap',
 
         else
           testLogger.debug 'not, isAddressParcel'
-          rmapsZoomLevel.dblClickZoom.enable(@scope)
+          rmapsZoomLevelService.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
         promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes()]
@@ -305,7 +305,7 @@ app.factory 'rmapsMap',
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
           https://github.com/tombatossals/angular-leaflet-directive/issues/820
           ###
-          $rootScope.$emit rmapsevents.map.results, @scope.map
+          $rootScope.$emit rmapsEventConstants.map.results, @scope.map
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)
@@ -370,9 +370,9 @@ app.factory 'rmapsMap',
         stateObj
 
       openWindow: (model, lTriggerObject) =>
-        rmapsPopupLoader.load(@scope, @map, model, lTriggerObject)
+        rmapsPopupLoaderService.load(@scope, @map, model, lTriggerObject)
 
       closeWindow: ->
-        rmapsPopupLoader.close()
+        rmapsPopupLoaderService.close()
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////

@@ -4,11 +4,11 @@ commonConfig = require '../../../../common/config/commonConfig.coffee'
 escapeHtml = require 'escape-html'
 mod = require '../module.coffee'
 
-defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor', 'rmapsRedirectInterceptor']
+defaultInterceptorList = ['rmapsLoadingIconInterceptorFactory', 'rmapsAlertInterceptorFactory', 'rmapsRedirectInterceptorFactory']
 
 interceptors =
-  rmapsRedirectInterceptor: ($location, $rootScope, rmapsUrlHelpers) ->
-    routes = rmapsUrlHelpers.getRoutes()
+  rmapsRedirectInterceptorFactory: ($location, $rootScope, rmapsUrlHelpersService) ->
+    routes = rmapsUrlHelpersService.getRoutes()
 
     'response': (response) ->
       if response.data?.doLogin and $location.path() != '/'+routes.login
@@ -18,7 +18,7 @@ interceptors =
         $location.path routes.profiles
       response
 
-  rmapsAlertInterceptor: ($rootScope, $q, rmapsevents) ->
+  rmapsAlertInterceptorFactory: ($rootScope, $q, rmapsEventConstants) ->
     defineNull = (value) ->
       return if typeof value == 'undefined' then null else value
     handle = (response, error=false) ->
@@ -30,12 +30,12 @@ interceptors =
           # alert is a falsy value, that means we're explicitly not supposed to show an alert according to the backend
           return response
         # yay!  the backend wants us to show an alert!
-        $rootScope.$emit rmapsevents.alert.spawn, response.data?.alert
+        $rootScope.$emit rmapsEventConstants.alert.spawn, response.data?.alert
       else if error && response.status != 0  && response.status != -1 # status==0 is weird conditions that we probably don't want the user to see, -1 is similar (cancelled is one case)
         alert =
           id: "#{response.status}-#{response.config?.url?.split('?')[0].split('#')[0]}"
           msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(status: defineNull(response.status), data:defineNull(response.data)))
-        $rootScope.$emit rmapsevents.alert.spawn, alert
+        $rootScope.$emit rmapsEventConstants.alert.spawn, alert
       return response
     response: handle
     responseError: (response) -> $q.reject(handle(response, true))
@@ -46,21 +46,21 @@ interceptors =
       alert =
         id: "request-#{request.url?.split('?')[0].split('#')[0]}"
         msg: commonConfig.UNEXPECTED_MESSAGE escapeHtml(JSON.stringify(url:defineNull(request.status)))
-      $rootScope.$emit rmapsevents.alert.spawn, alert
+      $rootScope.$emit rmapsEventConstants.alert.spawn, alert
       $q.reject(request)
 
-  rmapsLoadingIconInterceptor: ($q, rmapsSpinner) ->
+  rmapsLoadingIconInterceptorFactory: ($q, rmapsSpinnerService) ->
     request: (request) ->
-      rmapsSpinner.incrementLoadingCount(request.url)
+      rmapsSpinnerService.incrementLoadingCount(request.url)
       request
     requestError: (rejection) ->
-      rmapsSpinner.decrementLoadingCount(rejection.url)
+      rmapsSpinnerService.decrementLoadingCount(rejection.url)
       $q.reject(rejection)
     response: (response) ->
-      rmapsSpinner.decrementLoadingCount(response.config?.url)
+      rmapsSpinnerService.decrementLoadingCount(response.config?.url)
       response
     responseError: (rejection) ->
-      rmapsSpinner.decrementLoadingCount(rejection.config?.url)
+      rmapsSpinnerService.decrementLoadingCount(rejection.config?.url)
       $q.reject(rejection)
 ###
 take care of loading common interceptors among apps,

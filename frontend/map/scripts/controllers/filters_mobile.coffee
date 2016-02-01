@@ -11,7 +11,7 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   MAX_DOM = 365
 
   #initialize values for filter options in the select tags
-  $scope.filterValues = rmapsFilters.values
+  $scope.filterValues = rmapsFiltersFactory.values
 
   # Initialize scope values from the global filters
   $scope.bedsMin = $scope.selectedFilters.bedsMin || 0

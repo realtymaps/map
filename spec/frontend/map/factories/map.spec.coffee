@@ -2,7 +2,7 @@
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 mockRoutes = require '../fixtures/propertyData.coffee'
 
-describe "rmapsMap factory", ->
+describe "rmapsMapFactory factory", ->
   beforeEach ->
 
     angular.mock.module('rmapsMapApp')
@@ -21,16 +21,16 @@ describe "rmapsMap factory", ->
 
       zoomThresholdMilli: 1000
 
-    inject ($rootScope, rmapsMap, rmapsMainOptions, $httpBackend, digestor, rmapsMapToggles) =>
+    inject ($rootScope, rmapsMapFactory, rmapsMainOptions, $httpBackend, digestor, rmapsMapTogglesFactory) =>
       # Store variables for tests
       @$rootScope = $rootScope
       $rootScope.silenceRmapsControls = true
-      @rmapsMapToggles = rmapsMapToggles
+      @rmapsMapTogglesFactory = rmapsMapTogglesFactory
       @digestor = digestor
-      @ctor = rmapsMap
+      @ctor = rmapsMapFactory
 
-      # Construct the rmapsMap object to test
-      @subject = new rmapsMap($rootScope.$new(), rmapsMainOptions.map)
+      # Construct the rmapsMapFactory object to test
+      @subject = new rmapsMapFactory($rootScope.$new(), rmapsMainOptions.map)
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity).respond( identity: {})
       $httpBackend.when( 'POST', backendRoutes.config.google).respond( undefined )
@@ -77,7 +77,7 @@ describe "rmapsMap factory", ->
           @subject.hash = mockRoutes.hash
           @subject.mapState = mockRoutes.mapState
           @subject.map = @mockMapData
-          @subject.scope.Toggles = @rmapsMapToggles()
+          @subject.scope.Toggles = @rmapsMapTogglesFactory()
 
           # showResults: true
           promises = @subject.drawFilterSummary(true)
@@ -143,7 +143,7 @@ describe "rmapsMap factory", ->
       beforeEach ->
         @subject.hash = mockRoutes.hash
         @subject.mapState = mockRoutes.mapState
-        @subject.scope.Toggles = @rmapsMapToggles()
+        @subject.scope.Toggles = @rmapsMapTogglesFactory()
 
       afterEach ->
         @subject.map = null

@@ -27,4 +27,4 @@ admin =
         label: 'Use Static IP Address'
         type: 'checkbox'
 
-app.constant 'adminConstants', admin
+app.constant 'rmapsAdminConstants', admin
