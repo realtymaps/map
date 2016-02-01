@@ -34,7 +34,6 @@ class RouteCrud
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
-      #@debug "root: tReq:\n#{JSON.stringify tReq, null, 2}"
       if specificTransforms
         return validateAndTransform tReq, specificTransforms
       tReq
@@ -66,7 +65,6 @@ class RouteCrud
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here
   root: (req, res, next) =>
-    #@debug "(root) req:\n#{util.inspect(req, {depth: 1})}"
     methodExec req,
       GET: () =>
         @getQuery(req, 'rootGET').then (query) =>

@@ -5,10 +5,7 @@ app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   $log = $log.spawn 'frontend:mail:mailTemplate'
-# <<<<<<< HEAD
-#   _scope = null
-# =======
-# >>>>>>> origin/master
+
   mailCampaign = null
 
   campaignDefaults =
@@ -107,8 +104,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     mailCampaign.template_type = type
     mailCampaign.content = rmapsMailTemplateTypeService.getHtml(type)
 
-# ##### PUBLIC, for binding
-#   mailCampaign: mailCampaign
 
 ##### PUBLIC
   create: create
@@ -122,9 +117,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   setContent: _setContent
   getCampaign: _getCampaign
   setCampaign: _setCampaign
-
-  # setScope: (scope) ->
-  #   _scope = scope
 
   openPreview: () ->
     preview = $window.open "", "_blank"
@@ -145,29 +137,13 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
       profile = rmapsprincipal.getCurrentProfile()
       toSave.project_id = profile.project_id
-
       op = rmapsMailCampaignService.create(toSave) #upserts if not already created
       .then ({data}) ->
         $log.debug "Create data response:\n#{JSON.stringify(data, null, 2)}"
-        mailCampaign.id = data[0]
+        mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
 
-
-      # if not toSave.id?
-      #   delete toSave.id
-      #   profile = rmapsprincipal.getCurrentProfile()
-      #   toSave.project_id = profile.project_id
-
-      #   op = rmapsMailCampaignService.create(toSave)
-      #   .then ({data}) ->
-      #     mailCampaign.id = data[0]
-      #     $log.debug "campaign #{mailCampaign.id} created"
-      #     $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
-      # else
-      #   op = rmapsMailCampaignService.update(toSave)
-      #   .then ({data}) ->
-      #     $log.debug "campaign #{data[0]} updated"
 
   quote: () ->
     $modal.open

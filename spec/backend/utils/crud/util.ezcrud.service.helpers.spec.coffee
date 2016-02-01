@@ -34,10 +34,16 @@ describe 'util.ezcrud.service.helpers', ->
         lorem: "ipsum's"
       tableName = 'temp_table'
       qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      console.log "\n\n\n\n"
-      console.log "qstr:\n#{qstr}"
-      console.log "expected:\n#{expectedSql}"
-      console.log "\n\n\n\n"
+      expect(qstr.trim()).to.equal expectedSql
+
+    it 'returns correct upsert query string with null pk', ->
+      expectedSql = "INSERT INTO  temp_table  (id,lorem) VALUES  ( DEFAULT , 'ipsum''s' ) ON CONFLICT  (id) DO UPDATE SET  (lorem) = ( 'ipsum''s' ) RETURNING id"
+      ids =
+        id: null
+      entity =
+        lorem: "ipsum's"
+      tableName = 'temp_table'
+      qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
       expect(qstr.trim()).to.equal expectedSql
 
     it 'gets id obj', ->

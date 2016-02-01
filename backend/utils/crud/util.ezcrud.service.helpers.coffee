@@ -27,15 +27,17 @@ class ServiceCrud extends BaseObject
   # This exposes upsert query string for any other modules to use if desired and only
   # requires ids and entity as objects (idobj helps for support on multi-id pks)
   @getUpsertQueryString: (idObj, entityObj, tableName) ->
-    # "pre-process" data, stringify any JSON data
+    # "pre-process" data
+    for k,v of idObj
+      # upsert doesn't seem to know what to do w/ given 'null' pk
+      idObj[k] = '__DEFAULT__' if !v?
+
     for k,v of entityObj
+      # stringify any JSON data
       v = JSON.stringify(v) if _.isObject v
+      # use placeholder for single quotes in strings (incl for JSON)
       v = v.replace(/'/g,'__SINGLE_QUOTE__') if _.isString v
       entityObj[k] = v
-      # if _.isString v
-      #   entityObj[k] = v.replace(/'/g,'\\\'')
-      # else if _.isObject v
-      #   entityObj[k] = JSON.stringify(v)
 
     # some string processing to help give us good query values:
     #   util.inspect gives good array repr of entity values that can be used for sql values
@@ -47,6 +49,7 @@ class ServiceCrud extends BaseObject
     idValues = "#{util.inspect(_.values(idObj))}"
     idValues = idValues.substring(1,idValues.length-1)
     idValues = idValues.replace(/__SINGLE_QUOTE__/g,"''")
+    idValues = idValues.replace(/\'__DEFAULT__\'/g,'DEFAULT')
     entityValues = "#{util.inspect(_.values(entityObj))}"
     entityValues = entityValues.substring(1,entityValues.length-1)
     entityValues = entityValues.replace(/__SINGLE_QUOTE__/g,"''")
@@ -140,7 +143,7 @@ class ServiceCrud extends BaseObject
 
   upsert: (query, options = {}) ->
     @debug "upsert(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    throw new ServiceCrudError("upsert on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
+    #throw new ServiceCrudError("upsert on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
     ids = @_getIdObj query
     entity = _.omit query, @idKeys
     @debug "ids: #{JSON.stringify(ids)}"

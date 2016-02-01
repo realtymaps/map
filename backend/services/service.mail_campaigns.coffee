@@ -6,10 +6,10 @@ db = dbs.get('main')
 
 class MailService extends ServiceCrud
   getAll: (query = {}) ->
+    # resolve fields of ambiguity in query string
     if 'auth_user_id' of query
       query["#{tables.mail.campaign.tableName}.auth_user_id"] = query.auth_user_id
       delete query.auth_user_id
-
     if 'id' of query
       query["#{tables.mail.campaign.tableName}.id"] = query.id
       delete query.id
