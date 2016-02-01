@@ -15,7 +15,7 @@ base =
     PATH: 'rmaps.log'
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
-    ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
+    ENABLE: process.env.LOG_ENABLE ? 'frontend:mail*,backend:ezcrud*,backend:utils:validation'  # 'frontend:*,backend:*,test:*'
 
   DBS:
     MAIN:

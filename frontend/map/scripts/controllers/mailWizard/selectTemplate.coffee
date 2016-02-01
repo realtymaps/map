@@ -24,3 +24,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService,
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
     rmapsMailTemplate.setTemplateType(templateType)
     $scope.$parent.nextStep()
+
+  $rootScope.registerScopeData () ->
+    $scope.$parent.initMailTemplate()

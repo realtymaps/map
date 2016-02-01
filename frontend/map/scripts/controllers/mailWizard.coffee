@@ -3,8 +3,8 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplate) ->
-  $log = $log.spawn 'map:mailWizard'
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $timeout, $q, rmapsMailTemplate) ->
+  $log = $log.spawn 'frontend:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
 
   $scope.steps = [
@@ -27,10 +27,21 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
   $scope.prevStep = () ->
     _changeStep(-1)
 
-  $rootScope.registerScopeData () ->
+  $scope.initMailTemplate = () ->
     if $state.params.id
-      rmapsMailTemplate.load($state.params.id)
-      .then () ->
-        $state.go 'senderInfo'
+      $log.debug "Loading mail campaign #{$state.params.id}"
+      rmapsMailTemplate.load $state.params.id
     else
-      $state.go 'mail', reload: true
+      campaign = rmapsMailTemplate.getCampaign()
+      $log.debug "Continuing with mail campaign #{campaign.id}"
+      $q.when campaign
+
+  # $rootScope.registerScopeData () ->
+  #   if $state.params.id
+  #     $log.debug "Loading mail campaign #{$state.params.id}"
+  #     rmapsMailTemplate.load($state.params.id, 'wizard')
+
+      # .then () ->
+      #   $state.go 'senderInfo'
+  #   else
+  #     $state.go 'mail', reload: true

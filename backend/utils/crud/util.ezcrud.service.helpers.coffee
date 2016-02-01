@@ -29,7 +29,13 @@ class ServiceCrud extends BaseObject
   @getUpsertQueryString: (idObj, entityObj, tableName) ->
     # "pre-process" data, stringify any JSON data
     for k,v of entityObj
-      entity[k] = JSON.stringify(v) if _.isObject v
+      v = JSON.stringify(v) if _.isObject v
+      v = v.replace(/'/g,'__SINGLE_QUOTE__') if _.isString v
+      entityObj[k] = v
+      # if _.isString v
+      #   entityObj[k] = v.replace(/'/g,'\\\'')
+      # else if _.isObject v
+      #   entityObj[k] = JSON.stringify(v)
 
     # some string processing to help give us good query values:
     #   util.inspect gives good array repr of entity values that can be used for sql values
@@ -40,8 +46,10 @@ class ServiceCrud extends BaseObject
 
     idValues = "#{util.inspect(_.values(idObj))}"
     idValues = idValues.substring(1,idValues.length-1)
+    idValues = idValues.replace(/__SINGLE_QUOTE__/g,"''")
     entityValues = "#{util.inspect(_.values(entityObj))}"
     entityValues = entityValues.substring(1,entityValues.length-1)
+    entityValues = entityValues.replace(/__SINGLE_QUOTE__/g,"''")
     allValues = "#{idValues},#{entityValues}"
 
     # postgresql template for raw query
@@ -56,6 +64,7 @@ class ServiceCrud extends BaseObject
        (#{idKeys}) 
      DO UPDATE SET
        (#{entityKeys}) = (#{entityValues}) 
+     RETURNING #{idKeys}
     """
 
     # "post-process" data, sanitize the resulting string above suitable as raw query

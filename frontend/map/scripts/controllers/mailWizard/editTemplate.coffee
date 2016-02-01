@@ -6,10 +6,16 @@ module.exports = app
 app.controller 'rmapsEditTemplateCtrl',
 ($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsprincipal,
 rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
+  $log = $log.spawn 'frontend:mail:editTemplate'
+  $log.debug 'editTemplate'
 
   editor = {}
 
-  $scope.templObj = rmapsMailTemplate
+  $scope.templObj = {}
+  setTemplObj = () ->
+    $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplate.getCampaign()}"
+    $scope.templObj =
+      mailCampaign: rmapsMailTemplate.getCampaign()
 
   $scope.quoteAndSend = () ->
     rmapsMailTemplate.quote()
@@ -30,6 +36,8 @@ rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeSe
   $scope.macro = ""
 
   $scope.saveContent = () ->
+    $log.debug "saving #{$scope.templObj.name}"
+    rmapsMailTemplate.mailCampaign = $scope.templObj.mailCampaign
     rmapsMailTemplate.save()
 
   $scope.data =
@@ -37,3 +45,8 @@ rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeSe
 
   $scope.doPreview = () ->
     rmapsMailTemplate.openPreview()
+
+  $rootScope.registerScopeData () ->
+    $scope.$parent.initMailTemplate()
+    .then () ->
+      setTemplObj()

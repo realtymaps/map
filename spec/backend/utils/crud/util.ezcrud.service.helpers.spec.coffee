@@ -17,7 +17,7 @@ describe 'util.ezcrud.service.helpers', ->
       @serviceCrud = new ServiceCrud(dbFn, {debugNS:'ezcrud:service'})
       @query =
         id: 1
-        lorem: "ipsum"
+        lorem: "ipsum's"
 
     it 'passes sanity check', ->
       ServiceCrud.should.be.ok
@@ -27,13 +27,18 @@ describe 'util.ezcrud.service.helpers', ->
       (-> new ServiceCrud()).should.throw()
 
     it 'returns correct upsert query string', ->
+      expectedSql = "INSERT INTO  temp_table  (id,lorem) VALUES  ( 1 , 'ipsum''s' ) ON CONFLICT  (id) DO UPDATE SET  (lorem) = ( 'ipsum''s' ) RETURNING id"
       ids =
         id: 1
       entity =
-        lorem: "ipsum"
+        lorem: "ipsum's"
       tableName = 'temp_table'
       qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      expect(qstr.trim()).to.equal "INSERT INTO  temp_table  (id,lorem) VALUES  ( 1 , 'ipsum' ) ON CONFLICT  (id) DO UPDATE SET  (lorem) = ( 'ipsum' )"
+      console.log "\n\n\n\n"
+      console.log "qstr:\n#{qstr}"
+      console.log "expected:\n#{expectedSql}"
+      console.log "\n\n\n\n"
+      expect(qstr.trim()).to.equal expectedSql
 
     it 'gets id obj', ->
       idObj = @serviceCrud._getIdObj(@query)

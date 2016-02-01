@@ -34,7 +34,7 @@ class RouteCrud
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
-      @debug "root: tReq: #{JSON.stringify tReq}"
+      #@debug "root: tReq:\n#{JSON.stringify tReq, null, 2}"
       if specificTransforms
         return validateAndTransform tReq, specificTransforms
       tReq
@@ -55,23 +55,27 @@ class RouteCrud
     handleQuery data, res
 
   getQuery: (req, crudMethodStr) =>
+    @debug "req.query=#{JSON.stringify(req.query)}"
     @debug "req.params=#{JSON.stringify(req.params)}"
     @debug "req.body=#{JSON.stringify(req.body)}"
     @debug "req.method=#{req.method}"
     @exec(req, crudMethodStr).then (tReq) ->
-      query = _.merge({}, tReq.params, tReq.body)
+      query = _.merge({}, tReq.params, tReq.body, tReq.query)
       query
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here
   root: (req, res, next) =>
+    #@debug "(root) req:\n#{util.inspect(req, {depth: 1})}"
     methodExec req,
       GET: () =>
         @getQuery(req, 'rootGET').then (query) =>
           @_wrapRoute @svc.getAll(query), res
       POST: () =>
-        @getQuery(req, 'rootPOST').then (query) =>
-          @_wrapRoute @svc.create(query), res
+        @debug "POST, @enableUpsert:#{@enableUpsert}"
+        @getQuery(req, 'byIdPOST').then (query) =>
+          if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
+          return @_wrapRoute @svc.create(query), res
     , next
 
   byId: (req, res, next) =>
@@ -85,6 +89,7 @@ class RouteCrud
 
       # leverages option for upsert
       POST: () =>
+        @debug "POST, @enableUpsert:#{@enableUpsert}"
         @getQuery(req, 'byIdPOST').then (query) =>
           if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
           return @_wrapRoute @svc.create(query), res
