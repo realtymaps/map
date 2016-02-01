@@ -7,11 +7,12 @@ _intervalHandler = null
 
 
 runHirefire = () ->
-  hirefire.info null, null, (response) ->
-    if response.payload?
+  hirefire.info()
+  .then (needs) ->
+    if needs?
       console.log()
       console.log(new Date())
-      for queue in response.payload
+      for queue in needs
         console.log("    #{queue.name}: #{queue.quantity}")
 
 repeatHirefire = (period=60000) ->
