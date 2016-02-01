@@ -282,7 +282,7 @@ app.factory 'rmapsMapFactory',
         promises = []
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevelService.isAddressParcel(@scope.map.center.zoom, @scope) or
-             rmapsZoomLevelService.isParcel(@scope.map.center.zoom)) and rmapsZoomLevel.isBeyondCartoDb(@scope.map.center.zoom)
+             rmapsZoomLevelService.isParcel(@scope.map.center.zoom)) and rmapsZoomLevelService.isBeyondCartoDb(@scope.map.center.zoom)
           testLogger.debug 'isAddressParcel'
           promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
