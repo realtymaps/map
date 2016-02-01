@@ -2,9 +2,10 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $log, rmapsPropertiesService, rmapsMailTemplate) ->
-  $log = $log.spawn 'map:recipientInfo'
 
+app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $log, rmapsPropertiesService, rmapsMailTemplate) ->
+  $log = $log.spawn 'frontend:mail:recipientInfo'
+  $log.debug 'rmapsRecipientInfoCtrl'
   $scope.mailCampaign = rmapsMailTemplate.getCampaign()
 
   $scope.property = []

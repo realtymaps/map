@@ -97,7 +97,7 @@ rmapsevents, rmapsLayerFormatters, leafletData, leafletIterators, rmapsMapEvents
     getAll()
 
   $scope.$on '$destroy', ->
-    if _.isArray markersUnSubs
+    if markersUnSubs? and _.isArray markersUnSubs
       leafletIterators.each markersUnSubs, (unsub) ->
         unsub()
 

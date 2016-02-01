@@ -5,7 +5,10 @@ app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $moda
 rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
   $log = $log.spawn 'frontend:mail:mailTemplate'
-  _scope = null
+# <<<<<<< HEAD
+#   _scope = null
+# =======
+# >>>>>>> origin/master
   mailCampaign = null
 
   campaignDefaults =
@@ -120,8 +123,8 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   getCampaign: _getCampaign
   setCampaign: _setCampaign
 
-  setScope: (scope) ->
-    _scope = scope
+  # setScope: (scope) ->
+  #   _scope = scope
 
   openPreview: () ->
     preview = $window.open "", "_blank"
@@ -132,8 +135,6 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
     .then (campaigns) ->
       $log.debug "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
       mailCampaign = campaigns[0] if campaigns.length
-      # $timeout ->
-      #   _scope.$apply()
 
   save: () ->
     _getSenderData()
