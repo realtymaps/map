@@ -5,10 +5,10 @@ describe "rmapsLayerFormattersService", ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope,  rmapsLayerFormattersService, rmapsstylusVariables) =>
+    inject ($rootScope,  rmapsLayerFormattersService, rmapsStylusConstants) =>
       @$rootScope = $rootScope
       @subject = rmapsLayerFormattersService
-      @rmapsstylusVariables = rmapsstylusVariables
+      @rmapsStylusConstants = rmapsStylusConstants
 
 
   it 'subject exists', ->
@@ -144,8 +144,8 @@ describe "rmapsLayerFormattersService", ->
             style = @subject {savedDetails:isSaved: true}
             style.should.be.ok
             style.weight.should.be.equal 2
-            style.color.should.be.equal @rmapsstylusVariables['$rm_saved']
-            style.fillColor.should.be.equal @rmapsstylusVariables['$rm_saved']
+            style.color.should.be.equal @rmapsStylusConstants['$rm_saved']
+            style.fillColor.should.be.equal @rmapsStylusConstants['$rm_saved']
             style.fillOpacity.should.be.equal .75
 
           describe 'feature not saved', ->
@@ -179,8 +179,8 @@ describe "rmapsLayerFormattersService", ->
 
               style.should.be.ok
               style.weight.should.be.equal 2
-              style.color.should.be.equal @rmapsstylusVariables.$rm_sold
-              style.fillColor.should.be.equal @rmapsstylusVariables.$rm_sold
+              style.color.should.be.equal @rmapsStylusConstants.$rm_sold
+              style.fillColor.should.be.equal @rmapsStylusConstants.$rm_sold
               style.fillOpacity.should.be.equal .75
 
         describe 'w/ layerName', ->

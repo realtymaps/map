@@ -8,7 +8,7 @@ originator = 'map'
 
 app.controller "rmapsMapDrawCtrl", (
 $rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
-leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsevents) ->
+leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("frontend:map:MapDrawCtrl")
   drawnShapesFact = rmapsProjectsService.drawnShapes
@@ -109,7 +109,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
 
     _commonPostDrawActions = () ->
       if $scope.Toggles.propertiesInShapes
-        $rootScope.$emit rmapsevents.map.mainMap.redraw
+        $rootScope.$emit rmapsEventConstants.map.mainMap.redraw
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
@@ -146,7 +146,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
     _unsubscribes = _linker.hookDraw(mapId, _handle, originator)
 
     #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
-    $rootScope.$on rmapsevents.neighbourhoods.listToggled, (event, args...) ->
+    $rootScope.$on rmapsEventConstants.neighbourhoods.listToggled, (event, args...) ->
       [isOpen] = args
       if !isOpen
         _showHiddenLayers()
@@ -157,9 +157,9 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
     $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
       _eachLayerModel drawnItems, (model, layer) ->
         if newVal
-          $log.debug "bound: #{rmapsevents.neighbourhoods.createClick}"
+          $log.debug "bound: #{rmapsEventConstants.neighbourhoods.createClick}"
           layer.on 'click', () ->
-            $rootScope.$emit rmapsevents.neighbourhoods.createClick, model, layer
+            $rootScope.$emit rmapsEventConstants.neighbourhoods.createClick, model, layer
           return
         layer.clearAllEventListeners()
 

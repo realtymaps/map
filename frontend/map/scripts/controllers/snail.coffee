@@ -15,10 +15,10 @@ _setContextValues = null
 
 module.exports = app.controller 'rmapsSnailCtrl',
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-  rmapsRenderPdfBlobService, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinnerService) ->
+  rmapsRenderPdfBlobService, rmapsDocumentTemplateConstants, rmapsMainOptions, rmapsSpinnerService) ->
 
     $scope.data = data
-    $scope.rmapsdocumentTemplates = rmapsdocumentTemplates
+    $scope.rmapsDocumentTemplateConstants = rmapsDocumentTemplateConstants
     $scope.fonts = fonts
     $scope.placeholderValues =
       from:
@@ -56,7 +56,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
     _setContextValues = (index, blob) ->
       $scope["pdfPreviewBlob#{index}"] = $sce.trustAsResourceUrl(blob)
       $scope["templateId#{index}"] = $scope.form.style.templateId
-      template = $scope.rmapsdocumentTemplates[$scope["templateId#{index}"]]
+      template = $scope.rmapsDocumentTemplateConstants[$scope["templateId#{index}"]]
       if template
         $scope["width#{index}"] = template.width
         $scope["height#{index}"] = template.height
@@ -87,7 +87,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
       if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
-      template = $scope.rmapsdocumentTemplates[$scope.form.style.templateId]
+      template = $scope.rmapsDocumentTemplateConstants[$scope.form.style.templateId]
       formReady = true
       for prop of $scope.form
         $scope.data.snailData[prop] = _.clone($scope.form[prop])
@@ -128,7 +128,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
     if !$scope.data.property
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
-app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinnerService) ->
+app.run ($rootScope, $location, $timeout, rmapsEventConstants, rmapsSpinnerService) ->
   initiateSend = (property) ->
     _setContextValues?(0, 'about:blank')
     _setContextValues?(1, 'about:blank')
@@ -136,7 +136,7 @@ app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinnerService) ->
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
     $location.url frontendRoutes.snail
-  $rootScope.$on rmapsevents.snail.initiateSend, (event, property) -> initiateSend(property)
+  $rootScope.$on rmapsEventConstants.snail.initiateSend, (event, property) -> initiateSend(property)
 
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     # if we're leaving the snail state, cancel the watch for performance

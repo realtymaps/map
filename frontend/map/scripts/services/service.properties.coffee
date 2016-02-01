@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, rmapsPrincipalService,
-  rmapsevents, rmapsPromiseThrottlerFactory, $log) ->
+  rmapsEventConstants, rmapsPromiseThrottlerFactory, $log) ->
 
   $log = $log.spawn("frontend:map:rmapsPropertiesService")
 
@@ -22,7 +22,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   _prependAmpersand = (str) ->
     if str then '&' + str else ''
   # Reset the properties hash when switching profiles
-  $rootScope.$onRootScope rmapsevents.principal.profile.updated, (event, profile) ->
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
 
     propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
 
@@ -36,8 +36,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
           _.extend model, detail
           _favoriteProperty model
 
-      $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
-      $rootScope.$emit rmapsevents.map.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
+      $rootScope.$emit rmapsEventConstants.map.properties.favorite, _favoriteProperties
 
   _getState = (mapState = {}, filters = {}) ->
     # $log.debug "mapState: #{JSON.stringify mapState}"
@@ -160,13 +160,13 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
       _loadProperties()
       .then () ->
-        $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
+        $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
 
       #post state to database
       toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
       statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
       _saveThrottler.invokePromise statePromise
-      statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
+      statePromise.error (data, status) -> $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
 
     unpinProperty: (models) ->
       if _.isArray models
@@ -176,23 +176,23 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       else
         _saveProperty models, false
 
-      $rootScope.$emit rmapsevents.map.properties.pin, _savedProperties
+      $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
 
       #post state to database
       toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
       statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
       _saveThrottler.invokePromise statePromise
-      statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
+      statePromise.error (data, status) -> $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
 
     favoriteProperty: (model) ->
       _favoriteProperty model
-      $rootScope.$emit rmapsevents.map.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.map.properties.favorite, _favoriteProperties
 
       #post state to database
       toSave = _.mapValues _favoriteProperties, (model) -> model.savedDetails
       statePromise = $http.post(backendRoutes.userSession.updateState, favorites: toSave)
       _saveThrottler.invokePromise statePromise
-      statePromise.error (data, status) -> $rootScope.$emit(rmapsevents.alert, {type: 'danger', msg: data})
+      statePromise.error (data, status) -> $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
 
     getSavedProperties: ->
       _savedProperties

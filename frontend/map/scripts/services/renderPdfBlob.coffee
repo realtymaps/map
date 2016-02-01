@@ -2,10 +2,10 @@ app = require '../app.coffee'
 
 blobStream = require 'blob-stream'
 
-app.service 'rmapsRenderPdfBlobService', ($q, rmapsdocumentTemplates) ->
+app.service 'rmapsRenderPdfBlobService', ($q, rmapsDocumentTemplateConstants) ->
   toBlobUrl: (templateId, data, options = {}) ->
     stream = blobStream()
-    rmapsdocumentTemplates[templateId].render(data, stream)
+    rmapsDocumentTemplateConstants[templateId].render(data, stream)
     deferred = $q.defer()
     stream.on 'finish', () ->
       deferred.resolve(stream.toBlobURL('application/pdf'))

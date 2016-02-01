@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 mod = require '../module.coffee'
 
-mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsevents) ->
+mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants) ->
   #
   # Private Service Variables
   #
@@ -23,7 +23,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsevents) ->
 
     # Send an event to notify that the user is now authenticated
     if _authenticated
-      $rootScope.$emit rmapsevents.principal.login.success, identity
+      $rootScope.$emit rmapsEventConstants.principal.login.success, identity
 
   unsetIdentity = () ->
     _identity = null
@@ -62,7 +62,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsevents) ->
     return if _identity?.currentProfileId then _identity.profiles[_identity.currentProfileId] else null
 
   notifyProfileUpdated = (profile) ->
-    $rootScope.$emit rmapsevents.principal.profile.updated, profile
+    $rootScope.$emit rmapsEventConstants.principal.profile.updated, profile
 
   ##
   ##

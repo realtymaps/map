@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 _defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
 _defaultTemplate = do require '../../../html/includes/map/_smallDetailsPopup.jade'
 
-app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapspopupVariables, rmapsRenderingService, $timeout) ->
+app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupConstants, rmapsRenderingService, $timeout) ->
   _map = null #TODO this ref shouldn't be global if so this should become a factory
   _templateScope = null
   _renderPromises =
@@ -21,7 +21,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapspopupVa
     _map.closePopup()
     $timeout.cancel _timeoutPromise if _timeoutPromise
 
-  _getOffset = (map, model, offsets = rmapspopupVariables.offsets) ->
+  _getOffset = (map, model, offsets = rmapsPopupConstants.offsets) ->
     # get center and point container coords
     return if !model?.coordinates?.length
     center = map.latLngToContainerPoint map.getCenter()

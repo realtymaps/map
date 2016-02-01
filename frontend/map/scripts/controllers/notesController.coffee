@@ -5,11 +5,11 @@ mapId = 'mainMap'
 originator = 'map'
 popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
-app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsevents) ->
+app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsEventConstants) ->
   _signalUpdate = (promise) ->
-    return $rootScope.$emit rmapsevents.notes unless promise
+    return $rootScope.$emit rmapsEventConstants.notes unless promise
     promise.then ->
-      $rootScope.$emit rmapsevents.notes
+      $rootScope.$emit rmapsEventConstants.notes
 
   _.extend $scope,
     activeView: 'notes'
@@ -99,7 +99,7 @@ leafletIterators, toastr, $log) ->
   unsubscribes = mapUnSubs.concat markersUnSubs, geoJsonUnSubs
 
 .controller 'rmapsMapNotesCtrl', ($rootScope, $scope, $http, $log, rmapsNotesService,
-rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapEventsLinkerService) ->
+rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPopupLoaderService, rmapsMapEventsLinkerService) ->
 
   setMarkerNotesOptions = rmapsLayerFormattersService.MLS.setMarkerNotesOptions
   setDataOptions = rmapsLayerFormattersService.setDataOptions
@@ -146,7 +146,7 @@ rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsPo
   $scope.$watch 'Toggles.showNotes', (newVal) ->
     $scope.map.layers.overlays.notes.visible = newVal
 
-  $rootScope.$onRootScope rmapsevents.notes, ->
+  $rootScope.$onRootScope rmapsEventConstants.notes, ->
     getNotes().then ->
       ###
         NOTE this is highly dangerous if the map is moved and we update notes at the same time. As there is currently a race condition

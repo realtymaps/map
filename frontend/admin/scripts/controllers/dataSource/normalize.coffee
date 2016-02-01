@@ -14,7 +14,7 @@ require '../../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
+($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsEventConstants, rmapsParcelEnums, rmapsPrincipalService, rmapsAdminConstants) ->
 
   $scope.$state = $state
 
@@ -129,14 +129,14 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.loadLookups = (field) ->
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
-      if field._lookups.length <= adminConstants.dataSource.lookupThreshold
+      if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= adminConstants.dataSource.lookupThreshold
+        if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
           $scope.fieldData.current.lookups = lookups
         $scope.$evalAsync()
 

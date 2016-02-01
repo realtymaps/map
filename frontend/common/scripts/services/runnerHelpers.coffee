@@ -1,8 +1,8 @@
 mod = require '../module.coffee'
 # evaluate any scopeData routines that have built up upon login
-mod.service 'rmapsRunnerHelpersService', ($rootScope, $timeout, rmapsPrincipalService, rmapsevents) ->
+mod.service 'rmapsRunnerHelpersService', ($rootScope, $timeout, rmapsPrincipalService, rmapsEventConstants) ->
   setRegisterScopeData: () ->
-    $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
+    $rootScope.$onRootScope rmapsEventConstants.principal.login.success, () ->
       $timeout () ->
         while $rootScope.stateData.length
           $rootScope.stateData.pop()()

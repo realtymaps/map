@@ -1,7 +1,7 @@
 #TODO This should probably become a controller
 app = require '../app.coffee'
 
-app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rmapsRenderingService, rmapsevents, rmapsMainOptions) ->
+app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rmapsRenderingService, rmapsEventConstants, rmapsMainOptions) ->
   _promiseObject =
     filterDrawPromise: false
 
@@ -34,7 +34,7 @@ app.service 'rmapsFilterManagerService', ($rootScope, $log, rmapsParcelEnums, rm
   _updateFilters = (newFilters, oldFilters) ->
     return if (not newFilters and not oldFilters) or newFilters == oldFilters
     rmapsRenderingService.debounce _promiseObject, 'filterDrawPromise', ->
-      $rootScope.$emit rmapsevents.map.filters.updated, getFilters()
+      $rootScope.$emit rmapsEventConstants.map.filters.updated, getFilters()
     , rmapsMainOptions.filterDrawDelay
 
   $rootScope.$watchCollection 'selectedFilters', _updateFilters

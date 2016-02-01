@@ -2,7 +2,7 @@
 app = require '../app.coffee'
 
 app.service 'rmapsMailTemplateService', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
-rmapsPrincipalService, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
+rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
 
   $log = $log.spawn 'map:mailTemplate'
   mailCampaign = null
@@ -135,7 +135,7 @@ rmapsPrincipalService, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStatesS
         .then ({data}) ->
           mailCampaign.id = data[0]
           $log.debug "campaign #{mailCampaign.id} created"
-          $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+          $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
       else
         op = rmapsMailCampaignService.update(toSave)
         .then ({data}) ->

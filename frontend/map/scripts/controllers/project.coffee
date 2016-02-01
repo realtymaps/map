@@ -5,7 +5,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 module.exports = app
 
 app.controller 'rmapsProjectCtrl',
-($rootScope, $scope, $http, $log, $state, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsPageService, rmapsevents) ->
+($rootScope, $scope, $http, $log, $state, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsPageService, rmapsEventConstants) ->
   $scope.activeView = 'project'
   $log = $log.spawn("frontend:map:projects")
   $log.debug 'projectCtrl'
@@ -110,7 +110,7 @@ app.controller 'rmapsProjectCtrl',
     .then (clients) ->
       $scope.project.clients = clients
 
-  $rootScope.$onRootScope rmapsevents.notes, () ->
+  $rootScope.$onRootScope rmapsEventConstants.notes, () ->
     $scope.loadProject() unless !$state.params.id
 
   $rootScope.registerScopeData () ->

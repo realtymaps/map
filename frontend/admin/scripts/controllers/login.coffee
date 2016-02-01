@@ -9,7 +9,7 @@ httpStatus = require '../../../../common/utils/httpStatus.coffee'
 ###
 
 module.exports = app.controller 'rmapsLoginCtrl',
-  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsevents) ->
+  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsEventConstants) ->
 
     $scope.form = {}
     $scope.doLoginPost = () ->
@@ -17,7 +17,7 @@ module.exports = app.controller 'rmapsLoginCtrl',
       .success (data, status) ->
         if !httpStatus.isWithinOK status
           return
-        $rootScope.$emit rmapsevents.alert.dismiss, alertIds.loginFailure
+        $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
         $location.replace()
         $location.url($location.search().next || adminRoutes.urls.mls)

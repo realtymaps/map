@@ -18,7 +18,7 @@ _wrapGeomPointJson = (obj) ->
 ###
 app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
-  rmapsPropertiesService, rmapsevents, rmapsLayerFormattersService, rmapsMainOptions,
+  rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
   rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapTestLoggerService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
 
@@ -80,11 +80,11 @@ app.factory 'rmapsMapFactory',
 
         @singleClickCtrForDouble = 0
 
-        [rmapsevents.map.filters.updated, rmapsevents.map.mainMap.redraw].forEach (eventName) =>
+        [rmapsEventConstants.map.filters.updated, rmapsEventConstants.map.mainMap.redraw].forEach (eventName) =>
           $rootScope.$onRootScope eventName, =>
             @redraw()
 
-        $rootScope.$onRootScope rmapsevents.map.center, (evt, location) ->
+        $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) ->
           $scope.Toggles.setLocation location
 
         @layerFormatter = rmapsLayerFormattersService
@@ -305,7 +305,7 @@ app.factory 'rmapsMapFactory',
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
           https://github.com/tombatossals/angular-leaflet-directive/issues/820
           ###
-          $rootScope.$emit rmapsevents.map.results, @scope.map
+          $rootScope.$emit rmapsEventConstants.map.results, @scope.map
           if @directiveControls
             @directiveControls.geojson.create(@scope.map.geojson)
             @directiveControls.markers.create(@scope.map.markers)

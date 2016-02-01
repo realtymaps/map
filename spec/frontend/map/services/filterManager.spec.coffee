@@ -7,9 +7,9 @@ describe "rmapsFilterManagerService", ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsFilterManagerService, rmapsevents, digestor, $httpBackend) =>
+    inject ($rootScope, rmapsFilterManagerService, rmapsEventConstants, digestor, $httpBackend) =>
       @$rootScope = $rootScope
-      @rmapsevents =  rmapsevents
+      @rmapsEventConstants =  rmapsEventConstants
       @subject = rmapsFilterManagerService
       @digestor = digestor
 
@@ -22,7 +22,7 @@ describe "rmapsFilterManagerService", ->
       @subject.should.be.ok
 
 
-    describe 'rmapsevents.map.filters.updated', ->
+    describe 'rmapsEventConstants.map.filters.updated', ->
 
       it 'is emited on update', (done) ->
 
@@ -30,7 +30,7 @@ describe "rmapsFilterManagerService", ->
         @digestor.digest()
 
         spyCb = sinon.spy @$rootScope, '$emit'
-        @$rootScope.$onRootScope @rmapsevents.map.filters.updated, (event, filters) ->
+        @$rootScope.$onRootScope @rmapsEventConstants.map.filters.updated, (event, filters) ->
           expect(filters).to.eql status: ['for sale']
           done()
 

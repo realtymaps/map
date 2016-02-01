@@ -5,7 +5,7 @@ sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
   rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
 
   leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
@@ -65,7 +65,7 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
 
     sendSnail: (result) ->
-      $rootScope.$emit rmapsevents.snail.initiateSend, result
+      $rootScope.$emit rmapsEventConstants.snail.initiateSend, result
 
     getPriceLabel: (status) ->
       if (status =='recently sold'|| status=='not for sale')

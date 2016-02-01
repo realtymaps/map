@@ -15,7 +15,7 @@ map = undefined
 module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
-  rmapsMainOptions, rmapsMapTogglesFactory, rmapsPrincipalService, rmapsevents, rmapsProjectsService, rmapsProfilesService
+  rmapsMainOptions, rmapsMapTogglesFactory, rmapsPrincipalService, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
 
   $log = nemSimpleLogger.spawn("frontend:map:controller")
@@ -29,7 +29,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapsSearchboxService('mainMap')
 
   # If a new project is added or removed on the dashboard or elsewhere, this event will fire
-  $rootScope.$onRootScope rmapsevents.principal.profile.addremove, (event, identity) ->
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $scope.loadIdentity identity
 
   getProjects = (identity) ->

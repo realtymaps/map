@@ -7,9 +7,9 @@ originator = 'map'
 #TODO: rename to rmapsProjectNeighbourhoods{Whatever}....
 
 app.controller 'rmapsNeighbourhoodsModalCtrl', ($rootScope, $scope, $modal,
-rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
+rmapsProjectsService, rmapsMainOptions, rmapsEventConstants) ->
 
-  _event = rmapsevents.neighbourhoods
+  _event = rmapsEventConstants.neighbourhoods
   drawnShapesSvc = rmapsProjectsService.drawnShapes($rootScope.principal.getCurrentProfile())
 
   _signalUpdate = (promise) ->
@@ -45,7 +45,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
       _signalUpdate drawnShapesSvc.update model
 
 .controller 'rmapsMapNeighbourhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService,
-  leafletIterators, toastr, $log, rmapsevents) ->
+  leafletIterators, toastr, $log, rmapsEventConstants) ->
 
   createFromModal = $scope.create
   ###
@@ -73,12 +73,12 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
 
   rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)#safety precausion to not fire of unintended behavior
 
-  $rootScope.$on rmapsevents.neighbourhoods.createClick, (event, model, layer) ->
+  $rootScope.$on rmapsEventConstants.neighbourhoods.createClick, (event, model, layer) ->
     createFromModal(model).finally ->
       _destroy()
 
 .controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsProjectsService,
-rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMapEventsLinkerService) ->
+rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMapEventsLinkerService) ->
 
   ###
     Anything long term statewise goes here.
@@ -93,7 +93,7 @@ rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMa
       $log.debug "received data #{data.length} " if data?.length
       $scope.neighbourhoods = data
 
-  $rootScope.$onRootScope rmapsevents.neighbourhoods, ->
+  $rootScope.$onRootScope rmapsEventConstants.neighbourhoods, ->
     getAll()
 
   $scope.$on '$destroy', ->
@@ -104,6 +104,6 @@ rmapsevents, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMa
   $scope.neighbourhoodListToggled = (isOpen) ->
     #originally was not going to put this into state but it is needed for service.properties
     $rootScope.neighbourhoodsListIsOpen = isOpen
-    $rootScope.$emit rmapsevents.neighbourhoods.listToggled, isOpen
+    $rootScope.$emit rmapsEventConstants.neighbourhoods.listToggled, isOpen
 
   getAll()

@@ -9,7 +9,7 @@ require '../../directives/listinput.coffee'
 ###
 
 app.controller 'rmapsCountyCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
+($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsEventConstants, rmapsParcelEnums, rmapsPrincipalService, rmapsAdminConstants) ->
 
   $scope.$state = $state
 
@@ -130,14 +130,14 @@ app.controller 'rmapsCountyCtrl',
   $scope.loadLookups = (field) ->
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
-      if field._lookups.length <= adminConstants.dataSource.lookupThreshold
+      if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName && field.Interpretation
       config = $scope.countyData.current
       $scope.countyLoading = rmapsCountyService.getLookupTypes $scope.countyData.current.id, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= adminConstants.dataSource.lookupThreshold
+        if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
           $scope.fieldData.current.lookups = lookups
         $scope.$evalAsync()
 

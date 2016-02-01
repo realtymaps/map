@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsevents) ->
+app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("frontend:map:projects")
   $log.debug 'projectsCtrl'
@@ -64,5 +64,5 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     $scope.loadProjects()
 
   # When a project is added or removed elsewhere, this event will fire
-  $rootScope.$onRootScope rmapsevents.principal.profile.addremove, (event, identity) ->
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $scope.loadProjects()
