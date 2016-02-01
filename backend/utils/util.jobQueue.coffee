@@ -15,15 +15,7 @@ keystore = require '../services/service.keystore'
 {PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
 TaskImplementation = require './tasks/util.taskImplementation'
 dbs = require '../config/dbs'
-{HardFail, SoftFail} = require './errors/util.error.jobQueue'
-
-
-# TODO: delete this
-buildUniqueSubtaskName = (subtask, prefix='raw') ->
-  parts = [prefix, subtask.batch_id, subtask.task_name, subtask.data.dataType]
-  if subtask.data.rawTableSuffix
-    parts.push(subtask.data.rawTableSuffix)
-  parts.join('_')
+{HardFail, SoftFail, TaskNotImplemented} = require './errors/util.error.jobQueue'
 
 
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
@@ -100,6 +92,8 @@ queueReadyTasks = () -> Promise.try () ->
       .then (readyTasks=[]) ->
         Promise.map readyTasks, (task) ->
           queueTask(transaction, batchId, task, '<scheduler>')
+          .catch TaskNotImplemented, (err) ->
+            logger.error "#{err}"
 
 queueManualTask = (taskName, initiator) ->
   if !taskName
