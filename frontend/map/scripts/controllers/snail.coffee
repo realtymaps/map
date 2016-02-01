@@ -15,7 +15,7 @@ _setContextValues = null
 
 module.exports = app.controller 'rmapsSnailCtrl',
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-  rmapsRenderPdfBlob, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinner) ->
+  rmapsRenderPdfBlobService, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinnerService) ->
 
     $scope.data = data
     $scope.rmapsdocumentTemplates = rmapsdocumentTemplates
@@ -70,15 +70,15 @@ module.exports = app.controller 'rmapsSnailCtrl',
     _setContextValues(1, 'about:blank')
 
     $scope.renderError = (reason) ->
-      rmapsSpinner.decrementLoadingCount('pdf rendering')
+      rmapsSpinnerService.decrementLoadingCount('pdf rendering')
 
     $scope.finishRender = () ->
       $scope.iframeIndex = ($scope.iframeIndex+1)%2
-      rmapsSpinner.decrementLoadingCount('pdf rendering')
+      rmapsSpinnerService.decrementLoadingCount('pdf rendering')
 
     doRender = () ->
       renderPromise = null
-      rmapsRenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
+      rmapsRenderPdfBlobService.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
       .then (blob) ->
         _setContextValues(($scope.iframeIndex+1)%2, blob)
       , $scope.renderError
@@ -104,7 +104,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
         renderPromise = null
       else
         # create a new one
-        rmapsSpinner.incrementLoadingCount('pdf rendering')
+        rmapsSpinnerService.incrementLoadingCount('pdf rendering')
       renderPromise = $timeout(doRender, rmapsMainOptions.pdfRenderDelay)
 
     setWatch = () ->
@@ -128,7 +128,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
     if !$scope.data.property
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
-app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
+app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinnerService) ->
   initiateSend = (property) ->
     _setContextValues?(0, 'about:blank')
     _setContextValues?(1, 'about:blank')
@@ -145,4 +145,4 @@ app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
       if renderPromise
         $timeout.cancel(renderPromise)
         renderPromise = null
-        rmapsSpinner.decrementLoadingCount('pdf rendering')
+        rmapsSpinnerService.decrementLoadingCount('pdf rendering')

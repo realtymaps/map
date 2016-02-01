@@ -3,7 +3,7 @@
 describe 'mailTemplateType service', ->
 
   beforeEach ->
-    angular.mock.module('rmapsMapApp')
+    angular.mock.module('rmapsMapFactoryApp')
   
     inject (rmapsMailTemplateTypeService) =>
       @svc = rmapsMailTemplateTypeService

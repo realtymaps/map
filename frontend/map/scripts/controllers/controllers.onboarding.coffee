@@ -85,7 +85,7 @@ app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingPlanCtrl")
 
 app.controller 'rmapsOnboardingPaymentCtrl',
-($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
+($scope, $state, $log, $document, stripe, rmapsFaCreditCardsService) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
@@ -140,7 +140,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
       doShowRequired: behaveLikeAngularValidation
       getCardClass: (typeStr) ->
         return '' unless typeStr
-        'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
+        'fa fa-2x ' +  rmapsFaCreditCardsService.getCard(typeStr.toLowerCase())
 
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")

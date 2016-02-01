@@ -26,7 +26,7 @@ include ../mixins/property/_propertyAttributes.jade
             +propertyButtons('property')
 
 .mobile-only
-  #detail-card-tray(ng-controller="swipeTrayCtrl")
+  #detail-card-tray(ng-controller="rmapsSwipeTrayCtrl")
     #detail-card-container(ng-swipe-left="swipeLeft()" ng-swipe-right="swipeRight()")
       .detail-card(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"
       ng-class="trayPosition($index)"

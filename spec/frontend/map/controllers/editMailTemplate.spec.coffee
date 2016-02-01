@@ -1,14 +1,14 @@
 describe 'rmapsEditTemplateCtrl', ->
 
   beforeEach ->
-    angular.mock.module('rmapsMapApp')
+    angular.mock.module('rmapsMapFactoryApp')
   
-    inject ($controller, $rootScope, $document, rmapsMailTemplate) =>
+    inject ($controller, $rootScope, $document, rmapsMailTemplateService) =>
       @document = $document[0]
       @$controller = $controller
       @$rootScope = $rootScope
       @scope = @$rootScope.$new()
-      @rmapsMailTemplate = rmapsMailTemplate
+      @rmapsMailTemplateService = rmapsMailTemplate
 
   describe 'controller behavior', ->
     it 'vetting controller logic', ->      

@@ -14,8 +14,8 @@ require '../../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal', 'adminConstants',
-($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
+['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsPrincipalService', 'adminConstants',
+($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
 
   $scope.$state = $state
 

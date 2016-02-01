@@ -4,7 +4,7 @@ casing = require 'case'
 pieUtil = require '../utils/util.piechart.coffee'
 priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
 
-app.service 'rmapsLayerFormatters', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
+app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsstylusVariables) ->
 
   $log = $log.spawn('frontend:map:layerFormatter')
 

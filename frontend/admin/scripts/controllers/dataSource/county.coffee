@@ -9,7 +9,7 @@ require '../../directives/listinput.coffee'
 ###
 
 app.controller 'rmapsCountyCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
+($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
 
   $scope.$state = $state
 

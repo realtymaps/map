@@ -2,15 +2,15 @@ qs = require 'qs'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 sinon = require 'sinon'
 
-describe "rmapsFilterManager", ->
+describe "rmapsFilterManagerService", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module 'rmapsMapFactoryApp'
 
-    inject ($rootScope, rmapsFilterManager, rmapsevents, digestor, $httpBackend) =>
+    inject ($rootScope, rmapsFilterManagerService, rmapsevents, digestor, $httpBackend) =>
       @$rootScope = $rootScope
       @rmapsevents =  rmapsevents
-      @subject = rmapsFilterManager
+      @subject = rmapsFilterManagerService
       @digestor = digestor
 
       $httpBackend.when( 'GET', backendRoutes.userSession.identity)

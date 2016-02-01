@@ -1,6 +1,6 @@
 mod = require '../module.coffee'
 # evaluate any scopeData routines that have built up upon login
-mod.service 'rmapsRunnerHelpers', ($rootScope, $timeout, rmapsprincipal, rmapsevents) ->
+mod.service 'rmapsRunnerHelpersService', ($rootScope, $timeout, rmapsPrincipalService, rmapsevents) ->
   setRegisterScopeData: () ->
     $rootScope.$onRootScope rmapsevents.principal.login.success, () ->
       $timeout () ->
@@ -13,7 +13,7 @@ mod.service 'rmapsRunnerHelpers', ($rootScope, $timeout, rmapsprincipal, rmapsev
     $rootScope.registerScopeData = (restoreState) ->
 
       # if page is refreshed, but we change states, this will run the restoreState logic if auth'ed instead of pushing
-      if rmapsprincipal.isIdentityResolved() && rmapsprincipal.isAuthenticated()
+      if rmapsPrincipalService.isIdentityResolved() && rmapsprincipal.isAuthenticated()
         return restoreState()
 
       # if not auth'ed, push to container to be evaluated later

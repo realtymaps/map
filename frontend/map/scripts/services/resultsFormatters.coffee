@@ -4,11 +4,11 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
-app.service 'rmapsResultsFormatter', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
+app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
   rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
-  rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
+  rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
 
-  leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
+  leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
   limits = rmapsMainOptions.map
 
   class ResultsFormatter

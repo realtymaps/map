@@ -6,7 +6,7 @@ describe "ResultsFormatter", ->
           zoomThresh:
             addressParcel: 18
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module 'rmapsMapFactoryApp'
     angular.mock.module "uiGmapgoogle-maps.mocks"
     angular.mock.module "uiGmapgoogle-maps"
 

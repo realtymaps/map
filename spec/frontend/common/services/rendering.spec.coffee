@@ -4,9 +4,9 @@ describe "common.service.rendering", ->
   beforeEach ->
 
     angular.mock.module 'rmapsCommon'
-    inject ($rootScope, $timeout, rmapsRendering, digestor) =>
+    inject ($rootScope, $timeout, rmapsRenderingService, digestor) =>
       @digestor = digestor
-      @subject = rmapsRendering
+      @subject = rmapsRenderingService
 
   it 'exists', ->
     @subject.should.be.ok

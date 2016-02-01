@@ -7,8 +7,8 @@ mod = require '../module.coffee'
 defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor', 'rmapsRedirectInterceptor']
 
 interceptors =
-  rmapsRedirectInterceptor: ($location, $rootScope, rmapsUrlHelpers) ->
-    routes = rmapsUrlHelpers.getRoutes()
+  rmapsRedirectInterceptor: ($location, $rootScope, rmapsUrlHelpersService) ->
+    routes = rmapsUrlHelpersService.getRoutes()
 
     'response': (response) ->
       if response.data?.doLogin and $location.path() != '/'+routes.login
@@ -49,18 +49,18 @@ interceptors =
       $rootScope.$emit rmapsevents.alert.spawn, alert
       $q.reject(request)
 
-  rmapsLoadingIconInterceptor: ($q, rmapsSpinner) ->
+  rmapsLoadingIconInterceptor: ($q, rmapsSpinnerService) ->
     request: (request) ->
-      rmapsSpinner.incrementLoadingCount(request.url)
+      rmapsSpinnerService.incrementLoadingCount(request.url)
       request
     requestError: (rejection) ->
-      rmapsSpinner.decrementLoadingCount(rejection.url)
+      rmapsSpinnerService.decrementLoadingCount(rejection.url)
       $q.reject(rejection)
     response: (response) ->
-      rmapsSpinner.decrementLoadingCount(response.config?.url)
+      rmapsSpinnerService.decrementLoadingCount(response.config?.url)
       response
     responseError: (rejection) ->
-      rmapsSpinner.decrementLoadingCount(rejection.config?.url)
+      rmapsSpinnerService.decrementLoadingCount(rejection.config?.url)
       $q.reject(rejection)
 ###
 take care of loading common interceptors among apps,

@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsevents, rmapsprincipal, rmapsPropertiesService) ->
+app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsevents, rmapsPrincipalService, rmapsPropertiesService) ->
 
   getPinned = (event, pinned) ->
     $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()

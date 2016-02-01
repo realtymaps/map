@@ -5,11 +5,11 @@ testBasicLetterMarkup = """
 describe 'mailTemplate service', ->
 
   beforeEach ->
-    angular.mock.module('rmapsMapApp')
+    angular.mock.module('rmapsMapFactoryApp')
 
-    inject (rmapsMailTemplate) =>
+    inject (rmapsMailTemplateService) =>
       @type = 'basicLetter'
-      @template = rmapsMailTemplate
+      @template = rmapsMailTemplateService
 
   describe 'templateObj', ->
     it "tests valid basicLetter", ->

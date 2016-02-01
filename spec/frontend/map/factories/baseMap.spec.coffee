@@ -3,7 +3,7 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 describe "BaseMapCtrl", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module 'rmapsMapFactoryApp'
 
     @mocks =
       options:
@@ -12,11 +12,11 @@ describe "BaseMapCtrl", ->
 
       zoomThresholdMilli: 1000
 
-    inject ($rootScope, rmapsBaseMap) =>
+    inject ($rootScope, rmapsBaseMapFactory) =>
       @$rootScope = $rootScope
 
-      @ctor = rmapsBaseMap
-      @subject = new rmapsBaseMap($rootScope.$new(), @mocks.options, @mocks.zoomThresholdMilli)
+      @ctor = rmapsBaseMapFactory
+      @subject = new rmapsBaseMapFactory($rootScope.$new(), @mocks.options, @mocks.zoomThresholdMilli)
 
   it 'ctor exists', ->
     @ctor.should.be.ok

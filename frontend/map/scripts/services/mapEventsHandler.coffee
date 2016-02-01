@@ -19,16 +19,16 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @type = type
   @
 
-app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters,
-rmapsPropertiesService, rmapsMapEventEnums) ->
+app.service 'rmapsMapFactoryEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
+rmapsNgLeafletHelpersService, rmapsNgLeafletEventGate, rmapsMapFactoryEventsLinkerService, rmapsLayerFormattersService,
+rmapsPropertiesService, rmapsMapFactoryEventEnums) ->
 
   _gate = rmapsNgLeafletEventGate
   limits = rmapsMainOptions.map
-  _markerEvents = rmapsNgLeafletHelpers.events.markerEvents
-  _geojsonEvents = rmapsNgLeafletHelpers.events.geojsonEvents
+  _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
+  _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents
 
-  $log = nemSimpleLogger.spawn("frontend:map:rmapsMapEventsHandlerService")
+  $log = nemSimpleLogger.spawn("frontend:map:rmapsMapFactoryEventsHandlerService")
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
     $scope = mapCtrl.scope
@@ -42,9 +42,9 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
     _handleHover = (model, lObject, type, layerName) ->
       return if !layerName or !type or !lObject
       if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormatters.MLS.setMarkerPriceOptions(model)
+        rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model)
       if type == 'geojson'
-        opts = rmapsLayerFormatters.Parcels.getStyle(model, layerName)
+        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
         lObject.setStyle(opts)
 
     _handleManualMarkerCluster = (model) ->
@@ -89,7 +89,7 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
 
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
-        if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
+        if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapFactoryEventEnums.window.mouseover)
           mapCtrl.openWindow?(model, lObject)
 
         # Update model
@@ -129,8 +129,8 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
         _handleHover model, lObject, type, layerName
 
       click: (event, lObject, model, modelName, layerName, type) ->
-        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.marker.click) and type is 'marker'
-        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.geojson.click) and type is 'geojson'
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapFactoryEventEnums.marker.click) and type is 'marker'
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapFactoryEventEnums.geojson.click) and type is 'geojson'
         $scope.$evalAsync ->
           #delay click interaction to see if a dblclick came in
           #if one did then we skip setting the click on resultFormatter to not show the details (cause our intention was to save)
@@ -166,12 +166,12 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
 
     _.merge $scope,obj
 
-    rmapsMapEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
-    rmapsMapEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
+    rmapsMapFactoryEventsLinkerService.hookMarkers(mapCtrl.mapId, _eventHandler, thisOriginator)
+    rmapsMapFactoryEventsLinkerService.hookGeoJson(mapCtrl.mapId, _eventHandler, thisOriginator)
 
-    rmapsMapEventsLinkerService.hookMap mapCtrl.mapId,
+    rmapsMapFactoryEventsLinkerService.hookMap mapCtrl.mapId,
       click: (event) ->
-        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.map.click)
+        return if _gate.isDisabledEvent(mapCtrl.mapId, rmapsMapFactoryEventEnums.map.click)
 
         geojson = (new L.Marker(event.latlng)).toGeoJSON()
 

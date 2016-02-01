@@ -1,10 +1,10 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsprincipal, rmapsMailTemplate) ->
+app.controller 'rmapsMapFactoryMailCtrl', ($scope, $state, $modal, rmapsPrincipalService, rmapsMailTemplateService) ->
 
   $scope.addMail = () ->
-    profile = rmapsprincipal.getCurrentProfile()
+    profile = rmapsPrincipalService.getCurrentProfile()
     return if not profile
 
     property_ids = _.keys profile.properties_selected
@@ -19,7 +19,7 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsprincipal, rmap
 
       $scope.modalOk = () ->
         modalInstance.dismiss('save')
-        rmapsMailTemplate.create $scope.newMail
+        rmapsMailTemplateService.create $scope.newMail
         $state.go 'recipientInfo'
 
       $scope.cancelModal = () ->

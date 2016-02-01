@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
+app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, rmapsPrincipalService,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
   $log = $log.spawn("frontend:map:rmapsPropertiesService")
@@ -81,7 +81,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     return if not model or not model.rm_property_id
     rm_property_id = model.rm_property_id
 
-    model.savedDetails ?= new rmapsProperty(rm_property_id)
+    model.savedDetails ?= new rmapsPropertyFactory(rm_property_id)
 
     prop = _savedProperties[rm_property_id]
 
@@ -99,7 +99,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapspr
     rm_property_id = model.rm_property_id
 
     if !model.savedDetails
-      model.savedDetails = new rmapsProperty(rm_property_id)
+      model.savedDetails = new rmapsPropertyFactory(rm_property_id)
 
     prop = _favoriteProperties[rm_property_id]
     if not prop

@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 blobStream = require 'blob-stream'
 
-app.service 'rmapsRenderPdfBlob', ($q, rmapsdocumentTemplates) ->
+app.service 'rmapsRenderPdfBlobService', ($q, rmapsdocumentTemplates) ->
   toBlobUrl: (templateId, data, options = {}) ->
     stream = blobStream()
     rmapsdocumentTemplates[templateId].render(data, stream)

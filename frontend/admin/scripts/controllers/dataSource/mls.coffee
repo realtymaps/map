@@ -6,7 +6,7 @@ modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl',
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, $q, rmapsevents, adminConstants, rmapsprincipal,
+  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, $q, rmapsevents, adminConstants, rmapsPrincipalService,
   rmapsJobsService) ->
 
     # return new object with base defaults
@@ -231,7 +231,7 @@ app.controller 'rmapsMlsCtrl',
       promises.push rmapsJobsService.updateTask($scope.mlsData.current.id, {active: $scope.mlsData.task.active})
       promises.push $scope.mlsData.current.save()
 
-      if rmapsprincipal.hasPermission('change_mlsconfig_serverdata')
+      if rmapsPrincipalService.hasPermission('change_mlsconfig_serverdata')
         promises.push rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username })
 
       $q.all(promises)

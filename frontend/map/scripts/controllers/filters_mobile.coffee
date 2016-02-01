@@ -5,13 +5,13 @@ require '../factories/filters.coffee'
   Our Filters Controller
 ###
 
-module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $timeout, rmapsFilters, $log) ->
+module.exports = app.controller 'rmapsFiltersFactoryMobileCtrl', ($scope, $filter, $timeout, rmapsFilters, $log) ->
   MAX_PRICE = 10000000
   MAX_SIZE = 10000
   MAX_DOM = 365
 
   #initialize values for filter options in the select tags
-  $scope.filterValues = rmapsFilters.values
+  $scope.filterValues = rmapsFiltersFactory.values
 
   # Initialize scope values from the global filters
   $scope.bedsMin = $scope.selectedFilters.bedsMin || 0

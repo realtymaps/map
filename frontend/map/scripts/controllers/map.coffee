@@ -14,9 +14,9 @@ map = undefined
 
 module.exports = app
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
-  rmapsMainOptions, rmapsMapToggles, rmapsprincipal, rmapsevents, rmapsProjectsService, rmapsProfilesService
-  rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapssearchbox) ->
+app.controller 'rmapsMapFactoryCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
+  rmapsMainOptions, rmapsMapFactoryToggles, rmapsPrincipalService, rmapsevents, rmapsProjectsService, rmapsProfilesService
+  rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
 
   $log = nemSimpleLogger.spawn("frontend:map:controller")
 
@@ -26,7 +26,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     $scope.pageClass = pageClass
   #end inits
 
-  rmapssearchbox('mainMap')
+  rmapsSearchboxService('mainMap')
 
   # If a new project is added or removed on the dashboard or elsewhere, this event will fire
   $rootScope.$onRootScope rmapsevents.principal.profile.addremove, (event, identity) ->
@@ -91,7 +91,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
           $scope.map.center.zoom = Number map_position.zoom
-        $scope.rmapsMapToggles = new rmapsMapToggles(project.map_toggles)
+        $scope.rmapsMapFactoryToggles = new rmapsMapTogglesFactory(project.map_toggles)
       else
         if map_position?
           if map_position.center? and
@@ -103,8 +103,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           if map_position.zoom?
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
-        rmapsMainOptions.map.toggles = new rmapsMapToggles(project.map_toggles)
-        map = new rmapsMap($scope)
+        rmapsMainOptions.map.toggles = new rmapsMapFactoryToggles(project.map_toggles)
+        map = new rmapsMapFactory($scope)
 
       selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
@@ -128,7 +128,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
-    rmapsprincipal.getIdentity()
+    rmapsPrincipalService.getIdentity()
     .then (identity) ->
       $scope.loadIdentity identity, Number($state.params.project_id)
 

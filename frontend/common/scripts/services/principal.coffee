@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 permissionsUtil = require '../../../../common/utils/permissions.coffee'
 mod = require '../module.coffee'
 
-mod.service 'rmapsprincipal', ($rootScope, $q, $http, rmapsevents) ->
+mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsevents) ->
   #
   # Private Service Variables
   #

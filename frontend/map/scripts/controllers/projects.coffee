@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
+app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsevents) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("frontend:map:projects")
   $log.debug 'projectsCtrl'

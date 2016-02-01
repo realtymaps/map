@@ -13,7 +13,7 @@ mod.constant 'rmapsCreditCards', keysToValues
   paypal: undefined
   'apple-pay': undefined
 
-mod.service 'rmapsFaCreditCards', (rmapsCreditCards) ->
+mod.service 'rmapsFaCreditCardsService', (rmapsCreditCards) ->
   creditCards = rmapsCreditCards
   faCards = {}
 

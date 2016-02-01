@@ -42,7 +42,7 @@ app.factory 'mobileHeaderContext', ($log) ->
 #
 # Controller used by the header directive
 #
-app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $log, mobileHeaderContext) ->
+app.controller 'mobileHeaderCtrl', ($scope, $element, $attrs, $compile, $log, mobileHeaderContext) ->
   class MobileHeaderController
     _targets: {}
 
@@ -71,7 +71,7 @@ app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $l
 #
 app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
   restrict: 'E'
-  controller: 'mobileHeaderController'
+  controller: 'mobileHeaderCtrl'
   priority: 1000
   scope:
     headerId: '@'
@@ -86,8 +86,8 @@ createMobileHeaderButtonDirective = (type) ->
     restrict: 'EAC'
     require: '^mobileHeader',
     priority: 999
-    link: ($scope, $element, $attrs, mobileHeaderController) ->
-      mobileHeaderController.registerTargetElement(type, $element)
+    link: ($scope, $element, $attrs, mobileHeaderCtrl) ->
+      mobileHeaderCtrl.registerTargetElement(type, $element)
   }
 
 app.directive 'mobileHeaderButtonRight', () ->

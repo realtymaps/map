@@ -1,8 +1,8 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
-rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
+app.service 'rmapsMailTemplateService', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
+rmapsPrincipalService, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
 
   $log = $log.spawn 'map:mailTemplate'
   mailCampaign = null
@@ -47,9 +47,9 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   _getSenderData = () ->
     return $q.when mailCampaign.sender_info if !_.isEmpty mailCampaign.sender_info
 
-    rmapsprincipal.getIdentity()
+    rmapsPrincipalService.getIdentity()
     .then (identity) ->
-      rmapsUsStates.getById(identity.user.us_state_id)
+      rmapsUsStatesService.getById(identity.user.us_state_id)
       .then (state) ->
         mailCampaign.auth_user_id = identity.user.id
         mailCampaign.sender_info =
@@ -128,7 +128,7 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
 
       if not toSave.id?
         delete toSave.id
-        profile = rmapsprincipal.getCurrentProfile()
+        profile = rmapsPrincipalService.getCurrentProfile()
         toSave.project_id = profile.project_id
 
         op = rmapsMailCampaignService.create(toSave)

@@ -1,13 +1,13 @@
 priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/_priceMarker.jade'
 
-describe "rmapsLayerFormatters", ->
+describe "rmapsLayerFormattersService", ->
   beforeEach ->
 
-    angular.mock.module 'rmapsMapApp'
+    angular.mock.module 'rmapsMapFactoryApp'
 
-    inject ($rootScope,  rmapsLayerFormatters, rmapsstylusVariables) =>
+    inject ($rootScope,  rmapsLayerFormattersService, rmapsstylusVariables) =>
       @$rootScope = $rootScope
-      @subject = rmapsLayerFormatters
+      @subject = rmapsLayerFormattersService
       @rmapsstylusVariables = rmapsstylusVariables
 
 
