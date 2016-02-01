@@ -2,10 +2,10 @@ caseing = require 'case'
 app = require '../app.coffee'
 _thisName = "MapEventsLinkerService"
 
-app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpers, leafletDrawEvents) ->
+app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
   $log = nemSimpleLogger.spawn("frontend:map:#{_thisName}")
-  leafletEvents = rmapsNgLeafletHelpers.events
-  _getMapIdEventStr = rmapsNgLeafletHelpers.events.getMapIdEventStr
+  leafletEvents = rmapsNgLeafletHelpersService.events
+  _getMapIdEventStr = rmapsNgLeafletHelpersService.events.getMapIdEventStr
 
   _getArgs = (args, cb) ->
     unless cb

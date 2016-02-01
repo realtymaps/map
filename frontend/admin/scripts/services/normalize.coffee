@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 Promise = require 'bluebird'
 
-app.factory 'rmapsNormalizeService', ($log, Restangular) ->
+app.factory 'rmapsNormalizeFactory', ($log, Restangular) ->
 
   ruleAPI = backendRoutes.data_source.apiBaseDataSource
 

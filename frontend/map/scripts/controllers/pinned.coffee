@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsevents, rmapsprincipal, rmapsPropertiesService) ->
+app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
 
   getPinned = (event, pinned) ->
     $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
@@ -60,5 +60,5 @@ app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsevents, rmap
       modalInstance.dismiss('ok')
       rmapsPropertiesService.unpinProperty toPin
 
-  $rootScope.$onRootScope rmapsevents.map.properties.pin, getPinned
-  $rootScope.$onRootScope rmapsevents.map.properties.favorite, getFavorites
+  $rootScope.$onRootScope rmapsEventConstants.map.properties.pin, getPinned
+  $rootScope.$onRootScope rmapsEventConstants.map.properties.favorite, getFavorites

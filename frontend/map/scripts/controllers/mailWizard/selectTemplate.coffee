@@ -3,14 +3,14 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, rmapsMailTemplateTypeService, rmapsMailTemplate) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
 
   $scope.displayCategory = 'all'
 
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
 
-  $scope.campaign = rmapsMailTemplate.getCampaign()
+  $scope.campaign = rmapsMailTemplateService.getCampaign()
 
   $scope.isEmptyCategory = () ->
     return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
@@ -22,7 +22,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, rmapsMailTemplate
 
   $scope.selectTemplate = (idx) ->
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
-    rmapsMailTemplate.setTemplateType(templateType)
+    rmapsMailTemplateService.setTemplateType(templateType)
     $scope.$parent.nextStep()
 
   $rootScope.registerScopeData () ->

@@ -1,8 +1,8 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.service 'rmapsMailTemplate', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
-rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
+app.service 'rmapsMailTemplateService', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
+rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
 
   $log = $log.spawn 'frontend:mail:mailTemplate'
 
@@ -52,9 +52,9 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
   _getSenderData = () ->
     return $q.when mailCampaign.sender_info if !_.isEmpty mailCampaign.sender_info
 
-    rmapsprincipal.getIdentity()
+    rmapsPrincipalService.getIdentity()
     .then (identity) ->
-      rmapsUsStates.getById(identity.user.us_state_id)
+      rmapsUsStatesService.getById(identity.user.us_state_id)
       .then (state) ->
         mailCampaign.auth_user_id = identity.user.id
         mailCampaign.sender_info =
@@ -135,15 +135,15 @@ rmapsprincipal, rmapsevents, rmapsMailTemplateTypeService, rmapsUsStates) ->
       $log.debug "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
       toSave.recipients = JSON.stringify toSave.recipients
 
-      profile = rmapsprincipal.getCurrentProfile()
+      profile = rmapsPrincipalService.getCurrentProfile()
       toSave.project_id = profile.project_id
+
       op = rmapsMailCampaignService.create(toSave) #upserts if not already created
       .then ({data}) ->
         $log.debug "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
         $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
-
 
   quote: () ->
     $modal.open

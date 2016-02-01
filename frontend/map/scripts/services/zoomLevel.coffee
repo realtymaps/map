@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 keysToValue = require '../../../../common/utils/util.keysToValues.coffee'
 
-app.service 'rmapsZoomLevel', (rmapsMainOptions, $log) ->
+app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
   _zoomThresh = rmapsMainOptions.map.options.zoomThresh
   _enum = keysToValue
     addressParcel: 1

@@ -2,12 +2,12 @@
 qs = require 'qs'
 mod = require '../module.coffee'
 
-mod.factory 'rmapsauthorization', ($rootScope, $location, $log, rmapsprincipal, rmapsUrlHelpers) ->
-  $log = $log.spawn('frontend:map:rmapsauthorization')
-  routes = rmapsUrlHelpers.getRoutes()
+mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, rmapsPrincipalService, rmapsUrlHelpersService) ->
+  $log = $log.spawn('frontend:map:rmapsAuthorizationFactory')
+  routes = rmapsUrlHelpersService.getRoutes()
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
-    if not rmapsprincipal.isAuthenticated()
+    if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # set the route they wanted as a query parameter
       # then, send them to the signin route so they can log in
@@ -16,7 +16,7 @@ mod.factory 'rmapsauthorization', ($rootScope, $location, $log, rmapsprincipal, 
       $log.debug 'redirected to login'
       return
 
-    if not rmapsprincipal.hasPermission(toState?.permissionsRequired)
+    if not rmapsPrincipalService.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
       $location.replace()
       $location.url routes.accessDenied
@@ -39,16 +39,16 @@ mod.factory 'rmapsauthorization', ($rootScope, $location, $log, rmapsprincipal, 
     desiredLocation = $location.path()+'?'+qs.stringify($location.search())
 
     # if we can, do check now (synchronously)
-    if rmapsprincipal.isIdentityResolved()
+    if rmapsPrincipalService.isIdentityResolved()
       return doPermsCheck(toState, desiredLocation, false)
     # otherwise, go to temporary view and do check ASAP
     $location.replace()
     $location.url routes.authenticating
-    rmapsprincipal.getIdentity().then () ->
+    rmapsPrincipalService.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)
 
 
-mod.run ($rootScope, rmapsauthorization) ->
+mod.run ($rootScope, rmapsAuthorizationFactory) ->
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
-    rmapsauthorization.authorize(toState, toParams, fromState, fromParams)
+    rmapsAuthorizationFactory.authorize(toState, toParams, fromState, fromParams)
     return

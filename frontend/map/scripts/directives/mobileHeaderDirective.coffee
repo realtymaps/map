@@ -19,7 +19,7 @@ _ = require 'lodash'
 #
 # Service that is shared by the header directive and the buttons directives to pass transclusion functions
 #
-app.factory 'mobileHeaderContext', ($log) ->
+app.factory 'rmapsMobileHeaderContextFactory', ($log) ->
   class MobileHeaderContextManager
     _headers: {}
 
@@ -42,7 +42,7 @@ app.factory 'mobileHeaderContext', ($log) ->
 #
 # Controller used by the header directive
 #
-app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $log, mobileHeaderContext) ->
+app.controller 'rmapsMobileHeaderCtrl', ($scope, $element, $attrs, $compile, $log, rmapsMobileHeaderContextFactory) ->
   class MobileHeaderController
     _targets: {}
 
@@ -51,7 +51,7 @@ app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $l
 
     # Initialize the header controller with the header id that is specified for this header
     init: (headerId) ->
-      mobileHeaderContext.registerHeader headerId, @
+      rmapsMobileHeaderContextFactory.registerHeader headerId, @
 
     # If the header has a defined sub-directive allowing a location to be targeted, execute the
     # transclusion function for the buttons for that location
@@ -71,7 +71,7 @@ app.controller 'mobileHeaderController', ($scope, $element, $attrs, $compile, $l
 #
 app.directive 'mobileHeader', ($parse, $templateCache, $modal, $log) ->
   restrict: 'E'
-  controller: 'mobileHeaderController'
+  controller: 'rmapsMobileHeaderCtrl'
   priority: 1000
   scope:
     headerId: '@'
@@ -86,8 +86,8 @@ createMobileHeaderButtonDirective = (type) ->
     restrict: 'EAC'
     require: '^mobileHeader',
     priority: 999
-    link: ($scope, $element, $attrs, mobileHeaderController) ->
-      mobileHeaderController.registerTargetElement(type, $element)
+    link: ($scope, $element, $attrs, rmapsMobileHeaderCtrl) ->
+      rmapsMobileHeaderCtrl.registerTargetElement(type, $element)
   }
 
 app.directive 'mobileHeaderButtonRight', () ->

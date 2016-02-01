@@ -32,7 +32,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.editor.scope.$broadcast 'rmaps-drag-end'
 
 
-app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document, rmapsMailTemplate) ->
+app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document, rmapsMailTemplateService) ->
   restrict: 'A'
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
@@ -168,7 +168,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
 
     # keep templateObj updated with bound htmlcontent
     scope.$watch 'data.htmlcontent', (newC, oldC) ->
-      rmapsMailTemplate.setContent(scope.data.htmlcontent)
+      rmapsMailTemplateService.setContent(scope.data.htmlcontent)
       #scope.templateObj.mailCampaign.content = scope.data.htmlcontent
 
     # helper for holding a macro value during drag-and-drop

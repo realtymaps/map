@@ -10,7 +10,7 @@ stateDefaults =
   loginRequired: true
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
-rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
+rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
   buildState = (name, overrides = {}) ->
     state =
@@ -61,19 +61,19 @@ rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
     permissionsRequired: false
     showSteps: false
 
-  rmapsOnboardingOrderProvider.steps.forEach (boardingName) ->
+  rmapsOnboardingOrderServiceProvider.steps.forEach (boardingName) ->
     buildState boardingName,
       parent: 'onboarding'
-      url: '/' + (rmapsOnboardingOrderProvider.getId(boardingName) + 1)
+      url: '/' + (rmapsOnboardingOrderServiceProvider.getId(boardingName) + 1)
       loginRequired: false
       permissionsRequired: false
       showSteps: true
 
-  rmapsOnboardingProOrderProvider.steps.forEach (boardingName) ->
+  rmapsOnboardingProOrderServiceProvider.steps.forEach (boardingName) ->
     buildState boardingName + 'Pro',
       parent: 'onboarding'
       controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
-      url: '/pro/' + (rmapsOnboardingProOrderProvider.getId(boardingName) + 1)
+      url: '/pro/' + (rmapsOnboardingProOrderServiceProvider.getId(boardingName) + 1)
       templateProvider: ($templateCache) ->
         $templateCache.get "./views/onboarding/#{boardingName}.jade"
       loginRequired: false

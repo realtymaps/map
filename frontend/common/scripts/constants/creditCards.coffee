@@ -2,7 +2,7 @@
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 mod = require '../module.coffee'
 
-mod.constant 'rmapsCreditCards', keysToValues
+mod.constant 'rmapsCreditCardConstants', keysToValues
   visa: undefined
   mastercard: undefined
   discover: undefined
@@ -13,8 +13,8 @@ mod.constant 'rmapsCreditCards', keysToValues
   paypal: undefined
   'apple-pay': undefined
 
-mod.service 'rmapsFaCreditCards', (rmapsCreditCards) ->
-  creditCards = rmapsCreditCards
+mod.service 'rmapsFaCreditCardsService', (rmapsCreditCardConstants) ->
+  creditCards = rmapsCreditCardConstants
   faCards = {}
 
   _faValidCard = (typeStr) ->

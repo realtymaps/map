@@ -4,11 +4,11 @@ Point = require('../../../../common/utils/util.geometries.coffee').Point
 sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
-app.service 'rmapsPropertyFormatter', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
-  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsevents,
-  rmapsLeafletObjectFetcher, rmapsMainOptions, rmapsZoomLevel) ->
+app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
+  rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
+  rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
 
-  leafletDataMainMap = new rmapsLeafletObjectFetcher('mainMap')
+  leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
   limits = rmapsMainOptions.map
 
   _forSaleClass = {}
@@ -65,7 +65,7 @@ app.service 'rmapsPropertyFormatter', ($rootScope, $timeout, $filter, $log, $sta
       return (result?.rm_status=='recently sold'||result.rm_status=='not for sale') && result.close_date
 
     sendSnail: (result) ->
-      $rootScope.$emit rmapsevents.snail.initiateSend, result
+      $rootScope.$emit rmapsEventConstants.snail.initiateSend, result
 
     getPriceLabel: (status) ->
       if (status =='recently sold'|| status=='not for sale')

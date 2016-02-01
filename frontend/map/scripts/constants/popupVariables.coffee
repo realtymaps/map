@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.constant 'rmapspopupVariables',
+app.constant 'rmapsPopupConstants',
   offsets:
     top: 236
     bottom: 20

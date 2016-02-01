@@ -2,7 +2,7 @@
 app = require '../app.coffee'
 
 #TODO: see if using $state.is via siblings is a way of avoiding providers.onboarding
-app.controller 'rmapsOnboardingCtrl', ($q, $log, $scope, $state, $stateParams, rmapsOnboardingOrder, rmapsOnboardingOrderSelector,
+app.controller 'rmapsOnboardingCtrl', ($q, $log, $scope, $state, $stateParams, rmapsOnboardingOrderService, rmapsOnboardingOrderSelectorService,
 rmapsPlansService, rmapsOnboardingService) ->
 
   $log = $log.spawn("frontned:map:rmapsOnboardingCtrl")
@@ -29,7 +29,7 @@ rmapsPlansService, rmapsOnboardingService) ->
 
         set: (newPlan) ->
           $scope.user.plan.name = newPlan
-          rmapsOnboardingOrderSelector.initScope(newPlan, $scope)
+          rmapsOnboardingOrderSelectorService.initScope(newPlan, $scope)
           if $scope.view?.plans?
             $scope.user.plan.price = $scope.view.plans[newPlan]?.price
             unless $scope.user.plan.price
@@ -78,14 +78,14 @@ rmapsPlansService, rmapsOnboardingService) ->
   $log.debug "current user data"
   $log.debug $scope.user
 
-  rmapsOnboardingOrderSelector.initScope($state, $scope)
+  rmapsOnboardingOrderSelectorService.initScope($state, $scope)
   $scope.view.updateState()
 
 app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingPlanCtrl")
 
 app.controller 'rmapsOnboardingPaymentCtrl',
-($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
+($scope, $state, $log, $document, stripe, rmapsFaCreditCardsService) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
@@ -140,18 +140,18 @@ app.controller 'rmapsOnboardingPaymentCtrl',
       doShowRequired: behaveLikeAngularValidation
       getCardClass: (typeStr) ->
         return '' unless typeStr
-        'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
+        'fa fa-2x ' +  rmapsFaCreditCardsService.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
+app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesService) ->
   $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
 
-  rmapsFipsCodes.getAllMlsCodes().then (mlsCodes) ->
+  rmapsFipsCodesService.getAllMlsCodes().then (mlsCodes) ->
     $scope.mlsCodes = mlsCodes
 
   $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
 
-    rmapsFipsCodes.getAllByState usStateCode
+    rmapsFipsCodesService.getAllByState usStateCode
     .then (counties) ->
       $scope.counties = counties
 

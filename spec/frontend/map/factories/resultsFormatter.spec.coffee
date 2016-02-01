@@ -10,7 +10,7 @@ describe "ResultsFormatter", ->
     angular.mock.module "uiGmapgoogle-maps.mocks"
     angular.mock.module "uiGmapgoogle-maps"
 
-    inject ['$rootScope', 'GoogleApiMock', 'ResultsFormatter'.ns(),
+    inject ['$rootScope', 'GoogleApiMock', 'rmapsResultsFormatterService',
       ($rootScope, GoogleApiMock, ResultsFormatter) =>
         scope = $rootScope.$new()
         (new GoogleApiMock).initAll()

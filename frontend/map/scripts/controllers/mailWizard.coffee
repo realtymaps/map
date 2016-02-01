@@ -4,8 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rmapsMailTemplate) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplateService) ->
   $log = $log.spawn 'frontend:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -19,7 +18,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
     $scope.steps.indexOf name
 
   _changeStep = (next = 1) ->
-    rmapsMailTemplate.save()
+    rmapsMailTemplateService.save()
     thisStep = _getStep $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return

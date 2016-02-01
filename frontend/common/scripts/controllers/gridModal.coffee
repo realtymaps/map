@@ -1,5 +1,5 @@
 mod = require '../module.coffee'
-mod.factory 'rmapsGridModal', ($log) ->
+mod.factory 'rmapsGridModalFactory', ($log) ->
   ->
     [ '$scope', '$modalInstance', 'columnDefs', 'record', 'gridName', 'fieldTypeMap',
       ($scope, $modalInstance, columnDefs, record, gridName, fieldTypeMap) ->

@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-createModalDirective = ($parse, $templateCache, $modal, $log, OpenAsModalWindowContext, options) ->
+createModalDirective = ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory, options) ->
   restrict: 'A'
   link: (scope, element, attrs) ->
 #    $log = $log.spawn 'map:openAsModal'
@@ -28,20 +28,20 @@ createModalDirective = ($parse, $templateCache, $modal, $log, OpenAsModalWindowC
       if attrs.modalTitle
         title = scope.$eval attrs.modalTitle
 
-      OpenAsModalWindowContext.modalTitle = title
+      rmapsOpenAsModalWindowContextFactory.modalTitle = title
 
       # Open the modal
       modal = $modal.open {
         animation: true
         scope: childScope
-        controller: 'OpenAsModalWindowController'
+        controller: 'OpenAsModalWindowCtrl'
         template: template
         windowClass: windowClass
         windowTemplateUrl: attrs.windowTemplateUrl || options.windowTemplateUrl
       }
 
       # Set the modal on the context to pass title and handle close event
-      OpenAsModalWindowContext.modal = modal
+      rmapsOpenAsModalWindowContextFactory.modal = modal
 
     # Bind the click event on the modal element to launch the modal window and
     # remove the click handler when the scope is destroyed
@@ -49,24 +49,24 @@ createModalDirective = ($parse, $templateCache, $modal, $log, OpenAsModalWindowC
     scope.$on '$destroy', () ->
       element.unbind 'click', openModal
 
-app.directive 'openAsModal', ($parse, $templateCache, $modal, $log, OpenAsModalWindowContext) ->
-  createModalDirective $parse, $templateCache, $modal, $log, OpenAsModalWindowContext
+app.directive 'openAsModal', ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory) ->
+  createModalDirective $parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory
 
-app.directive 'mobileModal', ($parse, $templateCache, $modal, $log, OpenAsModalWindowContext) ->
+app.directive 'mobileModal', ($parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory) ->
   options =
     windowTemplateUrl: "./includes/_mobile_modal_window.jade"
     windowClass: "mobile-view mobile-modal-window"
 
-  createModalDirective $parse, $templateCache, $modal, $log, OpenAsModalWindowContext, options
+  createModalDirective $parse, $templateCache, $modal, $log, rmapsOpenAsModalWindowContextFactory, options
 
-app.controller 'OpenAsModalWindowController', ($scope, OpenAsModalWindowContext) ->
-  $scope.context = OpenAsModalWindowContext
+app.controller 'OpenAsModalWindowCtrl', ($scope, rmapsOpenAsModalWindowContextFactory) ->
+  $scope.context = rmapsOpenAsModalWindowContextFactory
   $scope.close = () ->
-    OpenAsModalWindowContext.modal.close()
+    rmapsOpenAsModalWindowContextFactory.modal.close()
 
-app.factory 'OpenAsModalWindowContext', () ->
-  class OpenAsModalWindowContext
+app.factory 'rmapsOpenAsModalWindowContextFactory', () ->
+  class OpenAsModalWindowContextFactory
     modalTitle: null
 
-  return new OpenAsModalWindowContext
+  return new OpenAsModalWindowContextFactory
 

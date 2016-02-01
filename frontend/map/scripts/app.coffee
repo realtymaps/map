@@ -36,9 +36,9 @@ app = window.angular.module appName, [
   'validation.rule'
 ]
 
-app.controller 'rmapsAppController', ($scope, $rootScope, $location, rmapsprincipal) ->
+app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalService) ->
 
-  rmapsprincipal.getIdentity().then (identity) ->
+  rmapsPrincipalService.getIdentity().then (identity) ->
     return unless identity
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
