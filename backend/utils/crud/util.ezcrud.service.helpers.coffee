@@ -143,7 +143,6 @@ class ServiceCrud extends BaseObject
 
   upsert: (query, options = {}) ->
     @debug "upsert(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    #throw new ServiceCrudError("upsert on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
     ids = @_getIdObj query
     entity = _.omit query, @idKeys
     @debug "ids: #{JSON.stringify(ids)}"

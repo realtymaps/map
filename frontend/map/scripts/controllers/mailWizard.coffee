@@ -31,7 +31,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
   $scope.prevStep = () ->
     _changeStep(-1)
 
-
+  # accessed in child controllers for maintaining mailTemplate object
   $scope.initMailTemplate = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
@@ -40,21 +40,3 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
       campaign = rmapsMailTemplate.getCampaign()
       $log.debug "Continuing with mail campaign #{campaign.id}"
       $q.when campaign
-
-  # $rootScope.registerScopeData () ->
-  #   step = _getStep($state.current.name)
-  #   $log.debug "state.current.name: #{$state.current.name}"
-  #   $log.debug "intended wizard step: #{step}"
-  #   $log.debug "getCampaign().id:  #{rmapsMailTemplate.getCampaign().id}"
-
-  #   # if getting a param.id, load it and goto senderInfo
-  #   if $state.params.id
-  #     rmapsMailTemplate.load($state.params.id)
-  #     .then () ->
-  #       $log.debug "$state.go 'senderInfo'..."
-  #       $state.go 'senderInfo'
-
-  #   # send user straight to mail list page if trying to make invalid req to wizard step
-  #   else if step != 0 and not rmapsMailTemplate.getCampaign().id
-  #     $state.go 'mail', {}, {reload: true}
-
