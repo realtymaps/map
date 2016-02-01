@@ -3,16 +3,14 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 mapId = 'mainMap'
 originator = 'map'
-domainName = 'MapDraw'
-controllerName = "#{domainName}Ctrl"
 
 #TODO: get colors from color palette
 
-app.controller "rmaps#{controllerName}", (
-$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
+app.controller "rmapsMapDrawCtrl", (
+$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsevents) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
-  $log = $log.spawn("frontend:map:#{controllerName}")
+  $log = $log.spawn("frontend:map:MapDrawCtrl")
   drawnShapesFact = rmapsProjectsService.drawnShapes
   drawnShapesSvc = null
 
@@ -72,7 +70,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
 
     _endDrawAction = () ->
       toastr.clear _toast
-      rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+      rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
     _destroy = () ->
       _it.each _unsubscribes, (unsub) -> unsub()
@@ -84,7 +82,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
         onHidden: (hidden) ->
           _endDrawAction()
 
-      rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
+      rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
     _getShapeModel = (layer) ->
       model = _.merge layer.model, layer.toGeoJSON()

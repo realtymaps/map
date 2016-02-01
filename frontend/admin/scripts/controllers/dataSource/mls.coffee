@@ -290,7 +290,7 @@ app.controller 'rmapsMlsCtrl',
       modalInstance = $modal.open
         animation: $scope.animationsEnabled
         template: modalTemplate
-        controller: 'ModalInstanceCtrl'
+        controller: 'rmapsModalInstanceCtrl'
         resolve:
           mlsModalData: () ->
             return getDefaultBase()
@@ -309,14 +309,14 @@ app.controller 'rmapsMlsCtrl',
       modalInstance = $modal.open
         animation: $scope.animationsEnabled
         template: changePasswordTemplate
-        controller: 'ModalPasswordCtrl'
+        controller: 'rmapsModalPasswordCtrl'
 
       # ok/cancel behavior of modal
       modalInstance.result.then (password) ->
         $scope.mlsData.current.password = password
         $scope.saveServerPassword()
 
-app.controller 'ModalInstanceCtrl',
+app.controller 'rmapsModalInstanceCtrl',
   ($scope, $modalInstance, mlsModalData, adminConstants) ->
     $scope.mlsModalData = mlsModalData
     # state of editing if id is truthy
@@ -329,7 +329,7 @@ app.controller 'ModalInstanceCtrl',
       $modalInstance.dismiss('cancel')
 
 
-app.controller 'ModalPasswordCtrl',
+app.controller 'rmapsModalPasswordCtrl',
   ($scope, $modalInstance) ->
     $scope.newpassword = ''
 

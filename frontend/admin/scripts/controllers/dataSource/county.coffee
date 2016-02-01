@@ -9,7 +9,7 @@ require '../../directives/listinput.coffee'
 ###
 
 app.controller 'rmapsCountyCtrl',
-($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
+($window, $scope, $rootScope, $state, $log, rmapsCountyService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsevents, rmapsParcelEnums, rmapsPrincipalService, adminConstants) ->
 
   $scope.$state = $state
 
@@ -61,7 +61,7 @@ app.controller 'rmapsCountyCtrl',
       items: $scope.categories[list] = []
 
   $scope.getBaseRules = (dataSourceType, dataListType) ->
-    $scope.baseRules = validatorBuilder.getBaseRules(dataSourceType, dataListType)
+    $scope.baseRules = rmapsValidatorBuilderService.getBaseRules(dataSourceType, dataListType)
 
   allRules = {}
 
@@ -77,7 +77,7 @@ app.controller 'rmapsCountyCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.buildBaseRule($scope.countyData.dataSourceType.id, $scope.countyData.dataListType.id) rule
+    rmapsValidatorBuilderService.buildBaseRule($scope.countyData.dataSourceType.id, $scope.countyData.dataListType.id) rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -115,7 +115,7 @@ app.controller 'rmapsCountyCtrl',
 
       # It is important to save the data type so a transform can be regenerated entirely from the config
       rule.config = _.defaults rule.config ? {}, DataType: field.DataType
-      validatorBuilder.buildDataRule rule
+      rmapsValidatorBuilderService.buildDataRule rule
       true
     if 'base' of $scope.categories
       updateAssigned()
@@ -268,7 +268,7 @@ app.controller 'rmapsCountyCtrl',
   loadCounty = (config) ->
     $scope.getTargetCategories(config.dataSourceType.id, config.dataListType.id)
     $scope.getBaseRules(config.dataSourceType.id, config.dataListType.id)
-    normalizeService = new rmapsNormalizeService config.current.id, config.dataSourceType.id, config.dataListType.id
+    normalizeService = new rmapsNormalizeFactory config.current.id, config.dataSourceType.id, config.dataListType.id
     $scope.countyLoading =
       normalizeService.getRules()
       .then (rules) ->

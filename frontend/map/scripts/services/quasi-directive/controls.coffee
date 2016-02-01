@@ -49,11 +49,11 @@ directiveControls = [
 for control in directiveControls
   do (control) ->
     control.dName = control.name[0].toUpperCase() + control.name.slice(1) + 'Control'
-    app.directive "rmaps#{control.dName}", (rmapsMapControlsLogger, $rootScope) -> control.directive(rmapsMapControlsLogger) unless $rootScope.silenceRmapsControls
+    app.directive "rmaps#{control.dName}", (rmapsMapControlsLoggerService, $rootScope) -> control.directive(rmapsMapControlsLoggerService) unless $rootScope.silenceRmapsControls
 
 # Leaflet usage:
 #    rmapsControlsService.{Some}Control position: 'botomleft', scope: mapScope
-app.service 'rmapsControlsService', ($compile, rmapsMapControlsLogger, $rootScope, $log) ->
+app.service 'rmapsControlsService', ($compile, rmapsMapControlsLoggerService, $rootScope, $log) ->
   $log = $log.spawn('frontend:map:rmapsControlsService')
   svc = {}
   for control in directiveControls
@@ -62,10 +62,10 @@ app.service 'rmapsControlsService', ($compile, rmapsMapControlsLogger, $rootScop
         includes: L.Mixin.Events
         options: control.options
         initialize: (options) ->
-          rmapsMapControlsLogger.debug "#{control.dName} init" unless $rootScope.silenceRmapsControls
+          rmapsMapControlsLoggerService.debug "#{control.dName} init" unless $rootScope.silenceRmapsControls
           super options
         onAdd: (map) ->
-          rmapsMapControlsLogger.debug "#{control.dName} onAdd" unless $rootScope.silenceRmapsControls
+          rmapsMapControlsLoggerService.debug "#{control.dName} onAdd" unless $rootScope.silenceRmapsControls
           wrapper = L.DomUtil.create 'div', 'rmaps-control' + " rmaps-#{control.name}-control"
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
           try

@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, rmapsPrincipalService,
-  rmapsevents, rmapsPromiseThrottler, $log) ->
+  rmapsevents, rmapsPromiseThrottlerFactory, $log) ->
 
   $log = $log.spawn("frontend:map:rmapsPropertiesService")
 
@@ -11,13 +11,13 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
   _savedProperties = {}
   _favoriteProperties = {}
 
-  _detailThrottler = new rmapsPromiseThrottler('detailThrottler')
-  _filterThrottler = new rmapsPromiseThrottler('filterThrottler')
-  _filterThrottlerGeoJson = new rmapsPromiseThrottler('filterThrottlerGeoJson')
-  _filterThrottlerCluster = new rmapsPromiseThrottler('filterThrottlerCluster')
-  _parcelThrottler = new rmapsPromiseThrottler('parcelThrottler')
-  _saveThrottler = new rmapsPromiseThrottler('saveThrottler')
-  _addressThrottler = new rmapsPromiseThrottler('addressThrottler')
+  _detailThrottler = new rmapsPromiseThrottlerFactory('detailThrottler')
+  _filterThrottler = new rmapsPromiseThrottlerFactory('filterThrottler')
+  _filterThrottlerGeoJson = new rmapsPromiseThrottlerFactory('filterThrottlerGeoJson')
+  _filterThrottlerCluster = new rmapsPromiseThrottlerFactory('filterThrottlerCluster')
+  _parcelThrottler = new rmapsPromiseThrottlerFactory('parcelThrottler')
+  _saveThrottler = new rmapsPromiseThrottlerFactory('saveThrottler')
+  _addressThrottler = new rmapsPromiseThrottlerFactory('addressThrottler')
 
   _prependAmpersand = (str) ->
     if str then '&' + str else ''

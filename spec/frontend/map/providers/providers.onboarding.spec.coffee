@@ -1,14 +1,14 @@
 ###global inject:true, angular:true,expect:true###
 # sinon = require 'sinon'
 
-describe "rmapsOnboardingOrder", ->
+describe "rmapsOnboardingOrderService", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsOnboardingOrder) =>
+    inject ($rootScope, rmapsOnboardingOrderService) =>
       @$rootScope = $rootScope
-      @subject = rmapsOnboardingOrder
+      @subject = rmapsOnboardingOrderService
 
   describe 'subject', ->
 
@@ -79,15 +79,15 @@ describe "rmapsOnboardingOrder", ->
         expect(@subject.getPrevStep('junk')).to.not.be.ok
 
 
-describe "rmapsOnboardingOrderSelector", ->
+describe "rmapsOnboardingOrderSelectorService", ->
   beforeEach ->
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope, rmapsOnboardingOrderSelector, rmapsOnboardingOrder, rmapsOnboardingProOrder) =>
+    inject ($rootScope, rmapsOnboardingOrderSelectorService, rmapsOnboardingOrderService, rmapsOnboardingProOrderService) =>
       @$rootScope = $rootScope
-      @subject = rmapsOnboardingOrderSelector
-      @rmapsOnboardingOrderProvider = rmapsOnboardingOrder
-      @rmapsOnboardingProOrderProvider = rmapsOnboardingProOrder
+      @subject = rmapsOnboardingOrderSelectorService
+      @rmapsOnboardingOrderServiceProvider = rmapsOnboardingOrderService
+      @rmapsOnboardingProOrderServiceProvider = rmapsOnboardingProOrderService
 
   describe "getPlanFromState" , ->
     it 'is pro', ->
@@ -103,25 +103,25 @@ describe "rmapsOnboardingOrderSelector", ->
   describe "getOrderSvc" , ->
     describe 'state', ->
       it 'is pro', ->
-        expect(@subject.getOrderSvc current: name: 'crapPro').to.be.equal @rmapsOnboardingProOrderProvider
+        expect(@subject.getOrderSvc current: name: 'crapPro').to.be.equal @rmapsOnboardingProOrderServiceProvider
 
       describe 'not pro', ->
         it 'string', ->
-          expect(@subject.getOrderSvc current: name: '').to.be.equal @rmapsOnboardingOrderProvider
+          expect(@subject.getOrderSvc current: name: '').to.be.equal @rmapsOnboardingOrderServiceProvider
 
         it 'undefined', ->
-          expect(@subject.getOrderSvc current: name: undefined).to.be.equal @rmapsOnboardingOrderProvider
+          expect(@subject.getOrderSvc current: name: undefined).to.be.equal @rmapsOnboardingOrderServiceProvider
 
     describe 'string', ->
       it 'is pro', ->
-        expect(@subject.getOrderSvc 'pro').to.be.equal @rmapsOnboardingProOrderProvider
+        expect(@subject.getOrderSvc 'pro').to.be.equal @rmapsOnboardingProOrderServiceProvider
 
       describe 'not pro', ->
         it 'string', ->
-          expect(@subject.getOrderSvc '').to.be.equal @rmapsOnboardingOrderProvider
+          expect(@subject.getOrderSvc '').to.be.equal @rmapsOnboardingOrderServiceProvider
 
         it 'undefined', ->
-          expect(@subject.getOrderSvc()).to.be.equal @rmapsOnboardingOrderProvider
+          expect(@subject.getOrderSvc()).to.be.equal @rmapsOnboardingOrderServiceProvider
 
   describe "initScope", ->
     describe 'is pro', ->
@@ -134,4 +134,4 @@ describe "rmapsOnboardingOrderSelector", ->
         @mockScope.orderSvc.name.should.be.eql 'pro'
 
       it 'has correct steps', ->
-        @mockScope.view.steps.should.be.eql @rmapsOnboardingProOrderProvider.steps
+        @mockScope.view.steps.should.be.eql @rmapsOnboardingProOrderServiceProvider.steps

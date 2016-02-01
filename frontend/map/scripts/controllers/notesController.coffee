@@ -52,7 +52,7 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
         _signalUpdate rmapsNotesService.remove note.id
 
 .controller 'rmapsMapNotesTapCtrl',
-($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+($scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService,
 leafletIterators, toastr, $log) ->
 
   linker = rmapsMapEventsLinkerService
@@ -64,7 +64,7 @@ leafletIterators, toastr, $log) ->
 
   _destroy = () ->
     toastr.clear noteToast
-    rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+    rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
     leafletIterators.each unsubscribes, (unsub) ->
       unsub()
@@ -76,7 +76,7 @@ leafletIterators, toastr, $log) ->
     onHidden: (hidden) ->
       _destroy()
 
-  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
+  rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
   _mapHandle =
     click: (event) ->

@@ -1,13 +1,13 @@
 _ = require 'lodash'
 
 
-describe 'rmapsAdminApp.validatorBuilder', ->
+describe 'rmapsAdminApp.rmapsValidatorBuilderService', ->
 
   beforeEach ->
     angular.mock.module 'rmapsAdminApp'
 
-    inject (validatorBuilder) =>
-      @validatorBuilder = validatorBuilder
+    inject (rmapsValidatorBuilderService) =>
+      @validatorBuilder = rmapsValidatorBuilderService
 
   it 'should transform fields correctly', ->
     _buildBaseRule = @validatorBuilder.buildBaseRule('mls','listing')

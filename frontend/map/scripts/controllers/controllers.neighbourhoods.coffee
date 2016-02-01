@@ -44,7 +44,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
       delete model.properties.neighbourhood_details
       _signalUpdate drawnShapesSvc.update model
 
-.controller 'rmapsMapNeighbourhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate,
+.controller 'rmapsMapNeighbourhoodsTapCtrl', ($rootScope, $scope, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService,
   leafletIterators, toastr, $log, rmapsevents) ->
 
   createFromModal = $scope.create
@@ -61,7 +61,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
 
   _destroy = () ->
     toastr.clear toast
-    rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+    rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
     $scope.Toggles.showNeighbourhoodTap = false
 
@@ -71,7 +71,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsevents) ->
     onHidden: (hidden) ->
       _destroy()
 
-  rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)#safety precausion to not fire of unintended behavior
+  rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)#safety precausion to not fire of unintended behavior
 
   $rootScope.$on rmapsevents.neighbourhoods.createClick, (event, model, layer) ->
     createFromModal(model).finally ->

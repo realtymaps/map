@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsService, rmapsResponsiveViewService) ->
+module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResponsiveViewService) ->
   #
   # Scope variables
   #
@@ -43,7 +43,7 @@ module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window,
         # If Editor, retrieve the clients for the project
         $scope.clients = null
         if rmapsPrincipalService.isProjectEditor()
-          clientsService = new rmapsClientsService profile.project_id
+          clientsService = new rmapsClientsFactory profile.project_id
           clientsService.getAll()
           .then (clients) ->
             angular.forEach clients, (client) ->

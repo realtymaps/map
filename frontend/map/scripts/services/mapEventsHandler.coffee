@@ -20,10 +20,10 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpersService, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
+rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
 rmapsPropertiesService, rmapsMapEventEnums) ->
 
-  _gate = rmapsNgLeafletEventGate
+  _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
   _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
   _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents

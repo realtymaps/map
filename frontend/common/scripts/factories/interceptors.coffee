@@ -4,10 +4,10 @@ commonConfig = require '../../../../common/config/commonConfig.coffee'
 escapeHtml = require 'escape-html'
 mod = require '../module.coffee'
 
-defaultInterceptorList = ['rmapsLoadingIconInterceptor', 'rmapsAlertInterceptor', 'rmapsRedirectInterceptor']
+defaultInterceptorList = ['rmapsLoadingIconInterceptorFactory', 'rmapsAlertInterceptorFactory', 'rmapsRedirectInterceptorFactory']
 
 interceptors =
-  rmapsRedirectInterceptor: ($location, $rootScope, rmapsUrlHelpersService) ->
+  rmapsRedirectInterceptorFactory: ($location, $rootScope, rmapsUrlHelpersService) ->
     routes = rmapsUrlHelpersService.getRoutes()
 
     'response': (response) ->
@@ -18,7 +18,7 @@ interceptors =
         $location.path routes.profiles
       response
 
-  rmapsAlertInterceptor: ($rootScope, $q, rmapsevents) ->
+  rmapsAlertInterceptorFactory: ($rootScope, $q, rmapsevents) ->
     defineNull = (value) ->
       return if typeof value == 'undefined' then null else value
     handle = (response, error=false) ->
@@ -49,7 +49,7 @@ interceptors =
       $rootScope.$emit rmapsevents.alert.spawn, alert
       $q.reject(request)
 
-  rmapsLoadingIconInterceptor: ($q, rmapsSpinnerService) ->
+  rmapsLoadingIconInterceptorFactory: ($q, rmapsSpinnerService) ->
     request: (request) ->
       rmapsSpinnerService.incrementLoadingCount(request.url)
       request
