@@ -241,12 +241,13 @@ normalizeData = (subtask) ->
     if successes.length == 0
       logger.debug('No successful data updates from normalize subtask: '+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
       return
-    jobQueue.queueSubsequentSubtask null, subtask, successes, constants.NUM_ROWS_TO_PAGINATE, "blackknight_finalizeData",
+    jobQueue.queueSubsequentSubtask null, subtask, "blackknight_finalizeData",
       cause: subtask.data.dataType
       i: subtask.data.i
       of: subtask.data.of
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
+      ids: successes
 
 ###
 finalizeDataPrep = (subtask) ->
@@ -261,7 +262,7 @@ finalizeDataPrep = (subtask) ->
 ###
 
 finalizeData = (subtask) ->
-  Promise.map subtask.data.values, countyHelpers.finalizeData.bind(null, subtask)
+  Promise.map subtask.data.ids, countyHelpers.finalizeData.bind(null, subtask)
 
 
 ready = () ->
