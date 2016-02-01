@@ -18,14 +18,6 @@ dbs = require '../config/dbs'
 {HardFail, SoftFail, TaskNotImplemented} = require './errors/util.error.jobQueue'
 
 
-# TODO: delete this
-buildUniqueSubtaskName = (subtask, prefix='raw') ->
-  parts = [prefix, subtask.batch_id, subtask.task_name, subtask.data.dataType]
-  if subtask.data.rawTableSuffix
-    parts.push(subtask.data.rawTableSuffix)
-  parts.join('_')
-
-
 # to understand at a high level most of what is going on in this code and how to write a task to be utilized by this
 # module, go to https://realtymaps.atlassian.net/wiki/display/DN/Job+queue%3A+the+developer+guide
 

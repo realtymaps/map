@@ -76,9 +76,9 @@ class Logger
       augmentedNamespace = @base+':__default_namespace__:'
       forceDebugFileAndLine = true
     else
-      augmentedNamespace = @base+':'+@namespace
       if !@namespace.endsWith(':')
         @namespace += ':'
+      augmentedNamespace = @base+':'+@namespace
 
     ###
       Overide logObject.debug with a debug instance
