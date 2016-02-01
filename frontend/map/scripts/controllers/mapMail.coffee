@@ -1,13 +1,18 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsPrincipalService, rmapsMailTemplateService) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsprincipal, rmapsPropertiesService) ->
+  $log = $log.spawn 'frontend:mail:rmapsMapMailCtrl'
+  $log.debug 'rmapsMailWizardCtrl'
 
-  $scope.addMail = () ->
-    profile = rmapsPrincipalService.getCurrentProfile()
-    return if not profile
+  $scope.addMail = (maybeParcel) ->
+    #profile = rmapsprincipal.getCurrentProfile()
+    savedProperties = rmapsPropertiesService.getSavedProperties()
 
-    property_ids = _.keys profile.properties_selected
+    if maybeParcel?
+      property_ids = [maybeParcel.rm_property_id]
+    else
+      property_ids = _.keys savedProperties
 
     $scope.newMail =
       property_ids: property_ids
@@ -20,7 +25,8 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, rmapsPrincipalServic
       $scope.modalOk = () ->
         modalInstance.dismiss('save')
         rmapsMailTemplateService.create $scope.newMail
-        $state.go 'recipientInfo'
+        $log.debug "$state.go 'recipientInfo'..."
+        $state.go 'recipientInfo', {}, {reload: true}
 
       $scope.cancelModal = () ->
         modalInstance.dismiss('cancel')

@@ -4,7 +4,7 @@ app = require '../app.coffee'
 app.service 'rmapsMailTemplateService', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
 rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
 
-  $log = $log.spawn 'map:mailTemplate'
+  $log = $log.spawn 'frontend:mail:mailTemplate'
   mailCampaign = null
 
   campaignDefaults =
