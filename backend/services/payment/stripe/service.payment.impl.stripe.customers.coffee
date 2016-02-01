@@ -6,17 +6,20 @@ _ = require 'lodash'
 
 StripeCustomers = (stripe) ->
 
-  remove = (customer) ->
+  remove = (authUser) ->
     onMissingArgsFail
-      id: {val:customer.id, required: true}
+      id: {val: authUser.stripe_customer_id, required: true}
 
-    stripe.customers.del customer.id
+    stripe.customers.del authUser.stripe_customer_id
     .then () ->
-      logger.info "Success: removal of customer #{customer.id}"
+      logger.info "Success: removal of customer #{authUser.stripe_customer_id}"
     .catch (error) ->
-      logger.info "ERROR: removal of customer #{customer.id}"
+      logger.info "ERROR: removal of customer #{authUser.stripe_customer_id}"
       logger.error error
-      #TODO: removal failed so add it to clean up JOB TASK
+      tables.auth.toM_errors.insert
+        auth_user_id: authUser.id
+        error_name: "stripe.remove.customer"
+        data: error: error
       throw error
 
 
@@ -47,14 +50,16 @@ StripeCustomers = (stripe) ->
       description: authUser.email + ' ' + extraDescription
 
     .then (customer) ->
+      _.extend authUser, stripe_customer_id: customer.id
+
       tables.auth.user(trx)
       .update stripe_customer_id: customer.id
       .where id: authUser.id
       .then () ->
-        authUser: _.extend authUser, stripe_customer_id: customer.id
+        authUser: authUser
         customer: customer
       .catch (error) ->
-        handleStripeDisaster error, customer
+        handleStripeDisaster error, authUser
         throw new CustomerCreateFailed(error) #rethrow so any db stuff is also reverted
 
   get = (authUser) ->
