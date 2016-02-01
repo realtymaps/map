@@ -14,7 +14,7 @@ map = undefined
 
 module.exports = app
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMap,
+app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMapFactory,
   rmapsMainOptions, rmapsMapTogglesFactory, rmapsPrincipalService, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
 

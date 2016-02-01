@@ -5,7 +5,7 @@ require '../factories/filters.coffee'
   Our Filters Controller
 ###
 
-module.exports = app.controller 'rmapsFiltersFactoryMobileCtrl', ($scope, $filter, $timeout, rmapsFilters, $log) ->
+module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $timeout, rmapsFilters, $log) ->
   MAX_PRICE = 10000000
   MAX_SIZE = 10000
   MAX_DOM = 365

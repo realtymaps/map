@@ -1,12 +1,12 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsprincipal, rmapsPropertiesService, rmapsMailTemplateService) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPrincipalService, rmapsPropertiesService, rmapsMailTemplateService) ->
   $log = $log.spawn 'frontend:mail:rmapsMapMailCtrl'
   $log.debug 'rmapsMailWizardCtrl'
 
   $scope.addMail = (maybeParcel) ->
-    #profile = rmapsprincipal.getCurrentProfile()
+    #profile = rmapsPrincipalService.getCurrentProfile()
     savedProperties = rmapsPropertiesService.getSavedProperties()
 
     if maybeParcel?

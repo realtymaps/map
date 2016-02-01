@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService, rmapsMailTemplate) ->
+app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
 
   $scope.displayCategory = 'all'
 
