@@ -33,7 +33,7 @@ class RouteCrud
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
-    .then (tReq) =>
+    .then (tReq) ->
       if specificTransforms
         return validateAndTransform tReq, specificTransforms
       tReq

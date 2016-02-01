@@ -143,7 +143,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         $log.debug "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
-        $rootScope.$emit rmapsevents.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+        $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
 
   quote: () ->
     $modal.open

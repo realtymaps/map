@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplateService) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rmapsMailTemplateService) ->
   $log = $log.spawn 'frontend:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -34,8 +34,8 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMa
   $scope.initMailTemplate = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      rmapsMailTemplate.load $state.params.id
+      rmapsMailTemplateService.load $state.params.id
     else
-      campaign = rmapsMailTemplate.getCampaign()
+      campaign = rmapsMailTemplateService.getCampaign()
       $log.debug "Continuing with mail campaign #{campaign.id}"
       $q.when campaign

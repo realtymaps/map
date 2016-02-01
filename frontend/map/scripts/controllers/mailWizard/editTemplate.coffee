@@ -4,7 +4,7 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsprincipal,
+($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsPrincipalService,
 rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
   $log = $log.spawn 'frontend:mail:editTemplate'
   $log.debug 'editTemplate'
