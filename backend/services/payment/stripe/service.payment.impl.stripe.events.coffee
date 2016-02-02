@@ -62,10 +62,10 @@ StripeEvents = (stripe) ->
     unless callEvent?
       throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
     _verify(eventObj).then (validEvent) ->
-      # console.log.magenta "POST _verify"
-      #TODO: this could be moved to validation itself validation.stripe namespace: 'events'
-      # console.log.magenta "calling #{eventObj.type}"
-      # console.log _eventHandles, true
+      logger.debug.magenta "POST _verify"
+      logger.debug.magenta .magenta "calling #{eventObj.type}"
+      logger.debug.magenta  _eventHandles, true
+
       callEvent(validEvent)
       .catch (err) ->
         #TODO: maybe rethink this

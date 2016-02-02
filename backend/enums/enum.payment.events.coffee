@@ -2,6 +2,8 @@ Case = require 'case'
 _ = require 'lodash'
 
 events = [
+  "customer.updated"
+  "customer.deleted"
   "customer.subscription.created"
   "customer.subscription.verified" #specific to vero
   "customer.subscription.deleted"

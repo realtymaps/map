@@ -26,14 +26,17 @@ submitPaymentPlan = ({plan, token, authUser, trx}) ->
     plan: plan
     token: token
 
-submitEmail = ({authUser, plan, customer}) ->
+submitEmail = ({authUser, plan, trx}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
   emailServices.events.subscriptionSignUp
     authUser: authUser
     plan: plan
   .catch (error) ->
     logger.info "SignUp Failed, reverting Payment Customer"
-    paymentServices.customers.remove customer
+    paymentServices.customers.handleCreationError
+      error: error
+      trx: trx
+      authUser:authUser
     throw error #rethrow error so transaction is reverted
 
 handles = wrapHandleRoutes
@@ -86,8 +89,6 @@ handles = wrapHandleRoutes
             submitPaymentPlan {plan, token, authUser, trx}
           .then ({authUser, customer}) ->
             submitEmail {authUser, plan, customer}
-
-
 
 module.exports = mergeHandles handles,
   createUser: method: "post"

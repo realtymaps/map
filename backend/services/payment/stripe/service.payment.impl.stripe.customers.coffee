@@ -2,44 +2,46 @@
 {CustomerCreateFailed} = require '../../../utils/errors/util.errors.stripe'
 tables = require '../../../config/tables'
 logger = require('../../../config/logger').spawn('stripe')
+stripeErrorEnums = require '../../../enums/enum.stripe.errors'
 _ = require 'lodash'
 
 StripeCustomers = (stripe) ->
 
   remove = (authUser) ->
     onMissingArgsFail
-      id: {val: authUser.stripe_customer_id, required: true}
+      args:
+        id: authUser.stripe_customer_id
+      required: ['id']
 
     stripe.customers.del authUser.stripe_customer_id
     .then () ->
       logger.info "Success: removal of customer #{authUser.stripe_customer_id}"
-    .catch (error) ->
-      logger.info "ERROR: removal of customer #{authUser.stripe_customer_id}"
-      logger.error error
-      tables.auth.toM_errors.insert
+
+  handleCreationError = (opts) ->
+    onMissingArgsFail
+      args: opts
+      required: ['authUser', 'error']
+
+    {error, trx, error, authUser, error_name} = opts
+
+    logger.error 'Some Error workflow error has ocurred with stripe. Therefore a customer must be backed out.'
+    logger.error error
+
+    remove(authUser.stripe_customer_id).catch (removeError) ->
+      logger.error "Critical Error on backing a customer out."
+      logger.error removeError
+      logger.info "Putting customer clean up into a job."
+      tables.auth.toM_errors(trx).insert
         auth_user_id: authUser.id
-        error_name: "stripe.remove.customer"
+        error_name: error_name or stripeErrorEnums.stripeCusomerRemove
         data: error: error
       throw error
 
-
-  handleStripeDisaster = (originalError, customer) ->
-    logger.error 'Some Error workflow error has ocurred with stripe. Therefore a customer must be backed out.'
-    logger.error originalError
-
-    remove(customer).catch (removeError) ->
-      #TODO: OMFG put it in a JOB task to clean up mess
-      #https://realtymaps.atlassian.net/browse/MAPD-795
-      logger.error "Critical Error on backing a cusomter out."
-      logger.error removeError
-      logger.info "Putting customer clean up into a job."
   # at this point a user should already be in auth_user
   create = (opts, extraDescription = '') ->
     onMissingArgsFail
-      trx: {val:opts.trx, required: true}
-      authUser: {val:opts.authUser, required: true}
-      plan: {val:opts.plan, required: true}
-      token: {val:opts.token, required: true} #client side card info we can save to user_credit_cards
+      args: opts
+      required: ['trx', 'authUser','plan','token']
 
     token = opts.token.id
     {authUser, plan, trx} = opts
@@ -59,7 +61,7 @@ StripeCustomers = (stripe) ->
         authUser: authUser
         customer: customer
       .catch (error) ->
-        handleStripeDisaster error, authUser
+        handleCreationError error, authUser
         throw new CustomerCreateFailed(error) #rethrow so any db stuff is also reverted
 
   get = (authUser) ->
@@ -68,5 +70,6 @@ StripeCustomers = (stripe) ->
   remove: remove
   create: create
   get: get
+  handleCreationError: handleCreationError
 
 module.exports = StripeCustomers

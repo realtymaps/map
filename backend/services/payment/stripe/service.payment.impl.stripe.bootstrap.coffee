@@ -44,9 +44,7 @@ createPlan = (stripe, planName, settings) ->
 initializePlan = (stripe, planName, settings) ->
   try
     logger.debug "Attempting to initialize plan: #{planName}"
-    onMissingArgsFail
-      price: {val: settings.price, required: true}
-      interval: {val: settings.interval, required: true}
+    onMissingArgsFail args: settings, required: ['price', 'interval']
   catch error
     logger.error error
     process.exit exitCodes.PAYMENT_INIT

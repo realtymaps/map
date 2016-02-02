@@ -25,8 +25,7 @@ VeroEvents = (vero) ->
   {createOrUpdate} = require('./service.email.impl.vero.user')(vero)
 
   _requireAuthUser = (opts) -> Promise.try () ->
-    onMissingArgsFail
-      authUser: {val:opts.authUser, required: true}
+    onMissingArgsFail args: opts, required: ['authUser']
 
   _cancelPlan = (opts) -> Promise.try () ->
     _requireAuthUser(opts)
@@ -62,8 +61,7 @@ VeroEvents = (vero) ->
   subscriptionSignUp = (opts, attempt) -> Promise.try () ->
     @name = "subscriptionSignUp"
 
-    onMissingArgsFail
-      authUser: {val:opts.authUser, required: true}
+    onMissingArgsFail args: opts, required: ['authUser']
 
     {authUser} = opts
 

@@ -20,15 +20,14 @@ describe 'utils.errors.args', ->
       {field1, field2} = @testObj
 
       subject.onMissingArgsFail
-        field1: val: field1, required: true
-        field2: val: field2, required: true
-        field3: val: field2, required: true
+        args: {field1,field2}
+        required: ['field1','field2']
 
     it 'fails on missing required field', ->
       {field1} = @testObj
 
       (->
         subject.onMissingArgsFail
-          field1: val: field1, required: true
-          field2: val: null, required: true
+          args: {field1,field2:null}
+          required: ['field1','field2']
       ).should.throw()
