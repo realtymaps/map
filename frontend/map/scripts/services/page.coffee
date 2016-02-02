@@ -18,7 +18,7 @@ app.provider 'rmapsPage', () ->
   #  Get an instance of rmapsPage
   #
   $get: ($rootScope, $window, $state, $log) ->
-    $log = $log.spawn 'frontend:map:rmapsPage'
+    $log = $log.spawn 'map:rmapsPage'
 
     class RmapsPage
 

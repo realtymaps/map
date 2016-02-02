@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.us_states.root
 
 mod.service 'rmapsUsStates', ($log, $http, $q) ->
-  $log = $log.spawn("frontend:common:rmapsUsStates")
+  $log = $log.spawn("common:rmapsUsStates")
 
   _stateData = {}
   _stateDataById = {}

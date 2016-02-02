@@ -6,7 +6,7 @@ module.exports = app
 
 app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsPropertiesService, rmapsPage, rmapsevents) ->
   $scope.activeView = 'project'
-  $log = $log.spawn("frontend:map:projects")
+  $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl'
 
   $scope.formatters =

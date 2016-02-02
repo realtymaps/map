@@ -54,7 +54,7 @@ for control in directiveControls
 # Leaflet usage:
 #    rmapsControls.{Some}Control position: 'botomleft', scope: mapScope
 app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope, $log) ->
-  $log = $log.spawn('frontend:map:rmapsControls')
+  $log = $log.spawn('map:rmapsControls')
   svc = {}
   for control in directiveControls
     do (control) ->

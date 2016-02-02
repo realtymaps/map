@@ -82,11 +82,11 @@ rmapsPlansService, rmapsOnboardingService) ->
   $scope.view.updateState()
 
 app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingPlanCtrl")
+  $log = $log.spawn("map:rmapsOnboardingPlanCtrl")
 
 app.controller 'rmapsOnboardingPaymentCtrl',
 ($scope, $state, $log, $document, stripe, rmapsFaCreditCards) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
+  $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
     "id"
@@ -143,7 +143,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
         'fa fa-2x ' +  rmapsFaCreditCards.getCard(typeStr.toLowerCase())
 
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
+  $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
   rmapsFipsCodes.getAllMlsCodes().then (mlsCodes) ->
     $scope.mlsCodes = mlsCodes
@@ -158,9 +158,9 @@ app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodes) ->
   $log.debug $scope
 
 app.controller 'rmapsOnboardingVerifyCtrl', ($scope, $log) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingVerifyCtrl")
+  $log = $log.spawn("map:rmapsOnboardingVerifyCtrl")
   $log.debug $scope
 
 app.controller 'rmapsOnboardingFinishYayCtrl', ($scope, $log) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingFinishYayCtrl")
+  $log = $log.spawn("map:rmapsOnboardingFinishYayCtrl")
   $scope.view.showSteps = false

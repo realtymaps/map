@@ -5,7 +5,7 @@ app = require '../app.coffee'
 
 domainName = 'NgLeafletEventGate'
 app.service 'rmaps' + domainName, (nemSimpleLogger, rmapsMapEventEnums) ->
-  $log = nemSimpleLogger.spawn("frontend:map:#{domainName}")
+  $log = nemSimpleLogger.spawn("map:#{domainName}")
   _disabledEvents = {}
 
   _throwOnEmptyId = (mapId) ->

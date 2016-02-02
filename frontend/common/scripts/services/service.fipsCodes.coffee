@@ -5,7 +5,7 @@ fipsRoutes = backendRoutes.fipsCodes
 serviceName = 'rmapsFipsCodes'
 
 mod.service serviceName, ($log, $http) ->
-  $log = $log.spawn("frontend:map:#{serviceName}")
+  $log = $log.spawn("map:#{serviceName}")
 
   @getAllByState = (stateName) ->
     throw new Error("stateName must be defined") unless stateName

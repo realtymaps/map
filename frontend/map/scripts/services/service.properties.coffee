@@ -4,7 +4,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsProperty, rmapsprincipal,
   rmapsevents, rmapsPromiseThrottler, $log) ->
 
-  $log = $log.spawn("frontend:map:rmapsPropertiesService")
+  $log = $log.spawn("map:rmapsPropertiesService")
 
   #HASH to properties by rm_property_id
   #we may want to save details beyond just saving there fore it will be a hash pointing to an object
