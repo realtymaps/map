@@ -20,7 +20,7 @@ mod.service 'rmapsDragDropService', [ '$rootScope', ($rootScope) ->
     _target
 ]
 
-mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDrop) ->
+mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDropService) ->
     {
       restrict: 'A'
       scope: rmapsDraggable: '=', rmapsDraggableCollection: '='
@@ -48,7 +48,7 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDrop) ->
     }
 ]
 
-.directive 'rmapsDroppable', [ '$rootScope', 'rmapsDragDropService', ($rootScope, rmapsDragDrop) ->
+.directive 'rmapsDroppable', [ '$rootScope', 'rmapsDragDropService', ($rootScope, rmapsDragDropService) ->
   {
     restrict: 'A'
     scope: onDrop: '&', onDrag: '&', rmapsDroppable: '='
