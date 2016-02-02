@@ -4,7 +4,7 @@ module.exports = app
 
 
 app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $log, rmapsPropertiesService, rmapsMailTemplateService) ->
-  $log = $log.spawn 'frontend:mail:recipientInfo'
+  $log = $log.spawn 'mail:recipientInfo'
   $log.debug 'rmapsRecipientInfoCtrl'
   $scope.mailCampaign = rmapsMailTemplateService.getCampaign()
 

@@ -4,7 +4,7 @@ module.exports = app
 
 app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
   $scope.activeView = 'projects'
-  $log = $log.spawn("frontend:map:projects")
+  $log = $log.spawn("map:projects")
   $log.debug 'projectsCtrl'
 
   $scope.projects = []

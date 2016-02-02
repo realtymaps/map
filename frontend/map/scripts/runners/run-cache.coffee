@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 
 app.run ($http, DSCacheFactory, nemSimpleLogger) ->
-  $log = nemSimpleLogger.spawn("frontend:map:cache")
+  $log = nemSimpleLogger.spawn("map:cache")
   #init caches here begining w default
   DSCacheFactory 'defaultCache',
     #capacity: 100000

@@ -114,8 +114,8 @@ class Logger
   spawn: (subNamespace) ->
     _getLogger(@base, @namespace+subNamespace)
 
-  isEnabled: (subNamespace) ->
-    suffix = if !subNamespace.endsWith(':') then ':' else ''
+  isEnabled: (subNamespace='') ->
+    suffix = if subNamespace != '' && !subNamespace.endsWith(':') then ':' else ''
     debug.enabled(@namespace+subNamespace+suffix)
 
 module.exports = (base) ->

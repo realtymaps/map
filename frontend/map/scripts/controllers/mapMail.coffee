@@ -2,7 +2,7 @@ app = require '../app.coffee'
 module.exports = app
 
 app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPrincipalService, rmapsPropertiesService, rmapsMailTemplateService) ->
-  $log = $log.spawn 'frontend:mail:rmapsMapMailCtrl'
+  $log = $log.spawn 'mail:rmapsMapMailCtrl'
   $log.debug 'rmapsMailWizardCtrl'
 
   $scope.addMail = (maybeParcel) ->

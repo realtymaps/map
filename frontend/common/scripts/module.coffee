@@ -7,7 +7,7 @@ mod.config (nemDebugProvider) ->
   # TODO: isn't this a bad idea?  I think that enables *just* `common:*`, meaning it turns off anything that was turned
   # TODO: on in config, saved only by a race condition because this gets overridden when the logging config is retrieved
   # TODO: from the server
-  debug.enable("common:*")
+  #debug.enable("common:*")
 
 mod.run (rmapsUsStatesService, $rootScope) ->
 
