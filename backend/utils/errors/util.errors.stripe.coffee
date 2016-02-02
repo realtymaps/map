@@ -1,5 +1,5 @@
 _ = require 'lodash'
-StripeErrors = require 'stripe/lib/error'
+StripeErrors = require 'stripe/lib/Error'
 handler = require '../util.handler'
 
 CustomerCreateFailedError = StripeErrors.StripeError.extend(type: 'CustomerCreateFailedError')
