@@ -5,7 +5,7 @@ app.config(($provide) ->
   #recommended way of dealing with clean up of angular communication channels
   #http://stackoverflow.com/questions/11252780/whats-the-correct-way-to-communicate-between-controllers-in-angularjs
   $provide.decorator '$rootScope', ($delegate, $log) ->
-    $log = $log.spawn("frontend:map:$rootScope")
+    $log = $log.spawn("map:$rootScope")
 
     $delegate.debug = (obj) ->
       $log.debug(obj)

@@ -12,8 +12,8 @@ fi
 
 if [[ "$1" == "--to" ]]
 then
-    # means we have a specified db, don't use the configured one 
-    DST_URL=`$SCRIPT_DIR/database/getDbUrl $2`?ssl=true
+    # means we have a specified db, don't use the configured one
+    DST_URL=`$SCRIPT_DIR/database/getDbUrl $2`
     DST_DB=`$SCRIPT_DIR/database/getDbName $2`
     shift
     shift

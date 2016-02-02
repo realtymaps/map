@@ -6,7 +6,7 @@ priceMarkerTemplate = require '../../html/includes/map/_priceMarker.jade'
 
 app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, rmapsStylusConstants) ->
 
-  $log = $log.spawn('frontend:map:layerFormatter')
+  $log = $log.spawn('map:layerFormatter')
 
   renderCounters =
     fill:

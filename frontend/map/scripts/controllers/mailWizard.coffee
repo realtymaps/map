@@ -5,7 +5,7 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, rmapsMailTemplateService) ->
-  $log = $log.spawn 'frontend:mail:mail:mailWizard'
+  $log = $log.spawn 'mail:mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
     'recipientInfo'

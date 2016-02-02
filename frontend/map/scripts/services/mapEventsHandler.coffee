@@ -28,7 +28,7 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
   _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
   _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents
 
-  $log = nemSimpleLogger.spawn("frontend:map:rmapsMapEventsHandlerService")
+  $log = nemSimpleLogger.spawn("map:rmapsMapEventsHandlerService")
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
     $scope = mapCtrl.scope

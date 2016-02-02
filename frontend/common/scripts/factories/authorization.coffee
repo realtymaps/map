@@ -3,7 +3,7 @@ qs = require 'qs'
 mod = require '../module.coffee'
 
 mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, rmapsPrincipalService, rmapsUrlHelpersService) ->
-  $log = $log.spawn('frontend:map:rmapsAuthorizationFactory')
+  $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
   doPermsCheck = (toState, desiredLocation, goToLocation) ->
