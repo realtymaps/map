@@ -13,17 +13,13 @@ fi
 if [[ "$1" == "--to" ]]
 then
     # means we have a specified db, don't use the configured one
-    DST_URL=`$SCRIPT_DIR/database/getDbUrl $2`?ssl=true
+    DST_URL=`$SCRIPT_DIR/database/getDbUrl $2`
     DST_DB=`$SCRIPT_DIR/database/getDbName $2`
     shift
     shift
 else
     DST_URL="$MAIN_DATABASE_URL"
     DST_DB="main db"
-    if [[ "$MAIN_DATABASE_SSL" != "off" ]]
-    then
-      DST_URL="${DST_URL}?ssl=true"
-    fi
 fi
 
 source $SCRIPT_DIR/environmentNormalization/dbsync
