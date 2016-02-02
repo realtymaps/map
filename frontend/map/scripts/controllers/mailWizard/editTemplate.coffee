@@ -10,8 +10,10 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
   $log.debug 'editTemplate'
 
   editor = {}
-
   $scope.templObj = {}
+  $scope.data =
+    htmlcontent: ""
+
   setTemplObj = () ->
     $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
     $scope.templObj =
@@ -37,11 +39,8 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
 
   $scope.saveContent = () ->
     $log.debug "saving #{$scope.templObj.name}"
-    rmapsMailTemplateService.mailCampaign = $scope.templObj.mailCampaign
+    rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
     rmapsMailTemplateService.save()
-
-  $scope.data =
-    htmlcontent: rmapsMailTemplateService.getContent()
 
   $scope.doPreview = () ->
     rmapsMailTemplateService.openPreview()
@@ -50,3 +49,5 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
     $scope.$parent.initMailTemplate()
     .then () ->
       setTemplObj()
+      $scope.data =
+        htmlcontent: $scope.templObj.mailCampaign.content
