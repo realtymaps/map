@@ -9,15 +9,18 @@ path = require 'path'
 memoize = require 'memoizee'
 
 
-names = config.LOGGING.ENABLE.split(/[, ]/g)
-for name,i in names
-  if name.endsWith('*')
-    continue
-  else if name.endsWith(':')
-    names[i] = name+'*'
-  else
-    names[i] = name+':*'
-debug.enable(names.join(','))
+if !config.LOGGING.ENABLE
+  debug.enable(null)
+else
+  names = config.LOGGING.ENABLE.split(/[, ]/g)
+  for name,i in names
+    if name.endsWith('*')
+      continue
+    else if name.endsWith(':')
+      names[i] = name+'*'
+    else
+      names[i] = name+':*'
+  debug.enable(names.join(','))
 
 
 _utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']

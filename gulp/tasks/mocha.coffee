@@ -5,6 +5,7 @@ istanbul = require 'gulp-coffee-istanbul'
 paths = require '../../common/config/paths'
 logFile = require '../util/logFile'
 es = require 'event-stream'
+logger = require '../util/logger'
 
 require 'chai'
 require('chai').should()
@@ -17,7 +18,7 @@ runMocha = (files, reporter = 'dot', done) ->
     reporter: reporter
     showStack: true
   .once 'error', (err) ->
-    console.log(err.stack ? err)
+    logger.error(err.stack ? err)
     done()
     return process.exit(1)
 

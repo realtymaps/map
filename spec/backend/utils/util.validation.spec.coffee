@@ -5,6 +5,7 @@ _ = require 'lodash'
 require("chai").should()
 {expect} = require("chai")
 sinon = require 'sinon'
+logger = require('../../specUtils/logger').spawn('validation')
 
 {
 validators
@@ -201,11 +202,11 @@ describe 'requireAllTransforms', ->
       test1: () ->
       test2: notRequired () ->
 
-    console.log obj, true
-    
+    logger.debug obj, true
+
     allRequiredTforms = requireAllTransforms obj
 
-    console.log allRequiredTforms, true
+    logger.debug allRequiredTforms, true
 
     _.keys(allRequiredTforms).should.have.lengthOf(2)
 
