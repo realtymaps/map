@@ -33,7 +33,7 @@ class ServiceCrud extends BaseObject
       idObj[k] = '__DEFAULT__' if !v?
 
     for k,v of entityObj
-      # stringify any JSON data
+      # stringify any JSON data and arrays
       v = JSON.stringify(v) if _.isObject v
       # use placeholder for single quotes in strings (incl for JSON)
       v = v.replace(/'/g,'__SINGLE_QUOTE__') if _.isString v

@@ -46,6 +46,24 @@ describe 'util.ezcrud.service.helpers', ->
       qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
       expect(qstr.trim()).to.equal expectedSql
 
+
+    it 'returns correct upsert query string with objects and json', ->
+      expectedSql = """INSERT INTO  temp_table  (id_one,id_two,lorem,some_json,an_array) VALUES  ( DEFAULT, DEFAULT , 'ipsum''s',  
+        '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) ON CONFLICT  (id_one,id_two) DO UPDATE SET  (lorem,some_json,an_array) = 
+        ( 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) RETURNING id_one,id_two""".replace(/\n/g,'')
+
+      ids =
+        id_one: null
+        id_two: null
+      entity =
+        lorem: "ipsum's"
+        some_json: {'one': 1, 'two':["spec's", "array", "of", "strings"]}
+        an_array: [1, 2, 3]
+      tableName = 'temp_table'
+      qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
+      expect(qstr.trim()).to.equal expectedSql
+
+
     it 'gets id obj', ->
       idObj = @serviceCrud._getIdObj(@query)
       expect(idObj).to.deep.equal {'id':1}
