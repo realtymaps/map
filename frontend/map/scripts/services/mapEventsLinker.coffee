@@ -3,7 +3,7 @@ app = require '../app.coffee'
 _thisName = "MapEventsLinkerService"
 
 app.service "rmaps#{_thisName}", ($rootScope, nemSimpleLogger, rmapsNgLeafletHelpersService, leafletDrawEvents) ->
-  $log = nemSimpleLogger.spawn("frontend:map:#{_thisName}")
+  $log = nemSimpleLogger.spawn("map:#{_thisName}")
   leafletEvents = rmapsNgLeafletHelpersService.events
   _getMapIdEventStr = rmapsNgLeafletHelpersService.events.getMapIdEventStr
 

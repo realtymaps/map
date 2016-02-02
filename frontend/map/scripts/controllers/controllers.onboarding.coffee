@@ -86,7 +86,7 @@ app.controller 'rmapsOnboardingPlanCtrl', ($scope, $state, $log) ->
 
 app.controller 'rmapsOnboardingPaymentCtrl',
 ($scope, $state, $log, $document, stripe, rmapsFaCreditCardsService) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingPaymentCtrl")
+  $log = $log.spawn("map:rmapsOnboardingPaymentCtrl")
 
   _safePaymentFields = [
     "id"
@@ -143,7 +143,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
         'fa fa-2x ' +  rmapsFaCreditCardsService.getCard(typeStr.toLowerCase())
 
 app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesService) ->
-  $log = $log.spawn("frontend:map:rmapsOnboardingLocationCtrl")
+  $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
   rmapsFipsCodesService.getAllMlsCodes().then (mlsCodes) ->
     $scope.mlsCodes = mlsCodes
