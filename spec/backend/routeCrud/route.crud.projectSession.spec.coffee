@@ -229,6 +229,7 @@ describe 'route.projectSession', ->
         body:{}
 
     it 'clients', ->
+      this.timeout(5000) # give it a longer timeout since 2s doesn't seem to be enough
       @subject.byIdDELETE(@mockRequest)
       .then =>
         @subject.svc.deleteStub.called.should.be.true

@@ -1,7 +1,7 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.provider 'rmapsOnboardingOrder', () ->
+app.provider 'rmapsOnboardingOrderService', () ->
   class OnBoardingOrder
     constructor: (@steps = [
       'onboardingPayment'
@@ -29,7 +29,6 @@ app.provider 'rmapsOnboardingOrder', () ->
 
     getNextStep: (name, direction = 1) ->
       currentId = @getId name
-      return unless currentId >= 0
       nextStepId = currentId + direction
       if @inBounds nextStepId
         @getStepName nextStepId
@@ -42,15 +41,15 @@ app.provider 'rmapsOnboardingOrder', () ->
 
   new OnBoardingOrder()
 
-app.provider 'rmapsOnboardingProOrder', (rmapsOnboardingOrderProvider) ->
-  new rmapsOnboardingOrderProvider.clazz [
+app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvider) ->
+  new rmapsOnboardingOrderServiceProvider.clazz [
     'onboardingPayment'
     'onboardingLocation'
     # 'onboardingVerify'
     'onboardingFinishYay'
   ], 'pro', 'onboardingLocation'#'onboardingVerify'
 
-app.provider 'rmapsOnboardingOrderSelector', (rmapsOnboardingOrderProvider, rmapsOnboardingProOrderProvider) ->
+app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   @getPlanFromState = ($state) ->
     return unless $state
     if /pro/i.test($state.current.name)
@@ -60,8 +59,8 @@ app.provider 'rmapsOnboardingOrderSelector', (rmapsOnboardingOrderProvider, rmap
     if !_.isString plan
       plan = @getPlanFromState(plan)# then plan should be $state
     if plan == 'pro'
-      return rmapsOnboardingProOrderProvider
-    rmapsOnboardingOrderProvider
+      return rmapsOnboardingProOrderServiceProvider
+    rmapsOnboardingOrderServiceProvider
 
   @initScope = (plan, $scope) ->
     $scope.orderSvc = @getOrderSvc(plan)

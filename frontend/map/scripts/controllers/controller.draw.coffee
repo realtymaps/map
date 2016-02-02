@@ -3,20 +3,18 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 mapId = 'mainMap'
 originator = 'map'
-domainName = 'MapDraw'
-controllerName = "#{domainName}Ctrl"
 
 #TODO: get colors from color palette
 
-app.controller "rmaps#{controllerName}", (
-$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGate, leafletIterators, toastr,
-leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevents) ->
+app.controller "rmapsMapDrawCtrl", (
+$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
+leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
-  $log = $log.spawn("frontend:map:#{controllerName}")
+  $log = $log.spawn("frontend:map:MapDrawCtrl")
   drawnShapesFact = rmapsProjectsService.drawnShapes
   drawnShapesSvc = null
 
-  if profile = rmapsprincipal.getCurrentProfile()
+  if profile = rmapsPrincipalService.getCurrentProfile()
     $log.debug('profile: project_id' + profile.project_id)
     drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
     drawnShapesSvc.getList().then (drawnShapes) ->
@@ -72,7 +70,7 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
 
     _endDrawAction = () ->
       toastr.clear _toast
-      rmapsNgLeafletEventGate.enableMapCommonEvents(mapId)
+      rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
     _destroy = () ->
       _it.each _unsubscribes, (unsub) -> unsub()
@@ -84,7 +82,7 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
         onHidden: (hidden) ->
           _endDrawAction()
 
-      rmapsNgLeafletEventGate.disableMapCommonEvents(mapId)
+      rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
     _getShapeModel = (layer) ->
       model = _.merge layer.model, layer.toGeoJSON()
@@ -111,7 +109,7 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
 
     _commonPostDrawActions = () ->
       if $scope.Toggles.propertiesInShapes
-        $rootScope.$emit rmapsevents.map.mainMap.redraw
+        $rootScope.$emit rmapsEventConstants.map.mainMap.redraw
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
@@ -148,7 +146,7 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
     _unsubscribes = _linker.hookDraw(mapId, _handle, originator)
 
     #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
-    $rootScope.$on rmapsevents.neighbourhoods.listToggled, (event, args...) ->
+    $rootScope.$on rmapsEventConstants.neighbourhoods.listToggled, (event, args...) ->
       [isOpen] = args
       if !isOpen
         _showHiddenLayers()
@@ -159,9 +157,9 @@ leafletData, leafletDrawEvents, rmapsprincipal, rmapsProjectsService, rmapsevent
     $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
       _eachLayerModel drawnItems, (model, layer) ->
         if newVal
-          $log.debug "bound: #{rmapsevents.neighbourhoods.createClick}"
+          $log.debug "bound: #{rmapsEventConstants.neighbourhoods.createClick}"
           layer.on 'click', () ->
-            $rootScope.$emit rmapsevents.neighbourhoods.createClick, model, layer
+            $rootScope.$emit rmapsEventConstants.neighbourhoods.createClick, model, layer
           return
         layer.clearAllEventListeners()
 

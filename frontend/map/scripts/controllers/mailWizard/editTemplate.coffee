@@ -4,15 +4,15 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsprincipal,
-rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
+($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsPrincipalService,
+rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
 
   editor = {}
 
-  $scope.templObj = rmapsMailTemplate
+  $scope.templObj = rmapsMailTemplateService
 
   $scope.quoteAndSend = () ->
-    rmapsMailTemplate.quote()
+    rmapsMailTemplateService.quote()
 
   $scope.textEditorSetup = () ->
     (el) ->
@@ -30,10 +30,10 @@ rmapsMailTemplate, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeSe
   $scope.macro = ""
 
   $scope.saveContent = () ->
-    rmapsMailTemplate.save()
+    rmapsMailTemplateService.save()
 
   $scope.data =
-    htmlcontent: rmapsMailTemplate.getContent()
+    htmlcontent: rmapsMailTemplateService.getContent()
 
   $scope.doPreview = () ->
-    rmapsMailTemplate.openPreview()
+    rmapsMailTemplateService.openPreview()

@@ -1,4 +1,4 @@
-div(ng-controller="MobilePageCtrl")
+div(ng-controller="rmapsMobilePageCtrl")
   .mobile-page(ng-class="{' ':!isMobileNavOpen,'mobile-nav-open':isMobileNavOpen, 'mobile-view': mobileView, 'desktop-view': desktopView }")
     include ../includes/_header
     #mobile-page-overlay(ng-if='isMobileNavOpen' ng-click='closeMobileNav($event)' ng-swipe-left='closeMobileNav($event)')

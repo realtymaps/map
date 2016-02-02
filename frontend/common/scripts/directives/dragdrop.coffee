@@ -4,7 +4,7 @@ mod = require '../module.coffee'
 # --------
 # Intended to be used with e.g. ng-repeat so items can be moved between lists
 
-mod.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
+mod.service 'rmapsDragDropService', [ '$rootScope', ($rootScope) ->
   _src = null
   _target = null
   dragStart: (src) ->
@@ -20,7 +20,7 @@ mod.service 'rmapsDragDrop', [ '$rootScope', ($rootScope) ->
     _target
 ]
 
-mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
+mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDrop) ->
     {
       restrict: 'A'
       scope: rmapsDraggable: '=', rmapsDraggableCollection: '='
@@ -32,23 +32,23 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
           # Firefox won't fire drag events without data
           e.dataTransfer.setData('text/plain', '')
 
-          rmapsDragDrop.dragStart
+          rmapsDragDropService.dragStart
             el: el
             model: scope.rmapsDraggable
             collection: scope.rmapsDraggableCollection
 
         el.bind 'dragend', (e) ->
-          rmapsDragDrop.dragEnd
+          rmapsDragDropService.dragEnd
             el: el
             model: scope.rmapsDraggable
             collection: scope.rmapsDraggableCollection
 
         el.bind 'dragenter', (e) ->
-          rmapsDragDrop.dragEnter scope.rmapsDraggable
+          rmapsDragDropService.dragEnter scope.rmapsDraggable
     }
 ]
 
-.directive 'rmapsDroppable', [ '$rootScope', 'rmapsDragDrop', ($rootScope, rmapsDragDrop) ->
+.directive 'rmapsDroppable', [ '$rootScope', 'rmapsDragDropService', ($rootScope, rmapsDragDrop) ->
   {
     restrict: 'A'
     scope: onDrop: '&', onDrag: '&', rmapsDroppable: '='
@@ -74,12 +74,12 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDrop', (rmapsDragDrop) ->
         angular.element(e.target).removeClass 'rmaps-drag-over'
 
         scope.onDrop()(
-          rmapsDragDrop.getSrc(),
+          rmapsDragDropService.getSrc(),
           {
             el: el
             collection: scope.rmapsDroppable
           },
-          rmapsDragDrop.getTarget()
+          rmapsDragDropService.getTarget()
         )
 
       $rootScope.$on 'rmaps-drag-start', ->

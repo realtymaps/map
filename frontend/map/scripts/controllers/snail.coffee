@@ -15,10 +15,10 @@ _setContextValues = null
 
 module.exports = app.controller 'rmapsSnailCtrl',
   ($scope, $rootScope, $location, $http, $sce, $timeout, $modal,
-  rmapsRenderPdfBlob, rmapsdocumentTemplates, rmapsMainOptions, rmapsSpinner) ->
+  rmapsRenderPdfBlobService, rmapsDocumentTemplateConstants, rmapsMainOptions, rmapsSpinnerService) ->
 
     $scope.data = data
-    $scope.rmapsdocumentTemplates = rmapsdocumentTemplates
+    $scope.rmapsDocumentTemplateConstants = rmapsDocumentTemplateConstants
     $scope.fonts = fonts
     $scope.placeholderValues =
       from:
@@ -56,7 +56,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
     _setContextValues = (index, blob) ->
       $scope["pdfPreviewBlob#{index}"] = $sce.trustAsResourceUrl(blob)
       $scope["templateId#{index}"] = $scope.form.style.templateId
-      template = $scope.rmapsdocumentTemplates[$scope["templateId#{index}"]]
+      template = $scope.rmapsDocumentTemplateConstants[$scope["templateId#{index}"]]
       if template
         $scope["width#{index}"] = template.width
         $scope["height#{index}"] = template.height
@@ -70,15 +70,15 @@ module.exports = app.controller 'rmapsSnailCtrl',
     _setContextValues(1, 'about:blank')
 
     $scope.renderError = (reason) ->
-      rmapsSpinner.decrementLoadingCount('pdf rendering')
+      rmapsSpinnerService.decrementLoadingCount('pdf rendering')
 
     $scope.finishRender = () ->
       $scope.iframeIndex = ($scope.iframeIndex+1)%2
-      rmapsSpinner.decrementLoadingCount('pdf rendering')
+      rmapsSpinnerService.decrementLoadingCount('pdf rendering')
 
     doRender = () ->
       renderPromise = null
-      rmapsRenderPdfBlob.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
+      rmapsRenderPdfBlobService.toBlobUrl($scope.form.style.templateId, $scope.data.snailData)
       .then (blob) ->
         _setContextValues(($scope.iframeIndex+1)%2, blob)
       , $scope.renderError
@@ -87,7 +87,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
       if !$scope.form?.style?.templateId
         $scope.formReady = false
         return
-      template = $scope.rmapsdocumentTemplates[$scope.form.style.templateId]
+      template = $scope.rmapsDocumentTemplateConstants[$scope.form.style.templateId]
       formReady = true
       for prop of $scope.form
         $scope.data.snailData[prop] = _.clone($scope.form[prop])
@@ -104,7 +104,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
         renderPromise = null
       else
         # create a new one
-        rmapsSpinner.incrementLoadingCount('pdf rendering')
+        rmapsSpinnerService.incrementLoadingCount('pdf rendering')
       renderPromise = $timeout(doRender, rmapsMainOptions.pdfRenderDelay)
 
     setWatch = () ->
@@ -128,7 +128,7 @@ module.exports = app.controller 'rmapsSnailCtrl',
     if !$scope.data.property
       # we got here through direct navigation, so we don't have data on a particular property, go to the map
       $location.url frontendRoutes.map
-app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
+app.run ($rootScope, $location, $timeout, rmapsEventConstants, rmapsSpinnerService) ->
   initiateSend = (property) ->
     _setContextValues?(0, 'about:blank')
     _setContextValues?(1, 'about:blank')
@@ -136,7 +136,7 @@ app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
     _.extend(data.snailData, pdfUtils.buildAddresses(property))
     setWatch?()
     $location.url frontendRoutes.snail
-  $rootScope.$on rmapsevents.snail.initiateSend, (event, property) -> initiateSend(property)
+  $rootScope.$on rmapsEventConstants.snail.initiateSend, (event, property) -> initiateSend(property)
 
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     # if we're leaving the snail state, cancel the watch for performance
@@ -145,4 +145,4 @@ app.run ($rootScope, $location, $timeout, rmapsevents, rmapsSpinner) ->
       if renderPromise
         $timeout.cancel(renderPromise)
         renderPromise = null
-        rmapsSpinner.decrementLoadingCount('pdf rendering')
+        rmapsSpinnerService.decrementLoadingCount('pdf rendering')

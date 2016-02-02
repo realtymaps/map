@@ -45,7 +45,7 @@
 #     to MainOpions.alerts.quietMillis
 ###
 mod = require '../module.coffee'
-mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsevents, $log, rmapsMainOptions) ->
+mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsEventConstants, $log, rmapsMainOptions) ->
   $scope.alerts = []
   alertsMap = {}
   anonymousAlertCounter = 1
@@ -153,7 +153,7 @@ mod.controller 'rmapsAlertsCtrl', ($scope, $timeout, $sce, rmapsevents, $log, rm
 
   # expose some functions via scope and event
   $scope.hideAlert = hideAlert # this is used by the alert close button
-  $scope.$onRootScope rmapsevents.alert.spawn, handleAlertSpawnEvent
-  $scope.$onRootScope rmapsevents.alert.hide, (event, alertId) -> hideAlert(alertId)
-  $scope.$onRootScope rmapsevents.alert.dismiss, (event, alertId) -> removeAlert(alertId)
-  $scope.$onRootScope rmapsevents.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)
+  $scope.$onRootScope rmapsEventConstants.alert.spawn, handleAlertSpawnEvent
+  $scope.$onRootScope rmapsEventConstants.alert.hide, (event, alertId) -> hideAlert(alertId)
+  $scope.$onRootScope rmapsEventConstants.alert.dismiss, (event, alertId) -> removeAlert(alertId)
+  $scope.$onRootScope rmapsEventConstants.alert.prevent, (event, alertInfo) -> preventAlert(alertInfo)

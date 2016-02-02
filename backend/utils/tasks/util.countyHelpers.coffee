@@ -174,33 +174,14 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 
 
 finalizeData = (subtask, id) ->
-  taxEntriesPromise = tables.property.tax()
+  tables.property.tax()
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('deleted')
   .orderByRaw('close_date DESC NULLS FIRST')
-  deedEntriesPromise = tables.property.deed()
-  .select('*')
-  .where(rm_property_id: id)
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('close_date ASC NULLS LAST')
-  mortgageEntriesPromise = tables.property.mortgage()
-  .select('*')
-  .where(rm_property_id: id)
-  .whereNull('deleted')
-  .orderBy('rm_property_id')
-  .orderBy('deleted')
-  .orderByRaw('close_date ASC NULLS LAST')
-  # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
-  # TODO: simultaneous closings, how do we properly sort to account for that?
-  parcelsPromise = tables.property.parcel()
-  .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
-  .where(rm_property_id: id)
-  Promise.join taxEntriesPromise, deedEntriesPromise, mortgageEntriesPromise, parcelsPromise, (taxEntries=[], deedEntries=[], mortgageEntries=[], parcel=[]) ->
+  .then (taxEntries=[]) ->
     if taxEntries.length == 0
       # not sure if this should ever be possible, but we'll handle it anyway
       return tables.property.deletes()
@@ -208,29 +189,59 @@ finalizeData = (subtask, id) ->
         rm_property_id: id
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
-    tax = dataLoadHelpers.finalizeEntry(taxEntries)
-    tax.data_source_type = 'county'
-    _.extend(tax, parcel[0])
+    if subtask.data.cause != 'tax' && taxEntries[0]?.batch_id == subtask.batch_id
+      # since the same rm_property_id might get enqueued for finalization multiple times, we GTFO based on the priority
+      # of the given enqueue source , in the following order: tax, deed, mortgage.  So if this instance wasn't enqueued
+      # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
+      # care of it.
+      return
+    tables.property.deed()
+    .select('*')
+    .where(rm_property_id: id)
+    .whereNull('deleted')
+    .orderBy('rm_property_id')
+    .orderBy('deleted')
+    .orderByRaw('close_date ASC NULLS LAST')
+    .then (deedEntries=[]) ->
+      if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
+        # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
+        return
+      mortgagePromise = tables.property.mortgage()
+      .select('*')
+      .where(rm_property_id: id)
+      .whereNull('deleted')
+      .orderBy('rm_property_id')
+      .orderBy('deleted')
+      .orderByRaw('close_date ASC NULLS LAST')
+      parcelsPromise = tables.property.parcel()
+      .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
+      .where(rm_property_id: id)
+      Promise.join mortgagePromise, parcelsPromise, (mortgageEntries=[], parcel=[]) ->
+        # TODO: does this need to be discriminated further?  speculators can resell a property the same day they buy it with
+        # TODO: simultaneous closings, how do we properly sort to account for that?
+        tax = dataLoadHelpers.finalizeEntry(taxEntries)
+        tax.data_source_type = 'county'
+        _.extend(tax, parcel[0])
 
-    # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
-    # TODO: static data fields?
+        # TODO: consider going through salesHistory to make it essentially a diff, with changed values only for certain
+        # TODO: static data fields?
 
-    # now that we have an ordered sales history, overwrite that into the tax record
-    saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
-    tax.subscriber_groups.mortgage = mortgageEntries
-    lastSale = deedEntries.pop()
-    if lastSale?
-      tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
-      tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
-      for field in saleFields
-        tax[field] = lastSale[field]
-    tax.shared_groups.sale = []
-    for deedInfo in deedEntries
-      tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
-      tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
+        # now that we have an ordered sales history, overwrite that into the tax record
+        saleFields = ['price', 'close_date', 'parcel_id', 'owner_name', 'owner_name_2', 'address', 'owner_address']
+        tax.subscriber_groups.mortgage = mortgageEntries
+        lastSale = deedEntries.pop()
+        if lastSale?
+          tax.subscriber_groups.owner = lastSale.subscriber_groups.owner
+          tax.subscriber_groups.deed = lastSale.subscriber_groups.deed
+          for field in saleFields
+            tax[field] = lastSale[field]
+        tax.shared_groups.sale = []
+        for deedInfo in deedEntries
+          tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
+          tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-    tables.property.combined()
-    .insert(tax)
+        tables.property.combined()
+        .insert(tax)
 
 
 ###
