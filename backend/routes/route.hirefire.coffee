@@ -30,12 +30,12 @@ info = (req, res, next) -> Promise.try () ->
     clearTimeout(_timeout)
     # continue to slightly stagger checks, just in case the initial stagger was unlucky
     _timeout = setTimeout(_checkIfRun, config.HIREFIRE.BACKUP.RUN_WINDOW + Math.floor(Math.random()*config.HIREFIRE.BACKUP.DELAY_VARIATION))
-  
+
   now = Date.now()
   keystore.setValue(HIREFIRE_RUN_TIMESTAMP, now)
   .then (currentTimestamp=now) ->
     # if it turns out something else has started running since we determined we should run (race condition),
-    # don't bother running if this isn't a real hirefire hit (let the other one handle it) 
+    # don't bother running if this isn't a real hirefire hit (let the other one handle it)
     if _priorTimestamp? && currentTimestamp != _priorTimestamp && req == null
       return
     jobQueue.doMaintenance()

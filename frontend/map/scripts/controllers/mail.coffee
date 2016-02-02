@@ -4,7 +4,7 @@ _ = require 'lodash'
 module.exports = app
 
 app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipalService, rmapsMailCampaignService) ->
-  $log = $log.spawn 'frontend:mail:mailCampaigns'
+  $log = $log.spawn 'mail:mailCampaigns'
   $log.debug 'rmapsMailCtrl'
   $scope.mailCampaigns = []
 

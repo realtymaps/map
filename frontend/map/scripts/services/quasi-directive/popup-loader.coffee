@@ -13,7 +13,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
   _delay = 100 #ms
   _timeoutPromise = null
 
-  $log = $log.spawn("frontend:map:popupLoader")
+  $log = $log.spawn("map:popupLoader")
 
   _close =  ->
     return unless _map

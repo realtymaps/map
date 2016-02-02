@@ -24,7 +24,7 @@ app.factory 'rmapsMapFactory',
 
     limits = rmapsMainOptions.map
 
-    $log = nemSimpleLogger.spawn("frontend:map:factory")
+    $log = nemSimpleLogger.spawn("map:factory")
     testLogger = rmapsMapTestLoggerService
 
     _initToggles = ($scope, toggles) ->
