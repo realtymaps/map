@@ -27,17 +27,14 @@ sendNotification = notification('jobQueue')
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   dbs.get('main').transaction (transaction) ->
-    if config.JOB_QUEUE.LOCK_DEBUG
-      logger.error "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
+    logger.spawn('dbLock').debug "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
     .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
     .then () ->
-      if config.JOB_QUEUE.LOCK_DEBUG
-        logger.error "==================<#{id}>  Acquired lock: #{lockId}"
+      logger.spawn('dbLock').debug "==================<#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
     .finally () ->
-      if config.JOB_QUEUE.LOCK_DEBUG
-        logger.error "------------------<#{id}> Releasing lock: #{lockId}"
+      logger.spawn('dbLock').debug "------------------<#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = () -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -503,27 +500,38 @@ _updateTaskCounts = (transaction) ->
   transaction.select(dbs.get('main').raw('jq_update_task_counts()'))
 
 doMaintenance = () ->
-  logger.spawn("maintenance").debug('Doing maintenance')
+  maintenanceLogger = logger.spawn("maintenance")
+  maintenanceLogger.debug('Doing maintenance...')
   _withDbLock config.JOB_QUEUE.MAINTENANCE_LOCK_ID, (transaction) ->
+    maintenanceLogger.debug('Getting last maintenance timestamp...')
     keystore.getValue(MAINTENANCE_TIMESTAMP, defaultValue: 0)
     .then (timestamp) ->
       if Date.now() - timestamp < config.JOB_QUEUE.MAINTENANCE_WINDOW
+        maintenanceLogger.debug('Skipping maintenance.')
         return
       Promise.try () ->
+        maintenanceLogger.debug('_handleSuccessfulTasks...')
         _handleSuccessfulTasks(transaction)
       .then () ->
+        maintenanceLogger.debug('_setFinishedTimestamps...')
         _setFinishedTimestamps(transaction)
       .then () ->
+        maintenanceLogger.debug('_sendLongTaskWarnings...')
         _sendLongTaskWarnings(transaction)
       .then () ->
+        maintenanceLogger.debug('_killLongTasks...')
         _killLongTasks(transaction)
       .then () ->
+        maintenanceLogger.debug('_handleZombies...')
         _handleZombies(transaction)
       .then () ->
+        maintenanceLogger.debug('_setFinishedTimestamps...')
         _setFinishedTimestamps(transaction)
       .then () ->
+        maintenanceLogger.debug('_updateTaskCounts...')
         _updateTaskCounts(transaction)
       .then () ->
+        maintenanceLogger.debug('Setting last maintenance timestamp...')
         keystore.setValue(MAINTENANCE_TIMESTAMP, Date.now())
 
 getQueueNeeds = () ->
