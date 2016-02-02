@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-app.factory 'rmapsMapToggles', ($rootScope) ->
+app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
 
   (json) ->
     _locationCb = null

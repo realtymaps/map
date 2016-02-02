@@ -4,14 +4,15 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $modal, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResultsFormatter, rmapsPropertyFormatter, rmapsPropertiesService, rmapsPage, rmapsevents) ->
+app.controller 'rmapsProjectCtrl',
+($rootScope, $scope, $http, $log, $state, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsPageService, rmapsEventConstants) ->
   $scope.activeView = 'project'
   $log = $log.spawn("frontend:map:projects")
   $log.debug 'projectCtrl'
 
   $scope.formatters =
-    results: new rmapsResultsFormatter scope: $scope
-    property: new rmapsPropertyFormatter
+    results: new rmapsResultsFormatterService scope: $scope
+    property: new rmapsPropertyFormatterService
 
   # Override for property button
   $scope.formatters.results.zoomTo = (result) ->
@@ -89,13 +90,13 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
           project.properties_selected = _.pick properties, _.keys(project.properties_selected)
           project.favorites = _.pick properties, _.keys(project.favorites)
 
-      clientsService = new rmapsClientsService project.id unless clientsService
+      clientsService = new rmapsClientsFactory project.id unless clientsService
       $scope.loadClients()
 
       $scope.project = project
 
       # Set the project name as the page title
-      rmapsPage.setDynamicTitle(project.name)
+      rmapsPageService.setDynamicTitle(project.name)
 
   $scope.loadProperties = (properties) ->
     rmapsPropertiesService.getProperties _.keys(properties), 'filter'
@@ -109,7 +110,7 @@ app.controller 'rmapsProjectCtrl', ($rootScope, $scope, $http, $log, $state, $mo
     .then (clients) ->
       $scope.project.clients = clients
 
-  $rootScope.$onRootScope rmapsevents.notes, () ->
+  $rootScope.$onRootScope rmapsEventConstants.notes, () ->
     $scope.loadProject() unless !$state.params.id
 
   $rootScope.registerScopeData () ->

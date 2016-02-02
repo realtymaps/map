@@ -2,9 +2,9 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.factory 'rmapsClientsService', ($http) ->
+app.factory 'rmapsClientsFactory', ($http) ->
 
-  class ClientsService
+  class Clients
     constructor: (@projectId) ->
       @endpoint = "#{backendRoutes.projectSession.root}/#{@projectId}/clients"
 

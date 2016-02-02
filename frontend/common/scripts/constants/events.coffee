@@ -2,7 +2,7 @@
 keysToValues = require '../../../../common/utils/util.keysToValues.coffee'
 mod = require '../module.coffee'
 
-mod.constant 'rmapsevents',
+mod.constant 'rmapsEventConstants',
   keysToValues
     notes: 1
     neighbourhoods:

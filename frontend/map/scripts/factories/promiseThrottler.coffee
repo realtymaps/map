@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 
 
-app.factory 'rmapsPromiseThrottler', ($log, $timeout, $q) ->
+app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
 
   defaultName = 'PromiseThrottler'
   defaultNameIndex = 0

@@ -14,8 +14,7 @@ require '../../factories/validatorBuilder.coffee'
 
 
 app.controller 'rmapsNormalizeCtrl',
-['$window', '$scope', '$rootScope', '$state', '$log', 'rmapsMlsService', 'rmapsNormalizeService', 'validatorBuilder', 'rmapsevents', 'rmapsParcelEnums', 'rmapsprincipal', 'adminConstants',
-($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeService, validatorBuilder, rmapsevents, rmapsParcelEnums, rmapsprincipal, adminConstants) ->
+($window, $scope, $rootScope, $state, $log, rmapsMlsService, rmapsNormalizeFactory, rmapsValidatorBuilderService, rmapsEventConstants, rmapsParcelEnums, rmapsPrincipalService, rmapsAdminConstants) ->
 
   $scope.$state = $state
 
@@ -47,7 +46,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   $scope.subStatusOptions = _.values rmapsParcelEnums.subStatus
 
-  $scope.baseRules = validatorBuilder.getBaseRules('mls', 'listing')
+  $scope.baseRules = rmapsValidatorBuilderService.getBaseRules('mls', 'listing')
 
   $scope.categories = {}
   $scope.targetCategories = _.map rmapsParcelEnums.categories['mls']['listing'], (label, list) ->
@@ -78,7 +77,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Handles adding base rules
   addBaseRule = (rule) ->
-    validatorBuilder.buildBaseRule('mls', 'listing') rule
+    rmapsValidatorBuilderService.buildBaseRule('mls', 'listing') rule
     addRule rule, 'base'
 
   # Handles parsing existing rules for display
@@ -115,7 +114,7 @@ app.controller 'rmapsNormalizeCtrl',
 
       # It is important to save the data type so a transform can be regenerated entirely from the config
       rule.config = _.defaults rule.config ? {}, DataType: field.DataType
-      validatorBuilder.buildDataRule rule
+      rmapsValidatorBuilderService.buildDataRule rule
       true
 
     _.forEach $scope.categories.base, (rule) -> updateAssigned()
@@ -130,14 +129,14 @@ app.controller 'rmapsNormalizeCtrl',
   $scope.loadLookups = (field) ->
     if field?._lookups
       $scope.fieldData.current._lookups = field._lookups
-      if field._lookups.length <= adminConstants.dataSource.lookupThreshold
+      if field._lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
         $scope.fieldData.current.lookups = field._lookups
     else if field && !field._lookups && field.LookupName
       config = $scope.mlsData.current
       $scope.mlsLoading = rmapsMlsService.getLookupTypes config.id, config.listing_data.db, field.LookupName
       .then (lookups) ->
         $scope.fieldData.current._lookups = field._lookups = lookups
-        if lookups.length <= adminConstants.dataSource.lookupThreshold
+        if lookups.length <= rmapsAdminConstants.dataSource.lookupThreshold
           $scope.fieldData.current.lookups = lookups
         $scope.$evalAsync()
 
@@ -269,7 +268,7 @@ app.controller 'rmapsNormalizeCtrl',
 
   # Load saved MLS config and RETS fields
   loadMls = (config) ->
-    normalizeService = new rmapsNormalizeService config.id, 'mls', 'listing'
+    normalizeService = new rmapsNormalizeFactory config.id, 'mls', 'listing'
     $scope.mlsLoading =
       normalizeService.getRules()
       .then (rules) ->
@@ -296,4 +295,3 @@ app.controller 'rmapsNormalizeCtrl',
   # Register the logic that acquires data so it can be evaluated after auth
   $rootScope.registerScopeData () ->
     $scope.loadReadyMls()
-]

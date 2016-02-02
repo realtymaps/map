@@ -2,10 +2,10 @@
 describe 'NgLeafletEventGate', ->
   beforeEach ->
     angular.mock.module 'rmapsMapApp'
-    inject ($rootScope, digestor, rmapsNgLeafletEventGate) =>
+    inject ($rootScope, digestor, rmapsNgLeafletEventGateService) =>
       @$rootScope = $rootScope
       @digestor = digestor
-      @subject = rmapsNgLeafletEventGate
+      @subject = rmapsNgLeafletEventGateService
 
   it 'subject can be created', ->
     @subject.should.be.ok

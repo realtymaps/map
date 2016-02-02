@@ -3,15 +3,15 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsevents,
-rmapsprincipal, rmapsMainOptions, $log, rmapsUsStates) ->
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsEventConstants,
+rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
 
   {profile} = rmapsMainOptions.images.dimensions
   maxImagePixles = profile.width
   imageQuality = profile.quality
-  rmapsprincipal.getIdentity().then ->
+  rmapsPrincipalService.getIdentity().then ->
     user = $rootScope.user
-    rmapsUsStates.getAll().then (states) ->
+    rmapsUsStatesService.getAll().then (states) ->
       $scope.us_states = states
 
     $http.get(backendRoutes.account_use_types.root).then (data) ->
@@ -30,7 +30,7 @@ rmapsprincipal, rmapsMainOptions, $log, rmapsUsStates) ->
         type:'rm-info'
         msg: msg
 
-      $rootScope.$broadcast rmapsevents.alert.spawn, alert
+      $rootScope.$broadcast rmapsEventConstants.alert.spawn, alert
 
     _.merge $scope,
       # companies:

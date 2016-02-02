@@ -1,9 +1,9 @@
 app = require '../app.coffee'
 
-app.run (rmapsPage) ->
-  # Ensure that rmapsPage instance is created
+app.run (rmapsPageService) ->
+  # Ensure that rmapsPageService instance is created
 
-app.provider 'rmapsPage', () ->
+app.provider 'rmapsPageService', () ->
   #
   # Provider functionality injected into config() blocks
   #
@@ -15,10 +15,10 @@ app.provider 'rmapsPage', () ->
     angular.extend defaults, page
 
   #
-  #  Get an instance of rmapsPage
+  #  Get an instance of rmapsPageService
   #
   $get: ($rootScope, $window, $state, $log) ->
-    $log = $log.spawn 'frontend:map:rmapsPage'
+    $log = $log.spawn 'frontend:map:rmapsPageService'
 
     class RmapsPage
 
@@ -64,7 +64,7 @@ app.provider 'rmapsPage', () ->
     #
     # Page context available on root scope for templates
     #
-    $rootScope.rmapsPage = page
+    $rootScope.rmapsPageService = page
 
     #
     # State change listener to reset page data
