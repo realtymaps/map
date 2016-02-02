@@ -1,106 +1,109 @@
 Promise = require "bluebird"
 jobQueue = require '../util.jobQueue'
-{SoftFail, HardFail} = require '../errors/util.error.jobQueue'
+{HardFail} = require '../errors/util.error.jobQueue'
 tables = require '../../config/tables'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('task:stripe')
 TaskImplementation = require './util.taskImplementation'
-lobSvc = require '../../services/service.lob'
-LobErrors = require '../errors/util.errors.lob'
-{isCausedBy} = require '../errors/util.error.partiallyHandledError'
-logger = require('../../config/logger').spawn('task:lob')
+stripeErrorEnums = require '../../enums/enum.stripe.errors'
 
-findLetters = (subtask) ->
-  tables.mail.letters()
-  .select(
-    [
-      'id'
-      'address_to as to'
-      'address_from as from'
-      'file'
-      'options'
-      'retries'
-    ]
-  )
-  .where(
-    status: 'ready'
-  )
-  .then (letters) ->
-    Promise.map letters, (letter) ->
-      jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
+stripe = null
+require('../../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
+{SubtaskHandler} = require './util.task.helpers'
+stripeErrors  = require '../../utils/errors/util.errors.stripe'
 
-sendLetter = (subtask) ->
-  letter = subtask.data
+###
+  ratelimits: (RPS)
+    liveMode: 100
+    testMode: 30
+###
+#lower number to stay below rate limit, consider signups that are happening at the same time
+NUM_ROWS_TO_PAGINATE = 25
 
-  logger.debug "#{JSON.stringify letter}"
+findStripeErrors = (subtask) ->
+  unless stripe
+    logger.debug "stripe api is not ready in jobtask"
+    return
+  logger.debug "subtask findStripeErrors entered"
+  logger.debug subtask, true
 
-  lobSvc.createLetterTest letter
+  tables.auth.toM_errors()
+  .where 'error_name', 'ilike', '%stripe%'
+  .where 'attempts', '<', 'max_attempts' #get active ones
+  .orderBy 'id'
+  .limit NUM_ROWS_TO_PAGINATE
+  .then (queued) ->
+    logger.debug "#{queued.length} stripe errors to fix."
+    Promise.map queued, (row) ->
 
-  .catch isCausedBy(LobErrors.LobRateLimitError), (error) ->
-    tables.mail.letters()
+      enqueue = (subtaskName) ->
+        jobQueue.queueSubsequentSubtask null, subtask, subtaskName, row, true
+
+      switch row.error_name
+        when stripeErrorEnums.stripeCustomerRemove
+          enqueue 'stripe_removeErroredCustomers'
+        when stripeErrorEnums.stripeCustomerBadCard
+          enqueue 'stripe_removeBadCards'
+        else
+          throw new HardFail "Unsupported stripe error message"
+
+
+###
+ Example response of invalid/non-existant customer
+ { [Error: No such customer: crap]
+  type: 'StripeInvalidRequestError',
+  rawType: 'invalid_request_error',
+  code: undefined,
+  param: 'id',
+  message: 'No such customer: crap',
+  detail: undefined,
+  raw:
+   { type: 'invalid_request_error',
+     message: 'No such customer: crap',
+     param: 'id',
+     statusCode: 404,
+     requestId: 'req_7poIYCVAQBggdP' },
+  requestId: 'req_7poIYCVAQBggdP',
+  statusCode: 404 } true
+###
+CommonSubtaskHandler = SubtaskHandler.compose
+
+  errorHandler: stripeErrors.handler
+
+  invalidRequestErrorType: stripeErrors.StripeInvalidRequestError.type
+
+  removalService: (subtask) ->
+    logger.debug "removing #{subtask.data.error_name} of id #{subtask.data.id} from error queue"
+    tables.auth.toM_errors().where(id: subtask.data.id).del()
+
+  updateService: (subtask) ->
+    tables.auth.toM_errors()
     .update
-      lob_response: error
-      status: 'error-transient'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
-    throw new HardFail("Lob API rate limit exceeded")
+      data: subtask.data
+      attempt: subtask.data.attempt + 1
+    .where id: subtask.data.id
 
-  .catch isCausedBy(LobErrors.LobUnauthorizedError), (error) ->
-    tables.mail.letters()
-    .update
-      lob_response: error
-      status: 'error-transient'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
 
-    throw new HardFail("Lob API access denied - check configuration/keys")
+RemoveErroredCustomersSubtaskHandler = SubtaskHandler.compose CommonSubtaskHandler,
+  thirdPartyService: (subtask) ->
+    stripe.customers.del subtask.data.customer
+  invalidRequestRegex: /no such customer/i
 
-  .catch isCausedBy(LobErrors.LobForbiddenError), (error) ->
-    tables.mail.letters()
-    .update
-      lob_response: error
-      status: 'error-transient'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
+RemoveBadCardsSubtaskHandler = SubtaskHandler.compose CommonSubtaskHandler,
+  thirdPartyService: (subtask) ->
+    stripe.customers.deleteCard subtask.data.customer, subtask.data.customerCard
+  invalidRequestRegex: /no such source/i
 
-    throw new HardFail("Lob API access denied - check configuration/keys")
-
-  .catch isCausedBy(LobErrors.LobBadRequestError), (error) ->
-    tables.mail.letters()
-    .update
-      lob_response: error
-      status: 'error-invalid'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
-
-    # Do not throw in this case, since the address is probably undeliverable
-
-  .catch isCausedBy(LobErrors.LobServerError), (error) ->
-    tables.mail.letters()
-    .update
-      lob_response: error
-      status: 'error-transient'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
-
-    throw new SoftFail("Lob API server error - retry later")
-
-  .then (lobResponse) ->
-    logger.debug "#{JSON.stringify lobResponse, null, 2}"
-    tables.mail.letters()
-    .update
-      lob_response: lobResponse
-      status: 'sent'
-      retries: letter.retries + 1
-    .where
-      id: letter.id
 
 subtasks =
-  findLetters: findLetters
-  sendLetter: sendLetter
+  findStripeErrors: findStripeErrors
+  removeErroredCustomers: RemoveErroredCustomersSubtaskHandler.handle
+  removeBadCards: RemoveBadCardsSubtaskHandler.handle
+  ###
+  other tasks in theory
+    - updatePlan
+    - suspendCustomer
+    - flagCustomer (potential suspension send out warning email)
+  ###
+
 
 module.exports = new TaskImplementation(subtasks)

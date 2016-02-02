@@ -4,6 +4,7 @@ _ = require 'lodash'
 events = [
   "customer.creation"
   "customer.remove"
+  "customer.bad.card"
 ].map (name) ->
   'stripe.' + name
 

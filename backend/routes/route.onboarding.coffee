@@ -86,7 +86,7 @@ handles = wrapHandleRoutes
             promise.then () -> authUser
 
           .then (authUser) ->
-            submitPaymentPlan {plan, token, authUser, trx}
+            submitPaymentPlan {plan, token, authUser} #not including trx on purpose
           .then ({authUser, customer}) ->
             submitEmail {authUser, plan, customer}
 
