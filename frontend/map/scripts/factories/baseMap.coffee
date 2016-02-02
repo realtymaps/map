@@ -10,8 +10,8 @@ _baseLayers = require '../utils/util.layers.base.coffee'
 _mapClassContainerName = 'angular-leaflet-map'
 _mapDrawEvents = ['resize','moveend', 'zoomend']
 
-module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leafletData, rmapsNgLeafletHelpers) ->
-  $log = nemSimpleLogger.spawn("map:baseFactory")
+module.exports = app.factory 'rmapsBaseMapFactory', (nemSimpleLogger, $timeout, leafletData, rmapsNgLeafletHelpersService) ->
+  $log = nemSimpleLogger.spawn("frontend:map:baseFactory")
   class BaseMap
     initScopeSettings: (options, mapPath, baseLayers, mapEvents) ->
       settings =
@@ -111,7 +111,7 @@ module.exports = app.factory 'rmapsBaseMap', (nemSimpleLogger, $timeout, leaflet
         #however this might be easier making our own directive instead of factories
         $timeout =>
           @map.invalidateSize()#map's bounds is not valid until after this call
-          leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpers.events.getMapIdEventStr(@mapId)}"
+          leafletPreNamespace = "leafletDirectiveMap.#{rmapsNgLeafletHelpersService.events.getMapIdEventStr(@mapId)}"
           _mapDrawEvents.forEach (eventName) =>
             eventName =  leafletPreNamespace + eventName
             return @scope.$on eventName, _maybeDraw

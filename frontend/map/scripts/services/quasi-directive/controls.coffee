@@ -3,7 +3,7 @@ app = require '../../app.coffee'
 # Leaflet control directive definitions should have these properties:
 #
 # name
-#    -- Exposed via rmapsControls service as {Name}Control
+#    -- Exposed via rmapsControlsService service as {Name}Control
 # options
 #    -- standard Leaflet control options e.g. position, plus scope
 # directive
@@ -49,12 +49,12 @@ directiveControls = [
 for control in directiveControls
   do (control) ->
     control.dName = control.name[0].toUpperCase() + control.name.slice(1) + 'Control'
-    app.directive "rmaps#{control.dName}", (rmapsMapControlsLogger, $rootScope) -> control.directive(rmapsMapControlsLogger) unless $rootScope.silenceRmapsControls
+    app.directive "rmaps#{control.dName}", (rmapsMapControlsLoggerService, $rootScope) -> control.directive(rmapsMapControlsLoggerService) unless $rootScope.silenceRmapsControls
 
 # Leaflet usage:
-#    rmapsControls.{Some}Control position: 'botomleft', scope: mapScope
-app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope, $log) ->
-  $log = $log.spawn('map:rmapsControls')
+#    rmapsControlsService.{Some}Control position: 'botomleft', scope: mapScope
+app.service 'rmapsControlsService', ($compile, rmapsMapControlsLoggerService, $rootScope, $log) ->
+  $log = $log.spawn('frontend:map:rmapsControlsService')
   svc = {}
   for control in directiveControls
     do (control) ->
@@ -62,10 +62,10 @@ app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope, $log
         includes: L.Mixin.Events
         options: control.options
         initialize: (options) ->
-          rmapsMapControlsLogger.debug "#{control.dName} init" unless $rootScope.silenceRmapsControls
+          rmapsMapControlsLoggerService.debug "#{control.dName} init" unless $rootScope.silenceRmapsControls
           super options
         onAdd: (map) ->
-          rmapsMapControlsLogger.debug "#{control.dName} onAdd" unless $rootScope.silenceRmapsControls
+          rmapsMapControlsLoggerService.debug "#{control.dName} onAdd" unless $rootScope.silenceRmapsControls
           wrapper = L.DomUtil.create 'div', 'rmaps-control' + " rmaps-#{control.name}-control"
           wrapper.setAttribute "rmaps-#{control.name}-control", ''
           try
@@ -78,12 +78,12 @@ app.service 'rmapsControls', ($compile, rmapsMapControlsLogger, $rootScope, $log
             .on wrapper, 'mousewheel', L.DomEvent.stopPropagation
             wrapper
           catch e
-            $log.error "rmapsControls: #{control.name}"
+            $log.error "rmapsControlsService: #{control.name}"
             $log.error e
       try
         svc[control.dName] = (options) -> new control.class(options)
       catch e
-        $log.error "rmapsControls: #{control.dName}"
+        $log.error "rmapsControlsService: #{control.dName}"
         $log.error e
 
   svc

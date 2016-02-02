@@ -2,14 +2,14 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 _ = require 'lodash'
 
-module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsevents) ->
-  $log = $log.spawn("map:search")
+module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $timeout, rmapsEventConstants) ->
+  $log = $log.spawn("frontend:map:search")
 
   $scope.searchScope = 'Places'
 
   $scope.result = googlePlace: null
 
-  $rootScope.$onRootScope rmapsevents.map.results, (evt, map) ->
+  $rootScope.$onRootScope rmapsEventConstants.map.results, (evt, map) ->
     numResults = _.keys(map.markers.filterSummary).length
 
     if numResults == 0
@@ -34,7 +34,7 @@ module.exports = app.controller 'rmapsSearchCtrl', ($scope, $log, $rootScope, $t
       else if place.types.indexOf("country") != -1 # country
         zoom = 5
 
-      $rootScope.$emit rmapsevents.map.center, coords:
+      $rootScope.$emit rmapsEventConstants.map.center, coords:
         latitude: place.geometry.location.lat()
         longitude: place.geometry.location.lng()
         zoom: zoom

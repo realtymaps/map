@@ -47,11 +47,11 @@ generateViewDirective = ($animate, $window, showView) ->
 #
 # Directive targeting .desktop-only CSS selector
 #
-app.directive 'desktopOnly', ($animate, $window, rmapsResponsiveView) ->
-  return generateViewDirective($animate, $window, rmapsResponsiveView.isDesktopView())
+app.directive 'desktopOnly', ($animate, $window, rmapsResponsiveViewService) ->
+  return generateViewDirective($animate, $window, rmapsResponsiveViewService.isDesktopView())
 
 #
 # Directive targeting .mobile-only CSS selector
 #
-app.directive 'mobileOnly', ($animate, $window, rmapsResponsiveView) ->
-  return generateViewDirective($animate, $window, rmapsResponsiveView.isMobileView())
+app.directive 'mobileOnly', ($animate, $window, rmapsResponsiveViewService) ->
+  return generateViewDirective($animate, $window, rmapsResponsiveViewService.isMobileView())

@@ -1,6 +1,6 @@
 app = require '../app.coffee'
 
-module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmapsprincipal, rmapsProjectsService, rmapsClientsService, rmapsResponsiveView) ->
+module.exports = app.controller 'rmapsMobilePageCtrl', ($scope, $state, $window, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResponsiveViewService) ->
   #
   # Scope variables
   #
@@ -12,8 +12,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
   # Rules should match those defined in responsive.styl
   #
 
-  $scope.mobileView = rmapsResponsiveView.isMobileView()
-  $scope.desktopView = rmapsResponsiveView.isDesktopView()
+  $scope.mobileView = rmapsResponsiveViewService.isMobileView()
+  $scope.desktopView = rmapsResponsiveViewService.isDesktopView()
 
   #
   # Mobile Menu Events
@@ -29,8 +29,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
     $scope.isMobileNavOpen = true
 
     # Load the current project, if any, in order to populate totals in the menu
-    if rmapsprincipal.isAuthenticated()
-      if profile = rmapsprincipal.getCurrentProfile()
+    if rmapsPrincipalService.isAuthenticated()
+      if profile = rmapsPrincipalService.getCurrentProfile()
         $scope.profile = profile
 
         # Load the Project counts such as number of properties, neighbourhoods, etc...
@@ -42,8 +42,8 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
 
         # If Editor, retrieve the clients for the project
         $scope.clients = null
-        if rmapsprincipal.isProjectEditor()
-          clientsService = new rmapsClientsService profile.project_id
+        if rmapsPrincipalService.isProjectEditor()
+          clientsService = new rmapsClientsFactory profile.project_id
           clientsService.getAll()
           .then (clients) ->
             angular.forEach clients, (client) ->
@@ -53,7 +53,7 @@ module.exports = app.controller 'MobilePageCtrl', ($scope, $state, $window, rmap
 
             $scope.clients = clients
 
-      rmapsprincipal.getIdentity()
+      rmapsPrincipalService.getIdentity()
       .then (identity) ->
         $scope.projectTotal = _.keys(identity.profiles).length
     else

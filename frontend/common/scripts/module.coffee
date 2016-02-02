@@ -9,8 +9,7 @@ mod.config (nemDebugProvider) ->
   # TODO: from the server
   #debug.enable("common:*")
 
+mod.run (rmapsUsStatesService, $rootScope) ->
 
-mod.run (rmapsUsStates, $rootScope) ->
-
-  rmapsUsStates.getAll().then (states) ->
+  rmapsUsStatesService.getAll().then (states) ->
     $rootScope.us_states = states

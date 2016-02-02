@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'swipeTrayCtrl', ($scope, $log) ->
+app.controller 'rmapsSwipeTrayCtrl', ($scope, $log) ->
   $log.debug "swipeTrayCtrl"
 
   $scope.index = 0

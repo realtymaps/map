@@ -2,8 +2,8 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal, rmapsProfilesService, rmapsProjectsService) ->
-  rmapsprincipal.getIdentity()
+app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsPrincipalService, rmapsProfilesService, rmapsProjectsService) ->
+  rmapsPrincipalService.getIdentity()
   .then (identity) ->
     {user, profiles} = identity
     user.full_name = if user.first_name and user.last_name then "#{user.first_name} #{user.last_name}" else ''
@@ -40,7 +40,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsprincipal,
                   id: profile.project_id
                   name: profile.name
                 .success ->
-                  rmapsprincipal.unsetIdentity()
+                  rmapsPrincipalService.unsetIdentity()
 
     $rootScope.$on 'rmapsRootClick', ->
       $scope.blur()

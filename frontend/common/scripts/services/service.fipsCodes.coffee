@@ -2,10 +2,9 @@ mod = require '../module.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 apiBase = backendRoutes.fipsCodes.root
 fipsRoutes = backendRoutes.fipsCodes
-serviceName = 'rmapsFipsCodes'
 
-mod.service serviceName, ($log, $http) ->
-  $log = $log.spawn("map:#{serviceName}")
+mod.service 'rmapsFipsCodesService', ($log, $http) ->
+  $log = $log.spawn("frontend:map:rmapsFipsCodes")
 
   @getAllByState = (stateName) ->
     throw new Error("stateName must be defined") unless stateName

@@ -1,5 +1,5 @@
 app = require '../app.coffee'
 validatorBuilder = require '../../../../common/utils/util.validatorBuilder.coffee'
 
-app.service 'validatorBuilder', () ->
+app.service 'rmapsValidatorBuilderService', () ->
   validatorBuilder

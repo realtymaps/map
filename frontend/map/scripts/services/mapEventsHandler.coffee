@@ -20,13 +20,13 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
   @
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
-rmapsNgLeafletHelpers, rmapsNgLeafletEventGate, rmapsMapEventsLinkerService, rmapsLayerFormatters,
+rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
 rmapsPropertiesService, rmapsMapEventEnums) ->
 
-  _gate = rmapsNgLeafletEventGate
+  _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
-  _markerEvents = rmapsNgLeafletHelpers.events.markerEvents
-  _geojsonEvents = rmapsNgLeafletHelpers.events.geojsonEvents
+  _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
+  _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents
 
   $log = nemSimpleLogger.spawn("map:rmapsMapEventsHandlerService")
 
@@ -42,9 +42,9 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
     _handleHover = (model, lObject, type, layerName) ->
       return if !layerName or !type or !lObject
       if type == 'marker' and layerName != 'addresses' and model.markerType != 'note'
-        rmapsLayerFormatters.MLS.setMarkerPriceOptions(model)
+        rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model)
       if type == 'geojson'
-        opts = rmapsLayerFormatters.Parcels.getStyle(model, layerName)
+        opts = rmapsLayerFormattersService.Parcels.getStyle(model, layerName)
         lObject.setStyle(opts)
 
     _handleManualMarkerCluster = (model) ->

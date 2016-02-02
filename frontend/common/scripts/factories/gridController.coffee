@@ -2,7 +2,7 @@ _ = require 'lodash'
 mod = require '../module.coffee'
 createTemplate = require('../../../common/html/views/templates/gridCreateModal.jade')()
 
-mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModal) ->
+mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModalFactory) ->
   ($scope) ->
     $scope.nameFilters = ""
 
@@ -45,7 +45,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
           fieldTypeMap: () ->
             return $scope.fieldTypeMap
 
-        controller: rmapsGridModal()
+        controller: rmapsGridModalFactory()
 
       modalInstance.result
       .then (record) ->

@@ -1,14 +1,14 @@
 priceMarkerTemplate = require '../../../../frontend/map/html/includes/map/_priceMarker.jade'
 
-describe "rmapsLayerFormatters", ->
+describe "rmapsLayerFormattersService", ->
   beforeEach ->
 
     angular.mock.module 'rmapsMapApp'
 
-    inject ($rootScope,  rmapsLayerFormatters, rmapsstylusVariables) =>
+    inject ($rootScope,  rmapsLayerFormattersService, rmapsStylusConstants) =>
       @$rootScope = $rootScope
-      @subject = rmapsLayerFormatters
-      @rmapsstylusVariables = rmapsstylusVariables
+      @subject = rmapsLayerFormattersService
+      @rmapsStylusConstants = rmapsStylusConstants
 
 
   it 'subject exists', ->
@@ -144,8 +144,8 @@ describe "rmapsLayerFormatters", ->
             style = @subject {savedDetails:isSaved: true}
             style.should.be.ok
             style.weight.should.be.equal 2
-            style.color.should.be.equal @rmapsstylusVariables['$rm_saved']
-            style.fillColor.should.be.equal @rmapsstylusVariables['$rm_saved']
+            style.color.should.be.equal @rmapsStylusConstants['$rm_saved']
+            style.fillColor.should.be.equal @rmapsStylusConstants['$rm_saved']
             style.fillOpacity.should.be.equal .75
 
           describe 'feature not saved', ->
@@ -179,8 +179,8 @@ describe "rmapsLayerFormatters", ->
 
               style.should.be.ok
               style.weight.should.be.equal 2
-              style.color.should.be.equal @rmapsstylusVariables.$rm_sold
-              style.fillColor.should.be.equal @rmapsstylusVariables.$rm_sold
+              style.color.should.be.equal @rmapsStylusConstants.$rm_sold
+              style.fillColor.should.be.equal @rmapsStylusConstants.$rm_sold
               style.fillOpacity.should.be.equal .75
 
         describe 'w/ layerName', ->

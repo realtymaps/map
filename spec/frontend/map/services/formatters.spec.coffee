@@ -1,4 +1,4 @@
-testScope = 'FormattersService'
+testScope = 'rmapsFormattersService'
 
 describe testScope, ->
   beforeEach ->
@@ -14,7 +14,7 @@ describe testScope, ->
       @apiMock.mockEvent()
     ]
 
-    inject ['$rootScope', testScope.ns(),
+    inject ['$rootScope', testScope,
       ($rootScope, Formatters) =>
         @$rootScope = $rootScope
         @subject = Formatters

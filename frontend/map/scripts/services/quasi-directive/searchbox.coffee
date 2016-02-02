@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 
-app.service 'rmapssearchbox', (leafletData) ->
+app.service 'rmapsSearchboxService', (leafletData) ->
 
   # need to have the id for the main map element (mapdiv)
   create = (mapdiv) ->
