@@ -7,6 +7,6 @@ CustomerCreateFailedError = StripeErrors.StripeError.extend(type: 'CustomerCreat
 ourHandler = (error, handles) ->
   handler {args: [error], handles}, () -> error.type
 
-module.exports = _.extend StripeErrors,
+module.exports = _.extend {}, StripeErrors,
   CustomerCreateFailedError: CustomerCreateFailedError
   handler: ourHandler

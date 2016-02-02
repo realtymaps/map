@@ -3,12 +3,9 @@ logger = require('../../config/logger').spawn('task:helpers')
 
 SubtaskHandler =
   compose: (extensions...) ->
-    obj = {}
-    _.extend obj, SubtaskHandler
-
-    for toExtend in extensions
-      _.extend obj, toExtend
-    obj
+    args = [{}, SubtaskHandler].concat extensions
+    _.extend args...
+    
   thirdPartyService: (subtask) ->
   removalService: (subtask) ->
   updateService: (subtask) ->
