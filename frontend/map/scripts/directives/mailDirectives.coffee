@@ -33,6 +33,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
 
 
 app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document, rmapsMailTemplateService) ->
+  $log = $log.spawn('mail:rmapsMacroHelper')
   restrict: 'A'
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
@@ -53,6 +54,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       el = angular.element "<span>#{macro}</span>"
       scope.setMacroClass el[0]
       range.insertNode el[0]
+      return el[0].childNodes[0]
 
     # determine if the node has been flagged as macro span (whether valid or not), by class
     # this is *not* macro validation
@@ -129,7 +131,17 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
-          scope.convertMacrosInSpan sel.focusNode, offset, macro, true
+          newTextEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, true
+
+          # procure a new range for caret
+          range = rangy.createRange()
+          range.setStartAfter(newTextEl)
+          length = newTextEl.length || newTextEl.childNodes.length
+          range.setEnd(newTextEl, length)
+          # set selection, which sets the caret
+          selection = rangy.getSelection()
+          selection.removeAllRanges()
+          selection.setSingleRange range
 
         # trim/clean data
         sel.focusNode.data = sel.focusNode.data.trim()
@@ -158,6 +170,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         scope.convertMacrosInSpan textNode, offset, scope.macro
 
       whenTyped: (e) ->
+        $log.debug "whenTyped, event:\n#{JSON.stringify e}"
         sel = rangy.getSelection()
         # while typing, filter for macros and wrap if necessary
         scope.macroFilter(sel)
