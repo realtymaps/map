@@ -1,6 +1,6 @@
 app = require '../../app.coffee'
 
-app.service 'rmapsSearchboxService', (leafletData) ->
+app.service 'rmapsSearchboxService', ($log, leafletData) ->
 
   # need to have the id for the main map element (mapdiv)
   create = (mapdiv) ->
@@ -49,5 +49,5 @@ app.service 'rmapsSearchboxService', (leafletData) ->
       map.addControl new L.Control.Search searchParams
 
     , (err) ->
-      console.log 'Error loading search bar:'
-      console.log err
+      $log.error 'Error loading search bar:'
+      $log.error err

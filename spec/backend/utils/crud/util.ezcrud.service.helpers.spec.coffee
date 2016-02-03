@@ -33,7 +33,7 @@ describe 'util.ezcrud.service.helpers', ->
         lorem: "ipsum"
       tableName = 'temp_table'
       qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      expect(qstr.trim()).to.equal "INSERT INTO  temp_table  (id,lorem) VALUES  ( 1 , 'ipsum' ) ON CONFLICT  (id) DO UPDATE SET  (lorem) = ( 'ipsum' )"
+      expect(qstr.trim()).to.equal "INSERT INTO temp_table (id,lorem) VALUES ( 1 , 'ipsum' ) ON CONFLICT (id) DO UPDATE SET (lorem) = ( 'ipsum' )"
 
     it 'gets id obj', ->
       idObj = @serviceCrud._getIdObj(@query)

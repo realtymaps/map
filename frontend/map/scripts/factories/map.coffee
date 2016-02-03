@@ -20,12 +20,12 @@ app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapTestLoggerService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
 
     limits = rmapsMainOptions.map
 
-    $log = nemSimpleLogger.spawn("map:factory")
-    testLogger = rmapsMapTestLoggerService
+    $log = nemSimpleLogger.spawn("map:factory:normal")
+    verboseLogger = nemSimpleLogger.spawn("map:factory:verbose")
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -283,7 +283,7 @@ app.factory 'rmapsMapFactory',
         #consider renaming parcels to addresses as that is all they are used for now
         if (rmapsZoomLevelService.isAddressParcel(@scope.map.center.zoom, @scope) or
              rmapsZoomLevelService.isParcel(@scope.map.center.zoom)) and rmapsZoomLevelService.isBeyondCartoDb(@scope.map.center.zoom)
-          testLogger.debug 'isAddressParcel'
+          verboseLogger.debug 'isAddressParcel'
           promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
@@ -293,7 +293,7 @@ app.factory 'rmapsMapFactory',
             $log.debug "addresses count to draw: #{data?.features?.length}"
 
         else
-          testLogger.debug 'not, isAddressParcel'
+          verboseLogger.debug 'not, isAddressParcel'
           rmapsZoomLevelService.dblClickZoom.enable(@scope)
           @clearBurdenLayers()
 
@@ -315,9 +315,9 @@ app.factory 'rmapsMapFactory',
 
 
       draw: (event, paths) =>
-        testLogger.debug 'draw'
+        verboseLogger.debug 'draw'
         return if !@scope.map.isReady
-        testLogger.debug 'isReady'
+        verboseLogger.debug 'isReady'
 
         $log.debug 'map.coffee - redraw calling results reset()'
         @scope?.formatters?.results?.reset()
@@ -325,7 +325,7 @@ app.factory 'rmapsMapFactory',
         #not getting bounds from scope as this is the most up to date and skips timing issues
         lBounds = _.pick(@map.getBounds(), ['_southWest', '_northEast'])
         return if lBounds._northEast.lat == lBounds._southWest.lat and lBounds._northEast.lng == lBounds._southWest.lng
-        testLogger.debug 'lBounds'
+        verboseLogger.debug 'lBounds'
         if not paths #and not @scope.drawUtil.isEnabled
           paths  = []
           for k, b of lBounds
@@ -334,13 +334,13 @@ app.factory 'rmapsMapFactory',
 
         if !paths? or paths.length < 2
           return
-        testLogger.debug 'paths'
+        verboseLogger.debug 'paths'
         @hash = _encode paths
-        testLogger.debug 'encoded hash'
+        verboseLogger.debug 'encoded hash'
         @scope.refreshState()
-        testLogger.debug 'refreshState'
+        verboseLogger.debug 'refreshState'
         ret = @redraw()
-        testLogger.debug 'redraw'
+        verboseLogger.debug 'redraw'
         ret
 
       getMapStateObj: =>

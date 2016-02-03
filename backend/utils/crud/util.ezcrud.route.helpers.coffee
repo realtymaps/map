@@ -1,6 +1,6 @@
 util = require 'util'
 _ = require 'lodash'
-logger = require('../../config/logger').spawn('ezcrud:route')
+_logger = require('../../config/logger').spawn('ezcrud:route')
 {methodExec, handleQuery} = require '../util.route.helpers'
 factory = require '../util.factory'
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
@@ -8,19 +8,21 @@ RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 
 class RouteCrud
   constructor: (@svc, options = {}) ->
-    @debug = () ->
-    if options.debugNS and _.isString options.debugNS
-      @debugLogger = logger.spawn options.debugNS
-      @debug = (msg) => @debugLogger.debug msg
-    @enableUpsert = options.enableUpsert ? false
     unless @svc?
       throw new RouteCrudError('@svc must be defined')
+
+    @logger = _logger
+    if @svc.dbFn?.tableName
+      @logger = @logger.spawn(@svc.dbFn?.tableName)
+    if options.debugNS
+      @logger = @logger.spawn(options.debugNS)
+    @enableUpsert = options.enableUpsert ? false
 
     #essentially clone the parts of a request we want to not mutate it
     @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
     @rootGETTransforms = options.rootGETTransforms ? defaultRequestTransforms()
-    @debug "Crud route instance made with options: #{util.inspect(options, false, 0)}"
+    @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
 
   # Public: validRequest a request via transforms
   #
@@ -34,30 +36,31 @@ class RouteCrud
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
-      @debug "root: tReq: #{JSON.stringify tReq}"
+      @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
         return validateAndTransform tReq, specificTransforms
       tReq
 
   exec: (req, crudMethodStr) =>
-    @debug req.originalUrl if req.originalUrl
+    if req.originalUrl
+      @logger.debug req.originalUrl
     @validRequest(req, crudMethodStr).then (tReq) ->
       tReq
 
   # allows leveraging centralized route handling if desired
   custom: (data, res) ->
-    @debug "Using custom route"
+    @logger.debug "Using custom route"
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
   _wrapRoute: (data, res) ->
-    @debug "Handling query"
+    @logger.debug "Handling query"
     handleQuery data, res
 
   getQuery: (req, crudMethodStr) =>
-    @debug "req.params=#{JSON.stringify(req.params)}"
-    @debug "req.body=#{JSON.stringify(req.body)}"
-    @debug "req.method=#{req.method}"
+    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
+    @logger.debug () -> "req.body=#{JSON.stringify(req.body)}"
+    @logger.debug () -> "req.method=#{req.method}"
     @exec(req, crudMethodStr).then (tReq) ->
       query = _.merge({}, tReq.params, tReq.body)
       query
