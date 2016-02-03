@@ -123,7 +123,7 @@ app.controller 'rmapsOnboardingPaymentCtrl',
     charge: ->
       stripe.card.createToken(_cleanReSubmit())
       .then (token) ->
-        $log.log 'token created for card ending in ', token.card.last4
+        $log.debug 'token created for card ending in ', token.card.last4
         _.extend $scope.user, token: _cleanToken(token)
         $scope.user.card
       .then (safePayment) ->
@@ -132,9 +132,9 @@ app.controller 'rmapsOnboardingPaymentCtrl',
         $scope.user.submit()
       .catch (err) ->
         if err.type and /^Stripe/.test(err.type)
-          $log.log 'Stripe error: ', err.message
+          $log.error 'Stripe error: ', err.message
         else
-          $log.log 'Other error occurred, possibly with your API', err.message
+          $log.error 'Other error occurred, possibly with your API', err.message
 
     view:
       doShowRequired: behaveLikeAngularValidation
