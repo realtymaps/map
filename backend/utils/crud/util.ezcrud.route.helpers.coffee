@@ -8,14 +8,15 @@ RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 
 class RouteCrud
   constructor: (@svc, options = {}) ->
+    unless @svc?
+      throw new RouteCrudError('@svc must be defined')
+
     @logger = _logger
-    if @dbFn.tableName
-      @logger = @logger.spawn(@dbFn.tableName)
+    if @svc.dbFn?.tableName
+      @logger = @logger.spawn(@svc.dbFn?.tableName)
     if options.debugNS
       @logger = @logger.spawn(options.debugNS)
     @enableUpsert = options.enableUpsert ? false
-    unless @svc?
-      throw new RouteCrudError('@svc must be defined')
 
     #essentially clone the parts of a request we want to not mutate it
     @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
