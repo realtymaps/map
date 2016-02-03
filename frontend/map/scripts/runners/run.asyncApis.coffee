@@ -2,7 +2,7 @@
 app = require '../app.coffee'
 
 app.run ($q, $log,  angularLoad, rmapsAsyncAPIsService) ->
-  $log = $log.spawn("frontend:maps:rmapsAsyncAPIsRunner")
+  $log = $log.spawn("maps:rmapsAsyncAPIsRunner")
   rmapsAsyncAPIsService.getAll()
   .then (urls) ->
     promises = urls.map (url) ->

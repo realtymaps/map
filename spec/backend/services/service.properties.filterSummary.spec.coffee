@@ -19,7 +19,7 @@ describe 'service.properties.filterSummary', ->
   # NOTE this is really an integration test
   # This is important as the database column naming is highly dependent!
   it 'geojsonPolys returns valid geojson', (done) ->
-    this.timeout(5000) # give it a longer timeout since 2s doesn't seem to be enough
+    this.timeout(10000) # give it a longer timeout since 2s doesn't seem to be enough
     @subject.getFilterSummary mocks.map.state, mocks.map.filter
     .then (data) ->
       gjv.valid(data).should.be.ok

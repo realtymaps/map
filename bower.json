@@ -15,7 +15,7 @@
     "angular-google-maps": "2.1.5",
     "angular-cache": "~3.2.5",
     "angular-bootstrap": "0.13.X",
-    "angular-simple-logger": "0.1.X",
+    "angular-simple-logger": "git://github.com/zacronos/angular-simple-logger.git",
     "angular-state-files": "*",
     "angular-ui-grid": "~3.0.0",
     "angular-ui-router": "~0.2.10",
@@ -94,6 +94,11 @@
         "css/font-awesome.css",
         "fonts/*"
       ]
+    },
+    "ui-leaflet": {
+      "dependencies": {
+        "angular-simple-logger": "git://github.com/zacronos/angular-simple-logger.git"
+      }
     }
   },
   "resolutions": {

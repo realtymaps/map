@@ -26,22 +26,28 @@ VARIABLE_HOLDER="${VARIABLE_BASE}_VARIABLE"
 if [[ "$SOURCE_APP_NAME" == "" ]]
 then
     # as evaluated locally
-    
+
     INDIRECT="${!VARIABLE_HOLDER}"
     if [[ "$INDIRECT" == "" ]]
     then
         INDIRECT="${VARIABLE_BASE}_URL"
+        DIRECT="${!INDIRECT}"
+    else
+        # if we found an indirect variable, then it's heroku config, and we need to connect with ?ssl=true
+        DIRECT="${!INDIRECT}?ssl=true"
     fi
-    DIRECT="${!INDIRECT}"
 else
     # as evaluated on the heroku app given after '@'
-    
+
     INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
     if [[ "$INDIRECT" == "" ]]
     then
         INDIRECT="${VARIABLE_BASE}_URL"
+        DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
+    else
+        # if we found an indirect variable, then it's heroku config, and we need to connect with ?ssl=true
+        DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`?ssl=true
     fi
-    DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
 fi
 
 echo "${DIRECT}"

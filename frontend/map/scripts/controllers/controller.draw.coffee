@@ -10,7 +10,7 @@ app.controller "rmapsMapDrawCtrl", (
 $rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
-  $log = $log.spawn("frontend:map:MapDrawCtrl")
+  $log = $log.spawn("map:MapDrawCtrl")
   drawnShapesFact = rmapsProjectsService.drawnShapes
   drawnShapesSvc = null
 

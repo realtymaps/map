@@ -54,7 +54,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants) ->
   ###
 
   linker = rmapsMapEventsLinkerService
-  $log = $log.spawn("frontend:map:rmapsMapNeighbourhoodsTapCtrl")
+  $log = $log.spawn("map:rmapsMapNeighbourhoodsTapCtrl")
 
   $scope.$on '$destroy', ->
     $log.debug('destroyed')
@@ -84,7 +84,7 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
     Anything long term statewise goes here.
   ###
   drawnShapesSvc = rmapsProjectsService.drawnShapes($rootScope.principal.getCurrentProfile())
-  $log = $log.spawn("frontend:map:neighbourhoods")
+  $log = $log.spawn("map:neighbourhoods")
 
   getAll = () ->
     drawnShapesSvc.getListNormalized().then (data) ->

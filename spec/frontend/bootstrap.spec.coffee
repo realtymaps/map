@@ -48,7 +48,7 @@ beforeEach ->
   .run ($httpBackend) ->
     #problem here is config.LOGGING.ENABLE is node, so if want on the fly horizontal levels
     #how do enable horizontal via karma. (injection - gen a bootstrap file?, another test server to serve the env?)
-    $httpBackend.when( 'GET', backendRoutes.config.debugLevels).respond(config.LOGGING.ENABLE || "frontend:test:*")
+    $httpBackend.when( 'GET', backendRoutes.config.debugLevels).respond(config.LOGGING.ENABLE || "test:*")
     $httpBackend.when( 'GET', backendRoutes.config.mapboxKey).respond(500)
     $httpBackend.when( 'GET', backendRoutes.config.cartodb).respond(500)
     $httpBackend.when( 'GET', backendRoutes.config.google).respond(500)
