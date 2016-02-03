@@ -27,6 +27,10 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.editor?.scope?.$on 'rmaps-drag-end', (e, opts) ->
         scope.macroAction.whenDropped e
 
+    scope.$on '$destroy', () ->
+      element.unbind 'dragover', element
+      element.unbind 'keyup', element
+
     $rootScope.$on 'rmaps-drag-end', (e) ->
       scope.editor.editorFunctions.focus()
       # percolate drag end event down so the editor hears it
