@@ -1,6 +1,5 @@
 #!/bin/sh
 set -e
-#source ~/.zshrc
 echo creating dev user:
 # create the role used for migrations (use "devpass" as the password)
 createuser -d -E -P dev
