@@ -42,7 +42,6 @@ describe 'service.dataSource.coffee', ->
   describe 'getColumnList', ->
     beforeEach ->
       @dsSqlMock = new SqlMock 'config', 'dataSourceFields',
-        debug: false
         result: [
           MetadataEntryID: 1
           LongName: 'a.long.name'
