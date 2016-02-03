@@ -55,7 +55,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       el = angular.element("<span>#{macro}</span>")[0]
       scope.setMacroClass el
       range.insertNode el
-      return el.childNodes[0]
+      return el
 
     # determine if the node has been flagged as macro span (whether valid or not), by class
     # this is *not* macro validation
@@ -132,20 +132,23 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
-          newTextEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, true
+          newMacroEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, true
 
           # trim/clean data
           sel.focusNode.data = sel.focusNode.data.trim()
 
-          # procure a new range for caret
-          range = rangy.createRange()
-          range.setStartAfter(newTextEl)
-          length = newTextEl.length || newTextEl.childNodes.length
-          range.setEnd(newTextEl, length)
-          # for some reason caret gets set inside span instead of "startAfter", so typing
-          # extends the text inside the macro span instead of outside of it
+          # add a new text node right after placement of new macro span (part of caret placement)
+          nextTextElement = newMacroEl.nextSibling
+          parent = newMacroEl.parentNode
+          newNode = _doc.createTextNode(" ")
+          referenceNode = nextTextElement
+          parent.insertBefore newNode, referenceNode
 
-          # set selection, which sets the caret
+          # procure a new range for (part of caret placement)
+          range = rangy.createRange()
+          range.setStartAndEnd(newNode, 1)
+
+          # set selection, which sets the caret placement
           selection = rangy.getSelection()
           selection.removeAllRanges()
           selection.setSingleRange range
