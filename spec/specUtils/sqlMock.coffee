@@ -1,7 +1,7 @@
 _ = require 'lodash'
 tables = require '../../backend/config/tables'
 sinon = require 'sinon'
-logger = require("./logger").spawn('SqlMock')
+_logger = require("./logger").spawn('SqlMock')
 Promise = require 'bluebird'
 dbs = require '../../backend/config/dbs'
 
@@ -38,7 +38,10 @@ class SqlMock
   ###
 
   constructor: (@groupName, @tableHandle, @options = {}) ->
-    @logger = logger.spawn("#{@groupName}:#{@tableHandle}")
+    @logger = _logger.spawn("#{@groupName}:#{@tableHandle}")
+    if @options.debugNS
+      @logger = @logger.spawn(@options.debugNS)
+
     @setResult(@options.result ? undefined) unless @options.results
     @setResults(@options.results ? undefined) unless @options.result
     @error = @options.error ? undefined
@@ -46,7 +49,7 @@ class SqlMock
 
     if @options.dbFn?
       @_svc = @options.dbFn
-      @logger.debug "dbFn set: #{@_svc.tableName}"
+      @logger.debug () -> "dbFn set: #{@_svc.tableName}"
 
     # dynamic instance hooks for the mock sql calls
     @[@groupName] = @
@@ -75,17 +78,17 @@ class SqlMock
 
   dbFn: () =>
     fn = () =>
-      @logger.debug "dbFn of #{@groupName}.#{@tableHandle} invoked"
+      @logger.debug "dbFn invoked"
       @
     fn.tableName = @tableName
-    @logger.debug "tablename: #{@tableName}"
+    @logger.debug () -> "tablename: #{@tableName}"
     fn
 
   setResult: (result) ->
     @setResults [result]
 
   setResults: (results = []) ->
-    @logger.debug "setting results #{JSON.stringify(results)}"
+    @logger.debug () -> "setting results #{JSON.stringify(results)}"
     if !_.isArray results
       throw new Error "Results must be of type Array."
     @results = results.reverse() #be like a queue
@@ -93,7 +96,7 @@ class SqlMock
   getResult: ->
     if @results.length
       ret = @results.pop()
-      @logger.debug "sending result, leaving #{@results.length} results in queue"
+      @logger.debug () -> "sending result, leaving #{@results.length} results in queue"
       return ret
 
   setError: (error) ->
@@ -112,7 +115,7 @@ class SqlMock
       @logger.debug "hooking dbs.get('main') for service"
       @_svc = dbs.get('main')
     else
-      @logger.debug "hooking tables.#{@groupName}.#{@tableHandle} for service"
+      @logger.debug () -> "hooking tables.#{@groupName}.#{@tableHandle} for service"
       @_svc = tables[@groupName][@tableHandle] unless @_svc
       @tableName = @_svc.tableName or @tableHandle
       @_svc = @_svc()
@@ -145,7 +148,7 @@ class SqlMock
   then: (handler) ->
     if @error?
       return Promise.reject(@error)
-    @logger.debug "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
+    @logger.debug () -> "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
     Promise.resolve(@getResult()).then handler
 
   catch: (predicate, handler) ->
@@ -155,14 +158,14 @@ class SqlMock
         handler = predicate
         predicate = undefined
 
-      @logger.debug.cyan "rejecting tables.#{@groupName}.#{@tableHandle} with #{@error}"
+      @logger.debug.cyan () -> "rejecting tables.#{@groupName}.#{@tableHandle} with #{@error}"
 
       if predicate?
         return Promise.reject(@error).catch predicate, handler
       else
         return Promise.reject(@error).catch handler
 
-    @logger.debug "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
+    @logger.debug () -> "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
     return Promise.resolve(@getResult())
 
   toString: () ->
@@ -180,13 +183,13 @@ SqlMock.sqlMock = () ->
 
 _sqlFns.forEach (name) ->
   SqlMock::[name] = ->
-    @logger.debug "called #{@tableHandle} #{name}"
+    @logger.debug () -> "called #{@tableHandle} #{name}"
 
     @[name + 'Spy'](arguments...)
-    @logger.debug "called #{@tableHandle} #{name}Spy"
+    @logger.debug () -> "called #{@tableHandle} #{name}Spy"
 
     @_appendArgChain(name, arguments)
-    @logger.debug "appended #{@tableHandle} #{name} to chain"
+    @logger.debug () -> "appended #{@tableHandle} #{name} to chain"
     @
 
 module.exports = SqlMock

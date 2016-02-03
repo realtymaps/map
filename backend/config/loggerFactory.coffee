@@ -54,8 +54,17 @@ _decorateOutput = (func, bindThis) ->
     if cluster.worker?.id?
       decorator = "<#{cluster.worker.id}>#{decorator}"
     args.unshift(decorator)
+    # this allows passing a function to be evaluated only if logging will take place
+    if typeof(args[1]) == 'function'
+      args[1] = args[1]()
     func.apply(bindThis, args)
 
+_resolveOutput = (func, bindThis) ->
+  (args...) ->
+    # this allows passing a function to be evaluated only if logging will take place
+    if typeof(args[0]) == 'function'
+      args[0] = args[0]()
+    func.apply(bindThis, args)(args...)
 
 if !baselogger
   throw Error('baselogger undefined')
@@ -84,21 +93,30 @@ class Logger
       augmentedNamespace = @base+':'+@namespace
 
     ###
-      Overide logObject.debug with a debug instance
+      Override logObject.debug with a debug instance
       namespace is to be used as handle for controlling logging verbosity
       see: https://github.com/visionmedia/debug/blob/master/Readme.md
     ###
-    if forceDebugFileAndLine || config.LOGGING.FILE_AND_LINE
-      @debug = _decorateOutput(debug(augmentedNamespace))
+    debugInstance = debug(augmentedNamespace)
+    if !debugInstance.enabled
+      @debug = (() ->)
+    else if forceDebugFileAndLine || config.LOGGING.FILE_AND_LINE
+      @debug = _decorateOutput(debugInstance)
     else
-      @debug = debug(augmentedNamespace)
+      @debug = _resolveOutput(debugInstance)
 
+    foundLevel = false
     for level in _levelFns
-      if forceDebugFileAndLine || config.LOGGING.FILE_AND_LINE
+      if level == config.LOGGING.LEVEL
+        foundLevel = true
+      if !foundLevel
+        @[level] = (() ->)
+      else if forceDebugFileAndLine || config.LOGGING.FILE_AND_LINE
         @[level] = _decorateOutput(baselogger[level], baselogger)
       else
-        @[level] = baselogger[level].bind(baselogger)
+        @[level] = _resolveOutput(baselogger[level], baselogger)
 
+    ###
     # delegation of both member funcs and member structs from this class to the baseLogObject
     for util in _utils
       do (util) =>
@@ -111,6 +129,7 @@ class Logger
             set: (value) ->
               baselogger[util] = value
             enumerable: false
+    ###
 
     colorWrap(@)
 
