@@ -4,7 +4,7 @@ modal-in-class="in"
 ng-style="{'z-index': 1050 + index*10, display: 'block'}")
   .modal-dialog(ng-class="size ? 'modal-' + size : ''")
     mobile-header.mobile-header-modal
-      .inner(ng-controller="OpenAsModalWindowController")
+      .inner(ng-controller="OpenAsModalWindowCtrl")
         .mobile-header-left
           mobile-header-button-left
           .mobile-header-title {{context.modalTitle}}
