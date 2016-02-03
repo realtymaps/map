@@ -8,7 +8,7 @@ stripeErrorEnums = require '../../enums/enum.stripe.errors'
 
 stripe = null
 require('../../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
-{SubtaskHandler} = require './util.task.helpers'
+{SubtaskHandlerThirdparty} = require './util.task.helpers'
 stripeErrors  = require '../../utils/errors/util.errors.stripe'
 
 ###
@@ -65,7 +65,7 @@ findStripeErrors = (subtask) ->
   requestId: 'req_7poIYCVAQBggdP',
   statusCode: 404 } true
 ###
-CommonSubtaskHandler = SubtaskHandler.compose
+CommonSubtaskHandler = SubtaskHandlerThirdparty.compose
 
   errorHandler: stripeErrors.handler
 
@@ -83,12 +83,12 @@ CommonSubtaskHandler = SubtaskHandler.compose
     .where id: subtask.data.id
 
 
-RemoveErroredCustomersSubtaskHandler = SubtaskHandler.compose CommonSubtaskHandler,
+RemoveErroredCustomersSubtaskHandler = SubtaskHandlerThirdparty CommonSubtaskHandler,
   thirdPartyService: (subtask) ->
     stripe.customers.del subtask.data.customer
   invalidRequestRegex: /no such customer/i
 
-RemoveBadCardsSubtaskHandler = SubtaskHandler.compose CommonSubtaskHandler,
+RemoveBadCardsSubtaskHandler = SubtaskHandlerThirdparty.compose CommonSubtaskHandler,
   thirdPartyService: (subtask) ->
     stripe.customers.deleteCard subtask.data.customer, subtask.data.customerCard
   invalidRequestRegex: /no such source/i

@@ -1,17 +1,21 @@
-_ = require 'lodash'
 logger = require('../../config/logger').spawn('task:helpers')
+{notImplemented} = require '../util.interface.helpers'
+Composable = require '../util.composable'
 
-SubtaskHandler =
-  compose: (extensions...) ->
-    args = [{}, SubtaskHandler].concat extensions
-    _.extend args...
-    
-  thirdPartyService: (subtask) ->
-  removalService: (subtask) ->
-  updateService: (subtask) ->
+SubtaskHandlerInterface = Composable.compose
+  handler: (subtask) ->
+    notImplemented()
+
+SubtaskHandlerThirdpartyInterface = SubtaskHandlerInterface.compose
+  thirdPartyService: (subtask) -> notImplemented()
+  removalService: (subtask) -> notImplemented()
+  updateService: (subtask) -> notImplemented()
+  errorHandler: (error, handleObj) -> notImplemented()
+
   invalidRequestErrorType: null
   invalidRequestRegex: null
-  errorHandler: (error, handleObj) ->
+
+SubtaskHandlerThirdparty = SubtaskHandlerThirdpartyInterface.compose
   handle: (subtask) ->
     removeFromErrorQueue = () =>
       @removalService subtask
@@ -36,5 +40,8 @@ SubtaskHandler =
 
       @errorHandler error, handleObj
 
+
 module.exports =
-  SubtaskHandler: SubtaskHandler
+  SubtaskHandlerInterface: SubtaskHandlerInterface
+  SubtaskHandlerThirdpartyInterface: SubtaskHandlerThirdpartyInterface
+  SubtaskHandlerThirdparty: SubtaskHandlerThirdparty

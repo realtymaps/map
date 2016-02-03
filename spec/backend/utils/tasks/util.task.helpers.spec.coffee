@@ -6,19 +6,13 @@ stripeErrors = require "#{basePath}/utils/errors/util.errors.stripe"
 Promise = require 'bluebird'
 subject = null
 
-describe 'SubtaskHandler', ->
+describe 'SubtaskHandlerThirdparty', ->
   beforeEach ->
-    subject = taskHelpers.SubtaskHandler
+    subject = taskHelpers.SubtaskHandlerThirdparty
 
   describe 'compose', ->
     beforeEach ->
       @composed = subject.compose
-        a: 'a'
-        aFn: ->
-      ,
-        b: 'b'
-        bFn: ->
-      ,
         thirdPartyService: sinon.stub()
         removalService: sinon.stub()
         updateService: sinon.stub()
@@ -26,19 +20,7 @@ describe 'SubtaskHandler', ->
         invalidRequestErrorType: 'MockErrorType'
         errorHandler: stripeErrors.handler
 
-    describe 'has SubtaskHandler', ->
-      describe 'composed', ->
-        it 'exists on instance', ->
-          @composed.compose.should.be.a 'function'
-
-        it 'has a', ->
-          @composed.a.should.be.eql 'a'
-          @composed.aFn.should.be.a 'function'
-
-        it 'has b', ->
-          @composed.b.should.be.eql 'b'
-          @composed.bFn.should.be.a 'function'
-
+    describe 'has SubtaskHandlerThirdparty', ->
       describe 'thirdPartyService', ->
         it 'exists', ->
           @composed.thirdPartyService.should.be.a 'function'
