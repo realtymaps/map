@@ -91,4 +91,10 @@ mod.directive 'rmapsDraggable', (rmapsDragDropService) ->
       $rootScope.$on 'rmaps-drag-end', ->
         angular.element(el).removeClass 'rmaps-drop-target'
         angular.element(el).removeClass 'rmaps-drag-over'
+
+      scope.$on '$destroy', () ->
+        el.unbind 'dragenter'
+        el.unbind 'dragleave'
+        el.unbind 'drop'
+
   }
