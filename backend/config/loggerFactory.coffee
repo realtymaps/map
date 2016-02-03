@@ -64,7 +64,7 @@ _resolveOutput = (func, bindThis) ->
     # this allows passing a function to be evaluated only if logging will take place
     if typeof(args[0]) == 'function'
       args[0] = args[0]()
-    func.apply(bindThis, args)(args...)
+    func.apply(bindThis, args)
 
 if !baselogger
   throw Error('baselogger undefined')
