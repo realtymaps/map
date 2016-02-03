@@ -44,6 +44,11 @@ mod.directive 'rmapsDraggable', (rmapsDragDropService) ->
 
       el.bind 'dragenter', (e) ->
         rmapsDragDropService.dragEnter scope.rmapsDraggable
+
+      scope.$on '$destroy', () ->
+        el.unbind 'dragstart'
+        el.unbind 'dragend'
+        el.unbind 'dragenter'
   }
 
 .directive 'rmapsDroppable', ($rootScope, rmapsDragDropService) ->
