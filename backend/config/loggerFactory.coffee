@@ -24,7 +24,7 @@ else
 
 
 _utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
-_levelFns = ['info', 'warn', 'error', 'log']
+_levelFns = ['info', 'warn', 'error']
 
 
 _isValidLogObject = (logObject) ->
