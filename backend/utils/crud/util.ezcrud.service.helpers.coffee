@@ -48,15 +48,10 @@ class ServiceCrud extends BaseObject
     # postgresql template for raw query
     # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
     qstr = """
-     INSERT INTO
-       #{tableName}
-       (#{allKeys})
-     VALUES
-       (#{allValues})
-     ON CONFLICT
-       (#{idKeys})
-     DO UPDATE SET
-       (#{entityKeys}) = (#{entityValues})
+     INSERT INTO #{tableName} (#{allKeys})
+      VALUES (#{allValues})
+      ON CONFLICT (#{idKeys})
+      DO UPDATE SET (#{entityKeys}) = (#{entityValues})
     """
 
     # "post-process" data, sanitize the resulting string above suitable as raw query
