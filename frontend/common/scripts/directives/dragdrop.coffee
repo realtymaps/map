@@ -4,7 +4,7 @@ mod = require '../module.coffee'
 # --------
 # Intended to be used with e.g. ng-repeat so items can be moved between lists
 
-mod.service 'rmapsDragDropService', [ '$rootScope', ($rootScope) ->
+mod.service 'rmapsDragDropService', ($rootScope) ->
   _src = null
   _target = null
   dragStart: (src) ->
@@ -18,37 +18,35 @@ mod.service 'rmapsDragDropService', [ '$rootScope', ($rootScope) ->
     _src
   getTarget: () ->
     _target
-]
 
-mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDropService) ->
-    {
-      restrict: 'A'
-      scope: rmapsDraggable: '=', rmapsDraggableCollection: '='
-      link: (scope, el, attrs) ->
-        angular.element(el).attr 'draggable', 'true'
+mod.directive 'rmapsDraggable', (rmapsDragDropService) ->
+  {
+    restrict: 'A'
+    scope: rmapsDraggable: '=', rmapsDraggableCollection: '='
+    link: (scope, el, attrs) ->
+      angular.element(el).attr 'draggable', 'true'
 
-        el.bind 'dragstart', (e) ->
+      el.bind 'dragstart', (e) ->
 
-          # Firefox won't fire drag events without data
-          e.dataTransfer.setData('text/plain', '')
+        # Firefox won't fire drag events without data
+        e.dataTransfer.setData('text/plain', '')
 
-          rmapsDragDropService.dragStart
-            el: el
-            model: scope.rmapsDraggable
-            collection: scope.rmapsDraggableCollection
+        rmapsDragDropService.dragStart
+          el: el
+          model: scope.rmapsDraggable
+          collection: scope.rmapsDraggableCollection
 
-        el.bind 'dragend', (e) ->
-          rmapsDragDropService.dragEnd
-            el: el
-            model: scope.rmapsDraggable
-            collection: scope.rmapsDraggableCollection
+      el.bind 'dragend', (e) ->
+        rmapsDragDropService.dragEnd
+          el: el
+          model: scope.rmapsDraggable
+          collection: scope.rmapsDraggableCollection
 
-        el.bind 'dragenter', (e) ->
-          rmapsDragDropService.dragEnter scope.rmapsDraggable
-    }
-]
+      el.bind 'dragenter', (e) ->
+        rmapsDragDropService.dragEnter scope.rmapsDraggable
+  }
 
-.directive 'rmapsDroppable', [ '$rootScope', 'rmapsDragDropService', ($rootScope, rmapsDragDropService) ->
+.directive 'rmapsDroppable', ($rootScope, rmapsDragDropService) ->
   {
     restrict: 'A'
     scope: onDrop: '&', onDrag: '&', rmapsDroppable: '='
@@ -89,4 +87,3 @@ mod.directive 'rmapsDraggable', [ 'rmapsDragDropService', (rmapsDragDropService)
         angular.element(el).removeClass 'rmaps-drop-target'
         angular.element(el).removeClass 'rmaps-drag-over'
   }
-]
