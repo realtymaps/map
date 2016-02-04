@@ -64,7 +64,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
     if !window.isTest
       $log.debug("filters: #{JSON.stringify filters}")
       $log.debug mapState
-      $log.log(route)
+      $log.debug route
 
     $http.post(route, _.extend({}, bodyExtensions,
       bounds: hash
