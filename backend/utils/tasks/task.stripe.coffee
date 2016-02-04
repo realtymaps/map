@@ -83,7 +83,7 @@ CommonSubtaskHandler = SubtaskHandlerThirdparty.compose
     .where id: subtask.data.id
 
 
-RemoveErroredCustomersSubtaskHandler = SubtaskHandlerThirdparty CommonSubtaskHandler,
+RemoveErroredCustomersSubtaskHandler = SubtaskHandlerThirdparty.compose CommonSubtaskHandler,
   thirdPartyService: (subtask) ->
     stripe.customers.del subtask.data.customer
   invalidRequestRegex: /no such customer/i
