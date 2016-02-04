@@ -28,6 +28,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     if !state.template && !state.templateProvider
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
+        console.log "State #{name} using template #{templateName}"
         $templateCache.get templateName
 
   createView = (name, state, viewName = name) ->
@@ -75,6 +76,19 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     $stateProvider.state(state)
     state
 
+  buildChildState = (name, parent, overrides = {}) ->
+    state = baseState name, overrides
+    state.parent = parent
+
+    appendTemplateProvider name, state
+
+    # Set the page type
+#    state.pageType = 'child'
+
+    console.log "Creating child state #{name} with parent #{parent}"
+    $stateProvider.state(state)
+    state
+
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
   buildMapState
     sticky: true,
@@ -88,28 +102,25 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
         squash: true
 
   buildState 'onboarding',
-    abstract: true
+#    abstract: true
     url: frontendRoutes.onboarding
     loginRequired: false
     permissionsRequired: false
 
-  buildState 'onboardingPlan',
-    parent: 'onboarding'
+  buildChildState 'onboardingPlan', 'onboarding',
     loginRequired: false
     permissionsRequired: false
     showSteps: false
 
   rmapsOnboardingOrderServiceProvider.steps.forEach (boardingName) ->
-    buildState boardingName,
-      parent: 'onboarding'
+    buildChildState boardingName, 'onboarding',
       url: '/' + (rmapsOnboardingOrderServiceProvider.getId(boardingName) + 1)
       loginRequired: false
       permissionsRequired: false
       showSteps: true
 
   rmapsOnboardingProOrderServiceProvider.steps.forEach (boardingName) ->
-    buildState boardingName + 'Pro',
-      parent: 'onboarding'
+    buildChildState boardingName + 'Pro', 'onboarding',
       controller: "rmaps#{boardingName[0].toUpperCase()}#{boardingName.substr(1)}Ctrl"
       url: '/pro/' + (rmapsOnboardingProOrderServiceProvider.getId(boardingName) + 1)
       templateProvider: ($templateCache) ->
@@ -125,11 +136,11 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'properties'
   buildModalState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
   buildModalState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
-  buildModalState 'projectClients', parent: 'project', page: { title: 'My Clients' }, mobile: { modal: true }
-  buildModalState 'projectNotes', parent: 'project', page: { title: 'Notes' }, mobile: { modal: true }
-  buildModalState 'projectFavorites', parent: 'project', page: { title: 'Favorites' }, mobile: { modal: true }
-  buildModalState 'projectNeighbourhoods', parent: 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
-  buildModalState 'projectPins', parent: 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
+  buildChildState 'projectClients', 'project', page: { title: 'My Clients' }, mobile: { modal: true }
+  buildChildState 'projectNotes', 'project', page: { title: 'Notes' }, mobile: { modal: true }
+  buildChildState 'projectFavorites', 'project', page: { title: 'Favorites' }, mobile: { modal: true }
+  buildChildState 'projectNeighbourhoods', 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
+  buildChildState 'projectPins', 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
@@ -140,10 +151,10 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'mailWizard',
     sticky: true
 
-  buildState 'selectTemplate', parent: 'mailWizard'
-  buildState 'editTemplate', parent: 'mailWizard'
-  buildState 'senderInfo', parent: 'mailWizard'
-  buildState 'recipientInfo', parent: 'mailWizard'
+  buildChildState 'selectTemplate', 'mailWizard'
+  buildChildState 'editTemplate', 'mailWizard'
+  buildChildState 'senderInfo', 'mailWizard'
+  buildChildState 'recipientInfo', 'mailWizard'
 
   buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false

@@ -40,14 +40,27 @@ app.provider 'rmapsPageService', () ->
       # Page Type
       #
 
+      pageType: null
+
+      _findParentPageType: () ->
+        @pageType = null
+        $current = $state.$current
+
+        while $current and @pageType == null
+          @pageType = $current.self.pageType if $current.self.pageType
+          $current = $current.parent
+
+        $log.debug "State #{$state.$current.self.name} has Page Type #{@pageType}"
+
       isMap: () ->
-        return $state.current?.pageType == 'map'
+        return @pageType == 'map'
 
       isModal: () ->
-        return $state.current?.pageType == 'modal'
+
+        return @pageType == 'modal'
 
       isPage: () ->
-        return $state.current?.pageType == 'page'
+        return @pageType == 'page'
 
       #
       # Navigation
@@ -98,5 +111,11 @@ app.provider 'rmapsPageService', () ->
 
         if toState.mobile
           page.mobile.modal = toState.mobile.modal
+
+    #
+    # State Change Success listener to store page type to avoid repeated evaluation of parent-hierarchy
+    #
+    $rootScope.$on "$stateChangeSuccess", (event, toState) ->
+      page._findParentPageType()
 
     return page

@@ -1,11 +1,9 @@
-section.white-page.onboarding.onboarding-plan(ng-cloak)
+section.white-page.onboarding.onboarding-plan
   .container
+    div ONBOARDING
     div(ng-if="view.showSteps")
       a(ng-if="view.hasPrevStep" ng-click="view.goToPrevStep()")
         .pull-left.fa.fa-chevron-left.fa-3x()
       h3 Step {{view.currentStepId}} of {{view.steps.length}}
-    
-    div(ng-repeat="state in $state.get() | filter:{parent: 'onboarding'}"
-      ui-view="{{state.name}}"
-      ng-show="$state.includes(state.name)", ng-cloak
-    )
+
+    div(ui-view)
