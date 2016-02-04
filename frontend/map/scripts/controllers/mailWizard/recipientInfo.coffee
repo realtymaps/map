@@ -2,7 +2,8 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($scope, $log, rmapsPropertiesService, rmapsMailTemplateService) ->
+
+app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $log, rmapsPropertiesService, rmapsMailTemplateService) ->
   $log = $log.spawn 'mail:recipientInfo'
   $log.debug 'rmapsRecipientInfoCtrl'
   $scope.mailCampaign = rmapsMailTemplateService.getCampaign()
@@ -29,3 +30,6 @@ app.controller 'rmapsRecipientInfoCtrl', ($scope, $log, rmapsPropertiesService, 
 
   $scope.changeRecipients = () ->
     rmapsMailTemplateService.setRecipients $scope[$scope.mailCampaign.recipientType]
+
+  $rootScope.registerScopeData () ->
+    $scope.$parent.initMailTemplate()

@@ -1,5 +1,5 @@
 _ = require 'lodash'
-#logger = require '../config/logger'
+logger = require('../config/logger').spawn('utils:validation')
 DataValidationError = require './errors/util.error.dataValidation'
 loaders = require './util.loaders'
 path = require 'path'

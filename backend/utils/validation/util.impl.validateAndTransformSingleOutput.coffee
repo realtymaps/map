@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('utils:validation')
 doValidationSteps = require './util.impl.doValidationSteps'
 DataValidationError = require '../errors/util.error.dataValidation'
 noop = require './util.validation.noop'
