@@ -50,7 +50,7 @@ info = (req, res, next) -> Promise.try () ->
       logger.debug('Determining queue needs...')
       jobQueue.getQueueNeeds()
     .then (needs) ->
-      logger.debug('Queue needs: '+JSON.stringify(needs, null, 2))
+      logger.debug () -> ('Queue needs: '+JSON.stringify(needs, null, 2))
       if next
         next new ExpressResponse(needs)
       else
