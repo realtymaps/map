@@ -4,6 +4,7 @@ heapdump = require 'heapdump'
 ExpressResponse = require '../utils/util.expressResponse'
 httpStatus = require '../../common/utils/httpStatus'
 config = require '../config/config'
+cluster = require 'cluster'
 
 module.exports =
   download:
