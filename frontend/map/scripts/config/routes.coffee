@@ -30,9 +30,9 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 
-  createView = (name, state) ->
+  createView = (name, state, viewName = name) ->
     state.views = {}
-    state.views["#{name}@#{state.parent}"] =
+    state.views["#{viewName}@#{state.parent}"] =
       templateProvider: state.templateProvider
       template: state.template
       controller: state.controller
@@ -43,20 +43,34 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     name = 'map'
     state = baseState name, overrides
     appendTemplateProvider name, state
-    createView name, state
+    createView name, state, 'main-map'
+
+    # Set the page type
+    state.pageType = 'map'
 
     $stateProvider.state(state)
     state
 
   buildModalState = (name, overrides = {}) ->
-    return
+    state = baseState name, overrides
+    appendTemplateProvider name, state
+    createView name, state, 'main-modal'
+
+    # Set the page type
+    state.pageType = 'modal'
+
+    $stateProvider.state(state)
+    state
 
   buildState = (name, overrides = {}) ->
     state = baseState name, overrides
     appendTemplateProvider name, state
 
     if state.parent
-      createView name, state
+      createView name, state, 'main-page'
+
+    # Set the page type
+    state.pageType = 'page'
 
     $stateProvider.state(state)
     state
@@ -107,22 +121,22 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
-  buildState 'history'
+  buildModalState 'history'
   buildState 'properties'
-  buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
-  buildState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
-  buildState 'projectClients', parent: 'project', page: { title: 'My Clients' }, mobile: { modal: true }
-  buildState 'projectNotes', parent: 'project', page: { title: 'Notes' }, mobile: { modal: true }
-  buildState 'projectFavorites', parent: 'project', page: { title: 'Favorites' }, mobile: { modal: true }
-  buildState 'projectNeighbourhoods', parent: 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
-  buildState 'projectPins', parent: 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
+  buildModalState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
+  buildModalState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
+  buildModalState 'projectClients', parent: 'project', page: { title: 'My Clients' }, mobile: { modal: true }
+  buildModalState 'projectNotes', parent: 'project', page: { title: 'Notes' }, mobile: { modal: true }
+  buildModalState 'projectFavorites', parent: 'project', page: { title: 'Favorites' }, mobile: { modal: true }
+  buildModalState 'projectNeighbourhoods', parent: 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
+  buildModalState 'projectPins', parent: 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
   buildState 'sendEmailModal'
   buildState 'newEmail'
 
-  buildState 'mail'
+  buildModalState 'mail'
   buildState 'mailWizard',
     sticky: true
 

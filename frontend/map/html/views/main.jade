@@ -1,8 +1,10 @@
 extends ./_layout
 block content
   .full-width.container
-    main.site-main.page(ui-view="map" class="{{pageClass}}")
+    main.site-main.page(ui-view="main-map" class="{{pageClass}}")
+
+    main.site-main.page(ui-view="main-page" class="{{pageClass}}" ng-show="rmapsPageService.isPage()")
       include ../views/home.jade
 
-  .main-modal(ng-show="!$state.includes('map') && $state.current.name != 'main'")
-    .page-modal(ng-repeat="state in $state.get() | filter:{parent: 'main', name: '!map'}", ui-view="{{state.name}}" class="{{pageClass}}", ng-show="$state.includes(state.name)", ng-cloak)
+  .main-modal(ng-show="rmapsPageService.isModal()")
+    .page-modal(ui-view="main-modal" class="{{pageClass}}")

@@ -29,30 +29,45 @@ app.provider 'rmapsPageService', () ->
       meta: defaults.meta
 
       #
-      # Header State
+      # Mobile Header State
       #
+
       mobile: {
         modal: false
       }
+
+      #
+      # Page Type
+      #
+
+      isMap: () ->
+        return $state.current?.pageType == 'map'
+
+      isModal: () ->
+        return $state.current?.pageType == 'modal'
+
+      isPage: () ->
+        return $state.current?.pageType == 'page'
 
       #
       # Navigation
       #
       historyLength: $window.history.length
 
-      #
-      # Accessors
-      #
-      allowDynamicTitle: false
-
-      setDynamicTitle: (value) ->
-        @title = value if value and @allowDynamicTitle
-
       back: () =>
         if $window.history.length > @historyLength
           $window.history.back()
         else
           $state.go 'map', {}, {reload: true}
+
+      #
+      # Accessors
+      #
+
+      allowDynamicTitle: false
+
+      setDynamicTitle: (value) ->
+        @title = value if value and @allowDynamicTitle
 
       reset: () ->
         @mobile.modal = false
