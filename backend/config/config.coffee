@@ -4,6 +4,7 @@ common =  require '../../common/config/commonConfig.coffee'
 
 
 base =
+  DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
   PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
