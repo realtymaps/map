@@ -1,23 +1,24 @@
 auth = require '../utils/util.auth'
-routeCrudHelpers = require '../utils/crud/util.crud.route.helpers'
-svcCrudHelpers = require '../utils/crud/util.crud.service.helpers'
+RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 mailCampaignService = require '../services/service.mail_campaigns'
 {validators} = require '../utils/util.validation'
 tableNames = require('../config/tableNames')
 sqlHelpers = require '../utils/util.sql.helpers'
 
-class MailCampaignRouteCrud extends routeCrudHelpers.RouteCrud
-  init: () ->
-    @reqTransforms =
-      params:
-        validators.reqId toKey: "#{tableNames.mail.campaign}.auth_user_id"
-      query:
-        validators.mapKeys id: "#{tableNames.mail.campaign}.id"
 
-    super arguments...
+reqTransforms =
+  body:
+    validators.reqId toKey: "auth_user_id"
 
-module.exports = routeHelpers.mergeHandles new MailCampaignRouteCrud(mailCampaignService, undefined, 'MailCampaignRouteCrud').init(true, sqlHelpers.columns.mailCampaigns),
+class MailCampaignRoute extends RouteCrud
+
+instance = new MailCampaignRoute mailCampaignService,
+  debugNS: "mailRoute"
+  reqTransforms: reqTransforms
+  enableUpsert: true
+
+module.exports = routeHelpers.mergeHandles instance,
   root:
     methods: ['get', 'post']
     middleware: [

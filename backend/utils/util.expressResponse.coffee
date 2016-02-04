@@ -4,6 +4,8 @@ logger = require '../config/logger'
 csvStringify = Promise.promisify(require('csv-stringify'))
 {PartiallyHandledError} = require './errors/util.error.partiallyHandledError'
 
+
+
 class ExpressResponse
   constructor: (@payload, @status=200, allowHtml=false, @format='json') ->
     @name = 'ExpressResponse'
@@ -22,9 +24,12 @@ class ExpressResponse
       result += "    Details: #{details}"
     result
   send: (res) ->
+    if @download
+      return res.download(@download, @filename)
+    if @filename
+      res.set('Content-disposition', "attachment; filename=#{@filename}")
     if @format == 'csv'
       # set headers for download
-      res.set('Content-disposition', 'attachment; filename=mlsdata.csv')
       res.set('Content-Type', 'text/csv')
 
       # stringify payload and send

@@ -31,7 +31,7 @@ module.exports =
   recipientInfo:  '/recipientInfo'
   senderInfo:     '/senderInfo'
   selectTemplate: '/selectTemplate'
-  editTemplate:   '/editTemplate'
+  editTemplate:   '/editTemplate?id'
 
   avatar:         '/assets/avatar.svg'
   mocks:

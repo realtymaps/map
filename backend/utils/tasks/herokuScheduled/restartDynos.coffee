@@ -1,9 +1,6 @@
-tables = require '../../../config/tables'
 logger = require '../../../config/logger'
 Heroku = require 'heroku-client'
 externalAccounts = require '../../../services/service.externalAccounts'
-{singleRow} = require '../../util.sql.helpers'
-_ = require 'lodash'
 
 restart = (appName = 'realtymaps-map') ->
   externalAccounts.getAccountInfo('heroku')

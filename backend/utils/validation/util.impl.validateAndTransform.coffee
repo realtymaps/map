@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('utils:validation')
 validateAndTransformSingleOutput = require './util.impl.validateAndTransformSingleOutput'
 
 ###########

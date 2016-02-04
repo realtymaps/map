@@ -92,6 +92,8 @@ class Logger
         @namespace += ':'
       augmentedNamespace = @base+':'+@namespace
 
+    @level = config.LOGGING.LEVEL
+
     ###
       Override logObject.debug with a debug instance
       namespace is to be used as handle for controlling logging verbosity
@@ -105,9 +107,9 @@ class Logger
     else
       @debug = _resolveOutput(debugInstance)
 
-    foundLevel = false
+    foundLevel = (@level == 'debug')
     for level in _levelFns
-      if level == config.LOGGING.LEVEL
+      if level == @level
         foundLevel = true
       if !foundLevel
         @[level] = (() ->)

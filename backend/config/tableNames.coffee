@@ -45,6 +45,7 @@ module.exports =
     m2m_group_permission: 'auth_m2m_group_permissions'
     m2m_user_locations: 'auth_m2m_user_locations'
     m2m_user_mls: 'auth_m2m_user_mls'
+    toM_errors: 'auth_2m_errors'
   user:
     profile: 'user_profile'
     project: 'user_project'

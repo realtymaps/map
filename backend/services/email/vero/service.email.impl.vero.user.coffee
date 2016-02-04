@@ -4,10 +4,7 @@ _ = require 'lodash'
 VeroUser = (vero) ->
 
   createOrUpdate = (opts) ->
-    onMissingArgsFail
-      authUser: {val:opts.authUser, required: true}
-      eventName: {val:opts.eventName, required: true}
-      plan: {val:opts.plan, required: true}
+    onMissingArgsFail args: opts, required: ['authUser', 'eventName', 'plan']
 
     {authUser, subscriptionStatus, eventName, eventData, plan} = opts
 

@@ -1,39 +1,12 @@
-NamedError = require './util.error.named'
+_ = require 'lodash'
+StripeErrors = require 'stripe/lib/Error'
+handler = require '../util.handler'
 
-class StripeCardError extends NamedError
-  constructor: (args...) ->
-    super('StripeCard', args...)
+CustomerCreateFailedError = StripeErrors.StripeError.extend(type: 'CustomerCreateFailedError')
 
-class RateLimitError extends NamedError
-  constructor: (args...) ->
-    super('RateLimit', args...)
+ourHandler = (error, handles) ->
+  handler {args: [error], handles}, () -> error.type
 
-class StripeInvalidRequestError extends NamedError
-  constructor: (args...) ->
-    super('StripeInvalidRequest', args...)
-
-class StripeAPIError extends NamedError
-  constructor: (args...) ->
-    super('StripeAPI', args...)
-
-class StripeConnectionError extends NamedError
-  constructor: (args...) ->
-    super('StripeConnection', args...)
-
-class StripeAuthenticationError extends NamedError
-  constructor: (args...) ->
-    super('StripeAuthentication', args...)
-
-class CustomerCreateFailedError extends NamedError
-  constructor: (args...) ->
-    super('CustomerCreateFailed', args...)
-
-
-module.exports =
-  StripeCardError: StripeCardError
-  RateLimitError: RateLimitError
-  StripeInvalidRequestError: StripeInvalidRequestError
-  StripeAPIError: StripeAPIError
-  StripeConnectionError: StripeConnectionError
-  StripeAuthenticationError: StripeAuthenticationError
+module.exports = _.extend {}, StripeErrors,
   CustomerCreateFailedError: CustomerCreateFailedError
+  handler: ourHandler

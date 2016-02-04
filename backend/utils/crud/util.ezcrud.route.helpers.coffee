@@ -59,10 +59,11 @@ class RouteCrud
 
   getQuery: (req, crudMethodStr) =>
     @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
+    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
     @logger.debug () -> "req.body=#{JSON.stringify(req.body)}"
     @logger.debug () -> "req.method=#{req.method}"
     @exec(req, crudMethodStr).then (tReq) ->
-      query = _.merge({}, tReq.params, tReq.body)
+      query = _.merge({}, tReq.params, tReq.body, tReq.query)
       query
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
@@ -73,8 +74,10 @@ class RouteCrud
         @getQuery(req, 'rootGET').then (query) =>
           @_wrapRoute @svc.getAll(query), res
       POST: () =>
-        @getQuery(req, 'rootPOST').then (query) =>
-          @_wrapRoute @svc.create(query), res
+        @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
+        @getQuery(req, 'byIdPOST').then (query) =>
+          if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
+          return @_wrapRoute @svc.create(query), res
     , next
 
   byId: (req, res, next) =>
@@ -88,6 +91,7 @@ class RouteCrud
 
       # leverages option for upsert
       POST: () =>
+        @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
         @getQuery(req, 'byIdPOST').then (query) =>
           if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
           return @_wrapRoute @svc.create(query), res
