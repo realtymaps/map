@@ -9,7 +9,7 @@ describe 'rmapsMacro directive tests', ->
 
   beforeEach ->
     angular.mock.module('rmapsMapApp')
-  
+
     inject (_$compile_, _$rootScope_, _$document_) =>
       @document = _$document_[0]
       @compile = _$compile_
@@ -136,10 +136,8 @@ describe 'rmapsMacro directive tests', ->
       goodExpectedInnerHTML = '<span>Some test text with a <span class="macro-display">{{macro}}</span></span>'
       badExpectedInnerHTML = '<span>Some test text with a <span class="macro-display-error">{{badmacro}}</span></span>'
 
-      console.log "#### converting..."
       @scope.convertMacrosInSpan(goodElement, goodOffset, goodMacro, exchange)
       @scope.convertMacrosInSpan(badElement, badOffset, badMacro, exchange)
 
-      console.log "#### testing..."
       expect(goodElement.innerHTML).to.equal goodExpectedInnerHTML
       expect(badElement.innerHTML).to.equal badExpectedInnerHTML

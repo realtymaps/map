@@ -32,12 +32,10 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmap
 
   rmapsRunnerHelpersService.setRegisterScopeData()
 
-app.run [ '$rootScope', 'Restangular', 'rmapsEventConstants',
-    ($rootScope, Restangular, rmapsEventConstants) ->
-      Restangular.setErrorInterceptor (response, deferred, responseHandler) ->
-        if response.status == 500
-          console.log(response)
-          $rootScope.$emit rmapsEventConstants.alert.spawn, response.data.alert
-          false
-        true
-]
+app.run ($log, $rootScope, Restangular, rmapsEventConstants) ->
+  Restangular.setErrorInterceptor (response, deferred, responseHandler) ->
+    if response.status == 500
+      $log.spawn('runRootScopeInit').debug(response)
+      $rootScope.$emit rmapsEventConstants.alert.spawn, response.data.alert
+      false
+    true

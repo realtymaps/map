@@ -37,6 +37,13 @@ do
             export IS_DEBUG=true
             export USE_DEBUG_PORT="${!i:8}"
             ;;
+        --logs=*)
+            export LOG_ENABLE="${!i:7}"
+            ;;
+        *)
+            echo "runDev: unexpected command line option: ${!i}"
+            exit 0
+            ;;
     esac
 done
 

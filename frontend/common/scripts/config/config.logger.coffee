@@ -10,4 +10,4 @@ mod.config ($provide, nemSimpleLoggerProvider) ->
       return
     $log.enable(data, absoluteNamespace: true)
     $log = $log.spawn("common:run:loggerSetup")
-    $log.debug "enabled: #{data} debug log levels."
+    $log.debug "debug log namespace toggles: #{data}"

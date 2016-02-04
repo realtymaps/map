@@ -1,7 +1,8 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
+app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
+  $log = $log.spawn('map:rmapsPinnedCtrl')
 
   getPinned = (event, pinned) ->
     $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
@@ -17,7 +18,7 @@ app.controller 'rmapsPinnedCtrl', ($scope, $rootScope, $modal, rmapsEventConstan
 
   $scope.pinResults = ($event) ->
     toPin = $scope.formatters.results.getResultsArray()
-    console.log toPin
+    $log.debug toPin
 
     return unless toPin?.length
 
