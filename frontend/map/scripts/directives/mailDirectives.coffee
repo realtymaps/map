@@ -1,3 +1,4 @@
+###global: rangy###
 app = require '../app.coffee'
 _ = require 'lodash'
 
@@ -26,6 +27,10 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.editor?.scope?.$on 'rmaps-drag-end', (e, opts) ->
         scope.macroAction.whenDropped e
 
+    scope.$on '$destroy', () ->
+      element.unbind 'dragover', element
+      element.unbind 'keyup', element
+
     $rootScope.$on 'rmaps-drag-end', (e) ->
       scope.editor.editorFunctions.focus()
       # percolate drag end event down so the editor hears it
@@ -33,6 +38,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
 
 
 app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document, rmapsMailTemplateService) ->
+  $log = $log.spawn('mail:rmapsMacroHelper')
   restrict: 'A'
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
@@ -50,9 +56,10 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
       if exchange
         range.setEnd textnode, offset+macro.length
         range.deleteContents()
-      el = angular.element "<span>#{macro}</span>"
-      scope.setMacroClass el[0]
-      range.insertNode el[0]
+      el = angular.element("<span>#{macro}</span>")[0]
+      scope.setMacroClass el
+      range.insertNode el
+      return el.childNodes[0]
 
     # determine if the node has been flagged as macro span (whether valid or not), by class
     # this is *not* macro validation
@@ -129,10 +136,24 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
-          scope.convertMacrosInSpan sel.focusNode, offset, macro, true
+          newTextEl = scope.convertMacrosInSpan sel.focusNode, offset, macro, true
 
-        # trim/clean data
-        sel.focusNode.data = sel.focusNode.data.trim()
+          # trim/clean data
+          sel.focusNode.data = sel.focusNode.data.trim()
+
+          # procure a new range for caret
+          range = rangy.createRange()
+          range.setStartAfter(newTextEl)
+          length = newTextEl.length || newTextEl.childNodes.length
+          range.setEnd(newTextEl, length)
+          # for some reason caret gets set inside span instead of "startAfter", so typing
+          # extends the text inside the macro span instead of outside of it
+
+          # set selection, which sets the caret
+          selection = rangy.getSelection()
+          selection.removeAllRanges()
+          selection.setSingleRange range
+
 
     scope.caretFromPoint = () ->
       # http://stackoverflow.com/questions/2444430/how-to-get-a-word-under-cursor-using-javascript
@@ -158,6 +179,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         scope.convertMacrosInSpan textNode, offset, scope.macro
 
       whenTyped: (e) ->
+        $log.debug "whenTyped, event:\n#{JSON.stringify e}"
         sel = rangy.getSelection()
         # while typing, filter for macros and wrap if necessary
         scope.macroFilter(sel)
