@@ -23,6 +23,7 @@ describe 'service.digimaps', ->
         return new StringStream(fileName)
 
   it 'getParcelZipFileStream', (done) ->
+    this.timeout(10000)
     @subject.getParcelZipFileStream('/ZIPS/Parcels_123.zip', Promise.resolve @mockFtpClient)
     .then (stream) ->
       str = ''

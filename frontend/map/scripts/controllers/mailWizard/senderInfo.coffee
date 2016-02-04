@@ -7,9 +7,11 @@ app.controller 'rmapsSenderInfoCtrl', ($rootScope, $scope, rmapsUsStatesService,
   $scope.us_states = []
 
   $rootScope.registerScopeData () ->
-    rmapsMailTemplateService.getSenderData()
-    .then (senderData) ->
-      $scope.senderData = senderData
+    $scope.$parent.initMailTemplate()
+    .then () ->
+      rmapsMailTemplateService.getSenderData()
+      .then (senderData) ->
+        $scope.senderData = senderData
 
-    rmapsUsStatesService.getAll().then (states) ->
-      $scope.us_states = states
+      rmapsUsStatesService.getAll().then (states) ->
+        $scope.us_states = states

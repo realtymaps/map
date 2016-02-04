@@ -6,7 +6,7 @@ validatorBuilder = require '../../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
-logger = require '../../config/logger'
+logger = require('../../config/logger').spawn('task')
 sqlHelpers = require '../util.sql.helpers'
 dbs = require '../../config/dbs'
 {HardFail, SoftFail} = require '../errors/util.error.jobQueue'
@@ -73,7 +73,7 @@ recordChangeCounts = (subtask) ->
       .where(subset)
       .where(deleted: subtask.batch_id)
       .then (results) ->
-        console.log('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+JSON.stringify(results,null,2))
+        logger.spawn("#{subtask.task_name}:dataLoadHelpers").debug () -> ('@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ '+JSON.stringify(results,null,2))
         results[0].count
   # get a count of raw rows from all raw tables from this batch with rm_valid == false
   invalidPromise = _countInvalidRows(rawTableName, true)
@@ -108,7 +108,7 @@ recordChangeCounts = (subtask) ->
       updated_rows: updatedSubquery
       deleted_rows: deletedCount
       touched_rows: touchedSubquery
-    console.log("=================================== #{blah.toString()}")
+    logger.spawn("#{subtask.task_name}:dataLoadHelpers").debug () -> ("=================================== #{blah.toString()}")
     blah
 
 

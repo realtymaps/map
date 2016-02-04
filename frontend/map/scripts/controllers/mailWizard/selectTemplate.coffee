@@ -3,7 +3,9 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
+  $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
+  $log.debug 'rmapsSelectTemplateCtrl'
 
   $scope.displayCategory = 'all'
 
@@ -22,5 +24,9 @@ app.controller 'rmapsSelectTemplateCtrl', ($scope, rmapsMailTemplateTypeService,
 
   $scope.selectTemplate = (idx) ->
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
+    $log.debug "templateType chosen: #{templateType}"
     rmapsMailTemplateService.setTemplateType(templateType)
     $scope.$parent.nextStep()
+
+  $rootScope.registerScopeData () ->
+    $scope.$parent.initMailTemplate()

@@ -17,7 +17,7 @@ gulp = require 'gulp'
 #this allows `gulp help` task to work which will display all taks via CLI so yes it is used
 # help = require('gulp-help')(gulp) #BROKEN IN GULP 4
 
-gulp.task 'frontendAssets', gulp.parallel 'angular', 'angularAdmin', 'otherAssets'
+gulp.task 'frontendAssets', gulp.series 'angular', 'angularAdmin', 'otherAssets'
 
 gulp.task 'developNoSpec', gulp.series 'clean', gulp.parallel('frontendAssets', 'express'), 'watch'
 
@@ -26,7 +26,7 @@ gulp.task 'develop', gulp.series 'developNoSpec', 'spec'
 
 gulp.task 'mock', gulp.series 'clean', 'jsonMock', 'express', 'watch'
 
-gulp.task 'prod', gulp.series 'prodAssetCheck',  gulp.parallel('otherAssets', 'angular', 'angularAdmin'), 'minify', 'gzip'
+gulp.task 'prod', gulp.series 'prodAssetCheck',  gulp.series('otherAssets', 'angular', 'angularAdmin'), 'minify', 'gzip'
 
 gulp.task 'default', gulp.parallel 'develop'
 

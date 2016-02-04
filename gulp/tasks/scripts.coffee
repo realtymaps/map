@@ -17,6 +17,7 @@ conf = require './conf'
 require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'
+logger = require '../util/logger'
 
 coffeelint = require('coffeelint')
 coffeelint.reporter = require('coffeelint-stylish').reporter
@@ -135,7 +136,7 @@ browserifyTask = (app, watch = false) ->
         .then (newEntries) ->
           diff = _.difference newEntries, entries
           if diff.length > 0
-            console.log "New files: #{diff}"
+            logger.info "New files: #{diff}"
             b.add diff
             entries = newEntries
             onUpdate()

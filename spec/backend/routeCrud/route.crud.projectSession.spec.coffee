@@ -104,6 +104,9 @@ class TestServiceCrudProject extends ServiceCrudProject
 #END BEGIN TESTABLE OVERRIDES
 
 describe 'route.projectSession', ->
+
+  this.timeout(10000)
+
   afterEach ->
     @projCrudSvc.resetStubs()
     @cls.kill()

@@ -55,16 +55,16 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
     if returnType? and !_.isString(returnType)
       $log.error "returnType is not a string. returnType: #{returnType}"
 
-    if $rootScope.propertiesInShapes and returnType#is drawnShapes filterSummary
+    if $rootScope.propertiesInShapes and returnType  #is drawnShapes filterSummary
       pathId = 'drawnShapes'
       if $rootScope.neighbourhoodsListIsOpen
         bodyExtensions.isNeighbourhood = true
 
     route = backendRoutes.properties[pathId]
-    if !window.isTest
-      $log.debug("filters: #{JSON.stringify filters}")
-      $log.debug mapState
-      $log.debug route
+
+    $log.debug("filters: #{JSON.stringify filters}")
+    $log.debug mapState
+    $log.debug(route)
 
     $http.post(route, _.extend({}, bodyExtensions,
       bounds: hash

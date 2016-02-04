@@ -7,7 +7,7 @@ tables = require '../config/tables'
 class DataSourceService extends ServiceCrud
 
   getColumnList: (dataSourceId, dataSourceType, dataListType) ->
-    @debug "getColumnList(), dataSourceId=#{dataSourceId}, dataSourceType=#{dataSourceType}, dataListType=#{dataListType}"
+    @logger.debug () -> "getColumnList(), dataSourceId=#{dataSourceId}, dataSourceType=#{dataSourceType}, dataListType=#{dataListType}"
     query = tables.config.dataSourceFields()
     .select(
       'MetadataEntryID',
@@ -25,7 +25,7 @@ class DataSourceService extends ServiceCrud
     @custom(query)
 
   getLookupTypes: (dataSourceId, lookupId) ->
-    @debug "getLookupTypes(), dataSourceId=#{dataSourceId}, lookupId=#{lookupId}"
+    @logger.debug () -> "getLookupTypes(), dataSourceId=#{dataSourceId}, lookupId=#{lookupId}"
     query = tables.config.dataSourceLookups()
     .select(
       'LookupName',

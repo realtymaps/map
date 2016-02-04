@@ -3,15 +3,17 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
 app.service 'rmapsMailCampaignService', ($log, $http) ->
-
+  $log = $log.spawn 'frontend:mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
   get: (query) ->
+    $log.debug "GET query:\n#{JSON.stringify query}"
     $http.get mailAPI, cache: false, params: query
     .then ({data}) ->
       data
 
   create: (entity) ->
+    $log.debug "CREATE entity:\n#{JSON.stringify entity}"
     $http.post mailAPI, entity
 
   remove: (id) ->

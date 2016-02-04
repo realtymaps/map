@@ -24,7 +24,6 @@ describe "rmapsMapFactory factory", ->
     inject ($rootScope, rmapsMapFactory, rmapsMainOptions, $httpBackend, digestor, rmapsMapTogglesFactory) =>
       # Store variables for tests
       @$rootScope = $rootScope
-      $rootScope.silenceRmapsControls = true
       @rmapsMapTogglesFactory = rmapsMapTogglesFactory
       @digestor = digestor
       @ctor = rmapsMapFactory
@@ -37,7 +36,6 @@ describe "rmapsMapFactory factory", ->
       $httpBackend.when( 'POST', mockRoutes.filterSummary.route).respond((method, url, dataString, headers, params) ->
         data = JSON.parse dataString
 
-        console.log "Mock Filter Summary for type #{data.returnType}"
         if data.returnType == 'clusterOrDefault'
           return ['200', mockRoutes.filterSummary.clusterOrDefault]
         else

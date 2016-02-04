@@ -56,9 +56,9 @@ class MlsConfigService extends ServiceCrud
 
   # Privileged
   create: (query) ->
-    @debug "create() query: #{JSON.stringify(query)}"
+    @logger.debug () -> "create() query: #{JSON.stringify(query)}"
     entity = _.omit(query, ['url', 'username', 'password'])
-    @debug "create() entity: #{JSON.stringify(entity)}"
+    @logger.debug () -> "create() entity: #{JSON.stringify(entity)}"
     entity.id = query.id
 
     # once MLS has been saved with no critical errors, create a task & subtasks
