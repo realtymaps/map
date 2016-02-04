@@ -54,7 +54,7 @@ StripeEvents = (stripe) ->
         origFunction subscription, authUser
 
   _verify = (eventObj) ->
-    # console.log.magenta "_verify"
+    logger.debug "_verify"
     stripe.events.retrieve eventObj.id
 
   handle = (eventObj) -> Promise.try () ->
@@ -62,10 +62,10 @@ StripeEvents = (stripe) ->
     unless callEvent?
       throw new stripeErrors.StripeInvalidRequest "Invalid Stripe Event, id(#{eventObj.id}) cannot be confirmed"
     _verify(eventObj).then (validEvent) ->
-      # console.log.magenta "POST _verify"
-      #TODO: this could be moved to validation itself validation.stripe namespace: 'events'
-      # console.log.magenta "calling #{eventObj.type}"
-      # console.log _eventHandles, true
+      logger.debug "POST _verify"
+      logger.debug "calling #{eventObj.type}"
+      logger.debug _eventHandles, true
+
       callEvent(validEvent)
       .catch (err) ->
         #TODO: maybe rethink this
