@@ -1,7 +1,7 @@
 // stylings for wysiwyg editor to control look/feel of editor and associated text-angular components
 
 $template-stage-margin = 1.25in
-$wysiwyg-scale-factor = 0.7
+$wysiwyg-scale-factor = 1.0
 $page-height = 11in
 
 *, *:before, *:after
@@ -21,8 +21,8 @@ $page-height = 11in
       top 0
       right 0
       bottom 0
-      padding-top ($template-stage-margin / 2)
-      padding-left ($template-stage-margin)
+      // padding-top ($template-stage-margin / 2)
+      // padding-left ($template-stage-margin)
       background-color $gray_lighter
       height $page-height
       margin-bottom $template-stage-margin
@@ -30,7 +30,7 @@ $page-height = 11in
 
       .letter-editor
         text-align left
-        // margin auto
+        margin auto
         box-shadow 4px 4px 20px #888888
         zoom $wysiwyg-scale-factor
 
