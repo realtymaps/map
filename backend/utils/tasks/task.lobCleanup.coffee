@@ -83,8 +83,6 @@ getLetter = (subtask) ->
       throw new SoftFail("Mutltiple copies of letter ID #{letter.id} returned by LOB!")
 
 subtasks =
-  findLetters: findLetters
-  sendLetter: sendLetter
   updateLetters: updateLetters
   getLetter: getLetter
 
