@@ -36,7 +36,7 @@ _withDbLock = (lockId, handler) ->
     .finally () ->
       logger.spawn('dbLock').debug "------------------<#{id}> Releasing lock: #{lockId}"
 
-queueReadyTasks = () -> Promise.try () ->
+queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)
   overrideRunNames = []
   overrideSkipNames = []
@@ -91,6 +91,8 @@ queueReadyTasks = () -> Promise.try () ->
           queueTask(transaction, batchId, task, '<scheduler>')
           .catch TaskNotImplemented, (err) ->
             logger.error "#{err}"
+            if opts.dieOnMissingTask
+              throw err
 
 queueManualTask = (taskName, initiator) ->
   if !taskName

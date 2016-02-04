@@ -5,7 +5,7 @@ require '../config/promisify'
 memoize = require 'memoizee'
 Encryptor = require '../utils/util.encryptor'
 config = require '../config/config'
-
+logger = require('../config/logger').spawn('externalAccounts')
 
 encryptors = {}
 _getEncryptor = (cipherKey) ->
@@ -60,7 +60,7 @@ insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   query = tables.config.externalAccounts(opts.transaction)
   .insert(_transform(_encrypt, cipherKey, accountInfo))
   if opts.logOnly
-    return console.log(query.toString())
+    return logger.info(query.toString())
   query
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
@@ -73,9 +73,9 @@ updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
     query = query.where(environment: accountInfo.environment)
   query = query.update(_transform(_encrypt, cipherKey, accountInfo))
   if opts.logOnly
-    return console.log(query.toString())
+    return logger.info(query.toString())
   query
-  
+
 
 module.exports =
   getAccountInfo: memoize.promise(getAccountInfo, maxAge: 15*60*1000)
