@@ -114,7 +114,5 @@ sendLetter = (subtask) ->
 subtasks =
   findLetters: findLetters
   sendLetter: sendLetter
-  updateLetters: updateLetters
-  getLetter: getLetter
 
 module.exports = new TaskImplementation(subtasks)
