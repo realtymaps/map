@@ -5,9 +5,7 @@ tables = require '../../config/tables'
 logger = require('../../config/logger').spawn('task:stripe')
 TaskImplementation = require './util.taskImplementation'
 stripeErrorEnums = require '../../enums/enum.stripe.errors'
-
 stripe = null
-require('../../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
 {SubtaskHandlerThirdparty} = require './util.task.helpers'
 stripeErrors  = require '../../utils/errors/util.errors.stripe'
 
@@ -83,7 +81,7 @@ CommonSubtaskHandler = SubtaskHandlerThirdparty.compose
     .where id: subtask.data.id
 
 
-RemoveErroredCustomersSubtaskHandler = SubtaskHandlerThirdparty CommonSubtaskHandler,
+RemoveErroredCustomersSubtaskHandler = SubtaskHandlerThirdparty.compose CommonSubtaskHandler,
   thirdPartyService: (subtask) ->
     stripe.customers.del subtask.data.customer
   invalidRequestRegex: /no such customer/i
@@ -106,4 +104,10 @@ subtasks =
   ###
 
 
-module.exports = new TaskImplementation(subtasks)
+class StipeTask extends TaskImplementation
+  initialize: () ->
+    #delay stripe initialization here to get no errors in specs
+    require('../../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
+    super(arguments...)
+
+module.exports = new StipeTask(subtasks)
