@@ -15,7 +15,8 @@ _checkIfRun = () ->
     if Date.now() - timestamp >= config.HIREFIRE.BACKUP.RUN_WINDOW
       logger.warn "Hirefire hasn't run since #{new Date(timestamp)}, manually executing"
       _priorTimestamp = timestamp
-      module.exports.info()
+      # the 'true' below prevents this from dieing on a missing task
+      module.exports.info(true)
     return undefined
 
 _priorTimestamp = null
@@ -26,6 +27,7 @@ if config.HIREFIRE.BACKUP.DO_BACKUP
 
 
 info = (req, res, next) -> Promise.try () ->
+  logger.debug('Route started...')
   if config.HIREFIRE.BACKUP.DO_BACKUP
     clearTimeout(_timeout)
     # continue to slightly stagger checks, just in case the initial stagger was unlucky
@@ -43,12 +45,12 @@ info = (req, res, next) -> Promise.try () ->
     jobQueue.doMaintenance()
     .then () ->
       logger.debug('Queueing ready tasks...')
-      jobQueue.queueReadyTasks()
+      jobQueue.queueReadyTasks(dieOnMissingTask: !req)
     .then () ->
       logger.debug('Determining queue needs...')
       jobQueue.getQueueNeeds()
     .then (needs) ->
-      logger.debug(JSON.stringify(needs, null, 2))
+      logger.debug('Queue needs: '+JSON.stringify(needs, null, 2))
       if next
         next new ExpressResponse(needs)
       else

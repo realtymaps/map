@@ -5,6 +5,7 @@
 gutil = require('gulp-util')
 prettyHrtime = require('pretty-hrtime')
 startTime = undefined
+logger = require('../../backend/config/logger').spawn('bundleLogger')
 
 module.exports =
   start: ->
@@ -19,28 +20,28 @@ module.exports =
   logEvents: (watcher) ->
     # Useful for debugging file watch issues
     watcher.on 'add', (path) ->
-      console.log 'File', path, 'has been added'
+      logger.info 'File', path, 'has been added'
 
     .on 'change', (path) ->
-      console.log 'File', path, 'has been changed'
+      logger.info 'File', path, 'has been changed'
 
     .on 'unlink', (path) ->
-      console.log 'File', path, 'has been removed'
+      logger.info 'File', path, 'has been removed'
 
     .on 'addDir', (path) ->
-      console.log 'Directory', path, 'has been added'
+      logger.info 'Directory', path, 'has been added'
 
     .on 'unlinkDir', (path) ->
-      console.log 'Directory', path, 'has been removed'
+      logger.info 'Directory', path, 'has been removed'
 
     .on 'error', (error) ->
-      console.log 'Error happened', error
+      logger.error 'Error happened', error
 
     .on 'ready', ->
-      console.log 'Initial scan complete. Ready for changes'
+      logger.info 'Initial scan complete. Ready for changes'
 
     .on 'raw', (event, path, details) ->
-      console.log 'Raw event info:', event, path, details
+      logger.info 'Raw event info:', event, path, details
 
     watcher
 
