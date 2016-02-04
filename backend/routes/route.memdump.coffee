@@ -14,7 +14,10 @@ module.exports =
     handle: (req, res, next) ->
       logger.info('Beginning memdump...')
       timestamp = (new Date).toISOString().slice(0, -5).replace('T', '_')
-      heapdump.writeSnapshot "/tmp/#{config.ENV}_#{config.DYNO}_#{timestamp}.heapsnapshot", (err, filename) ->
+      instance = config.DYNO
+      if cluster.worker?.id
+        instance += '.'+cluster.worker.id
+      heapdump.writeSnapshot "/tmp/#{config.ENV}_#{instance}_#{timestamp}.heapsnapshot", (err, filename) ->
         if err
           return next(new ExpressResponse('Failed to complete memdump.', httpStatus.INTERNAL_SERVER_ERROR))
         logger.info('Memdump finished.')
