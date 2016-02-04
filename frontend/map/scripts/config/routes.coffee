@@ -12,7 +12,7 @@ stateDefaults =
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
 rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
-  buildState = (name, overrides = {}) ->
+  baseState = (name, overrides = {}) ->
     state =
       name:         name
       parent:       'main'
@@ -22,25 +22,49 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     _.extend(state, overrides)
     _.defaults(state, stateDefaults)
 
+    return state
+
+  appendTemplateProvider = (name, state) ->
     if !state.template && !state.templateProvider
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
         $templateCache.get templateName
 
-    if state.parent
-      state.views = {}
-      state.views["#{name}@#{state.parent}"] =
-        templateProvider: state.templateProvider
-        template: state.template
-        controller: state.controller
-      delete state.template
-      delete state.controller
+  createView = (name, state) ->
+    state.views = {}
+    state.views["#{name}@#{state.parent}"] =
+      templateProvider: state.templateProvider
+      template: state.template
+      controller: state.controller
+    delete state.template
+    delete state.controller
+
+  buildMapState = (overrides = {}) ->
+    name = 'map'
+    state = baseState name, overrides
+    appendTemplateProvider name, state
+    createView name, state
+
     $stateProvider.state(state)
     state
 
+  buildModalState = (name, overrides = {}) ->
+    return
+
+  buildState = (name, overrides = {}) ->
+    state = baseState name, overrides
+    appendTemplateProvider name, state
+
+    if state.parent
+      createView name, state
+
+    $stateProvider.state(state)
+    state
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
-  buildState 'map', sticky: true, reloadOnSearch: false,
+  buildMapState
+    sticky: true,
+    reloadOnSearch: false,
     params:
       project_id:
         value: null
