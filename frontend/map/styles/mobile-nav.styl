@@ -12,7 +12,7 @@ $menu-footer-viewer-height = 129px
 
 #mobile-nav
   position absolute
-  z-index 1001
+  z-index $rm-mobile-nav-zindex
   left 0
   top 0
   width "calc(100% - %s)" % mobileNavOffset
@@ -176,5 +176,5 @@ $menu-footer-viewer-height = 129px
   left 0
   height 100%
   width 100%
-  z-index 1000
+  z-index $rm-mobile-nav-zindex - 1
   background-color rgba(0,0,0,0.4)

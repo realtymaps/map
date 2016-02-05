@@ -1,10 +1,10 @@
 extends ./_layout
 block content
   .full-width.container
-    main.site-main.page(ui-view="main-map" class="{{pageClass}}")
+    main.site-main.map-container(ui-view="main-map" class="{{pageClass}}")
 
-    main.site-main.page(ui-view="main-page" class="{{pageClass}}" ng-show="rmapsPageService.isPage()")
+    main.site-main.page-container(ui-view="main-page" class="{{pageClass}}" ng-show="rmapsPageService.isPage()")
       include ../views/home.jade
 
-  .main-modal(ng-show="rmapsPageService.isModal()")
+  .modal-container(ng-show="rmapsPageService.isModal()")
     .page-modal(ui-view="main-modal" class="{{pageClass}}")

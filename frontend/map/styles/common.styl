@@ -68,7 +68,7 @@ p
 header.site-header, mobile-header
   display block
   position absolute
-  z-index 2000
+  z-index $rm-header-zindex
   left 0
   top 0
   right 0
@@ -162,12 +162,18 @@ header.site-header
 
 /* PAGES
 ============================================================================= */
-.page
-    bottom:0
-    position:absolute
-    top:$navbarHeight
-    width:100%
+.map-container
+.page-container
+  bottom:0
+  position:absolute
+  top:$navbarHeight
+  width:100%
 
+.map-container
+  z-index: $rm-map-zindex
+
+.page-container
+  z-index: $rm-page-zindex
 
 checkbox(size)
   input[type=checkbox]
@@ -296,7 +302,7 @@ $fnFooterClose()
   position: absolute
   height $slideoutHeight
   width: 100%
-  z-index: 3
+  z-index: $rm-slider-zindex
   top: 0px
   background-color: $dark_blue
   bottom: 0
