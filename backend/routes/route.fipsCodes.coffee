@@ -1,75 +1,54 @@
 auth = require '../utils/util.auth'
+logger = require '../config/logger'
 fipsCodes = require '../services/service.fipsCodes'
 {RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 {validators} = require '../utils/util.validation'
-logger = require '../config/logger'
+{handleRoute} = require '../utils/util.route.helpers'
 _ = require 'lodash'
 
 class FipsCodesCrud extends RouteCrud
   init:() ->
-    @getAllByStateTransforms =
-      params:
-        state:
-          required: true
-          transform: [validators.string(minLength:2, maxLength:2)]
-
+    @getAllTransforms =
+      params: validators.object isEmptyProtect: true
       query: validators.object isEmptyProtect: true
-      body: validators.object isEmptyProtect: true
-
-    @getAllByStateCountyTransforms = _.extend {}, @getAllByStateTransforms,
-      params:
-        county:
-          required: true
-          transform: [validators.string(minLength:2)]
-
-    @getByMlsCodeTransforms =
-      params:
-        mls_code:
-          required: true
-          transform: [validators.string(minLength:2)]
-      query: validators.object isEmptyProtect: true
-      body: validators.object isEmptyProtect: true
+      body: validators.object subValidateSeparate:
+        state: validators.string(minLength:2, maxLength:2)
 
     @getAllMlsCodesTransforms =
       params: validators.object isEmptyProtect: true
       query: validators.object isEmptyProtect: true
-      body: validators.object isEmptyProtect: true
+      body: validators.object subValidateSeparate:
+        state: validators.string(minLength:2)
+        mls: validators.string(minLength:2)
+        county: validators.string(minLength:2)
+        fips_code: validators.string(minLength:4)
+        id: validators.integer()
 
     super(true, ['state', 'count', 'code'])
 
-  getAllByState: (req, res) =>
-    @validRequest req, 'getAllByState'
-    .then (validReq) =>
-      @handleQuery @svc.getAllByState(validReq.params.state), res
+  getAll: (req, res, next) =>
+    handleRoute req, res, next, =>
+      @validRequest req, 'getAll'
+      .then (validReq) =>
+        @svc.getAll(validReq.body)
 
-  getAllByStateCounty: (req, res) =>
-    @validRequest req, 'getAllByStateCounty'
-    .then (validReq) =>
-      @handleQuery @svc.getAllByStateCounty(validReq.params.state), res
+  getAllMlsCodes: (req, res, next) =>
+    handleRoute req, res, next, =>
+      @validRequest req, 'getAllMlsCodes'
+      .then (validReq) =>
+        @svc.getAllMlsCodes(validReq.body)
 
-  getAllByStateLikeCounty: (req, res) =>
-    @validRequest req, 'getAllByStateCounty'
-    .then (validReq) =>
-      @handleQuery @svc.getAllByStateLikeCounty(validReq.params.state), res
-
-  getByMlsCode: (req, res) =>
-    @validRequest req, 'getByMlsCode'
-    .then (validReq) =>
-      @handleQuery @svc.getByMlsCode(validReq.params.mls_code), res
-
-  getAllMlsCodes: (req, res) =>
-    @validRequest req, 'getAllMlsCodes'
-    .then (validReq) =>
-      @handleQuery @svc.getAllMlsCodes(), res
+  getAllSupportedMlsCodes: (req, res, next) =>
+    handleRoute req, res, next, =>
+      @validRequest req, 'getAllMlsCodes'
+      .then (validReq) =>
+        @svc.getAllSupportedMlsCodes(validReq.body)
 
 module.exports = mergeHandles new FipsCodesCrud(fipsCodes),
   root:
-    middleware: [auth.requireLogin(redirectOnFail: true)]
-  byId:
-    middleware: [auth.requireLogin(redirectOnFail: true)]
-  getAllByStateCounty: {}
-  getAllByState: {}
-  getAllByStateLikeCounty: {}
-  getByMlsCode: {}
-  getAllMlsCodes: {}
+    method: 'post'
+  getAllMlsCodes:
+    method: 'post'
+  getAllSupportedMlsCodes:
+    method: 'post'

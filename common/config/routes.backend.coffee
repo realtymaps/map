@@ -118,11 +118,9 @@ module.exports =
     apiBase: apiBaseFipsCodes
     root: apiBaseFipsCodes
     byId: "#{apiBaseFipsCodes}/code/:code"
-    getAllByState: "#{apiBaseFipsCodes}/state/:state"
-    getAllByStateCounty: "#{apiBaseFipsCodes}/state/:state/county/:county"
-    getAllByStateLikeCounty: "#{apiBaseFipsCodes}/state/:state/like/county/:county"
-    getByMlsCode: "#{apiBaseFipsCodes}/mls/:mls_code"
+    getAll: "#{apiBaseFipsCodes}/state/:state"
     getAllMlsCodes: "#{apiBaseFipsCodes}/mls"
+    getAllSupportedMlsCodes: "#{apiBaseFipsCodes}/mlsSupported"
   account_images:
     apiBase: apiBaseAccountImages
     root: apiBaseAccountImages
@@ -168,6 +166,8 @@ module.exports =
 
   mls:
     apiBaseMls: apiBaseMls # Exposed for Restangular instantiation
+    root: apiBaseMls
+    supported: "#{apiBaseMls}/supported"
     getDatabaseList: "#{apiBaseMls}/:mlsId/databases"
     getTableList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables"
     getColumnList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"

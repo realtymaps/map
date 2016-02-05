@@ -45,7 +45,7 @@ handles = wrapHandleRoutes
     # req = _.pick req, ['body', 'params', 'query']
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
-      {plan, token, fips_code, mls_code} = validReq.body
+      {plan, token, fips_code, mls_code, mls_id} = validReq.body
       plan = plan.name
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
@@ -73,15 +73,15 @@ handles = wrapHandleRoutes
             .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
-            if !fips_code and !mls_code
-              throw new Error("fips_code or mls_code required for user location restrictions.")
+            if !fips_code and (!mls_code or !mls_id)
+              throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
             promise = null
             if fips_code
               promise = tables.auth.m2m_user_locations(trx)
               .insert(auth_user_id: authUser.id, fips_code: fips_code)
-            if mls_code
+            if mls_id and mls_code and plan.name == 'pro'
               promise = tables.auth.m2m_user_mls(trx)
-              .insert(auth_user_id: authUser.id, mls_code: mls_code)
+              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id
 
             promise.then () -> authUser
 
