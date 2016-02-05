@@ -132,10 +132,10 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'snail'
   buildState 'user'
   buildState 'profiles'
-  buildModalState 'history'
+  buildState 'history'
   buildState 'properties'
-  buildModalState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
-  buildModalState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
+  buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
+  buildState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
   buildChildState 'projectClients', 'project', page: { title: 'My Clients' }, mobile: { modal: true }
   buildChildState 'projectNotes', 'project', page: { title: 'Notes' }, mobile: { modal: true }
   buildChildState 'projectFavorites', 'project', page: { title: 'Favorites' }, mobile: { modal: true }
@@ -147,7 +147,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'sendEmailModal'
   buildState 'newEmail'
 
-  buildModalState 'mail'
+  buildState 'mail'
   buildState 'mailWizard',
     sticky: true
 
