@@ -9,19 +9,6 @@ export JQ_QUEUE_NAME="$@"
 
 if [[ "$IS_HEROKU" != "" ]]
 then
-    # apparently we have to remove the ?ssl=true for pgbouncer to work correctly
-    export MAIN_DATABASE_URL="${MAIN_DATABASE_URL%\?ssl\=true}"
-    export RAW_TEMP_DATABASE_URL="${RAW_TEMP_DATABASE_URL%\?ssl\=true}"
-    export PGBOUNCER_URLS="MAIN_DATABASE_URL RAW_TEMP_DATABASE_URL"
-    export PGBOUNCER_MAX_CLIENT_CONN=400
-    export PGBOUNCER_DEFAULT_POOL_SIZE=15
-    export PGBOUNCER_MIN_POOL_SIZE=2
-    export PGBOUNCER_RESERVE_POOL_SIZE=1
-    export PGBOUNCER_LOG_CONNECTIONS=0  # no
-    export PGBOUNCER_LOG_DISCONNECTIONS=0  # no
-    export PGBOUNCER_LOG_POOLER_ERRORS=1  # yes
-    export PGBOUNCER_STATS_PERIOD=3600
-
     bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
 else
     coffee $SCRIPT_DIR/../backend/jobQueueWorker.coffee "$@"
