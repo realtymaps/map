@@ -9,7 +9,7 @@ heapdump = require 'heapdump'
 logger = require('../config/logger').spawn('memdump')
 
 
-makeDump = () ->
+makeDump = (callback) ->
   timestamp = (new Date).toISOString().slice(0, -5).replace('T', '__').replace(':', '-')
   instance = config.DYNO
   if cluster.worker?.id
@@ -22,6 +22,8 @@ makeDump = () ->
       logger.error('Failed to complete memdump: '+key+'\n'+err)
       return
     logger.info('Memdump finished: '+key)
+    if callback
+      callback(name)
 
 
 getDump = (req, res, next) ->
@@ -30,6 +32,11 @@ getDump = (req, res, next) ->
     .then (files) ->
       response = new ExpressResponse(files.sort().join('\n'))
       response.format = 'text'
+      next(response)
+  else if req.query.file == 'new'
+    makeDump (filename) ->
+      response = new ExpressResponse()
+      response.download = filename
       next(response)
   else if req.query.file == 'last'
     globby('/tmp/*.heapsnapshot')
