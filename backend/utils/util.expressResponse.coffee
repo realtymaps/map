@@ -38,6 +38,9 @@ class ExpressResponse
         res.send(data)
       .catch (err) ->
         new PartiallyHandledError(err, 'Error while sending csv attachment')
+    else if @format == 'text'
+      res.set('Content-Type', 'text/plain')
+      res.status(@status).send(@payload||'')
     else
       content = if @payload? then JSON.stringify(@payload) else ''
       res.status(@status).send content
