@@ -51,6 +51,8 @@ info = (req, res, next) -> Promise.try () ->
       jobQueue.getQueueNeeds()
     .then (needs) ->
       logger.debug () -> ('Queue needs: '+JSON.stringify(needs, null, 2))
+      if req.query.memdump  # TODO: remove these lines once finished with troubleshooting
+        return require('./route.memdump').handle(req, res, next)  # TODO: remove these lines once finished with troubleshooting
       if next
         next new ExpressResponse(needs)
       else
