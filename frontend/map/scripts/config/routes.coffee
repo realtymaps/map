@@ -28,7 +28,6 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     if !state.template && !state.templateProvider
       state.templateProvider = ($templateCache) ->
         templateName = if state.parent == 'main' or state.parent is null then "./views/#{name}.jade" else "./views/#{state.parent}/#{name}.jade"
-        console.log "State #{name} using template #{templateName}"
         $templateCache.get templateName
 
   createView = (name, state, viewName = name) ->
@@ -81,11 +80,6 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     state.parent = parent
 
     appendTemplateProvider name, state
-
-    # Set the page type
-#    state.pageType = 'child'
-
-    console.log "Creating child state #{name} with parent #{parent}"
     $stateProvider.state(state)
     state
 

@@ -20,7 +20,7 @@ app.provider 'rmapsPageService', () ->
   $get: ($rootScope, $window, $state, $log) ->
     $log = $log.spawn 'map:rmapsPageService'
 
-    class RmapsPage
+    class RmapsPageService
 
       #
       # Page Defaults
@@ -87,7 +87,7 @@ app.provider 'rmapsPageService', () ->
         @title = defaults.title
         @meta = defaults.meta
 
-    page = new RmapsPage
+    page = new RmapsPageService
 
     #
     # Page context available on root scope for templates

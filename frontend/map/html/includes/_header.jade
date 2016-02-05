@@ -10,7 +10,7 @@ header.site-header
           include ./header/_search
         include ./header/_rightnav
   .mobile-only
-    .inner(ng-if='!rmapsPage.mobile.modal')
+    .inner(ng-if='!rmapsPageService.mobile.modal')
       .container-fluid
         include ./header/_burger
         include ./header/_logo
@@ -18,12 +18,12 @@ header.site-header
           include ./header/_search
 
 .mobile-only
-  mobile-header.mobile-site-header(ng-if='rmapsPage.mobile.modal')
+  mobile-header.mobile-site-header(ng-if='rmapsPageService.mobile.modal')
     .inner
       .mobile-header-left
-        a(ng-click='rmapsPage.back($event)')
+        a(ng-click='rmapsPageService.back($event)')
           i.fa.fa-chevron-left
       .mobile-header-center
-        .mobile-header-title {{rmapsPage.title}}
+        .mobile-header-title {{rmapsPageService.title}}
       .mobile-header-right
         div(ng-bind-html="buttons['right']")
