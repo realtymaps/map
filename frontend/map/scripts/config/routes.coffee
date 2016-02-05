@@ -96,7 +96,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
         squash: true
 
   buildState 'onboarding',
-#    abstract: true
+    abstract: true
     url: frontendRoutes.onboarding
     loginRequired: false
     permissionsRequired: false
