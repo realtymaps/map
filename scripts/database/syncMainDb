@@ -18,7 +18,12 @@ then
     shift
     shift
 else
-    DST_URL="$MAIN_DATABASE_URL"
+    if [[ "$IS_HEROKU" != "" ]]
+    then
+        DST_URL="$MAIN_DATABASE_URL"?ssl=true
+    else
+        DST_URL="$MAIN_DATABASE_URL"
+    fi
     DST_DB="main db"
 fi
 
