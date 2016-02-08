@@ -2,6 +2,42 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
+app.directive 'iframeDirective', ($rootScope, $log, $timeout, rmapsMailTemplateService) ->
+  restrict: 'A'
+  scope:
+    content: '='
+  template: '<iframe frameborder="0" srcdoc="{{content}}"></iframe>'
+  #link: (scope, element, attrs, ngModel) ->
+    # scope.mousex = 0
+    # scope.mousey = 0
+
+    # element.bind 'dragover', (e) ->
+    #   scope.mousex = e.clientX
+    #   scope.mousey = e.clientY
+
+    # element.on 'keyup', (e) ->
+    #   update = () ->
+    #     scope.macroAction.whenTyped e
+    #     ngModel.$commitViewValue()
+    #     ngModel.$render()
+
+    #   scope.$evalAsync update
+
+    # $timeout ->
+    #   scope.editor = textAngularManager.retrieveEditor 'wysiwyg'
+    #   scope.editor?.scope?.$on 'rmaps-drag-end', (e, opts) ->
+    #     scope.macroAction.whenDropped e
+
+    # scope.$on '$destroy', () ->
+    #   element.unbind 'dragover', element
+    #   element.unbind 'keyup', element
+
+    # $rootScope.$on 'rmaps-drag-end', (e) ->
+    #   scope.editor.editorFunctions.focus()
+    #   # percolate drag end event down so the editor hears it
+    #   scope.editor.scope.$broadcast 'rmaps-drag-end'
+
+
 
 app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularManager) ->
   restrict: 'A'
