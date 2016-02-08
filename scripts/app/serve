@@ -30,7 +30,7 @@ fi
 if [[ "$IS_HEROKU" != "" ]]
 then
   gulp $GULP_COLOR prod
-  coffee ./backend/server.coffee
+  bin/start-pgbouncer-stunnel coffee ./backend/server.coffee
 else
   gulp $GULP_COLOR $GULP_TARGET $DEBUG_ARG
 fi

@@ -50,6 +50,5 @@ else
     fi
   ) &
 
-  source $SCRIPT_DIR/app/syncVars
-  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee bin/start-pgbouncer-stunnel $SCRIPT_DIR/app/startApp
+  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
 fi
