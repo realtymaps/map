@@ -12,10 +12,10 @@ else
   if [[ "$IS_HEROKU" == "" ]]
   then
     # not on heroku
-    
+
     # first kill off nginx in case it's been lingering -- doing it here so it has time to die
     pkill nginx || true
-    
+
     # next we need to bootstrap the nginx buildpack
     BUILDPACK_DIR=/var/tmp/nginx-buildpack
     if [ ! -e $BUILDPACK_DIR/.git ]
@@ -34,10 +34,10 @@ else
     ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
-  
+
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
   # we give a bit of slack for heroku startup overhead, nginx startup, etc
-  
+
   rm -f ./nginx/app-initialized
   rm -f ./nginx/nginx-app-start
   rm -f ./nginx/nginx-app-end
@@ -49,6 +49,7 @@ else
       touch ./nginx/app-initialized
     fi
   ) &
-  
-  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
+
+  source $SCRIPT_DIR/app/syncVars
+  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee bin/start-pgbouncer-stunnel $SCRIPT_DIR/app/startApp
 fi
