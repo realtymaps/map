@@ -17,7 +17,8 @@ base =
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
     ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
-
+    TIMESTAMP: process.env.LOG_TIMESTAMP == 'true'
+    LOG_TO_FILE: process.env.LOG_TO_FILE == 'true'
   DBS:
     MAIN:
       client: 'pg'
