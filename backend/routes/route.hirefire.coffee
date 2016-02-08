@@ -4,6 +4,7 @@ jobQueue = require '../utils/util.jobQueue'
 ExpressResponse = require '../utils/util.expressResponse'
 keystore = require '../services/service.keystore'
 config = require '../config/config'
+memdump = require '../utils/util.memdump'
 
 
 HIREFIRE_RUN_TIMESTAMP = 'hirefire run timestamp'
@@ -50,6 +51,9 @@ info = (req, res, next) -> Promise.try () ->
       logger.debug('Determining queue needs...')
       jobQueue.getQueueNeeds()
     .then (needs) ->
+      # TODO: remove this line once finished with troubleshooting
+      if req?.query.memdump then require('../utils/util.memdump').makeDump()
+
       logger.debug () -> ('Queue needs: '+JSON.stringify(needs, null, 2))
       if next
         next new ExpressResponse(needs)

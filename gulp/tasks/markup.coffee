@@ -1,6 +1,5 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
-path = require 'path'
 gulp = require 'gulp'
 conf = require './conf'
 $ = require('gulp-load-plugins')()

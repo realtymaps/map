@@ -64,7 +64,7 @@ base =
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
-    API_KEY: process.env.HIREFIRE_TOKEN
+    API_KEY: process.env.HIREFIRE_TOKEN||'dummy'
     BACKUP:
       DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
       RUN_WINDOW: 120000  # 2 minutes
