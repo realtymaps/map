@@ -1,3 +1,25 @@
+//
+// Used by ui-router based modals utilizing the main layout named view
+//
+.modal-container
+  position: relative;
+  top: 50px;
+  height: calc(100% - 50px);
+  z-index: $rm-modal-zindex;
+  background-color: rgba(255,255,255,0.8);
+
+.page-modal
+  background-color: white;
+  margin: 0 75px;
+  height: 100%;
+
+.mobile-view
+  .page-modal
+    margin: 0;
+
+//
+// Used by mobile view when invoking modals through ui-modal
+//
 .mobile-modal-window.modal
   .modal-dialog
     position: absolute
@@ -29,11 +51,11 @@
 
     .mobile-header-modal
       position: fixed;
-      z-index: 10;
+      z-index: $rm-modal-header-zindex;
 
     .mobile-footer-modal
       position: fixed;
-      z-index: 10;
+      z-index: $rm-modal-header-zindex;
       bottom: 0;
       left: 0;
       right: 0;

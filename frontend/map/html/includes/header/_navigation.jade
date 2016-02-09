@@ -5,16 +5,16 @@ nav.navigation.pull-left(role="navigation")
     span(ng-click="toggleMainNav()") toggle menu
   ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('map') }")
-      a(href="{{frontendRoutes.map}}")
+      a(ui-sref="map")
         span map
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('mail') }")
-      a(href="{{frontendRoutes.mail}}")
+      a(ui-sref="mail")
         span mail
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('history') }")
-      a(href="{{frontendRoutes.history}}")
+      a(ui-sref="history")
         span history
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.includes('projects') || $state.includes('project') }")
-      a(href="{{frontendRoutes.projects}}")
+      a(ui-sref="projects")
         span projects
     li(ng-cloak ng-hide="$state.is('main')")
       +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")

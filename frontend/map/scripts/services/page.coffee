@@ -20,7 +20,7 @@ app.provider 'rmapsPageService', () ->
   $get: ($rootScope, $window, $state, $log) ->
     $log = $log.spawn 'map:rmapsPageService'
 
-    class RmapsPage
+    class RmapsPageService
 
       #
       # Page Defaults
@@ -29,24 +29,43 @@ app.provider 'rmapsPageService', () ->
       meta: defaults.meta
 
       #
-      # Header State
+      # Mobile Header State
       #
+
       mobile: {
         modal: false
       }
 
       #
+      # Page Type
+      #
+
+      pageType: null
+
+      _findParentPageType: () ->
+        @pageType = null
+        $current = $state.$current
+
+        while $current and @pageType == null
+          @pageType = $current.self.pageType if $current.self.pageType
+          $current = $current.parent
+
+        $log.debug "State #{$state.$current.self.name} has Page Type #{@pageType}"
+
+      isMap: () ->
+        return @pageType == 'map'
+
+      isModal: () ->
+
+        return @pageType == 'modal'
+
+      isPage: () ->
+        return @pageType == 'page'
+
+      #
       # Navigation
       #
       historyLength: $window.history.length
-
-      #
-      # Accessors
-      #
-      allowDynamicTitle: false
-
-      setDynamicTitle: (value) ->
-        @title = value if value and @allowDynamicTitle
 
       back: () =>
         if $window.history.length > @historyLength
@@ -54,12 +73,21 @@ app.provider 'rmapsPageService', () ->
         else
           $state.go 'map', {}, {reload: true}
 
+      #
+      # Accessors
+      #
+
+      allowDynamicTitle: false
+
+      setDynamicTitle: (value) ->
+        @title = value if value and @allowDynamicTitle
+
       reset: () ->
         @mobile.modal = false
         @title = defaults.title
         @meta = defaults.meta
 
-    page = new RmapsPage
+    page = new RmapsPageService
 
     #
     # Page context available on root scope for templates
@@ -83,5 +111,11 @@ app.provider 'rmapsPageService', () ->
 
         if toState.mobile
           page.mobile.modal = toState.mobile.modal
+
+    #
+    # State Change Success listener to store page type to avoid repeated evaluation of parent-hierarchy
+    #
+    $rootScope.$on "$stateChangeSuccess", (event, toState) ->
+      page._findParentPageType()
 
     return page
