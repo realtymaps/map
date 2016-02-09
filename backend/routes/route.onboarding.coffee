@@ -73,7 +73,8 @@ handles = wrapHandleRoutes
             .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
-            if !fips_code and (!mls_code or !mls_id)
+            if !fips_code and !(mls_code and mls_id)
+              logger.debug {fips_code, mls_code, mls_id}, true
               throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
             promise = null
             if fips_code
