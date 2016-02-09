@@ -387,14 +387,16 @@ CREATE TRIGGER update_modified_time_lookup_mls
 BEFORE UPDATE ON lookup_mls
 FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column();
 
+LOCK TABLE lookup_mls IN EXCLUSIVE MODE;
+
+DELETE FROM lookup_mls
+where state || full_name || mls in (
+  select state_name || full_name || mls from temp_lookup_mls
+);
+
 INSERT INTO lookup_mls (state, full_name, mls)
-   SELECT state_name, full_name, mls
-   FROM temp_lookup_mls
- ON CONFLICT (state, full_name, mls)
- DO UPDATE SET
-  state = EXCLUDED.state,
-  full_name = EXCLUDED.full_name,
-  mls = EXCLUDED.mls;
+SELECT temp_lookup_mls.state_name, temp_lookup_mls.full_name, temp_lookup_mls.mls
+FROM temp_lookup_mls;
 
 COMMIT;
 
