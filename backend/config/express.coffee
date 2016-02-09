@@ -1,11 +1,6 @@
 config = require './config'
-if config.NEW_RELIC.RUN
-  newrelic = require 'newrelic'
-else
-  newrelic =
-    getBrowserTimingHeader: () ->
-      '<!-- NEWRELIC NOT LOADED -->'
 
+newrelic = require './newrelic'
 express = require 'express'
 path = require 'path'
 Promise = require 'bluebird'
