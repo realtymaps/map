@@ -20,6 +20,7 @@ module.exports =
       email: emailTransforms
       fips_code: notRequired validators.string(minLength: 5)
       mls_code:  notRequired validators.string(minLength: 2)
+      mls_id:  notRequired validators.string(minLength: 2)
       first_name: validators.string(minLength: 2)
       last_name: validators.string(minLength: 2)
 

@@ -64,7 +64,7 @@ StripeCustomers = (stripe) ->
   create = (opts, extraDescription = '') ->
     onMissingArgsFail
       args: opts
-      required: ['trx', 'authUser','plan','token']
+      required: ['authUser','plan','token']
 
     token = opts.token.id
     {authUser, plan, trx} = opts
