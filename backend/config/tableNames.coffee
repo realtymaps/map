@@ -12,7 +12,8 @@ module.exports =
     usStates: 'lookup_us_states'
     accountUseTypes: 'lookup_account_use_types'
     fipsCodes: 'lookup_fips_codes'
-    mlsFipsCodes: 'lookup_mls_fips_code'
+    mls: 'lookup_mls'
+    mls_m2m_fips_code_county: 'lookup_mls_m2m_fips_code_county'
   property:
     listing: 'data_normal_listing'
     tax: 'data_normal_tax'

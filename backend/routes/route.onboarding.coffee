@@ -21,7 +21,6 @@ _ = require 'lodash'
 submitPaymentPlan = ({plan, token, authUser, trx}) ->
   logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
   paymentServices.customers.create
-    trx: trx
     authUser: authUser
     plan: plan
     token: token
@@ -35,7 +34,6 @@ submitEmail = ({authUser, plan, trx}) ->
     logger.info "SignUp Failed, reverting Payment Customer"
     paymentServices.customers.handleCreationError
       error: error
-      trx: trx
       authUser:authUser
     throw error #rethrow error so transaction is reverted
 
@@ -45,7 +43,7 @@ handles = wrapHandleRoutes
     # req = _.pick req, ['body', 'params', 'query']
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
-      {plan, token, fips_code, mls_code} = validReq.body
+      {plan, token, fips_code, mls_code, mls_id} = validReq.body
       plan = plan.name
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
@@ -73,15 +71,20 @@ handles = wrapHandleRoutes
             .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
-            if !fips_code and !mls_code
-              throw new Error("fips_code or mls_code required for user location restrictions.")
+            logger.debug {fips_code, mls_code, mls_id, plan}, true
+            if !fips_code and !(mls_code and mls_id)
+              throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
+
             promise = null
             if fips_code
               promise = tables.auth.m2m_user_locations(trx)
               .insert(auth_user_id: authUser.id, fips_code: fips_code)
-            if mls_code
+
+            if mls_id and mls_code and plan == 'pro'
               promise = tables.auth.m2m_user_mls(trx)
-              .insert(auth_user_id: authUser.id, mls_code: mls_code)
+              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id
+            else
+              promise = Promise.reject new Error 'invalid plan for mls setup'
 
             promise.then () -> authUser
 

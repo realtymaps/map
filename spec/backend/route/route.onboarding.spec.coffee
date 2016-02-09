@@ -87,6 +87,7 @@ describe "route.onboarding", ->
           token: 'token'
           fips_code: 'fips_code'
           mls_code: 'mls_code'
+          mls_id: 'mls_id'
 
     describe "submitPaymentPlan", ->
 

@@ -13,7 +13,6 @@ cluster = require './config/cluster'
 touch = require 'touch'
 rimraf = require 'rimraf'
 mkdirp = require 'mkdirp'
-Promise = require 'bluebird'
 
 
 if config.MEM_WATCH.IS_ON
