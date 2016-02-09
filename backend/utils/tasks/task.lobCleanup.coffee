@@ -21,6 +21,7 @@ updateLetters = (subtask) ->
       'id'
       "options->'metadata'->'uuid' as uuid"
       'date(rm_inserted_time) as created_date'
+      'lob_response'
     ]
   )
   .whereNull('lob_response')
@@ -38,11 +39,15 @@ updateLetters = (subtask) ->
 getLetter = (subtask) ->
   letter = subtask.data
 
+  lob_errors = []
+  if letter.lob_errors?
+    lob_errors = lob_errors.concat letter.lob_errors
+
   if not letter?.uuid
     logger.debug "Letter #{letter.id} has no uuid!"
     return tables.mail.letters()
     .update
-      status: 'error-no-uuid'
+      status: 'error-invalid'
     .where
       id: letter.id
 
@@ -75,8 +80,8 @@ getLetter = (subtask) ->
     else
       tables.mail.letters()
       .update
-        lob_response: data[0]
-        status: 'sent-duplicate'
+        lob_response: data
+        status: 'sent'
       .where
         id: letter.id
 
