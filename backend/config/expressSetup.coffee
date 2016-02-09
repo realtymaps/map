@@ -1,3 +1,5 @@
+# this file's basename can't be 'express' or else it confuses newrelic
+
 config = require './config'
 
 newrelic = require './newrelic'
