@@ -20,18 +20,22 @@ myCustomLevels =
     warn: 'yellow'
     error: 'red'
 
-# console.info config.LOGGING.LEVEL
+consoleTransport = new (winston.transports.Console)
+  level: config.LOGGING.LEVEL
+  colorize: true
+  timestamp: config.LOGGING.TIMESTAMP
+fileTransport = new (winston.transports.File)
+  filename: logPath
+  level: config.LOGGING.LEVEL
+  timestamp: true
+
+transports = []
+transports.push consoleTransport
+if config.LOGGING.LOG_TO_FILE
+  transports.push fileTransport
+
 logger = new (winston.Logger)(
-  transports: [
-    new (winston.transports.Console)
-      level: config.LOGGING.LEVEL
-      colorize: true
-      timestamp: true
-    new (winston.transports.File)
-      filename: logPath
-      level: config.LOGGING.LEVEL
-      timestamp: true
-  ]
+  transports: transports
   levels: myCustomLevels.levels
 )
 winston.addColors myCustomLevels.colors
