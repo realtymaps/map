@@ -1,3 +1,6 @@
+# keep this at the top so it can load first
+require './config/newrelic'
+
 config = require './config/config'
 
 require '../common/extensions/strings'
