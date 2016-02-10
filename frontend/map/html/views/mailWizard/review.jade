@@ -53,9 +53,10 @@
                 h2 Price Quote
               .row
                 .btn.btn-danger(ng-show="priceQuote == null") Refreshing price data...
+                .btn.btn-danger(ng-show="templObj.mailCampaign.recipients.length == 0") N/A
                 //- p.getting-quote(ng-show="priceQuote == null") Calculating price quote...
                 .btn.btn-success(
-                  ng-hide="priceQuote == null" 
+                  ng-hide="priceQuote == null || templObj.mailCampaign.recipients.length == 0" 
                   tooltip-trigger="mousehover" 
                   uib-tooltip="Click to submit this mailing!" 
                   tooltip-enable="true" 

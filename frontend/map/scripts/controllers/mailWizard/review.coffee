@@ -27,13 +27,13 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       controller: 'rmapsModalSendMailCtrl'
       keyboard: false
       backdrop: 'static'
-      windowClass: 'snail-modal'
+      windowClass: 'confirm-mail-modal'
       resolve:
         price: $scope.priceQuote
 
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
-      if result == 'sent'
+      if result
         $state.go('review', { id: rmapsMailTemplateService.getCampaign().id }, { reload: true })
 
   $scope.sentFlag = false
@@ -43,6 +43,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
   getQuote = () ->
     if rmapsMailTemplateService.isSent()
       return $q.when("Mailing submitted. Lob Batch Id: #{$scope.templObj.mailCampaign.lob_batch_id}")
+    if $scope.templObj.mailCampaign?.recipients?.length == 0
+      return $q.when("0.00")
     rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
     .then (data) ->
       $log.debug "getquote data: #{JSON.stringify(data)}"
