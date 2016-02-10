@@ -15,7 +15,7 @@ paymentSvc = null
 
 LOB_LETTER_DEFAULTS =
   color: true
-  template: true
+  template: false
 
 LOB_LETTER_FIELDS = [
    'to'
