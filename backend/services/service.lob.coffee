@@ -2,7 +2,7 @@ externalAccounts = require '../services/service.externalAccounts'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:lob')
 _ = require 'lodash'
 config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
@@ -83,7 +83,7 @@ createLetterTest = (letter) ->
   .then (lob) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
-    logger.debug "#{JSON.stringify letter, null, 2}"
+    logger.debug () -> "#{JSON.stringify letter, null, 2}"
     lob.test.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
 
     .catch isUnhandled, handleError('live')

@@ -1,0 +1,61 @@
+app = require '../../app.coffee'
+_ = require 'lodash'
+
+module.exports = app
+
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $state, $modal, rmapsMailTemplateService, rmapsLobService) ->
+  $log = $log.spawn 'mail:review'
+  $log.debug 'rmapsReviewCtrl'
+
+  $scope.templObj =
+    mailCampaign: {}
+
+  setTemplObj = () ->
+    $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
+    $scope.templObj =
+      mailCampaign: rmapsMailTemplateService.getCampaign()
+
+  $scope.quoteAndSend = () ->
+    $scope.$parent.quoteAndSend()
+
+  $scope.sendMail = () ->
+    $scope.$parent.sendMail()
+
+  $scope.sendMail = () ->
+    modalInstance = $modal.open
+      template: require('../../../html/views/templates/modal-confirmMailSend.tpl.jade')()
+      controller: 'rmapsModalSendMailCtrl'
+      keyboard: false
+      backdrop: 'static'
+      windowClass: 'snail-modal'
+      resolve:
+        price: $scope.priceQuote
+
+    modalInstance.result.then (result) ->
+      $log.debug "modal result: #{result}"
+      if result == 'sent'
+        $state.go('review', { id: rmapsMailTemplateService.getCampaign().id }, { reload: true })
+
+  $scope.sentFlag = false
+  $scope.category = null
+  $scope.priceQuote = null
+
+  getQuote = () ->
+    if rmapsMailTemplateService.isSent()
+      return $q.when("Mailing submitted. Lob Batch Id: #{$scope.templObj.mailCampaign.lob_batch_id}")
+    rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
+    .then (data) ->
+      $log.debug "getquote data: #{JSON.stringify(data)}"
+      data.price
+
+  $rootScope.registerScopeData () ->
+    $scope.$parent.initMailTemplate()
+    .then () ->
+      setTemplObj()
+      $scope.category = rmapsMailTemplateService.getCategory()
+      $scope.sentFlag = rmapsMailTemplateService.isSent()
+      $log.debug "mail sent? #{$scope.sentFlag}"
+      getQuote()
+      .then (response) ->
+        $log.debug "getquote then: #{response}"
+        $scope.priceQuote = response

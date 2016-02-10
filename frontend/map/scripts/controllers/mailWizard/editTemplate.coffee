@@ -6,7 +6,7 @@ module.exports = app
 app.controller 'rmapsEditTemplateCtrl',
 ($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsPrincipalService,
 rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
-  $log = $log.spawn 'frontend:mail:editTemplate'
+  $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
   editor = {}
