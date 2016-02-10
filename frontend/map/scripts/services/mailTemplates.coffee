@@ -91,7 +91,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
-    previewStyles = "body {border: 1px solid black;}"
+    previewStyles = "body {background-color: #FFF}"
     "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
 
   _createLobHtml = () ->

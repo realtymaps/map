@@ -45,9 +45,8 @@ app.provider 'rmapsOnboardingProOrderService', (rmapsOnboardingOrderServiceProvi
   new rmapsOnboardingOrderServiceProvider.clazz [
     'onboardingPayment'
     'onboardingLocation'
-    # 'onboardingVerify'
     'onboardingFinishYay'
-  ], 'pro', 'onboardingLocation'#'onboardingVerify'
+  ], 'pro', 'onboardingLocation'
 
 app.provider 'rmapsOnboardingOrderSelectorService', (rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   @getPlanFromState = ($state) ->
