@@ -1,0 +1,6 @@
+.modal-header
+  h3.modal-title Mail Preview
+  button(ng-click="close()").btn.btn-danger Close
+
+.modal-body
+  iframe#mail-preview-iframe(frameborder="0" ng-class="{'iframe-preview-letter': category == 'letter', 'iframe-preview-postcard': category == 'postcard'}")

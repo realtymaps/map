@@ -142,18 +142,43 @@ app.controller 'rmapsOnboardingPaymentCtrl',
         return '' unless typeStr
         'fa fa-2x ' +  rmapsFaCreditCardsService.getCard(typeStr.toLowerCase())
 
-app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesService) ->
+app.controller 'rmapsOnboardingLocationCtrl', ($scope, $log, rmapsFipsCodesService, rmapsMlsService) ->
   $log = $log.spawn("map:rmapsOnboardingLocationCtrl")
 
-  rmapsFipsCodesService.getAllMlsCodes().then (mlsCodes) ->
-    $scope.mlsCodes = mlsCodes
+  $scope.supportedMLS =
+    show: true
+    change: () ->
+      delete $scope.user.mls_code
+
+  $scope.doneButton =
+    getText:  () ->
+      if !$scope.supportedMLS.show
+        'Procceed Unsupported'
+      else
+        'Done'
+
+    getTitle: () ->
+      if !$scope.supportedMLS.show
+        'You are proceeding as a standard account with the chance of pro.'
+      else
+        'Done'
+
 
   $scope.$watch 'user.us_state_code', (usStateCode) ->
     return unless usStateCode
 
-    rmapsFipsCodesService.getAllByState usStateCode
-    .then (counties) ->
-      $scope.counties = counties
+    rmapsFipsCodesService.getAllSupportedMlsCodes state: usStateCode
+    .then (mlsFipsCounties) ->
+      $scope.mlsFipsCounties = mlsFipsCounties
+
+    rmapsMlsService.getAll state: usStateCode
+    .then (mlses) ->
+      $scope.mlsCodes = mlses
+
+    rmapsMlsService.getAllSupported state: usStateCode
+    .then (mlses) ->
+      $scope.supportedMlsCodes = mlses
+
 
   $log.debug $scope
 

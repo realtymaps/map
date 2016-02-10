@@ -1,10 +1,11 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
+modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsPrincipalService,
+($rootScope, $scope, $log, $window, $timeout, $document, $state, $modal, rmapsPrincipalService,
 rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
   $log = $log.spawn 'frontend:mail:editTemplate'
   $log.debug 'editTemplate'
@@ -42,8 +43,19 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
     rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
     rmapsMailTemplateService.save()
 
+  $scope.animationsEnabled = true
   $scope.doPreview = () ->
-    rmapsMailTemplateService.openPreview()
+    # rmapsMailTemplateService.openPreview()
+    modalInstance = $modal.open
+      animation: $scope.animationsEnabled
+      template: modalTemplate
+      controller: 'rmapsMailTemplatePreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        mailContent: () ->
+          return "some-content"
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
@@ -51,3 +63,13 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
       setTemplObj()
       $scope.data =
         htmlcontent: $scope.templObj.mailCampaign.content
+
+
+app.controller 'rmapsMailTemplatePreviewCtrl',
+  ($scope, $modalInstance, $log, $window, $timeout, mailContent, rmapsMailTemplateService) ->
+    $scope.category = rmapsMailTemplateService.getCategory()
+    $timeout () ->
+      $window.document.getElementById('mail-preview-iframe').srcdoc = rmapsMailTemplateService.createPreviewHtml()
+
+    $scope.close = () ->
+      $modalInstance.dismiss()

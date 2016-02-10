@@ -73,5 +73,8 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
   getHtml: (type) ->
     _meta[type].content
 
+  getCategoryFromType: (type) ->
+    _meta[type].category
+
   getDefaultHtml: () ->
     _meta['basicLetter'].content
