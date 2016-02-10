@@ -32,6 +32,7 @@ apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseFlamegraph = "#{apiBase}/flamegraph"
+apiBaseShell = "#{apiBase}/shell"
 
 module.exports =
   views:
@@ -228,5 +229,8 @@ module.exports =
   flamegraph:
     apiBase: apiBaseFlamegraph
     flamegraph: apiBaseFlamegraph
+  shell:
+    apiBase: apiBaseShell
+    shell: apiBaseShell
 
   # hirefire secret value set from within backend/config/config.coffee
