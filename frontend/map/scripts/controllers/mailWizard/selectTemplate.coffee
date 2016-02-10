@@ -26,7 +26,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, rmapsMailTe
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
     $log.debug "templateType chosen: #{templateType}"
     rmapsMailTemplateService.setTemplateType(templateType)
-    $scope.$parent.nextStep()
+    $scope.campaign = rmapsMailTemplateService.getCampaign()
+    #$scope.$parent.nextStep()
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
