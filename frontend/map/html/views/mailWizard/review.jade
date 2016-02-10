@@ -24,7 +24,7 @@
                   span(class="{{templObj.mailCampaign.status}}") {{templObj.mailCampaign.status}}
 
             .col-md-2
-               button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ng-click="senderInfo({id:templObj.mailCampaign.id})") edit
+               button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="senderInfo({id:templObj.mailCampaign.id})") edit
 
           .row.separator
             .col-md-10
@@ -38,7 +38,7 @@
                   when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing will be sent to 1 recipient.', 'other': 'Mailing will be sent to {{templObj.mailCampaign.recipients.length}} recipients.'}")
 
             .col-md-2
-               button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ng-click="recipientInfo({id:templObj.mailCampaign.id})") edit
+               button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="recipientInfo({id:templObj.mailCampaign.id})") edit
 
           .row.separator(ng-show="sentFlag")
             .col-md-12
@@ -55,11 +55,11 @@
                 .btn.btn-danger(ng-show="priceQuote == null") Refreshing price data...
                 //- p.getting-quote(ng-show="priceQuote == null") Calculating price quote...
                 .btn.btn-success(
-                  tooltip-placement="top"
-                  ng-hide="priceQuote == null"
-                  uib-tooltip="Click to submit this mailing!"
-                  ng-click="sendMail()"
-                ) Submit campaign for {{priceQuote | currency}}
+                  ng-hide="priceQuote == null" 
+                  tooltip-trigger="mousehover" 
+                  uib-tooltip="Click to submit this mailing!" 
+                  tooltip-enable="true" 
+                  ng-click="sendMail()") Submit campaign for {{priceQuote | currency}}
 
             //- .col-md-2
             //-    button.btn.btn-primary.review-edit-button(ng-click="senderInfo({id:templObj.mailCampaign.id})") edit
