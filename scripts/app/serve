@@ -27,13 +27,13 @@ then
   unset PORT
 fi
 
-if [[ "$IS_HEROKU" != "" ]]
-then
-  IFS=, <<< $PROD_ARG
-  PROD_ARG=$@
-  $PROD_SCRIPT
+if [[ "$IS_HEROKU" != "" ]]; then
   gulp $GULP_COLOR prod &
-  bin/start-pgbouncer-stunnel coffee $PROD_ARG ./backend/server.coffee
+  if [[ "$DO_PERF" != "" ]]; then
+    bin/start-pgbouncer-stunnel coffee --nodejs --perf-basic-prof ./backend/server.coffee
+  else
+    bin/start-pgbouncer-stunnel coffee ./backend/server.coffee
+  fi
 else
   gulp $GULP_COLOR $GULP_TARGET $DEBUG_ARG
 fi
