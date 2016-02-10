@@ -5,6 +5,7 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTempla
   $scope.price = price
   $scope.sendingFlag = false
   $scope.message = 'There\'s no turning back!'
+  $scope.failedFlag = false
   $scope.send = () ->
     $scope.sendingFlag = true
     rmapsLobService.submit rmapsMailTemplateService.getLobData()
@@ -14,7 +15,9 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTempla
       .then () ->
         $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" submitted!", type: 'rm-success' }
         $scope.$close('sent')
+
     .error (data, status) ->
+      $scope.failedFlag = true
       if data?.errmsg
         $scope.message = data.errmsg.text
       else

@@ -104,7 +104,6 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     mailCampaign.content = rmapsMailTemplateTypeService.getHtml(type)
 
   _getCategory = () ->
-    console.log mailCampaign
     rmapsMailTemplateTypeService.getCategoryFromType(mailCampaign.template_type)
 
   _setStatus = (status) ->

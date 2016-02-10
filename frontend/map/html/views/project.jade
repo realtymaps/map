@@ -49,7 +49,4 @@
                             span.value {{project.sqft}}
                             span.small Sq Ft
 
-                      ul(ng-repeat="state in $state.get() | filter:{parent: 'project'}"
-                        ui-view="{{state.name}}"
-                        ng-show="$state.includes(state.name)"
-                        ng-cloak ng-class="state.name.replace('project','').toLowerCase()")
+                      ul(ui-view ng-class="state.name.replace('project','').toLowerCase()")

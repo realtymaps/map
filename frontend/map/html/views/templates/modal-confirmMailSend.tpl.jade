@@ -1,11 +1,11 @@
 .modal-header
-  h3.modal-title Are you sure??
+  h3.modal-title(ng-show="failedFlag") There was a problem.
+  h3.modal-title(ng-hide="failedFlag") Are you sure??
 
 .modal-body
   p {{message}}
-  //- p(ng-show="!sendingFlag") There's no turning back!
-  //- p(ng-show="sendingFlag") Submitting campaign to be mailed, please wait...
 
 .modal-footer(ng-class="{'faded': sendingFlag}")
-  button.btn.btn-primary(ng-click="send()") Yes, I'm committing to pay {{price | currency}} to have this mailing submitted.
-  button.btn.btn-danger(ng-click="cancel()") No, cancel!
+  button.btn.btn-primary(ng-hide="failedFlag" ng-click="send()") Yes, I'm committing to pay {{price | currency}} to have this mailing submitted.
+  button.btn.btn-danger(ng-hide="failedFlag" ng-click="cancel()") No, cancel!
+  button.btn.btn-danger(ng-show="failedFlag" ng-click="cancel()") Try again later.
