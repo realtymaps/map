@@ -28,7 +28,7 @@ require('./config/googleMaps').loadValues()
 .then () ->
   cluster 'web', {}, () ->
     # express configuration
-    app = require './config/express'
+    app = require './config/expressSetup'
 
     try
       logger.info "Attempting to start backend on port #{config.PORT}"
