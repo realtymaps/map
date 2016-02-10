@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+ORIG_DIR=`pwd`
+
+# echo $SCRIPT_DIR
+# echo $ORIG_DIR
+OUT_FILE=./tmp/flamegraph.`date +%m%d%Y%s`.flame.svg
+
+rm -f /tmp/out.nodestacks01 /tmp/*.map
+perf record -F 99 -p `pgrep -n node` -g -- sleep 30
+perf script > ./tmp/out.nodestacks01
+
+../../node_modules/flamegraph/bin/flamegraph.js -f ./tmp/out.nodestacks01 -m `ls /tmp/*.map` > $OUT_FILE
+echo $OUT_FILE
