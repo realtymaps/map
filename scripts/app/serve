@@ -31,7 +31,7 @@ if [[ "$IS_HEROKU" != "" ]]; then
   gulp $GULP_COLOR prod &
   if [[ "$DO_PERF" != "" ]]; then
     PERF="/app/.apt/usr/lib/linux-tools-3.13.0-71/perf"
-    perf record -e cycles:u -g -- coffee --nodejs --perf-basic-prof ./backend/server.coffee
+    $PERF record -e cycles:u -g -- coffee --nodejs --perf-basic-prof ./backend/server.coffee
   else
     bin/start-pgbouncer-stunnel coffee ./backend/server.coffee
   fi
