@@ -30,7 +30,7 @@ fi
 if [[ "$IS_HEROKU" != "" ]]
 then
   IFS=, <<< $PROD_ARG
-  $PROD_ARG=$@
+  PROD_ARG=$@
   $PROD_SCRIPT
   gulp $GULP_COLOR prod &
   bin/start-pgbouncer-stunnel coffee $PROD_ARG ./backend/server.coffee
