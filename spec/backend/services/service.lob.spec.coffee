@@ -52,6 +52,8 @@ describe "service.lob", ->
 
   describe 'sending valid campaign', ->
 
+    this.timeout(10000)
+
     it 'should update status and create letters', (done) ->
 
       svc.sendCampaign mockCampaign.id, mockAuthUser.id
