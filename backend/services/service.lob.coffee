@@ -11,6 +11,7 @@ LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
+paymentSvc = null
 
 LOB_LETTER_DEFAULTS =
   color: true
@@ -76,7 +77,7 @@ createLetter = (letter) ->
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
 
     logger.debug -> "#{JSON.stringify letter, null, 2}"
-    lob.live.letters.createAsync _.pick letter, LOB_LETTER_FIELDS
+    lob.live.letters.create _.pick letter, LOB_LETTER_FIELDS
 
     .catch isUnhandled, handleError('live')
 
@@ -94,17 +95,19 @@ createLetterTest = (letter) ->
 
 sendCampaign = (campaignId, userId) ->
 
+  logger.debug "Sending campaign #{campaignId}"
+
   Promise.props({
 
     authUser: tables.auth.user()
       .select('stripe_customer_id')
-      .where('id', userId)
+      .where(id: userId)
 
     campaign: tables.mail.campaign()
       .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
-    payment: require('./services.payment')
+    payment: paymentSvc or require('./services.payment')
 
   })
 
@@ -151,7 +154,7 @@ sendCampaign = (campaignId, userId) ->
         dbs.transaction 'main', (tx) ->
 
           amount = pricePerLetter * campaign.recipients.length
-          logger.debug "Creating $#{amount} CC hold on default card for customer #{stripe_customer_id}"
+          logger.debug "Creating $#{amount.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
 
           payment.customers.charge
               customer: stripe_customer_id

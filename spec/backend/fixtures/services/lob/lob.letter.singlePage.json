@@ -1,0 +1,73 @@
+{
+    "id": "ltr_cc3b499a71b17923",
+    "description": null,
+    "metadata": {
+        "campaignId": "54",
+        "userId": "9",
+        "uuid": "e9222640-cf54-11e5-96bc-9319592f8499"
+    },
+    "to": {
+        "id": "adr_c2202a0a22eaf212",
+        "description": null,
+        "name": "Homeowner",
+        "company": null,
+        "phone": null,
+        "email": null,
+        "address_line1": "2938 Cypress St",
+        "address_line2": null,
+        "address_city": "Naples",
+        "address_state": "Florida",
+        "address_zip": "34112-5814",
+        "address_country": "United States",
+        "metadata": {},
+        "date_created": "2016-02-09T22:22:44.722Z",
+        "date_modified": "2016-02-09T22:22:44.722Z",
+        "deleted": true,
+        "object": "address"
+    },
+    "from": {
+        "id": "adr_9e864348f9eafaaf",
+        "description": null,
+        "name": "Jesse Stewart",
+        "company": null,
+        "phone": null,
+        "email": null,
+        "address_line1": "2317 Alta Ave.",
+        "address_line2": "",
+        "address_city": "Louisville",
+        "address_state": "Kentucky",
+        "address_zip": "40205",
+        "address_country": "United States",
+        "metadata": {},
+        "date_created": "2016-02-09T22:22:44.727Z",
+        "date_modified": "2016-02-09T22:22:44.727Z",
+        "deleted": true,
+        "object": "address"
+    },
+    "color": true,
+    "double_sided": false,
+    "template": true,
+    "return_envelope": false,
+    "perforated_page": null,
+    "extra_service": null,
+    "pages": 1,
+    "price": 1.20,
+    "url": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923.pdf?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=6UuD1E7tUcEAZJaMrkQ787wsBEk%3D",
+    "tracking": {
+        "id": "trk_c0c2d9c73c57cefa",
+        "tracking_number": "897714123456789",
+        "carrier": "USPS",
+        "link": null,
+        "events": [],
+        "object": "tracking"
+    },
+    "thumbnails": [{
+        "small": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923_thumb_small_1.png?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=998M%2BYGAiU%2BJt4tkJgTupLo8iL4%3D",
+        "medium": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923_thumb_medium_1.png?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=jzKWnAQeIdpYiudJ%2BVfWuyoq31E%3D",
+        "large": "https://s3-us-west-2.amazonaws.com/assets.lob.com/ltr_cc3b499a71b17923_thumb_large_1.png?AWSAccessKeyId=AKIAJVT3IPSNH662QU6A&Expires=1457648565&Signature=JclxQVD3AyCaap2dSAwdElucxuU%3D"
+    }],
+    "expected_delivery_date": "2016-02-16",
+    "date_created": "2016-02-09T22:22:45.722Z",
+    "date_modified": "2016-02-09T22:22:45.722Z",
+    "object": "letter"
+}

@@ -1,0 +1,63 @@
+{
+  "id": 1,
+  "auth_user_id": 7,
+  "name": "Campaign 1",
+  "status": "ready",
+  "content": "<div class=\"amazing-html-5-content\">Dear Reader...</div>",
+  "sender_info": {
+    "first_name": "Spammy",
+    "last_name": "McMailer",
+    "address_line1": "123 Main St",
+    "address_city": "Springfield",
+    "address_state": "FL",
+    "address_zip": "55555",
+    "email": "blackhole@realtymaps.com"
+  },
+  "recipients": [
+    {
+      "rm_property_id": "12021_29830400000_001",
+      "street_address_num": "2938",
+      "street_address_name": "Cypress St",
+      "city": "Naples",
+      "state": "FL",
+      "zip": "34112-5814",
+      "owner_street_address_num": "6947",
+      "owner_street_address_name": "Madrid Dr",
+      "owner_city": "Demotte",
+      "owner_state": "IN",
+      "owner_zip": "46310-9411",
+      "property_address": "2938 Cypress St Naples FL 34112-5814",
+      "owner_address": "6947 Madrid Dr Demotte IN 46310-9411"
+    }, {
+      "rm_property_id": "12021_29830840000_001",
+      "street_address_num": "2917",
+      "street_address_name": "Poplar St",
+      "city": "Naples",
+      "state": "FL",
+      "zip": "34112-5830",
+      "owner_street_address_num": "2917",
+      "owner_street_address_name": "Poplar St",
+      "owner_city": "Naples",
+      "owner_state": "FL",
+      "owner_zip": "34112-5830",
+      "property_address": "2917 Poplar St Naples FL 34112-5830",
+      "owner_address": "2917 Poplar St Naples FL 34112-5830"
+    }, {
+      "rm_property_id": "12021_48730920506_001",
+      "street_address_num": "2370",
+      "street_address_name": "Becca Ave",
+      "owner_name": "Danny Daniels",
+      "owner_name2": "Amy Daniels",
+      "city": "Naples",
+      "state": "FL",
+      "zip": "34112-5849",
+      "owner_street_address_num": "2370",
+      "owner_street_address_name": "Becca Ave",
+      "owner_city": "Naples",
+      "owner_state": "FL",
+      "owner_zip": "34112-5849",
+      "property_address": "2370 Becca Ave Naples FL 34112-5849",
+      "owner_address": "2370 Becca Ave Naples FL 34112-5849"
+    }
+  ]
+}
