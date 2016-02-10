@@ -7,6 +7,8 @@ make = (callback) ->
   exec './scripts/misc/flamegraph', (err, stdout, stderr) ->
     logger.info "creating flamegraph"
     logger.info stdout
+    if err
+      logger.error stderr
     callback stdout if callback
 
 handleGetRoute = (req, res, next) ->
