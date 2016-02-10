@@ -44,8 +44,6 @@ handleGetRoute = (req, res, next) ->
   catch error
     next new ExpressResponse(alert: error.message, httpStatus.BAD_REQUEST)
 
-make()
-
 module.exports = {
   make
   handleGetRoute
