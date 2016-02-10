@@ -14,7 +14,7 @@ rm -f /tmp/out.nodestacks01
 
 PERF="/app/.apt/usr/lib/linux-tools-3.13.0-71/perf"
 
-$PERF record -F 99 -p `pgrep -n node` -g -- sleep 30
+# $PERF record -F 99 -p `pgrep -n node` -g -- sleep 30
 $PERF script > ./tmp/out.nodestacks01
 
 ../../node_modules/flamegraph/bin/flamegraph.js -f ./tmp/out.nodestacks01 -m `ls -t /tmp/*.map | awk 'FNR == 1'` > $OUT_FILE
