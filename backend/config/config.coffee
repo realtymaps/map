@@ -86,11 +86,11 @@ base =
     HASH_MIN_LENGTH: 20
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
-    LIVE_MODE: false
+    LIVE_MODE: process.env.PAYMENT_IS_LIVE or false
     INTERVAL_COUNT: 1
     CURRENCY: 'usd'
   EMAIL_PLATFORM:
-    LIVE_MODE: false
+    LIVE_MODE: process.env.EMAIL_IS_LIVE or false
     MAX_RETRIES: 4
     RETRY_DELAY_MILLI: 2000
 # this one's separated out so we can re-use the DBS.MAIN.connection value

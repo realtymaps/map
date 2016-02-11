@@ -4,11 +4,11 @@
       form
         div.row.equal-height
           div.col-md-9
-            .row(style="text-align: center")
+            .row
               .toolGroup
-                button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
-                button.btn.btn-success.miscTool(ng-click="saveContent()") Save
                 button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
+                button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
+                button.btn.btn-default.miscTool(ng-click="saveContent()" ng-class="{'btn-inactive': saveStatus == 'saved', 'btn-error': saveStatus == 'error'}") {{saveButtonText[saveStatus]}}
                 text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
                   ta-toolbar="[['redo','undo']]")
 
@@ -56,7 +56,7 @@
                   //- div.form-section
                   //-   h4
                   //-     | Font Color
-                  //-   text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" 
+                  //-   text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools"
                   //-     ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
 
                   //- div.form-section
