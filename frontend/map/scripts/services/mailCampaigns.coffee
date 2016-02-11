@@ -13,7 +13,7 @@ app.service 'rmapsMailCampaignService', ($log, $http) ->
       data
 
   create: (entity) ->
-    $log.debug "CREATE entity:\n#{JSON.stringify entity}"
+    $log.debug -> "CREATE entity:\n#{JSON.stringify entity}"
     $http.post mailAPI, entity
 
   remove: (id) ->
