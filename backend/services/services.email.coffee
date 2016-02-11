@@ -29,7 +29,7 @@ validateHash = (hash) -> Promise.try () ->
   _getUserByHash(hash)
   .then (user) ->
     unless _isValidWithinTime(user.email_validation_hash_created_time)
-      throw new ValidateEmailHashTimedOutError("Validaiton Hash has not been confirmed with the alotted time period.")
+      throw new ValidateEmailHashTimedOutError("Validation Hash has not been confirmed with the allotted time period.")
     user.email_is_valid = true
     user.email_validation_attempt += 1
     userTable()

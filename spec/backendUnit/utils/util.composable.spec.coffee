@@ -1,4 +1,4 @@
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 subject = require "#{basePath}/utils/util.composable"
 sinon = require 'sinon'
 require("chai").should()

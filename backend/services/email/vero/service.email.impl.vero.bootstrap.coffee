@@ -6,7 +6,7 @@ logger = require('../../../config/logger').spawn('vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 veroFactory = require 'vero-promise'
 
-# TODO: use rewire in specs to return {other: auth_token: ''} during unit tests
+
 VeroBootstrap = do () ->
   Promise.try () ->
     externalAccounts.getAccountInfo('vero')
@@ -18,7 +18,7 @@ VeroBootstrap = do () ->
       vero
   .catch (err) ->
     logger.error "CRITICAL ERROR: OUR EMAIL PLATFORM IS NOT SETUP CORRECTLY"
-    logger.error err, true
+    logger.error err.stack || err
     if EMAIL_PLATFORM.LIVE_MODE
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'

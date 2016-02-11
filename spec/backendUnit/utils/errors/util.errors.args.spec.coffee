@@ -1,6 +1,6 @@
 require('chai').should()
 # expect = require 'expect'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 subject = require "#{basePath}/utils/errors/util.errors.args"
 
 describe 'utils.errors.args', ->

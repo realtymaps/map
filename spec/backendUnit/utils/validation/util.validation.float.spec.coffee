@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
@@ -41,7 +41,7 @@ describe 'utils/validation.validators.float()'.ns().ns('Backend'), ->
       expectResolve(validators.float()(param, undefined)).then (value) ->
         (value == null).should.be.true
     ]
-    
+
   promiseIt 'should reject strings that do not represent numbers', () ->
     [
       expectReject(validators.float()(param, '12.3abc'), DataValidationError)

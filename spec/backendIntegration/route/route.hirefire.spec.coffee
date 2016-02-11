@@ -1,4 +1,4 @@
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 hirefireRoute = require "#{basePath}/routes/route.hirefire"
 {expectResolve, expectReject, promiseIt} = require('../../specUtils/promiseUtils')
 

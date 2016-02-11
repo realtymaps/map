@@ -1,6 +1,6 @@
 require("chai").should()
 Promise = require 'bluebird'
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 _ = require 'lodash'
 require("chai").should()
 {expect} = require("chai")

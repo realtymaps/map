@@ -1,7 +1,7 @@
 require('chai').should()
 sinon = require 'sinon'
 Promise = require 'bluebird'
-basePath = require '../../../basePath'
+{basePath} = require '../../../globalSetup'
 rewire = require 'rewire'
 emailEvents = rewire "#{basePath}/services/email/vero/service.email.impl.vero.events"
 subject = rewire "#{basePath}/services/payment/stripe/service.payment.impl.stripe.events"

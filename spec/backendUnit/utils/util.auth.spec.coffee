@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 sessionSecurityService = require "#{basePath}/services/service.sessionSecurity"
 auth = require "#{basePath}/utils/util.auth"
 require("chai").should()

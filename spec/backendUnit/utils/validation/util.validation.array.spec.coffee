@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 
 {validators, DataValidationError} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')
@@ -26,7 +26,7 @@ describe 'utils/validation.validators.array()'.ns().ns('Backend'), ->
       expectResolve(validators.array()(param, undefined)).then (value) ->
         (value == null).should.be.true
     ]
-    
+
   promiseIt 'should reject non-arrays', () ->
     [
       expectReject(validators.array()(param, 'abc'), DataValidationError)

@@ -1,7 +1,7 @@
 {assert, } = require('chai')
 require('chai').should()
 Promise = require 'bluebird'
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 logger = require("../../specUtils/logger").spawn('route.crud.projectSession')
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 CrudServiceHelpers = require "#{basePath}/utils/crud/util.crud.service.helpers"

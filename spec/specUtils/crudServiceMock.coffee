@@ -1,4 +1,4 @@
-basePath = require '../backendUnit/basePath'
+{basePath} = require '../backendUnit/globalSetup'
 logger = require("./logger").spawn('crudServiceMock')
 {dbFnCalls} = require "#{basePath}/utils/crud/util.crud.service.helpers"
 sinon = require 'sinon'

@@ -116,7 +116,7 @@ class SqlMock
       @_svc = dbs.get('main')
     else
       @logger.debug () -> "hooking tables.#{@groupName}.#{@tableHandle} for service"
-      @_svc = tables[@groupName][@tableHandle] unless @_svc
+      @_svc ?= tables[@groupName][@tableHandle]
       @tableName = @_svc.tableName or @tableHandle
       @_svc = @_svc()
     @_svc

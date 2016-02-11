@@ -65,10 +65,6 @@ initializePlans = (stripe) ->
   stripe
 
 
-# TODO: use rewire in specs to return the following during unit tests:
-# TODO:     other:
-# TODO:       secret_test_api_key: ''
-# TODO:       secret_live_api_key: ''
 module.exports = do ->
   externalAccounts.getAccountInfo('stripe')
   .then ({other}) ->

@@ -57,7 +57,7 @@ shutdown = () ->
 
 getKnex = (dbName) ->
   if !enabled
-    throw new Error("database is disabled (#{disableMessage}), can't get db client: #{dbName}")
+    return knex(client: 'pg')
   knexInUse = true
   if !connectedDbs[dbName]?
     connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])

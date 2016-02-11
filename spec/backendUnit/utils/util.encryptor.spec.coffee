@@ -1,4 +1,4 @@
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 Encryptor = require "#{basePath}/utils/util.encryptor"
 require("chai").should()
 

@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 require("chai").should()
 {expect} = require("chai")
 

@@ -5,7 +5,7 @@ gjv = require 'geojson-validation'
 mocks =
   map:
     state: require('../../fixtures/backend/mapState')
-    filter: require('../../fixtures/backend/mapFilter')()
+    filter: require('../../fixtures/backend/mapFilter')
 
 describe 'service.properties.parcels', ->
 

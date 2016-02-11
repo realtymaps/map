@@ -1,6 +1,6 @@
 _ = require 'lodash'
 sinon = require 'sinon'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 {validators} = require "#{basePath}/utils/util.validation"
 RouteCrud = require "#{basePath}/utils/crud/util.ezcrud.route.helpers"
 ServiceCrud = require "#{basePath}/utils/crud/util.ezcrud.service.helpers"

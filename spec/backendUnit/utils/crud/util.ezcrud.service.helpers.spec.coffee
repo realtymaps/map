@@ -1,5 +1,5 @@
 _ = require 'lodash'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 sinon = require 'sinon'
 SqlMock = require '../../../specUtils/sqlMock'
 ServiceCrud = require "#{basePath}/utils/crud/util.ezcrud.service.helpers"
@@ -47,9 +47,7 @@ describe 'util.ezcrud.service.helpers', ->
       expect(qstr.trim()).to.equal expectedSql
 
     it 'returns correct upsert query string with objects and json', ->
-      expectedSql = """INSERT INTO temp_table (id_one,id_two,lorem,some_json,an_array) VALUES ( DEFAULT, DEFAULT , 'ipsum''s',  
-        '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) ON CONFLICT (id_one,id_two) DO UPDATE SET (lorem,some_json,an_array) = 
-        ( 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) RETURNING id_one,id_two""".replace(/\n/g,'')
+      expectedSql = """INSERT INTO temp_table (id_one,id_two,lorem,some_json,an_array) VALUES ( DEFAULT, DEFAULT , 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) ON CONFLICT (id_one,id_two) DO UPDATE SET (lorem,some_json,an_array) = ( 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) RETURNING id_one,id_two""".replace(/\n/g,'')
 
       ids =
         id_one: null

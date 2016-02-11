@@ -3,7 +3,7 @@ should()
 sinon = require "sinon"
 Promise = require 'bluebird'
 _ = require 'lodash'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 {Crud, HasManyRouteCrud, wrapRoutesTrait} = require "#{basePath}/utils/crud/util.crud.route.helpers"
 crudSvc = require "#{basePath}/utils/crud/util.crud.service.helpers"
 {validators} = require "#{basePath}/utils/util.validation"

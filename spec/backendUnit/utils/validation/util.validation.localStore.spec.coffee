@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-basePath = require '../../basePath'
+{basePath} = require '../../globalSetup'
 
 {validators, DataValidationError, validateAndTransform} = require "#{basePath}/utils/util.validation"
 {expectResolve, expectReject, promiseIt} = require('../../../specUtils/promiseUtils')

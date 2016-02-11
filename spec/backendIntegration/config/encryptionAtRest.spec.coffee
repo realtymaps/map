@@ -1,5 +1,5 @@
 require("chai").should()
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 
 
 describe 'ENCRYPTION_AT_REST', () ->

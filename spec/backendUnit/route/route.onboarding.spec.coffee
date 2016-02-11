@@ -2,11 +2,11 @@ require('chai').should()
 sinon = require 'sinon'
 rewire = require 'rewire'
 Promise = require 'bluebird'
-basePath = require '../basePath'
+{basePath} = require '../globalSetup'
 SqlMock = require '../../specUtils/sqlMock'
 
 onboardingRoute = rewire "#{basePath}/routes/route.onboarding"
-logger = require("#{basePath}/config/logger").spawn('test:backend:route.onboarding')
+logger = require("../../specUtils/logger").spawn('backend:route:onboarding')
 
 subject = null
 # onboardingRoute.__set__ 'mergeHandles', ->

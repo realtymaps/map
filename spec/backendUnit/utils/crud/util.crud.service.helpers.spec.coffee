@@ -6,7 +6,6 @@ require("chai").should()
 {expect} = require("chai")
 sinon = require 'sinon'
 
-tables.auth.permission() # calling this to bootstrap the tables queries; see tables.coffee
 
 HasManyCrudInstance = hasManyCrud(tables.auth.permission, [
   "#{tables.auth.m2m_user_permission.tableName}.id as id"

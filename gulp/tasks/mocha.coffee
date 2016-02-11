@@ -6,7 +6,7 @@ paths = require '../../common/config/paths'
 logFile = require '../util/logFile'
 es = require 'event-stream'
 logger = require '../util/logger'
-require './dbDisable'
+require './unitPrep'
 
 require 'chai'
 require('chai').should()
@@ -36,8 +36,8 @@ gulp.task 'backendIntegrationSpec', (done) ->
 gulp.task 'backendIntegrationDebugSpec', (done) ->
   runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
 
-gulp.task 'backendSpec', gulp.series('disableDbs', 'backendUnitSpec', 'enableDbs', 'backendIntegrationSpec')
-gulp.task 'backendDebugSpec', gulp.series('disableDbs', 'backendUnitDebugSpec', 'enableDbs', 'backendIntegrationDebugSpec')
+gulp.task 'backendSpec', gulp.series('unitTestPrep', 'backendUnitSpec', 'unitTestTeardown', 'backendIntegrationSpec')
+gulp.task 'backendDebugSpec', gulp.series('unitTestPrep', 'backendUnitDebugSpec', 'unitTestTeardown', 'backendIntegrationDebugSpec')
 
 gulp.task 'commonSpec', (done) ->
   runMocha 'spec/common/**/*spec*', undefined, done
