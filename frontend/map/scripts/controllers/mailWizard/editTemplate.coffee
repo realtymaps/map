@@ -15,6 +15,13 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
   $scope.data =
     htmlcontent: ""
 
+  $scope.saveButtonText =
+    'saved': 'All Changes Saved'
+    'saving': 'Saving...'
+    'error': 'Error Saving'
+
+  $scope.saveStatus = 'saved'
+
   setTemplObj = () ->
     $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
     $scope.templObj =
@@ -38,10 +45,18 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
 
   $scope.macro = ""
 
-  $scope.saveContent = () ->
+  $scope.saveContent = _.debounce () ->
+    $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.templObj.name}"
     rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
     rmapsMailTemplateService.save()
+    .then ->
+      $scope.saveStatus = 'saved'
+    .catch ->
+      $scope.saveStatus = 'error'
+  , 1000
+
+  $scope.$watch 'data.htmlcontent', $scope.saveContent
 
   $scope.animationsEnabled = true
   $scope.doPreview = () ->
