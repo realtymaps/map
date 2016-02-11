@@ -1,3 +1,4 @@
+{PAYMENT_PLATFORM} = require '../config/config'
 logger = require('../config/logger').spawn("route.onboarding")
 {mergeHandles} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
@@ -24,6 +25,7 @@ submitPaymentPlan = ({plan, token, authUser, trx}) ->
     authUser: authUser
     plan: plan
     token: token
+    trx: trx
 
 submitEmail = ({authUser, plan, trx}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -48,6 +50,7 @@ handles = wrapHandleRoutes
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
+        entity.is_test = !PAYMENT_PLATFORM.LIVE_MODE
         createPasswordHash entity.password
         .then (password) ->
           # console.log.magenta "password"
@@ -89,7 +92,7 @@ handles = wrapHandleRoutes
             promise.then () -> authUser
 
           .then (authUser) ->
-            submitPaymentPlan {plan, token, authUser} #not including trx on purpose
+            submitPaymentPlan {plan, token, authUser, trx}
           .then ({authUser, customer}) ->
             submitEmail {authUser, plan, customer}
 
