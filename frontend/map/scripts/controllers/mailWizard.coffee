@@ -21,11 +21,11 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
 
   $scope.hideNextButton = () ->
     thisStep = _getStep $state.current.name
-    (thisStep == $scope.steps.length-1 or rmapsMailTemplateService.isSent())
+    (thisStep == ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
 
   $scope.hideSendButton = () ->
     thisStep = _getStep $state.current.name
-    (thisStep != $scope.steps.length-1 or rmapsMailTemplateService.isSent())
+    (thisStep != ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
 
   $scope.hideProgress = () ->
     rmapsMailTemplateService.isSent()
