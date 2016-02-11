@@ -1,5 +1,5 @@
 stripeFactory = require 'stripe'
-{getAccountInfo} = require '../../service.externalAccounts'
+externalAccounts = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
 {PAYMENT_PLATFORM} = require '../../../config/config'
 plansService = require '../../service.plans'
@@ -70,7 +70,7 @@ initializePlans = (stripe) ->
 # TODO:       secret_test_api_key: ''
 # TODO:       secret_live_api_key: ''
 module.exports = do ->
-  getAccountInfo('stripe')
+  externalAccounts.getAccountInfo('stripe')
   .then ({other}) ->
     throw new CriticalError('Stripe API_KEYS intialization failed.') unless other
     API_KEYS = other
