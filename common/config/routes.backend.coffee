@@ -31,7 +31,6 @@ apiBaseEmail = "#{apiBase}/email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 apiBaseMemdump = "#{apiBase}/memdump"
-apiBaseFlamegraph = "#{apiBase}/flamegraph"
 apiBaseShell = "#{apiBase}/shell"
 
 module.exports =
@@ -226,9 +225,6 @@ module.exports =
   memdump:
     apiBase: apiBaseMemdump
     download: "#{apiBaseMemdump}/download"
-  flamegraph:
-    apiBase: apiBaseFlamegraph
-    flamegraph: apiBaseFlamegraph
   shell:
     apiBase: apiBaseShell
     shell: apiBaseShell
