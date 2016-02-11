@@ -30,6 +30,8 @@ mainBootstrapped = false
 _bootstrapMain = () ->
   if mainBootstrapped
     return
+  if !dbs.isEnabled()
+    throw new Error('database access is currently disabled')
   # then rewrite this module for its actual function instead of these bootstrappers
   for key,val of module.exports
     if key == 'buildRawTableQuery'

@@ -37,8 +37,8 @@ gulp.task 'backendIntegrationSpec', (done) ->
 gulp.task 'backendIntegrationDebugSpec', (done) ->
   runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
 
-gulp.task 'backendSpec', gulp.series('overrideDbCreds', 'backendUnitSpec', 'fixDbCreds', 'backendIntegrationSpec')
-gulp.task 'backendDebugSpec', gulp.series('overrideDbCreds', 'backendUnitDebugSpec', 'fixDbCreds', 'backendIntegrationDebugSpec')
+gulp.task 'backendSpec', gulp.series('disableDbs', 'backendUnitSpec', 'enableDbs', 'backendIntegrationSpec')
+gulp.task 'backendDebugSpec', gulp.series('disableDbs', 'backendUnitDebugSpec', 'enableDbs', 'backendIntegrationDebugSpec')
 
 gulp.task 'commonSpec', (done) ->
   runMocha 'spec/common/**/*spec*', undefined, done
