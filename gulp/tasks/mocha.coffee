@@ -1,7 +1,6 @@
 gulp = require 'gulp'
 mocha = require 'gulp-mocha'
 plumber = require 'gulp-plumber'
-env = require 'gulp-env'
 istanbul = require 'gulp-coffee-istanbul'
 paths = require '../../common/config/paths'
 logFile = require '../util/logFile'
