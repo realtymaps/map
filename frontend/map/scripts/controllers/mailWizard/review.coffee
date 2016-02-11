@@ -11,7 +11,6 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
     mailCampaign: {}
 
   setTemplObj = () ->
-    $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
     $scope.templObj =
       mailCampaign: rmapsMailTemplateService.getCampaign()
 
@@ -47,7 +46,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       return $q.when("0.00")
     rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
     .then (data) ->
-      $log.debug "getquote data: #{JSON.stringify(data)}"
+      $log.debug -> "getquote data: #{JSON.stringify(data)}"
       data.price
 
   $rootScope.registerScopeData () ->
@@ -56,8 +55,6 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       setTemplObj()
       $scope.category = rmapsMailTemplateService.getCategory()
       $scope.sentFlag = rmapsMailTemplateService.isSent()
-      $log.debug "mail sent? #{$scope.sentFlag}"
       getQuote()
       .then (response) ->
-        $log.debug "getquote then: #{response}"
         $scope.priceQuote = response
