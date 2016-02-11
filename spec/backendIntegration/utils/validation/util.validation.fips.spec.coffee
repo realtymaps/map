@@ -8,11 +8,6 @@ basePath = require '../../basePath'
 describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  if process.env.CIRCLECI
-    it "can't run on CircleCI because postgres-based trigram matching can't be mocked", () ->
-      #noop
-    return
-
   promiseIt 'should resolve to codes for counties that match the text exactly', () ->
     [
       expectResolve(validators.fips()(param, stateCode: 'DE', county: 'New Castle')).then (value) ->

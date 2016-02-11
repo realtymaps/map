@@ -4,14 +4,10 @@ Promise = require 'bluebird'
 gjv = require 'geojson-validation'
 mocks =
   map:
-    state: require('../fixtures/mapState')
-    filter: require('../fixtures/mapFilter')
+    state: require('../../fixtures/backend/mapState')
+    filter: require('../../fixtures/backend/mapFilterFilterSummary')()
 
 describe 'service.properties.parcels', ->
-  if process.env.CIRCLECI
-    it "can't run on CircleCI because it's an integration test that hits the db", () ->
-      #noop
-    return
 
   beforeEach ->
     @subject = svc

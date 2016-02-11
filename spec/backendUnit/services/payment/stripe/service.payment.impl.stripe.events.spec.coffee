@@ -20,7 +20,7 @@ mockAuthUser =
   cancel_email_hash: "terminated"
 
 
-jsonString = "../../../fixtures/services/stripe/:file.json"
+jsonString = "../../../../fixtures/backend/services/stripe/:file.json"
 
 describe "service.payment.impl.stripe.events", ->
 

@@ -8,11 +8,6 @@ basePath = require '../../basePath'
 describe 'utils/validation.validators.rm_property_id()'.ns().ns('Backend'), ->
   param = 'fake'
 
-  if process.env.CIRCLECI
-    it "can't run on CircleCI because postgres-based trigram matching can't be mocked", () ->
-      #noop
-    return
-
   promiseIt 'should resolve given a stateCode & county for fips lookup, a APN, and default 001', () ->
     [
       expectResolve(validators.rm_property_id()(param, stateCode: 'DE', county: 'New Castle', apn: '10001')).then (value) ->

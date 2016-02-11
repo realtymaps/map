@@ -1,16 +1,19 @@
 gulp = require 'gulp'
 mocha = require 'gulp-mocha'
 plumber = require 'gulp-plumber'
+env = require 'gulp-env'
 istanbul = require 'gulp-coffee-istanbul'
 paths = require '../../common/config/paths'
 logFile = require '../util/logFile'
 es = require 'event-stream'
 logger = require '../util/logger'
+require './dbDisable'
 
 require 'chai'
 require('chai').should()
 
 runMocha = (files, reporter = 'dot', done) ->
+
   gulp.src files, read: false
   # .pipe logFile(es)
   .pipe plumber()
@@ -22,11 +25,20 @@ runMocha = (files, reporter = 'dot', done) ->
     done()
     return process.exit(1)
 
-gulp.task 'backendSpec', (done) ->
-  runMocha ['spec/backend/**/*spec*'], undefined, done
+gulp.task 'backendUnitSpec', (done) ->
+  runMocha ['spec/backendUnit/**/*spec*'], undefined, done
 
-gulp.task 'backendDebugSpec', (done) ->
-  runMocha ['spec/backend/**/*spec*'], 'spec', done
+gulp.task 'backendUnitDebugSpec', (done) ->
+  runMocha ['spec/backendUnit/**/*spec*'], 'spec', done
+
+gulp.task 'backendIntegrationSpec', (done) ->
+  runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
+
+gulp.task 'backendIntegrationDebugSpec', (done) ->
+  runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
+
+gulp.task 'backendSpec', gulp.series('overrideDbCreds', 'backendUnitSpec', 'fixDbCreds', 'backendIntegrationSpec')
+gulp.task 'backendDebugSpec', gulp.series('overrideDbCreds', 'backendUnitDebugSpec', 'fixDbCreds', 'backendIntegrationDebugSpec')
 
 gulp.task 'commonSpec', (done) ->
   runMocha 'spec/common/**/*spec*', undefined, done
@@ -36,8 +48,6 @@ gulp.task 'gulpSpec', (done) ->
 
 gulp.task 'gulpDebugSpec', (done) ->
   runMocha "spec/gulp/**/*spec*", 'spec', done
-
-gulp.task 'mocha', gulp.series 'backendSpec'
 
 gulp.task 'coverFiles', ->
   gulp.src [paths.common, paths.backend].map (f) -> f + '*.coffee'

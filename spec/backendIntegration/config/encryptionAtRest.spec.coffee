@@ -4,11 +4,6 @@ basePath = require '../basePath'
 
 describe 'ENCRYPTION_AT_REST', () ->
 
-  if process.env.CIRCLECI
-    it "can't run on CircleCI because we don't have the encryption key there", () ->
-      #noop
-    return
-
   encryptor = require "#{basePath}/config/encryptor"
 
   it 'should decrypt to a known string', () ->
