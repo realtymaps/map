@@ -38,6 +38,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
     thisStep = _getStep $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return
+    $log.debug "_changeStep() going to #{newStep}"
     $state.go($state.get(newStep))
 
   $scope.nextStep = () ->
@@ -50,8 +51,8 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
   $scope.initMailTemplate = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      rmapsMailTemplateService.load $state.params.id
+      return rmapsMailTemplateService.load $state.params.id
     else
       campaign = rmapsMailTemplateService.getCampaign()
       $log.debug "Continuing with mail campaign #{campaign.id}"
-      $q.when campaign
+      return $q.when campaign
