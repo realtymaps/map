@@ -1,9 +1,0 @@
-#!/bin/bash
-set -e
-
-crap_opts="--nodejs,--crap"
-
-IFS=, <<< $crap_opts
-
-newOpts=$@
-echo $newOpts
