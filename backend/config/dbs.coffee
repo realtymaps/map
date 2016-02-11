@@ -12,6 +12,7 @@ connectedDbs =
 
 
 enabled = true
+disableMessage = null
 knexInUse = false
 plainClientCount = 0
 
@@ -56,7 +57,7 @@ shutdown = () ->
 
 getKnex = (dbName) ->
   if !enabled
-    throw new Error("database is disabled, can't get db client: #{dbName}")
+    throw new Error("database is disabled (#{disableMessage}), can't get db client: #{dbName}")
   knexInUse = true
   if !connectedDbs[dbName]?
     connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
@@ -65,7 +66,7 @@ getKnex = (dbName) ->
 
 getPlainClient = (dbName, handler) ->
   if !enabled
-    throw new Error("database is disabled, can't get plain db client")
+    throw new Error("database is disabled (#{disableMessage}), can't get plain db client")
   dbConfig = config.DBS[dbName.toUpperCase()]
   client = new pg.Client(dbConfig.connection)
   promiseQuery = Promise.promisify(client.query, client)
@@ -92,13 +93,14 @@ transaction = (dbName, queryCb, postCatchCb) ->
 enable = () ->
   enabled = true
 
-disable = () ->
+disable = (message) ->
   if knexInUse || plainClientCount
     inUse = Object.keys(_.omit(connectedDbs, 'pg'))
     if plainClientCount > 0
       inUse.push("plain:#{plainClientCount}")
     throw new Error("Can't disable database; some database clients already in use: (#{inUse.join(', ')})")
   enabled = false
+  disableMessage = message
 
 
 module.exports =
@@ -106,6 +108,6 @@ module.exports =
   get: getKnex
   getPlainClient: getPlainClient
   transaction: transaction
-  isEnabled: () -> enabled
+  isDisabled: () -> if !enabled then disableMessage else false
   enable: enable
   disable: disable

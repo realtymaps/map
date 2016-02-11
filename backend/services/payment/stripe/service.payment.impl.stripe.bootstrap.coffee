@@ -52,7 +52,7 @@ initializePlan = (stripe, planName, settings) ->
   stripe.plans.retrieve planName
   .then () ->
     logger.debug "Plan: #{planName} already exists"
-    #TODO: add updating plan vai differences in metadata
+    #TODO: add updating plan via differences in metadata
   .catch () ->
     createPlan(stripe, planName, settings)
 
@@ -64,15 +64,15 @@ initializePlans = (stripe) ->
   #don't wait on plan init kick off rest of api
   stripe
 
-module.exports = do ->
-  promise = if process.env.CIRCLECI then Promise.resolve(
-    other:
-      secret_test_api_key: ''
-      secret_live_api_key: ''
-    ) else getAccountInfo 'stripe'
 
-  promise.then ({other}) ->
-    throw new CriticalError('Stipe API_KEYS intialization failed.') unless other
+# TODO: use rewire in specs to return the following during unit tests:
+# TODO:     other:
+# TODO:       secret_test_api_key: ''
+# TODO:       secret_live_api_key: ''
+module.exports = do ->
+  getAccountInfo('stripe')
+  .then ({other}) ->
+    throw new CriticalError('Stripe API_KEYS intialization failed.') unless other
     API_KEYS = other
     apiKeyNameStr = if PAYMENT_PLATFORM.LIVE_MODE then 'live' else 'test'
     keyToUse = "secret_#{apiKeyNameStr}_api_key"

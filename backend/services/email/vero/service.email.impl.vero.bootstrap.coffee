@@ -1,16 +1,16 @@
 Promise = require 'bluebird'
-{getAccountInfo} = require '../../service.externalAccounts'
+externalAccounts = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
 exitCodes = require '../../../enums/enum.exitCodes'
 logger = require('../../../config/logger').spawn('vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 veroFactory = require 'vero-promise'
 
+# TODO: use rewire in specs to return {other: auth_token: ''} during unit tests
 VeroBootstrap = do () ->
   Promise.try () ->
-    promise = if process.env.CIRCLECI then Promise.resolve(other: auth_token: '') else getAccountInfo 'vero'
-
-    promise.then ({other}) ->
+    externalAccounts.getAccountInfo('vero')
+    .then ({other}) ->
       API_KEYS = other
       throw new CriticalError('vero API_KEYS intialization failed.') unless other
       vero = veroFactory(API_KEYS.auth_token)
