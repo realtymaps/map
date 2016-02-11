@@ -10,22 +10,21 @@ LobErrors = require '../errors/util.errors.lob'
 {isCausedBy} = require '../errors/util.error.partiallyHandledError'
 logger = require('../../config/logger').spawn('task:lob')
 
+LOB_MAX_RETRIES = 10
+
 #
 # This task identifies letters that were sent to LOB but we have no response/status data saved
 #   Such a scenario could arise due to a network timeout
 #
 updateLetters = (subtask) ->
-  tables.mail.letters()
+  query = tables.mail.letters()
+  query
   .select(
-    [
-      'id'
-      "options->'metadata'->'uuid' as uuid"
-      'date(rm_inserted_time) as created_date'
-      'lob_response'
-    ]
+    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date")
   )
   .whereNull('lob_response')
   .where(status: 'error-transient')
+  .where('retries', '<=', LOB_MAX_RETRIES)
   .then (letters) ->
     Promise.map letters, (letter) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_getLetter', letter, true

@@ -136,7 +136,6 @@ findCampaigns = (subtask, cb) ->
     ]
   )
   .where status: 'sending'
-  .where 'rm_modified_time', '<=', moment.utc().subtract(CAMPAIGN_BILLING_DELAY, 'day').format('YYYYMMDD')
 
   .then (campaigns) ->
 
@@ -147,7 +146,7 @@ findCampaigns = (subtask, cb) ->
       readyDate = moment(campaign.stripe_charge.created, 'X').add(CAMPAIGN_BILLING_DELAY, 'days')
       if not readyDate.isBefore(moment())
         logger.debug "Campaign #{campaign.id} will be ignored until #{readyDate.format()}"
-        # return
+        return
 
       tables.mail.letters()
       .select('id')
