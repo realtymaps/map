@@ -15,7 +15,7 @@ app.service 'rmapsLobService', ($log, $http) ->
 
   getQuote: (lobData) ->
     handlePost(quoteUrl, lobData, alerts:false).then (response) ->
-      $log.debug "getQuote response: #{JSON.stringify(response)}"
+      $log.debug () -> "getQuote response: #{JSON.stringify(response)}"
       response.data
 
   submit: (lobData) ->
