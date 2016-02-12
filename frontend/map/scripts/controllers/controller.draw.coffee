@@ -109,7 +109,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsProjectsService, rma
 
     _commonPostDrawActions = () ->
       if $scope.Toggles.propertiesInShapes
-        $rootScope.$emit rmapsEventConstants.map.mainMap.redraw
+        $rootScope.$emit rmapsEventConstants.map.mainMap.reDraw
 
     #see https://github.com/michaelguild13/Leaflet.draw#events
     _handle =
