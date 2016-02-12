@@ -46,8 +46,9 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
         $log.debug "Confirmation result: #{result}"
         if result
           rmapsMailTemplateService.setTemplateType(templateType)
+          $scope.campaign = rmapsMailTemplateService.getCampaign()
           $scope.oldTemplateType = $scope.campaign.templateType
-    
+
     else
       rmapsMailTemplateService.setTemplateType(templateType)
 
