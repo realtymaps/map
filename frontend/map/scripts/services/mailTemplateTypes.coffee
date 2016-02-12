@@ -10,29 +10,23 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'tempLetter02':
-      content: ''
-      name: "Basic Letter #2"
+    'introductionLetter':
+      content: require('../../html/includes/mail/introduction-letter-template.jade')()
+      name: "Introduction Letter"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'tempLetter03':
-      content: ''
-      name: "Basic Letter #3"
+    'prospectingLetter':
+      content: require('../../html/includes/mail/prospecting-letter-template.jade')()
+      name: "Prospecting Letter"
       thumb: "/assets/base/template_img.png"
       category: 'letter'
 
-    'tempPostcard01':
-      content: ''
-      name: "Basic Postcard #1"
+    'neighborhoodFarmingLetter':
+      content: require('../../html/includes/mail/neighborhood-farming-letter-template.jade')()
+      name: "Neighborhood Farming Letter"
       thumb: "/assets/base/template_img.png"
-      category: 'postcard'
-
-    'tempPostcard02':
-      content: ''
-      name: "Basic Postcard #2"
-      thumb: "/assets/base/template_img.png"
-      category: 'postcard'
+      category: 'letter'
 
 
   _getTypeNames = () ->
@@ -78,6 +72,9 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
 
   getHtml: (type) ->
     _meta[type].content
+
+  getCategoryFromType: (type) ->
+    _meta[type].category
 
   getDefaultHtml: () ->
     _meta['basicLetter'].content

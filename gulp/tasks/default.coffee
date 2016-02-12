@@ -19,6 +19,8 @@ gulp = require 'gulp'
 
 gulp.task 'frontendAssets', gulp.series 'angular', 'angularAdmin', 'otherAssets'
 
+gulp.task 'frontendAssetsWatch', gulp.series 'frontendAssets', 'watch_all_front'
+
 gulp.task 'developNoSpec', gulp.series 'clean', gulp.parallel('frontendAssets', 'express'), 'watch'
 
 #note specs must come after watch since browserifyWatch also builds scripts

@@ -182,7 +182,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         scope.convertMacrosInSpan textNode, offset, scope.macro
 
       whenTyped: (e) ->
-        $log.debug "whenTyped, event:\n#{JSON.stringify e}"
+        $log.debug -> "whenTyped, event:\n#{JSON.stringify e}"
         sel = rangy.getSelection()
         # while typing, filter for macros and wrap if necessary
         scope.macroFilter(sel)

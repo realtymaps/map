@@ -143,7 +143,7 @@ browserifyTask = (app, watch = false) ->
       , 1000
 
       # Useful for debugging file watch issues
-      require('../util/bundleLogger').logEvents(watcher)
+      # require('../util/bundleLogger').logEvents(watcher)
 
       b = watchify b
 

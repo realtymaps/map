@@ -1,6 +1,6 @@
 hirefire = require('./routes/route.hirefire')
 jobQueue = require('./utils/util.jobQueue')
-_ = require('lodash')
+logger = require('./config/logger').spawn('hirefire:simulation')
 
 
 _intervalHandler = null
@@ -10,14 +10,14 @@ runHirefire = () ->
   hirefire.info()
   .then (needs) ->
     if needs?
-      console.log()
-      console.log(new Date())
+      logger.info()
+      logger.info(new Date())
       for queue in needs
-        console.log("    #{queue.name}: #{queue.quantity}")
+        logger.info("    #{queue.name}: #{queue.quantity}")
 
 repeatHirefire = (period=60000) ->
   _intervalHandler = setInterval(runHirefire, period)
-  setImmediate console.log
+  setImmediate logger.info
   runHirefire()
   return undefined
 

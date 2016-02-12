@@ -10,3 +10,4 @@ module.exports = Promise.try () ->
     events: require('./service.payment.impl.stripe.events')(stripe)
   .catch (err) ->
     logger.error 'backend stripe is bootsraped failed'
+    logger.error err.stack || err

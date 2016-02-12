@@ -3,12 +3,12 @@
     .container
       form
         div.row.equal-height
-          div.col-md-6
-            .row(style="text-align: center")
+          div.col-md-9
+            .row
               .toolGroup
-                button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
-                button.btn.btn-success.miscTool(ng-click="saveContent()") Save
                 button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
+                button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!
+                button.btn.btn-default.miscTool(ng-click="saveContent()" ng-class="{'btn-inactive': saveStatus == 'saved', 'btn-error': saveStatus == 'error'}") {{saveButtonText[saveStatus]}}
                 text-angular-toolbar(name="miscToolbar" ta-toolbar-group-class="miscTools" ta-toolbar-button-class="btn btn-default miscTool"
                   ta-toolbar="[['redo','undo']]")
 
@@ -22,7 +22,7 @@
                       rmaps-macro-helper
                       rmaps-macro-event-helper
                       name="wysiwyg"
-                      ta-default-wrap="span"
+                      ta-default-wrap="p"
                       ta-text-editor-class="ta-letter-wrapper"
                       ta-html-editor-setup="htmlEditorSetup()"
                       ta-text-editor-setup="textEditorSetup()"
@@ -30,7 +30,7 @@
                       ta-target-toolbars="fontSizeToolbar")
                       //- ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 
-          div.col-md-6
+          div.col-md-3
             tabset(justified="true")
               tab(heading="Text Options" active="true")
                 div.edit-template-design
@@ -40,23 +40,23 @@
                   //-   text-angular-toolbar(name="fontTypeToolbar" ta-toolbar-group-class="fontTypeTools"
                   //-     ta-toolbar="[['fontHelvetica','fontTimesNewRoman','fontGillSans','fontGeorgia']]")
 
-                  div.form-section
-                    h4
-                      | Font Size
-                    text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group"
-                      ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
+                  //- div.form-section
+                  //-   h4
+                  //-     | Font Size
+                  //-   text-angular-toolbar(name="fontSizeToolbar" ta-toolbar-group-class="btn-group"
+                  //-     ta-toolbar="[['fontSize12','fontSize14','fontSize16','fontSize18','fontSize20']]")
 
-                  div.form-section
-                    h4
-                      | Macros
-                    div(ng-repeat="macro in macros" rmaps-draggable="macro")
-                      label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
+                  //- div.form-section
+                  //-   h4
+                  //-     | Macros
+                  //-   div(ng-repeat="macro in macros" rmaps-draggable="macro")
+                  //-     label.btn.btn-primary(ng-mousedown="setMacro(macro)") {{macro}}
 
 
                   //- div.form-section
                   //-   h4
                   //-     | Font Color
-                  //-   text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools" 
+                  //-   text-angular-toolbar(name="colorToolbar" ta-toolbar-group-class="colorTools"
                   //-     ta-toolbar="[['textBlack','textBlue','textGreen','textRed','textYellow','textWhite']]")
 
                   //- div.form-section
