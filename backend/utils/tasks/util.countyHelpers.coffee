@@ -236,6 +236,7 @@ finalizeData = (subtask, id) ->
           for field in saleFields
             tax[field] = lastSale[field]
         tax.shared_groups.sale = []
+        tax.subscriber_groups.deedHistory = []
         for deedInfo in deedEntries
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
