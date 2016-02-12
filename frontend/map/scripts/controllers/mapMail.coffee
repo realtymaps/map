@@ -3,7 +3,6 @@ module.exports = app
 
 app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPrincipalService, rmapsPropertiesService, rmapsMailTemplateService) ->
   $log = $log.spawn 'mail:rmapsMapMailCtrl'
-  $log.debug 'rmapsMailWizardCtrl'
 
   $scope.addMail = (maybeParcel) ->
     #profile = rmapsPrincipalService.getCurrentProfile()
