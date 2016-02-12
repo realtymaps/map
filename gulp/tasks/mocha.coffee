@@ -31,10 +31,18 @@ gulp.task 'backendUnitDebugSpec', (done) ->
   runMocha ['spec/backendUnit/**/*spec*'], 'spec', done
 
 gulp.task 'backendIntegrationSpec', (done) ->
-  runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
+  if process.env.CIRCLECI
+    logger.debug("Skipping integration tests (CIRCLECI=#{process.env.CIRCLECI})")
+    done()
+  else
+    runMocha ['spec/backendIntegration/**/*spec*'], undefined, done
 
 gulp.task 'backendIntegrationDebugSpec', (done) ->
-  runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
+  if process.env.CIRCLECI
+    logger.debug("Skipping integration tests (CIRCLECI=#{process.env.CIRCLECI})")
+    done()
+  else
+    runMocha ['spec/backendIntegration/**/*spec*'], 'spec', done
 
 gulp.task 'backendSpec', gulp.series('unitTestPrep', 'backendUnitSpec', 'unitTestTeardown', 'backendIntegrationSpec')
 gulp.task 'backendDebugSpec', gulp.series('unitTestPrep', 'backendUnitDebugSpec', 'unitTestTeardown', 'backendIntegrationDebugSpec')
