@@ -1,8 +1,7 @@
 {should, expect}= require('chai')
 should()
 sinon = require 'sinon'
-basePath = require '../../basePath'
-subject = require "#{basePath}/utils/tasks/task.lob"
+subject = require "../../../../backend/utils/tasks/task.lob"
 Promise = require 'bluebird'
 
 findLettersTest = () ->

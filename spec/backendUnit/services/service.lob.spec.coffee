@@ -14,11 +14,11 @@ mockAuthUser =
   email: "blackhole@realtymaps.com"
   stripe_customer_id: 'cus_7r3jpOU0t3LQ9k'
 
-mockCampaign = require '../fixtures/services/lob/mail.campaign.json'
-mockLetter = require '../fixtures/services/lob/mail.letter.json'
-mockLobLetter = require '../fixtures/services/lob/lob.letter.singlePage.json'
-mockCustomer = require '../fixtures/services/stripe/customer.subscription.verified.json'
-mockCharge = require '../fixtures/services/stripe/charge.uncaptured.json'
+mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
+mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
+mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
+mockCharge = require '../../fixtures/backend/services/stripe/charge.uncaptured.json'
 
 describe "service.lob", ->
 
@@ -32,10 +32,12 @@ describe "service.lob", ->
       auth:
         user: () -> user
       mail:
-        campaign: () => campaigns
-        letters:  () => letters
+        campaign: () -> campaigns
+        letters:  () -> letters
 
     svc.__set__ 'tables', @tables
+
+    svc.__set__ 'dbs', transaction: (name, cb) -> cb()
 
     @paymentSvc = customers:
       get: -> Promise.try -> mockCustomer
@@ -52,7 +54,7 @@ describe "service.lob", ->
 
   describe 'sending valid campaign', ->
 
-    this.timeout(10000)
+    # this.timeout(10000)
 
     it 'should update status and create letters', (done) ->
 
@@ -62,10 +64,10 @@ describe "service.lob", ->
         @tables.auth.user().selectSpy.callCount.should.equal 1
         @tables.auth.user().whereSpy.args[0][0].should.deep.equal id: mockAuthUser.id
 
+        whereSpy = @tables.mail.campaign().whereSpy
+
         @tables.mail.campaign().selectSpy.callCount.should.equal 1
         @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
-
-        @tables.mail.campaign().updateSpy.callCount.should.equal 1
 
         @tables.mail.campaign().updateSpy.callCount.should.equal 1
         @tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
