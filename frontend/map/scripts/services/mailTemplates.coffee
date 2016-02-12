@@ -139,7 +139,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
       $log.debug "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
       mailCampaign = campaigns[0] if campaigns.length
 
-  save: (options) ->
+  save: () ->
     _getSenderData()
     .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
@@ -154,8 +154,6 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
-        if !options?.silent?
-          $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
 
   getLobData: () ->
     lobData =
