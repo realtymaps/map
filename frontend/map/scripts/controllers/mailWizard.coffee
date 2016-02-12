@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rmapsMailTemplateService) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $modal, rmapsMailTemplateService, rmapsLobService) ->
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -12,7 +12,23 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
     'senderInfo'
     'selectTemplate'
     'editTemplate'
+    'review'
   ]
+
+  $scope.hideBackButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == 0 or rmapsMailTemplateService.isSent())
+
+  $scope.hideNextButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideSendButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep != ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideProgress = () ->
+    rmapsMailTemplateService.isSent()
 
   _getStep = (name) ->
     $scope.steps.indexOf name

@@ -106,6 +106,11 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   _getCategory = () ->
     rmapsMailTemplateTypeService.getCategoryFromType(mailCampaign.template_type)
 
+  _setStatus = (status) ->
+    mailCampaign.status = status
+
+  _isSent = () ->
+    mailCampaign.status == 'sent'
 
 ##### PUBLIC
   create: create
@@ -120,6 +125,9 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   setContent: _setContent
   getCampaign: _getCampaign
   setCampaign: _setCampaign
+  setStatus: _setStatus
+
+  isSent: _isSent
 
   openPreview: () ->
     preview = $window.open "", "_blank"
@@ -131,7 +139,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
       $log.debug "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
       mailCampaign = campaigns[0] if campaigns.length
 
-  save: () ->
+  save: (options) ->
     _getSenderData()
     .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
@@ -146,7 +154,18 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
-        $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+        if !options?.silent?
+          $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+
+  getLobData: () ->
+    lobData =
+      campaign: _getCampaign()
+      file: _createLobHtml()
+      macros: {}
+      recipients: _getLobRecipientData()
+      from: _getLobSenderData()
+
+
 
   quote: () ->
     $modal.open
@@ -159,6 +178,6 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         lobData: ->
           campaign: _getCampaign()
           file: _createLobHtml()
-          macros: name: 'Justin'
+          macros: {}
           recipients: _getLobRecipientData()
           from: _getLobSenderData()

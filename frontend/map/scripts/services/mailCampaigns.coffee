@@ -3,7 +3,7 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
 app.service 'rmapsMailCampaignService', ($log, $http) ->
-  $log = $log.spawn 'frontend:mail:mailCampaignService'
+  $log = $log.spawn 'mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
   get: (query) ->

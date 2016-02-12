@@ -2,7 +2,7 @@ externalAccounts = require '../services/service.externalAccounts'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:lob')
 _ = require 'lodash'
 config = require '../config/config'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
@@ -76,7 +76,7 @@ createLetter = (letter) ->
     if config.ENV != 'production'
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
 
-    logger.debug -> "#{JSON.stringify letter, null, 2}"
+    logger.debug -> "createLetter() #{JSON.stringify letter, null, 2}"
     lob.live.letters.create _.pick letter, LOB_LETTER_FIELDS
 
     .catch isUnhandled, handleError('live')
@@ -88,7 +88,7 @@ createLetterTest = (letter) ->
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
 
-    # logger.debug -> "#{JSON.stringify letter, null, 2}"
+    logger.debug () -> "createLetterTest() #{JSON.stringify letter, null, 2}"
     lob.test.letters.create _.pick(letter, LOB_LETTER_FIELDS)
 
     .catch isUnhandled, handleError('test')
