@@ -15,7 +15,7 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTempla
       rmapsLobService.getQuote(rmapsMailTemplateService.getLobData()).then (response) ->
       #rmapsLobService.submit(rmapsMailTemplateService.getLobData()).success (response) ->
         rmapsMailTemplateService.setStatus 'sent'
-        rmapsMailTemplateService.save(silent: true)
+        rmapsMailTemplateService.save()
         .then () ->
           #$rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" submitted!", type: 'rm-success' }
           $scope.bodyMessage = "Mail campaign \"#{rmapsMailTemplateService.getCampaign().name}\" submitted!"
