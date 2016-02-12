@@ -1,6 +1,7 @@
 logger = require '../config/logger'
 dbs = require '../config/dbs'
 clone = require 'clone'
+knex = require 'knex'
 
 
 _buildQuery = (db, tableName) ->
@@ -30,6 +31,7 @@ mainBootstrapped = false
 _bootstrapMain = () ->
   if mainBootstrapped
     return
+
   # then rewrite this module for its actual function instead of these bootstrappers
   for key,val of module.exports
     if key == 'buildRawTableQuery'
@@ -41,6 +43,8 @@ _buildQueryBootstrapper = (groupName, id, tableName) ->
   # we need the bootstrapper to act and look the same as the query builder would -- so it will connect to the db,
   # rewrite itself out of the module, and then pass through to do whatever is expected
   bootstrapper = (args...) ->
+    if dbs.isDisabled()
+      return _buildQuery(knex(client: 'pg'), tableName)(args...)
     _bootstrapMain()
     return module.exports[groupName][id](args...)
   bootstrapper.tableName = tableName
