@@ -45,10 +45,11 @@ describe "service.lob", ->
 
     svc.__set__ 'paymentSvc', @paymentSvc
 
+    svc.__set__ 'externalAccounts', getAccountInfo: Promise.try ->
     lobSvc = letters:
       create: -> Promise.try -> mockLobLetter
 
-    svc.__set__ 'lobPromise', Promise.try ->
+    svc.__set__ 'lobPromise', -> Promise.try ->
       test: lobSvc
       live: lobSvc
 

@@ -47,7 +47,7 @@ handleError = (env) -> (err) ->
   else if err.status_code == 500
     throw new LobErrors.LobServerError(lobError, msg)
 
-lobPromise = Promise.try () ->
+lobPromise = () ->
   externalAccounts.getAccountInfo('lob')
   .then (accountInfo) ->
     test = new LobFactory(accountInfo.other.test_api_key)
@@ -67,7 +67,7 @@ _getAddress = (r) ->
   address_zip: r.address_zip ? r.zip ? ''
 
 createLetter = (letter) ->
-  lobPromise
+  lobPromise()
   .then (lob) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
@@ -82,7 +82,7 @@ createLetter = (letter) ->
     .catch isUnhandled, handleError('live')
 
 createLetterTest = (letter) ->
-  lobPromise
+  lobPromise()
   .then (lob) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
@@ -223,7 +223,7 @@ queueLetters = (campaign, tx) ->
         sender_zip: address_from.address_zip
 
 getPriceQuote = (userId, data) ->
-  lobPromise
+  lobPromise()
   .then (lob) ->
     throw new Error("recipients must be an array") unless _.isArray data?.recipients
     Promise.map data.recipients, (recipient) ->
