@@ -24,7 +24,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $scope, $log, rmapsPropert
 
       $scope.property = _.indexBy data, 'property_address'
       $scope.owner = _.indexBy data, 'owner_address'
-      $scope.propertyAndOwner = _.values _.defaults $scope.property, $scope.owner
+      $scope.propertyAndOwner = _.values _.defaults _.clone($scope.property), $scope.owner
       $scope.property = _.values $scope.property
       $scope.owner = _.values $scope.owner
 

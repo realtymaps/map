@@ -16,7 +16,7 @@ class PartiallyHandledError extends VError
 module.exports =
   PartiallyHandledError: PartiallyHandledError
   isUnhandled: (err) ->
-    !(err instanceof PartiallyHandledError)
+    !err? || !(err instanceof PartiallyHandledError)
   isCausedBy: (errorType, _err) ->
     check = (err) ->
       cause = err

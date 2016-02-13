@@ -8,6 +8,8 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
   rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
   rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
 
+  $log = $log.spawn("map:rmapsResultsFormatterService")
+
   leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
   limits = rmapsMainOptions.map
 
@@ -70,7 +72,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         doDeleteLastTime: false
 
       @mapCtrl.scope.$watch 'map.markers.filterSummary', (newVal, oldVal) =>
-        $log.debug 'resultsFormatter - watch filterSummary'
+        $log.debug "resultsFormatter - watch filterSummary. New results? #{newVal != oldVal}"
 
         return if newVal == oldVal
         @lastSummaryIndex = 0
@@ -79,7 +81,8 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         @loadMore()
 
     getResultsArray: =>
-      _.values @mapCtrl.scope.results
+      results = _.values @mapCtrl.scope.results
+      results
 
     ###
     Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
@@ -119,12 +122,15 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
       resultCenter.zoom = 20 if @mapCtrl.scope.satMap?
 
-    loadMore: =>
+    loadMore: (cancel = true) =>
       #debugging
       @postRepeat.lastTime = new Date() if @postRepeat
       #end debugging
       if @loader
-        $timeout.cancel @loader
+        if cancel
+          $timeout.cancel @loader
+        else
+          return
       @loader = $timeout @throttledLoadMore, 20
 
     getAmountToLoad: () ->

@@ -1,8 +1,7 @@
-###global _:true, L:true ###
+###global _###
 app = require '../app.coffee'
 template = do require '../../html/views/templates/modals/neighbourhood.jade'
 mapId = 'mainMap'
-originator = 'map'
 
 #TODO: rename to rmapsProjectNeighbourhoods{Whatever}....
 
@@ -95,11 +94,6 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
 
   $rootScope.$onRootScope rmapsEventConstants.neighbourhoods, ->
     getAll()
-
-  $scope.$on '$destroy', ->
-    if markersUnSubs? and _.isArray markersUnSubs
-      leafletIterators.each markersUnSubs, (unsub) ->
-        unsub()
 
   $scope.neighbourhoodListToggled = (isOpen) ->
     #originally was not going to put this into state but it is needed for service.properties

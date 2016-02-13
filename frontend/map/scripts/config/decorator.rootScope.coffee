@@ -1,5 +1,4 @@
 app = require '../app.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 app.config(($provide) ->
   #recommended way of dealing with clean up of angular communication channels

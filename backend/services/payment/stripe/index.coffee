@@ -1,6 +1,6 @@
 Promise = require 'bluebird'
 stripeBootstrap = require './service.payment.impl.stripe.bootstrap'
-logger = require '../../../config/logger'
+logger = (require '../../../config/logger').spawn('stripe')
 
 module.exports = Promise.try () ->
   stripeBootstrap

@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('route:lob')
 ExpressResponse = require '../utils/util.expressResponse'
 commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
