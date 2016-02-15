@@ -40,8 +40,8 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       result?.savedDetails?.isFavorite == true
 
     getCurrentOwnersTitle: (result) =>
-      title = 'result-property-hovered'
-      if @hasMultipleOwners(result)
+      title = result?.owner_title
+      if title and @hasMultipleOwners(result)
         title += 's'
       title
 

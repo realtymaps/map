@@ -1,7 +1,7 @@
 include ../mixins/property/_propertyButtons.jade
 include ../../../../common/html/includes/mixins/_spinnerMixin.jade
 
-.desktop-only
+.desktop-only(ng-show="false")
   .navbar-below.detail-container#results-slide(ng-show="Toggles.showDetails")
       .tray-close-light#detail-close(ng-click="Toggles.toggleDetails()" ng-cloak)
           i.centered.fa.fa-chevron-right.fa-2x
