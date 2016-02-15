@@ -3,11 +3,29 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
     span.icon.icon-add
   ul.dropdown-menu.btnblock
     li
-      button.btn.btn-transparent.add-project(popover-placement="right" popover-trigger="mouseenter" popover="Add Project" ng-controller="rmapsMapProjectsCtrl" ng-click="addProject()")
-        span.icon.icon-add_project
+      button.btn.btn-transparent.add-project(
+        popover-placement="right"
+        popover-trigger="mouseenter"
+        popover="Add Project"
+        ng-controller="rmapsMapProjectsCtrl"
+        ng-click="addProject()")
+          span.icon.icon-add_project
     li
-      button.btn.btn-transparent.add-note(popover-placement="right" popover-trigger="mouseenter" popover="Add Note" ng-click="Toggles.enableNoteTap()")
-        span.icon.icon-add_note
+      button.btn.btn-transparent.add-note(
+        popover-placement="right"
+        popover-trigger="mouseenter"
+        popover="Add Note"
+        ng-click="Toggles.enableNoteTap()")
+          span.icon.icon-add_note
     li
       button.btn.btn-transparent.add-mail(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
         span.icon.icon-send_email
+    li
+      button(
+        ng-controller="rmapsNeighbourhoodsModalCtrl"
+        class="btn btn-transparent add-neighbour"
+        popover-placement="top"
+        popover-trigger="mouseenter"
+        popover="Add Neighbour"
+        ng-click="Toggles.enableNeighbourhoodTap()")
+          span.icon.icon-add_neighbourhood
