@@ -1,9 +1,11 @@
 gulp = require 'gulp'
-dbs = require '../../backend/config/dbs'
 Promise = require 'bluebird'
 universalMock = require '../../spec/specUtils/universalMock'
 
+
 gulp.task 'unitTestPrep', (done) ->
+  #delete require.cache[require.resolve('../../backend/config/dbs')]
+  dbs = require '../../backend/config/dbs'
   dbs.disable('unit tests')
 
   externalAccounts = require "../../backend/services/service.externalAccounts"
@@ -37,6 +39,7 @@ gulp.task 'unitTestPrep', (done) ->
   done()
 
 gulp.task 'unitTestTeardown', (done) ->
+  dbs = require '../../backend/config/dbs'
   dbs.enable()
   universalMock.resetAll()
   done()

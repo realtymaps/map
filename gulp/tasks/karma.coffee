@@ -48,7 +48,8 @@ gulp.task 'karmaChrome', (done) ->
 gulp.task 'karma', (done) ->
   karmaKick (code) ->
     done(code)
-    process.exit code #hack this should not need to be here
+    if code
+      process.exit code #hack this should not need to be here
   ,
     _.extend {}, opts,
       reporters: ['dots', 'junit']
