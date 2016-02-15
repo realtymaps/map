@@ -1,4 +1,5 @@
 gulp = require 'gulp'
+
 require './angular'
 require './otherAssets'
 require './karma'
@@ -10,7 +11,7 @@ gulp.task 'spec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'fronte
 gulp.task 'rebuildSpec', gulp.series(
   gulp.parallel('commonSpec', 'backendSpec')
   , gulp.parallel('otherAssets', 'browserifyAll')
-  , 'gulpSpec', 'frontendSpec')
+  , 'gulpSpec', 'frontendSpec', () -> process.exit(0))
 
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 
