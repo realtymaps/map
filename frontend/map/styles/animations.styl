@@ -3,26 +3,26 @@
  */
 
 // Create the browser specific animation entries
-make-animation(args)
+$fnMakeAnimation(args)
   -webkit-animation args
   -moz-animation args
   animation args
 
-make-transition(args)
-  transition all 250ms ease 0ms
-  -webkit-transition all 250ms ease 0ms
+$fnMakeTransition(args)
+  transition args
+  -webkit-transition args
 
 /* Global Transitions */
 .global-transition
-  //make-transition(all 250ms ease 0ms)
+  //$fnMakeTransition(all 250ms ease 0ms)
 
 //.page.ng-leave
 //  z-index:8888
-//  make-animation(keepStill 0.5s both ease-in)
+//  $fnMakeAnimation(keepStill 0.5s both ease-in)
 //
 //.page.ng-enter
 //  z-index:9999
-//  make-animation(slideInUp 0.5s both ease-in)
+//  $fnMakeAnimation(slideInUp 0.5s both ease-in)
 
 
 /* ANIMATIONS (from common.styl) */
