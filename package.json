@@ -141,7 +141,7 @@
     "karma-html2js-preprocessor": "0.x",
     "karma-jasmine": "0.x",
     "karma-junit-reporter": "^0.3.8",
-    "karma-kickoff": "0.0.1",
+    "karma-kickoff": "0.0.x",
     "karma-mocha": "0.x",
     "karma-mocha-reporter": "^0.3.1",
     "karma-phantomjs-launcher": "0.x",

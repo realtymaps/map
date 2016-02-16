@@ -1,9 +1,10 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
+modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
@@ -26,7 +27,22 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, rmapsMailTe
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
     $log.debug "templateType chosen: #{templateType}"
     rmapsMailTemplateService.setTemplateType(templateType)
-    $scope.$parent.nextStep()
+    $scope.campaign = rmapsMailTemplateService.getCampaign()
+
+  $scope.previewTemplate = (template) ->
+    modalInstance = $modal.open
+      template: modalTemplate
+      controller: 'rmapsMailTemplatePreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          content: rmapsMailTemplateTypeService.getHtml(template.type)
+          category: template.category
+          title: template.name
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
+    .then () ->
+      $scope.campaign = rmapsMailTemplateService.getCampaign()

@@ -49,7 +49,7 @@ class SqlMock
 
     if @options.dbFn?
       @_svc = @options.dbFn
-      @logger.debug () -> "dbFn set: #{@_svc.tableName}"
+      @logger.debug () => "dbFn set: #{@_svc.tableName}"
 
     # dynamic instance hooks for the mock sql calls
     @[@groupName] = @
@@ -96,7 +96,7 @@ class SqlMock
   getResult: ->
     if @results.length
       ret = @results.pop()
-      @logger.debug () -> "sending result, leaving #{@results.length} results in queue"
+      @logger.debug () => "sending result, leaving #{@results?.length} results in queue"
       return ret
 
   setError: (error) ->
@@ -115,8 +115,8 @@ class SqlMock
       @logger.debug "hooking dbs.get('main') for service"
       @_svc = dbs.get('main')
     else
-      @logger.debug () -> "hooking tables.#{@groupName}.#{@tableHandle} for service"
-      @_svc = tables[@groupName][@tableHandle] unless @_svc
+      @logger.debug () => "hooking tables.#{@groupName}.#{@tableHandle} for service"
+      @_svc ?= tables[@groupName][@tableHandle]
       @tableName = @_svc.tableName or @tableHandle
       @_svc = @_svc()
     @_svc
@@ -148,8 +148,9 @@ class SqlMock
   then: (handler) ->
     if @error?
       return Promise.reject(@error)
-    @logger.debug () -> "resolving tables.#{@groupName}.#{@tableHandle} with #{@result}"
-    Promise.resolve(@getResult()).then handler
+    result = @getResult()
+    @logger.debug () => "resolving tables.#{@groupName}.#{@tableHandle} with #{result}"
+    Promise.resolve(result).then handler
 
   catch: (predicate, handler) ->
     if @error?
@@ -158,15 +159,16 @@ class SqlMock
         handler = predicate
         predicate = undefined
 
-      @logger.debug.cyan () -> "rejecting tables.#{@groupName}.#{@tableHandle} with #{@error}"
+      @logger.debug.cyan () => "rejecting tables.#{@groupName}.#{@tableHandle} with #{@error}"
 
       if predicate?
         return Promise.reject(@error).catch predicate, handler
       else
         return Promise.reject(@error).catch handler
 
-    @logger.debug () -> "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{@result}"
-    return Promise.resolve(@getResult())
+    result = @getResult()
+    @logger.debug () => "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{result}"
+    return Promise.resolve(result)
 
   toString: () ->
     @_quickQuery().toString()
@@ -183,13 +185,13 @@ SqlMock.sqlMock = () ->
 
 _sqlFns.forEach (name) ->
   SqlMock::[name] = ->
-    @logger.debug () -> "called #{@tableHandle} #{name}"
+    @logger.debug () => "called #{@tableHandle} #{name}"
 
     @[name + 'Spy'](arguments...)
-    @logger.debug () -> "called #{@tableHandle} #{name}Spy"
+    @logger.debug () => "called #{@tableHandle} #{name}Spy"
 
     @_appendArgChain(name, arguments)
-    @logger.debug () -> "appended #{@tableHandle} #{name} to chain"
+    @logger.debug () => "appended #{@tableHandle} #{name} to chain"
     @
 
 module.exports = SqlMock

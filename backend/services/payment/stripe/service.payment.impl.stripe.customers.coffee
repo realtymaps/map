@@ -64,7 +64,7 @@ StripeCustomers = (stripe) ->
   create = (opts, extraDescription = '') ->
     onMissingArgsFail
       args: opts
-      required: ['authUser','plan','token']
+      required: ['authUser','plan','token', 'trx']
 
     token = opts.token.id
     {authUser, plan, trx} = opts
@@ -88,11 +88,53 @@ StripeCustomers = (stripe) ->
         throw new CustomerCreateFailedError(error) #rethrow so any db stuff is also reverted
 
   get = (authUser) ->
+    logger.debug "stripe.customers.retrieve #{authUser.stripe_customer_id}"
     stripe.customers.retrieve authUser.stripe_customer_id
+
+  getSources = (authUser) ->
+    get(authUser)
+    .then (customer) ->
+      customer?.sources?.data
+
+  getDefaultSource = (authUser) ->
+    get(authUser)
+    .then (customer) ->
+      _.find customer?.sources?.data, 'id', customer?.default_source
+
+  charge = (opts, idempotency_key) ->
+    _.defaults opts,
+      currency: 'usd'
+      capture: true
+
+    onMissingArgsFail
+      args: opts
+      required: ['amount', 'currency', 'source', 'description']
+
+    opts.amount = opts.amount * 100 # dollars to cents
+
+    if idempotency_key
+      headers = {idempotency_key}
+
+    logger.debug -> "Creating stripe charge: #{JSON.stringify opts} #{JSON.stringify headers}"
+    stripe.charges.create opts, headers
+
+  capture = (opts, idempotency_key) ->
+    onMissingArgsFail
+      args: opts
+      required: [ 'charge' ]
+
+    if opts.amount
+      opts.amount = opts.amount * 100 # dollars to cents
+
+    logger.debug -> "Capturing stripe charge: #{JSON.stringify opts}"
+    stripe.charges.capture opts.charge, _.pick opts, [ 'amount', 'receipt_email', 'statement_descriptor' ]
 
   remove: remove
   create: create
   get: get
+  getDefaultSource: getDefaultSource
+  charge: charge
+  capture: capture
   handleCreationError: handleCreationError
 
 module.exports = StripeCustomers

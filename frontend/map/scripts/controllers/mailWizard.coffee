@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rmapsMailTemplateService) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $modal, rmapsMailTemplateService, rmapsLobService) ->
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -12,7 +12,23 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
     'senderInfo'
     'selectTemplate'
     'editTemplate'
+    'review'
   ]
+
+  $scope.hideBackButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == 0 or rmapsMailTemplateService.isSent())
+
+  $scope.hideNextButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideSendButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep != ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideProgress = () ->
+    rmapsMailTemplateService.isSent()
 
   _getStep = (name) ->
     $scope.steps.indexOf name
@@ -22,6 +38,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
     thisStep = _getStep $state.current.name
     newStep = $scope.steps[thisStep + next]
     if thisStep == -1 or !newStep? then return
+    $log.debug "_changeStep() going to #{newStep}"
     $state.go($state.get(newStep))
 
   $scope.nextStep = () ->
@@ -34,8 +51,8 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
   $scope.initMailTemplate = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      rmapsMailTemplateService.load $state.params.id
+      return rmapsMailTemplateService.load $state.params.id
     else
       campaign = rmapsMailTemplateService.getCampaign()
       $log.debug "Continuing with mail campaign #{campaign.id}"
-      $q.when campaign
+      return $q.when campaign
