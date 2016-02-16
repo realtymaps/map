@@ -69,8 +69,10 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
-        mailContent: () ->
-          return "some-content"
+        template: () ->
+          content: $scope.data.htmlcontent
+          category: rmapsMailTemplateService.getCategory()
+          title: 'Mail Preview'
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
@@ -79,12 +81,11 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
       $scope.data =
         htmlcontent: $scope.templObj.mailCampaign.content
 
-
 app.controller 'rmapsMailTemplatePreviewCtrl',
-  ($scope, $modalInstance, $log, $window, $timeout, mailContent, rmapsMailTemplateService) ->
-    $scope.category = rmapsMailTemplateService.getCategory()
+  ($scope, $modalInstance, $log, $window, $timeout, template, rmapsMailTemplateService, rmapsMailTemplateTypeService) ->
+    $scope.template = template
     $timeout () ->
-      $window.document.getElementById('mail-preview-iframe').srcdoc = rmapsMailTemplateService.createPreviewHtml()
+      $window.document.getElementById('mail-preview-iframe').srcdoc = rmapsMailTemplateService.createPreviewHtml(template.content)
 
     $scope.close = () ->
       $modalInstance.dismiss()
