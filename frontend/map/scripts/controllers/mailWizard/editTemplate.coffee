@@ -72,6 +72,7 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
         template: () ->
           content: $scope.data.htmlcontent
           category: rmapsMailTemplateService.getCategory()
+          title: 'Mail Preview'
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()

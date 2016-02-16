@@ -30,7 +30,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
     $scope.campaign = rmapsMailTemplateService.getCampaign()
 
   $scope.previewTemplate = (template) ->
-    $log.debug template
     modalInstance = $modal.open
       template: modalTemplate
       controller: 'rmapsMailTemplatePreviewCtrl'
@@ -41,6 +40,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
         template: () ->
           content: rmapsMailTemplateTypeService.getHtml(template.type)
           category: template.category
+          title: template.name
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
