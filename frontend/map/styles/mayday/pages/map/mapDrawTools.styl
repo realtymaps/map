@@ -1,5 +1,21 @@
+
 $fnMakeMapDrawTools()
+  $makeHeightWidth(pix)
+    height pix !important
+    width pix !important
+
+  $makeTool(pix, marginArg = false)
+    .tools
+      button
+        $makeHeightWidth(pix)
+        if marginArg
+          margin marginArg
+
+
   $drawToolHeight = 50px
+  $drawToolSmallButtonHeight = 25px
+  $drawToolSmallHeight = 150px
+
   .draw-tools
     width 100%
     position absolute
@@ -7,6 +23,24 @@ $fnMakeMapDrawTools()
     background-color $charcoal
     color $white
     height $drawToolHeight
+
+    @media (max-width: xs-1)
+      height $drawToolSmallHeight !important
+      .row
+        height $drawToolSmallHeight !important
+        > */*all children of .row*/
+          height $drawToolSmallHeight !important
+
+      $makeTool($drawToolSmallButtonHeight, 10px)
+
+    @media (min-width: xs)
+      $makeTool($drawToolHeight)
+
+    @media (min-width: s-1)
+      $makeTool($drawToolHeight)
+
+    @media (min-width: md-1)
+      $makeTool($drawToolHeight)
 
     .close-btn
       transform translateY(25%)
@@ -21,6 +55,7 @@ $fnMakeMapDrawTools()
         height $drawToolHeight
 
     .tools
+      transform translateX(25%)
       button
         display inline
 
@@ -29,7 +64,6 @@ $fnMakeMapDrawTools()
 
     .btn-transparent
       height $drawToolHeight
-      width 50px
       background-color transparent
       color $white
 

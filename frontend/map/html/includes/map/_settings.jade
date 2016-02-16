@@ -51,7 +51,17 @@
             span.col-md-1.label to
             .col-md-4
               select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
-
+          
+          li.set.setInShapes.row
+            span.label.col-md-5 In Shapes / Neighborhoods
+            .col-md-7
+              .btn-group.pull-right
+                label.btn.btn-white.btn-checkbox(
+                  ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
+                  ng-repeat="c in ['on', 'off']"
+                  ng-model="Toggles.propertiesInShapes"
+                  btn-radio="{{c == 'on'}}"
+                  uncheckable) {{c}}
         ul
           li.showAdvanced.row
             span.label.col-md-12

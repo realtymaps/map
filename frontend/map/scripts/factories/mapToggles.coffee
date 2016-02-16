@@ -52,6 +52,9 @@ app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
     @togglePropertiesInShapes = () =>
       @propertiesInShapes = !@propertiesInShapes
 
+    @setPropetiesInShapes = (bool) ->
+      @propertiesInShapes = bool
+
     @toggleIsSketchMode = () =>
       @isSketchMode = !@isSketchMode
 

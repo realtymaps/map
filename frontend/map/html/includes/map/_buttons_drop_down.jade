@@ -3,6 +3,14 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
     span.icon.icon-add
   ul.dropdown-menu.btnblock
     li
+      button.btn.btn-transparent.nav-btn(
+        ng-click="Toggles.toggleIsSketchMode(); Toggles.togglePropertiesInShapes(true);"
+        popover-placement="top"
+        popover="Turn On/Off Sketch Mode"
+        popover-trigger="mouseenter"
+        ng-class="Toggles.isSketchMode ? 'on' : ''")
+        span.icon.icon-pen2
+    li
       button.btn.btn-transparent.add-project.nav-btn(
         popover-placement="right"
         popover-trigger="mouseenter"
