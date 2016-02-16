@@ -4,7 +4,7 @@
       include ./_buttons_drop_down.jade
     
     div.btn-group.desktop-only
-      button.btn.btn-transparent.nav-button(
+      button.btn.btn-transparent.nav-btn(
         ng-click="Toggles.toggleIsSketchMode()"
         popover-placement="top"
         popover="Turn On/Off Sketch Mode"
@@ -12,8 +12,9 @@
         ng-class="Toggles.isSketchMode ? 'on' : ''")
         span.icon.icon-pen2
     
+    //not sure WTF this should go, for no this will do
     div.btn-group.desktop-only
-      button.btn.btn-transparent.nav-button(
+      button.btn.btn-transparent.nav-btn(
         ng-click="Toggles.togglePropertiesInShapes()"
         popover-placement="top"
         popover="Filter by shapes"

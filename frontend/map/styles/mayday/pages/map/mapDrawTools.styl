@@ -1,28 +1,34 @@
 $fnMakeMapDrawTools()
-
+  $drawToolHeight = 50px
   .draw-tools
     width 100%
     position absolute
     z-index 20
     background-color $charcoal
     color $white
-    height 50px
-
-    .text
-      margin-top 4%
+    height $drawToolHeight
 
     .close-btn
-      margin-top 2%
+      transform translateY(25%)
+
+    h4
+      line-height $drawToolHeight
+      margin-top 0
+      margin-bottom 0
+
+    .row
+      > */*all children of .row*/
+        height $drawToolHeight
 
     .tools
       button
         display inline
 
-    .nav-button
+    .nav-btn
       font-size 28px
 
     .btn-transparent
-      height 50px
+      height $drawToolHeight
       width 50px
       background-color transparent
       color $white
