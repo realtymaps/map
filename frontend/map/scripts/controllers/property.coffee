@@ -20,15 +20,8 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, rmapsProperties
 
   getPropertyDetail = (propertyId) ->
     $log.debug "Getting property detail for #{propertyId}"
-#    rmapsPropertiesService.getProperties propertyId, 'detail'
-#    .then (result) ->
-#      $log.debug "Have results for property detail for id #{propertyId}"
-#      $scope.selectedResult = result.data[0]
 
-    rmapsPropertiesService.getPropertyDetail(rmapsMapFactory.mapCtrl.scope.refreshState(
-      map_results:
-        selectedResultId: propertyId)
-    , {rm_property_id: propertyId }, 'all')
+    rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all')
     .then (data) ->
       $scope.selectedResult = data
 
