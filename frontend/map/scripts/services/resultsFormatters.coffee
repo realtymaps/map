@@ -158,7 +158,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
 
     click: (result, event, context) ->
-      $log.debug "!!! Click on property id: #{result.rm_property_id}"
       $state.go "property", { id: result.rm_property_id }
 
       maybeFetchCb = (showDetails) =>
