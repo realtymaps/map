@@ -3,4 +3,4 @@
   button(ng-click="close()").btn.btn-danger Close
 
 .modal-body
-  iframe#mail-preview-iframe(frameborder="0" ng-class="{'iframe-preview-letter': category == 'letter', 'iframe-preview-postcard': category == 'postcard'}")
+  iframe#mail-preview-iframe(frameborder="0" ng-class="{'iframe-preview-letter': template.category == 'letter', 'iframe-preview-postcard': template.category == 'postcard'}")
