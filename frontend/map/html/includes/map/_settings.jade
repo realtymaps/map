@@ -1,7 +1,7 @@
 .settings-tool
   .desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
-      button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(dropdown-toggle)
+      button.dropdown-toggle.btn.btn-transparent.nav-button.settings.toggle-active(dropdown-toggle)
         span.icon.icon-settings
       .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
         h4.title Property Filters
@@ -81,7 +81,7 @@
               input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
 
   .mobile-only
-    button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
+    button.dropdown-toggle.btn.btn-transparent.nav-button.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
       span.icon.icon-settings
 
   script(type="text/ng-template" id="SettingsModalMobile")

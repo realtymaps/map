@@ -1,8 +1,28 @@
-.draw-tools.desktop-only
-    button.btn.btn-transparent.properties-in-shapes(
-      ng-click="Toggles.togglePropertiesInShapes()"
-      popover-placement="top"
-      popover="Filter by shapes"
-      popover-trigger="mouseenter"
-      ng-class="Toggles.propertiesInShapes ? 'on' : ''")
-      span.icon.icon-markers-in-shapes
+//.desktop-only TODO (wont show)
+.draw-tools.container(ng-if="Toggles.isSketchMode")
+  .row
+    .col-md-3.col-sm-3.col-xs-12
+      h4.text Sketch Mode
+    
+    .col-md-6.col-sm-6.col-xs-12
+      .tools
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-note-pen
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-android-checkbox-outline-blank
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-android-radio-button-off
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-polygon
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-text-create
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-redo2
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-undo
+        button.btn.btn-transparent.nav-button
+          span.icon.icon-trash
+    
+    .col-md-3.col-sm-3.col-xs-12
+      button.btn.btn-primary.pull-right.close-btn(
+        ng-click="Toggles.toggleIsSketchMode()") Close

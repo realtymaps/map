@@ -1,21 +1,33 @@
 .map-navigation
   div.projects-tools
     div.btn-group.desktop-only
-
       include ./_buttons_drop_down.jade
+    
+    div.btn-group.desktop-only
+      button.btn.btn-transparent.nav-button(
+        ng-click="Toggles.toggleIsSketchMode()"
+        popover-placement="top"
+        popover="Turn On/Off Sketch Mode"
+        popover-trigger="mouseenter"
+        ng-class="Toggles.isSketchMode ? 'on' : ''")
+        span.icon.icon-pen2
+    
+    div.btn-group.desktop-only
+      button.btn.btn-transparent.nav-button(
+        ng-click="Toggles.togglePropertiesInShapes()"
+        popover-placement="top"
+        popover="Filter by shapes"
+        popover-trigger="mouseenter"
+        ng-class="Toggles.propertiesInShapes ? 'on' : ''")
+        span.icon.icon-markers-in-shapes
 
     div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
-
       include ./_projects.jade
-
       //- Todo: conditionally show pinned or favorites depending on user role
       include ./_pinned.jade
       include ./_favorites.jade
-
       include ./_notes.jade
-
       include ./_neighbourhood.jade
 
     div.btn-group
-
       include ./_settings.jade

@@ -1,9 +1,9 @@
 span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
-  button.dropdown-toggle.btn.btn-transparent.add-button.toggle-active(dropdown-toggle)
+  button.dropdown-toggle.btn.btn-transparent.nav-button.add-button.toggle-active(dropdown-toggle)
     span.icon.icon-add
   ul.dropdown-menu.btnblock
     li
-      button.btn.btn-transparent.add-project(
+      button.btn.btn-transparent.add-project.nav-button(
         popover-placement="right"
         popover-trigger="mouseenter"
         popover="Add Project"
@@ -11,19 +11,23 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
         ng-click="addProject()")
           span.icon.icon-add_project
     li
-      button.btn.btn-transparent.add-note(
+      button.btn.btn-transparent.add-note.nav-button(
         popover-placement="right"
         popover-trigger="mouseenter"
         popover="Add Note"
         ng-click="Toggles.enableNoteTap()")
           span.icon.icon-add_note
     li
-      button.btn.btn-transparent.add-mail(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
-        span.icon.icon-send_email
+      button.btn.btn-transparent.nav-button.add-mail(
+        ng-controller="rmapsMapMailCtrl"
+        popover-placement="right"
+        popover-trigger="mouseenter"
+        popover="New Mailing"
+        ng-click="addMail()")
+          span.icon.icon-send_email
     li
-      button(
+      button.btn.btn-transparent.nav-button.add-neighbour(
         ng-controller="rmapsNeighbourhoodsModalCtrl"
-        class="btn btn-transparent add-neighbour"
         popover-placement="top"
         popover-trigger="mouseenter"
         popover="Add Neighbour"
