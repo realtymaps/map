@@ -157,13 +157,13 @@ sendCampaign = (campaignId, userId) ->
           logger.debug "Creating $#{amount.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
 
           payment.customers.charge
-              customer: stripe_customer_id
-              source: stripeCustomer.default_source
-              amount: amount
-              capture: false # funds held but not actually charged until letters are sent to LOB
-              description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
+            customer: stripe_customer_id
+            source: stripeCustomer.default_source
+            amount: amount
+            capture: false # funds held but not actually charged until letters are sent to LOB
+            description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
             ,
-              "charge_campaign_#{campaign.id}" # unique identifier to prevent duplicate charges
+            "charge_campaign_#{campaign.id}" # unique identifier to prevent duplicate charges
 
           .catch isUnhandled, (err) ->
 

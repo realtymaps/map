@@ -193,9 +193,9 @@ chargeCampaign = (subtask) ->
       statement_descriptor = "REALTYMAPS #{campaign.stripe_charge.description ? ''}".trim().slice 0, 22
 
       payment.customers.capture
-          charge: campaign.stripe_charge.id
-          amount: totalPrice
-          statement_descriptor: statement_descriptor
+        charge: campaign.stripe_charge.id
+        amount: totalPrice
+        statement_descriptor: statement_descriptor
 
     .catch isUnhandled, (err) ->
 

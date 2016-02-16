@@ -15,3 +15,4 @@
                   .tmpl-data
                     h3.tmpl-title {{template.name}}
                     img.tmpl-image(src="{{template.thumb}}" ng-class="{'selected':campaign.template_type == template.type}")
+                .btn(ng-click="previewTemplate(template)") Preview

@@ -1,6 +1,4 @@
-testBasicLetterMarkup = """
-<div class="letter-page" style="width: 8.5in; height: 11in;"><div id="recipient-address-window"><div>placeholder1</div></div><div id="return-address-window"><div>placeholder2</div></div><div class="letter-page-content-text"><span class="fontSize18">testing markup with a {{goodmacro}} and a {{badmacro}}.</span></div></div>
-"""
+campaignFixture = require '../fixtures/mailCampaign.json'
 
 describe 'mailTemplate service', ->
 
@@ -11,19 +9,70 @@ describe 'mailTemplate service', ->
       @type = 'basicLetter'
       @template = rmapsMailTemplateService
 
-  describe 'templateObj', ->
-    it "tests valid basicLetter", ->
-      expect(@template).to.be.ok
-      expect(@template.getCampaign().content).to.not.exist
-      @template.setTemplateType(@type)
-      expect(@template.getCampaign().content).to.have.length.above 0
+  it 'passes sanity check', ->
+    expect(@template).to.be.ok
+    expect(@template.getCampaign().content).to.not.exist
+    @template.setTemplateType(@type)
+    expect(@template.getCampaign().content).to.have.length.above 0
 
-    it 'returns createPreviewHtml', ->
-      @template.setTemplateType(@type)
-      expect(@template.createPreviewHtml()).to.contain 'body {border: 1px solid black;}'
-      expect(@template.createPreviewHtml()).to.contain '<div class="letter-page">'
+  describe 'service members', ->
 
-    it 'returns createLobHtml', ->
-      @template.setTemplateType(@type)
-      expect(@template.createLobHtml()).to.not.contain 'body {border: 1px solid black;}'
-      expect(@template.createLobHtml()).to.contain '<div class="letter-page">'
+    it 'returns correct defaults', ->
+      expected =
+        id: null
+        auth_user_id: null
+        lob_batch_id: null
+        name: 'New Mailing'
+        count: 0
+        status: 'pending'
+        content: null
+        template_type: ''
+        lob_content: null
+        sender_info: null
+        recipients: []
+        submitted: null
+
+      actual = @template.getCampaign()
+      expect(actual).to.eql expected
+
+    it 'returns correct lob entity', ->
+      lobRecipients = [
+        name: 'Current Resident'
+        address_line1: '1775 Gulf Shore Blvd S'
+        address_line2: ''
+        address_city: 'Naples'
+        address_state: 'FL'
+        address_zip: '34102-7561'
+      ,
+        name: 'Current Resident'
+        address_line1: '175 16th Ave S'
+        address_line2: ''
+        address_city: 'Naples'
+        address_state: 'FL'
+        address_zip: '34102-7443'
+      ]
+
+      lobFrom =
+        company: null
+        address_line1: '791 10th St. S'
+        address_line2: null
+        address_city: 'Naples'
+        address_state: 'FL'
+        address_zip: '34102'
+        phone: null
+        email: 'mailtest@realtymaps.com'
+        name: 'Fname Lname'
+
+      @template.setCampaign(campaignFixture)
+      actual = @template.getLobData()
+
+      expect(actual.campaign).to.eql campaignFixture
+      expect(actual.file).to.contain '<div class="letter-page"><p>Content</p></div></body>'
+      expect(actual.recipients).to.eql lobRecipients
+      expect(actual.from).to.eql lobFrom
+
+    it 'returns correct template category', ->
+      @template.setCampaign(campaignFixture)
+      category = @template.getCategory()
+      expect(category).to.eql 'letter'
+

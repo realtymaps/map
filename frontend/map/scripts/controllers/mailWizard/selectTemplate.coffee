@@ -2,7 +2,6 @@ app = require '../../app.coffee'
 _ = require 'lodash'
 modalTemplate = require('../../../html/views/templates/modals/confirm.jade')()
 
-
 module.exports = app
 
 app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
@@ -52,11 +51,24 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
     else
       rmapsMailTemplateService.setTemplateType(templateType)
 
+  $scope.previewTemplate = (template) ->
+    modalInstance = $modal.open
+      template: modalTemplate
+      controller: 'rmapsMailTemplatePreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          content: rmapsMailTemplateTypeService.getHtml(template.type)
+          category: template.category
+          title: template.name
+
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
     .then () ->
       $scope.campaign = rmapsMailTemplateService.getCampaign()
-      $log.debug "Loaded campaign:\n#{JSON.stringify($scope.campaign, null, 2)}"
+      $log.debug -> "Loaded campaign:\n#{JSON.stringify($scope.campaign, null, 2)}"
       $scope.oldTemplateType = $scope.campaign.template_type
 
 

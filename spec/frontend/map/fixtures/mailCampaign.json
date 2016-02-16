@@ -1,0 +1,139 @@
+{
+  "property_ids": [
+    "12021_14004520006_001",
+    "12021_14005320001_001"
+  ],
+  "id": 94,
+  "auth_user_id": 7,
+  "lob_batch_id": null,
+  "name": "Test Mailing",
+  "count": 0,
+  "status": "pending",
+  "content": "<head></head><body><div class=\"letter-page\"><p>Content</p></div></body>",
+  "template_type": "basicLetter",
+  "lob_content": null,
+  "sender_info": {
+    "first_name": "Fname",
+    "last_name": "Lname",
+    "company": null,
+    "address_line1": "791 10th St. S",
+    "address_line2": null,
+    "address_city": "Naples",
+    "address_state": "FL",
+    "address_zip": "34102",
+    "phone": null,
+    "email": "mailtest@realtymaps.com"
+  },
+  "recipients": [
+    {
+      "rm_property_id": "12021_14004520006_001",
+      "street_address_num": "1775",
+      "street_address_name": "Gulf Shore Blvd S",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -81.8039127983455,
+                26.1253595194603
+              ],
+              [
+                -81.8039604192588,
+                26.1257975125411
+              ],
+              [
+                -81.8036945997889,
+                26.1258217608323
+              ],
+              [
+                -81.8036470054052,
+                26.1253837904261
+              ],
+              [
+                -81.8039127983455,
+                26.1253595194603
+              ]
+            ]
+          ]
+        ]
+      },
+      "geom_point_json": {
+        "type": "Point",
+        "coordinates": [
+          -81.8038037098797,
+          26.1255906471602
+        ]
+      },
+      "rm_status": "for sale",
+      "owner_name": "Sissel H Cooper",
+      "year_built": "1988-01-01T00:00:00.000Z",
+      "city": "Naples",
+      "state": "FL",
+      "zip": "34102-7561",
+      "owner_street_address_num": "1775",
+      "owner_street_address_name": "Gulf Shore Blvd S",
+      "owner_city": "Naples",
+      "owner_state": "FL",
+      "owner_zip": "34102-7561",
+      "property_address": "1775 Gulf Shore Blvd S undefined Naples FL 34102-7561",
+      "owner_address": "1775 Gulf Shore Blvd S undefined Naples FL 34102-7561"
+    },
+    {
+      "rm_property_id": "12021_14005320001_001",
+      "street_address_num": "175",
+      "street_address_name": "16th Ave S",
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [
+                -81.803262635468,
+                26.1276253029267
+              ],
+              [
+                -81.8033072480576,
+                26.1280358242831
+              ],
+              [
+                -81.8030035522255,
+                26.1280633316894
+              ],
+              [
+                -81.8029589155986,
+                26.1276528562084
+              ],
+              [
+                -81.803262635468,
+                26.1276253029267
+              ]
+            ]
+          ]
+        ]
+      },
+      "geom_point_json": {
+        "type": "Point",
+        "coordinates": [
+          -81.8031330898338,
+          26.1278443241249
+        ]
+      },
+      "rm_status": "for sale",
+      "owner_name": "Nick Shepherd",
+      "year_built": "2001-01-01T00:00:00.000Z",
+      "city": "Naples",
+      "state": "FL",
+      "zip": "34102-7443",
+      "owner_street_address_num": "175",
+      "owner_street_address_name": "16th Ave S",
+      "owner_city": "Naples",
+      "owner_state": "FL",
+      "owner_zip": "34102-7443",
+      "property_address": "175 16th Ave S undefined Naples FL 34102-7443",
+      "owner_address": "175 16th Ave S undefined Naples FL 34102-7443"
+    }
+  ],
+  "submitted": null,
+  "recipientType": "property"
+}

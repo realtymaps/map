@@ -8,10 +8,20 @@ opts =
   configFile: '../../karma.conf.coffee'
   logFn: log
 
-gulp.task 'karma', (done) ->
+gulp.task 'karmaCoverage', (done) ->
   karmaKick done, _.extend {}, opts,
     reporters:['dots', 'coverage']
     singleRun: true
+    browserify:
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs',
+        ["browserify-istanbul",
+          ignore: ["spec/**/*"]
+          #https://github.com/karma-runner/karma-coverage/issues/157#issuecomment-160555004
+          #fixes the text karma-coverage error
+          instrumenterConfig: { embedSource: true }
+        ]
+      ]
+
 
 gulp.task 'karmaMocha', (done) ->
   karmaKick(done, opts)
@@ -35,12 +45,11 @@ gulp.task 'karmaChrome', (done) ->
       debug: true
       transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs']
 
-gulp.task 'frontendSpec', gulp.series 'karma'
-
-gulp.task 'karmaNoCoverage', (done) ->
+gulp.task 'karma', (done) ->
   karmaKick (code) ->
     done(code)
-    process.exit code #hack this should not need to be here
+    if code
+      process.exit code #hack this should not need to be here
   ,
     _.extend {}, opts,
       reporters: ['dots', 'junit']
@@ -49,4 +58,6 @@ gulp.task 'karmaNoCoverage', (done) ->
         suite: 'realtymaps'
         useBrowserName: true
 
-gulp.task 'frontendNoCoverageSpec', gulp.series 'karmaNoCoverage'
+gulp.task 'frontendCoverageSpec', gulp.series 'karmaCoverage'
+
+gulp.task 'frontendSpec', gulp.series 'karma'

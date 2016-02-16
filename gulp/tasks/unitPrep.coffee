@@ -1,7 +1,8 @@
 gulp = require 'gulp'
-dbs = require '../../backend/config/dbs'
 Promise = require 'bluebird'
 universalMock = require '../../spec/specUtils/universalMock'
+dbs = require '../../backend/config/dbs'
+
 
 gulp.task 'unitTestPrep', (done) ->
   dbs.disable('unit tests')

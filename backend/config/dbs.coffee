@@ -98,7 +98,8 @@ disable = (message) ->
     inUse = Object.keys(_.omit(connectedDbs, 'pg'))
     if plainClientCount > 0
       inUse.push("plain:#{plainClientCount}")
-    throw new Error("Can't disable database; some database clients already in use: (#{inUse.join(', ')})")
+    logger.warn("Can't disable database; some database clients already in use: (#{inUse.join(', ')})")
+    return
   enabled = false
   disableMessage = message
 
