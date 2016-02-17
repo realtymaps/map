@@ -58,6 +58,7 @@
     position: relative;
 
   .settings-button
+    @extend .btn.btn-white
     width: 32px;
     height: 32px;
     margin: 0;
@@ -92,6 +93,9 @@
       background-color: white;
       border: solid 1px $rm-slider-handle-color;
 
+      &:hover
+        background: $rm-slider-bar-selected-color;
+
     .rz-pointer:after
       display: none;
 
@@ -115,4 +119,3 @@
       &:after
         position: absolute;
         left: 4px;
-

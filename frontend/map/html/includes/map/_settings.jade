@@ -136,6 +136,16 @@
           .settings-value {{translateDom(domSlider.min)}} - {{translateDom(domSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+        
+        .item.settings-row
+          .settings-header In Shapes / Neighborhoods
+          button.button.settings-button.btn-white.btn-checkbox(
+            ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
+            ng-click="makeDirty()"
+            ng-repeat="c in ['on', 'off']"
+            ng-model="Toggles.propertiesInShapes"
+            btn-radio="{{c == 'on'}}"
+            uncheckable) {{c}}
 
       footer.mobile-footer.mobile-footer-modal
         button.button.button-full.button-action(ng-click="apply()" ng-class="{ 'disabled': !dirty }") Apply Filters
