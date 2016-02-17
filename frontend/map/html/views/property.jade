@@ -5,12 +5,8 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
   .property-detail-container.container
     //+spinnerMixin()
     .row
-      .col-sm-2.navbar
-        ul.nav
-          li
-            button(class="btn btn-link" ng-click="setActiveTab('t1')" ng-class="active.t1 ? 'active' : '' ") Property Detail
-          li
-            button(class="btn btn-link" ng-click="setActiveTab('t2')" ng-class="active.t2 ? 'active' : '' ") Tax Detail
+      .col-sm-2
+        // TODO Add tab navigation when tax data is available
 
       .col-sm-8
         .prop-image.prop-image-lg
