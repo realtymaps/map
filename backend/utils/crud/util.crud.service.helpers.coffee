@@ -27,7 +27,7 @@ class Crud extends BaseObject
   constructor: (@dbFn, @idKey = 'id') ->
     super()
     unless _.isFunction @dbFn
-      logger.debug @dbFn, true
+      logger.debug @dbFn
       throw new Error('dbFn must be a knex function')
 
   # a function to clone a instance so that, init in Thennable Trait can be called

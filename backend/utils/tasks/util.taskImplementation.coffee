@@ -32,7 +32,7 @@ class TaskImplementation
     @subtasks[subtaskBaseName](subtask)
 
   initialize: (transaction, batchId, task) ->
-    tables.jobQueue.subtaskConfig(transaction)
+    tables.jobQueue.subtaskConfig(transaction: transaction)
     .where
       task_name: task.name
       auto_enqueue: true

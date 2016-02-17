@@ -14,9 +14,7 @@ routeCrudToTest = rewire "#{basePath}/routeCrud/route.crud.projectSession"
 safeProject = sqlHelpers.columns.project
 mockCls = require '../../specUtils/mockCls'
 {joinColumnNames} = require "#{basePath}/utils/util.sql.columns"
-tableNames = require "#{basePath}/config/tableNames"
 tables = require "#{basePath}/config/tables"
-usrTableNames = tableNames.user
 sinon = require 'sinon'
 require "#{basePath}/extensions"
 
@@ -186,7 +184,7 @@ describe 'route.projectSession', ->
         obj = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
-        obj["#{usrTableNames.notes}.project_id"] = [ @mockRequest.params.id ]
+        obj["#{tables.user.notes.tableName}.project_id"] = [ @mockRequest.params.id ]
         @subject.notesCrud.svc.getAllStub.args[0][0].should.be.eql obj
         @subject.notesCrud.svc.getAllStub.args[0][1].should.be.eql false
         assert.isTrue @subject.notesCrud.svc.getAllStub.sqls.length > 0
@@ -206,7 +204,7 @@ describe 'route.projectSession', ->
         params = {}
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
-        params["#{usrTableNames.drawnShapes}.project_id"] = [ @mockRequest.params.id ]
+        params["#{tables.user.drawnShapes.tableName}.project_id"] = [ @mockRequest.params.id ]
         @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
         @subject.drawnShapesCrud.svc.getAllStub.args[0][1].should.be.eql false
         # assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0

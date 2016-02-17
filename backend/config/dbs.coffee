@@ -7,14 +7,10 @@ do require '../../common/config/dbChecker.coffee'
 _ = require 'lodash'
 
 
-connectedDbs =
-  pg: pg
+connectedDbs = {}
+connectionless = knex(client: 'pg')
+_enabled = true
 
-
-enabled = true
-disableMessage = null
-knexInUse = false
-plainClientCount = 0
 
 _knexShutdown = (db, name) ->
   logger.debug "... attempting '#{name}' database shutdown ..."
@@ -38,77 +34,65 @@ _barePgShutdown = () ->
     pg.end()
 
 
-_shutdown = (db, name) ->
-  if name == 'pg'
-    _barePgShutdown()
-  else
-    _knexShutdown(db, name)
-
-
 shutdown = () ->
   logger.info 'database shutdowns initiated ...'
 
-  return Promise.join Promise.all _.map(connectedDbs, _shutdown), () ->
+  return Promise.join _barePgShutdown, Promise.all(_.map(connectedDbs, _knexShutdown)), () ->
     logger.info 'all databases successfully shut down.'
+    connectedDbs = {}
+    delete require.cache[require.resolve('pg')]
+    pg = require 'pg'
   .catch (error) ->
     logger.error 'all databases shut down (?), some with errors.'
     Promise.reject(error)
 
 
-getKnex = (dbName) ->
-  if !enabled
-    return knex(client: 'pg')
-  knexInUse = true
+get = (dbName) ->
+  if !_enabled
+    return connectionless
+  if dbName == 'pg'
+    return pg
   if !connectedDbs[dbName]?
     connectedDbs[dbName] = knex(config.DBS[dbName.toUpperCase()])
   connectedDbs[dbName]
 
 
 getPlainClient = (dbName, handler) ->
-  if !enabled
-    throw new Error("database is disabled (#{disableMessage}), can't get plain db client")
+  if !_enabled
+    throw new Error("database is disabled, can't get plain db client")
   dbConfig = config.DBS[dbName.toUpperCase()]
   client = new pg.Client(dbConfig.connection)
   promiseQuery = Promise.promisify(client.query, client)
   streamQuery = client.query.bind(client)
-  plainClientCount++
   Promise.promisify(client.connect, client)()
   .then () ->
     handler(((sql, args...) -> promiseQuery(sql.toString(), args...)), streamQuery)
   .finally () ->
-    plainClientCount--
     try
       client.end()
     catch err
       logger.warn "Error disconnecting raw db connection: #{err}"
 
-transaction = (dbName, queryCb, postCatchCb) ->
-  getKnex(dbName).transaction (trx) ->
+
+transaction = (args...) ->
+  # allow the 'main' arg to be omitted
+  if typeof(args[0]) != 'string'
+    args.unshift('main')
+  [dbName, queryCb, errCb] = args
+  get(dbName).transaction (trx) ->
     queryCb(trx)
     .catch (err) ->
       logger.debug "transaction reverted: #{err}"
-      postCatchCb(err) if postCatchCb?
+      errCb?(err)
       throw err
-
-enable = () ->
-  enabled = true
-
-disable = (message) ->
-  if knexInUse || plainClientCount
-    inUse = Object.keys(_.omit(connectedDbs, 'pg'))
-    if plainClientCount > 0
-      inUse.push("plain:#{plainClientCount}")
-    logger.warn("Can't disable database; some database clients already in use: (#{inUse.join(', ')})")
-    return
-  enabled = false
-  disableMessage = message
 
 
 module.exports =
   shutdown: shutdown
-  get: getKnex
+  get: get
   getPlainClient: getPlainClient
   transaction: transaction
-  isDisabled: () -> if !enabled then disableMessage else false
-  enable: enable
-  disable: disable
+  connectionless: connectionless
+  isEnabled: () -> _enabled
+  enable: () -> _enabled = true
+  disable: () -> _enabled = false

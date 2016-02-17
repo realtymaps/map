@@ -56,7 +56,7 @@ handles = wrapHandleRoutes
           # console.log.magenta "password"
           entity.password = password
 
-          tables.auth.user(trx).returning("id").insert entity
+          tables.auth.user(transaction: trx).returning("id").insert entity
           .then (id) ->
             # console.log.magenta "inserted user"
             getPlanId(plan, trx)
@@ -64,13 +64,13 @@ handles = wrapHandleRoutes
               # console.log.magenta "planId/groupId: #{groupId}"
               logger.debug "auth_user_id: #{id}"
               #give plan / group permissions
-              tables.auth.m2m_user_group(trx)
+              tables.auth.m2m_user_group(transaction: trx)
               .insert user_id: parseInt(id), group_id: parseInt(groupId)
               .then ->
                 id
           .then (id) ->
             logger.debug "new user (#{id}) inserted SUCCESS"
-            tables.auth.user(trx).select(basicColumns.user.concat(["id"])...)
+            tables.auth.user(transaction: trx).select(basicColumns.user.concat(["id"])...)
             .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
@@ -80,11 +80,11 @@ handles = wrapHandleRoutes
 
             promise = null
             if fips_code
-              promise = tables.auth.m2m_user_locations(trx)
+              promise = tables.auth.m2m_user_locations(transaction: trx)
               .insert(auth_user_id: authUser.id, fips_code: fips_code)
 
             if mls_id and mls_code and plan == 'pro'
-              promise = tables.auth.m2m_user_mls(trx)
+              promise = tables.auth.m2m_user_mls(transaction: trx)
               .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id
             else
               promise = Promise.reject new Error 'invalid plan for mls setup'

@@ -98,6 +98,7 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
       rawTableSuffix: rawTableSuffix
       dataType: file.type
       action: file.action
+      normalSubid: file.name.slice(0, 5)
     if action == constants.DELETE
       loadData.fileType = constants.DELETE
     else
@@ -106,9 +107,10 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
         rawTableSuffix: rawTableSuffix
         dataType: file.type
         deletes: dataLoadHelpers.DELETE.INDICATED
-        subset:
-          fips_code: file.name.slice(0, 5)
+        normalSubid: file.name.slice(0, 5)
     loadDataList.push(loadData)
+  loadDataList = [loadDataList[0]]
+  countDataList = [countDataList[0]]
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
@@ -173,7 +175,10 @@ checkFtpDrop = (subtask) ->
 
 
 loadRawData = (subtask) ->
-  constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
+  # first ensure a normalized data table exists
+  dataLoadHelpers.ensureNormalizedTable(subtask.data.dataType, subtask.data.normalSubid)
+  .then () ->
+    constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
     countyHelpers.loadRawData subtask,
       dataSourceId: 'blackknight'
@@ -189,20 +194,20 @@ loadRawData = (subtask) ->
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
+      normalSubid: subtask.data.normalSubid
 
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
 
 deleteData = (subtask) ->
-  rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
   # get rows for this subtask
   normalDataTable = tables.property[subtask.data.dataType]
-  tables.buildRawTableQuery(rawTableName)
+  tables.temp(subid: dataLoadHelpers.buildUniqueSubtaskName(subtask))
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
   .then (rows) ->
     promises = for row in rows then do (row) ->
       if subtask.data.action == constants.REFRESH
-        normalDataTable()
+        normalDataTable(subtask.data.normalSubid)
         .where
           data_source_id: 'blackknight'
           fips_code: row['FIPS Code']
@@ -215,7 +220,7 @@ deleteData = (subtask) ->
           .then (validationInfo) ->
             Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
           .then (normalizedData) ->
-            normalDataTable()
+            normalDataTable(subtask.data.normalSubid)
             .where
               data_source_id: 'blackknight'
               fips_code: row['FIPS Code']
@@ -223,7 +228,7 @@ deleteData = (subtask) ->
             .whereNull('deleted')
             .update(deleted: subtask.batch_id)
         else
-          normalDataTable()
+          normalDataTable(subtask.data.normalSubid)
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']
@@ -248,6 +253,7 @@ normalizeData = (subtask) ->
       rawTableSuffix: subtask.data.rawTableSuffix
       count: successes.length
       ids: successes
+      normalSubid: subtask.data.normalSubid
 
 ###
 finalizeDataPrep = (subtask) ->

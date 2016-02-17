@@ -11,7 +11,7 @@ runHirefire = () ->
   .then (needs) ->
     if needs?
       logger.info()
-      logger.info(new Date())
+      logger.info((new Date()).toString())
       for queue in needs
         logger.info("    #{queue.name}: #{queue.quantity}")
 

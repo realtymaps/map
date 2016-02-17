@@ -45,10 +45,11 @@ are:
 scripts.  It takes a db specifier as an argument and echos the resolved conninfo URL.
 * `foreman run ./scripts/database/getDbName` takes a db specifier, and returns the db name if the specifier was a
 conninfo URL, or the specifier itself if it wasn't a conninfo URL
-  
+
 #### Direct-use scripts
-* `foreman run ./scripts/database/syncMainDb` performs the following actions:
-  * updates the property db with the latest migrations from `./scripts/migrations` (recursively)
+* `foreman run ./scripts/database/syncDb <label> [app]` performs the following actions:
+  * updates the <label> db (on the [app] heroku app, if included) with the latest migrations from
+  `./scripts/migrations/<label>` (recursively)
 
 ## environmentNormalization scripts
 * `source ./scripts/environmentNormalization/dbsync` ensures dbsync is available for use by other scripts.  It finds

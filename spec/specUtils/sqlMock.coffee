@@ -53,10 +53,10 @@ class SqlMock
 
     # dynamic instance hooks for the mock sql calls
     @[@groupName] = @
-    @[@tableHandle] = (trx) =>
-      if trx?
-        @commitSpy = sinon.spy(trx, 'commit')
-        @rollbackSpy = sinon.spy(trx, 'rollback')
+    @[@tableHandle] = (opts={}) =>
+      if opts.transaction?
+        @commitSpy = sinon.spy(opts.transaction, 'commit')
+        @rollbackSpy = sinon.spy(opts.transaction, 'rollback')
       return @
     @tableName = @tableHandle
 

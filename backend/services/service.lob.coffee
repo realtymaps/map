@@ -182,7 +182,7 @@ sendCampaign = (campaignId, userId) ->
             .then (inserted) ->
 
               logger.debug "Queued #{campaign.recipients.length} letters, changing status of campaign #{campaignId} -> 'sending'"
-              tables.mail.campaign(tx)
+              tables.mail.campaign(transaction: tx)
               .update(status: 'sending', stripe_charge: stripeCharge)
               .where(id: campaignId, auth_user_id: userId)
 
@@ -191,7 +191,7 @@ sendCampaign = (campaignId, userId) ->
               throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
 
 queueLetters = (campaign, tx) ->
-  tables.mail.letters(tx)
+  tables.mail.letters(transaction: tx)
   .insert _.map campaign.recipients, (recipient) ->
     address_to = _getAddress recipient
     address_from = _getAddress campaign.sender_info

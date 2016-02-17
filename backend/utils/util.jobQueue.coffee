@@ -57,7 +57,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
       # otherwise, rely on default ready-checking logic
   .then () ->
     _withDbLock config.JOB_QUEUE.SCHEDULING_LOCK_ID, (transaction) ->
-      tables.jobQueue.taskConfig(transaction)
+      tables.jobQueue.taskConfig(transaction: transaction)
       .select()
       .where(active: true)                  # only consider active tasks
       .whereRaw("COALESCE(ignore_until, '1970-01-01'::TIMESTAMP) <= NOW()") # only consider tasks whose time has come
@@ -65,7 +65,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
         sqlHelpers.whereIn(this, 'name', overrideRunNames)        # run if in the override run list ...
         sqlHelpers.orWhereNotIn(this, 'name', overrideSkipNames)  # ... or it's not in the override skip list ...
         .whereNotExists () ->                                     # ... and we can't find a history entry such that ...
-          tables.jobQueue.taskHistory(this)
+          tables.jobQueue.taskHistory(transaction: this)
           .select(1)
           .where(current: true)
           .whereRaw("#{tables.jobQueue.taskConfig.tableName}.name = #{tables.jobQueue.taskHistory.tableName}.name")
@@ -99,7 +99,7 @@ queueManualTask = (taskName, initiator) ->
     throw new Error('Task name required!')
   dbs.get('main').transaction (transaction) ->
     # need to be sure it's not already running
-    tables.jobQueue.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction: transaction)
     .select()
     .where
       current: true
@@ -108,7 +108,7 @@ queueManualTask = (taskName, initiator) ->
       if task?.length && !task[0].finished
         Promise.reject(new Error("Refusing to queue task #{taskName}; another instance is currently #{task[0].status}, started #{task[0].started} by #{task[0].initiator}"))
     .then () ->
-      tables.jobQueue.taskConfig(transaction)
+      tables.jobQueue.taskConfig(transaction: transaction)
       .select()
       .where(name: taskName)
       .then (result) ->
@@ -121,11 +121,11 @@ queueManualTask = (taskName, initiator) ->
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
   logger.spawn("task:#{task.name}").debug "Queueing task for batchId #{batchId}: #{task.name}"
-  tables.jobQueue.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction: transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
   .then () ->
-    tables.jobQueue.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction: transaction)
     .insert
       name: task.name
       data: task.data
@@ -134,7 +134,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
       warn_timeout_minutes: task.warn_timeout_minutes
       kill_timeout_minutes: task.kill_timeout_minutes
   .then () -> # clear out any subtasks for prior runs of this task
-    tables.jobQueue.currentSubtasks(transaction)
+    tables.jobQueue.currentSubtasks(transaction: transaction)
     .where(task_name: task.name)
     .whereNot(batch_id: batchId)
     .delete()
@@ -144,7 +144,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
   .then (taskImpl) ->
     taskImpl.initialize(transaction, batchId, task)
   .then (count) ->
-    tables.jobQueue.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction: transaction)
     .where
       name: task.name
       current: true
@@ -155,7 +155,7 @@ queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
 
 _checkTask = (transaction, batchId, taskName) ->
   # need to get taskData such that we fail if the task is not still preparing or running i.e. has errored in some way
-  tables.jobQueue.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction: transaction)
   .where
     current: true
     name: taskName
@@ -229,7 +229,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
           singleSubtask.task_data = taskData
           singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
           singleSubtask.batch_id = batchId
-          tables.jobQueue.currentSubtasks(transaction)
+          tables.jobQueue.currentSubtasks(transaction: transaction)
           .insert singleSubtask
         .then () ->
           return subtaskData.length
@@ -239,7 +239,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
-        tables.jobQueue.currentSubtasks(transaction)
+        tables.jobQueue.currentSubtasks(transaction: transaction)
         .insert singleSubtask
         .then () ->
           return 1
@@ -266,7 +266,7 @@ cancelTask = (taskName, status='canceled', withPrejudice=false) ->
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
   logger.info("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
   dbs.get('main').transaction (transaction) ->
-    tables.jobQueue.taskHistory(transaction)
+    tables.jobQueue.taskHistory(transaction: transaction)
     .where
       name: taskName
       current: true
@@ -276,7 +276,7 @@ cancelTask = (taskName, status='canceled', withPrejudice=false) ->
       status_changed: dbs.get('main').raw('NOW()')
       finished: dbs.get('main').raw('NOW()')
     .then () ->
-      subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction)
+      subtaskCancelQuery = tables.jobQueue.currentSubtasks(transaction: transaction)
       .where(task_name: taskName)
       if withPrejudice
         subtaskCancelQuery = subtaskCancelQuery
@@ -423,7 +423,7 @@ getQueuedSubtask = (queueName) ->
 
 _sendLongTaskWarnings = (transaction=null) ->
   # warn about long-running tasks
-  tables.jobQueue.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction: transaction)
   .whereNull('finished')
   .whereNotNull('warn_timeout_minutes')
   .where(current: true)
@@ -436,7 +436,7 @@ _sendLongTaskWarnings = (transaction=null) ->
 
 _killLongTasks = (transaction=null) ->
   # kill long-running tasks
-  tables.jobQueue.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction: transaction)
   .whereNull('finished')
   .whereNotNull('kill_timeout_minutes')
   .where(current: true)
@@ -453,7 +453,7 @@ _killLongTasks = (transaction=null) ->
 
 _handleZombies = (transaction=null) ->
   # mark subtasks that should have been suicidal (but maybe disappeared instead) as zombies, and possibly cancel their tasks
-  tables.jobQueue.currentSubtasks(transaction)
+  tables.jobQueue.currentSubtasks(transaction: transaction)
   .whereNull('finished')
   .whereNotNull('started')
   .whereNotNull('kill_timeout_seconds')
@@ -464,10 +464,10 @@ _handleZombies = (transaction=null) ->
 
 _handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
-  tables.jobQueue.taskHistory(transaction)
+  tables.jobQueue.taskHistory(transaction: transaction)
   .where(status: 'running')
   .whereNotExists () ->
-    tables.jobQueue.currentSubtasks(this)
+    tables.jobQueue.currentSubtasks(transaction: this)
     .select(1)
     .whereRaw("#{tables.jobQueue.currentSubtasks.tableName}.task_name = #{tables.jobQueue.taskHistory.tableName}.name")
     .where () ->
@@ -486,12 +486,12 @@ _handleSuccessfulTasks = (transaction=null) ->
 
 _setFinishedTimestamps = (transaction=null) ->
   # set the correct 'finished' value for tasks based on finished timestamps for their subtasks
-  tables.jobQueue.currentSubtasks(transaction)
+  tables.jobQueue.currentSubtasks(transaction: transaction)
   .select('task_name', dbs.get('main').raw('MAX(finished) AS finished'))
   .groupBy('task_name')
   .then (tasks=[]) ->
     Promise.map tasks, (task) ->
-      tables.jobQueue.taskHistory(transaction)
+      tables.jobQueue.taskHistory(transaction: transaction)
       .where
         current: true
         name: task.task_name
@@ -621,7 +621,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, s
   queueSubtask(transaction, batchId, taskData, subtask, data)
 
 getSubtaskConfig = (transaction, subtaskName, taskName) ->
-  tables.jobQueue.subtaskConfig(transaction)
+  tables.jobQueue.subtaskConfig(transaction: transaction)
   .where
     name: subtaskName
     task_name: taskName

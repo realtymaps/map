@@ -6,10 +6,8 @@ filterStatuses = require "../enums/filterStatuses"
 filterAddress = require "../enums/filterAddress"
 _ = require "lodash"
 tables = require "../config/tables"
-tableNames = require "../config/tableNames"
 
 dbFn = tables.property.propertyDetails
-dbTableName = tableNames.property.propertyDetails
 
 validators = validation.validators
 
@@ -77,29 +75,29 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
 
   query.limit(limit) if limit
   if bounds
-    sqlHelpers.whereInBounds(query, "#{dbTableName}.geom_polys_raw", bounds)
+    sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geom_polys_raw", bounds)
 
   if filters.status.length < statuses.length
-    sqlHelpers.whereIn(query, "#{dbTableName}.rm_status", filters.status)
+    sqlHelpers.whereIn(query, "#{dbFn.tableName}.rm_status", filters.status)
 
-  sqlHelpers.between(query, "#{dbTableName}.price", filters.priceMin, filters.priceMax)
-  sqlHelpers.between(query, "#{dbTableName}.finished_sqft", filters.sqftMin, filters.sqftMax)
-  sqlHelpers.between(query, "#{dbTableName}.acres", filters.acresMin, filters.acresMax)
+  sqlHelpers.between(query, "#{dbFn.tableName}.price", filters.priceMin, filters.priceMax)
+  sqlHelpers.between(query, "#{dbFn.tableName}.finished_sqft", filters.sqftMin, filters.sqftMax)
+  sqlHelpers.between(query, "#{dbFn.tableName}.acres", filters.acresMin, filters.acresMax)
 
   if filters.bedsMin
-    query.where("#{dbTableName}.bedrooms", ">=", filters.bedsMin)
+    query.where("#{dbFn.tableName}.bedrooms", ">=", filters.bedsMin)
 
   if filters.bathsMin
-    query.where("#{dbTableName}.baths_full", ">=", filters.bathsMin)
+    query.where("#{dbFn.tableName}.baths_full", ">=", filters.bathsMin)
 
   if filters.hasOwner?
     # only checking owner_name here and now owner_name2 because we do normalization in the property summary
     # table that ensures we never have owner_name2 if we don"t have owner_name -- therefore checking
     # only owner_name does the same thing and creates a more efficient query
     if filters.hasOwner
-      query.whereNotNull("#{dbTableName}.owner_name")
+      query.whereNotNull("#{dbFn.tableName}.owner_name")
     else
-      query.whereNull("#{dbTableName}.owner_name")
+      query.whereNull("#{dbFn.tableName}.owner_name")
 
   if filters.ownerName
     # need to avoid any characters that have special meanings in regexes
@@ -110,7 +108,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
       # make dashes and apostraphes optional, can be missing or replaced with a space in the name text
       # since this is after the split, a space here will be an actual part of the search
       result.push chunk.replace(/(["-])/g, "[$1 ]?")
-    sqlHelpers.allPatternsInAnyColumn(query, patterns, ["#{dbTableName}.owner_name", "#{dbTableName}.owner_name2"])
+    sqlHelpers.allPatternsInAnyColumn(query, patterns, ["#{dbFn.tableName}.owner_name", "#{dbFn.tableName}.owner_name2"])
 
   if filters.listedDaysMin
     sqlHelpers.ageOrDaysFromStartToNow(query, "listing_age_days", "listing_start_date", ">=", filters.listedDaysMin)
@@ -125,9 +123,9 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
       for key, value of filters.address
         if key == 'zip'
           # Match 5-digit zip even if DB contains zip ext
-          @where("#{dbTableName}.#{key}", "like", "#{value}%")
+          @where("#{dbFn.tableName}.#{key}", "like", "#{value}%")
         else
-          @where("#{dbTableName}.#{key}", "=", value)
+          @where("#{dbFn.tableName}.#{key}", "=", value)
 
   query
 

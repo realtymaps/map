@@ -1,7 +1,6 @@
 logger = require '../config/logger'
 BaseFilterSummaryService = require './service.properties.base.filterSummary'
 _ = require 'lodash'
-tablesNames = require '../config/tableNames'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 {validators} = require '../utils/util.validation'
@@ -16,8 +15,8 @@ override:
 - tested non knex query that works
 ###
 
-detailsName = tablesNames.property.propertyDetails
-drawnShapesName = tablesNames.user.drawnShapes
+detailsName = tables.property.propertyDetails.tableName
+drawnShapesName = tables.user.drawnShapes.tableName
 
 throwOnUndefined = (thing, name) ->
   unless thing

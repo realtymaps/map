@@ -1,0 +1,24 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+if [[ "$SKIP_DBSYNC" == "true" ]]
+then
+    exit 0
+fi
+
+DB_LABEL=`echo "$1" | tr '[a-z]' '[A-Z]'`
+DST_URL=`$SCRIPT_DIR/database/getDbUrl ${DB_LABEL}_DATABASE`
+
+if [[ $1 == *"@"* ]]
+then
+    DST_URL="${DST_URL}?ssl=true"
+fi
+
+source $SCRIPT_DIR/environmentNormalization/dbsync
+
+
+echo "SYNC: performing db migrations on: ${DB_LABEL}_DATABASE"
+$DBSYNC --path migrations/$1 --client pg --connection $DST_URL --reminder 1 --recursive
