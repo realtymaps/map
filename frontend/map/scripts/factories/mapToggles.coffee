@@ -1,6 +1,7 @@
+###globals _###
 app = require '../app.coffee'
 
-app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
+app.factory 'rmapsMapTogglesFactory', () ->
 
   (json) ->
     _locationCb = null
@@ -16,6 +17,7 @@ app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
     @showNeighbourhoodTap = false
     @showNotes = false
     @propertiesInShapes = false
+    @isSketchMode = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
@@ -26,30 +28,38 @@ app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
     @toggleNotes = () =>
       @showNotes = !@showNotes
 
-    @toggleNoteTap = =>
+    @toggleNoteTap = () =>
       @showNoteTap = !@showNoteTap
 
-    @toggleAddresses = =>
+    @toggleAddresses = () =>
       @showAddresses = !@showAddresses
 
-    @togglePrices = =>
+    @togglePrices = () =>
       @showPrices = !@showPrices
 
-    @toggleDetails = =>
+    @toggleDetails = () =>
       @showDetails = !@showDetails
 
-    @toggleResults = =>
+    @toggleResults = () =>
       if @showDetails
         @showDetails = false
         @showResults = true
         return
       @showResults =  !@showResults
 
-    @toggleFilters = =>
+    @toggleFilters = () =>
       @showFilters = !@showFilters
 
-    @togglePropertiesInShapes = =>
-      @propertiesInShapes = !@propertiesInShapes
+    @setPropetiesInShapes = (bool) ->
+      if bool != @propertiesInShapes
+        @propertiesInShapes = bool
+
+    @togglePropertiesInShapes = () ->
+      return if @isSketchMode && @propertiesInShapes
+      @setPropetiesInShapes !@propertiesInShapes
+
+    @toggleIsSketchMode = () =>
+      @isSketchMode = !@isSketchMode
 
     @toggleSearch = (val) =>
       if val?
@@ -64,7 +74,7 @@ app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
     @setLocationCb = (cb) ->
       _locationCb = cb
 
-    @toggleLocation = =>
+    @toggleLocation = () =>
       @isFetchingLocation = true
       navigator.geolocation.getCurrentPosition (location) =>
         @isFetchingLocation = false

@@ -2,13 +2,13 @@
 
 /* Use @media mobile, @media desktop, etc. */
 
-mobile = "(max-width: " + xs-1 + ")"
+$mobile = "(max-width: " + xs-1 + ")"
 
-mobileUp = "(min-width:" + xs + ") and (max-width:" + s-1 + ")"
+$mobileUp= "(min-width:" + xs + ") and (max-width:" + s-1 + ")"
 
-tablet = "(min-width:" + s + ") and (max-width:" + md-1 + ")"
+$tablet= "(min-width:" + s + ") and (max-width:" + md-1 + ")"
 
-desktop = "(min-width:" + md + ")"
+$desktop= "(min-width:" + md + ")"
 
 /*
  *  MARKER Classes to be used as parent selectors
@@ -22,7 +22,7 @@ desktop = "(min-width:" + md + ")"
 }
 
 /*
- * Minimum allowable width of desktop page
+ * Minimum allowable width of $desktoppage
  */
 .mobile-page.desktop-view
   min-width: xs;
@@ -30,47 +30,45 @@ desktop = "(min-width:" + md + ")"
 /*RWD helpers*/
 
 .hidden-xs
-  @media mobile
+  @media $mobile
     display none!important
 
 .hidden-s
-  @media mobileUp
+  @media $mobileUp
     display none!important
 
 .hidden-md
-  @media tablet
+  @media $tablet
     display none!important
 
 .hidden-lg
-  @media desktop
+  @media $desktop
     display none!important
 
 .visible-xs
-  @media mobile
+  @media $mobile
     display block!important
 
 .visible-s
-  @media mobileUp
+  @media $mobileUp
     display block!important
 
 .visible-md
-  @media tablet
+  @media $tablet
     display block!important
 
 .visible-lg
-  @media desktop
+  @media $desktop
     display block!important
 
 .desktop-only
   //display none
-  //@media desktop
-  //  display block!important
-  //@media tablet
-  //  display block!important
-  //@media mobileUp
-  //  display block!important
+  //@media $desktop  //    display block!important
+  //@media $tablet  //    display block!important
+  //@media $mobileUp
+  //    display block!important
 
 .mobile-only
   //display none
-  //@media mobile
+  //@media $mobile
   //  display block!important
