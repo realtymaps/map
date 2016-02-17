@@ -8,11 +8,6 @@ ORIG_DIR=`pwd`
 cd $SCRIPT_DIR/..
 
 
-echo "~~~~~~~~~~~~~~~~~~~~~~~~ bounced: MAIN_DATABASE_URL=$MAIN_DATABASE_URL"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~ bounced: RAW_TEMP_DATABASE_URL=$RAW_TEMP_DATABASE_URL"
-echo "~~~~~~~~~~~~~~~~~~~~~~~~ bounced: NORMALIZED_DATABASE_URL=$NORMALIZED_DATABASE_URL"
-
-
 $SCRIPT_DIR/database/syncDb main
 $SCRIPT_DIR/database/syncDb normalized
 

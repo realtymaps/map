@@ -17,8 +17,8 @@ VARIABLE_BASE="${STR_SPLIT[0]}"
 SOURCE_APP_NAME="${STR_SPLIT[1]}"
 
 
-# echoes a db url via indirect reference to <PARAM>_VARIABLE,
-# falling back to a direct reference to <PARAM>_URL
+# echoes a db url via direct reference to <PARAM>_URL,
+# falling back to an indirect reference to <PARAM>_VARIABLE
 
 VARIABLE_HOLDER="${VARIABLE_BASE}_VARIABLE"
 
@@ -27,21 +27,24 @@ if [[ "$SOURCE_APP_NAME" == "" ]]
 then
     # as evaluated locally
 
-    INDIRECT="${!VARIABLE_HOLDER}"
-    if [[ "$INDIRECT" == "" ]]
-    then
-        INDIRECT="${VARIABLE_BASE}_URL"
-    fi
+    INDIRECT="${VARIABLE_BASE}_URL"
     DIRECT="${!INDIRECT}"
+
+    if [[ "$DIRECT" == "" ]]
+    then
+        INDIRECT="${!VARIABLE_HOLDER}"
+        DIRECT="${!INDIRECT}"
+    fi
 else
     # as evaluated on the heroku app given after '@'
 
-    INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
+    INDIRECT="${VARIABLE_BASE}_URL"
+    DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
     if [[ "$INDIRECT" == "" ]]
     then
-        INDIRECT="${VARIABLE_BASE}_URL"
+        INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
+        DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
     fi
-    DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
 fi
 
 echo "${DIRECT}"
