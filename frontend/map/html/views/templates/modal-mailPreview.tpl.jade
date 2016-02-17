@@ -2,5 +2,14 @@
   h3.modal-title {{template.title}}
   button(ng-click="close()").btn.btn-danger Close
 
-.modal-body
+.modal-body(ng-show="processing")
+  .waiting
+    p Processing preview...
+    img(src="assets/icon_loading_earth.gif")
+
+.modal-body(ng-hide="mediaType != 'pdf' || processing ")
+  embed#mail-preview-pdf.pdf-preview-letter(embed-src="{{template.pdf}}" src="{{template.pdf}}")
+
+.modal-body(ng-hide="mediaType != 'iframe' || processing ")
   iframe#mail-preview-iframe(frameborder="0" ng-class="{'iframe-preview-letter': template.category == 'letter', 'iframe-preview-postcard': template.category == 'postcard'}")
+

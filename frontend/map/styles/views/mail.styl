@@ -13,25 +13,45 @@
     border-top 1px solid $gray_lighter !important
 
 .preview-mail-window
+  .modal-body
+    width 100%
+    height 90%
+    text-align center
+    overflow scroll
+    
+    .waiting
+      width 310px
+      margin auto
+      margin-top 100px
+      p
+        float left
+        font-size: 30px
+      img
+        float right
+        height 30px
+        width 30px
+      
+
+  .iframe-preview-postcard, .modal-dialog
+    width 10in
+    height 90%
+
+  .modal-content
+    background-color #FFFFFF
+    height 100%
+    overflow auto
+
   .iframe-preview-letter
     width 8.5in
     height 11in
-    box-shadow: 4px 4px 20px #888;
+    box-shadow 4px 4px 20px #888
+    border 1px solid rgba(0, 0, 0, 0.2)
+    margin-bottom 25px
 
-  .iframe-preview-postcard
-
-  .modal-dialog
-    width 10in
-    height 11in
-
-  .modal-body
-    width 100%
-    height 8in
-    text-align center
-    overflow scroll
-
-  .modal-content
-    background-color #FFF8DC
+  .pdf-preview-letter
+    width 8.5in
+    height 90%
+    border 1px solid rgba(0, 0, 0, 0.2)
 
 
 .mail

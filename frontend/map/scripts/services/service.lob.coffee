@@ -7,17 +7,24 @@ app.service 'rmapsLobService', ($log, $http) ->
   quoteUrl = backendRoutes.snail.quote
   sendUrl = backendRoutes.snail.send
 
-  handlePost = (postParams...) ->
+  _handlePost = (postParams...) ->
     $http.post(postParams...).success (data) ->
       $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"
       data
 
-
-  getQuote: (lobData) ->
-    handlePost(quoteUrl, lobData, alerts:false).then (response) ->
+  _getQuoteAndPdf = (lobData) ->
+    _handlePost(quoteUrl, lobData, alerts:false).then (response) ->
       $log.debug () -> "getQuote response: #{JSON.stringify(response)}"
       response.data
 
+  getPdf: (lobData) ->
+    _getQuoteAndPdf(lobData).then (data)->
+      data.pdf
+
+  getQuote: (lobData) ->
+    _getQuoteAndPdf(lobData).then (data)->
+      data.price
+
   submit: (lobData) ->
     url = sendUrl.replace(':campaign_id', lobData.campaign.id)
-    handlePost(url, lobData, alerts:false)
+    _handlePost(url, lobData, alerts:false)

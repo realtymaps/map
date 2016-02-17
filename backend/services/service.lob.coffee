@@ -231,8 +231,11 @@ getPriceQuote = (userId, data) ->
       letter.to = _getAddress recipient
       createLetterTest letter
   .then (lobResponses) ->
-    _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
-      total + Number(price)
+    res =
+      pdf: lobResponses[0].url
+      thumbnails: lobResponses[0].thumbnails
+      price: _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
+        total + Number(price)
 
 module.exports =
   getPriceQuote: getPriceQuote

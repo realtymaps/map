@@ -45,9 +45,9 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
     if $scope.templObj.mailCampaign?.recipients?.length == 0
       return $q.when("0.00")
     rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
-    .then (data) ->
-      $log.debug -> "getquote data: #{JSON.stringify(data)}"
-      data.price
+    .then (quote) ->
+      $log.debug -> "getquote data: #{JSON.stringify(quote)}"
+      quote
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
