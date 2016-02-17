@@ -5,8 +5,8 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
     li
       button.btn.btn-transparent.nav-btn(
         ng-click="Toggles.toggleIsSketchMode(); Toggles.togglePropertiesInShapes(true);"
-        popover-placement="top"
-        popover="Turn On/Off Sketch Mode"
+        popover-placement="right"
+        popover="Sketch Mode"
         popover-trigger="mouseenter"
         ng-class="Toggles.isSketchMode ? 'on' : ''")
         span.icon.icon-pen2
@@ -36,8 +36,8 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
     li
       button.btn.btn-transparent.nav-btn.add-neighbour(
         ng-controller="rmapsNeighbourhoodsModalCtrl"
-        popover-placement="top"
+        popover-placement="right"
         popover-trigger="mouseenter"
-        popover="Add Neighbour"
+        popover="Add Neighbor"
         ng-click="Toggles.enableNeighbourhoodTap()")
           span.icon.icon-add_neighbourhood
