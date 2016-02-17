@@ -1,20 +1,79 @@
-$fnMakeMapDrawTools()
-  .draw-tools
-    position absolute
-    right 310px
-    top 22px
-    width 110px
 
-    button
-      display inline-block
-      margin-right 5px
-      // float left
-      clear both
-      width 50px
-      height 50px
-      font-size 18px
-      span
-        font-size xx-large
-    .btn-transparent.properties-in-shapes.on
-      color: $white
-      background $rm-property-sale-green
+$fnMakeMapDrawTools()
+  $makeHeightWidth(pix)
+    height pix !important
+    width pix !important
+
+  $makeTool(pix, marginArg = false)
+    .tools
+      button
+        $makeHeightWidth(pix)
+        if marginArg
+          margin marginArg
+
+
+  $drawToolHeight = 50px
+  $drawToolSmallButtonHeight = 25px
+  $drawToolSmallHeight = 150px
+
+  .draw-tools
+    width 100%
+    position absolute
+    z-index 20
+    background-color $charcoal
+    color $white
+    height $drawToolHeight
+
+    @media (max-width: xs-1)
+      height $drawToolSmallHeight !important
+      .row
+        height $drawToolSmallHeight !important
+        > */*all children of .row*/
+          height $drawToolSmallHeight !important
+
+      $makeTool($drawToolSmallButtonHeight, 10px)
+
+    @media (min-width: xs)
+      $makeTool($drawToolHeight)
+
+    .close-btn
+      transform translateY(25%)
+
+    h4
+      line-height $drawToolHeight
+      margin-top 0
+      margin-bottom 0
+
+    .row
+      > */*all children of .row*/
+        height $drawToolHeight
+
+    .tools
+      transform translateX(25%)
+      button
+        display inline
+        box-shadow none
+
+    .nav-btn
+      font-size 28px
+
+    .btn-transparent
+      height $drawToolHeight
+      background-color transparent
+      color $white
+
+      &:hover
+        background-color transparent
+
+    /*Want to slide down*/
+    &.ng-enter
+    &.ng-leave
+      $fnMakeTransition(300ms ease-in-out)
+
+    &.ng-enter
+    &.ng-leave.ng-leave-active
+      opacity 0
+
+    &.ng-leave
+    &.ng-enter.ng-enter-active
+      opacity 1

@@ -37,13 +37,6 @@ directiveControls = [
     position: 'bottomleft'
   directive: ($log) ->
     template: require('../../../html/includes/map/_location.jade')()
-,
-  name: 'drawtools'
-  options:
-    position: 'bottomright'
-  directive: ($log) ->
-    tmp = require('../../../html/includes/map/_drawTools.jade')()
-    template: tmp
 ]
 
 for control in directiveControls
