@@ -1,12 +1,19 @@
 .sender-info
     .inner
         .container
-            h1.pageTitle Sender Info
             form
                 .row
                     .col-sm-8
                         .row
+                            h1.pageTitle Campaign Info
+                            .col-sm-12
+                                .form-group
+                                    label Campaign Name
+                                    input.form-control(type="text" ng-model="campaign.name")
+                        .row
+                            h1.pageTitle Sender Info
                             .col-sm-6
+
                                 .form-group
                                     label First Name
                                     input.form-control(type="text" ng-model="senderData.first_name")

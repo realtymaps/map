@@ -1,3 +1,4 @@
+###globals L,_###
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 
@@ -20,7 +21,7 @@ app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsPrincipalService) ->
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService) ->
 
     limits = rmapsMainOptions.map
 
@@ -42,6 +43,7 @@ app.factory 'rmapsMapFactory',
       if toggles?.setLocationCb?
         toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
+
 
     class Map extends rmapsBaseMapFactory
       baseIsLoaded = false
@@ -148,7 +150,6 @@ app.factory 'rmapsMapFactory',
               rmapsControlsService.LayerControl scope: $scope
               self.zoomBox
               rmapsControlsService.LocationControl scope: $scope
-              rmapsControlsService.DrawtoolsControl scope: $scope
             ]
 
 

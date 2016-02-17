@@ -9,7 +9,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
     'recipientInfo'
-    'senderInfo'
+    'campaignInfo'
     'selectTemplate'
     'editTemplate'
     'review'
@@ -35,11 +35,12 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
 
   _changeStep = (next = 1) ->
     rmapsMailTemplateService.save()
-    thisStep = _getStep $state.current.name
-    newStep = $scope.steps[thisStep + next]
-    if thisStep == -1 or !newStep? then return
-    $log.debug "_changeStep() going to #{newStep}"
-    $state.go($state.get(newStep))
+    .then () ->
+      thisStep = _getStep $state.current.name
+      newStep = $scope.steps[thisStep + next]
+      if thisStep == -1 or !newStep? then return
+      $log.debug "_changeStep() going to #{newStep}"
+      $state.go($state.get(newStep))
 
   $scope.nextStep = () ->
     _changeStep(1)
@@ -54,5 +55,8 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
       return rmapsMailTemplateService.load $state.params.id
     else
       campaign = rmapsMailTemplateService.getCampaign()
-      $log.debug "Continuing with mail campaign #{campaign.id}"
-      return $q.when campaign
+      if $state.current.name != 'recipientInfo' and !campaign.id?
+        $state.go('mail')
+      else
+        $log.debug "Continuing with mail campaign #{campaign.id}"
+        return $q.when campaign
