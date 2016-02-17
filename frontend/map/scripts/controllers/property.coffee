@@ -21,7 +21,7 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, rmapsProperties
   getPropertyDetail = (propertyId) ->
     $log.debug "Getting property detail for #{propertyId}"
 
-    rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all')
+    rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
     .then (data) ->
       $scope.selectedResult = data
 
