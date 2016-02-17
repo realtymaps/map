@@ -147,7 +147,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
   buildChildState 'selectTemplate', 'mailWizard'
   buildChildState 'editTemplate', 'mailWizard'
-  buildChildState 'senderInfo', 'mailWizard'
+  buildChildState 'campaignInfo', 'mailWizard'
   buildChildState 'recipientInfo', 'mailWizard'
   buildChildState 'review', 'mailWizard'
 

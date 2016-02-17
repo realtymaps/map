@@ -9,7 +9,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
     'recipientInfo'
-    'senderInfo'
+    'campaignInfo'
     'selectTemplate'
     'editTemplate'
     'review'
