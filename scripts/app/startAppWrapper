@@ -7,7 +7,16 @@ APP_DIR="$SCRIPT_DIR/.."
 
 $SCRIPT_DIR/app/stopServe
 
+
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ pre: MAIN_DATABASE_URL=$MAIN_DATABASE_URL"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ pre: RAW_TEMP_DATABASE_URL=$RAW_TEMP_DATABASE_URL"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ pre: NORMALIZED_DATABASE_URL=$NORMALIZED_DATABASE_URL"
+
 source $SCRIPT_DIR/app/syncVars
+
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ post: MAIN_DATABASE_URL=$MAIN_DATABASE_URL"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ post: RAW_TEMP_DATABASE_URL=$RAW_TEMP_DATABASE_URL"
+echo "~~~~~~~~~~~~~~~~~~~~~~~~ post: NORMALIZED_DATABASE_URL=$NORMALIZED_DATABASE_URL"
 
 
 if [[ "$SKIP_NGINX" == "true" ]]
