@@ -1,6 +1,7 @@
+###globals _###
 app = require '../app.coffee'
 
-app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
+app.factory 'rmapsMapTogglesFactory', () ->
 
   (json) ->
     _locationCb = null
@@ -49,11 +50,13 @@ app.factory 'rmapsMapTogglesFactory', ($rootScope) ->
     @toggleFilters = () =>
       @showFilters = !@showFilters
 
-    @togglePropertiesInShapes = () =>
-      @propertiesInShapes = !@propertiesInShapes
-
     @setPropetiesInShapes = (bool) ->
-      @propertiesInShapes = bool
+      if bool != @propertiesInShapes
+        @propertiesInShapes = bool
+
+    @togglePropertiesInShapes = () ->
+      return if @isSketchMode && @propertiesInShapes
+      @setPropetiesInShapes !@propertiesInShapes
 
     @toggleIsSketchMode = () =>
       @isSketchMode = !@isSketchMode
