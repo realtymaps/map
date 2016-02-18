@@ -61,6 +61,7 @@ module.exports =
     notes: 'user_notes'
     drawnShapes: 'user_drawn_shapes'
     creditCards: 'user_credit_cards'
+    shellHistory: 'user_shell_history'
     errors: 'user_errors'
   mail:
     campaign: 'user_mail_campaigns'
