@@ -46,7 +46,7 @@ _transform = (fieldTransform, cipherKey, accountInfo) ->
 getAccountInfo = (name, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   environment = opts.environment ? config.ENV
-  query = tables.config.externalAccounts(opts.transaction)
+  query = tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: name)
   .where () ->
     this.where(environment: environment)
@@ -57,7 +57,7 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
-  query = tables.config.externalAccounts(opts.transaction)
+  query = tables.config.externalAccounts(transaction: opts.transaction)
   .insert(_transform(_encrypt, cipherKey, accountInfo))
   if opts.logOnly
     return logger.info(query.toString())
@@ -65,7 +65,7 @@ insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
-  query = tables.config.externalAccounts(opts.transaction)
+  query = tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: accountInfo.name)
   if !accountInfo.environment?
     query = query.whereNull('environment')

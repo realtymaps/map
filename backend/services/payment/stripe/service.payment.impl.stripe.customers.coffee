@@ -50,7 +50,7 @@ StripeCustomers = (stripe) ->
             attempt: attempt or 1
 
         logger.debug payload, true
-        tables.auth.toM_errors(trx).insert payload
+        tables.user.errors(transaction: trx).insert payload
 
       handleObj[StripeInvalidRequestError.type] = () ->
         return if /no such customer/i.test error.message
@@ -77,7 +77,7 @@ StripeCustomers = (stripe) ->
     .then (customer) ->
       _.extend authUser, stripe_customer_id: customer.id
 
-      tables.auth.user(trx)
+      tables.auth.user(transaction: trx)
       .update stripe_customer_id: customer.id
       .where id: authUser.id
       .then () ->

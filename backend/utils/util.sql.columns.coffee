@@ -1,5 +1,4 @@
 tables = require '../config/tables'
-tablesNames = require '../config/tableNames'
 _ = require 'lodash'
 
 ageOrDaysFromStartToNow = (listingAge, beginDate) ->
@@ -24,7 +23,7 @@ basicColumns = do ->
       'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
       'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
       'owner_zip'
-    ].map((name)-> tablesNames.property.propertyDetails + '.' + name).join(', ')
+    ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     # columns returned for additional detail results
     detail: [
       'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',

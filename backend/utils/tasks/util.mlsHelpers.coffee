@@ -40,7 +40,7 @@ loadUpdates = (subtask, options) ->
           throw SoftFail(error, "Transient RETS error; try again later")
         throw error
     .then (retsStream) ->
-      rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+      rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
       dataLoadHistory =
         data_source_id: options.dataSourceId
         data_source_type: 'mls'

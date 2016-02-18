@@ -4,10 +4,16 @@ set -e
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 APP_DIR="$SCRIPT_DIR/.."
 
+
+$SCRIPT_DIR/app/stopServe
+
+source $SCRIPT_DIR/app/syncVars
+
+
 if [[ "$SKIP_NGINX" == "true" ]]
 then
   export NGINX_SOCKET_FILENAME=""
-  $SCRIPT_DIR/app/startApp
+  START_COMMAND="$SCRIPT_DIR/app/startApp"
 else
   if [[ "$IS_HEROKU" == "" ]]
   then
@@ -50,5 +56,12 @@ else
     fi
   ) &
 
-  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
+  START_COMMAND="./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp"
 fi
+
+if [[ "$IS_HEROKU" != "" ]]
+then
+    START_COMMAND="bin/start-pgbouncer-stunnel $START_COMMAND"
+fi
+
+$START_COMMAND

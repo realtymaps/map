@@ -18,14 +18,14 @@ _getValuesMap = (namespace, defaultValues, transaction) ->
     map
 
 _getValues = (namespace, transaction) ->
-  tables.config.keystore(transaction)
+  tables.config.keystore(transaction: transaction)
   .select('key', 'value')
   .where(namespace: namespace)
   .then (result=[]) ->
     result
 
 _getValue = (key, namespace, defaultValue, transaction) ->
-  query = tables.config.keystore(transaction)
+  query = tables.config.keystore(transaction: transaction)
   .select('value')
   .where(key: key)
   if !namespace?
@@ -46,7 +46,7 @@ setValue = (key, value, options={}) ->
     dbs.get('main').transaction _setValueImpl.bind(null, key, value, options)
 
 _setValueImpl = (key, value, options, transaction) ->
-  query = tables.config.keystore(options.transaction)
+  query = tables.config.keystore(transaction: options.transaction)
   if !options.namespace?
     query = query.whereNull('namespace')
   else
@@ -56,7 +56,7 @@ _setValueImpl = (key, value, options, transaction) ->
   .then (result) ->
     if !result?.length
       # couldn't find it to update, need to insert
-      tables.config.keystore(options.transaction)
+      tables.config.keystore(transaction: options.transaction)
       .insert
         key: key
         value: sqlHelpers.safeJsonArray(value)
@@ -65,7 +65,7 @@ _setValueImpl = (key, value, options, transaction) ->
         undefined
     else
       # found a result, so update it and return the old value
-      query = tables.config.keystore(options.transaction)
+      query = tables.config.keystore(transaction: options.transaction)
       if !options.namespace?
         query = query.whereNull('namespace')
       else

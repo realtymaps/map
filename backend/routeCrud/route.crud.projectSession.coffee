@@ -2,7 +2,7 @@ _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
-usrTableNames = require('../config/tableNames').user
+tables = require('../config/tables')
 {joinColumnNames} = require '../utils/util.sql.columns'
 {validators} = require '../utils/util.validation'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -116,11 +116,11 @@ class ProjectRouteCrud extends RouteCrud
     #                                          :notes_id"  :(id -> project_id)
     @notesCrud = routeCrud(@svc.notes, 'notes_id', 'NotesHasManyRouteCrud',['query','params'])
     @notesCrud.rootGETTransforms =
-      params: validators.mapKeys id: "#{usrTableNames.notes}.project_id"
+      params: validators.mapKeys id: "#{tables.user.notes.tableName}.project_id"
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
     @notesCrud.byIdGETTransforms =
-      params: validators.mapKeys {id: "#{usrTableNames.project}.id",notes_id: "#{usrTableNames.notes}.id"}
+      params: validators.mapKeys {id: "#{tables.user.project.tableName}.id",notes_id: "#{tables.user.notes.tableName}.id"}
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
@@ -129,11 +129,11 @@ class ProjectRouteCrud extends RouteCrud
     @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
     @drawnShapesCrud.doLogRequest = ['params', 'body']
     @drawnShapesCrud.rootGETTransforms =
-      params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id"
+      params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id"
       query: validators.object isEmptyProtect: true
       body: validators.object isEmptyProtect: true
     @drawnShapesCrud.byIdGETTransforms =
-      params: validators.mapKeys {id: "#{usrTableNames.project}.id",drawn_shapes_id: "#{usrTableNames.drawnShapes}.id"}
+      params: validators.mapKeys {id: "#{tables.user.project.tableName}.id",drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"}
 
     bodyTransform =
       validators.object
@@ -143,7 +143,7 @@ class ProjectRouteCrud extends RouteCrud
           geom_line_json:  validators.geojson(toCrs:true)
 
     @drawnShapesCrud.rootPOSTTransforms =
-      params: validators.mapKeys id: "#{usrTableNames.project}.id"
+      params: validators.mapKeys id: "#{tables.user.project.tableName}.id"
       query: validators.object isEmptyProtect: true
       body: bodyTransform
 
@@ -151,14 +151,14 @@ class ProjectRouteCrud extends RouteCrud
     @profilesCrud.doLogRequest = ['params', 'body']
     @profilesCrud.rootGETTransforms =
       params: [
-        validators.mapKeys id: "#{usrTableNames.profile}.project_id"
-        validators.reqId toKey: "#{usrTableNames.profile}.auth_user_id"
+        validators.mapKeys id: "#{tables.user.profile.tableName}.project_id"
+        validators.reqId toKey: "#{tables.user.profile.tableName}.auth_user_id"
       ]
 
     for route in ['byIdPUT', 'byIdDELETE']
       do (route) =>
         @drawnShapesCrud[route + 'Transforms'] =
-          params: validators.mapKeys id: "#{usrTableNames.drawnShapes}.project_id", drawn_shapes_id: 'id'
+          params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id", drawn_shapes_id: 'id'
           query: validators.object isEmptyProtect: true
           body: bodyTransform
 
@@ -185,7 +185,7 @@ class ProjectRouteCrud extends RouteCrud
       projects
 
   rootGET: (req, res, next) ->
-    super req, res, next
+    super(req, res, next)
     .then (projects) =>
       newReq = @cloneRequest(req)
       logger.debug "newReq: #{JSON.stringify newReq}"
@@ -197,11 +197,11 @@ class ProjectRouteCrud extends RouteCrud
 
   byIdGET: (req, res, next) =>
     #so this is where bookshelf or objection.js would be much more concise
-    super req, res, next
+    super(req, res, next)
     .then (project) ->
       if not project?
         # Look for viewer profile
-        userProfileSvc.getAll "#{usrTableNames.profile}.auth_user_id": req.user.id, project_id: req.params.id
+        userProfileSvc.getAll "#{tables.user.profile.tableName}.auth_user_id": req.user.id, project_id: req.params.id
         .then sqlHelpers.singleRow
       else
         project
@@ -214,7 +214,7 @@ class ProjectRouteCrud extends RouteCrud
       .then sqlHelpers.singleRow
 
   byIdDELETE: (req, res, next) ->
-    super req, res, next
+    super(req, res, next)
     .then () ->
       userUtils.cacheUserValues req, profiles: true # to force profiles refresh in cache
     .then () ->

@@ -5,7 +5,7 @@ dbs = require '../../backend/config/dbs'
 
 
 gulp.task 'unitTestPrep', (done) ->
-  dbs.disable('unit tests')
+  dbs.disable()
 
   externalAccounts = require "../../backend/services/service.externalAccounts"
   accounts =

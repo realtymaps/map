@@ -6,7 +6,7 @@ sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 
 Promise.try () ->
   prefix = "ENCRYPTION_AT_REST sync:"
-  
+
   # bail early if there's no old key
   if !process.env.OLD_ENCRYPTION_AT_REST
     logger.info "#{prefix} No old encryption key detected."
@@ -18,29 +18,29 @@ Promise.try () ->
   Encryptor = require "#{basePath}/utils/util.encryptor"
   newEncryptor = new Encryptor(cipherKey: process.env.ENCRYPTION_AT_REST)
   oldEncryptor = new Encryptor(cipherKey: process.env.OLD_ENCRYPTION_AT_REST)
-  
+
   keystore.getValue('ENCRYPTION_AT_REST', namespace: 'sanity')
   .then (sanity) ->
     if newEncryptor.decrypt(sanity) == 'you are using the correct key!'
       logger.warn "#{prefix} Old encryption key detected, but new key is already in use."
       return Promise.reject(exit: 0)
-  
+
     if oldEncryptor.decrypt(sanity) != 'you are using the correct key!'
       logger.error "#{prefix} Neither old nor new key checks out!!!  OH NOES!"
       return Promise.reject(exit: 1)
-      
+
     logger.info "#{prefix} Old encryption key still in use, updating encrypted payloads."
   .then () ->
-    
+
     tables = require "#{basePath}/config/tables"
-  
-    
+
+
     recrypt = (payload) ->
       if !payload?
         return payload
       return newEncryptor.encrypt(oldEncryptor.decrypt(payload))
-  
-  
+
+
     dbs = require "#{basePath}/config/dbs"
     dbs.get('main').transaction (transaction) ->
       Promise.try () ->
@@ -49,7 +49,7 @@ Promise.try () ->
       .then () ->
         logger.info "#{prefix} changing key for external accounts..."
         externalAccounts = require '../../backend/services/service.externalAccounts'
-        tables.config.externalAccounts(transaction)
+        tables.config.externalAccounts(transaction: transaction)
         .select('name')
         .then (externalAccountsList) ->
           Promise.map externalAccountsList, (accountName) ->
