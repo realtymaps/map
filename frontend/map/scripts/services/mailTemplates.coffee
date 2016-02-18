@@ -7,8 +7,6 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   $log = $log.spawn 'mail:mailTemplate'
   mailCampaign = null
 
-  previewUrl = null
-
   campaignDefaults =
     id: null
     auth_user_id: null
