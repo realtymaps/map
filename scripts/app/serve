@@ -27,10 +27,15 @@ then
   unset PORT
 fi
 
-if [[ "$IS_HEROKU" != "" ]]
-then
-  gulp $GULP_COLOR prod
-  bin/start-pgbouncer-stunnel coffee ./backend/server.coffee
+if [[ "$IS_HEROKU" != "" ]]; then
+  gulp $GULP_COLOR prod &
+  if [[ "$DO_PERF" != "" ]]; then
+    # PERF="/app/.apt/usr/lib/linux-tools-3.13.0-71/perf"
+    # $PERF record -e cycles:u -g --
+    bin/start-pgbouncer-stunnel coffee --nodejs --perf-basic-prof ./backend/server.coffee
+  else
+    bin/start-pgbouncer-stunnel coffee ./backend/server.coffee
+  fi
 else
   gulp $GULP_COLOR $GULP_TARGET $DEBUG_ARG
 fi
