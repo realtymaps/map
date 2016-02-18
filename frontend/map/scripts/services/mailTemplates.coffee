@@ -136,7 +136,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   load: (campaignId) ->
     rmapsMailCampaignService.get id: campaignId
     .then (campaigns) ->
-      $log.debug "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
+      $log.debug -> "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
       mailCampaign = campaigns[0] if campaigns.length
 
   save: () ->

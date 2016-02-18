@@ -1,6 +1,7 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
-modalTemplate = require('../../../html/views/templates/modals/confirm.jade')()
+confirmModalTemplate = require('../../../html/views/templates/modals/confirm.jade')()
+previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
@@ -33,7 +34,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
     if $scope.oldTemplateType != "" and $scope.oldTemplateType != templateType
       modalInstance = $modal.open
         animation: true
-        template: modalTemplate
+        template: confirmModalTemplate
         controller: 'rmapsConfirmCtrl'
         resolve:
           modalTitle: () ->
@@ -53,8 +54,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
 
   $scope.previewTemplate = (template) ->
     modalInstance = $modal.open
-      template: modalTemplate
-      controller: 'rmapsMailTemplatePreviewCtrl'
+      template: previewModalTemplate
+      controller: 'rmapsMailTemplateIFramePreviewCtrl'
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'

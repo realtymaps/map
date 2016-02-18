@@ -64,7 +64,7 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
     modalInstance = $modal.open
       animation: $scope.animationsEnabled
       template: modalTemplate
-      controller: 'rmapsMailTemplatePreviewCtrl'
+      controller: 'rmapsMailTemplatePdfPreviewCtrl'
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
@@ -80,12 +80,3 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
       setTemplObj()
       $scope.data =
         htmlcontent: $scope.templObj.mailCampaign.content
-
-app.controller 'rmapsMailTemplatePreviewCtrl',
-  ($scope, $modalInstance, $log, $window, $timeout, template, rmapsMailTemplateService, rmapsMailTemplateTypeService) ->
-    $scope.template = template
-    $timeout () ->
-      $window.document.getElementById('mail-preview-iframe').srcdoc = rmapsMailTemplateService.createPreviewHtml(template.content)
-
-    $scope.close = () ->
-      $modalInstance.dismiss()
