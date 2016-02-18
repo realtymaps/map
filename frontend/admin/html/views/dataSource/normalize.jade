@@ -383,6 +383,12 @@
             input(type="checkbox" ng-model="fieldData.current.config.stripFormatting" ng-change="updateRule()")
           .col-md-6.help Special characters will be removed.
 
+      .col-md-12.scroll(ng-show="['price','acres'].indexOf(fieldData.current.output) != -1")
+        .row
+          .col-md-2 Implicit Decimal Places
+          .col-md-4
+            input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+
     .col-md-12.typeahead.scroll(ng-show="fieldData.current.type.name == 'datetime'")
       .row
         .col-md-2 Date Format
