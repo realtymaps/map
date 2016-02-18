@@ -128,7 +128,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'
-  buildModalState 'property'
+  buildModalState 'property', page: { title: 'Property Detail' }
   buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
   buildState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
   buildChildState 'projectClients', 'project', page: { title: 'My Clients' }, mobile: { modal: true }

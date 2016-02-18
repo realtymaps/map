@@ -2,6 +2,10 @@ include ../includes/mixins/property/_propertyButtons.jade
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 .property-detail-modal
+    mobile-header-buttons(header-id="page-modal-header")
+      .property-modal-buttons
+        +propertyButtons('selectedResult')
+
   .property-detail-container.container
     //+spinnerMixin()
     .row
@@ -27,7 +31,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .content-emphasis {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
             .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
 
-          .col-sm-6.text-right
+          .col-sm-6.text-right.desktop-only
             +propertyButtons('selectedResult')
 
         .row.content-block.prop-attrs.border-bottom
@@ -39,41 +43,41 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .content-heading Property Info
 
             .row.content-row
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.bedrooms)}}
                 .content-label Beds
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.baths_total)}}
                 .content-label Baths
 
             .row.content-row
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.finished_sqft)}}
                 .content-label Sq Ft
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.getYear(selectedResult.year_built)}}
                 .content-label Built
 
             .row.content-row
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.acres)}}
                 .content-label Acres
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.land_square_footage)}}
                 .content-label Lot SqFt
 
             .row.content-row
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.lot_front_footage)}}
                 .content-label Front Ft
-              .col-sm-6
+              .col-xs-6
                 .content-value {{formatters.property.orNa(selectedResult.depth_footage)}}
                 .content-label Depth Ft
 
         .content-block.border-bottom
           .content-heading Owner Info
           .row
-            .col-md-6
+            .col-sm-6
               .content-label Current Owner
               .content-lg
                 span(ng-if="formatters.property.getCurrentOwnersTitle(selectedResult)") {{formatters.property.getCurrentOwnersTitle(selectedResult)}}:
@@ -81,47 +85,47 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
                 span(ng-if="selectedResult.owner_name2")
                   br/
                   | {{selectedResult.owner_name2}}
-            .col-md-6
+            .col-sm-6
               .content-label Address
               .content-lg {{selectedResult.owner_street_address_num}} {{selectedResult.owner_street_address_name}} {{selectedResult.owner_street_address_unit}}
                 br/
                 | {{formatters.property.getCityStateZip(selectedResult,true)}}
 
         .row.content-block.border-bottom
-          .col-md-6.border-right(ng-if="formatters.property.showListingData(selectedResult)")
+          .col-sm-6.border-right(ng-if="formatters.property.showListingData(selectedResult)")
             .content-heading MLS Listing Info
             .row.content-row
-              .col-md-6
+              .col-sm-6
                 .content-label Listed for
                 .content-value {{formatters.property.humanizeDays(selectedResult.listing_age) }}
-              .col-md-6
+              .col-sm-6
                 .content-label Orginal Asked Price
                 .content-value {{formatters.property.getPrice(selectedResult.original_price)}}
             .row
-              .col-md-6
+              .col-sm-6
                 .content-label Close Price
                 .content-value {{formatters.property.getPrice(selectedResult.mls_close_price)}}
-              .col-md-6
+              .col-sm-6
                 .content-label Close Date
                 .content-value
                   span(ng-if="selectedResult.mls_close_date") {{selectedResult.mls_close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                   span(ng-if="!selectedResult.mls_close_date") N/A
-          .col-md-6(ng-if="formatters.property.showSalesData(selectedResult)")
+          .col-sm-6(ng-if="formatters.property.showSalesData(selectedResult)")
             .content-heading Historical Sales Info
             .row.content-row
-              .col-md-6
+              .col-sm-6
                 .content-label Mortgage
                 .content-value {{formatters.property.getPrice(selectedResult.mortgage_amount)}}
-              .col-md-6
+              .col-sm-6
                 .content-label Prior Sales Price
                 .content-value {{formatters.property.getPrice(selectedResult.sale_price)}}
             .row
-              .col-md-6
+              .col-sm-6
                 .content-label Prior Sale Date
                 .content-value
                   span(ng-if="selectedResult.sale_date") {{selectedResult.sale_date.toLocaleString() | date : 'MM/dd/yyyy'}}
                   span(ng-if="!selectedResult.sale_date") N/A
-              .col-md-6
+              .col-sm-6
 
 
       .col-sm-2
