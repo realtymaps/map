@@ -391,6 +391,12 @@
         .col-md-6.help Date formatting, as documented #{''}
           a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
 
+    .col-md-12.scroll(ng-show="fieldData.current.type.name == 'integer'")
+      .row
+        .col-md-2 Implicit Decimal Places
+        .col-md-4
+          input(type="number" placeholder="0" ng-model="fieldData.current.config.implicitDecimals" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
+
     .col-md-12.scroll
       .row.advanced
         .col-md-2
