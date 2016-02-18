@@ -109,8 +109,6 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
         deletes: dataLoadHelpers.DELETE.INDICATED
         normalSubid: file.name.slice(0, 5)
     loadDataList.push(loadData)
-  loadDataList = [loadDataList[0]]
-  countDataList = [countDataList[0]]
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
