@@ -487,7 +487,7 @@ ensureNormalizedTable = (dataType, subid) ->
       table.integer('fips_code').notNullable()
       table.text('parcel_id').notNullable()
       table.json('address')
-      table.decimal('price', 12)
+      table.decimal('price', 12, 2)
       table.timestamp('close_date', true)
       table.text('owner_name')
       table.text('owner_name_2')
@@ -502,7 +502,7 @@ ensureNormalizedTable = (dataType, subid) ->
       if dataType == 'tax'
         table.integer('bedrooms')
         table.integer('baths_full')
-        table.decimal('acres', 10)
+        table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS FIRST)")
