@@ -1,0 +1,1 @@
+ALTER TABLE lookup_mls_fips_code RENAME TO lookup_mls_m2m_fips_code_county;

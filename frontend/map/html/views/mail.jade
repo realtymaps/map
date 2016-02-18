@@ -31,7 +31,7 @@
                 th.col-md-1
 
             tbody
-              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="senderInfo({id:campaign.id})" ui-sref-opts="{reload: true}")
+              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="review({id:campaign.id})" ui-sref-opts="{reload: true}")
                 td
                   h4 {{campaign.name}}
                 td

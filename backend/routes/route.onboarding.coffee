@@ -1,3 +1,4 @@
+{PAYMENT_PLATFORM} = require '../config/config'
 logger = require('../config/logger').spawn("route.onboarding")
 {mergeHandles} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
@@ -21,10 +22,10 @@ _ = require 'lodash'
 submitPaymentPlan = ({plan, token, authUser, trx}) ->
   logger.debug "PaymentPlan: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
   paymentServices.customers.create
-    trx: trx
     authUser: authUser
     plan: plan
     token: token
+    trx: trx
 
 submitEmail = ({authUser, plan, trx}) ->
   logger.debug "EmailService: attempting to add user authUser.id #{authUser.id}, first_name: #{authUser.first_name}"
@@ -35,7 +36,6 @@ submitEmail = ({authUser, plan, trx}) ->
     logger.info "SignUp Failed, reverting Payment Customer"
     paymentServices.customers.handleCreationError
       error: error
-      trx: trx
       authUser:authUser
     throw error #rethrow error so transaction is reverted
 
@@ -45,17 +45,18 @@ handles = wrapHandleRoutes
     # req = _.pick req, ['body', 'params', 'query']
     validateAndTransformRequest req, onboardingTransforms.createUser
     .then (validReq) ->
-      {plan, token, fips_code, mls_code} = validReq.body
+      {plan, token, fips_code, mls_code, mls_id} = validReq.body
       plan = plan.name
       transaction 'main', (trx) ->
         entity = _.pick validReq.body, basicColumns.user
         entity.email_validation_hash = makeEmailHash()
+        entity.is_test = !PAYMENT_PLATFORM.LIVE_MODE
         createPasswordHash entity.password
         .then (password) ->
           # console.log.magenta "password"
           entity.password = password
 
-          tables.auth.user(trx).returning("id").insert entity
+          tables.auth.user(transaction: trx).returning("id").insert entity
           .then (id) ->
             # console.log.magenta "inserted user"
             getPlanId(plan, trx)
@@ -63,30 +64,35 @@ handles = wrapHandleRoutes
               # console.log.magenta "planId/groupId: #{groupId}"
               logger.debug "auth_user_id: #{id}"
               #give plan / group permissions
-              tables.auth.m2m_user_group(trx)
+              tables.auth.m2m_user_group(transaction: trx)
               .insert user_id: parseInt(id), group_id: parseInt(groupId)
               .then ->
                 id
           .then (id) ->
             logger.debug "new user (#{id}) inserted SUCCESS"
-            tables.auth.user(trx).select(basicColumns.user.concat(["id"])...)
+            tables.auth.user(transaction: trx).select(basicColumns.user.concat(["id"])...)
             .where id: parseInt id
           .then expectSingleRow
           .then (authUser) ->
-            if !fips_code and !mls_code
-              throw new Error("fips_code or mls_code required for user location restrictions.")
+            logger.debug {fips_code, mls_code, mls_id, plan}, true
+            if !fips_code and !(mls_code and mls_id)
+              throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")
+
             promise = null
             if fips_code
-              promise = tables.auth.m2m_user_locations(trx)
+              promise = tables.auth.m2m_user_locations(transaction: trx)
               .insert(auth_user_id: authUser.id, fips_code: fips_code)
-            if mls_code
-              promise = tables.auth.m2m_user_mls(trx)
-              .insert(auth_user_id: authUser.id, mls_code: mls_code)
+
+            if mls_id and mls_code and plan == 'pro'
+              promise = tables.auth.m2m_user_mls(transaction: trx)
+              .insert auth_user_id: authUser.id, mls_code: mls_code, mls_user_id: mls_id
+            else
+              promise = Promise.reject new Error 'invalid plan for mls setup'
 
             promise.then () -> authUser
 
           .then (authUser) ->
-            submitPaymentPlan {plan, token, authUser} #not including trx on purpose
+            submitPaymentPlan {plan, token, authUser, trx}
           .then ({authUser, customer}) ->
             submitEmail {authUser, plan, customer}
 

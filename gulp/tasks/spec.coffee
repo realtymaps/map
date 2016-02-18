@@ -1,4 +1,5 @@
 gulp = require 'gulp'
+
 require './angular'
 require './otherAssets'
 require './karma'
@@ -10,7 +11,7 @@ gulp.task 'spec', gulp.series gulp.parallel('commonSpec', 'backendSpec', 'fronte
 gulp.task 'rebuildSpec', gulp.series(
   gulp.parallel('commonSpec', 'backendSpec')
   , gulp.parallel('otherAssets', 'browserifyAll')
-  , 'gulpSpec', 'frontendNoCoverageSpec')
+  , 'gulpSpec', 'frontendSpec', () -> process.exit(0))
 
 gulp.task 'rspec', gulp.series 'rebuildSpec'
 
@@ -18,4 +19,4 @@ gulp.task 'rspec', gulp.series 'rebuildSpec'
 gulp.task 'openCoverage', (done) ->
   open 'http://localhost:8085/coverage/application/index.html', 'Google Chrome', done
 
-gulp.task 'rcoverage', gulp.series 'vendor', 'frontendSpec', 'openCoverage'
+gulp.task 'rcoverage', gulp.series 'vendor', 'frontendCoverageSpec', 'openCoverage'

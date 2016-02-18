@@ -1,18 +1,26 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
+modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, rmapsPrincipalService,
+($rootScope, $scope, $log, $window, $timeout, $document, $state, $modal, rmapsPrincipalService,
 rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
-  $log = $log.spawn 'frontend:mail:editTemplate'
+  $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
   editor = {}
   $scope.templObj = {}
   $scope.data =
     htmlcontent: ""
+
+  $scope.saveButtonText =
+    'saved': 'All Changes Saved'
+    'saving': 'Saving...'
+    'error': 'Error Saving'
+
+  $scope.saveStatus = 'saved'
 
   setTemplObj = () ->
     $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
@@ -37,13 +45,34 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
 
   $scope.macro = ""
 
-  $scope.saveContent = () ->
+  $scope.saveContent = _.debounce () ->
+    $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.templObj.name}"
     rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
     rmapsMailTemplateService.save()
+    .then ->
+      $scope.saveStatus = 'saved'
+    .catch ->
+      $scope.saveStatus = 'error'
+  , 1000
 
+  $scope.$watch 'data.htmlcontent', $scope.saveContent
+
+  $scope.animationsEnabled = true
   $scope.doPreview = () ->
-    rmapsMailTemplateService.openPreview()
+    # rmapsMailTemplateService.openPreview()
+    modalInstance = $modal.open
+      animation: $scope.animationsEnabled
+      template: modalTemplate
+      controller: 'rmapsMailTemplatePdfPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          content: $scope.data.htmlcontent
+          category: rmapsMailTemplateService.getCategory()
+          title: 'Mail Preview'
 
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()

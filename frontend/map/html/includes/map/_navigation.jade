@@ -1,21 +1,15 @@
 .map-navigation
   div.projects-tools
     div.btn-group.desktop-only
-
       include ./_buttons_drop_down.jade
-
+    
     div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
-
       include ./_projects.jade
-
       //- Todo: conditionally show pinned or favorites depending on user role
       include ./_pinned.jade
       include ./_favorites.jade
-
       include ./_notes.jade
-
       include ./_neighbourhood.jade
 
     div.btn-group
-
       include ./_settings.jade

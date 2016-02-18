@@ -1,7 +1,7 @@
 .settings-tool
   .desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
-      button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(dropdown-toggle)
+      button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(dropdown-toggle)
         span.icon.icon-settings
       .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
         h4.title Property Filters
@@ -51,7 +51,17 @@
             span.col-md-1.label to
             .col-md-4
               select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
-
+          
+          li.set.setInShapes.row
+            span.label.col-md-5 In Shapes / Neighborhoods
+            .col-md-7
+              .btn-group.pull-right
+                label.btn.btn-white.btn-checkbox(
+                  ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
+                  ng-repeat="c in ['on', 'off']"
+                  ng-model="Toggles.propertiesInShapes"
+                  btn-radio="{{c == 'on'}}"
+                  uncheckable) {{c}}
         ul
           li.showAdvanced.row
             span.label.col-md-12
@@ -81,7 +91,7 @@
               input.form-control(ng-model="selectedFilters.closePriceMax" type="text" numeral format="$0,0" placeholder="Maximum")
 
   .mobile-only
-    button.dropdown-toggle.btn.btn-transparent.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
+    button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(mobile-modal modal-template="'SettingsModalMobile'" modal-title="'Filter by'")
       span.icon.icon-settings
 
   script(type="text/ng-template" id="SettingsModalMobile")
@@ -126,6 +136,16 @@
           .settings-value {{translateDom(domSlider.min)}} - {{translateDom(domSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
+        
+        .item.settings-row
+          .settings-header In Shapes / Neighborhoods
+          button.button.settings-button.btn-white.btn-checkbox(
+            ng-class="{active: Toggles.propertiesInShapes == (c == 'on')}"
+            ng-click="makeDirty()"
+            ng-repeat="c in ['on', 'off']"
+            ng-model="Toggles.propertiesInShapes"
+            btn-radio="{{c == 'on'}}"
+            uncheckable) {{c}}
 
       footer.mobile-footer.mobile-footer-modal
         button.button.button-full.button-action(ng-click="apply()" ng-class="{ 'disabled': !dirty }") Apply Filters

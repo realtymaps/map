@@ -4,25 +4,43 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rmapsMailTemplateService) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $modal, rmapsMailTemplateService, rmapsLobService) ->
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
     'recipientInfo'
-    'senderInfo'
+    'campaignInfo'
     'selectTemplate'
     'editTemplate'
+    'review'
   ]
+
+  $scope.hideBackButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == 0 or rmapsMailTemplateService.isSent())
+
+  $scope.hideNextButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep == ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideSendButton = () ->
+    thisStep = _getStep $state.current.name
+    (thisStep != ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+
+  $scope.hideProgress = () ->
+    rmapsMailTemplateService.isSent()
 
   _getStep = (name) ->
     $scope.steps.indexOf name
 
   _changeStep = (next = 1) ->
     rmapsMailTemplateService.save()
-    thisStep = _getStep $state.current.name
-    newStep = $scope.steps[thisStep + next]
-    if thisStep == -1 or !newStep? then return
-    $state.go($state.get(newStep))
+    .then () ->
+      thisStep = _getStep $state.current.name
+      newStep = $scope.steps[thisStep + next]
+      if thisStep == -1 or !newStep? then return
+      $log.debug "_changeStep() going to #{newStep}"
+      $state.go($state.get(newStep))
 
   $scope.nextStep = () ->
     _changeStep(1)
@@ -34,8 +52,11 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, rma
   $scope.initMailTemplate = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      rmapsMailTemplateService.load $state.params.id
+      return rmapsMailTemplateService.load $state.params.id
     else
       campaign = rmapsMailTemplateService.getCampaign()
-      $log.debug "Continuing with mail campaign #{campaign.id}"
-      $q.when campaign
+      if $state.current.name != 'recipientInfo' and !campaign.id?
+        $state.go('mail')
+      else
+        $log.debug "Continuing with mail campaign #{campaign.id}"
+        return $q.when campaign

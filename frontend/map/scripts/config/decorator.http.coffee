@@ -2,12 +2,14 @@
 app = require '../app.coffee'
 qs = require 'qs'
 
+###globals angular, _###
 app.config(($httpProvider) ->
   $httpProvider.useApplyAsync(true)
 )
-.config(($provide) ->
+.config(($provide, rmapsPromiseDataProviderProvider) ->
   # attempting to create a cancelable $http on all its functions
-  $provide.decorator '$http', ($delegate, $q, $cacheFactory) ->
+  $provide.decorator '$http', ($delegate, $q, $cacheFactory, rmapsPromiseDataProvider) ->
+    flattenDataPromise = rmapsPromiseDataProvider.flattenDataPromise
     http = {}
     methods = ['get', 'delete', 'head', 'jsonp']
     dataMethods = ['post', 'put', 'patch']
@@ -78,6 +80,10 @@ app.config(($httpProvider) ->
           method: method
           url: url
           data: data
+
+    (methods.concat dataMethods).forEach (method) ->
+      $delegate[method + 'Data'] = () ->
+        flattenDataPromise $delegate[method](arguments...)
 
     objectFields.forEach (name) ->
       $delegate[name] = http.root[name]

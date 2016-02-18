@@ -25,14 +25,7 @@ module.exports = (config) ->
       #NOTE transform WILL NOT WORK HERE IFF a transform exists in the package.json
       # THEREFORE it must go in the gulp task
       # transform: ['coffeeify', 'brfs', ["istanbul-ignoreify",{"ignore": ["**/spec/**"]}]]
-      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs',
-        ["browserify-istanbul",
-          ignore: ["spec/**/*"]
-          #https://github.com/karma-runner/karma-coverage/issues/157#issuecomment-160555004
-          #fixes the text karma-coverage error
-          instrumenterConfig: { embedSource: true }
-        ]
-      ]
+      transform: ['coffeeify', 'jadeify', 'stylusify', 'brfs']
       # extensions: ['.coffee', '.js']
 
 
@@ -85,7 +78,7 @@ module.exports = (config) ->
     # NOTE , TODO 'html' reporter use if you want to hit the karma jasmine runner (frequently causes karma to blow up at the end of run),
     # test results reporter to use
     # possible values: 'dots', 'progress', 'mocha'
-    reporters: ['mocha', 'coverage']
+    reporters: ['mocha']
 
     # htmlReporter:
     #   middlePathDir: "chrome"

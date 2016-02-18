@@ -78,3 +78,16 @@ app.directive 'rmapsAutofocus', ($timeout) ->
           element[0].focus()
         , 250
     ), true
+
+# solution based on: https://github.com/angular/angular.js/issues/339
+app.directive 'embedSrc', ->
+  restrict: 'A',
+  link: (scope, element, attrs) ->
+    current = element
+    scope.$watch( () ->
+      return attrs.embedSrc
+    , () ->
+      clone = element.clone().attr 'src', attrs.embedSrc, 'class', '.pdf-preview-letter'
+      current.replaceWith clone
+      current = clone
+    )

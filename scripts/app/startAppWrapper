@@ -4,18 +4,24 @@ set -e
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
 APP_DIR="$SCRIPT_DIR/.."
 
+
+$SCRIPT_DIR/app/stopServe
+
+source $SCRIPT_DIR/app/syncVars
+
+
 if [[ "$SKIP_NGINX" == "true" ]]
 then
   export NGINX_SOCKET_FILENAME=""
-  $SCRIPT_DIR/app/startApp
+  START_COMMAND="$SCRIPT_DIR/app/startApp"
 else
   if [[ "$IS_HEROKU" == "" ]]
   then
     # not on heroku
-    
+
     # first kill off nginx in case it's been lingering -- doing it here so it has time to die
     pkill nginx || true
-    
+
     # next we need to bootstrap the nginx buildpack
     BUILDPACK_DIR=/var/tmp/nginx-buildpack
     if [ ! -e $BUILDPACK_DIR/.git ]
@@ -34,10 +40,10 @@ else
     ./bin/detect $APP_DIR && ./bin/compile $APP_DIR ${BUILDPACK_DIR}-cache ${BUILDPACK_DIR}-env && ./bin/release $APP_DIR
     cd $APP_DIR
   fi
-  
+
   # this ensures we never wait more than 60 seconds before letting nginx bind the port;
   # we give a bit of slack for heroku startup overhead, nginx startup, etc
-  
+
   rm -f ./nginx/app-initialized
   rm -f ./nginx/nginx-app-start
   rm -f ./nginx/nginx-app-end
@@ -49,6 +55,13 @@ else
       touch ./nginx/app-initialized
     fi
   ) &
-  
-  ./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp
+
+  START_COMMAND="./nginx/bin/start-nginx --conf ./backend/config/nginx.conf.coffee $SCRIPT_DIR/app/startApp"
 fi
+
+if [[ "$IS_HEROKU" != "" ]]
+then
+    START_COMMAND="bin/start-pgbouncer-stunnel $START_COMMAND"
+fi
+
+$START_COMMAND

@@ -1,5 +1,4 @@
 tables = require '../config/tables'
-tablesNames = require '../config/tableNames'
 _ = require 'lodash'
 
 ageOrDaysFromStartToNow = (listingAge, beginDate) ->
@@ -24,7 +23,7 @@ basicColumns = do ->
       'baths_half', 'baths_total', 'bedrooms', 'price', 'assessed_value', 'city', 'state', 'zip',
       'owner_street_address_num', 'owner_street_address_name', 'owner_street_address_unit', 'owner_city', 'owner_state',
       'owner_zip'
-    ].map((name)-> tablesNames.property.propertyDetails + '.' + name).join(', ')
+    ].map((name)-> tables.property.propertyDetails.tableName + '.' + name).join(', ')
     # columns returned for additional detail results
     detail: [
       'annual_tax', 'tax_desc', 'property_indication_category', 'property_indication_name', 'zoning',
@@ -82,6 +81,8 @@ basicColumns = do ->
     creditCards: ['id', 'auth_user_id', 'token', 'last4', 'brand', 'country', 'exp_month', 'exp_year', 'last_charge_amount']
 
     mailCampaigns: ['id', 'auth_user_id', 'project_id', 'lob_batch_id', 'name', 'count', 'status', 'content', 'template_type', 'submitted', 'sender_info', 'lob_content', 'recipients']
+
+    mls: ['id', 'state', 'full_name', 'mls']
 
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret

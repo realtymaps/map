@@ -1,0 +1,22 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+ORIG_DIR=`pwd`
+
+# echo $SCRIPT_DIR
+# echo $ORIG_DIR
+OUT_FILE=./tmp/flamegraph.`date +%m%d%Y%s`.flame.svg
+
+#keep removal error from happening
+touch /tmp/out.nodestacks01
+rm -f /tmp/out.nodestacks01
+
+PERF="/app/.apt/usr/lib/linux-tools-3.13.0-71/perf"
+#/app/.apt/usr/lib/linux-tools-3.13.0-71/perf record -F 99 -p `pgrep -n node` -g -- sleep 30
+#/app/.apt/usr/lib/linux-tools-3.13.0-71/perf script > /tmp/out.nodestacks01
+$PERF record -F 99 -p `pgrep -n node` -g -- sleep 30
+$PERF script > /tmp/out.nodestacks01
+
+../../node_modules/flamegraph/bin/flamegraph.js -f /tmp/out.nodestacks01 -m `ls -t /tmp/*.map | awk 'FNR == 1'` > $OUT_FILE
+echo $OUT_FILE

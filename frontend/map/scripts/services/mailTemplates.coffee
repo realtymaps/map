@@ -24,7 +24,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   create = (newMail = {}, newSender = {}) ->
     mailCampaign = _.defaults newMail, campaignDefaults
     senderData = newSender
-    $log.debug "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
+    $log.debug -> "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
 
   create()
 
@@ -87,12 +87,12 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
       address_state: r.state ? ''
       address_zip: r.zip ? ''
 
-  _createPreviewHtml = () ->
+  _createPreviewHtml = (content) ->
     # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
-    previewStyles = "body {border: 1px solid black;}"
-    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
+    previewStyles = "body {background-color: #FFF}"
+    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{content}</body></html>"
 
   _createLobHtml = () ->
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
@@ -103,6 +103,14 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     mailCampaign.template_type = type
     mailCampaign.content = rmapsMailTemplateTypeService.getHtml(type)
 
+  _getCategory = () ->
+    rmapsMailTemplateTypeService.getCategoryFromType(mailCampaign.template_type)
+
+  _setStatus = (status) ->
+    mailCampaign.status = status
+
+  _isSent = () ->
+    mailCampaign.status == 'sent'
 
 ##### PUBLIC
   create: create
@@ -110,12 +118,16 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   createLobHtml: _createLobHtml
 
   setTemplateType: _setTemplateType
+  getCategory: _getCategory
   setRecipients: _setRecipients
   getSenderData: _getSenderData
   getContent: _getContent
   setContent: _setContent
   getCampaign: _getCampaign
   setCampaign: _setCampaign
+  setStatus: _setStatus
+
+  isSent: _isSent
 
   openPreview: () ->
     preview = $window.open "", "_blank"
@@ -124,14 +136,14 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   load: (campaignId) ->
     rmapsMailCampaignService.get id: campaignId
     .then (campaigns) ->
-      $log.debug "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
+      $log.debug -> "Loaded mailCampaign:\n#{JSON.stringify(campaigns, null, 2)}"
       mailCampaign = campaigns[0] if campaigns.length
 
   save: () ->
     _getSenderData()
     .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
-      $log.debug "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
+      $log.debug -> "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
       toSave.recipients = JSON.stringify toSave.recipients
 
       profile = rmapsPrincipalService.getCurrentProfile()
@@ -139,10 +151,19 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
 
       op = rmapsMailCampaignService.create(toSave) #upserts if not already created
       .then ({data}) ->
-        $log.debug "Create data response:\n#{JSON.stringify(data, null, 2)}"
+        $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
         $log.debug "campaign #{mailCampaign.id} created"
-        $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" saved.", type: 'rm-success' }
+
+  getLobData: () ->
+    lobData =
+      campaign: _getCampaign()
+      file: _createLobHtml()
+      macros: {}
+      recipients: _getLobRecipientData()
+      from: _getLobSenderData()
+
+
 
   quote: () ->
     $modal.open
@@ -155,6 +176,6 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         lobData: ->
           campaign: _getCampaign()
           file: _createLobHtml()
-          macros: name: 'Justin'
+          macros: {}
           recipients: _getLobRecipientData()
           from: _getLobSenderData()

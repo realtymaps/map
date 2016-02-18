@@ -1,3 +1,6 @@
+# keep this at the top so it can load first
+require './config/newrelic'
+
 config = require './config/config'
 
 require '../common/extensions/strings'
@@ -10,7 +13,6 @@ cluster = require './config/cluster'
 touch = require 'touch'
 rimraf = require 'rimraf'
 mkdirp = require 'mkdirp'
-Promise = require 'bluebird'
 
 
 if config.MEM_WATCH.IS_ON
@@ -26,7 +28,7 @@ require('./config/googleMaps').loadValues()
 .then () ->
   cluster 'web', {}, () ->
     # express configuration
-    app = require './config/express'
+    app = require './config/expressSetup'
 
     try
       logger.info "Attempting to start backend on port #{config.PORT}"

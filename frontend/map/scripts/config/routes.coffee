@@ -148,8 +148,9 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
   buildChildState 'selectTemplate', 'mailWizard'
   buildChildState 'editTemplate', 'mailWizard'
-  buildChildState 'senderInfo', 'mailWizard'
+  buildChildState 'campaignInfo', 'mailWizard'
   buildChildState 'recipientInfo', 'mailWizard'
+  buildChildState 'review', 'mailWizard'
 
   buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
   buildState 'logout', sticky: false, loginRequired: false

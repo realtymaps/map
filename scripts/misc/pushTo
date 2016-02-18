@@ -48,13 +48,13 @@ fi
 queueHerokuSetting () {
     SETTING_NAME=$1
     DESIRED_VALUE=$2
-    
+
     echo "PUSH_TO: checking value of Heroku setting: $SETTING_NAME"
-    
+
     CURRENT_SETTING=`$SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT get $SETTING_NAME`
     if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
     then
-        echo "PUSH_TO: current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'" 
+        echo "PUSH_TO: current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'"
         HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
     else
         echo "PUSH_TO: current value is correct ('$CURRENT_SETTING')"
@@ -75,7 +75,7 @@ if [[ "$SERVICE" == "heroku" ]]
 then
     HEROKU_SETTINGS=""
     queueHerokuSetting "IS_HEROKU" "1"
-    
+
     if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
     then
         # this is a prod push
@@ -84,15 +84,8 @@ then
         # this is a staging push
         queueHerokuSetting "NODE_ENV" "staging"
     fi
-    
+
     setQueuedHerokuSettings
-fi
-
-
-if [[ "$DO_DBSYNC" == "--dbsync" ]]
-then
-    # do db changes before we push, so app startup won't take long and heroku won't panic
-    $SCRIPT_DIR/database/syncMainDb --to MAIN_DATABASE@$PROJECT
 fi
 
 

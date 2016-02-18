@@ -1,6 +1,5 @@
 require '../../common/extensions/strings'
 paths = require '../../common/config/paths'
-path = require 'path'
 gulp = require 'gulp'
 gutil = require 'gulp-util'
 globby = require 'globby'
@@ -9,8 +8,6 @@ browserify = require 'browserify'
 watchify = require 'watchify'
 source = require 'vinyl-source-stream'
 buffer = require 'vinyl-buffer'
-vinylPaths = require 'vinyl-paths'
-del = require 'del'
 prettyHrtime = require 'pretty-hrtime'
 through = require 'through2'
 conf = require './conf'
@@ -39,7 +36,7 @@ browserifyTask = (app, watch = false) ->
       conf.errorHandler 'Bundler'
     .on 'end', ->
       timestamp = prettyHrtime process.hrtime startTime
-      gutil.log 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
+      logger.debug 'Bundled', gutil.colors.blue(outputName), 'in', gutil.colors.magenta(timestamp)
     .pipe source outputName
     .pipe buffer()
     .pipe $.sourcemaps.init loadMaps: true
@@ -125,7 +122,7 @@ browserifyTask = (app, watch = false) ->
 
       globby(inputGlob)
       .then (newEntries) ->
-        gutil.log 'Bundling', gutil.colors.blue(config.outputName) + ' ' + newEntries.length + ' files ...'
+        logger.debug 'Bundling', gutil.colors.blue(config.outputName) + ' ' + newEntries.length + ' files ...'
         b.bundle().pipe(stream)
 
     if watch
@@ -136,14 +133,14 @@ browserifyTask = (app, watch = false) ->
         .then (newEntries) ->
           diff = _.difference newEntries, entries
           if diff.length > 0
-            logger.info "New files: #{diff}"
+            logger.debug "New files: #{diff}"
             b.add diff
             entries = newEntries
             onUpdate()
       , 1000
 
       # Useful for debugging file watch issues
-      require('../util/bundleLogger').logEvents(watcher)
+      # require('../util/bundleLogger').logEvents(watcher)
 
       b = watchify b
 

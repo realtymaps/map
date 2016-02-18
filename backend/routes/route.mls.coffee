@@ -1,17 +1,43 @@
-_ = require 'lodash'
-util = require 'util'
-{expectSingleRow} = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('backend:routes:mls')
 mlsConfigService = require '../services/service.mls_config'
-validation = require '../utils/util.validation'
+mlsService = require '../services/service.mls'
+{validators, validateAndTransformRequest} = require '../utils/util.validation'
 auth = require '../utils/util.auth'
 Promise = require 'bluebird'
 through2 = require 'through2'
 
+{handleRoute} =  require '../utils/util.route.helpers'
+
+lookupMlsTransforms =
+  params: validators.object isEmptyProtect: true
+  query: validators.object isEmptyProtect: true
+  body: validators.object subValidateSeparate:
+    state: validators.string(minLength:2, maxLength:2)
+    full_name: validators.string(minLength:2)
+    mls: validators.string(minLength:2)
+    id: validators.integer()
 
 module.exports =
+  root:
+    method: 'post'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        validateAndTransformRequest req, lookupMlsTransforms
+        .then (validReq) ->
+          logger.debug validReq
+          mlsService.getAll(validReq.body)
+
+  supported:
+    method: 'post'
+    handle: (req, res, next) ->
+      handleRoute req, res, next, ->
+        validateAndTransformRequest req, lookupMlsTransforms
+        .then (validReq) ->
+          logger.debug validReq
+          mlsService.getAllSupported(validReq.body)
+
   getDatabaseList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
@@ -73,8 +99,8 @@ module.exports =
             404
         else
           validations =
-            limit: [validation.validators.integer(min: 1), validation.validators.defaults(defaultValue: 1000)]
-          validation.validateAndTransformRequest(req.query, validations)
+            limit: [validators.integer(min: 1), validators.defaults(defaultValue: 1000)]
+          validateAndTransformRequest(req.query, validations)
           .then (result) ->
             retsHelpers.getDataStream(mlsConfig, result.limit)
           .then (retsStream) ->

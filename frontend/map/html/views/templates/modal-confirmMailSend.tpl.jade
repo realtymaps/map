@@ -1,0 +1,20 @@
+.modal-header
+  h3.modal-title(ng-show="failedFlag") There was a problem.
+  h3.modal-title(ng-hide="failedFlag || successFlag") Are you sure??
+  h3.modal-title(ng-show="successFlag") Mail is on its way!
+
+.modal-body
+  p {{bodyMessage}}
+  p {{statusMessage}}
+
+.modal-footer(ng-class="{'faded': sendingFlag}")
+  .row.confirm-widgets(ng-hide="failedFlag || successFlag")
+    input.sentinel(type="checkbox" ng-model="sentinel" ng-disabled="sendingFlag")
+    | Check this box to commit to pay {{price | currency}} 
+    span(style="font-weight: bold;") and 
+    | click submit.
+  .row.confirm-widgets
+    button.btn.btn-primary(ng-hide="failedFlag || successFlag" ng-disabled="sendingFlag" ng-click="send()") Submit
+    button.btn.btn-danger(ng-hide="failedFlag || successFlag" ng-disabled="sendingFlag" ng-click="cancel()") No, cancel!
+    button.btn.btn-danger(ng-show="failedFlag" ng-disabled="sendingFlag" ng-click="cancel()") Try again later.
+    button.btn.btn-success(ng-show="successFlag" ng-disabled="sendingFlag" ng-click="cancel()") Ok

@@ -39,7 +39,7 @@ _addRules = (query, rules, counts) ->
 
 _putRules = (query, rules) ->
   dbs.get('main').transaction (trx) ->
-    tables.config.dataNormalization(trx)
+    tables.config.dataNormalization(transaction: trx)
     .delete()
     .where(query)
     .then (result) ->

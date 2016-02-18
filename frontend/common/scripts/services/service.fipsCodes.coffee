@@ -6,20 +6,11 @@ fipsRoutes = backendRoutes.fipsCodes
 mod.service 'rmapsFipsCodesService', ($log, $http) ->
   $log = $log.spawn("map:rmapsFipsCodes")
 
-  @getAllByState = (stateName) ->
-    throw new Error("stateName must be defined") unless stateName
-    $http.get("#{apiBase}/state/#{stateName}").then ({data}) ->
-      data
+  getAll: (data = {}) ->
+    $http.postData(apiBase, data)
 
-  @getByMlsCode = (mlsCode) ->
-    throw new Error("mlsCode must be defined") unless mlsCode
-    $http.get(fipsRoutes.getByMlsCode.replace(':mls_code',mlsCode))
-    .then ({data}) ->
-      data
+  getAllMlsCodes: (data = {}) ->
+    $http.postData(fipsRoutes.getAllMlsCodes, data)
 
-  @getAllMlsCodes = () ->
-    $http.get(fipsRoutes.getAllMlsCodes)
-    .then ({data}) ->
-      data
-
-  @
+  getAllSupportedMlsCodes: (data = {}) ->
+    $http.postData(fipsRoutes.getAllSupportedMlsCodes, data)

@@ -27,7 +27,7 @@ zlib = require 'zlib'
 
 # loads all records from a ftp-dropped zip file
 loadRawData = (subtask, options) ->
-  rawTableName = dataLoadHelpers.buildUniqueSubtaskName(subtask)
+  rawTableName = tables.temp.buildTableName(dataLoadHelpers.buildUniqueSubtaskName(subtask))
   fileBaseName = dataLoadHelpers.buildUniqueSubtaskName(subtask, subtask.task_name)
   if options.sftp
     ftp = new PromiseSftp()
@@ -174,7 +174,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 
 
 finalizeData = (subtask, id) ->
-  tables.property.tax()
+  tables.property.tax(subid: subtask.data.normalSubid)
   .select('*')
   .where(rm_property_id: id)
   .whereNull('deleted')
@@ -195,7 +195,7 @@ finalizeData = (subtask, id) ->
       # because of tax data, but the tax data appears to have been updated in this same batch, we bail and let tax take
       # care of it.
       return
-    tables.property.deed()
+    tables.property.deed(subid: subtask.data.normalSubid)
     .select('*')
     .where(rm_property_id: id)
     .whereNull('deleted')
@@ -206,7 +206,7 @@ finalizeData = (subtask, id) ->
       if subtask.data.cause == 'mortgage' && deedEntries[0]?.batch_id == subtask.batch_id
         # see above comment about GTFO shortcut logic.  This part lets mortgage give priority to deed.
         return
-      mortgagePromise = tables.property.mortgage()
+      mortgagePromise = tables.property.mortgage(subid: subtask.data.normalSubid)
       .select('*')
       .where(rm_property_id: id)
       .whereNull('deleted')
@@ -236,6 +236,7 @@ finalizeData = (subtask, id) ->
           for field in saleFields
             tax[field] = lastSale[field]
         tax.shared_groups.sale = []
+        tax.subscriber_groups.deedHistory = []
         for deedInfo in deedEntries
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))

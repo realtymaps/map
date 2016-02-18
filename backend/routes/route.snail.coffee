@@ -1,5 +1,5 @@
 Promise = require 'bluebird'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('route:lob')
 ExpressResponse = require '../utils/util.expressResponse'
 commonConfig = require '../../common/config/commonConfig'
 httpStatus = require '../../common/utils/httpStatus'
@@ -62,8 +62,8 @@ module.exports =
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
       lobService.getPriceQuote req.user.id, req.body
-      .then (price) ->
-        new ExpressResponse(price: price)
+      .then (response) ->
+        new ExpressResponse(response)
       .catch generateErrorHandler('get a price quote for that mailing')
       .then (response) ->
         next(response)

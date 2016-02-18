@@ -24,7 +24,7 @@ findStripeErrors = (subtask) ->
   logger.debug "subtask findStripeErrors entered"
   logger.debug subtask, true
 
-  tables.auth.toM_errors()
+  tables.user.errors()
   .where 'error_name', 'ilike', '%stripe%'
   .where 'attempts', '<', 'max_attempts' #get active ones
   .orderBy 'id'
@@ -71,10 +71,10 @@ CommonSubtaskHandler = SubtaskHandlerThirdparty.compose
 
   removalService: (subtask) ->
     logger.debug "removing #{subtask.data.error_name} of id #{subtask.data.id} from error queue"
-    tables.auth.toM_errors().where(id: subtask.data.id).del()
+    tables.user.errors().where(id: subtask.data.id).del()
 
   updateService: (subtask) ->
-    tables.auth.toM_errors()
+    tables.user.errors()
     .update
       data: subtask.data
       attempt: subtask.data.attempt + 1

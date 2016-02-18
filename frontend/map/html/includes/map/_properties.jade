@@ -14,7 +14,7 @@ include ../mixins/property/_propertyAttributes.jade
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('finished_sqft')")
         li(ng-click="formatters.results.setOrReverseResultsPredicate('year_built')") Year
           span(class="caret {{resultsDescending ? 'desc' : 'asc'}}" ng-class="formatters.results.getSortClass('year_built')")
-    #results-list-container(infinite-scroll='formatters.results.loadMore()' infinite-scroll-distance='0' infinite-scroll-container='"#results-list-container"')
+    #results-list-container(infinite-scroll='formatters.results.loadMore(false)' infinite-scroll-distance='0' infinite-scroll-container='"#results-list-container"')
       #results-list.list()
         ul.list
           li(ng-repeat="property in formatters.results.getResultsArray() | orderBy:resultsPredicate:resultsDescending | limitTo:resultsLimit"

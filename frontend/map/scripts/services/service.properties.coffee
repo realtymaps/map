@@ -67,6 +67,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
         bodyExtensions.isNeighbourhood = true
 
     route = backendRoutes.properties[pathId]
+
     $log.debug("filters: #{JSON.stringify filters}")
     $log.debug mapState
     $log.debug(route)

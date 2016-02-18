@@ -17,7 +17,8 @@ base =
     LEVEL: process.env.LOG_LEVEL ? 'debug'
     FILE_AND_LINE: false
     ENABLE: process.env.LOG_ENABLE ? ''  # 'frontend:*,backend:*,test:*'
-
+    TIMESTAMP: process.env.LOG_TIMESTAMP == 'true'
+    LOG_TO_FILE: process.env.LOG_TO_FILE == 'true'
   DBS:
     MAIN:
       client: 'pg'
@@ -30,6 +31,14 @@ base =
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
+      pool:
+        min: if process.env.JQ_QUEUE_NAME then 2 else 0
+        max: if process.env.JQ_QUEUE_NAME then 4 else 2
+        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
+        pingTimeout: 20*60*1000
+    NORMALIZED:
+      client: 'pg'
+      connection: process.env.NORMALIZED_DATABASE_URL
       pool:
         min: if process.env.JQ_QUEUE_NAME then 2 else 0
         max: if process.env.JQ_QUEUE_NAME then 4 else 2
@@ -85,11 +94,11 @@ base =
     HASH_MIN_LENGTH: 20
   PAYMENT_PLATFORM:
     TRIAL_PERIOD_DAYS: 30
-    LIVE_MODE: false
+    LIVE_MODE: process.env.PAYMENT_IS_LIVE or false
     INTERVAL_COUNT: 1
     CURRENCY: 'usd'
   EMAIL_PLATFORM:
-    LIVE_MODE: false
+    LIVE_MODE: process.env.EMAIL_IS_LIVE or false
     MAX_RETRIES: 4
     RETRY_DELAY_MILLI: 2000
 # this one's separated out so we can re-use the DBS.MAIN.connection value

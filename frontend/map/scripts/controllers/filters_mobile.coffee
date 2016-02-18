@@ -23,6 +23,8 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
   markDirty = () ->
     $scope.dirty = true
 
+  $scope.makeDirty = markDirty
+
   #
   # Create slider step arrays
   #
@@ -185,4 +187,3 @@ module.exports = app.controller 'rmapsFiltersMobileCtrl', ($scope, $filter, $tim
     $scope.selectedFilters.bathsMin = $scope.bathsMin
 
     $scope.close()
-

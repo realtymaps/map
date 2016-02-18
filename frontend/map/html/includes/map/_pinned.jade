@@ -2,7 +2,7 @@ include ../mixins/property/_propertyAttributes.jade
 include ../mixins/_circleNrMixin.jade
 
 span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" dropdown)
-  button(class="dropdown-toggle btn btn-transparent pinned" dropdown-toggle)
+  button.btn.btn-transparent.nav-btn.dropdown-toggle.pinned(dropdown-toggle)
     span.icon.icon-pin
 
   .dropdown-menu.whiteblock.no-margin
@@ -10,6 +10,8 @@ span(ng-controller="rmapsPinnedCtrl" class="dropdown btn-group pinned-list" drop
       span
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") {{pinnedTotal}} Pinned Properties
         a(ng-show="!pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") No Pinned Properties
+        span.results-btn(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
+          span.icon.icon-send_email
         span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle
           span.action Results

@@ -1,17 +1,28 @@
-.draw-tools.desktop-only
-    button.btn.btn-transparent.properties-in-shapes(
-      ng-click="Toggles.togglePropertiesInShapes()"
-      popover-placement="top"
-      popover="Filter by shapes"
-      popover-trigger="mouseenter"
-      ng-class="Toggles.propertiesInShapes ? 'on' : ''")
-      span.icon.icon-markers-in-shapes
-
-    button(
-      ng-controller="rmapsNeighbourhoodsModalCtrl"
-      class="btn btn-transparent add-neighbour"
-      popover-placement="top"
-      popover-trigger="mouseenter"
-      popover="Add Neighbour"
-      ng-click="Toggles.enableNeighbourhoodTap()")
-        span.icon.icon-add_neighbourhood
+//.desktop-only TODO (wont show)
+.draw-tools.container(ng-if="Toggles.isSketchMode")
+  .row
+    .col.col-md-3.col-sm-3.col-xs-3
+      h4 Sketch Mode
+    
+    .col.col-md-6.col-sm-6.col-xs-3
+      .tools
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-note-pen
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-android-checkbox-outline-blank
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-android-radio-button-off
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-polygon
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-text-create
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-redo2
+        button.btn.btn-transparent.nav-btn
+          span.icon.icon-undo
+        button.btn.btn-transparent.nav-btn
+          span.icon.fa.fa-trash-o
+    
+    .col.col-md-3.col-sm-3.col-xs-3
+      button.btn.btn-primary.close-btn.pull-right(
+        ng-click="Toggles.toggleIsSketchMode(); Toggles.setPropetiesInShapes(false)") Close
