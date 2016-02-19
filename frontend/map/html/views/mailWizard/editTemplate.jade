@@ -18,6 +18,34 @@
               .template-stage-container
                 .template-stage
                   .letter-editor
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .page-divider
+                    .return-address-window
+                      .return-address-text
+                        .address-line {{templObj.mailCampaign.sender_info.first_name}} {{templObj.mailCampaign.sender_info.last_name}}
+                        .address-line {{templObj.mailCampaign.sender_info.address_line1}}
+                        .address-line {{templObj.mailCampaign.sender_info.address_city}}, {{templObj.mailCampaign.sender_info.address_state}} {{templObj.mailCampaign.sender_info.address_zip}}
+                    .recipient-address-window
+                      .recipient-address-text
+                        .address-line {{templObj.mailCampaign.sender_info.name}}
+                        .address-line {{templObj.mailCampaign.recipients[0].street_address_num}} {{templObj.mailCampaign.recipients[0].street_address_name}}
+                        .address-line {{templObj.mailCampaign.recipients[0].city}}, {{templObj.mailCampaign.recipients[0].state}} {{templObj.mailCampaign.recipients[0].zip}}
                     div(text-angular
                       rmaps-macro-helper
                       rmaps-macro-event-helper

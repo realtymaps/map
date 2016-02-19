@@ -1,48 +1,72 @@
 // generic container stylings that are to be made available to all templates for usage of layout and style where needed
-
+$print-margin = 0.1875in
+$divider-offset = 11in
 
 .letter-editor // page itself, this gets applied to <body> of html
-  position relative
   width 8.5in
-  height 11in
-  margin 0
-  padding 0
   color black
-
   font-family 'Helvetica Neue', Helvetica, Arial, sans-serif
-  overflow hidden
+  background-color $white
 
 .letter-page // inner container
-  position relative
+  // position relative
   width 6.5in
-  left 1in
-  top 1in
-  height 9in
+  // left 1in
+  // top 3in
+  // height 9in
+  padding $print-margin*2
 
 .return-address-window
-  position absolute
-  left 0.625in
-  top -2.75in
+  // position absolute
+  background-color $gray_lightest
+  margin-left 0.625in
+  margin-top 0.5in
   width 3.25in
   height 0.875in
 
 .return-address-text
-  position absolute
-  left 0.1in
-  top: 0.1in
+  // position absolute
+  margin-left 0.1in
+  margin-top: 0.1in
   width 3.05in
   height 0.675in
 
 .recipient-address-window
-  position absolute
-  left 0.625in
-  top -1.5in
+  background-color $gray_lightest
+  // position absolute
+  margin-left 0.625in
+  margin-top 0.1in
   width 4.0in
   height 1.0in
 
 .recipient-address-text
-  position absolute
-  left 0.1in
-  top 0.1in
+  // position absolute
+  margin-left 0.1in
+  margin-top 0.1in
   width 3.80in
   height 0.8in
+
+.address-line
+  text-transform uppercase
+  font-family sans-serif
+  font-size 0.15in
+
+p
+  page-break-after always
+
+.page-divider
+  border 1px solid gray
+  height 1px
+  position relative
+  top 11in
+  text-align center
+  z-index 2
+
+  for i in (1..20)
+    &:nth-child({i})
+      top ($divider-offset * i)
+      &::after
+        content \'Page (i+1)\'
+
+  &:nth-child(1)
+    top 1.2in + $divider-offset
