@@ -2,7 +2,7 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsSwipeTrayCtrl', ($scope, $log) ->
+app.controller 'rmapsSwipeTrayCtrl', ($scope, $state, $log) ->
   $log.debug "swipeTrayCtrl"
 
   $scope.index = 0
@@ -47,6 +47,8 @@ app.controller 'rmapsSwipeTrayCtrl', ($scope, $log) ->
       checkLoadMore()
     else if $index < $scope.index
       $scope.index = $scope.index - 1
+    else
+      $state.go('property', { id: property.rm_property_id })
 
   # Reset the index to 0 if the available properties in the scope have changed
   $scope.$watch 'map.markers.filterSummary', (newVal, oldVal) ->

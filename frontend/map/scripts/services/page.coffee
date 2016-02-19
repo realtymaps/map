@@ -36,6 +36,9 @@ app.provider 'rmapsPageService', () ->
         modal: false
       }
 
+      showMobileModalHeader: () ->
+        return @mobile?.modal || @isModal()
+
       #
       # Page Type
       #
@@ -56,7 +59,6 @@ app.provider 'rmapsPageService', () ->
         return @pageType == 'map'
 
       isModal: () ->
-
         return @pageType == 'modal'
 
       isPage: () ->
