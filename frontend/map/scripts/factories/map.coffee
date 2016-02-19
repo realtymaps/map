@@ -44,14 +44,10 @@ app.factory 'rmapsMapFactory',
         toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
-
     class Map extends rmapsBaseMapFactory
-      @mapCtrl = null
       baseIsLoaded = false
 
       constructor: ($scope) ->
-        @constructor.mapCtrl = @
-
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
 
