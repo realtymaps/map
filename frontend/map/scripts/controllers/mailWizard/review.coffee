@@ -66,7 +66,5 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
         if $scope.sentFlag
           getReviewDetails()
           .then (details) ->
-            console.log "@@@@@@ details:"
-            console.log JSON.stringify(details,null,2)
             $scope.details.pdf = details.pdf
 
