@@ -1,5 +1,5 @@
+##globals _###
 app = require '../app.coffee'
-
 
 app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
 
@@ -9,7 +9,6 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
     Simple Class to Keep Track of its own promises to debounce
   ###
   (name) ->
-    self = this
     unless name
       name = "#{defaultName}-#{defaultNameIndex}"
       defaultNameIndex += 1
@@ -18,18 +17,18 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
     promiseHash = {}
     promisesIndex = 0
 
-    cancelAll = ->
+    cancelAll = () ->
       if _.keys(promiseHash).length
-        _.each promiseHash, (cancelHandler) ->
-          cancelHandler()
+        _.each promiseHash, (promise) ->
+          promise.cancel()
     ###
       A promise has ben executed;
       cache it, if it is still there later.. cancel it.
 
-      If it finishes gracefully or is forced (canceled)
-      it will remove itself from the cache.
+      The cache is short lived and evey child promiseis responsible for cleaning up itself
+      and removing itself from the cache. Removal upon resolve (graceful) or ugly (cance/reject).
     ###
-    @invokePromise = (cancelablePromise, options) =>
+    invokePromise = (cancelablePromise, options) =>
       deferred = $q.defer()
       nonCancelpromise = deferred.promise
 
@@ -44,25 +43,13 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
 
       cancelablePromise.then (data) ->
         deferred.resolve(data.data) if data?
-      .finally =>
-        promiseHash.remove(@name + myId)
+      .finally () =>
+        delete promiseHash[@name + myId]
 
-      promiseHash[@name + myId] = ->
-        ### these alerts won't be sent in the first place, now
-        # prevent alerts from the canceled $http call
-        if options.http?
-          opts =
-            id: "0-#{options.http.route or name}"
-            quietMillis: MainOptions.alert.cancelQuietMillis
-
-          $rootScope.$emit Events.alert.prevent, opts
-        ###
-
-        # do the cancel
-        cancelablePromise.cancel()
+      promiseHash[@name + myId] = cancelablePromise
 
       deferred.promise #return a regular promise
 
-    @reset = cancelAll
-
-    @
+    invokePromise: invokePromise
+    reset: cancelAll
+    cancelAll: cancelAll
