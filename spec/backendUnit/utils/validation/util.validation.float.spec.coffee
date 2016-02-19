@@ -55,3 +55,9 @@ describe 'utils/validation.validators.float()'.ns().ns('Backend'), ->
       expectResolve(validators.float(min: 4.1, max: 4.6)(param, '4.1'))
       expectResolve(validators.float(min: 4.1, max: 4.6)(param, '4.6'))
     ]
+
+  promiseIt 'should calculate implicit decimal places', () ->
+    [
+      expectResolve(validators.float(implicitDecimals: 2)(param, '12345')).then (value) ->
+        value.should.equal(123.45)
+    ]
