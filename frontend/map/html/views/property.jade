@@ -2,6 +2,7 @@ include ../includes/mixins/property/_propertyButtons.jade
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 .property-detail-modal
+  div.mobile-only
     mobile-header-buttons(header-id="page-modal-header")
       .property-modal-buttons
         +propertyButtons('selectedResult')
