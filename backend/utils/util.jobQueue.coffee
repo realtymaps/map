@@ -264,7 +264,7 @@ cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
 cancelTask = (taskName, status='canceled', withPrejudice=false) ->
   # note that this doesn't cancel subtasks that are already running; there's no easy way to do that except within the
   # worker that's executing that subtask, and we're not going to make that worker poll to watch for a cancel message
-  logger.info("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
+  logger.spawn("cancels").debug("Cancelling task: #{taskName}, status:#{status}, withPrejudice:#{withPrejudice}")
   dbs.get('main').transaction (transaction) ->
     tables.jobQueue.taskHistory(transaction: transaction)
     .where
