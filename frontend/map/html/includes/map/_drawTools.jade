@@ -6,7 +6,11 @@
     
     .col.col-md-6.col-sm-6.col-xs-3
       .tools(ng-controller="rmapsMapDrawCtrl")
-        div.rmaps-leaflet-draw(map-promise="map.mapPromise" options="map.leafletDrawOptions")
+        div(ng-if="map.mapPromise")
+          div.rmaps-leaflet-draw(
+            id="sketchDraw"
+            mapPromise="map.mapPromise"
+            options="map.leafletDrawOptions")
         
     .col.col-md-3.col-sm-3.col-xs-3
       button.btn.btn-primary.close-btn.pull-right(

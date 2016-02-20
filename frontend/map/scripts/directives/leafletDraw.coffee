@@ -4,10 +4,15 @@ template = require './leafletDraw/leafletDraw.jade'
 LeafletDrawApi = require './leafletDraw/api.draw.js'
 
 
-app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout) ->
+app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout,
+rmapsLeafletDrawDirectiveCtrlDefaults) ->
+
+  {getEventName} = rmapsLeafletDrawDirectiveCtrlDefaults
+
   $log = $log.spawn('rmapsLeafletDraw')
+
   scope:
-    mapPromise: '='
+    mappromise: '='
     options: '=?'
 
   template: template()
@@ -22,10 +27,10 @@ app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeou
     _optionsEditedInDirective = false
     _deferred = undefined
 
-    unless scope.mapPromise
-      throw new Error 'mapPromise required'
+    unless scope.mappromise
+      throw new Error 'mappromise required'
 
-    scope.mapPromise.then (map) ->
+    scope.mappromise.then (map) ->
 
       _create = () ->
         if attrs.id?
@@ -55,12 +60,31 @@ app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeou
 
         _featureGroup = options.edit.featureGroup
         map.addLayer(_featureGroup)
+
         drawControl = new LeafletDrawApi options
 
-        map.addControl drawControl
-        _deferred.resolvedDefer = true
-        _deferred.resolve
-          control: drawControl
-          map:map
+        drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
+        editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
-        leafletDrawEvents.bindEvents(attrs.id, map, name = null, options, leafletScope, layerName = null, {mapId: attrs.id})
+        handles = {}
+        for handleName, legacyHandle of drawModeHandles
+          do (handleName, legacyHandle) ->
+            handles[getEventName(attrs.id, handleName)] = (event) ->
+              legacyHandle.handler.enable()
+
+        handles[getEventName(attrs.id, 'pen')] = (event) ->
+          #kick off free draw
+        handles[getEventName(attrs.id, 'text')] = (event) ->
+          #kick off something that puts text on map
+        handles[getEventName(attrs.id, 'redo')] = (event) ->
+          #pull out of drawItems cache and put it back on the map
+        handles[getEventName(attrs.id, 'undo')] = (event) ->
+          #pull out of drawItems cache and put it back on the map
+        handles[getEventName(attrs.id, 'trash')] = (event) ->
+          editModeHandles?.remove.handler.enable()
+
+        for eventName, handle of handles
+          do (eventName, handle) ->
+            scope.$on eventName, handle
+
+      _create()

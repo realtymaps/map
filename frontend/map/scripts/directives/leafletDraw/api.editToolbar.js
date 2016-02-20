@@ -18,15 +18,15 @@ module.exports = L.EditToolbar.extend({
 		}
 
 		this._toolbarClass = 'leaflet-draw-edit'
-		L.Class.prototype.initialize.call(this, options)
+		// L.Class.prototype.initialize.call(this, options)
 
 		this._selectedFeatureCount = 0
 	},
 
 	getModeHandlers: function (map) {
 		var featureGroup = this.options.featureGroup
-		return [
-			{
+		return {
+			edit: {
 				enabled: this.options.edit,
 				handler: new L.EditToolbar.Edit(map, {
 					featureGroup: featureGroup,
@@ -35,7 +35,7 @@ module.exports = L.EditToolbar.extend({
 				title: _.get(this.options.edit, "buttons.title") ||
           L.drawLocal.edit.toolbar.buttons.edit
 			},
-			{
+			remove: {
 				enabled: this.options.remove,
 				handler: new L.EditToolbar.Delete(map, {
 					featureGroup: featureGroup
@@ -43,24 +43,24 @@ module.exports = L.EditToolbar.extend({
 				title: _.get(this.options.remove, "buttons.title") ||
           L.drawLocal.edit.toolbar.buttons.remove
 			}
-		]
+		}
 	},
 
   getActions: function () {
-		return [
-			{
+		return {
+			edit: {
 				title: L.drawLocal.edit.toolbar.actions.save.title,
 				text: L.drawLocal.edit.toolbar.actions.save.text,
 				callback: this._save,
 				context: this
 			},
-			{
+			remove: {
 				title: L.drawLocal.edit.toolbar.actions.cancel.title,
 				text: L.drawLocal.edit.toolbar.actions.cancel.text,
 				callback: this.disable,
 				context: this
 			}
-		];
+		};
 	},
 
   addToolbar: function (map) {

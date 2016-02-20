@@ -1,11 +1,12 @@
 ###globals angular###
 app = require '../../app.coffee'
+directiveName = 'rmapsLeafletDrawDirectiveCtrl'
 
-app.service 'rmapsLeafletDrawDirectiveCtrlDefaults', () ->
+app.service "#{directiveName}Defaults", () ->
   drawContexts = [
     'pen'
     'polyline'
-    'square'
+    'rectangle'
     'circle'
     'polygon'
     'text'
@@ -30,7 +31,7 @@ app.service 'rmapsLeafletDrawDirectiveCtrlDefaults', () ->
         default: _spanCssCls
         pen: _spanCssCls + ' icon-note-pen'
         polyline: _spanCssCls + ' icon-polyline'
-        square: _spanCssCls + ' icon-android-checkbox-outline-blank'
+        rectangle: _spanCssCls + ' icon-android-checkbox-outline-blank'
         circle: _spanCssCls + ' icon-android-radio-button-off'
         polygon: _spanCssCls + ' icon-polygon'
         text: _spanCssCls + ' icon-text-create'
@@ -57,35 +58,54 @@ app.service 'rmapsLeafletDrawDirectiveCtrlDefaults', () ->
     defaults?[subContext]?[divType]?.default or #we should have something here
     '' #worst case as undefined will kill ng-class and iterate forever
 
-
   createContexts = (divType) ->
     getClass: (drawContext, id) ->
       get({divType, subContext: 'classes', drawContext, id})
-
-    click: (drawContext, id) ->
-      get({divType, subContext: 'clicks', drawContext, id})?()
 
   explicitGets =
     button: createContexts 'button'
     span: createContexts 'span'
 
-  #return all internals to allow them to be overriden for different behavior
-  {defaults, get, idToDefaultsMap, explicitGets, drawContexts}
+  getEvents = (id) ->
+    drawContexts[id] or drawContexts
+
+  getEventName = (id, drawContext) ->
+    eventName = '' + directiveName
+    [id, drawContext].forEach (name) ->
+      eventName += ".#{name}"
+    eventName
+
+  allEvents = (id, cb) ->
+    for c in getEvents(id)
+      cb(getEventName(id, c))
+
+  #return all internals to allow them to be overriden
+  #for different behavior
+  {
+    defaults
+    get
+    idToDefaultsMap
+    explicitGets
+    drawContexts
+    getEvents
+    getEventName
+    allEvents
+  }
+
 
 #simple binding where the logic is mainly driven by the above service
-app.controller 'rmapsLeafletDrawDirectiveCtrl', ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaults) ->
-  {explicitGets, drawContexts} = rmapsLeafletDrawDirectiveCtrlDefaults
+app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaults) ->
+  {getEventName, explicitGets, drawContexts} = rmapsLeafletDrawDirectiveCtrlDefaults
 
   scopeContext = (divType) ->
     getClass: (drawContext) ->
       ret = explicitGets[divType].getClass(drawContext, $scope.attrsId)
       ret
 
-    click: (drawContext) ->
-      ret = explicitGets[divType].click(drawContext, $scope.attrsId)
-      ret
+    click: (drawContext, event) ->
+      $scope.$emit getEventName($scope.attrsId, drawContext), event
 
   angular.extend $scope,
     button: scopeContext 'button'
     span: scopeContext 'span'
-    drawContexts: drawContexts
+    drawContexts: drawContexts[$scope.attrsId] or drawContexts

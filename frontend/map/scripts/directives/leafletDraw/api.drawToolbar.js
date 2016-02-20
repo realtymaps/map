@@ -23,42 +23,41 @@ module.exports = L.DrawToolbar.extend({
 			}
 		}
 
-		L.Class.prototype.initialize.call(this, options)
 	},
 
 	getModeHandlers: function (map) {
-		return [
-			{
+		return {
+			polyline: {
 				enabled: this.options.polyline,
 				handler: new L.Draw.Polyline(map, this.options.polyline),
 				title: _.get(this.options.polyline,"buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.polyline
 			},
-			{
+			polygon: {
 				enabled: this.options.polygon,
 				handler: new L.Draw.Polygon(map, this.options.polygon),
 				title: _.get(this.options.rectangle,"buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.polygon
 			},
-			{
+			rectangle: {
 				enabled: this.options.rectangle,
 				handler: new L.Draw.Rectangle(map, this.options.rectangle),
 				title: _.get(this.options.rectangle,"buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.rectangle
 			},
-			{
+			circle: {
 				enabled: this.options.circle,
 				handler: new L.Draw.Circle(map, this.options.circle),
 				title: _.get(this.options.circle, "buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.circle
 			},
-			{
+			marker: {
 				enabled: this.options.marker,
 				handler: new L.Draw.Marker(map, this.options.marker),
 				title: _.get(this.options.marker, "buttons.title") ||
           L.drawLocal.draw.toolbar.buttons.marker
 			}
-		]
+		}
 	},
 
 	// Get the actions part of the toolbar
