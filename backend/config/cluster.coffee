@@ -14,7 +14,7 @@ shutdownNow = (prefix, exitCode) ->
 
 
 catchUncaughtErrors = (prefix, err) ->
-  logger.error "#{prefix}: Something very bad happened.  ", err.message
+  logger.error "#{prefix}: Something very bad happened.  #{err.message}"
   logger.error err.stack || err
   # and now GTFO, because you are in unpredictable state
   shutdownNow(prefix, 1)

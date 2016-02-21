@@ -127,7 +127,7 @@ environmentConfig =
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
     NEW_RELIC:
-      RUN: Boolean(process.env.NEW_RELIC_RUN)
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else false
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
     CLEANUP:
@@ -151,7 +151,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
@@ -167,7 +167,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       APP_NAME: 'realtymaps-map'
 
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
