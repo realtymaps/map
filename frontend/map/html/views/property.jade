@@ -139,9 +139,9 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
       .container
         .content-block.prop-attrs.border-bottom
-          .pull-right
+          .pull-right.text-right
             .prop-price(ng-if="selectedResult.price" ng-class="formatters.property.getForSaleClass(selectedResult, false)") {{formatters.property.getPrice(selectedResult.price)}}
-            .below-price
+            .below-price.content-label
               .sold-date.info.title(ng-if="formatters.property.showSoldDate(selectedResult)") sold: {{selectedResult.close_date.toLocaleString() | date : 'MM/dd/yyyy'}}
 
           .content-emphasis.content-lg {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
