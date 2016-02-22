@@ -2,14 +2,24 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailCampaignService', ($log, $http) ->
+app.service 'rmapsMailCampaignService', ($log, $http, $sce) ->
   $log = $log.spawn 'mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
   get: (query) ->
-    $log.debug "GET query:\n#{JSON.stringify query}"
+    $log.debug -> "GET query:\n#{JSON.stringify query}"
     $http.get mailAPI, cache: false, params: query
     .then ({data}) ->
+      data
+
+  getReviewDetails: (id) ->
+    throw new Error('entity must have id') unless id
+    url = backendRoutes.mail.getReviewDetails.replace ':id', id
+    $http.get url
+    .then ({data}) ->
+      $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
+      if 'pdf' of data
+        data.pdf = $sce.trustAsResourceUrl(data.pdf)
       data
 
   create: (entity) ->

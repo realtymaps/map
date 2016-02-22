@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $state, $modal, rmapsMailTemplateService, rmapsLobService) ->
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $state, $modal, rmapsMailTemplateService, rmapsLobService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -38,6 +38,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
   $scope.sentFlag = false
   $scope.category = null
   $scope.priceQuote = null
+  $scope.details =
+    pdf: null
 
   getQuote = () ->
     if rmapsMailTemplateService.isSent()
@@ -49,6 +51,9 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       $log.debug -> "getquote data: #{JSON.stringify(quote)}"
       quote
 
+  getReviewDetails = () ->
+    rmapsMailCampaignService.getReviewDetails($scope.templObj.mailCampaign.id)
+
   $rootScope.registerScopeData () ->
     $scope.$parent.initMailTemplate()
     .then () ->
@@ -58,3 +63,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       getQuote()
       .then (response) ->
         $scope.priceQuote = response
+        if $scope.sentFlag
+          getReviewDetails()
+          .then (details) ->
+            $scope.details.pdf = details.pdf
+
