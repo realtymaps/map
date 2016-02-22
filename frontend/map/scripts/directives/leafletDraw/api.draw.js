@@ -14,6 +14,8 @@ module.exports = L.Class.extend({
 			throw new Error('Leaflet.draw 0.2.3+ requires Leaflet 0.7.0+. Download latest from https://github.com/Leaflet/Leaflet/')
 		}
 
+		L.setOptions(this, options)
+
 		var toolbar
 
 		this._toolbars = {}

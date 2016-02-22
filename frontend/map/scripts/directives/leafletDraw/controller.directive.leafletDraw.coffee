@@ -2,7 +2,7 @@
 app = require '../../app.coffee'
 directiveName = 'rmapsLeafletDrawDirectiveCtrl'
 
-app.service "#{directiveName}Defaults", () ->
+app.service "#{directiveName}DefaultsService", () ->
   drawContexts = [
     'pen'
     'polyline'
@@ -12,6 +12,7 @@ app.service "#{directiveName}Defaults", () ->
     'text'
     'redo'
     'undo'
+    'edit'
     'trash'
   ]
   ###
@@ -37,6 +38,7 @@ app.service "#{directiveName}Defaults", () ->
         text: _spanCssCls + ' icon-text-create'
         redo: _spanCssCls + ' icon-redo2'
         undo: _spanCssCls + ' icon-undo'
+        edit: _spanCssCls + ' fa fa-edit'
         trash: _spanCssCls + ' fa fa-trash-o'
 
 
@@ -94,8 +96,8 @@ app.service "#{directiveName}Defaults", () ->
 
 
 #simple binding where the logic is mainly driven by the above service
-app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaults) ->
-  {getEventName, explicitGets, drawContexts} = rmapsLeafletDrawDirectiveCtrlDefaults
+app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
+  {getEventName, explicitGets, drawContexts} = rmapsLeafletDrawDirectiveCtrlDefaultsService
 
   scopeContext = (divType) ->
     getClass: (drawContext) ->
@@ -108,4 +110,8 @@ app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaul
   angular.extend $scope,
     button: scopeContext 'button'
     span: scopeContext 'span'
-    drawContexts: drawContexts[$scope.attrsId] or drawContexts
+    drawContexts: drawContexts
+
+  $scope.$watch 'attrsId', (newVal, oldVal) ->
+    if newVal != oldVal and newVal?
+      $scope.drawContexts = drawContexts[newVal]

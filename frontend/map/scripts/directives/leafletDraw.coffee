@@ -5,15 +5,16 @@ LeafletDrawApi = require './leafletDraw/api.draw.js'
 
 
 app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout,
-rmapsLeafletDrawDirectiveCtrlDefaults) ->
+rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
-  {getEventName} = rmapsLeafletDrawDirectiveCtrlDefaults
+  {getEventName} = rmapsLeafletDrawDirectiveCtrlDefaultsService
 
   $log = $log.spawn('rmapsLeafletDraw')
 
   scope:
     mappromise: '='
     options: '=?'
+    events: '=?'
 
   template: template()
   replace: false
@@ -86,5 +87,12 @@ rmapsLeafletDrawDirectiveCtrlDefaults) ->
         for eventName, handle of handles
           do (eventName, handle) ->
             scope.$on eventName, handle
+
+        if scope.events
+          for eventName, handle of scope.events
+            do (eventName, handle) ->
+              map.on eventName, (args...) ->
+                args.push scope
+                handle args...
 
       _create()

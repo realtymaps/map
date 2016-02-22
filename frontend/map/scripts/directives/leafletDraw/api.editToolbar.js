@@ -5,6 +5,9 @@
 module.exports = L.EditToolbar.extend({
 
 	initialize: function (options) {
+
+		L.setOptions(this, options)
+		
 		// Need to set this manually since null is an acceptable value here
 		if (options.edit) {
 			if (typeof options.edit.selectedPathOptions === 'undefined') {

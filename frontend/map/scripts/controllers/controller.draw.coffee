@@ -10,45 +10,15 @@ app.controller "rmapsMapDrawCtrl", (
 $rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnService) ->
   drawnShapesSvc = rmapsDrawnService.getDrawnShapesSvc()
+
+  makeDrawKeys = (handles) ->
+    _.mapKeys handles, (val, key) -> 'draw:' + key
+
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
   $log = $log.spawn("map:MapDrawCtrl")
 
   _toast = null
   rmapsDrawnService.getDrawnItems().then (drawnItems) ->
-
-    #call this on every shape change to save shapes
-
-    _.merge $scope,
-      map:
-        mapPromise:  leafletData.getMap('mainMap')
-        drawState: {}
-        leafletDrawOptions:
-          ngOptions:
-            cssClass: 'btn btn-transparent nav-btn'
-          position:"bottomright"
-          draw:
-            polyline:
-              metric: false
-            polygon:
-              metric: false
-              showArea: true
-              drawError:
-                color: '#b00b00' #TODO change colors to map theme
-                timeout: 1000
-              shapeOptions:
-                color: '#bada55' #TODO change colors to map theme
-            circle:
-              showArea: true
-              metric: false
-              shapeOptions:
-                color: '#662d91' #TODO change colors to map theme
-            marker: false
-          edit:
-            featureGroup: drawnItems
-            remove: true
-        events:
-          draw:
-            enable: leafletDrawEvents.getAvailableEvents()
 
     leafletData.getMap(mapId).then (lMap) ->
 
@@ -101,8 +71,8 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         if $scope.Toggles.propertiesInShapes
           $rootScope.$emit rmapsEventConstants.map.mainMap.reDraw
 
-      #see https://github.com/michaelguild13/Leaflet.draw#events
-      _handle =
+
+      _handles = makeDrawKeys
         created: ({layer,layerType}) ->
           drawnItems.addLayer(layer)
           drawnShapesSvc?.create(layer.toGeoJSON()).then ({data}) ->
@@ -132,8 +102,40 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         deletestop: ({handler}) ->
           _endDrawAction()
 
-      _handle = _.mapKeys _handle, (val, key) -> 'draw:' + key
-      _unsubscribes = _linker.hookDraw(mapId, _handle, originator)
+      _unsubscribes = _linker.hookDraw(mapId, _handles, originator)
+
+      _.merge $scope,
+        map:
+          mapPromise:  leafletData.getMap('mainMap')
+          drawState: {}
+          leafletDrawEvents: _handles
+          leafletDrawOptions:
+            ngOptions:
+              cssClass: 'btn btn-transparent nav-btn'
+            position:"bottomright"
+            draw:
+              polyline:
+                metric: false
+              polygon:
+                metric: false
+                showArea: true
+                drawError:
+                  color: '#b00b00' #TODO change colors to map theme
+                  timeout: 1000
+                shapeOptions:
+                  color: '#bada55' #TODO change colors to map theme
+              circle:
+                showArea: true
+                metric: false
+                shapeOptions:
+                  color: '#662d91' #TODO change colors to map theme
+              marker: false
+            edit:
+              featureGroup: drawnItems
+              remove: true
+          events:
+            draw:
+              enable: leafletDrawEvents.getAvailableEvents()
 
       #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
       $rootScope.$on rmapsEventConstants.neighbourhoods.listToggled, (event, args...) ->
