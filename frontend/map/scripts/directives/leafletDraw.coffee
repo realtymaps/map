@@ -80,26 +80,21 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
 
-        handles = {}
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
-            handles[getEventName(attrs.id, handleName)] = (event) ->
+            scope['clicked' + handleName.toInitCaps()] = (event) ->
               _enableHandle legacyHandle, scope
 
-        handles[getEventName(attrs.id, 'pen')] = (event) ->
+        scope.clickedPen = (event) ->
           #kick off free draw
-        handles[getEventName(attrs.id, 'text')] = (event) ->
+        scope.clickedText = (event) ->
           #kick off something that puts text on map
-        handles[getEventName(attrs.id, 'redo')] = (event) ->
+        scope.clickedRedo = (event) ->
           #pull out of drawItems cache and put it back on the map
-        handles[getEventName(attrs.id, 'undo')] = (event) ->
+        scope.clickedUndo = (event) ->
           #pull out of drawItems cache and put it back on the map
-        handles[getEventName(attrs.id, 'trash')] = (event) ->
+        scope.clickedTrash = (event) ->
           _enableHandle editModeHandles?.remove, scope
-
-        leafletIterators.each handles, (handle, eventName) ->
-          do (eventName, handle) ->
-            scope.$on eventName, handle
 
         if scope.events
           leafletIterators.each scope.events, (handle, eventName) ->
@@ -115,8 +110,15 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
         scope.$on '$destroy', ->
           scope.disable()
+
+          for handleName, legacyHandle of drawModeHandles
+            do (handleName, legacyHandle) ->
+              handles[getEventName(attrs.id, handleName)] = null
+
           if scope.events
             leafletIterators.each scope.events, (handle, eventName) ->
               map.off eventName, handle
+          drawControl?.onRemove()
+          drawControl = null
 
       _create()

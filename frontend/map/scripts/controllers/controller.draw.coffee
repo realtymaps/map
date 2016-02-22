@@ -2,36 +2,35 @@
 app = require '../app.coffee'
 
 mapId = 'mainMap'
-originator = 'map'
 
 #TODO: get colors from color palette
 
 app.controller "rmapsMapDrawCtrl", (
-$rootScope, $scope, $log, rmapsMapEventsLinkerService, rmapsNgLeafletEventGateService, leafletIterators, toastr,
+$rootScope, $scope, $log, rmapsNgLeafletEventGateService, toastr,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnService) ->
   drawnShapesSvc = rmapsDrawnService.getDrawnShapesSvc()
-
+  _hiddenDrawnItems = []
+  
   makeDrawKeys = (handles) ->
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
   # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
-  $log = $log.spawn("map:MapDrawCtrl")
+  $log = $log.spawn("map:rmapsMapDrawCtrl")
 
   _toast = null
   rmapsDrawnService.getDrawnItems().then (drawnItems) ->
+    $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     leafletData.getMap(mapId).then (lMap) ->
 
       lMap.addLayer(drawnItems)
-
-      _linker = rmapsMapEventsLinkerService
-      _it = leafletIterators
 
       _endDrawAction = () ->
         toastr.clear _toast
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
       _destroy = () ->
+        _hiddenDrawnItems = []
         lMap.removeLayer(drawnItems)
 
       _doToast = (msg, contextName) ->
@@ -53,9 +52,8 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         layersObj.getLayers().forEach (layer) ->
           cb(_getShapeModel(layer), layer)
 
-      _hiddenDrawnItems = []
-
       _showHiddenLayers = () ->
+        $log.spawn("_hiddenDrawnItems").debug(Object.keys(_hiddenDrawnItems._layers).length)
         for layer in _hiddenDrawnItems
           drawnItems.addLayer(layer)
         _hiddenDrawnItems = []

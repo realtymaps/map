@@ -68,25 +68,13 @@ app.service "#{directiveName}DefaultsService", () ->
   createContexts = (divType) ->
     getClass: (drawContext, id) ->
       get({divType, subContext: 'classes', drawContext, id})
+
     getText: (drawContext, id) ->
       get({divType, subContext: 'texts', drawContext, id})
 
   explicitGets =
     button: createContexts 'button'
     span: createContexts 'span'
-
-  getEvents = (id) ->
-    drawContexts[id] or drawContexts
-
-  getEventName = (id, drawContext) ->
-    eventName = '' + directiveName
-    [id, drawContext].forEach (name) ->
-      eventName += ".#{name}"
-    eventName
-
-  allEvents = (id, cb) ->
-    for c in getEvents(id)
-      cb(getEventName(id, c))
 
   scopeContext = (scope, attrs) -> (divType) ->
     getClass: (drawContext) ->
@@ -97,8 +85,8 @@ app.service "#{directiveName}DefaultsService", () ->
       ret = explicitGets[divType].getText(drawContext, attrs.id)
       ret
 
-    click: (drawContext, event) ->
-      scope.$emit getEventName(attrs.id, drawContext), event
+    click: (drawContext, $event) ->
+      scope['clicked' + drawContext.toInitCaps()]($event)
 
 
   #return all internals to allow them to be overriden
@@ -109,8 +97,5 @@ app.service "#{directiveName}DefaultsService", () ->
     idToDefaultsMap
     explicitGets
     drawContexts
-    getEvents
-    getEventName
-    allEvents
     scopeContext
   }

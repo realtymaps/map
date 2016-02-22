@@ -1,13 +1,17 @@
+var OurToolBar = require('./api.Toolbar.js')
 /*L.Map.mergeOptions({
 	editControl: true
 })*/
 
 module.exports = L.EditToolbar.extend({
-
+	removeToolbar: function() {
+	},
+	addToolbar: function (map) {
+	},
 	initialize: function (options) {
 
 		L.setOptions(this, options)
-		
+
 		// Need to set this manually since null is an acceptable value here
 		if (options.edit) {
 			if (typeof options.edit.selectedPathOptions === 'undefined') {
@@ -66,28 +70,11 @@ module.exports = L.EditToolbar.extend({
 		};
 	},
 
-  addToolbar: function (map) {
-		// var container = L.Toolbar.prototype.addToolbar.call(this, map);
-
-		this._checkDisabled();
-
-		this.options.featureGroup.on('layeradd layerremove', this._checkDisabled, this);
-
-		// return container;
-	},
-
-	removeToolbar: function () {
-		this.options.featureGroup.off('layeradd layerremove', this._checkDisabled, this);
-
-		// L.Toolbar.prototype.removeToolbar.call(this);
-	},
-
 	disable: function () {
 		if (!this.enabled()) { return; }
 
 		this._activeMode.handler.revertLayers();
-
-		// L.Toolbar.prototype.disable.call(this);
+		L.Toolbar.prototype.disable.call(this);
 	},
 
 	_save: function () {
