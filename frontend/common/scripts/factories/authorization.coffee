@@ -2,7 +2,7 @@
 qs = require 'qs'
 mod = require '../module.coffee'
 
-mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, rmapsPrincipalService, rmapsUrlHelpersService) ->
+mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
@@ -43,7 +43,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, rmapsPrin
       return doPermsCheck(toState, desiredLocation, false)
     # otherwise, go to temporary view and do check ASAP
     $location.replace()
-    $location.url routes.authenticating
+    $state.go(routes.authenticating)
     rmapsPrincipalService.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)
 
