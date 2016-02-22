@@ -4,5 +4,10 @@ div(ng-controller="rmapsLeafletDrawDirectiveCtrl")
   button(
     ng-repeat="toDraw in ::drawContexts"
     ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
-      span(ng-class="::span.getClass(toDraw)")
+      span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
+      
+  button(ng-if="enabled"
+    ng-class="::button.getClass('cancel')" ng-click="disable()") {{::button.getText('cancel')}}
+      span(ng-if="::span.getClass('cancel')" ng-class="::span.getClass('cancel')")
+
   

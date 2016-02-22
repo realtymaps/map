@@ -32,7 +32,6 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
       _destroy = () ->
-        _it.each _unsubscribes, (unsub) -> unsub()
         lMap.removeLayer(drawnItems)
 
       _doToast = (msg, contextName) ->
@@ -101,8 +100,6 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
           _doToast('Delete Drawing','Delete Drawing')
         deletestop: ({handler}) ->
           _endDrawAction()
-
-      _unsubscribes = _linker.hookDraw(mapId, _handles, originator)
 
       _.merge $scope,
         map:

@@ -4,7 +4,7 @@ template = require './leafletDraw/leafletDraw.jade'
 LeafletDrawApi = require './leafletDraw/api.draw.js'
 
 
-app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout,
+app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout, leafletIterators,
 rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
   {getEventName} = rmapsLeafletDrawDirectiveCtrlDefaultsService
@@ -15,6 +15,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     mappromise: '='
     options: '=?'
     events: '=?'
+    enabled: '=?'
 
   template: template()
   replace: false
@@ -27,6 +28,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     _featureGroup = undefined
     _optionsEditedInDirective = false
     _deferred = undefined
+    _currentLegacyHandle = null
 
     unless scope.mappromise
       throw new Error 'mappromise required'
@@ -72,6 +74,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           do (handleName, legacyHandle) ->
             handles[getEventName(attrs.id, handleName)] = (event) ->
               legacyHandle.handler.enable()
+              _currentLegacyHandle = legacyHandle.handler
 
         handles[getEventName(attrs.id, 'pen')] = (event) ->
           #kick off free draw
@@ -83,16 +86,24 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           #pull out of drawItems cache and put it back on the map
         handles[getEventName(attrs.id, 'trash')] = (event) ->
           editModeHandles?.remove.handler.enable()
+          scope.enabled = true
+          _currentLegacyHandle = legacyHandle.handler
 
-        for eventName, handle of handles
+        leafletIterators.each handles, (handle, eventName) ->
           do (eventName, handle) ->
             scope.$on eventName, handle
 
         if scope.events
-          for eventName, handle of scope.events
-            do (eventName, handle) ->
-              map.on eventName, (args...) ->
-                args.push scope
-                handle args...
+          leafletIterators.each scope.events, (handle, eventName) ->
+            map.on eventName, handle
+
+        scope.$watch 'enabled', (newVal) ->
+          if newVal == false
+            _currentLegacyHandle?.disable()
+
+        scope.$on '$destroy', ->
+          if scope.events
+            leafletIterators.each scope.events, (handle, eventName) ->
+              map.off eventName, handle
 
       _create()

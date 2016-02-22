@@ -25,11 +25,15 @@ app.service "#{directiveName}DefaultsService", () ->
   _spanCssCls = 'icon'
 
   defaults =
+    texts:
+      button:
+        default: ''
+        cancel: 'Cancel'
     classes:
       button:
         default: 'button btn btn-transparent nav-btn'
+        cancel: 'button btn btn-primary'
       span:
-        default: _spanCssCls
         pen: _spanCssCls + ' icon-note-pen'
         polyline: _spanCssCls + ' icon-polyline'
         rectangle: _spanCssCls + ' icon-android-checkbox-outline-blank'
@@ -40,6 +44,7 @@ app.service "#{directiveName}DefaultsService", () ->
         undo: _spanCssCls + ' icon-undo'
         edit: _spanCssCls + ' fa fa-edit'
         trash: _spanCssCls + ' fa fa-trash-o'
+        cancel: undefined
 
 
   get = (opts) ->
@@ -63,6 +68,8 @@ app.service "#{directiveName}DefaultsService", () ->
   createContexts = (divType) ->
     getClass: (drawContext, id) ->
       get({divType, subContext: 'classes', drawContext, id})
+    getText: (drawContext, id) ->
+      get({divType, subContext: 'texts', drawContext, id})
 
   explicitGets =
     button: createContexts 'button'
@@ -104,6 +111,10 @@ app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaul
       ret = explicitGets[divType].getClass(drawContext, $scope.attrsId)
       ret
 
+    getText: (drawContext) ->
+      ret = explicitGets[divType].getText(drawContext, $scope.attrsId)
+      ret
+
     click: (drawContext, event) ->
       $scope.$emit getEventName($scope.attrsId, drawContext), event
 
@@ -111,6 +122,8 @@ app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaul
     button: scopeContext 'button'
     span: scopeContext 'span'
     drawContexts: drawContexts
+    disable: () ->
+      $scope.enabled = false
 
   $scope.$watch 'attrsId', (newVal, oldVal) ->
     if newVal != oldVal and newVal?
