@@ -1,6 +1,6 @@
 .map-navigation
   div.projects-tools
-    div.btn-group.desktop-only
+    div.btn-group.desktop-only(ng-hide="Toggles.isSketchMode")
       include ./_buttons_drop_down.jade
     
     div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")

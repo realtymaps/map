@@ -1,4 +1,4 @@
-.settings-tool
+.settings-tool(ng-hide="Toggles.isSketchMode")
   .desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(dropdown-toggle)
@@ -61,6 +61,17 @@
                   ng-repeat="c in ['on', 'off']"
                   ng-model="Toggles.propertiesInShapes"
                   btn-radio="{{c == 'on'}}"
+                  uncheckable) {{c}}
+                  
+          li.set.row
+            span.label.col-md-5 Old DrawToolbar
+            .col-md-7
+              .btn-group.pull-right
+                label.btn.btn-white.btn-checkbox(
+                  ng-class="{active: Toggles.showOldToolbar == (c == 'show')}"
+                  ng-repeat="c in ['show', 'hide']"
+                  ng-model="Toggles.showOldToolbar"
+                  btn-radio="{{c == 'show'}}"
                   uncheckable) {{c}}
         ul
           li.showAdvanced.row

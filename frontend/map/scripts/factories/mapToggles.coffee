@@ -18,6 +18,7 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @showNotes = false
     @propertiesInShapes = false
     @isSketchMode = false
+    @showOldToolbar = false
 
     @enableNoteTap = () =>
       @showNoteTap = true
