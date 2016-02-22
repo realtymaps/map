@@ -233,12 +233,21 @@ getPriceQuote = (userId, data) ->
   .then (lobResponses) ->
     res =
       pdf: lobResponses[0].url
-      thumbnails: lobResponses[0].thumbnails
       price: _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
         total + Number(price)
+
+getDetails = (lobId) ->
+  lobPromise()
+  .then (lob) ->
+    lob.live.letters.retrieve lobId
+    .then (response) ->
+      response
+    .catch isUnhandled, handleError('live')
+
 
 module.exports =
   getPriceQuote: getPriceQuote
   createLetter: createLetter
   createLetterTest: createLetterTest
   sendCampaign: sendCampaign
+  getDetails: getDetails

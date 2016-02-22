@@ -11,6 +11,9 @@ reqTransforms =
     validators.reqId toKey: "auth_user_id"
 
 class MailCampaignRoute extends RouteCrud
+  getReviewDetails: (req, res, next) =>
+    @custom @svc.getReviewDetails(req.params.id, req.body), res
+
 
 instance = new MailCampaignRoute mailCampaignService,
   debugNS: "mailRoute"
@@ -29,4 +32,9 @@ module.exports = routeHelpers.mergeHandles instance,
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
+    ]
+  getReviewDetails:
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
     ]
