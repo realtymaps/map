@@ -43,7 +43,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $location, $log, $state, r
       return doPermsCheck(toState, desiredLocation, false)
     # otherwise, go to temporary view and do check ASAP
     $location.replace()
-    $state.go(routes.authenticating)
+    $state.go($state.get(routes.authenticating))
     rmapsPrincipalService.getIdentity().then () ->
       return doPermsCheck(toState, desiredLocation, true)
 
