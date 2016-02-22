@@ -7,7 +7,9 @@ LeafletDrawApi = require './leafletDraw/api.draw.js'
 app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout, leafletIterators,
 rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
-  {getEventName} = rmapsLeafletDrawDirectiveCtrlDefaultsService
+  errorHeader = "rmapsLeafletDraw"
+
+  {getEventName, drawContexts, scopeContext} = rmapsLeafletDrawDirectiveCtrlDefaultsService
 
   $log = $log.spawn('rmapsLeafletDraw')
 
@@ -22,13 +24,24 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
   restrict: 'C'
   # require: ['leaflet']
   link: (scope, element, attrs) ->
+    _featureGroup = _deferred = _currentHandler = undefined
+    _optionsEditedInDirective = false
+
+    _scopeContext = scopeContext(scope, attrs)
+
+    _enableHandle = (handle) ->
+      handle.handler.enable()
+      scope.enabled = true
+      _currentHandler = handle.handler
+
+    angular.extend scope,
+      button: _scopeContext 'button'
+      span: _scopeContext 'span'
+      drawContexts: drawContexts[attrs.id] or drawContexts
+
+
     if !leafletData
       throw new Error 'ui-leaflet is not loaded'
-
-    _featureGroup = undefined
-    _optionsEditedInDirective = false
-    _deferred = undefined
-    _currentLegacyHandle = null
 
     unless scope.mappromise
       throw new Error 'mappromise required'
@@ -36,8 +49,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
     scope.mappromise.then (map) ->
 
       _create = () ->
-        if attrs.id?
-          scope.attrsId = attrs.id
 
         return if _optionsEditedInDirective
 
@@ -73,8 +84,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         for handleName, legacyHandle of drawModeHandles
           do (handleName, legacyHandle) ->
             handles[getEventName(attrs.id, handleName)] = (event) ->
-              legacyHandle.handler.enable()
-              _currentLegacyHandle = legacyHandle.handler
+              _enableHandle legacyHandle, scope
 
         handles[getEventName(attrs.id, 'pen')] = (event) ->
           #kick off free draw
@@ -85,9 +95,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         handles[getEventName(attrs.id, 'undo')] = (event) ->
           #pull out of drawItems cache and put it back on the map
         handles[getEventName(attrs.id, 'trash')] = (event) ->
-          editModeHandles?.remove.handler.enable()
-          scope.enabled = true
-          _currentLegacyHandle = legacyHandle.handler
+          _enableHandle editModeHandles?.remove, scope
 
         leafletIterators.each handles, (handle, eventName) ->
           do (eventName, handle) ->
@@ -97,11 +105,16 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           leafletIterators.each scope.events, (handle, eventName) ->
             map.on eventName, handle
 
+        scope.disable = () ->
+          _currentHandler?.disable()
+          scope.enabled = false
+
         scope.$watch 'enabled', (newVal) ->
           if newVal == false
-            _currentLegacyHandle?.disable()
+            scope.disable()
 
         scope.$on '$destroy', ->
+          scope.disable()
           if scope.events
             leafletIterators.each scope.events, (handle, eventName) ->
               map.off eventName, handle
