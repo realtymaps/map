@@ -24,7 +24,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   create = (newMail = {}, newSender = {}) ->
     mailCampaign = _.defaults newMail, campaignDefaults
     senderData = newSender
-    # $log.debug -> "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
+    $log.debug -> "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
 
   create()
 
@@ -145,7 +145,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     _getSenderData()
     .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
-      # $log.debug -> "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
+      $log.debug -> "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
       toSave.recipients = JSON.stringify toSave.recipients
 
       profile = rmapsPrincipalService.getCurrentProfile()
@@ -153,9 +153,9 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
 
       op = rmapsMailCampaignService.create(toSave) #upserts if not already created
       .then ({data}) ->
-        # $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
+        $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
-        # $log.debug "campaign #{mailCampaign.id} saved"
+        $log.debug "campaign #{mailCampaign.id} saved"
 
   getLobData: () ->
     lobData =
