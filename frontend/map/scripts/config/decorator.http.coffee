@@ -1,3 +1,4 @@
+###globals angular###
 app = require '../app.coffee'
 qs = require 'qs'
 
@@ -47,18 +48,13 @@ app.config(($httpProvider) ->
       else
         promise = cachedResp
 
-      #TODO: could override promise with another to return data instead data.data (less annoying)
-
-      # unless promise.success?
-      #   promise.success = ->
-      #     promise
-      #   promise.error = (cb) ->
-      #     promise.catch (err) ->
-      #       cb(err)
-      #     promise
-
       promise.cancel = ->
-        canceler.resolve()
+        ###
+          Edge case bug if the first request is canceled
+          you do not want to resolve it. If you resolve then you
+          might have cached a canceled request/ response. Which is nothing.
+        ###
+        canceler.reject('canceled')
 
       promise.catch ->
         #if $q.all rejects a collection of promises then we can cancel the http

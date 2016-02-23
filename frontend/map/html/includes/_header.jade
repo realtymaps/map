@@ -10,7 +10,7 @@ header.site-header
           include ./header/_search
         include ./header/_rightnav
   .mobile-only
-    .inner(ng-if='!rmapsPageService.mobile.modal')
+    .inner(ng-if='!rmapsPageService.showMobileModalHeader()')
       .container-fluid
         include ./header/_burger
         include ./header/_logo
@@ -18,12 +18,15 @@ header.site-header
           include ./header/_search
 
 .mobile-only
-  mobile-header.mobile-site-header(ng-if='rmapsPageService.mobile.modal')
-    .inner
-      .mobile-header-left
-        a(ng-click='rmapsPageService.back($event)')
-          i.fa.fa-chevron-left
-      .mobile-header-center
-        .mobile-header-title {{rmapsPageService.title}}
-      .mobile-header-right
-        div(ng-bind-html="buttons['right']")
+  div(ng-if='rmapsPageService.showMobileModalHeader()')
+    mobile-header.mobile-site-header(header-id="page-modal-header")
+      .inner
+        .mobile-header-left
+          a(ng-click='rmapsPageService.back($event)')
+            i.fa.fa-chevron-left
+            mobile-header-target-left
+        .mobile-header-center
+          .mobile-header-title {{rmapsPageService.title}}
+          mobile-header-target-center
+        .mobile-header-right
+          mobile-header-target-right

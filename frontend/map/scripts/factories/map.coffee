@@ -44,7 +44,6 @@ app.factory 'rmapsMapFactory',
         toggles.setLocationCb(_handleMoveToMyLocation)
       $scope.Toggles = toggles
 
-
     class Map extends rmapsBaseMapFactory
       baseIsLoaded = false
 
