@@ -1,12 +1,12 @@
+###globals _, angular###
 app = require '../app.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
 
-sprintf = require('sprintf-js').sprintf
 require '../services/leafletObjectFetcher.coffee'
 
 app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log, $state, $location, rmapsParcelEnums,
   rmapsGoogleService, rmapsPropertiesService, rmapsFormattersService, uiGmapGmapUtil, rmapsEventConstants,
-  rmapsLeafletObjectFetcherFactory, rmapsMainOptions, rmapsZoomLevelService) ->
+  rmapsLeafletObjectFetcherFactory, rmapsMainOptions) ->
 
   $log = $log.spawn("map:rmapsResultsFormatterService")
 
@@ -102,8 +102,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
     getSortClass: (toMatchSortStr) =>
       if toMatchSortStr != @mapCtrl.scope.resultsPredicate
         return ''
-      sortClass = 'active-sort'
-      return sortClass
+      return 'active-sort'
 
     centerOn: (result) =>
       @zoomTo(result,false)

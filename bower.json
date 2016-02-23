@@ -31,7 +31,6 @@
     "leaflet.zoombox": "https://github.com/realtymaps/Leaflet.ZoomBox/archive/d66f81d1ef1cdcfd2e2047c309e6e69535c2fbe5.zip",
     "lodash": "~3.10.0",
     "ng-img-crop": "~0.3.2",
-    "ng-infinite-scroller-origin": "~1.2.0",
     "restangular": "1.5.1",
     "rmaps-angular-utils": "1.0.1",
     "spinkit": "~1.0.0",
@@ -46,7 +45,8 @@
     "angular-validation": "git://github.com/nmccready/angular-validation#master",
     "angularjs-slider": "~2.4.0",
     "angular-numeraljs": "~1.2.0",
-    "gl-matrix": "~2.3.1"
+    "gl-matrix": "~2.3.1",
+    "ngInfiniteScroll": "git://github.com/realtymaps/ngInfiniteScroll#68e6609cf80930e6ec730c733de34152db95297b"
   },
   "overrides": {
     "angular-busy": {
