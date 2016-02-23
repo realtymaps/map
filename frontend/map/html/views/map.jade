@@ -1,6 +1,5 @@
 section.map(ng-cloak ng-init="init('page-map')")
   include ../includes/mixins/_leafletMixin.jade
-
   include ../includes/map/_drawTools.jade
 
   div(ng-if="map.isReady" id="map")
@@ -9,7 +8,7 @@ section.map(ng-cloak ng-init="init('page-map')")
     div(ng-if="!Toggles.showOldToolbar")
       +leafletMixin('map', 'mainMap')
 
-  include ../includes/map/_properties.jade
+  include ../includes/map/_properties.jade 
   include ../includes/map/_searchbox.jade
   include ../includes/map/_notesTap.jade
   include ../includes/map/_neighbourhoodsTap.jade
