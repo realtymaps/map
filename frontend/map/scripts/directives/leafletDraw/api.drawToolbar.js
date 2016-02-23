@@ -6,11 +6,7 @@ var OurToolBar = require('./api.Toolbar.js')
     actually adding a toolbar to the map.
 */
 
-module.exports = L.DrawToolbar.extend({
-	removeToolbar: function() {
-	},
-	addToolbar: function (map) {
-	},
+module.exports = L.DrawToolbar.extend(Object.assign({}, OurToolBar, {
 
 	initialize: function (options) {
 
@@ -93,4 +89,4 @@ module.exports = L.DrawToolbar.extend({
 			}
 		]
 	}
-})
+}))

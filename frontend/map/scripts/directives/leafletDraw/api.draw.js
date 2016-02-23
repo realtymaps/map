@@ -39,6 +39,7 @@ module.exports = L.Class.extend({
 			this._toolbars[EditToolbar.TYPE].on('enable', this._toolbarEnabled, this)
 		}
 		L.toolbar = this //set global var for editing the toolbar
+
 	},
 
 	onAdd: function (map) {
@@ -50,7 +51,6 @@ module.exports = L.Class.extend({
 			}
 		}
 
-		return container
 	},
 
 	onRemove: function () {

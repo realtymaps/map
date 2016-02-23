@@ -19,6 +19,8 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
     return unless _map
     $log.debug 'closing popup'
     _map.closePopup()
+    _templateScope?.$destroy()
+    _templateScope = null
     $timeout.cancel _timeoutPromise if _timeoutPromise
 
   _getOffset = (map, model, offsets = rmapsPopupConstants.offsets) ->

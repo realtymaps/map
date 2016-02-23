@@ -57,9 +57,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         if options.control?.promises?
           options.control.promised _deferred.promise
 
-        if _featureGroup
-          map.removeLayer _featureGroup
-
         if !L.Control.Draw?
           $log.error "#{errorHeader} Leaflet.Draw is not loaded as a plugin."
           return
@@ -76,6 +73,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         map.addLayer(_featureGroup)
 
         drawControl = new LeafletDrawApi options
+        drawControl.onAdd map
 
         drawModeHandles = drawControl._toolbars.draw.getModeHandlers(map)
         editModeHandles = drawControl._toolbars.edit?.getModeHandlers(map)
@@ -111,9 +109,12 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         scope.$on '$destroy', ->
           scope.disable()
 
+          if _featureGroup
+            map.removeLayer _featureGroup
+
           if scope.events
             leafletIterators.each scope.events, (handle, eventName) ->
-              map.off eventName, handle
+              map.off eventName
           drawControl?.onRemove()
           drawControl = null
 
