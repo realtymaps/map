@@ -1,4 +1,5 @@
 ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
+lobService = require './service.lob'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 
@@ -24,6 +25,21 @@ class MailService extends ServiceCrud
     )
     .where(query)
     super(query, transaction: transaction)
+
+  # any details for a mail review shall be delivered upon this service call
+  getReviewDetails: (campaign_id) ->
+    tables.mail.letters()
+    .select 'lob_response'
+    .where user_mail_campaign_id: campaign_id
+    .limit 1
+    .then (result) ->
+      if !result?.length? or result.length == 0 then throw new PartiallyHandledError(error, "No letters have been sent from this campaign!")
+      sample = result[0]
+      lobId = sample.lob_response.id
+      lobService.getDetails lobId
+      .then (lob_response) ->
+        details =
+          pdf: lob_response.url
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance

@@ -1,0 +1,45 @@
+@import '../components/property-attr-functions.styl'
+
+//
+// This component should be used when a Google Street View or Property Image is displayed for a property
+//
+
+// Wrapper DIV around Property image or street view
+.prop-image
+  position: relative;
+  width: 100%;
+
+  // Large property image (e.g. - for Details modal)
+  &.prop-image-lg
+    height: 350px;
+
+  &.prop-image-md
+    height: 205px;
+
+  .prop-image-panorama
+  .property-img-satellite
+  .angular-leaflet-map
+    width: 100%;
+    height: 100%;
+
+  // Property status floating in lower-left corner of image
+  .prop-image-status
+    display inline-block
+    position absolute
+    bottom 0
+    left 0
+    padding: 7px 30px
+    font-size: 15px
+    font-weight: 500
+    color $rm_status_on_background
+    text-transform uppercase
+
+    $fnPropertyStatus(background-color)
+
+  &.prop-image-md
+    .prop-image-status
+      padding: 6px 15px;
+      font-size: 12px;
+      font-weight: 200;
+      letter-spacing: 1.1px;
+

@@ -10,6 +10,7 @@ module.exports =
   user:           'user'
   history:        'history'
   properties:     'properties'
+  property:       'property/:id'
   projects:       'projects'
   project:        'project/:id'
   projectClients: 'project/:id/clients'

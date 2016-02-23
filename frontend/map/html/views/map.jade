@@ -1,15 +1,14 @@
 section.map(ng-cloak ng-init="init('page-map')")
   include ../includes/mixins/_leafletMixin.jade
-  
+
   include ../includes/map/_drawTools.jade
-  
+
   div(ng-if="map.isReady" id="map")
-    div(ng-controller="rmapsMapDrawCtrl")
+    div(ng-if="Toggles.showOldToolbar" ng-controller="rmapsMapDrawCtrl")
       +leafletMixin('map', 'mainMap')(lf-draw='map.leafletDrawOptions')
-  
-  
-  include ../includes/map/_detailsTray.jade
-  //- include ../includes/map/_filtersTray.jade
+    div(ng-if="!Toggles.showOldToolbar")
+      +leafletMixin('map', 'mainMap')
+
   include ../includes/map/_properties.jade
   include ../includes/map/_searchbox.jade
   include ../includes/map/_notesTap.jade
