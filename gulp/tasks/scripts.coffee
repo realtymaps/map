@@ -100,7 +100,7 @@ browserifyTask = (app, watch = false) ->
               log = if level is 'error' then 'error' else 'warn'
               msg = "Coffeelint #{level} @ #{file}:#{lineNumber} #{message}".replace(/'/g, "\\'")
               @push "console.#{log} '#{msg}'\n"
-              @push "alert window.lintAlert = 'LINT ERRORS SEE CONSOLE' if not window.lintAlert"
+              @push "alert window.lintAlert = 'LINT ERRORS SEE CONSOLE' if not window.lintAlert\n"
 
           next()
 
