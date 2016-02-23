@@ -205,16 +205,23 @@ app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
     $log = $log.spawn('mail:pageBreakHelper')
-    $log.debug element
 
+    # This is fairly conservative to try and ensure a paragraph does not overlap the margin
     bottomMargin = (1.2*96)
+
+    # Standard letter
     pxPerPage = (11*96)
+
+    # The padding/margin needs to be set on the page-break (first) element of each page.
     topMargin = (0.5*96)
+
+    # It isn't necessary to subtract the top margin as long as the nearest position:relative parent is at the top of the page
     topMarginFirstPage = 0 # (2.7*96)
+
+    # The tag type to consider for page-breaks.
     tagName = element.attr('ta-default-wrap') || 'p'
 
     update = () ->
-      # toCheck = element[0].querySelector('.ta-bind').childNodes
       toCheck = element.find(tagName)
       nextBreak = pxPerPage - topMarginFirstPage - bottomMargin
       pageCounter = 0
@@ -226,8 +233,7 @@ app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
         if (offset) >= nextBreak && pageCounter > 0
           angular.element(p).addClass 'page-break'
           nextBreak = p.offsetTop + pxPerPage - bottomMargin
-          # nextBreak += pxPerPage
-          pageCounter = 0
+          pageCounter = 0 # The first paragraph on any page will never be pushed to the next page
         else
           angular.element(p).removeClass 'page-break'
 
