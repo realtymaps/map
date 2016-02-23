@@ -12,32 +12,42 @@ $page-height = 11in
 .mail-wizard
   .edit-template
     background-color $gray_lighter
-    .template-stage-container
-      // position relative
-      overflow scroll
 
     .template-stage
-      // left 0
-      // top 0
-      // right 0
-      // bottom 0
-      // padding-top ($template-stage-margin / 2)
-      // padding-left ($template-stage-margin)
       background-color $gray_lighter
-      height $page-height
       margin-bottom $template-stage-margin
       text-align center
 
       .letter-editor
-        text-align left
         margin auto
         box-shadow 4px 4px 20px #888888
         zoom $wysiwyg-scale-factor
-        overflow auto
+        overflow scroll
+        height 6.5in
+        width 8.5in
+        background-color $white
+        position relative
 
         .wysiwygOnly
           display block
           pointer-events none
+
+        p.page-break
+          margin-top 0
+          &::before
+            content \'Page Break\'
+            text-align right
+            display block
+            border-top 1px dotted $gray
+            margin-top -0.25in
+            color $gray
+            font-size 12px
+            position absolute
+            right 0
+            width 100%
+            height 0
+            line-height 1em
+            padding-right 0.5em
 
       .macro-display
         background-color #46b8f1
@@ -51,29 +61,14 @@ $page-height = 11in
         margin-left 2px
         margin-right 2px
 
-      .ta-letter-wrapper
-        // push bottom-bound of letter content container down to bottom of page so it looks better in wysiwig
-        // height @height
-        display block
-        width 100%
-        // overflow auto
-        font-size 100%
-        line-height unset
-        background-color #ffffff
-
       .letter-page
         top 0
-
         &:focus
           border none
 
       .ta-scroll-window > .ta-bind
         padding 0
         outline none
-        // height @height
-
-      .ta-root
-        // height @height
 
       #recipient-address-window, #return-address-window
         overflow hidden

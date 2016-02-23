@@ -132,7 +132,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     # filter selected node for macros
     scope.macroFilter = (sel) ->
       # make macro span if it needs
-      if /{{.*?}}/.test(sel.focusNode.data)
+      if /{{.*?}}/.test(sel.focusNode?.data)
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
@@ -199,3 +199,43 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->
       scope.macro = macro
+
+app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
+  restrict: 'A'
+  require: 'ngModel'
+  link: (scope, element, attrs, ngModel) ->
+    $log = $log.spawn('mail:pageBreakHelper')
+    $log.debug element
+
+    bottomMargin = (1.2*96)
+    pxPerPage = (11*96)
+    topMargin = (0.5*96)
+    topMarginFirstPage = 0 # (2.7*96)
+    tagName = element.attr('ta-default-wrap') || 'p'
+
+    update = () ->
+      # toCheck = element[0].querySelector('.ta-bind').childNodes
+      toCheck = element.find(tagName)
+      nextBreak = pxPerPage - topMarginFirstPage - bottomMargin
+      pageCounter = 0
+      for p, i in toCheck
+        offset = p.offsetTop + p.clientHeight
+        pageCounter++
+        # $log.debug -> "##{i} next:#{nextBreak}px/#{(nextBreak/96).toFixed(2)}in offsetTop:#{p.offsetTop}px/#{(p.offsetTop/96).toFixed(2)}in " +
+        #   " clientHeight:#{p.clientHeight}px/#{(p.clientHeight/96).toFixed(2)}in total:#{offset}px/#{(offset/96).toFixed(2)}in"
+        if (offset) >= nextBreak && pageCounter > 0
+          angular.element(p).addClass 'page-break'
+          nextBreak = p.offsetTop + pxPerPage - bottomMargin
+          # nextBreak += pxPerPage
+          pageCounter = 0
+        else
+          angular.element(p).removeClass 'page-break'
+
+    element.on 'keyup', _.debounce () ->
+      scope.$evalAsync update
+    , 100
+
+    $timeout update, 500
+
+    scope.$on '$destroy', () ->
+      element.unbind 'keyup', element

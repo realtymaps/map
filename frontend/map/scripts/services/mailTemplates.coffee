@@ -24,7 +24,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
   create = (newMail = {}, newSender = {}) ->
     mailCampaign = _.defaults newMail, campaignDefaults
     senderData = newSender
-    $log.debug -> "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
+    # $log.debug -> "Created mailCampaign:\n#{JSON.stringify(mailCampaign, null, 2)}"
 
   create()
 
@@ -92,12 +92,14 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
     previewStyles = "body {background-color: #FFF}"
-    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{content}</body></html>"
+    "<html><head><title>#{mailCampaign.name}</title><<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
   _createLobHtml = () ->
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
-    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
+    "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{mailCampaign.content}</body></html>"
 
   _setTemplateType = (type) ->
     mailCampaign.template_type = type
@@ -143,7 +145,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     _getSenderData()
     .then () ->
       toSave = _.pick mailCampaign, _.keys(campaignDefaults)
-      $log.debug -> "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
+      # $log.debug -> "Saving mailCampaign:\n#{JSON.stringify(toSave, null, 2)}"
       toSave.recipients = JSON.stringify toSave.recipients
 
       profile = rmapsPrincipalService.getCurrentProfile()
@@ -151,9 +153,9 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
 
       op = rmapsMailCampaignService.create(toSave) #upserts if not already created
       .then ({data}) ->
-        $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
+        # $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
-        $log.debug "campaign #{mailCampaign.id} created"
+        # $log.debug "campaign #{mailCampaign.id} saved"
 
   getLobData: () ->
     lobData =
