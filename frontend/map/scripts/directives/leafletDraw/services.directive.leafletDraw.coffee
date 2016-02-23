@@ -1,8 +1,7 @@
-###globals angular###
 app = require '../../app.coffee'
 directiveName = 'rmapsLeafletDrawDirectiveCtrl'
 
-app.service "#{directiveName}Defaults", () ->
+app.service "#{directiveName}DefaultsService", () ->
   drawContexts = [
     'pen'
     'polyline'
@@ -12,6 +11,7 @@ app.service "#{directiveName}Defaults", () ->
     'text'
     'redo'
     'undo'
+    'edit'
     'trash'
   ]
   ###
@@ -24,11 +24,15 @@ app.service "#{directiveName}Defaults", () ->
   _spanCssCls = 'icon'
 
   defaults =
+    texts:
+      button:
+        default: ''
+        cancel: 'Cancel'
     classes:
       button:
         default: 'button btn btn-transparent nav-btn'
+        cancel: 'button btn btn-primary'
       span:
-        default: _spanCssCls
         pen: _spanCssCls + ' icon-note-pen'
         polyline: _spanCssCls + ' icon-polyline'
         rectangle: _spanCssCls + ' icon-android-checkbox-outline-blank'
@@ -37,7 +41,9 @@ app.service "#{directiveName}Defaults", () ->
         text: _spanCssCls + ' icon-text-create'
         redo: _spanCssCls + ' icon-redo2'
         undo: _spanCssCls + ' icon-undo'
+        edit: _spanCssCls + ' fa fa-edit'
         trash: _spanCssCls + ' fa fa-trash-o'
+        cancel: undefined
 
 
   get = (opts) ->
@@ -62,22 +68,25 @@ app.service "#{directiveName}Defaults", () ->
     getClass: (drawContext, id) ->
       get({divType, subContext: 'classes', drawContext, id})
 
+    getText: (drawContext, id) ->
+      get({divType, subContext: 'texts', drawContext, id})
+
   explicitGets =
     button: createContexts 'button'
     span: createContexts 'span'
 
-  getEvents = (id) ->
-    drawContexts[id] or drawContexts
+  scopeContext = (scope, attrs) -> (divType) ->
+    getClass: (drawContext) ->
+      ret = explicitGets[divType].getClass(drawContext, attrs.id)
+      ret
 
-  getEventName = (id, drawContext) ->
-    eventName = '' + directiveName
-    [id, drawContext].forEach (name) ->
-      eventName += ".#{name}"
-    eventName
+    getText: (drawContext) ->
+      ret = explicitGets[divType].getText(drawContext, attrs.id)
+      ret
 
-  allEvents = (id, cb) ->
-    for c in getEvents(id)
-      cb(getEventName(id, c))
+    click: (drawContext, $event) ->
+      scope['clicked' + drawContext.toInitCaps()]($event)
+
 
   #return all internals to allow them to be overriden
   #for different behavior
@@ -87,25 +96,5 @@ app.service "#{directiveName}Defaults", () ->
     idToDefaultsMap
     explicitGets
     drawContexts
-    getEvents
-    getEventName
-    allEvents
+    scopeContext
   }
-
-
-#simple binding where the logic is mainly driven by the above service
-app.controller directiveName, ($scope, $log, rmapsLeafletDrawDirectiveCtrlDefaults) ->
-  {getEventName, explicitGets, drawContexts} = rmapsLeafletDrawDirectiveCtrlDefaults
-
-  scopeContext = (divType) ->
-    getClass: (drawContext) ->
-      ret = explicitGets[divType].getClass(drawContext, $scope.attrsId)
-      ret
-
-    click: (drawContext, event) ->
-      $scope.$emit getEventName($scope.attrsId, drawContext), event
-
-  angular.extend $scope,
-    button: scopeContext 'button'
-    span: scopeContext 'span'
-    drawContexts: drawContexts[$scope.attrsId] or drawContexts

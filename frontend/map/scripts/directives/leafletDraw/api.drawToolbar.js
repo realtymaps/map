@@ -1,3 +1,4 @@
+var OurToolBar = require('./api.Toolbar.js')
 /*
   Mods: L.DrawToolbar
   Goal:
@@ -6,14 +7,15 @@
 */
 
 module.exports = L.DrawToolbar.extend({
-
+	removeToolbar: function() {
+	},
 	addToolbar: function (map) {
 	},
 
-	removeToolbar: function () {
-	},
-
 	initialize: function (options) {
+
+		L.setOptions(this, options)
+
 		// Ensure that the options are merged correctly since L.extend is only shallow
 		for (var type in this.options) {
 			if (this.options.hasOwnProperty(type)) {

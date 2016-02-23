@@ -2,16 +2,17 @@
 app = require '../app.coffee'
 
 app.config ($provide) ->
-  $provide.decorator 'rmapsLeafletDrawDirectiveCtrlDefaults', ($delegate) ->
+  $provide.decorator 'rmapsLeafletDrawDirectiveCtrlDefaultsService', ($delegate) ->
 
-    angular.extend $delegate.drawContexts
+    angular.extend $delegate.drawContexts,
       sketchDraw: [
         'polyline'
-        'square'
+        'rectangle'
         'circle'
         'polygon'
         'text'
-        'redo'
-        'undo'
+        'edit'
         'trash'
       ]
+
+    $delegate
