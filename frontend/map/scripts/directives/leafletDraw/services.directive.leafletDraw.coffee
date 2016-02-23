@@ -1,4 +1,3 @@
-###globals angular###
 app = require '../../app.coffee'
 directiveName = 'rmapsLeafletDrawDirectiveCtrl'
 

@@ -9,7 +9,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
   errorHeader = "rmapsLeafletDraw"
 
-  {getEventName, drawContexts, scopeContext} = rmapsLeafletDrawDirectiveCtrlDefaultsService
+  {drawContexts, scopeContext} = rmapsLeafletDrawDirectiveCtrlDefaultsService
 
   $log = $log.spawn('rmapsLeafletDraw')
 
@@ -110,10 +110,6 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
         scope.$on '$destroy', ->
           scope.disable()
-
-          for handleName, legacyHandle of drawModeHandles
-            do (handleName, legacyHandle) ->
-              handles[getEventName(attrs.id, handleName)] = null
 
           if scope.events
             leafletIterators.each scope.events, (handle, eventName) ->
