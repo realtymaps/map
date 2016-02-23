@@ -53,6 +53,7 @@ module.exports = (config) ->
     # list of files / patterns to load in the browser
     files: [
       'node_modules/phantomjs-polyfill/bind-polyfill.js'
+      'node_modules/object-assign/browser.js'
       require.resolve('stripe-debug')#https://github.com/bendrucker/angular-stripe/issues/23
       '_public/scripts/vendor.js'
       '_public/styles/vendor.css'
