@@ -86,11 +86,11 @@ recordChangeCounts = (subtask) ->
   .where(subset)
   .count('*')
   # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-  updatedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: this)
+  updatedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(updated: subtask.batch_id)
   .where(subset)
   .count('*')
-  touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: this)
+  touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(batch_id: subtask.batch_id)
   .where(subset)
   .orWhere(deleted: subtask.batch_id)
