@@ -32,7 +32,7 @@ projectResponses =
 
 drawnShapesRsponses =
   delete: 1
-  getAll: [{draw_id:1, id:2, shape_extras:{}}]
+  getAll: [{project_id:1, draw_id:1, id:2, shape_extras:{}}]
 
 userUtils =
   cacheUserValues: sinon.stub()
@@ -159,6 +159,7 @@ describe 'route.projectSession', ->
         projects.length.should.be.ok
         projects[0].clients.length.should.be.ok
         projects[0].notes.length.should.be.ok
+        # console.log.cyan projects[0].drawnShapes, true
         projects[0].drawnShapes.length.should.be.ok
 
     it 'clients', ->
