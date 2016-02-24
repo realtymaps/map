@@ -5,6 +5,10 @@ div(ng-if="!$$destroyed")
     ng-repeat="toDraw in ::drawContexts"
     ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
       span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
+  
+  button.cancel(ng-if="canSave"
+    ng-class="::button.getClass('save')" ng-click="save()") {{::button.getText('save')}}
+      span(ng-if="::span.getClass('save')" ng-class="::span.getClass('save')")
       
   button.cancel(ng-if="enabled"
     ng-class="::button.getClass('cancel')" ng-click="disable()") {{::button.getText('cancel')}}

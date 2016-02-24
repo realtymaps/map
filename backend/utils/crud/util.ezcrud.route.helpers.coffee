@@ -2,9 +2,8 @@ util = require 'util'
 _ = require 'lodash'
 _logger = require('../../config/logger').spawn('ezcrud:route')
 {methodExec, handleQuery} = require '../util.route.helpers'
-factory = require '../util.factory'
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
-{validateAndTransform, defaultRequestTransforms, falsyDefaultTransformsToNoop} = require '../util.validation'
+{validateAndTransformRequest, defaultRequestTransforms, falsyDefaultTransformsToNoop} = require '../util.validation'
 
 class RouteCrud
   constructor: (@svc, options = {}) ->
@@ -45,12 +44,12 @@ class RouteCrud
 
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
-    validateAndTransform req, @reqTransforms
+    validateAndTransformRequest req, @reqTransforms
     .then (tReq) =>
       @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
         @logger.debug "attempting: #{transformName}"
-        return validateAndTransform tReq, specificTransforms
+        return validateAndTransformRequest tReq, specificTransforms
       tReq
 
   logRequest: (req, addMsg) =>
