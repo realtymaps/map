@@ -36,6 +36,7 @@ module.exports = (options = {}) ->
       clonedVal[val] = origVal
       delete clonedVal[key]
 
+    logger.debug "return val"
     logger.debug clonedVal, true
     logger.debug "end validation.mapKeys"
 

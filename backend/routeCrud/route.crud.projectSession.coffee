@@ -137,9 +137,9 @@ class ProjectRouteCrud extends RouteCrud
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
     @drawnShapesCrud = new EzRouteCrud @svc.drawnShapes,
-
+      handleQuery: false
       rootGETTransforms:
-        params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id"
+        params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true
         body: validators.object isEmptyProtect: true
 
@@ -177,7 +177,8 @@ class ProjectRouteCrud extends RouteCrud
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
-      drawnShapes: @drawnShapesCrud.root req, res, next
+      drawnShapes: do =>
+        @drawnShapesCrud.rootGET(req, res, next)
       favorites: @profilesCrud.rootGET req, res, next
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'

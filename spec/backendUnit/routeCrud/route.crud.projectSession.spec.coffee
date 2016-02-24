@@ -1,5 +1,5 @@
-{assert, } = require('chai')
-require('chai').should()
+{assert, expect, should} = require('chai')
+should()
 Promise = require 'bluebird'
 {basePath} = require '../globalSetup'
 logger = require("../../specUtils/logger").spawn('route.crud.projectSession')
@@ -26,15 +26,21 @@ projectResponses =
   getById: [id:1, sandbox: false]
   delete: 1
 
-drawnShapesRsponses = notesResponses = clientResponses = profilesResponses =
+ notesResponses = clientResponses = profilesResponses =
   delete: 1
   getAll: [{project_id:1, id:2}]
 
+drawnShapesRsponses =
+  delete: 1
+  getAll: [{draw_id:1, id:2, shape_extras:{}}]
 
 userUtils =
   cacheUserValues: sinon.stub()
 
 routeCrudToTest.__set__ 'userUtils', userUtils
+
+mockRes =
+  json: ->
 
 class TestServiceCrudProject extends ServiceCrudProject
   constructor: () ->
@@ -139,7 +145,7 @@ describe 'route.projectSession', ->
         body:{}
 
     it 'project', ->
-      @subject.rootGET(@mockRequest,{},(->))
+      @subject.rootGET(@mockRequest,mockRes,(->))
       .then (projects) =>
         @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
@@ -156,7 +162,7 @@ describe 'route.projectSession', ->
         projects[0].drawnShapes.length.should.be.ok
 
     it 'clients', ->
-      @subject.rootGET(@mockRequest,{},(->))
+      @subject.rootGET(@mockRequest,mockRes,(->))
       .then () =>
         @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
@@ -178,7 +184,7 @@ describe 'route.projectSession', ->
         """.replace(/\n/g,'')
 
     it 'notes', ->
-      @subject.rootGET(@mockRequest,{},(->))
+      @subject.rootGET(@mockRequest,mockRes,(->))
       .then () =>
         @subject.notesCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
@@ -198,23 +204,15 @@ describe 'route.projectSession', ->
            "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
 
     it 'drawnShapes', ->
-      @subject.rootGET(@mockRequest,{},(->))
+      @subject.rootGET(@mockRequest,mockRes,(->))
       .then () =>
         @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
-        params = {}
+        params =
+          project_id: [ @mockRequest.params.id ]
         #TODO: SHOULD notes be restricted to project only or also to parent_auth_user_id, or auth_user_id
         # obj.parent_auth_user_id = @mockRequest.user.id
-        params["#{tables.user.drawnShapes.tableName}.project_id"] = [ @mockRequest.params.id ]
         @subject.drawnShapesCrud.svc.getAllStub.args[0][0].should.be.eql params
-        @subject.drawnShapesCrud.svc.getAllStub.args[0][1].should.be.eql false
-        # assert.isTrue @subject.drawnShapesCrud.svc.getAllStub.sqls.length > 0
-        # # console.log @subject.drawnShapesCrud.svc.getAllStub.sqls[0].cyan
-        # @subject.drawnShapesCrud.svc.getAllStub.sqls[0].should.be.equal """
-        #   select "user_drawn_shapes"."id" as "id", "user_drawn_shapes"."auth_user_id" as "auth_user_id",
-        #    "user_drawn_shapes"."project_id" as "project_id", "user_drawn_shapes"."geom_point_json" as "geom_point_json",
-        #    "user_drawn_shapes"."geom_polys_raw" as "geom_polys_raw" from "user_project" inner join "user_drawn_shapes"
-        #    on "user_drawn_shapes"."project_id" = "user_project"."id" where "user_drawn_shapes"."project_id" = '1'
-        #    """.replace(/\n/g,'')
+        expect(@subject.drawnShapesCrud.svc.getAllStub.args[0][1]).to.not.be.ok
 
   describe 'byIdDELETE', ->
     beforeEach ->
@@ -231,7 +229,7 @@ describe 'route.projectSession', ->
 
     it 'clients', ->
       this.timeout(10000) # give it a longer timeout since 2s doesn't seem to be enough
-      @subject.byIdDELETE(@mockRequest,{},(->))
+      @subject.byIdDELETE(@mockRequest,mockRes,(->))
       .then =>
         @subject.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok

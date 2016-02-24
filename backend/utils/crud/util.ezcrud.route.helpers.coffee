@@ -3,27 +3,32 @@ _ = require 'lodash'
 _logger = require('../../config/logger').spawn('ezcrud:route')
 {methodExec, handleQuery} = require '../util.route.helpers'
 RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
-{validateAndTransformRequest, defaultRequestTransforms, falsyDefaultTransformsToNoop} = require '../util.validation'
+{
+  validateAndTransform
+  validateAndTransformRequest
+  defaultRequestTransforms
+  falsyDefaultTransformsToNoop
+} = require '../util.validation'
 
 class RouteCrud
-  constructor: (@svc, options = {}) ->
+  constructor: (@svc, @options = {}) ->
     unless @svc?
       throw new RouteCrudError('@svc must be defined')
 
     @logger = _logger
     if @svc.dbFn?.tableName
       @logger = @logger.spawn(@svc.dbFn?.tableName)
-    if options.debugNS
-      @logger = @logger.spawn(options.debugNS)
-    @enableUpsert = options.enableUpsert ? false
+    if @options.debugNS
+      @logger = @logger.spawn(@options.debugNS)
+    @enableUpsert = @options.enableUpsert ? false
 
     #essentially clone the parts of a request we want to not mutate it
-    @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
+    @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
-    @initializeTransforms 'root', options, ['GET', 'POST']
-    @initializeTransforms 'byId', options, ['GET', 'POST']
+    @initializeTransforms 'root', @options, ['GET', 'POST']
+    @initializeTransforms 'byId', @options, ['GET', 'POST']
 
-    @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
+    @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
 
 
   initializeTransforms: (transformType, options, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
@@ -44,21 +49,21 @@ class RouteCrud
 
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
-    validateAndTransformRequest req, @reqTransforms
+    validateAndTransform req, @reqTransforms
     .then (tReq) =>
       @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
         @logger.debug "attempting: #{transformName}"
-        return validateAndTransformRequest tReq, specificTransforms
+        return validateAndTransform tReq, specificTransforms
       tReq
 
-  logRequest: (req, addMsg) =>
+  logRequest: (req, addMsg, type = 'req') =>
     if addMsg
       @logger.debug.cyan(addMsg)
-    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
-    @logger.debug () -> "req.query=#{JSON.stringify(req.query)}"
-    @logger.debug () -> "req.body=#{JSON.stringify(req.body)}"
-    @logger.debug () -> "req.method=#{req.method}"
+    @logger.debug () -> "#{type}.params=#{JSON.stringify(req.params)}"
+    @logger.debug () -> "#{type}.query=#{JSON.stringify(req.query)}"
+    @logger.debug () -> "#{type}.body=#{JSON.stringify(req.body)}"
+    @logger.debug () -> "#{type}.method=#{req.method}"
     return
 
   exec: (req, crudMethodStr) =>
@@ -73,49 +78,72 @@ class RouteCrud
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
-  _wrapRoute: (data, res) ->
+  _wrapRoute: (data, res) =>
     @logger.debug "Handling query"
+
+    if @options.handleQuery == false
+      return data
+    if _.isFunction @options.handleQuery
+      return @options.handleQuery(data)
     handleQuery data, res
 
   getQuery: (req, crudMethodStr) =>
     @logRequest req, 'initial req'
     @exec(req, crudMethodStr).then (tReq) =>
-      @logRequest tReq, 'transformed tReq'
+      @logRequest tReq, 'transformed tReq', 'tReq'
       query = _.merge({}, tReq.params, tReq.body, tReq.query)
       query
+
+  rootGET: (req, res, next) =>
+    @getQuery(req, 'rootGET').then (query) =>
+      @_wrapRoute @svc.getAll(query), res
+
+  rootPOST: (req, res, next) =>
+    @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
+    @getQuery(req, 'rootPOST').then (query) =>
+      if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
+      return @_wrapRoute @svc.create(query), res
+
+  byIdGET: (req, res, next) =>
+    @getQuery(req, 'byIdGET').then (query) =>
+      @_wrapRoute @svc.getById(query), res
+
+  byIdPUT: (req, res, next) =>
+    @getQuery(req, 'byIdPUT').then (query) =>
+      @_wrapRoute @svc.update(query), res
+
+  byIdPOST: (req, res, next) =>
+    @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
+    @getQuery(req, 'byIdPOST').then (query) =>
+      if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
+      return @_wrapRoute @svc.create(query), res
+
+  byIdDELETE: (req, res, next) =>
+    @getQuery(req, 'byIdDELETE').then (query) =>
+      @_wrapRoute @svc.delete(query), res
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here
   root: (req, res, next) =>
     methodExec req,
       GET: () =>
-        @getQuery(req, 'rootGET').then (query) =>
-          @_wrapRoute @svc.getAll(query), res
+        @rootGET req, res, next
       POST: () =>
-        @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
-        @getQuery(req, 'rootPOST').then (query) =>
-          if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-          return @_wrapRoute @svc.create(query), res
+        @rootPOST req, res, next
     , next
 
   byId: (req, res, next) =>
     methodExec req,
       GET: () =>
-        @getQuery(req, 'byIdGET').then (query) =>
-          @_wrapRoute @svc.getById(query), res
+        @byIdGET req, res, next
       PUT: () =>
-        @getQuery(req, 'byIdPUT').then (query) =>
-          @_wrapRoute @svc.update(query), res
+        @byIdPUT req, res, next
 
       # leverages option for upsert
       POST: () =>
-        @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
-        @getQuery(req, 'byIdPOST').then (query) =>
-          if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-          return @_wrapRoute @svc.create(query), res
+        @byIdPOST req, res, next
       DELETE: () =>
-        @getQuery(req, 'byIdDELETE').then (query) =>
-          @_wrapRoute @svc.delete(query), res
+        @byIdDELETE req, res, next
     , next
 
 module.exports = RouteCrud
