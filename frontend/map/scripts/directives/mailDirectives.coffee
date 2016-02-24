@@ -224,16 +224,13 @@ app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
     update = () ->
       toCheck = element.find(tagName)
       nextBreak = pxPerPage - topMarginFirstPage - bottomMargin
-      pageCounter = 0
       for p, i in toCheck
         offset = p.offsetTop + p.clientHeight
-        pageCounter++
         # $log.debug -> "##{i} next:#{nextBreak}px/#{(nextBreak/96).toFixed(2)}in offsetTop:#{p.offsetTop}px/#{(p.offsetTop/96).toFixed(2)}in " +
-        #   " clientHeight:#{p.clientHeight}px/#{(p.clientHeight/96).toFixed(2)}in total:#{offset}px/#{(offset/96).toFixed(2)}in"
-        if (offset) >= nextBreak && pageCounter > 0
+          # " clientHeight:#{p.clientHeight}px/#{(p.clientHeight/96).toFixed(2)}in total:#{offset}px/#{(offset/96).toFixed(2)}in"
+        if (offset) >= nextBreak && i > 0 # The first paragraph on any page will never be pushed to the next page
           angular.element(p).addClass 'page-break'
           nextBreak = p.offsetTop + pxPerPage - bottomMargin
-          pageCounter = 0 # The first paragraph on any page will never be pushed to the next page
         else
           angular.element(p).removeClass 'page-break'
 

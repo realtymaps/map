@@ -2,7 +2,6 @@
 
 $template-stage-margin = 1.25in
 $wysiwyg-scale-factor = 1.0
-$page-height = 11in
 
 *, *:before, *:after
   -webkit-box-sizing border-box
@@ -19,22 +18,22 @@ $page-height = 11in
       text-align center
 
       .letter-editor
-        margin auto
+        margin auto // centers the editor
         box-shadow 4px 4px 20px #888888
         zoom $wysiwyg-scale-factor
         overflow scroll
         height 6.5in
         width 8.5in
         background-color $white
-        position relative
+        position relative // Important for address positioning and page breaks
 
         .wysiwygOnly
           display block
           pointer-events none
 
         p.page-break
-          margin-top 0
-          &::before
+          margin-top 0 // Overridden in print
+          &::before // Visual indicator
             content \'Page Break\'
             text-align right
             display block
@@ -61,15 +60,35 @@ $page-height = 11in
         margin-left 2px
         margin-right 2px
 
-      .letter-page
-        top 0
-        &:focus
-          border none
-
       .ta-scroll-window > .ta-bind
         padding 0
-        outline none
+        outline none // prevents blue outline around the editor
 
-      #recipient-address-window, #return-address-window
-        overflow hidden
-        background-color rgba(100,100,100,0.5)
+      .return-address-window,
+      .recipient-address-window
+        background-color $gray_lightest
+        border-radius 5px
+        position absolute
+
+      .return-address-window
+        left 0.625in
+        top 0.5in
+        width 3.25in
+        height 0.875in
+
+      .recipient-address-window
+        left 0.625in
+        top 1.5in
+        width 4.0in
+        height 1.0in
+
+      .return-address-text,
+      .recipient-address-text
+        padding 1em
+        text-align left
+
+      .address-line
+        text-transform uppercase
+        font-family sans-serif
+        font-size 0.13in
+        line-height 1.5em

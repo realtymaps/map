@@ -92,7 +92,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
     previewStyles = "body {background-color: #FFF}"
-    "<html><head><title>#{mailCampaign.name}</title><<link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+    "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
       "<style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
   _createLobHtml = () ->
