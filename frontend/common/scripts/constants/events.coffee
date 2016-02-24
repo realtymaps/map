@@ -11,6 +11,8 @@ mod.constant 'rmapsEventConstants',
     map:
       results: 1
       center: 1
+      centerOnProperty: 1
+      zoomToProperty: 1
       mainMap:
         reDraw: 1
       drawPolys:

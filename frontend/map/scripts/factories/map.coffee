@@ -1,6 +1,7 @@
 ###globals L,_###
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 _encode = require('geohash64').encode
 _emptyGeoJsonData =
@@ -55,6 +56,13 @@ app.factory 'rmapsMapFactory',
 
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
+
+        # Property Button events
+        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) ->
+          self.zoomTo result, false
+
+        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
+          self.zoomTo result, doChangeZoom
 
         leafletData.getMap('mainMap').then (map) =>
 
@@ -374,5 +382,23 @@ app.factory 'rmapsMapFactory',
 
       closeWindow: ->
         rmapsPopupLoaderService.close()
+
+      centerOn: (result) =>
+        @zoomTo(result, false)
+
+      zoomTo: (result, doChangeZoom) ->
+        console.log  "CAUGHT zoomToProperty event"
+        return if not result?.coordinates?
+
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        old = _.cloneDeep @scope.map.center
+        resultCenter.zoom = old.zoom
+        @scope.map.center = resultCenter
+        return unless doChangeZoom
+        zoomLevel = @scope.options.zoomThresh.addressParcel
+        zoomLevel = @scope.map.center.zoom if @scope.map.center.zoom > @scope.options.zoomThresh.addressParcel
+        @scope.map.center.zoom = zoomLevel
+
+        resultCenter.zoom = 20 if @scope.satMap?
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////
