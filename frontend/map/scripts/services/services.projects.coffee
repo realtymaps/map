@@ -89,8 +89,10 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         normal = {}
         normal[_getGeomName(shape.geometry.type)] = shape.geometry
         normal.project_id = profile.project_id
-        normal.id = shape.properties.id if shape.properties?.id?
-        normal.shape_extras = shape.properties.shape_extras if shape.properties?.shape_extras?
+        if shape.properties?.id?
+          normal.id = shape.properties.id
+        if shape.properties?.shape_extras?
+          normal.shape_extras = shape.properties.shape_extras
         normal.neighbourhood_name = shape.properties.neighbourhood_name || null
         normal.neighbourhood_details = shape.properties.neighbourhood_details || null
         normal

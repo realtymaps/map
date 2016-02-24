@@ -131,6 +131,7 @@ class ProjectRouteCrud extends RouteCrud
           geom_point_json: validators.geojson(toCrs:true)
           geom_polys_json: validators.geojson(toCrs:true)
           geom_line_json:  validators.geojson(toCrs:true)
+          shape_extras: validators.object()
 
     #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
     #                                                     :drawn_shapes_id"  :(id -> project_id)
