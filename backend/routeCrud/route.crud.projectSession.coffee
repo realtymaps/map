@@ -137,7 +137,6 @@ class ProjectRouteCrud extends RouteCrud
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
     @drawnShapesCrud = new EzRouteCrud @svc.drawnShapes,
-      handleQuery: false
       rootGETTransforms:
         params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true
@@ -153,6 +152,14 @@ class ProjectRouteCrud extends RouteCrud
         query: validators.object isEmptyProtect: true
         body: bodyTransform
 
+      byIdPUTTransforms:
+        query: validators.object isEmptyProtect: true
+        body: bodyTransform
+
+      byIdDELETETransforms:
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+        query: validators.object isEmptyProtect: true
+
     @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
     @profilesCrud.doLogRequest = ['params', 'body']
     @profilesCrud.rootGETTransforms =
@@ -160,13 +167,6 @@ class ProjectRouteCrud extends RouteCrud
         validators.mapKeys id: "#{tables.user.profile.tableName}.project_id"
         validators.reqId toKey: "#{tables.user.profile.tableName}.auth_user_id"
       ]
-
-    for route in ['byIdPUT', 'byIdDELETE']
-      do (route) =>
-        @drawnShapesCrud[route + 'Transforms'] =
-          params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id", drawn_shapes_id: 'id'
-          query: validators.object isEmptyProtect: true
-          body: bodyTransform
 
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
@@ -178,7 +178,7 @@ class ProjectRouteCrud extends RouteCrud
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
       drawnShapes: do =>
-        @drawnShapesCrud.rootGET(req, res, next)
+        @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
       favorites: @profilesCrud.rootGET req, res, next
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'

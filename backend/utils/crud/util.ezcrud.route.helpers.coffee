@@ -26,7 +26,7 @@ class RouteCrud
     @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
     @initializeTransforms 'root', @options, ['GET', 'POST']
-    @initializeTransforms 'byId', @options, ['GET', 'POST']
+    @initializeTransforms 'byId', @options
 
     @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
 
@@ -78,14 +78,16 @@ class RouteCrud
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
-  _wrapRoute: (data, res) =>
+  _wrapRoute: (data, res, lHandleQuery) =>
     @logger.debug "Handling query"
 
-    if @options.handleQuery == false
+    if lHandleQuery == false || @options.handleQuery == false
       return data
     if _.isFunction @options.handleQuery
       return @options.handleQuery(data)
-    handleQuery data, res
+
+    fn = lHandleQuery || handleQuery
+    fn data, res
 
   getQuery: (req, crudMethodStr) =>
     @logRequest req, 'initial req'
@@ -94,56 +96,56 @@ class RouteCrud
       query = _.merge({}, tReq.params, tReq.body, tReq.query)
       query
 
-  rootGET: (req, res, next) =>
+  rootGET: ({req, res, next, lHandleQuery}) =>
     @getQuery(req, 'rootGET').then (query) =>
-      @_wrapRoute @svc.getAll(query), res
+      @_wrapRoute @svc.getAll(query), res, lHandleQuery
 
-  rootPOST: (req, res, next) =>
+  rootPOST: ({req, res, next, lHandleQuery}) =>
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
     @getQuery(req, 'rootPOST').then (query) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-      return @_wrapRoute @svc.create(query), res
+      return @_wrapRoute @svc.create(query), res, lHandleQuery
 
-  byIdGET: (req, res, next) =>
+  byIdGET: ({req, res, next, lHandleQuery}) =>
     @getQuery(req, 'byIdGET').then (query) =>
-      @_wrapRoute @svc.getById(query), res
+      @_wrapRoute @svc.getById(query), res, lHandleQuery
 
-  byIdPUT: (req, res, next) =>
+  byIdPUT: ({req, res, next, lHandleQuery}) =>
     @getQuery(req, 'byIdPUT').then (query) =>
-      @_wrapRoute @svc.update(query), res
+      @_wrapRoute @svc.update(query), res, lHandleQuery
 
-  byIdPOST: (req, res, next) =>
+  byIdPOST: ({req, res, next, lHandleQuery}) =>
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
     @getQuery(req, 'byIdPOST').then (query) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-      return @_wrapRoute @svc.create(query), res
+      return @_wrapRoute @svc.create(query), res, lHandleQuery
 
-  byIdDELETE: (req, res, next) =>
+  byIdDELETE: ({req, res, next, lHandleQuery}) =>
     @getQuery(req, 'byIdDELETE').then (query) =>
-      @_wrapRoute @svc.delete(query), res
+      @_wrapRoute @svc.delete(query), res, lHandleQuery
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here
   root: (req, res, next) =>
     methodExec req,
       GET: () =>
-        @rootGET req, res, next
+        @rootGET {req, res, next}
       POST: () =>
-        @rootPOST req, res, next
+        @rootPOST {req, res, next}
     , next
 
   byId: (req, res, next) =>
     methodExec req,
       GET: () =>
-        @byIdGET req, res, next
+        @byIdGET {req, res, next}
       PUT: () =>
-        @byIdPUT req, res, next
+        @byIdPUT {req, res, next}
 
       # leverages option for upsert
       POST: () =>
-        @byIdPOST req, res, next
+        @byIdPOST {req, res, next}
       DELETE: () =>
-        @byIdDELETE req, res, next
+        @byIdDELETE {req, res, next}
     , next
 
 module.exports = RouteCrud
