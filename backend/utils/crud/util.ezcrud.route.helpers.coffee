@@ -32,14 +32,26 @@ class RouteCrud
   # Returns the tReq (TransformedRequest) as `Promise`.
   validRequest: (req, crudMethodStr) =>
     specificTransforms = @[crudMethodStr + 'Transforms']
+    @logger.debug "might have: #{specificTransforms}"
+
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
     validateAndTransform req, @reqTransforms
     .then (tReq) =>
       @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
+        @logger.debug "attempting: #{specificTransforms}"
         return validateAndTransform tReq, specificTransforms
       tReq
+
+  logRequest: (req, addMsg) =>
+    if addMsg
+      @logger.debug.cyan(addMsg)
+    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
+    @logger.debug () -> "req.query=#{JSON.stringify(req.query)}"
+    @logger.debug () -> "req.body=#{JSON.stringify(req.body)}"
+    @logger.debug () -> "req.method=#{req.method}"
+    return
 
   exec: (req, crudMethodStr) =>
     if req.originalUrl
@@ -58,11 +70,9 @@ class RouteCrud
     handleQuery data, res
 
   getQuery: (req, crudMethodStr) =>
-    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
-    @logger.debug () -> "req.params=#{JSON.stringify(req.params)}"
-    @logger.debug () -> "req.body=#{JSON.stringify(req.body)}"
-    @logger.debug () -> "req.method=#{req.method}"
-    @exec(req, crudMethodStr).then (tReq) ->
+    @logRequest req, 'initial req'
+    @exec(req, crudMethodStr).then (tReq) =>
+      @logRequest tReq, 'transformed tReq'
       query = _.merge({}, tReq.params, tReq.body, tReq.query)
       query
 
@@ -75,7 +85,7 @@ class RouteCrud
           @_wrapRoute @svc.getAll(query), res
       POST: () =>
         @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
-        @getQuery(req, 'byIdPOST').then (query) =>
+        @getQuery(req, 'rootPOST').then (query) =>
           if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
           return @_wrapRoute @svc.create(query), res
     , next

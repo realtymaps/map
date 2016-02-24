@@ -1,6 +1,7 @@
 _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
+EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
 tables = require('../config/tables')
 {joinColumnNames} = require '../utils/util.sql.columns'
@@ -124,17 +125,6 @@ class ProjectRouteCrud extends RouteCrud
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
-    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
-    #                                                     :drawn_shapes_id"  :(id -> project_id)
-    @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud.doLogRequest = ['params', 'body']
-    @drawnShapesCrud.rootGETTransforms =
-      params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id"
-      query: validators.object isEmptyProtect: true
-      body: validators.object isEmptyProtect: true
-    @drawnShapesCrud.byIdGETTransforms =
-      params: validators.mapKeys {id: "#{tables.user.project.tableName}.id",drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"}
-
     bodyTransform =
       validators.object
         subValidateSeparate:
@@ -142,10 +132,25 @@ class ProjectRouteCrud extends RouteCrud
           geom_polys_json: validators.geojson(toCrs:true)
           geom_line_json:  validators.geojson(toCrs:true)
 
-    @drawnShapesCrud.rootPOSTTransforms =
-      params: validators.mapKeys id: "#{tables.user.project.tableName}.id"
-      query: validators.object isEmptyProtect: true
-      body: bodyTransform
+    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
+    #                                                     :drawn_shapes_id"  :(id -> project_id)
+    #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud = new EzRouteCrud @svc.drawnShapes,
+
+      rootGETTransforms:
+        params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id"
+        query: validators.object isEmptyProtect: true
+        body: validators.object isEmptyProtect: true
+
+      byIdGETTransforms:
+        params: validators.mapKeys
+          id: "#{tables.user.project.tableName}.id"
+          drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"
+
+      byIdPOSTTransforms:
+        params: validators.mapKeys id: "#{tables.user.project.tableName}.id"
+        query: validators.object isEmptyProtect: true
+        body: bodyTransform
 
     @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
     @profilesCrud.doLogRequest = ['params', 'body']

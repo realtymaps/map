@@ -61,6 +61,7 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
 
     drawnShapes: (profile) ->
+      $logDraw = $log.spawn("frontend:projects:drawnShapes")
       rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
 
       getList = (cache = false) ->
@@ -104,9 +105,15 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
 
       create: (shape) ->
         $http.post rootUrl, _normalize shape
+        .catch (error) ->
+          $logDraw.error error
 
       update: (shape) ->
         $http.put _byIdUrl(shape), _normalize shape
+        .catch (error) ->
+          $logDraw.error error
 
       delete: (shape) ->
         $http.delete _byIdUrl(shape)
+        .catch (error) ->
+          $logDraw.error error
