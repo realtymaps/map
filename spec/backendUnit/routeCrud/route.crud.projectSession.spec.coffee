@@ -139,7 +139,7 @@ describe 'route.projectSession', ->
         body:{}
 
     it 'project', ->
-      @subject.rootGET(@mockRequest)
+      @subject.rootGET(@mockRequest,{},(->))
       .then (projects) =>
         @subject.svc.getAllStub.sqls.should.be.ok
         @subject.svc.getAllStub.sqls[0].should.be.eql """select * from "user_project" where "id" = '1' and "auth_user_id" = '2'"""
@@ -156,7 +156,7 @@ describe 'route.projectSession', ->
         projects[0].drawnShapes.length.should.be.ok
 
     it 'clients', ->
-      @subject.rootGET(@mockRequest)
+      @subject.rootGET(@mockRequest,{},(->))
       .then () =>
         @subject.clientsCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
@@ -178,7 +178,7 @@ describe 'route.projectSession', ->
         """.replace(/\n/g,'')
 
     it 'notes', ->
-      @subject.rootGET(@mockRequest)
+      @subject.rootGET(@mockRequest,{},(->))
       .then () =>
         @subject.notesCrud.svc.getAllStub.args.length.should.be.ok
         obj = {}
@@ -198,7 +198,7 @@ describe 'route.projectSession', ->
            "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
 
     it 'drawnShapes', ->
-      @subject.rootGET(@mockRequest)
+      @subject.rootGET(@mockRequest,{},(->))
       .then () =>
         @subject.drawnShapesCrud.svc.getAllStub.args.length.should.be.ok
         params = {}
@@ -231,7 +231,7 @@ describe 'route.projectSession', ->
 
     it 'clients', ->
       this.timeout(10000) # give it a longer timeout since 2s doesn't seem to be enough
-      @subject.byIdDELETE(@mockRequest)
+      @subject.byIdDELETE(@mockRequest,{},(->))
       .then =>
         @subject.svc.deleteStub.called.should.be.true
         userUtils.cacheUserValues.called.should.be.ok
