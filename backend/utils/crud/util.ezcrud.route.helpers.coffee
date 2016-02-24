@@ -21,8 +21,16 @@ class RouteCrud
     #essentially clone the parts of a request we want to not mutate it
     @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
     #this is an example, the rest can be filled in by an implementation or derived class
-    @rootGETTransforms = options.rootGETTransforms ? defaultRequestTransforms()
+    @initializeTransforms 'root', options, ['GET', 'POST']
+    @initializeTransforms 'byId', options, ['GET', 'POST']
+
     @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
+
+
+  initializeTransforms: (transformType, options, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
+    methods.forEach (meth) =>
+      transformName = "#{transformType}#{meth}Transforms"
+      @[transformName] = options[transformName] ? defaultRequestTransforms()
 
   # Public: validRequest a request via transforms
   #
@@ -31,8 +39,9 @@ class RouteCrud
   #
   # Returns the tReq (TransformedRequest) as `Promise`.
   validRequest: (req, crudMethodStr) =>
-    specificTransforms = @[crudMethodStr + 'Transforms']
-    @logger.debug "might have: #{specificTransforms}"
+    transformName = crudMethodStr + 'Transforms'
+    specificTransforms = @[transformName]
+    @logger.debug.magenta "might have: #{transformName}"
 
     for transforms in [@reqTransforms, specificTransforms]
       falsyDefaultTransformsToNoop(transforms) if transforms?
@@ -40,7 +49,7 @@ class RouteCrud
     .then (tReq) =>
       @logger.debug () -> "root: tReq: #{JSON.stringify tReq}"
       if specificTransforms
-        @logger.debug "attempting: #{specificTransforms}"
+        @logger.debug "attempting: #{transformName}"
         return validateAndTransform tReq, specificTransforms
       tReq
 
