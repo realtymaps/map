@@ -1,0 +1,8 @@
+h3 {{addressList.length}} Addresses
+table.table-striped
+  tbody
+    tr(ng-repeat="address in addressList track by $index")
+      td
+        .address-line {{address.name}}
+        .address-line {{address.street_address_num}} {{address.street_address_name}}
+        .address-line {{address.city}}, {{address.state}} {{address.zip}}
