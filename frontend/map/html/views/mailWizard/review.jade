@@ -29,15 +29,15 @@
               .col-md-2
                  button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="senderInfo({id:templObj.mailCampaign.id})") edit
 
-            .row.separator
+            .row.separator.recipients
               .col-md-10
-                .row 
+                .row
                   h2 Recipients
                 .row
-                  p(ng-show="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
+                  p(ng-click="showAddresses(templObj.mailCampaign.recipients)" ng-show="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
                     when="{'0': 'No recipients were selected for this mailing.', '1': 'Mailing was sent to 1 recipient.', 'other': 'Mailing was sent to {{templObj.mailCampaign.recipients.length}} recipients.'}")
 
-                  p(ng-hide="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
+                  p(ng-click="showAddresses(templObj.mailCampaign.recipients)" ng-hide="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
                     when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing will be sent to 1 recipient.', 'other': 'Mailing will be sent to {{templObj.mailCampaign.recipients.length}} recipients.'}")
 
               .col-md-2
@@ -59,9 +59,9 @@
                   .btn.btn-danger(ng-show="templObj.mailCampaign.recipients.length == 0") N/A
                   //- p.getting-quote(ng-show="priceQuote == null") Calculating price quote...
                   .btn.btn-success(
-                    ng-hide="priceQuote == null || templObj.mailCampaign.recipients.length == 0" 
-                    tooltip-trigger="mousehover" 
-                    uib-tooltip="Click to submit this mailing!" 
-                    tooltip-enable="true" 
+                    ng-hide="priceQuote == null || templObj.mailCampaign.recipients.length == 0"
+                    tooltip-trigger="mousehover"
+                    uib-tooltip="Click to submit this mailing!"
+                    tooltip-enable="true"
                     ng-click="sendMail()") Submit campaign for {{priceQuote | currency}}
           //- .col-md-6

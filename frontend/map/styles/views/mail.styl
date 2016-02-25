@@ -18,7 +18,7 @@
     height 90%
     text-align center
     overflow scroll
-    
+
     .waiting
       width 310px
       margin auto
@@ -30,7 +30,7 @@
         float right
         height 30px
         width 30px
-      
+
 
   .iframe-preview-postcard, .modal-dialog
     width 10in
@@ -53,6 +53,12 @@
     height 90%
     border 1px solid rgba(0, 0, 0, 0.2)
 
+.address-list-modal
+  font-family "museo_sans500"
+  table
+    width 100%
+    td
+      padding 5px
 
 .mail
   @extends .font-regular
@@ -155,6 +161,7 @@
 
             .total
               color $text_gray_lighter
+              text-decoration underline
 
     .select-template
       .inner .container
@@ -261,11 +268,15 @@
 
         .review-edit-button
           margin-top 30px
-          
+
+        .recipients
+          p
+            text-decoration underline
+            cursor pointer
 
         .content-with-pdf-review
           width 50%
-          
+
         .pdf-review
           width 40%
           height 600px

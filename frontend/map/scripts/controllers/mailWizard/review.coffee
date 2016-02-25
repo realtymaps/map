@@ -35,6 +35,14 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       if result
         $state.go('review', { id: rmapsMailTemplateService.getCampaign().id }, { reload: true })
 
+  $scope.showAddresses = (addresses) ->
+    $log.debug addresses
+    $scope.addressList = addresses
+    modalInstance = $modal.open
+      template: require('../../../html/views/templates/modals/addressList.jade')()
+      windowClass: 'address-list-modal'
+      scope: $scope
+
   $scope.sentFlag = false
   $scope.category = null
   $scope.priceQuote = null
