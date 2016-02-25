@@ -14,6 +14,11 @@ app.controller 'rmapsProjectCtrl',
     results: new rmapsResultsFormatterService scope: $scope
     property: new rmapsPropertyFormatterService
 
+  # Override for property button
+  $scope.zoomClick = (result) ->
+    $state.go 'map', project_id: $state.params.id, property_id: result.rm_property_id
+    return false
+
   $scope.project = null
   clientsService = null
 

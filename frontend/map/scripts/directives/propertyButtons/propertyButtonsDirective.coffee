@@ -7,9 +7,9 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
   $log.debug "Property Buttons directive: ", template
   return {
     restrict: 'EA'
-    scope: {
+    scope:
       property: '='
-    }
+      zoomClick: '&?'
     template: template()
     controller: ($scope, $element, $attrs, $transclude) ->
       $log.debug "Property Buttons directive controller"
@@ -17,8 +17,13 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
       $scope.zoomTo = ($event) ->
         $log.debug "ZOOM TO!!!!"
         $event.stopPropagation() if $event
-        $rootScope.$emit rmapsEventConstants.map.zoomToProperty, $scope.property
 
+        proceed = true
+        if $scope.zoomClick
+          proceed = $scope.zoomClick { property: $scope.property }
+
+        if proceed
+          $rootScope.$emit rmapsEventConstants.map.zoomToProperty, $scope.property
 
       $scope.formatters = {
         results: new rmapsResultsFormatterService  scope: $scope
