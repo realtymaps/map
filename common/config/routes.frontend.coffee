@@ -30,7 +30,7 @@ module.exports =
   mail:           'mail'
   mailWizard:     'mailWizard?id'
   recipientInfo:  '/recipientInfo'
-  senderInfo:     '/senderInfo'
+  campaignInfo:   '/campaignInfo'
   selectTemplate: '/selectTemplate'
   editTemplate:   '/editTemplate'
   review:   '/review'

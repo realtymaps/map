@@ -1,3 +1,20 @@
+.mail-wizard-steps
+  header.send-progress(ng-hide="hideProgress()")
+    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
+    div.pathway
+      ul
+        li
+          span Recipients
+        li
+          span Campaign Info
+        li.active
+          span Select Template
+        li
+          span Edit Template
+        li
+          span Review
+
 .select-template
   .inner
     .container
