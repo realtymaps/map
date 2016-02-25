@@ -22,9 +22,8 @@ gulp.task 'karmaCoverage', (done) ->
         ]
       ]
 
-
 gulp.task 'karmaMocha', (done) ->
-  karmaKick(done, opts)
+  karmaKick done, opts
 
 gulp.task 'karmaFiles', (done) ->
   karmaKick done, _.extend {}, opts,

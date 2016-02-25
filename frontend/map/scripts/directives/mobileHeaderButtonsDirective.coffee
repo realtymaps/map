@@ -12,9 +12,16 @@ _ = require 'lodash'
 #    a(ng-click="doSomething()") View-Specific Button   <-- This will execute in the $scope of the view/modal
 #
 app.directive 'mobileHeaderButtons', ($parse, $templateCache, $modal, $log, rmapsMobileHeaderContextFactory) ->
-  restrict: 'E'
-  transclude: true
-  scope:
-    buttonType: '@'
-  controller: ($scope, $element, $attrs, $transclude) ->
-    rmapsMobileHeaderContextFactory.setButtons $scope.headerId || 'mobile-header', $scope.buttonType || 'right', $transclude
+  $log = $log.spawn "mobileHeader"
+  return {
+    restrict: 'E'
+    transclude: true
+    scope:
+      headerId: '@'
+      buttonType: '@'
+    controller: ($scope, $element, $attrs, $transclude) ->
+      $log.debug "MOBILE-HEADER-BUTTONS Link page view directive:", $scope.headerId, $scope.buttonType
+      headerId = $scope.headerId || 'mobile-header'
+      buttonType = $scope.buttonType || 'right'
+      rmapsMobileHeaderContextFactory.setButtons headerId, buttonType, $transclude
+  }

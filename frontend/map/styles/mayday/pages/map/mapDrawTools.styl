@@ -6,10 +6,12 @@ $fnMakeMapDrawTools()
 
   $makeTool(pix, marginArg = false)
     .tools
-      button
-        $makeHeightWidth(pix)
-        if marginArg
-          margin marginArg
+      .rmaps-leaflet-draw
+        div
+          button
+            $makeHeightWidth(pix)
+            if marginArg
+              margin marginArg
 
 
   $drawToolHeight = 50px
@@ -50,9 +52,11 @@ $fnMakeMapDrawTools()
 
     .tools
       transform translateX(25%)
-      button
-        display inline
-        box-shadow none
+      .rmaps-leaflet-draw
+        div
+          button
+            display inline
+            box-shadow none
 
     .nav-btn
       font-size 28px

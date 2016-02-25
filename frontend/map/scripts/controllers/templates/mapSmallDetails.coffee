@@ -1,6 +1,5 @@
 app = require '../../app.coffee'
 
-sprintf = require('sprintf-js').sprintf
 numeral = require 'numeral'
 casing = require 'case'
 moment = require 'moment'
@@ -16,19 +15,21 @@ module.exports =
 
     getPrice = (val) ->
       String.orDash if val then '$'+casing.upper numeral(val).format('0,0'), ',' else null
+
     getStatusClass = (status) ->
       return colorClasses[status] || ''
+
     getPriceLabel = (status) ->
       if (status=='recently sold'||status=='not for sale')
-        label = 'Sold'
+        'Sold'
       else
-        label = 'Asking'
-      return label
+        'Asking'
+
     formatHalfBaths = (numBaths) ->
       if (numBaths > 0)
-        halfBaths =  numBaths + ' Half Bath'
+        numBaths + ' Half Bath'
       else
-        halfBaths = ''
+        ''
 
     #TODO: consider pointing everything to mdoel.. and then for modifiers use functions
     $scope.street_address_num = String.orDash $scope.model.street_address_num

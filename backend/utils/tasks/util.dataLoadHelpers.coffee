@@ -80,35 +80,33 @@ recordChangeCounts = (subtask) ->
   invalidPromise = _countInvalidRows(subid, true)
   # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
   unvalidatedPromise = _countInvalidRows(subid, false)
-  Promise.join deletedPromise, invalidPromise, unvalidatedPromise, (deletedCount=0, invalidCount, unvalidatedCount) ->
-    # get a count of rows from this batch with null change history, i.e. newly-inserted rows
-    insertedSubquery = () ->
-      tables.property[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: this)
-      .where(inserted: subtask.batch_id)
-      .where(subset)
-      .count('*')
-    # get a count of rows from this batch without a null change history, i.e. newly-updated rows
-    updatedSubquery = () ->
-      tables.property[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: this)
-      .where(updated: subtask.batch_id)
-      .where(subset)
-      .count('*')
-    touchedSubquery = () ->
-      tables.property[subtask.data.dataType](subid: subtask.data.normalSubid, transaction: this)
-      .where(batch_id: subtask.batch_id)
-      .where(subset)
-      .orWhere(deleted: subtask.batch_id)
-      .where(subset)
-      .count('*')
+  # get a count of rows from this batch with null change history, i.e. newly-inserted rows
+  insertedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+  .where(inserted: subtask.batch_id)
+  .where(subset)
+  .count('*')
+  # get a count of rows from this batch without a null change history, i.e. newly-updated rows
+  updatedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+  .where(updated: subtask.batch_id)
+  .where(subset)
+  .count('*')
+  touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
+  .where(batch_id: subtask.batch_id)
+  .where(subset)
+  .orWhere(deleted: subtask.batch_id)
+  .where(subset)
+  .count('*')
+  updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, touchedCount) ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tables.temp.buildTableName(subid))
     .update
       invalid_rows: invalidCount
       unvalidated_rows: unvalidatedCount
-      inserted_rows: insertedSubquery
-      updated_rows: updatedSubquery
+      inserted_rows: insertedCount
+      updated_rows: updatedCount
       deleted_rows: deletedCount
-      touched_rows: touchedSubquery
+      touched_rows: touchedCount
+  Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, touchedPromise, updateDataLoadHistory)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows

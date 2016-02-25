@@ -5,24 +5,14 @@
       h4 Sketch Mode
     
     .col.col-md-6.col-sm-6.col-xs-3
-      .tools
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-note-pen
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-android-checkbox-outline-blank
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-android-radio-button-off
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-polygon
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-text-create
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-redo2
-        button.btn.btn-transparent.nav-btn
-          span.icon.icon-undo
-        button.btn.btn-transparent.nav-btn
-          span.icon.fa.fa-trash-o
-    
+      .tools(ng-controller="rmapsMapDrawCtrl")
+        div(ng-if="map.mapPromise")
+          div.rmaps-leaflet-draw(
+            id="sketchDraw"
+            mapPromise="map.mapPromise"
+            options="map.leafletDrawOptions"
+            events="map.leafletDrawEvents")
+        
     .col.col-md-3.col-sm-3.col-xs-3
       button.btn.btn-primary.close-btn.pull-right(
         ng-click="Toggles.toggleIsSketchMode(); Toggles.setPropetiesInShapes(false)") Close

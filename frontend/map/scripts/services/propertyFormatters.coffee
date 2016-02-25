@@ -40,8 +40,8 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       result?.savedDetails?.isFavorite == true
 
     getCurrentOwnersTitle: (result) =>
-      title = 'result-property-hovered'
-      if @hasMultipleOwners(result)
+      title = result?.owner_title
+      if title and @hasMultipleOwners(result)
         title += 's'
       title
 
@@ -51,12 +51,12 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       return false
 
     getForSaleClass: (result, showSaved = true) ->
-      return unless result
+      return '' unless result
       soldClass = _forSaleClass['saved'] if showSaved and result.savedDetails?.isSaved
       soldClass or _forSaleClass[result.rm_status] or _forSaleClass['default']
 
     getStatusLabelClass: (result, ignoreSavedStatus=false) ->
-      return unless result
+      return '' unless result
       soldClass = _statusLabelClass['saved'] if result.savedDetails?.isSaved && !ignoreSavedStatus
       return soldClass or _statusLabelClass[result.rm_status] or _statusLabelClass['default']
 

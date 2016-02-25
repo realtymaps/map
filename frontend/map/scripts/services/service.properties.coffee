@@ -39,11 +39,17 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
       $rootScope.$emit rmapsEventConstants.map.properties.favorite, _favoriteProperties
 
-  _getState = (mapState = {}, filters = {}) ->
+  _getState = (mapState = {}, filters) ->
     # $log.debug "mapState: #{JSON.stringify mapState}"
     # $log.debug "filters: #{JSON.stringify filters}"
-    _.extend {}, mapState,
-      filters: filters
+    result = _.extend {}, mapState
+
+    # Only include the filters if a set of values is explicitly being passed, otherwise ignore so that the
+    # state object will not have the filters key at all
+    if filters
+      result.filters = filters
+
+    return result
 
   # this convention for a combined service call helps elsewhere because we know how to get the path used
   # by this call, which means we can do things with alerts related to it

@@ -208,6 +208,7 @@ module.exports =
     apiBaseMailCampaigns: apiBaseMailCampaigns
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
+    getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
   plans:
     apiBase: apiBasePlans
     root: apiBasePlans
