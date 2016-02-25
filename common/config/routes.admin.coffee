@@ -21,13 +21,3 @@ module.exports =
   authenticating: 'authenticating'
   accessDenied: 'accessDenied'
   pageNotFound: '*path'
-
-  # the urls for states are needed
-  urls:
-    login: '/admin/login'
-    logout: '/admin/logout'
-    jobs: '/admin/jobs'
-    utils: '/admin/utils'
-    dataSource: '/admin/dataSource'
-    authenticating: '/admin/authenticating'
-    accessDenied: '/admin/accessDenied'

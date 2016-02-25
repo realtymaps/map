@@ -8,26 +8,29 @@ httpStatus = require '../../../../common/utils/httpStatus.coffee'
   Login controller
 ###
 
+
+doNextRedirect = (state, toState, nextLocation) ->
+  redirectState = state.get(nextLocation || toState)
+  state.go(redirectState)
+
+
 module.exports = app.controller 'rmapsLoginCtrl',
-  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsEventConstants) ->
+  ($rootScope, $scope, $http, $location, $state, rmapsPrincipalService, rmapsEventConstants) ->
 
     $scope.form = {}
     $scope.doLoginPost = () ->
       $http.post backendRoutes.userSession.login, $scope.form
       .success (data, status) ->
+        console.log "login success..."
         if !httpStatus.isWithinOK status
           return
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
-        $location.replace()
-        $location.url($location.search().next || adminRoutes.urls.mls)
 
-app.run ($rootScope, $location, rmapsPrincipalService) ->
+        doNextRedirect($state, $location.search().next, adminRoutes.mls.replace('/',''))
 
-  doNextRedirect = (toState, nextLocation) ->
-    if rmapsPrincipalService.isAuthenticated()
-      $location.replace()
-      $location.url(nextLocation || adminRoutes.urls.mls)
+
+app.run ($rootScope, $location, $state, rmapsPrincipalService) ->
 
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
 
@@ -36,10 +39,11 @@ app.run ($rootScope, $location, rmapsPrincipalService) ->
       return
 
     # ... and we're already logged in, we'll move past the login state (now or when we find out)
-    if rmapsPrincipalService.isIdentityResolved()
 
-      doNextRedirect(toState, $location.search().next)
-    else
-      rmapsPrincipalService.getIdentity()
-      .then () ->
-        doNextRedirect(toState, $location.search().next)
+    if rmapsPrincipalService.isAuthenticated()
+      if rmapsPrincipalService.isIdentityResolved()
+        doNextRedirect($state, toState, $location.search().next)
+      else
+        rmapsPrincipalService.getIdentity()
+        .then () ->
+          doNextRedirect($state, toState, $location.search().next)
