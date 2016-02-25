@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
@@ -61,7 +62,9 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
 
     drawnShapes: (profile) ->
-      $logDraw = $log.spawn("frontend:projects:drawnShapes")
+      ###eslint-disable###
+      $logDraw = $log.spawn("projects:drawnShapes")
+      ###eslint-enable###
       rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
 
       getList = (cache = false) ->
@@ -107,15 +110,9 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
 
       create: (shape) ->
         $http.post rootUrl, _normalize shape
-        .catch (error) ->
-          $logDraw.error error
 
       update: (shape) ->
         $http.put _byIdUrl(shape), _normalize shape
-        .catch (error) ->
-          $logDraw.error error
 
       delete: (shape) ->
         $http.delete _byIdUrl(shape)
-        .catch (error) ->
-          $logDraw.error error
