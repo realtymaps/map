@@ -7,7 +7,7 @@ _ = require 'lodash'
 shutdown = require './shutdown'
 
 
-if (not config.DBS.MAIN.connection)
+if !config.DBS.MAIN.connection && !process.env.IS_HEROKU
   logger.error 'Database connection URL not available; did you use foreman?'
   process.exit(1)
 
