@@ -24,7 +24,6 @@ class RouteCrud
 
     #essentially clone the parts of a request we want to not mutate it
     @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
-    #this is an example, the rest can be filled in by an implementation or derived class
     @initializeTransforms 'root', @options, ['GET', 'POST']
     @initializeTransforms 'byId', @options
 
