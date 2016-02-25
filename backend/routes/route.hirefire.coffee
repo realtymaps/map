@@ -4,12 +4,15 @@ hirefire = require '../services/service.hirefire'
 
 
 info = (req, res, next) ->
+  result = null
   hirefire.getQueueNeeds()
   .then (needs) ->
-    next new ExpressResponse(needs)
+    result = new ExpressResponse(needs)
   .catch (err) ->
     logger.error "unexpected error during hirefire info check: #{err.stack||err}"
-    next(err)
+    result = err
+  .finally () ->
+    next(result)
 
 
 module.exports =
