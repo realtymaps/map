@@ -37,3 +37,7 @@ mod.constant 'rmapsEventConstants',
       prevent: 1
     snail:
       initiateSend: 1
+    update:
+      properties:
+        pin: 1
+        favorite: 1

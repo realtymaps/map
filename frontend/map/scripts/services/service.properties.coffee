@@ -36,8 +36,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
           _.extend model, detail
           _favoriteProperty model
 
-      $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
-      $rootScope.$emit rmapsEventConstants.map.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.favorite, _favoriteProperties
 
   _getState = (mapState = {}, filters) ->
     # $log.debug "mapState: #{JSON.stringify mapState}"
@@ -166,7 +166,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
       _loadProperties()
       .then () ->
-        $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
+        $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
 
       #post state to database
       toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
@@ -182,7 +182,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       else
         _saveProperty models, false
 
-      $rootScope.$emit rmapsEventConstants.map.properties.pin, _savedProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
 
       #post state to database
       toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
@@ -192,7 +192,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     favoriteProperty: (model) ->
       _favoriteProperty model
-      $rootScope.$emit rmapsEventConstants.map.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.favorite, _favoriteProperties
 
       #post state to database
       toSave = _.mapValues _favoriteProperties, (model) -> model.savedDetails

@@ -61,5 +61,5 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
       modalInstance.dismiss('ok')
       rmapsPropertiesService.unpinProperty toPin
 
-  $rootScope.$onRootScope rmapsEventConstants.map.properties.pin, getPinned
-  $rootScope.$onRootScope rmapsEventConstants.map.properties.favorite, getFavorites
+  $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, getPinned
+  $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, getFavorites
