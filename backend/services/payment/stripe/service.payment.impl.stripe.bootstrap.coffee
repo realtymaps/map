@@ -4,8 +4,8 @@ externalAccounts = require '../../service.externalAccounts'
 {PAYMENT_PLATFORM} = require '../../../config/config'
 plansService = require '../../service.plans'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
-exitCodes = require '../../../enums/enum.exitCodes'
 logger = require('../../../config/logger').spawn('stripe')
+shutdown = require '../../../config/shutdown'
 _ = require 'lodash'
 
 #StripeBootstrap
@@ -36,7 +36,7 @@ createPlan = (stripe, planName, settings) ->
     if PAYMENT_PLATFORM.LIVE_MODE
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'
-    process.exit exitCodes.PAYMENT_INIT
+    shutdown.exit(error: true)
   .then (created) ->
     logger.debug "Plan: #{planName} Created"
     created
@@ -47,7 +47,7 @@ initializePlan = (stripe, planName, settings) ->
     onMissingArgsFail args: settings, required: ['price', 'interval']
   catch error
     logger.error error
-    process.exit exitCodes.PAYMENT_INIT
+    shutdown.exit(error: true)
 
   stripe.plans.retrieve planName
   .then () ->

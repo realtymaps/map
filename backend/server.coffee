@@ -3,7 +3,9 @@ require './config/newrelic'
 
 
 cluster = require './config/cluster'
+shutdown = require './config/shutdown'
 rimraf = require 'rimraf'
+Promise = require 'bluebird'
 
 
 _doStartup = (err) ->
@@ -33,8 +35,9 @@ _doStartup = (err) ->
 
       try
         logger.info "Attempting to start backend on port #{config.PORT}"
-        app.listen config.PORT, ->
+        server = app.listen config.PORT, ->
           logger.info "Backend express server listening on port #{config.PORT} in #{config.ENV} mode"
+          shutdown.onExit(Promise.promisify(server.close, server))
           mkdirp './nginx', ->
             touch.sync('./nginx/app-initialized', force: true)
             logger.info 'App init broadcast'
