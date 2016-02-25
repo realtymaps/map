@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )/.."
+
+
+source $SCRIPT_DIR/app/syncVars
+
+if [[ "$IS_HEROKU" != "" ]]
+then
+    bin/start-pgbouncer-stunnel coffee $SCRIPT_DIR/../backend/queueNeedsWorker.coffee
+else
+    coffee $SCRIPT_DIR/../backend/queueNeedsWorker.coffee
+fi

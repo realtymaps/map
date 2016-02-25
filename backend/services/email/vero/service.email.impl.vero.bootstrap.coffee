@@ -1,10 +1,10 @@
 Promise = require 'bluebird'
 externalAccounts = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
-exitCodes = require '../../../enums/enum.exitCodes'
 logger = require('../../../config/logger').spawn('vero')
 {EMAIL_PLATFORM} = require '../../../config/config'
 veroFactory = require 'vero-promise'
+shutdown = require '../../../config/shutdown'
 
 
 VeroBootstrap = do () ->
@@ -22,6 +22,6 @@ VeroBootstrap = do () ->
     if EMAIL_PLATFORM.LIVE_MODE
       #TODO: Send EMAIL to dev team
       logger.debug 'email to dev team: initiated'
-    process.exit exitCodes.EMAIL_INIT
+    shutdown.exit(error: true)
 
 module.exports = VeroBootstrap

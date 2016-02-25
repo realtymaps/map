@@ -73,11 +73,9 @@ base =
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
-    API_KEY: process.env.HIREFIRE_TOKEN||'dummy'
-    BACKUP:
-      DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
-      RUN_WINDOW: 120000  # 2 minutes
-      DELAY_VARIATION: 10000  # 10 seconds
+    API_KEY: process.env.HIREFIRE_TOKEN || 'dummy'
+    RUN_WINDOW: 60000  # 1 minute
+    WARN_THRESHOLD: 300000  # 5 minutes
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number
@@ -127,7 +125,7 @@ environmentConfig =
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
     NEW_RELIC:
-      RUN: Boolean(process.env.NEW_RELIC_RUN)
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else false
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
     CLEANUP:
@@ -151,7 +149,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
@@ -167,7 +165,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       APP_NAME: 'realtymaps-map'
 
 environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
