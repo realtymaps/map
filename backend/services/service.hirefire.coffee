@@ -26,7 +26,8 @@ updateQueueNeeds = () ->
       store[RUN_TIMESTAMP] = now
       store[QUEUE_NEEDS] = needs
       keystore.setValuesMap(store, namespace: NAMESPACE)
-      needs
+      .then () ->
+        needs
 
 getQueueNeeds = () ->
   defaults = {}
