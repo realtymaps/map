@@ -6,7 +6,7 @@ div(ng-if="!$$destroyed")
     ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")
       span(ng-if="::span.getClass(toDraw)" ng-class="::span.getClass(toDraw)")
   
-  button.cancel(ng-if="canSave"
+  button.save(ng-if="canSave"
     ng-class="::button.getClass('save')" ng-click="save()") {{::button.getText('save')}}
       span(ng-if="::span.getClass('save')" ng-class="::span.getClass('save')")
       

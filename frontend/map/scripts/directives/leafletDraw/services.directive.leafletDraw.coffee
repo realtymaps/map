@@ -33,8 +33,8 @@ app.service "#{directiveName}DefaultsService", () ->
     classes:
       button:
         default: 'button btn btn-transparent nav-btn'
-        cancel: 'cancel button btn btn-primary'
-        save: 'save button btn btn-primary'
+        cancel: 'button btn btn-primary'
+        save: 'button btn btn-primary'
 
       span:
         pen: _spanCssCls + ' icon-note-pen'
