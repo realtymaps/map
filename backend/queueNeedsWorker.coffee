@@ -11,9 +11,9 @@ runOnce = () ->
   hirefire.updateQueueNeeds()
   .then (needs) ->
     if needs?
-      logger.info('Current queue needs:')
+      logger.debug('Current queue needs:')
       for queue in needs
-        logger.info("    #{queue.name}: #{queue.quantity}")
+        logger.debug("    #{queue.name}: #{queue.quantity}")
 
 repeat = (period=config.HIREFIRE.RUN_WINDOW) ->
   _intervalHandler = setInterval(runOnce, period)
