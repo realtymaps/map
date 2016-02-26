@@ -139,8 +139,6 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
-  buildState 'sendEmailModal'
-  buildState 'newEmail'
 
   buildState 'mail'
   buildState 'mailWizard',
