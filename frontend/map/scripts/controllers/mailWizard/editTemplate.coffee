@@ -5,15 +5,11 @@ modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jad
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, $modal, rmapsPrincipalService,
-rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
+($rootScope, $scope, $log, $modal, rmapsPrincipalService, textAngularManager, rmapsMainOptions) ->
   $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
   editor = {}
-  # $scope.templObj = {}
-  # $scope.data =
-  #   htmlcontent: ""
 
   $scope.saveButtonText =
     'saved': 'All Changes Saved'
@@ -21,14 +17,6 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
     'error': 'Error Saving'
 
   $scope.saveStatus = 'saved'
-
-  # setTemplObj = () ->
-  #   $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
-  #   $scope.templObj =
-  #     mailCampaign: rmapsMailTemplateService.getCampaign()
-
-  $scope.quoteAndSend = () ->
-    rmapsMailTemplateService.quote()
 
   $scope.textEditorSetup = () ->
     (el) ->
@@ -48,8 +36,7 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
   $scope.saveContent = _.debounce () ->
     $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.wizard.mail.campaign.name}"
-    # rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
-    rmapsMailTemplateService.save()
+    $scope.wizard.mail.save()
     .then ->
       $scope.saveStatus = 'saved'
     .catch ->
@@ -60,7 +47,6 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
 
   $scope.animationsEnabled = true
   $scope.doPreview = () ->
-    # rmapsMailTemplateService.openPreview()
     modalInstance = $modal.open
       animation: $scope.animationsEnabled
       template: modalTemplate
@@ -70,13 +56,8 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () ->
-          content: $scope.wizard.mail.campaign.content
-          category: rmapsMailTemplateService.getCategory()
+          lobData: $scope.wizard.mail.getLobData()
           title: 'Mail Preview'
 
   $rootScope.registerScopeData () ->
     $scope.ready()
-  #   .then () ->
-  #     setTemplObj()
-  #     $scope.data =
-  #       htmlcontent: $scope.templObj.mailCampaign.content

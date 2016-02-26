@@ -3,22 +3,9 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $state, $modal, rmapsMailTemplateService, rmapsLobService, rmapsMailCampaignService) ->
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
-
-  # $scope.templObj =
-  #   mailCampaign: {}
-
-  # setTemplObj = () ->
-  #   $scope.templObj =
-  #     mailCampaign: rmapsMailTemplateService.getCampaign()
-
-  # $scope.quoteAndSend = () ->
-  #   $scope.$parent.quoteAndSend()
-
-  # $scope.sendMail = () ->
-  #   $scope.$parent.sendMail()
 
   $scope.sendMail = () ->
     modalInstance = $modal.open
@@ -29,6 +16,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       windowClass: 'confirm-mail-modal'
       resolve:
         price: $scope.priceQuote
+        mail: $scope.wizard.mail
 
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
@@ -50,11 +38,11 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
     pdf: null
 
   getQuote = () ->
-    if rmapsMailTemplateService.isSent()
+    if $scope.wizard.mail.isSent()
       return $q.when("Mailing submitted. Lob Batch Id: #{$scope.wizard.mail.campaign.lob_batch_id}")
     if $scope.wizard.mail.campaign?.recipients?.length == 0
       return $q.when("0.00")
-    rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
+    rmapsLobService.getQuote $scope.wizard.mail.getLobData()
     .then (quote) ->
       $log.debug -> "getquote data: #{JSON.stringify(quote)}"
       quote
@@ -65,9 +53,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
   $rootScope.registerScopeData () ->
     $scope.ready()
     .then () ->
-      # setTemplObj()
-      $scope.category = rmapsMailTemplateService.getCategory()
-      $scope.sentFlag = rmapsMailTemplateService.isSent()
+      $scope.category = $scope.wizard.mail.getCategory()
+      $scope.sentFlag = $scope.wizard.mail.isSent()
       getQuote()
       .then (response) ->
         $scope.priceQuote = response

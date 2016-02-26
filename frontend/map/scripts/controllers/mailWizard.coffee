@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $modal, rmapsMailTemplateService, rmapsLobService) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $modal, rmapsMailTemplateFactory, rmapsLobService) ->
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -16,29 +16,28 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
   ]
 
   $scope.wizard =
-    mail:
-      campaign: null
+    mail: new rmapsMailTemplateFactory()
 
   $scope.hideBackButton = () ->
     thisStep = _getStep $state.current.name
-    (thisStep == 0 or rmapsMailTemplateService.isSent())
+    (thisStep == 0 or $scope.wizard.mail.isSent())
 
   $scope.hideNextButton = () ->
     thisStep = _getStep $state.current.name
-    (thisStep == ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+    (thisStep == ($scope.steps.length - 1) or $scope.wizard.mail.isSent())
 
   $scope.hideSendButton = () ->
     thisStep = _getStep $state.current.name
-    (thisStep != ($scope.steps.length - 1) or rmapsMailTemplateService.isSent())
+    (thisStep != ($scope.steps.length - 1) or $scope.wizard.mail.isSent())
 
   $scope.hideProgress = () ->
-    rmapsMailTemplateService.isSent()
+    $scope.wizard.mail.isSent()
 
   _getStep = (name) ->
     $scope.steps.indexOf name
 
   _changeStep = (next = 1) ->
-    rmapsMailTemplateService.save()
+    $scope.wizard.mail.save()
     .then () ->
       thisStep = _getStep $state.current.name
       newStep = $scope.steps[thisStep + next]
@@ -56,13 +55,10 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
   $scope.ready = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      rmapsMailTemplateService.load $state.params.id
-      .then (campaign) ->
-        $scope.wizard.mail.campaign = campaign
+      return $scope.wizard.mail.load $state.params.id # return promise
     else
-      $scope.wizard.mail.campaign = rmapsMailTemplateService.getCampaign()
       if $state.current.name != 'recipientInfo' and !$scope.wizard.mail.campaign.id?
-        $state.go('mail')
+        $state.go('mail') # redirect
       else
         $log.debug "Continuing with mail campaign #{$scope.wizard.mail.campaign.id}"
-        return $q.when $scope.wizard.mail.campaign
+        return $q.when $scope.wizard.mail.campaign # return promise

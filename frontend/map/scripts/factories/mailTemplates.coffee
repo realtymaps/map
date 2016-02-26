@@ -1,8 +1,8 @@
 ###global _:true###
 app = require '../app.coffee'
 
-app.service 'rmapsMailTemplateFactory', ($rootScope, $window, $log, $timeout, $q, $modal, rmapsMailCampaignService,
-rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
+app.service 'rmapsMailTemplateFactory', ($rootScope, $log, $q, $modal, rmapsMailCampaignService,
+rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
   $log = $log.spawn 'mail:mailTemplate'
 
   campaignDefaults =
@@ -20,7 +20,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     submitted: null
 
 
-  class mailTemplateFactory
+  class MailTemplateFactory
     constructor: () ->
       @campaign = null
       @senderData = null
@@ -31,7 +31,33 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
       @senderData = newSender
       $log.debug () => "Created mail campaign:\n#{JSON.stringify(@campaign, null, 2)}"
 
-    _getSenderData: () ->
+    _getLobSenderData: () ->
+      # https://lob.com/docs#addresses
+      lobSenderData = _.cloneDeep @campaign.sender_info
+      lobSenderData.name = "#{lobSenderData.first_name ? ''} #{lobSenderData.last_name ? ''}".trim()
+      delete lobSenderData.first_name
+      delete lobSenderData.last_name
+      lobSenderData
+
+    _getLobRecipientData: () ->
+      return null unless @campaign.recipients?.length
+      _.map @campaign.recipients, (r) ->
+        name: r.name ? "Current Resident"
+        address_line1: "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
+        address_line2: r.street_address_unit ? ''
+        address_city: r.city ? ''
+        address_state: r.state ? ''
+        address_zip: r.zip ? ''
+
+    getLobData: () ->
+      lobData =
+        campaign: @campaign
+        file: @createLobHtml()
+        macros: {}
+        recipients: @_getLobRecipientData()
+        from: @_getLobSenderData()
+
+    getSenderData: () ->
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
       rmapsPrincipalService.getIdentity()
       .then (identity) =>
@@ -50,21 +76,29 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
             phone: identity.user.work_phone
             email: identity.user.email
 
-
     createPreviewHtml: (content) ->
       # all the small class names added that the editor tools use on the content, like .fontSize12 {font-size: 12px}
       fragStyles = require '../../styles/mailTemplates/template-frags.styl'
       classStyles = require '../../styles/mailTemplates/template-classes.styl'
       previewStyles = "body {background-color: #FFF}"
-      "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
         "<style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
-    _createLobHtml: () ->
+    createLobHtml: () ->
       fragStyles = require '../../styles/mailTemplates/template-frags.styl'
       classStyles = require '../../styles/mailTemplates/template-classes.styl'
-      "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
-        "<style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{mailCampaign.content}</body></html>"
+      "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+        "<style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{@campaign.content}</body></html>"
 
+    setTemplateType: (type) ->
+      @campaign.template_type = type
+      @campaign.content = rmapsMailTemplateTypeService.getHtml(type)
+
+    getCategory: () ->
+      rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
+
+    isSent: () ->
+      @campaign.status == 'sent'
 
     load: (campaignId) ->
       rmapsMailCampaignService.get id: campaignId
@@ -74,32 +108,16 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
         @campaign
 
     save: () ->
-      @_getSenderData()
+      console.log "saving, status: #{@campaign.status}"
+      @getSenderData()
       .then () =>
         toSave = _.pick @campaign, _.keys(campaignDefaults)
-        $log.debug () => "Saving @campaign:\n#{JSON.stringify(toSave, null, 2)}"
         toSave.recipients = JSON.stringify toSave.recipients
 
         profile = rmapsPrincipalService.getCurrentProfile()
         toSave.project_id = profile.project_id
 
-        op = rmapsMailCampaignService.create(toSave) #upserts if not already created
+        op = rmapsMailCampaignService.create(toSave) #upserts if not already created (only if using psql 9.5)
         .then ({data}) =>
           @campaign.id = data.rows[0].id
           $log.debug () => "Saved mail campaign:\n#{JSON.stringify(@campaign, null, 2)}"
-
-
-
-    # getAll: (query) ->
-    #   $http.get @endpoint, cache: false, params: query
-    #   .then ({data}) ->
-    #     data
-
-    # create: (entity) ->
-    #   $http.post @endpoint, entity
-
-    # update: (entity) ->
-    #   throw new Error('entity must have id') unless entity.id
-    #   $http.put "#{@endpoint}/#{entity.id}", entity
-    # remove: (entity) ->
-    #   $http.delete "#{@endpoint}/#{entity.id}"

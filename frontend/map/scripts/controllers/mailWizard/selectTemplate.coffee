@@ -5,7 +5,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rmapsMailTemplateTypeService) ->
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
@@ -13,7 +13,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
 
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
-  # $scope.campaign = rmapsMailTemplateService.getCampaign()
   $scope.oldTemplateType = ""
   
 
@@ -45,12 +44,11 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
       modalInstance.result.then (result) ->
         $log.debug "Confirmation result: #{result}"
         if result
-          rmapsMailTemplateService.setTemplateType(templateType)
-          # $scope.campaign = rmapsMailTemplateService.getCampaign()
+          $scope.wizard.mail.setTemplateType(templateType)
           $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
 
     else
-      rmapsMailTemplateService.setTemplateType(templateType)
+      $scope.wizard.mail.setTemplateType(templateType)
 
   $scope.previewTemplate = (template) ->
     modalInstance = $modal.open
@@ -68,8 +66,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
   $rootScope.registerScopeData () ->
     $scope.ready()
     .then () ->
-      # $scope.campaign = rmapsMailTemplateService.getCampaign()
-      # $log.debug -> "Loaded campaign:\n#{JSON.stringify($scope.campaign, null, 2)}"
       $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
 
 
