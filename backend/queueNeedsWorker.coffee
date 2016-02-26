@@ -52,7 +52,7 @@ if require.main == module  # run directly, not require()d
       if !workerId?
         if workerForked
           logger.error('Worker forked, but no id registered!!!')
-          # TODO: should probably try to send an alert email or something
+          shutdown.exit(error: true)
           return
         logger.spawn('processes').debug "attempting fork..."
         workerForked = true
@@ -69,8 +69,8 @@ if require.main == module  # run directly, not require()d
       else if intervalsWaited == 6
         logger.warn 'YOU ARE TERMINATED! (SIGKILL)'
         cluster.workers[workerId].kill('SIGKILL')
-      # else if intervalsWaited == 7
-        # TODO: should probably try to send an alert email or something
+      else if intervalsWaited == 7
+        shutdown.exit(error: true)
     masterLoop = () ->
       spawnWorker()
       setInterval(spawnWorker, config.HIREFIRE.RUN_WINDOW)
