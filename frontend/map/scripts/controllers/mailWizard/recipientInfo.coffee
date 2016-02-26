@@ -5,14 +5,14 @@ module.exports = app
 app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, rmapsPropertiesService, rmapsMailTemplateService) ->
   $log = $log.spawn 'mail:recipientInfo'
   $log.debug 'rmapsRecipientInfoCtrl'
-  $scope.mailCampaign = rmapsMailTemplateService.getCampaign()
+  # $scope.mailCampaign = rmapsMailTemplateService.getCampaign()
 
   $scope.property = []
   $scope.owner = []
   $scope.propertyAndOwner = []
 
   $scope.changeRecipients = () ->
-    rmapsMailTemplateService.setRecipients $scope[$scope.mailCampaign.recipientType]
+    rmapsMailTemplateService.setRecipients $scope[$scope.wizard.mail.campaign.recipientType]
 
   $scope.showAddresses = (addresses) ->
     $log.debug addresses
@@ -23,11 +23,12 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, rmap
       scope: $scope
 
   $rootScope.registerScopeData () ->
-    $scope.$parent.initMailTemplate().then (campaign) ->
-      $scope.mailCampaign = campaign
+    $scope.ready()
+    .then () ->
+      # $scope.mailCampaign = campaign
 
-      if not $scope.mailCampaign.recipients?.length and $scope.mailCampaign.property_ids?.length
-        rmapsPropertiesService.getProperties $scope.mailCampaign.property_ids, 'filter'
+      if not $scope.wizard.mail.campaign.recipients?.length and $scope.wizard.mail.campaign.property_ids?.length
+        rmapsPropertiesService.getProperties $scope.wizard.mail.campaign.property_ids, 'filter'
         .then ({data}) ->
 
           hash = (a) ->

@@ -43,7 +43,8 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
     _doc = $document[0]
-
+    console.log "attrs:"
+    console.log attrs
     # convert existing macros that aren't already styled
     $timeout ->
       ngModel.$setViewValue scope.convertMacros()
@@ -192,9 +193,15 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
           scope.setMacroClass sel.focusNode
 
     # keep templateObj updated with bound htmlcontent
-    scope.$watch 'data.htmlcontent', (newC, oldC) ->
-      rmapsMailTemplateService.setContent(scope.data.htmlcontent)
+    # scope.$watch 'data.htmlcontent', (newC, oldC) ->
+    #   rmapsMailTemplateService.setContent(scope.data.htmlcontent)
       #scope.templateObj.mailCampaign.content = scope.data.htmlcontent
+
+    # scope.$watch attrs.ngModel, (newC, oldC) ->
+    #   rmapsMailTemplateService.setContent(ngModel)
+
+
+
 
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->

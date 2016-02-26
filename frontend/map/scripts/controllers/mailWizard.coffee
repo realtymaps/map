@@ -15,6 +15,10 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
     'review'
   ]
 
+  $scope.wizard =
+    mail:
+      campaign: null
+
   $scope.hideBackButton = () ->
     thisStep = _getStep $state.current.name
     (thisStep == 0 or rmapsMailTemplateService.isSent())
@@ -49,14 +53,16 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $q, $mo
     _changeStep(-1)
 
   # accessed in child controllers for maintaining mailTemplate object
-  $scope.initMailTemplate = () ->
+  $scope.ready = () ->
     if $state.params.id
       $log.debug "Loading mail campaign #{$state.params.id}"
-      return rmapsMailTemplateService.load $state.params.id
+      rmapsMailTemplateService.load $state.params.id
+      .then (campaign) ->
+        $scope.wizard.mail.campaign = campaign
     else
-      campaign = rmapsMailTemplateService.getCampaign()
-      if $state.current.name != 'recipientInfo' and !campaign.id?
+      $scope.wizard.mail.campaign = rmapsMailTemplateService.getCampaign()
+      if $state.current.name != 'recipientInfo' and !$scope.wizard.mail.campaign.id?
         $state.go('mail')
       else
-        $log.debug "Continuing with mail campaign #{campaign.id}"
-        return $q.when campaign
+        $log.debug "Continuing with mail campaign #{$scope.wizard.mail.campaign.id}"
+        return $q.when $scope.wizard.mail.campaign

@@ -7,18 +7,18 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
-  $scope.templObj =
-    mailCampaign: {}
+  # $scope.templObj =
+  #   mailCampaign: {}
 
-  setTemplObj = () ->
-    $scope.templObj =
-      mailCampaign: rmapsMailTemplateService.getCampaign()
+  # setTemplObj = () ->
+  #   $scope.templObj =
+  #     mailCampaign: rmapsMailTemplateService.getCampaign()
 
-  $scope.quoteAndSend = () ->
-    $scope.$parent.quoteAndSend()
+  # $scope.quoteAndSend = () ->
+  #   $scope.$parent.quoteAndSend()
 
-  $scope.sendMail = () ->
-    $scope.$parent.sendMail()
+  # $scope.sendMail = () ->
+  #   $scope.$parent.sendMail()
 
   $scope.sendMail = () ->
     modalInstance = $modal.open
@@ -33,7 +33,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
       if result
-        $state.go('review', { id: rmapsMailTemplateService.getCampaign().id }, { reload: true })
+        $state.go('review', { id: $scope.wizard.mail.campaign.id }, { reload: true })
 
   $scope.showAddresses = (addresses) ->
     $log.debug addresses
@@ -51,8 +51,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
 
   getQuote = () ->
     if rmapsMailTemplateService.isSent()
-      return $q.when("Mailing submitted. Lob Batch Id: #{$scope.templObj.mailCampaign.lob_batch_id}")
-    if $scope.templObj.mailCampaign?.recipients?.length == 0
+      return $q.when("Mailing submitted. Lob Batch Id: #{$scope.wizard.mail.campaign.lob_batch_id}")
+    if $scope.wizard.mail.campaign?.recipients?.length == 0
       return $q.when("0.00")
     rmapsLobService.getQuote rmapsMailTemplateService.getLobData()
     .then (quote) ->
@@ -60,12 +60,12 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $timeout, $stat
       quote
 
   getReviewDetails = () ->
-    rmapsMailCampaignService.getReviewDetails($scope.templObj.mailCampaign.id)
+    rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
 
   $rootScope.registerScopeData () ->
-    $scope.$parent.initMailTemplate()
+    $scope.ready()
     .then () ->
-      setTemplObj()
+      # setTemplObj()
       $scope.category = rmapsMailTemplateService.getCategory()
       $scope.sentFlag = rmapsMailTemplateService.isSent()
       getQuote()

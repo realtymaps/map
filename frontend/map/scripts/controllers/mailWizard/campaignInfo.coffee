@@ -7,12 +7,12 @@ app.controller 'rmapsCampaignInfoCtrl', ($rootScope, $scope, rmapsUsStatesServic
   $scope.us_states = []
 
   $rootScope.registerScopeData () ->
-    $scope.$parent.initMailTemplate()
+    $scope.ready()
     .then () ->
       rmapsMailTemplateService.getSenderData()
       .then (senderData) ->
         $scope.senderData = senderData
-        $scope.campaign = rmapsMailTemplateService.getCampaign()
+        # $scope.campaign = rmapsMailTemplateService.getCampaign()
 
       rmapsUsStatesService.getAll().then (states) ->
         $scope.us_states = states
