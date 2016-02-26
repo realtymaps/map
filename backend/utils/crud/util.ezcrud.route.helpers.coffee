@@ -11,23 +11,23 @@ RouteCrudError = require('../errors/util.errors.crud').RouteCrudError
 } = require '../util.validation'
 
 class RouteCrud
-  constructor: (@svc, @options = {}) ->
+  constructor: (@svc, options = {}) ->
     unless @svc?
       throw new RouteCrudError('@svc must be defined')
 
     @logger = _logger
     if @svc.dbFn?.tableName
       @logger = @logger.spawn(@svc.dbFn?.tableName)
-    if @options.debugNS
-      @logger = @logger.spawn(@options.debugNS)
-    @enableUpsert = @options.enableUpsert ? false
+    if options.debugNS
+      @logger = @logger.spawn(options.debugNS)
+    @enableUpsert = options.enableUpsert ? false
 
     #essentially clone the parts of a request we want to not mutate it
-    @reqTransforms = @options.reqTransforms ? defaultRequestTransforms()
-    @initializeTransforms 'root', @options, ['GET', 'POST']
-    @initializeTransforms 'byId', @options
+    @reqTransforms = options.reqTransforms ? defaultRequestTransforms()
+    @initializeTransforms 'root', options, ['GET', 'POST']
+    @initializeTransforms 'byId', options
 
-    @logger.debug () -> "Crud route instance made with options: #{util.inspect(@options, false, 0)}"
+    @logger.debug () -> "Crud route instance made with options: #{util.inspect(options, false, 0)}"
 
 
   initializeTransforms: (transformType, options, methods = ['GET', 'POST', 'PUT', 'DELETE']) =>
@@ -77,16 +77,9 @@ class RouteCrud
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
-  _wrapRoute: (data, res, lHandleQuery) =>
+  _wrapRoute: (q, res, lHandleQuery) =>
     @logger.debug "Handling query"
-
-    if lHandleQuery == false || @options.handleQuery == false
-      return data
-    if _.isFunction @options.handleQuery
-      return @options.handleQuery(data)
-
-    fn = lHandleQuery || handleQuery
-    fn data, res
+    handleQuery q, res, lHandleQuery
 
   getQuery: (req, crudMethodStr) =>
     @logRequest req, 'initial req'
@@ -121,7 +114,7 @@ class RouteCrud
 
   byIdDELETE: ({req, res, next, lHandleQuery}) =>
     @getQuery(req, 'byIdDELETE').then (query) =>
-      @_wrapRoute @svc.delete(query), res, lHandleQuery
+      @_wrapRoute @svc.delete(query), res,
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here
