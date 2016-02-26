@@ -43,8 +43,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
   require: 'ngModel'
   link: (scope, element, attrs, ngModel) ->
     _doc = $document[0]
-    console.log "attrs:"
-    console.log attrs
+
     # convert existing macros that aren't already styled
     $timeout ->
       ngModel.$setViewValue scope.convertMacros()

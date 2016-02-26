@@ -21,7 +21,6 @@ module.exports = app.controller 'rmapsLoginCtrl',
     $scope.doLoginPost = () ->
       $http.post backendRoutes.userSession.login, $scope.form
       .success (data, status) ->
-        console.log "login success..."
         if !httpStatus.isWithinOK status
           return
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure

@@ -108,7 +108,6 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
         @campaign
 
     save: () ->
-      console.log "saving, status: #{@campaign.status}"
       @getSenderData()
       .then () =>
         toSave = _.pick @campaign, _.keys(campaignDefaults)
