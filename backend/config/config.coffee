@@ -1,7 +1,10 @@
 _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig.coffee'
-scriptName = require './scriptName'
+
+scriptName = path.basename(require.main.filename, '.coffee')
+if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
+  scriptName = '__REPL'  # this makes it easier to use the result as keys in a hash
 
 
 base =
