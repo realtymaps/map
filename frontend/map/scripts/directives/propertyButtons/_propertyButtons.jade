@@ -1,15 +1,15 @@
 div.btn-actions
-  button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(ctrl.property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
-    i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(ctrl.property)") &nbsp;
-    i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(ctrl.property)") &nbsp;
+  button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
+    i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(property)") &nbsp;
+    i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(property)") &nbsp;
 
-  button.pinto(ng-click="formatters.results.clickSaveResultFromList(ctrl.property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isSavedResult(ctrl.property) ? 'Unpin' : 'Pin'}}")
+  button.pinto(ng-click="formatters.results.clickSaveResultFromList(property, $event); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="{{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}")
     span.icon.icon-pin
 
-  button.send(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail(ctrl.property)")
+  button.send(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail(property)")
     span.icon.icon-send_email
 
-  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(ctrl.property); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
+  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()" popover-placement="left" popover-trigger="mouseenter" popover="Note")
     i.fa.fa-sticky-note &nbsp;
 
   button.snail(ng-click="zoomTo($event);" popover-placement="left" popover-trigger="mouseenter" popover="Zoom To")

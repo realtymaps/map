@@ -22,8 +22,9 @@ app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService) ->
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsLeafletObjectFetcherFactory) ->
 
+    leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("map:factory:normal")
@@ -57,12 +58,17 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
+        #
         # Property Button events
+        #
         $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) ->
           self.zoomTo result, false
 
         $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
           self.zoomTo result, doChangeZoom
+
+        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, (event, result) ->
+          self.pinPropertyEventHandler event, result
 
         leafletData.getMap('mainMap').then (map) =>
 
@@ -98,18 +104,39 @@ app.factory 'rmapsMapFactory',
 
         @layerFormatter = rmapsLayerFormattersService
 
-        @saveProperty = (model, lObject) =>
-          #TODO: Need to debounce / throttle
-          if model.savedDetails?.isSaved
-            saved = rmapsPropertiesService.unpinProperty(model)
-          else
-            saved = rmapsPropertiesService.pinProperty(model)
+        @pinPropertyEventHandler = (event, result) =>
+          wasSaved = result?.savedDetails?.isSaved
 
-          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-          lObject?.setIcon(new L.divIcon(model.icon))
-          return unless saved
-          saved.then (savedDetails) =>
-            @redraw(false)
+          # Handle the leaflet object
+          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+          lObject?.setIcon(new L.divIcon(result.icon))
+
+          #make sure selectedResult is updated if it exists
+          summary = @scope.map?.markers?.filterSummary
+          if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
+            delete @scope.selectedResult.savedDetails
+            angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
+
+          if wasSaved and !@scope.results[result.rm_property_id]
+            result.isMousedOver = undefined
+
+          @redraw(false)
+
+#        @saveProperty = (model) =>
+#          lObject = leafletDataMainMap.get(model.rm_property_id, 'filterSummary')?.lObject
+#
+#          #TODO: Need to debounce / throttle
+#          if model.savedDetails?.isSaved
+#            saved = rmapsPropertiesService.unpinProperty(model)
+#          else
+#            saved = rmapsPropertiesService.pinProperty(model)
+#
+#          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
+#          lObject?.setIcon(new L.divIcon(model.icon))
+#          return unless saved
+#          saved.then (savedDetails) =>
+#            @redraw(false)
 
         @favoriteProperty = (model, lObject) =>
           #TODO: Need to debounce / throttle

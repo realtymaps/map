@@ -50,11 +50,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         @mapCtrl.scope.resultsPotentialLength = undefined
         @filterSummaryInBounds = undefined
 
-        #make sure selectedResult is updated if it exists
-        summary = @mapCtrl.scope.map?.markers?.filterSummary
-        if @mapCtrl.scope.selectedResult? and summary[@mapCtrl.scope.selectedResult.rm_property_id]?
-          delete @mapCtrl.scope.selectedResult.savedDetails
-          angular.extend(@mapCtrl.scope.selectedResult, summary[@mapCtrl.scope.selectedResult.rm_property_id])
         @loadMore()
       , 5
 
@@ -150,12 +145,18 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       $state.go "property", { id: result.rm_property_id }
 
     clickSaveResultFromList: (result, event = {}) =>
+      $log.debug "CLICK to PIN with result:", result
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-      wasSaved = result?.savedDetails?.isSaved
-      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+
+      rmapsPropertiesService.pinUnpinProperty(result).then =>
         @reset()
-        if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
-          result.isMousedOver = undefined
+
+#      wasSaved = result?.savedDetails?.isSaved
+#      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+#        @reset()
+#        if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
+#          result.isMousedOver = undefined
+
 
     clickFavoriteResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)

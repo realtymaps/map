@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 template = require './_propertyButtons.jade'
 
-app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterService, rmapsEventConstants, $log) ->
+app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsEventConstants, $log) ->
   $log.debug "Property Buttons directive: ", template
   return {
     restrict: 'EA'
@@ -12,10 +12,13 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
       zoomClick: '&?'
     template: template()
     controller: ($scope, $element, $attrs, $transclude) ->
-      $log.debug "Property Buttons directive controller"
+      $log.debug "PROPERTY BUTTONS with property", $scope.property
+      $scope.formatters = {
+        results: new rmapsResultsFormatterService  scope: $scope
+        property: new rmapsPropertyFormatterService()
+      }
 
       $scope.zoomTo = ($event) ->
-        $log.debug "ZOOM TO!!!!"
         $event.stopPropagation() if $event
 
         proceed = true
@@ -25,9 +28,14 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
         if proceed
           $rootScope.$emit rmapsEventConstants.map.zoomToProperty, $scope.property
 
-      $scope.formatters = {
-        results: new rmapsResultsFormatterService  scope: $scope
-      }
+
+      $scope.pin = ($event) ->
+        $event.stopPropagation() if $event
+
+        rmapsPropertiesService.save
+
+      $scope.favorite = ($event) ->
+        $event.stopPropagation() if $event
 
 
   }
