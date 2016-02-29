@@ -1,7 +1,7 @@
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 app = require '../../app.coffee'
 
-app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTemplateService, rmapsLobService, rmapsEventConstants) ->
+app.controller 'rmapsModalSendMailCtrl', ($scope, $state, mail, price, rmapsLobService) ->
   $scope.price = price
   $scope.sendingFlag = false
   $scope.bodyMessage = 'There\'s no turning back!'
@@ -12,13 +12,11 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTempla
   $scope.send = () ->
     if $scope.sentinel
       $scope.sendingFlag = true
-      rmapsLobService.getQuote(rmapsMailTemplateService.getLobData()).then (response) ->
-      #rmapsLobService.submit(rmapsMailTemplateService.getLobData()).success (response) ->
-        rmapsMailTemplateService.setStatus 'sent'
-        rmapsMailTemplateService.save()
+      rmapsLobService.submit(mail.getLobData()).success (response) ->
+        mail.campaign.status = 'sent'
+        mail.save()
         .then () ->
-          #$rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "Mail campaign \"#{mailCampaign.name}\" submitted!", type: 'rm-success' }
-          $scope.bodyMessage = "Mail campaign \"#{rmapsMailTemplateService.getCampaign().name}\" submitted!"
+          $scope.bodyMessage = "Mail campaign \"#{mail.campaign.name}\" submitted!"
           $scope.statusMessage = ''
           $scope.sendingFlag = false
           $scope.successFlag = true
@@ -26,6 +24,8 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, price, rmapsMailTempla
         $scope.failedFlag = true
         if data?.errmsg
           $scope.bodyMessage = data.errmsg.text
+          if data.errmsg.troubleshooting
+            $scope.bodyMessage += "\n#{data.errmsg.troubleshooting}"
         else
           $scope.bodyMessage = commonConfig.UNEXPECTED_MESSAGE()
         $scope.sendingFlag = false

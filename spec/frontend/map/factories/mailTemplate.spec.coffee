@@ -5,17 +5,17 @@ describe 'mailTemplate service', ->
   beforeEach ->
     angular.mock.module('rmapsMapApp')
 
-    inject (rmapsMailTemplateService) =>
+    inject (rmapsMailTemplateFactory) =>
       @type = 'basicLetter'
-      @template = rmapsMailTemplateService
+      @template = new rmapsMailTemplateFactory()
 
   it 'passes sanity check', ->
     expect(@template).to.be.ok
-    expect(@template.getCampaign().content).to.not.exist
+    expect(@template.campaign.content).to.not.exist
     @template.setTemplateType(@type)
-    expect(@template.getCampaign().content).to.have.length.above 0
+    expect(@template.campaign.content).to.have.length.above 0
 
-  describe 'service members', ->
+  describe 'factory members', ->
 
     it 'returns correct defaults', ->
       expected =
@@ -32,7 +32,7 @@ describe 'mailTemplate service', ->
         recipients: []
         submitted: null
 
-      actual = @template.getCampaign()
+      actual = @template.campaign
       expect(actual).to.eql expected
 
     it 'returns correct lob entity', ->
@@ -63,7 +63,7 @@ describe 'mailTemplate service', ->
         email: 'mailtest@realtymaps.com'
         name: 'Fname Lname'
 
-      @template.setCampaign(campaignFixture)
+      @template.campaign = campaignFixture
       actual = @template.getLobData()
 
       expect(actual.campaign).to.eql campaignFixture
@@ -72,7 +72,7 @@ describe 'mailTemplate service', ->
       expect(actual.from).to.eql lobFrom
 
     it 'returns correct template category', ->
-      @template.setCampaign(campaignFixture)
+      @template.campaign = campaignFixture
       category = @template.getCategory()
       expect(category).to.eql 'letter'
 
