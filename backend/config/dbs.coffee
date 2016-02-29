@@ -3,8 +3,13 @@ pg = require 'pg'
 Promise = require 'bluebird'
 config = require './config'
 logger = require('./logger').spawn('dbs')
-do require '../../common/config/dbChecker.coffee'
 _ = require 'lodash'
+shutdown = require './shutdown'
+
+
+if !config.DBS.MAIN.connection && !process.env.IS_HEROKU
+  logger.error 'Database connection URL not available; did you use foreman?'
+  process.exit(1)
 
 
 connectedDbs = {}
@@ -34,11 +39,16 @@ _barePgShutdown = () ->
     pg.end()
 
 
-shutdown = () ->
-  logger.info 'database shutdowns initiated ...'
+shutdown = (quiet) ->
+  if quiet
+    log = logger.debug.bind(logger)
+  else
+    log = logger.info.bind(logger)
+
+  log 'database shutdowns initiated ...'
 
   return Promise.join _barePgShutdown, Promise.all(_.map(connectedDbs, _knexShutdown)), () ->
-    logger.info 'all databases successfully shut down.'
+    log 'all databases successfully shut down.'
     connectedDbs = {}
     delete require.cache[require.resolve('pg')]
     pg = require 'pg'

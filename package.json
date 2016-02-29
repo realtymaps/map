@@ -9,8 +9,8 @@
     "url": "https://github.com/realtymaps/map"
   },
   "engines": {
-    "node": "4.2.2",
-    "npm": "2.X"
+    "node": "4.3.1",
+    "npm": "2.x"
   },
   "scripts": {
     "start": "./scripts/app/startAppWrapper",
@@ -24,6 +24,7 @@
     "postinstall": "bower update",
     "clean": "./scripts/app/clean",
     "job-queue": "./scripts/app/processJobQueue",
+    "queue-needs": "./scripts/app/updateQueueNeeds",
     "cmocha": "foreman run ./scripts/misc/cmocha",
     "cmochaDebug": "foreman run ./scripts/misc/cmocha --debug",
     "stylus": "stylus",

@@ -92,12 +92,14 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
     previewStyles = "body {background-color: #FFF}"
-    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-editor'>#{content}</body></html>"
+    "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
   _createLobHtml = () ->
     fragStyles = require '../../styles/mailTemplates/template-frags.styl'
     classStyles = require '../../styles/mailTemplates/template-classes.styl'
-    "<html><head><title>#{mailCampaign.name}</title><style>#{fragStyles}#{classStyles}</style></head><body class='letter-editor'>#{mailCampaign.content}</body></html>"
+    "<html><head><title>#{mailCampaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{mailCampaign.content}</body></html>"
 
   _setTemplateType = (type) ->
     mailCampaign.template_type = type
@@ -153,7 +155,7 @@ rmapsPrincipalService, rmapsEventConstants, rmapsMailTemplateTypeService, rmapsU
       .then ({data}) ->
         $log.debug -> "Create data response:\n#{JSON.stringify(data, null, 2)}"
         mailCampaign.id = data.rows[0].id
-        $log.debug "campaign #{mailCampaign.id} created"
+        $log.debug "campaign #{mailCampaign.id} saved"
 
   getLobData: () ->
     lobData =

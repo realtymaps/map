@@ -85,17 +85,23 @@ recordChangeCounts = (subtask) ->
   .where(inserted: subtask.batch_id)
   .where(subset)
   .count('*')
+  .then (results) ->
+    results[0].count
   # get a count of rows from this batch without a null change history, i.e. newly-updated rows
   updatedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(updated: subtask.batch_id)
   .where(subset)
   .count('*')
+  .then (results) ->
+    results[0].count
   touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(batch_id: subtask.batch_id)
   .where(subset)
   .orWhere(deleted: subtask.batch_id)
   .where(subset)
   .count('*')
+  .then (results) ->
+    results[0].count
   updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, touchedCount) ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tables.temp.buildTableName(subid))
