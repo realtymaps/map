@@ -69,7 +69,6 @@ _getAddress = (r) ->
 createLetter = (letter) ->
   lobPromise()
   .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
 
@@ -84,7 +83,6 @@ createLetter = (letter) ->
 createLetterTest = (letter) ->
   lobPromise()
   .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
 
@@ -104,10 +102,10 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'content', 'content_url', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
-    payment: paymentSvc or require('./services.payment')
+    payment: paymentSvc or require('./services.payment') # allows rewire
 
   })
 
@@ -195,32 +193,46 @@ queueLetters = (campaign, tx) ->
   .insert _.map campaign.recipients, (recipient) ->
     address_to = _getAddress recipient
     address_from = _getAddress campaign.sender_info
+    file = campaign.content_url || campaign.content
 
-    auth_user_id: campaign.auth_user_id
-    user_mail_campaign_id: campaign.id
-    address_to: address_to
-    address_from: address_from
-    file: campaign.content
-    status: 'ready'
-    options:
-      metadata:
-        campaignId: campaign.id
-        userId: campaign.auth_user_id
-        uuid: uuid.v1()
-      data:
-        campaign_name: campaign.name
-        recipient_name: address_to.name
-        recipient_address_line1: address_to.address_line1
-        recipient_address_line2: address_to.address_line2
-        recipient_city: address_to.address_city
-        recipient_state: address_to.address_state
-        recipient_zip: address_to.address_zip
-        sender_name: address_from.name
-        sender_address_line1: address_from.address_line1
-        sender_address_line2: address_from.address_line2
-        sender_city: address_from.address_city
-        sender_state: address_from.address_state
-        sender_zip: address_from.address_zip
+    # If this letter is a pdf, template must be set to false so the address is on a separate page
+    if campaign.content_url
+      template = false
+      file = campaign.content_url
+    else
+      file = campaign.content
+
+    letter =
+      auth_user_id: campaign.auth_user_id
+      user_mail_campaign_id: campaign.id
+      address_to: address_to
+      address_from: address_from
+      file: file
+      status: 'ready'
+      options:
+        template: template
+        metadata:
+          campaignId: campaign.id
+          userId: campaign.auth_user_id
+          uuid: uuid.v1()
+        data:
+          campaign_name: campaign.name
+          recipient_name: address_to.name
+          recipient_address_line1: address_to.address_line1
+          recipient_address_line2: address_to.address_line2
+          recipient_city: address_to.address_city
+          recipient_state: address_to.address_state
+          recipient_zip: address_to.address_zip
+          sender_name: address_from.name
+          sender_address_line1: address_from.address_line1
+          sender_address_line2: address_from.address_line2
+          sender_city: address_from.address_city
+          sender_state: address_from.address_state
+          sender_zip: address_from.address_zip
+
+    _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
+
+    letter
 
 getPriceQuote = (userId, data) ->
   lobPromise()
