@@ -81,14 +81,18 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
       fragStyles = require '../../styles/mailTemplates/template-frags.styl'
       classStyles = require '../../styles/mailTemplates/template-classes.styl'
       previewStyles = "body {background-color: #FFF}"
-      "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
-        "<style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>"
+      """
+      <html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>"
+      <style>#{fragStyles}#{classStyles}#{previewStyles}</style></head><body class='letter-body'>#{content}</body></html>
+      """
 
     createLobHtml: () ->
       fragStyles = require '../../styles/mailTemplates/template-frags.styl'
       classStyles = require '../../styles/mailTemplates/template-classes.styl'
-      "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
-        "<style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{@campaign.content}</body></html>"
+      """
+      <html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>"
+      <style>#{fragStyles}#{classStyles}</style></head><body class='letter-body'>#{@campaign.content}</body></html>
+      """
 
     setTemplateType: (type) ->
       @campaign.template_type = type
