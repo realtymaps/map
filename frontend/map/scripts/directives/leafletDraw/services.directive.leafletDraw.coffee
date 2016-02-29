@@ -28,10 +28,14 @@ app.service "#{directiveName}DefaultsService", () ->
       button:
         default: ''
         cancel: 'Cancel'
+        save: 'Save'
+
     classes:
       button:
         default: 'button btn btn-transparent nav-btn'
         cancel: 'button btn btn-primary'
+        save: 'button btn btn-primary'
+
       span:
         pen: _spanCssCls + ' icon-note-pen'
         polyline: _spanCssCls + ' icon-polyline'

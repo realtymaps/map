@@ -13,7 +13,9 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnService) ->
     _makeDrawKeys
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
-        drawnShapesSvc?.create(layer.toGeoJSON()).then ({data}) ->
+        geojson = layer.toGeoJSON()
+
+        drawnShapesSvc?.create(geojson).then ({data}) ->
           newId = data
           layer.model =
             properties:
