@@ -3,7 +3,8 @@ describe 'rmapsMailWizardCtrl', ->
   beforeEach ->
     angular.mock.module('rmapsMapApp')
 
-    inject ($controller, $rootScope, $q, rmapsMailTemplateFactory) =>
+    inject ($controller, $rootScope, $q, digestor, rmapsMailTemplateFactory) =>
+      @digestor = digestor
       @state = # $state needs to compliment a scenario for rmapsMailWizardCtrl to create new campaign via factory
         current:
           name: 'recipientInfo'
@@ -14,10 +15,12 @@ describe 'rmapsMailWizardCtrl', ->
       @rmapsMailTemplateFactory = rmapsMailTemplateFactory
 
   describe 'controller behavior', ->
-    xit 'vetting controller logic', (done) ->
+    it 'vetting controller logic', (done) ->
       controller = @$controller 'rmapsMailWizardCtrl', { $scope: @scope, $state: @state }
-      @scope.ready()
+      logic = @scope.ready()
       .then () =>
         expect(@scope.wizard.mail).to.be.ok
         done()
+
+      @digestor.digest @scope, logic
 
