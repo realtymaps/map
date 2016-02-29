@@ -151,6 +151,8 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       rmapsPropertiesService.pinUnpinProperty(result).then =>
         @reset()
 
+      return false
+
 #      wasSaved = result?.savedDetails?.isSaved
 #      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
 #        @reset()
@@ -165,3 +167,5 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         @reset()
         if wasFavorite and !@mapCtrl.scope.results[result.rm_property_id]
           result.isMousedOver = undefined
+
+      return false

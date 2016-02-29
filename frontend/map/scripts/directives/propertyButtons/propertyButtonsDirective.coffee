@@ -10,6 +10,7 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
     scope:
       property: '='
       zoomClick: '&?'
+      pinClick: '&?'
     template: template()
     controller: ($scope, $element, $attrs, $transclude) ->
       $log.debug "PROPERTY BUTTONS with property", $scope.property
@@ -28,11 +29,15 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
         if proceed
           $rootScope.$emit rmapsEventConstants.map.zoomToProperty, $scope.property
 
-
       $scope.pin = ($event) ->
         $event.stopPropagation() if $event
 
-        rmapsPropertiesService.save
+        proceed = true
+        if $scope.pinClick
+          proceed = $scope.pinClick { property: $scope.property }
+
+        if proceed
+          rmapsPropertiesService.pinUnpinProperty($scope.property)
 
       $scope.favorite = ($event) ->
         $event.stopPropagation() if $event

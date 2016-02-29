@@ -82,25 +82,33 @@ $fnMakePropertyAttr()
     border-top 1px solid $darker_white
 
     a
-      font-size 11px
+      font-size 22px
+      color: $gray_medium
       border none
       border-right 1px solid $darker_white
-      background $white
+      background-color $dark_white
       line-height 50px
       text-align center
-      padding 0
+      padding 0 0 0 6px
       width 33.3333%
       float left
       min-width 10px
 
     button
-      font-size 11px
+      font-size 22px
+      color: $gray_medium
       border none
       border-right 1px solid $darker_white
-      background $white
-      padding 0
+      background-color $dark_white
+      padding 0 0 0 6px
       width 20%
       float left
       min-width 10px
       &:last-child
         border none
+
+      &.button-is-pin
+        color: $rm_saved
+
+      &.button-is-favorite
+        color: $rm_favorite
