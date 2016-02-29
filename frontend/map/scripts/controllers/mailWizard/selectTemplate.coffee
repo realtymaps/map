@@ -5,35 +5,48 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload, rmapsMailTemplateTypeService, rmapsMailTemplateService) ->
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload,
+  rmapsMailTemplateTypeService, rmapsMailTemplateService, rmapsMainOptions) ->
+
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
-
   $scope.uploadFile = (file, errFiles) ->
     console.log "got a file!"
+
     $scope.f = file
     $scope.errFile = errFiles && errFiles[0]
+    key = "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}"
+
+    console.log "s3_upload creds:"
+    console.log "#{JSON.stringify(rmapsMainOptions.mail.s3_upload, null, 2)}"
+    console.log "key: #{key}"
+
     if (file)
       file.upload = Upload.upload(
-        url: 'https://angular-file-upload-cors-srv.appspot.com/upload'
-        data: {data: file}
+        url: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
+        method: 'POST'
+        #data: {data: file}
+        data:
+          key: key
+          AWSAccessKeyId: rmapsMainOptions.mail.s3_upload.AWSAccessKeyId
+          acl: 'private'
+          policy: rmapsMainOptions.mail.s3_upload.policy
+          signature: rmapsMainOptions.mail.s3_upload.signature
+          'Content-Type': 'application/pdf'
+          #filename: file.name
+          file: file
       )
 
       file.upload.then (response) ->
         $timeout () ->
           file.result = response.data
-          console.log "file result:"
-          console.log file.result
 
       , (response) ->
         if (response.status > 0)
           $scope.errorMsg = response.status + ': ' + response.data
-        console.log "error"
-        console.log response
+
       , (evt) ->
-        console.log "event!"
-        console.log evt
         file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total))
 
 
