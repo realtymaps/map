@@ -12,7 +12,7 @@ app.controller 'rmapsModalSendMailCtrl', ($scope, $state, mail, price, rmapsLobS
   $scope.send = () ->
     if $scope.sentinel
       $scope.sendingFlag = true
-      rmapsLobService.submit(mail.getLobData()).success (response) ->
+      rmapsLobService.send(mail.getLobData()).success (response) ->
         mail.campaign.status = 'sent'
         mail.save()
         .then () ->

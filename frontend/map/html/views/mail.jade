@@ -45,8 +45,6 @@
                 td.col-md-1
                   span {{campaign.rm_inserted_time | date:'MM/dd/yyyy'}}
                 td.col-md-1
-                  span {{(campaign.submitted | date:'MM/dd/yyyy') || 'never'}}
-                td.col-md-1
-                  span {{(campaign.submitted | date:'MM/dd/yyyy') || 'never'}}
+                  span {{(campaign.stripe_charge.created | date:'MM/dd/yyyy') || 'never'}}
                 td.col-md-1
                   button.btn.btn-white(ng-click="deleteCampaign(campaign); $event.stopPropagation()") Delete
