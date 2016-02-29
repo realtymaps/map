@@ -69,8 +69,11 @@ _getAddress = (r) ->
 createLetter = (letter) ->
   lobPromise()
   .then (lob) ->
+    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+    letter.to = letter.address_to
+    letter.from = letter.address_from
 
     if config.ENV != 'production'
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
@@ -83,8 +86,11 @@ createLetter = (letter) ->
 createLetterTest = (letter) ->
   lobPromise()
   .then (lob) ->
+    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+    letter.to = letter.address_to
+    letter.from = letter.address_from
 
     logger.debug () -> "createLetterTest() #{JSON.stringify letter, null, 2}"
     lob.test.letters.create _.pick(letter, LOB_LETTER_FIELDS)
@@ -138,16 +144,13 @@ sendCampaign = (campaignId, userId) ->
     .then (stripeCustomer) ->
 
       logger.debug "Checking price to send campaign #{campaign.id} on behalf of user #{userId}"
-      getPriceQuote userId,
-        file: campaign.content
-        from: _getAddress campaign.sender_info
-        recipients: campaign.recipients.slice 0, 1
+      getPriceQuote userId, campaign.id
 
       .catch isUnhandled, (err) ->
 
         throw new PartiallyHandledError(err, "Could not get price quote for campaign #{campaign.id}")
 
-      .then (pricePerLetter) ->
+      .then ({price}) ->
 
         dbs.transaction 'main', (tx) ->
 
@@ -191,62 +194,67 @@ sendCampaign = (campaignId, userId) ->
 queueLetters = (campaign, tx) ->
   tables.mail.letters(transaction: tx)
   .insert _.map campaign.recipients, (recipient) ->
-    address_to = _getAddress recipient
-    address_from = _getAddress campaign.sender_info
-    file = campaign.content_url || campaign.content
+    buildLetter campaign, recipient
 
-    # If this letter is a pdf, template must be set to false so the address is on a separate page
-    if campaign.content_url
-      template = false
-      file = campaign.content_url
-    else
-      file = campaign.content
+buildLetter = (campaign, recipient) ->
+  address_to = _getAddress recipient
+  address_from = _getAddress campaign.sender_info
+  file = campaign.content_url || campaign.content
 
-    letter =
-      auth_user_id: campaign.auth_user_id
-      user_mail_campaign_id: campaign.id
-      address_to: address_to
-      address_from: address_from
-      file: file
-      status: 'ready'
-      options:
-        template: template
-        metadata:
-          campaignId: campaign.id
-          userId: campaign.auth_user_id
-          uuid: uuid.v1()
-        data:
-          campaign_name: campaign.name
-          recipient_name: address_to.name
-          recipient_address_line1: address_to.address_line1
-          recipient_address_line2: address_to.address_line2
-          recipient_city: address_to.address_city
-          recipient_state: address_to.address_state
-          recipient_zip: address_to.address_zip
-          sender_name: address_from.name
-          sender_address_line1: address_from.address_line1
-          sender_address_line2: address_from.address_line2
-          sender_city: address_from.address_city
-          sender_state: address_from.address_state
-          sender_zip: address_from.address_zip
+  # If this letter is a pdf, template must be set to false so the address is on a separate page
+  if campaign.content_url
+    template = false
+    file = campaign.content_url
+  else
+    file = campaign.content
 
-    _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
+  letter =
+    auth_user_id: campaign.auth_user_id
+    user_mail_campaign_id: campaign.id
+    address_to: address_to
+    address_from: address_from
+    file: file
+    status: 'ready'
+    options:
+      template: template
+      metadata:
+        campaignId: campaign.id
+        userId: campaign.auth_user_id
+        uuid: uuid.v1()
+      data:
+        campaign_name: campaign.name
+        recipient_name: address_to.name
+        recipient_address_line1: address_to.address_line1
+        recipient_address_line2: address_to.address_line2
+        recipient_city: address_to.address_city
+        recipient_state: address_to.address_state
+        recipient_zip: address_to.address_zip
+        sender_name: address_from.name
+        sender_address_line1: address_from.address_line1
+        sender_address_line2: address_from.address_line2
+        sender_city: address_from.address_city
+        sender_state: address_from.address_state
+        sender_zip: address_from.address_zip
 
-    letter
+  _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
 
-getPriceQuote = (userId, data) ->
-  lobPromise()
-  .then (lob) ->
-    throw new Error("recipients must be an array") unless _.isArray data?.recipients
-    Promise.map data.recipients, (recipient) ->
-      letter = _.clone data
-      letter.to = _getAddress recipient
-      createLetterTest letter
-  .then (lobResponses) ->
-    res =
-      pdf: lobResponses[0].url
-      price: _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
-        total + Number(price)
+  letter
+
+getPriceQuote = (userId, campaignId) ->
+  tables.mail.campaign()
+    .select('id', 'auth_user_id', 'name', 'content', 'content_url', 'status', 'sender_info', 'recipients')
+    .where(id: campaignId, auth_user_id: userId)
+
+  .then ([campaign]) ->
+    throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
+
+    letter = buildLetter campaign, campaign.recipients[0]
+    createLetterTest letter
+
+    .then (lobResponse) ->
+      res =
+        pdf: lobResponse.url
+        price: lobResponse.price * campaign.recipients.length
 
 getDetails = (lobId) ->
   lobPromise()

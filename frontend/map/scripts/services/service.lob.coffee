@@ -4,7 +4,6 @@ _ = require 'lodash'
 
 app.service 'rmapsLobService', ($log, $http) ->
   $log = $log.spawn 'service:rmapsLobService'
-  quoteUrl = backendRoutes.snail.quote
   sendUrl = backendRoutes.snail.send
 
   _handlePost = (postParams...) ->
@@ -13,7 +12,7 @@ app.service 'rmapsLobService', ($log, $http) ->
       data
 
   _getQuoteAndPdf = (lobData) ->
-    _handlePost(quoteUrl, lobData, alerts:false).then (response) ->
+    $http.get("/api/snail/quote/#{lobData.campaign.id}", alerts:false).then (response) ->
       $log.debug () -> "_getQuoteAndPdf response: #{JSON.stringify(response)}"
       response.data
 
@@ -25,6 +24,6 @@ app.service 'rmapsLobService', ($log, $http) ->
     _getQuoteAndPdf(lobData).then (data)->
       data.price
 
-  submit: (lobData) ->
+  send: (lobData) ->
     url = sendUrl.replace(':campaign_id', lobData.campaign.id)
-    _handlePost(url, lobData, alerts:false)
+    _handlePost(url, {}, alerts:false)
