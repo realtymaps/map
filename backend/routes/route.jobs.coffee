@@ -6,6 +6,8 @@ auth = require '../utils/util.auth'
 jobQueue = require '../utils/util.jobQueue'
 userSession =  require '../services/service.userSession'
 ExpressResponse = require '../utils/util.expressResponse'
+logger = require('../config/logger').spawn('jobQueue:manual')
+
 
 class JobCrud extends RouteCrud
   init: () ->
