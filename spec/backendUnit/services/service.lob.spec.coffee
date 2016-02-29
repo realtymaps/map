@@ -29,7 +29,7 @@ describe "service.lob", ->
     beforeEach ->
 
       user = new SqlMock 'auth', 'user', result: [mockAuthUser]
-      campaigns = new SqlMock 'mail', 'campaign', result: [mockCampaign]
+      campaigns = new SqlMock 'mail', 'campaign', results: [[mockCampaign],[mockCampaign]]
       letters = new SqlMock 'mail', 'letters', result: [mockLetter]
 
       @tables =
@@ -57,36 +57,36 @@ describe "service.lob", ->
         test: lobSvc
         live: lobSvc
 
-      it 'should update campaign status and create letters', (done) ->
+    it 'should update campaign status and create letters', (done) ->
 
-        svc.sendCampaign mockCampaign.id, mockAuthUser.id
-        .then (campaign) =>
+      svc.sendCampaign mockCampaign.id, mockAuthUser.id
+      .then (campaign) =>
 
-          @tables.auth.user().selectSpy.callCount.should.equal 1
-          @tables.auth.user().whereSpy.args[0][0].should.deep.equal id: mockAuthUser.id
+        @tables.auth.user().selectSpy.callCount.should.equal 1
+        @tables.auth.user().whereSpy.args[0][0].should.deep.equal id: mockAuthUser.id
 
-          @tables.mail.campaign().selectSpy.callCount.should.equal 1
-          @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
+        @tables.mail.campaign().selectSpy.callCount.should.equal 2
+        @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
 
-          @tables.mail.campaign().updateSpy.callCount.should.equal 1
-          @tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
-          @tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
+        @tables.mail.campaign().updateSpy.callCount.should.equal 1
+        @tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
+        @tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
 
-          @tables.mail.letters().insertSpy.callCount.should.equal 1
-          @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
+        @tables.mail.letters().insertSpy.callCount.should.equal 1
+        @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
-          @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.content
+        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.content
 
-          @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal true
+        @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal true
 
-          done()
+        done()
 
   describe 'sending pdf campaigns', ->
 
     beforeEach ->
 
       user = new SqlMock 'auth', 'user', result: [mockAuthUser]
-      campaigns = new SqlMock 'mail', 'campaign', result: [mockPdfCampaign]
+      campaigns = new SqlMock 'mail', 'campaign', results: [[mockPdfCampaign],[mockPdfCampaign]]
       letters = new SqlMock 'mail', 'letters', result: [mockLetter]
 
       @tables =
@@ -122,7 +122,7 @@ describe "service.lob", ->
         @tables.auth.user().selectSpy.callCount.should.equal 1
         @tables.auth.user().whereSpy.args[0][0].should.deep.equal id: mockAuthUser.id
 
-        @tables.mail.campaign().selectSpy.callCount.should.equal 1
+        @tables.mail.campaign().selectSpy.callCount.should.equal 2
         @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
 
         @tables.mail.campaign().updateSpy.callCount.should.equal 1

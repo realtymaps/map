@@ -154,7 +154,7 @@ sendCampaign = (campaignId, userId) ->
 
         dbs.transaction 'main', (tx) ->
 
-          amount = pricePerLetter * campaign.recipients.length
+          amount = price * campaign.recipients.length
           logger.debug "Creating $#{amount.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
 
           payment.customers.charge
