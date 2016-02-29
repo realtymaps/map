@@ -21,16 +21,12 @@ describe 'mailTemplate service', ->
       expected =
         id: null
         auth_user_id: null
-        lob_batch_id: null
         name: 'New Mailing'
-        count: 0
-        status: 'pending'
+        status: 'ready'
         content: null
         template_type: ''
-        lob_content: null
         sender_info: null
         recipients: []
-        submitted: null
 
       actual = @template.campaign
       expect(actual).to.eql expected
