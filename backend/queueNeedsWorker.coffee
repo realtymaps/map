@@ -69,7 +69,8 @@ if require.main == module  # run directly, not require()d
       else if intervalsWaited == 6
         logger.warn 'YOU ARE TERMINATED! (SIGKILL)'
         cluster.workers[workerId].kill('SIGKILL')
-      else if intervalsWaited == 7
+      else if intervalsWaited >= 7
+        logger.error 'COMMITTING SUICIDE'
         shutdown.exit(error: true)
     masterLoop = () ->
       spawnWorker()
