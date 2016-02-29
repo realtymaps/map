@@ -167,7 +167,7 @@ class SqlMock
         return Promise.reject(@error).catch handler
 
     result = @getResult()
-    @logger.debug () => "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{result}"
+    @logger.debug () => "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{JSON.stringify result}"
     return Promise.resolve(result)
 
   toString: () ->
