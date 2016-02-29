@@ -1,13 +1,20 @@
 app = require '../app.coffee'
 module.exports = app
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsMailRecipientService) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService) ->
   $log = $log.spawn 'mail:rmapsMapMailCtrl'
 
   $scope.addMail = (maybeParcel) ->
-    rmapsMailRecipientService.updatePropertyIds(maybeParcel)
+
+    savedProperties = rmapsPropertiesService.getSavedProperties()
+
+    if maybeParcel?
+      property_ids = [maybeParcel.rm_property_id]
+    else
+      property_ids = _.keys savedProperties
+
     $scope.newMail =
-      property_ids: rmapsMailRecipientService.getPropertyIds()
+      property_ids: property_ids
 
     $scope.modalTitle = "Create Mail Campaign"
 
@@ -17,7 +24,7 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsMailRecip
       $scope.modalOk = () ->
         modalInstance.dismiss('save')
         $log.debug "$state.go 'recipientInfo'..."
-        $state.go 'recipientInfo', {}, {reload: true}
+        $state.go 'recipientInfo', {property_ids: $scope.newMail.property_ids}, {reload: true}
 
       $scope.cancelModal = () ->
         modalInstance.dismiss('cancel')

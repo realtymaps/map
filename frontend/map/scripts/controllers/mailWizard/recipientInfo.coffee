@@ -2,7 +2,7 @@ app = require '../../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, rmapsPropertiesService, rmapsMailRecipientService) ->
+app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $state, rmapsPropertiesService) ->
   $log = $log.spawn 'mail:recipientInfo'
   $log.debug 'rmapsRecipientInfoCtrl'
 
@@ -24,8 +24,7 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, rmap
   $rootScope.registerScopeData () ->
     $scope.ready()
     .then () ->
-      # $scope.mailCampaign = campaign
-      $scope.wizard.mail.campaign.property_ids = rmapsMailRecipientService.getPropertyIds()
+      $scope.wizard.mail.campaign.property_ids = $state.params.property_ids
       if not $scope.wizard.mail.campaign.recipients?.length and $scope.wizard.mail.campaign.property_ids?.length
         rmapsPropertiesService.getProperties $scope.wizard.mail.campaign.property_ids, 'filter'
         .then ({data}) ->

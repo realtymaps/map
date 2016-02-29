@@ -124,6 +124,9 @@ sendCampaign = (campaignId, userId) ->
     if not campaign
       throw new PartiallyHandledError("Campaign #{campaignId} not found")
 
+    if campaign.status != 'ready'
+      throw new PartiallyHandledError("Campaign #{campaignId} has status '#{campaign.status}' -- cannot send unless status is 'ready'")
+
     if not _.isArray campaign?.recipients
       throw new PartiallyHandledError("Campaign #{campaignId} has invalid recipients")
 
