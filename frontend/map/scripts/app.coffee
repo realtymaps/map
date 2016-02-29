@@ -60,4 +60,3 @@ app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalSer
 module.exports = app
 
 require('./controllers/mayday_controllers1.coffee')(app)
-require('./controllers/mayday_controllers2.coffee')(app)
