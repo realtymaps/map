@@ -13,5 +13,12 @@ app.config ($provide) ->
         'edit'
         'trash'
       ]
+      neighborhood: [
+        'rectangle'
+        'circle'
+        'polygon'
+        'edit'
+        'trash'
+      ]
 
     $delegate

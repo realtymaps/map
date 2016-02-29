@@ -136,7 +136,13 @@ class ProjectRouteCrud extends RouteCrud
     #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
     #                                                     :drawn_shapes_id"  :(id -> project_id)
     #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud = new EzRouteCrud @svc.drawnShapes,
+    class DrawbShapeCrud extends EzRouteCrud
+
+      neighborhoods: (req, res, next) =>
+        @getQuery(req, 'rootGET').then (query) =>
+          @_wrapRoute @svc.neighborhoods(query), res
+
+    @drawnShapesCrud = new DrawbShapeCrud @svc.drawnShapes,
       rootGETTransforms:
         params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true

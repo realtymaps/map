@@ -45,16 +45,13 @@ getFilterSummaryAsQuery = (filters, limit, query = getDefaultQuery()) ->
   if filters.isNeighbourhood?
     if filters.isNeighbourhood
       query = query.whereNotNull("#{drawnShapesName}.neighbourhood_name", filters.project_id)
-    else
-      query = query.whereNull("#{drawnShapesName}.neighbourhood_name", filters.project_id)
 
-  # logger.debug.cyan query.toString()
   query
 
 getResultCount = (filters) ->
   query = getDefaultQuery(sqlHelpers.selectCountDistinct(tables.property.propertyDetails()))
   q = getFilterSummaryAsQuery(filters,null, query)
-  # logger.debug q.toString()
+  logger.debug q.toString()
   q
 
 module.exports =

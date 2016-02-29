@@ -14,9 +14,9 @@ app.service 'rmapsDrawnService',
 
     drawnShapesSvc
 
-  getDrawnItems = () ->
+  getDrawnItems = (mainFn = 'getList') ->
     drawnItems = new L.FeatureGroup()
-    getDrawnShapesSvc()?.getList()
+    getDrawnShapesSvc()?[mainFn]()
     .then (drawnShapes) ->
       # TODO: drawn shapes will get its own tables for GIS queries
       $log.debug 'fetched shapes'
@@ -28,6 +28,9 @@ app.service 'rmapsDrawnService',
           layer.model = feature
           drawnItems.addLayer layer
       drawnItems
+
+  getDrawnItemsNeighborhoods = () ->
+    getDrawnItems('getNeighborhoods')
 
   _getShapeModel = (layer) ->
     _.merge layer.model, layer.toGeoJSON()
@@ -42,5 +45,6 @@ app.service 'rmapsDrawnService',
   {
     getDrawnShapesSvc
     getDrawnItems
+    getDrawnItemsNeighborhoods
     eachLayerModel
   }

@@ -21,6 +21,8 @@ _sqlFns = [
   'raw'
   'groupByRaw'
   'whereRaw'
+  'whereNull'
+  'whereNotNull'
 
   'as'
   'from'

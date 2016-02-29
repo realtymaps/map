@@ -1,0 +1,19 @@
+mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl)
+  //.desktop-only TODO (wont show)
+  .draw-tools.container(ng-if="#{toggleBoolean}")&attributes(attributes)
+    .row
+      .col.col-md-3.col-sm-3.col-xs-3
+        h4 #{h4}
+      
+      .col.col-md-6.col-sm-6.col-xs-3
+        .tools(ng-controller="#{ctrl}")
+          div(ng-if="draw.ready")
+            div.rmaps-leaflet-draw(
+              id="#{drawToolId}"
+              mapPromise="draw.mapPromise"
+              options="draw.leafletDrawOptions"
+              events="draw.leafletDrawEvents")
+          
+      .col.col-md-3.col-sm-3.col-xs-3
+        button.btn.btn-primary.close-btn.pull-right(
+          ng-click="#{toggleFn}") Close

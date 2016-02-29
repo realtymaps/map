@@ -66,11 +66,13 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
       $logDraw = $log.spawn("projects:drawnShapes")
       ###eslint-enable###
       rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
+      neighborhoodUrl = backendRoutes.projectSession.neighborhoods.replace(":id",profile.project_id)
 
       getList = (cache = false) ->
-        $http.get rootUrl, cache: cache
-        .then ({data}) ->
-          data
+        $http.getData rootUrl, cache: cache
+
+      getNeighborhoods = (cache = false) ->
+        $http.getData neighborhoodUrl, cache: cache
 
       _byIdUrl = (shape) ->
         backendRoutes.projectSession.drawnShapesById
@@ -101,6 +103,8 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         normal
 
       getList: getList
+
+      getNeighborhoods: getNeighborhoods
 
       getListNormalized: (cache = false) ->
         getList(cache).then (geojson) ->

@@ -70,6 +70,8 @@ module.exports =
     notesById: "#{apiBaseProjectsSession}/:id/notes/:notes_id"
     drawnShapes: "#{apiBaseProjectsSession}/:id/drawnShapes"
     drawnShapesById: "#{apiBaseProjectsSession}/:id/drawnShapes/:drawn_shapes_id"
+    #drawn shapes as neighborhoods
+    neighborhoods: "#{apiBaseProjectsSession}/:id/neighborhoods"
   user:
     apiBase: apiBaseUsers
     root: apiBaseUsers

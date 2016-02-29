@@ -1,22 +1,23 @@
+$drawToolHeight = 50px
+$drawToolSmallButtonHeight = 25px
+$drawToolSmallHeight = 150px
 
 $fnMakeMapDrawTools()
-  $makeHeightWidth(pix)
-    height pix !important
-    width pix !important
 
   $makeTool(pix, marginArg = false)
     .tools
       .rmaps-leaflet-draw
         div
           button
-            $makeHeightWidth(pix)
-            if marginArg
-              margin marginArg
-
-
-  $drawToolHeight = 50px
-  $drawToolSmallButtonHeight = 25px
-  $drawToolSmallHeight = 150px
+            width pix !important
+              if marginArg
+                margin marginArg
+            &.cancel
+            &.save
+              width auto !important
+              padding-top 7px
+              padding-bottom 7px
+              margin-right 10px
 
   .draw-tools
     width 100%

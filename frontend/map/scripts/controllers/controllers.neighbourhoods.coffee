@@ -76,13 +76,13 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants) ->
     createFromModal(model).finally ->
       _destroy()
 
-.controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http, $log, rmapsProjectsService,
-rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators, rmapsMapEventsLinkerService) ->
+.controller 'rmapsMapNeighbourhoodsCtrl', ($rootScope, $scope, $http,
+$log, rmapsDrawnService, rmapsEventConstants) ->
 
   ###
     Anything long term statewise goes here.
   ###
-  drawnShapesSvc = rmapsProjectsService.drawnShapes($rootScope.principal.getCurrentProfile())
+  drawnShapesSvc = rmapsDrawnService.getDrawnShapesSvc()
   $log = $log.spawn("map:neighbourhoods")
 
   getAll = () ->

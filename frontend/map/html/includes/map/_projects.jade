@@ -1,4 +1,4 @@
-span(ng-hide="Toggles.isSketchMode" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsMapProjectsCtrl")
+span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsMapProjectsCtrl")
   button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
     span
       span.icon.icon-project
