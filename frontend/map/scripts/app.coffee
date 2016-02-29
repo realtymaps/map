@@ -34,6 +34,7 @@ app = window.angular.module appName, [
   'uiGmapgoogle-maps'
   'validation'
   'validation.rule'
+  'ngFileUpload'
 ]
 
 app.controller 'rmapsAppCtrl', ($scope, $rootScope, $location, rmapsPrincipalService) ->
