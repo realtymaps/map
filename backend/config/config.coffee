@@ -8,10 +8,12 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 
 base =
+  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null
-  PROC_COUNT: parseInt(process.env.WEB_CONCURRENCY) || require('os').cpus().length
+  PROC_COUNT: parseInt(process.env
+  .WEB_CONCURRENCY) || require('os').cpus().length
   ENV: process.env.NODE_ENV || 'development'
   ROOT_PATH: path.join(__dirname, '..')
   FRONTEND_ASSETS_PATH: path.join(__dirname, '../../_public')

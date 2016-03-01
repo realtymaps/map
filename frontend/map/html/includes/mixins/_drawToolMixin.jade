@@ -1,6 +1,7 @@
 mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl)
   //.desktop-only TODO (wont show)
-  .draw-tools.container(ng-if="#{toggleBoolean}")&attributes(attributes)
+  //hint if you want only drawings to show sometimes use ng-if (will kill controller)
+  .draw-tools.container(ng-show="#{toggleBoolean}")&attributes(attributes)
     .row
       .col.col-md-3.col-sm-3.col-xs-3
         h4 #{h4}

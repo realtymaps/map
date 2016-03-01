@@ -8,8 +8,8 @@ app.factory "rmapsDrawPostActionFactory", ($rootScope, rmapsEventConstants) ->
 
 app.factory "rmapsDrawCtrlFactory", (
 $rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
-leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnService) ->
-  {eachLayerModel} = rmapsDrawnService
+leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnUtilsService) ->
+  {eachLayerModel} = rmapsDrawnUtilsService
 
   ({$scope, mapId, handles, drawnItems, postDrawAction, name, colorOptions}) ->
 

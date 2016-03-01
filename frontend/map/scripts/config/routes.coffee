@@ -8,6 +8,8 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 stateDefaults =
   sticky: false
   loginRequired: true
+  profileRequired: true
+  persist: false
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
 rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
@@ -39,17 +41,17 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     delete state.template
     delete state.controller
 
-  buildMapState = (overrides = {}) ->
-    name = 'map'
-    state = baseState name, overrides
-    appendTemplateProvider name, state
-    createView name, state, 'main-map'
-
-    # Set the page type
-    state.pageType = 'map'
-
-    $stateProvider.state(state)
-    state
+  # buildMapState = (overrides = {}) ->
+  #   name = 'map'
+  #   state = baseState name, overrides
+  #   appendTemplateProvider name, state
+  #   createView name, state, 'main-map'
+  #
+  #   # Set the page type
+  #   state.pageType = 'map'
+  #
+  #   $stateProvider.state(state)
+  #   state
 
   buildModalState = (name, overrides = {}) ->
     state = baseState name, overrides
@@ -70,7 +72,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       createView name, state, 'main-page'
 
     # Set the page type
-    state.pageType = 'page'
+    state.pageType = state.pageType or 'page'#could already be set from overrides
 
     $stateProvider.state(state)
     state
@@ -84,7 +86,18 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     state
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
-  buildMapState
+  # buildMapState
+  #   sticky: true,
+  #   reloadOnSearch: false,
+  #   params:
+  #     project_id:
+  #       value: null
+  #       squash: true
+  #     property_id:
+  #       value: null
+  #       squash: true
+
+  buildState 'map',
     sticky: true,
     reloadOnSearch: false,
     params:
@@ -124,8 +137,8 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       showSteps: true
 
   buildState 'snail'
-  buildState 'user'
-  buildState 'profiles'
+  buildState 'user', profileRequired: false
+  buildState 'profiles', profileRequired: false
   buildState 'history'
   buildState 'properties'
   buildModalState 'property', page: { title: 'Property Detail' }

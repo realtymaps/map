@@ -1,34 +1,35 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnService) ->
-  {eachLayerModel} = rmapsDrawnService
+app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService) ->
+  {eachLayerModel} = rmapsDrawnUtilsService
   $log = $log.spawn("map:rmapsMapDrawHandlesFactory")
 
   _makeDrawKeys = (handles) ->
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
   return (opts) ->
-    {drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb} = opts
+    {drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, create} = opts
     _makeDrawKeys
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
         geojson = layer.toGeoJSON()
 
-        drawnShapesSvc?.create(geojson).then ({data}) ->
+        promise = create or drawnShapesSvc?.create
+        promise(geojson).then ({data}) ->
           newId = data
           layer.model =
             properties:
               id: newId
-          commonPostDrawActions()
+          commonPostDrawActions(layer.model)
       edited: ({layers}) ->
         eachLayerModel layers, (model) ->
           drawnShapesSvc?.update(model).then ->
-            commonPostDrawActions()
+            commonPostDrawActions(model)
       deleted: ({layers}) ->
         eachLayerModel layers, (model) ->
           drawnShapesSvc?.delete(model).then ->
-            commonPostDrawActions()
+            commonPostDrawActions(model)
       drawstart: ({layerType}) ->
         announceCb('Draw on the map to query polygons and shapes','Draw')
       drawstop: ({layerType}) ->

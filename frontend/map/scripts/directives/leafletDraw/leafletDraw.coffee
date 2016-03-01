@@ -1,8 +1,7 @@
 ###globals L, angular###
-app = require '../app.coffee'
-template = require './leafletDraw/leafletDraw.jade'
-LeafletDrawApi = require './leafletDraw/api.draw.js'
-
+app = require '../../app.coffee'
+template = require './leafletDraw.jade'
+LeafletDrawApi = require './api.draw.js'
 
 app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout, leafletIterators,
 rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
@@ -47,6 +46,22 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
       throw new Error 'mappromise required'
 
     scope.mappromise.then (map) ->
+
+      _attachEvents = () ->
+        return if !scope.events
+
+        leafletIterators.each scope.events, (handle, eventName) ->
+          map.on eventName, handle
+
+      _cleanUpEvents = (events) ->
+        return if !events
+
+        leafletIterators.each events, (handle, eventName) ->
+          map.off eventName
+
+      scope.$watchCollection 'events', (newVal, oldVal) ->
+        _cleanUpEvents(oldVal)
+        _attachEvents()
 
       _create = () ->
 
@@ -100,9 +115,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           _enableHandle editModeHandles?.remove, scope
           scope.canSave = true
 
-        if scope.events
-          leafletIterators.each scope.events, (handle, eventName) ->
-            map.on eventName, handle
+        _attachEvents()
 
         scope.disable = () ->
           _currentHandler?.disable()
@@ -123,9 +136,8 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           if _featureGroup
             map.removeLayer _featureGroup
 
-          if scope.events
-            leafletIterators.each scope.events, (handle, eventName) ->
-              map.off eventName
+            _cleanUpEvents()
+
           drawControl?.onRemove()
           drawControl = null
 

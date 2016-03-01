@@ -45,7 +45,6 @@ app.factory 'rmapsMapFactory',
       $scope.Toggles = toggles
 
     class Map extends rmapsBaseMapFactory
-      baseIsLoaded = false
 
       constructor: ($scope) ->
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
@@ -56,7 +55,7 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        leafletData.getMap('mainMap').then (map) =>
+        leafletData.getMap('mainMap').then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
