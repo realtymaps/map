@@ -41,7 +41,7 @@
                   .col-md-2
                     p Status:
                   .col-md-10
-                    span(class="{{wizard.mail.campaign.status}}") {{wizard.mail.campaign.status}}
+                    span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
 
               .col-md-2
                  button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit

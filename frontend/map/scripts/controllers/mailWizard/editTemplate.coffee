@@ -46,18 +46,34 @@ app.controller 'rmapsEditTemplateCtrl',
   $scope.$watch 'wizard.mail.campaign.content', $scope.saveContent
 
   $scope.animationsEnabled = true
+
   $scope.doPreview = () ->
-    modalInstance = $modal.open
-      animation: $scope.animationsEnabled
-      template: modalTemplate
-      controller: 'rmapsMailTemplatePdfPreviewCtrl'
-      openedClass: 'preview-mail-opened'
-      windowClass: 'preview-mail-window'
-      windowTopClass: 'preview-mail-windowTop'
-      resolve:
-        template: () ->
-          lobData: $scope.wizard.mail.getLobData()
-          title: 'Mail Preview'
+    $scope.wizard.mail.save()
+    .then () ->
+      $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'rmapsMailTemplatePdfPreviewCtrl'
+        openedClass: 'preview-mail-opened'
+        windowClass: 'preview-mail-window'
+        windowTopClass: 'preview-mail-windowTop'
+        resolve:
+          template: () ->
+            campaign: $scope.wizard.mail.campaign
+            title: 'Mail Preview'
+
+  $scope.quoteAndSend = () ->
+    $scope.wizard.mail.save()
+    .then () ->
+      $modal.open
+        template: require('../../../html/views/templates/modal-snailPrice.tpl.jade')()
+        controller: 'rmapsModalSnailPriceCtrl'
+        keyboard: false
+        backdrop: 'static'
+        windowClass: 'snail-modal'
+        resolve:
+          template: () ->
+            campaign: $scope.wizard.mail.campaign
 
   $rootScope.registerScopeData () ->
     $scope.ready()

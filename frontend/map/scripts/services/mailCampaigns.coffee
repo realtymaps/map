@@ -7,7 +7,6 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce) ->
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
   get: (query) ->
-    $log.debug -> "GET query:\n#{JSON.stringify query}"
     $http.get mailAPI, cache: false, params: query
     .then ({data}) ->
       data
@@ -23,7 +22,6 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce) ->
       data
 
   create: (entity) ->
-    $log.debug -> "CREATE entity:\n#{JSON.stringify entity}"
     $http.post mailAPI, entity
 
   remove: (id) ->
