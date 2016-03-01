@@ -45,7 +45,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
             phone: identity.user.work_phone
             email: identity.user.email
 
-    createLobHtml: (content, extraStyles = "") ->
+    createLobHtml: (content = @campaign.content, extraStyles = "") ->
       fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
       classStyles = (require '../../styles/mailTemplates/template-classes.styl').replace(/\n/g,'')
       "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
@@ -73,7 +73,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
       .then () =>
         toSave = _.pick @campaign, _.keys(campaignDefaults)
         toSave.recipients = JSON.stringify toSave.recipients
-        toSave.lob_content = @createLobHtml(@campaign.content)
+        toSave.lob_content = @createLobHtml()
 
         if profile = rmapsPrincipalService.getCurrentProfile()
           toSave.project_id = profile.project_id
