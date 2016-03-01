@@ -25,6 +25,7 @@ describe 'mailTemplate service', ->
         status: 'ready'
         content: null
         template_type: ''
+        lob_content: null
         sender_info: null
         recipients: []
 
