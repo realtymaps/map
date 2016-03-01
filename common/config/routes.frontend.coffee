@@ -22,8 +22,6 @@ module.exports =
   notes:          'notes'
   favorites:      'favorites'
   addProjects:    'addProjects'
-  sendEmailModal: 'sendEmailModal'
-  createNewEmail: 'newEmail'
   onboarding:     'onboarding'
   onboardingPlan: '/plan'
 
