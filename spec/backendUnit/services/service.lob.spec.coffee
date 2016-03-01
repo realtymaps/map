@@ -16,7 +16,7 @@ mockAuthUser =
   stripe_customer_id: 'cus_7r3jpOU0t3LQ9k'
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
-mockPdfCampaign = _.extend {}, mockCampaign, content_url: 'https://s3-us-west-2.amazonaws.com/lob-assets/letter-goblue.pdf'
+mockPdfCampaign = _.extend {}, mockCampaign, aws_key: 'asdf.pdf'
 mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
@@ -132,7 +132,7 @@ describe "service.lob", ->
         @tables.mail.letters().insertSpy.callCount.should.equal 1
         @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
-        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockPdfCampaign.content_url
+        @tables.mail.letters().insertSpy.args[0][0][0].file.should.contain mockPdfCampaign.aws_key
 
         @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal false
 

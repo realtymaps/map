@@ -15,6 +15,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     lob_content: null
     sender_info: null
     recipients: []
+    aws_key: null
 
   class MailTemplateFactory
     constructor: () ->

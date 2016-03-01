@@ -28,6 +28,7 @@ describe 'mailTemplate service', ->
         lob_content: null
         sender_info: null
         recipients: []
+        aws_key: null
 
       actual = @template.campaign
       expect(actual).to.eql expected

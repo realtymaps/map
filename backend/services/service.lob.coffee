@@ -108,7 +108,7 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire
@@ -195,14 +195,17 @@ queueLetters = (campaign, tx) ->
   .insert _.map campaign.recipients, (recipient) ->
     buildLetter campaign, recipient
 
+buildS3Url = (key) ->
+  return "http://s3.url.example.com/uploads/#{key}"
+
 buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
 
   # If this letter is a pdf, template must be set to false so the address is on a separate page
-  if campaign.content_url
+  if campaign.aws_key
     template = false
-    file = campaign.content_url
+    file = buildS3Url campaign.aws_key
   else
     file = campaign.lob_content
 
@@ -240,7 +243,7 @@ buildLetter = (campaign, recipient) ->
 
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->

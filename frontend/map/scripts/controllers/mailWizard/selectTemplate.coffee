@@ -6,7 +6,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 module.exports = app
 
 app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload,
-  rmapsMailTemplateTypeService, rmapsMailTemplateService, rmapsMainOptions) ->
+  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
@@ -41,6 +41,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       file.upload.then (response) ->
         $timeout () ->
           file.result = response.data
+          $scope.wizard.mail.campaign.aws_key = key
+          $scope.wizard.mail.save()
 
       , (response) ->
         if (response.status > 0)
