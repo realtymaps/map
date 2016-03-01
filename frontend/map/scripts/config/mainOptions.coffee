@@ -51,8 +51,9 @@ app.constant 'rmapsMainOptions', do () ->
         name: '{{name}}'
       s3_upload:
         AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
-        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwgICJjb25kaXRpb25zIjogWyAgICAgeyJidWNrZXQiOiAicm1hcHMtcGRmLXVwbG9hZHMifSwgICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cG' +
-          'xvYWRzLyJdLCAgICB7ImFjbCI6ICJwcml2YXRlIn0sICAgIFsic3RhcnRzLXdpdGgiLCAiJENvbnRlbnQtVHlwZSIsICJhcHBsaWNhdGlvbi9wZGYiXSwgICAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdICBdfQ=='
-        signature: 'OLaTihvJce9+2waEaPIGdi8T588='
+        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgICB7ImJ1Y2tldCI6ICJybWFwcy1wZG' +
+          'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +
+          'FydHMtd2l0aCIsICIkQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL3BkZiJdLAogICAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
+        signature: 'wvcT2Cp1Qb6a2XI59tr/vwjN1Vs='
 
   res

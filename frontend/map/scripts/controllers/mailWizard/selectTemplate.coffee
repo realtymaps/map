@@ -16,7 +16,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
     $scope.f = file
     $scope.errFile = errFiles && errFiles[0]
-    key = "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}"
+    key = "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
 
     console.log "s3_upload creds:"
     console.log "#{JSON.stringify(rmapsMainOptions.mail.s3_upload, null, 2)}"
