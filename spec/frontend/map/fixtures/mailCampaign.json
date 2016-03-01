@@ -9,9 +9,10 @@
   "name": "Test Mailing",
   "count": 0,
   "status": "pending",
-  "content": "<head></head><body><div class=\"letter-page\"><p>Content</p></div></body>",
+  "content": "<div class=\"letter-page\"><p>Content</p></div>",
   "template_type": "basicLetter",
-  "lob_content": null,
+  "lob_content": "<head></head><body><div class=\"letter-page\"><p>Content</p></div></body>",
+  "content_url": null,
   "sender_info": {
     "first_name": "Fname",
     "last_name": "Lname",

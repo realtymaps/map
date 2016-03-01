@@ -75,7 +75,7 @@ describe "service.lob", ->
         @tables.mail.letters().insertSpy.callCount.should.equal 1
         @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
-        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.content
+        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.lob_content
 
         @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal true
 

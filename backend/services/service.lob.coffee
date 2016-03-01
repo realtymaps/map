@@ -108,7 +108,7 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'content', 'content_url', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire
@@ -154,13 +154,12 @@ sendCampaign = (campaignId, userId) ->
 
         dbs.transaction 'main', (tx) ->
 
-          amount = price * campaign.recipients.length
-          logger.debug "Creating $#{amount.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
+          logger.debug "Creating $#{price.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
 
           payment.customers.charge
             customer: stripe_customer_id
             source: stripeCustomer.default_source
-            amount: amount
+            amount: price
             capture: false # funds held but not actually charged until letters are sent to LOB
             description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
             ,
@@ -199,14 +198,13 @@ queueLetters = (campaign, tx) ->
 buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
-  file = campaign.content_url || campaign.content
 
   # If this letter is a pdf, template must be set to false so the address is on a separate page
   if campaign.content_url
     template = false
     file = campaign.content_url
   else
-    file = campaign.content
+    file = campaign.lob_content
 
   letter =
     auth_user_id: campaign.auth_user_id
@@ -242,7 +240,7 @@ buildLetter = (campaign, recipient) ->
 
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'content', 'content_url', 'status', 'sender_info', 'recipients')
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
