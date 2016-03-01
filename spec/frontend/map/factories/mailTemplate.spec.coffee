@@ -21,16 +21,13 @@ describe 'mailTemplate service', ->
       expected =
         id: null
         auth_user_id: null
-        lob_batch_id: null
         name: 'New Mailing'
-        count: 0
-        status: 'pending'
+        status: 'ready'
         content: null
         template_type: ''
         lob_content: null
         sender_info: null
         recipients: []
-        submitted: null
 
       actual = @template.campaign
       expect(actual).to.eql expected
@@ -64,12 +61,8 @@ describe 'mailTemplate service', ->
         name: 'Fname Lname'
 
       @template.campaign = campaignFixture
-      actual = @template.getLobData()
-
-      expect(actual.campaign).to.eql campaignFixture
-      expect(actual.file).to.contain '<div class="letter-page"><p>Content</p></div></body>'
-      expect(actual.recipients).to.eql lobRecipients
-      expect(actual.from).to.eql lobFrom
+      expect(@template.campaign.content).to.contain '<div class="letter-page"><p>Content</p></div>'
+      expect(@template.createLobHtml()).to.contain '<body class=\'letter-body\'><div class=\"letter-page\"><p>Content</p></div></body>'
 
     it 'returns correct template category', ->
       @template.campaign = campaignFixture

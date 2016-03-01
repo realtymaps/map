@@ -58,10 +58,10 @@ generateErrorHandler = (actionMsg) ->
 
 module.exports =
   quote:
-    method: 'post'
+    method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) -> Promise.try () ->
-      lobService.getPriceQuote req.user.id, req.body
+      lobService.getPriceQuote req.user.id, req.params.campaign_id
       .then (response) ->
         new ExpressResponse(response)
       .catch generateErrorHandler('get a price quote for that mailing')

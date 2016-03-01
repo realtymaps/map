@@ -4,7 +4,7 @@ backendRoutes = require '../../../../../common/config/routes.backend.coffee'
 httpStatus = require '../../../../../common/utils/httpStatus.coffee'
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 
-app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location, $log, lobData) ->
+app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $location, $log, template) ->
 
   $scope.$interpolate = $interpolate
   $scope.modalControl = {}
@@ -24,30 +24,30 @@ app.controller 'rmapsModalSnailPriceCtrl', ($scope, $http, $interpolate, $locati
   $scope.lteCurrentStatus = (message) ->
     return message.status <= $scope.modalControl.status
 
-  handlePost = (postParams...) ->
-    $http.post(postParams...)
-    .error (data, status) ->
-      if data?.errmsg
-        $scope.messages.push
-          status: $scope.statuses.error
-          text: data.errmsg.text
-          troubleshooting: data.errmsg.troubleshooting
-      else
-        $scope.messages.push
-          status: $scope.statuses.error
-          text: commonConfig.UNEXPECTED_MESSAGE()
-          troubleshooting: JSON.stringify(status:status||null, data:data||null)
+  onError = (data, status) ->
+    if data?.errmsg
+      $scope.messages.push
+        status: $scope.statuses.error
+        text: data.errmsg.text
+        troubleshooting: data.errmsg.troubleshooting
+    else
+      $scope.messages.push
+        status: $scope.statuses.error
+        text: commonConfig.UNEXPECTED_MESSAGE()
+        troubleshooting: JSON.stringify(status:status||null, data:data||null)
 
   $scope.modalControl.status = $scope.statuses.fetching
 
-  handlePost(backendRoutes.snail.quote, lobData, alerts:false)
+  $http.get("/api/snail/quote/#{template.campaign.id}", alerts:false)
+  .error onError
   .success (data) ->
     $scope.messageData.price = data.price
     $scope.modalControl.status = $scope.statuses.asking
 
   $scope.send = () ->
     $scope.modalControl.status = $scope.statuses.sending
-    handlePost("/api/snail/send/#{lobData.campaign.id}", lobData, alerts:false)
+    $http.post("/api/snail/send/#{template.campaign.id}", {}, alerts:false)
+    .error onError
     .success () ->
       $scope.modalControl.status = $scope.statuses.sent
 

@@ -72,6 +72,8 @@ createLetter = (letter) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+    letter.to = letter.address_to
+    letter.from = letter.address_from
 
     if config.ENV != 'production'
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
@@ -87,6 +89,8 @@ createLetterTest = (letter) ->
     _.defaultsDeep letter, LOB_LETTER_DEFAULTS
 
     letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+    letter.to = letter.address_to
+    letter.from = letter.address_from
 
     logger.debug () -> "createLetterTest() #{JSON.stringify letter, null, 2}"
     lob.test.letters.create _.pick(letter, LOB_LETTER_FIELDS)
@@ -104,10 +108,10 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'content', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
-    payment: paymentSvc or require('./services.payment')
+    payment: paymentSvc or require('./services.payment') # allows rewire
 
   })
 
@@ -140,26 +144,22 @@ sendCampaign = (campaignId, userId) ->
     .then (stripeCustomer) ->
 
       logger.debug "Checking price to send campaign #{campaign.id} on behalf of user #{userId}"
-      getPriceQuote userId,
-        file: campaign.content
-        from: _getAddress campaign.sender_info
-        recipients: campaign.recipients.slice 0, 1
+      getPriceQuote userId, campaign.id
 
       .catch isUnhandled, (err) ->
 
         throw new PartiallyHandledError(err, "Could not get price quote for campaign #{campaign.id}")
 
-      .then (pricePerLetter) ->
+      .then ({price}) ->
 
         dbs.transaction 'main', (tx) ->
 
-          amount = pricePerLetter * campaign.recipients.length
-          logger.debug "Creating $#{amount.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
+          logger.debug "Creating $#{price.toFixed(2)} CC hold on default card for customer #{stripe_customer_id}"
 
           payment.customers.charge
             customer: stripe_customer_id
             source: stripeCustomer.default_source
-            amount: amount
+            amount: price
             capture: false # funds held but not actually charged until letters are sent to LOB
             description: "Mail Campaign \"#{campaign.name}\"" # Included in reciept emails
             ,
@@ -193,16 +193,28 @@ sendCampaign = (campaignId, userId) ->
 queueLetters = (campaign, tx) ->
   tables.mail.letters(transaction: tx)
   .insert _.map campaign.recipients, (recipient) ->
-    address_to = _getAddress recipient
-    address_from = _getAddress campaign.sender_info
+    buildLetter campaign, recipient
 
+buildLetter = (campaign, recipient) ->
+  address_to = _getAddress recipient
+  address_from = _getAddress campaign.sender_info
+
+  # If this letter is a pdf, template must be set to false so the address is on a separate page
+  if campaign.content_url
+    template = false
+    file = campaign.content_url
+  else
+    file = campaign.lob_content
+
+  letter =
     auth_user_id: campaign.auth_user_id
     user_mail_campaign_id: campaign.id
     address_to: address_to
     address_from: address_from
-    file: campaign.content
+    file: file
     status: 'ready'
     options:
+      template: template
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
@@ -222,19 +234,25 @@ queueLetters = (campaign, tx) ->
         sender_state: address_from.address_state
         sender_zip: address_from.address_zip
 
-getPriceQuote = (userId, data) ->
-  lobPromise()
-  .then (lob) ->
-    throw new Error("recipients must be an array") unless _.isArray data?.recipients
-    Promise.map data.recipients, (recipient) ->
-      letter = _.clone data
-      letter.to = _getAddress recipient
-      createLetterTest letter
-  .then (lobResponses) ->
-    res =
-      pdf: lobResponses[0].url
-      price: _.reduce (_.pluck lobResponses, 'price'), (total, price) ->
-        total + Number(price)
+  _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
+
+  letter
+
+getPriceQuote = (userId, campaignId) ->
+  tables.mail.campaign()
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
+    .where(id: campaignId, auth_user_id: userId)
+
+  .then ([campaign]) ->
+    throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
+
+    letter = buildLetter campaign, campaign.recipients[0]
+    createLetterTest letter
+
+    .then (lobResponse) ->
+      res =
+        pdf: lobResponse.url
+        price: lobResponse.price * campaign.recipients.length
 
 getDetails = (lobId) ->
   lobPromise()
