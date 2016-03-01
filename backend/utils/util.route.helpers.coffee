@@ -30,7 +30,13 @@ mergeHandles = (handles, config) ->
       handle: unless config[key].handle? then handles[key] else handles[config[key].handle]
   config
 
-handleQuery = (q, res) ->
+handleQuery = (q, res, lHandleQuery) ->
+  if lHandleQuery == false
+    return q
+
+  if _.isFunction lHandleQuery
+    return lHandleQuery(q)
+
   #if we have a stream avail pipe it
   if q?.stringify? and _.isFunction q.stringify
     return q.stringify().pipe(res)

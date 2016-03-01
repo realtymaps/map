@@ -44,50 +44,6 @@ then
 fi
 
 
-# we don't want to set any heroku settings we don't have to, because that triggers an app restart
-queueHerokuSetting () {
-    SETTING_NAME=$1
-    DESIRED_VALUE=$2
-
-    echo "PUSH_TO: checking value of Heroku setting: $SETTING_NAME"
-
-    CURRENT_SETTING=`$SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT get $SETTING_NAME`
-    if [[ "$CURRENT_SETTING" != "$DESIRED_VALUE" ]]
-    then
-        echo "PUSH_TO: current value is '$CURRENT_SETTING', changing to '$DESIRED_VALUE'"
-        HEROKU_SETTINGS="$HEROKU_SETTINGS $SETTING_NAME=$DESIRED_VALUE"
-    else
-        echo "PUSH_TO: current value is correct ('$CURRENT_SETTING')"
-    fi
-}
-
-setQueuedHerokuSettings () {
-    if [[ "$HEROKU_SETTINGS" != "" ]]
-    then
-        echo "PUSH_TO: setting config values: $HEROKU_SETTINGS"
-        $SCRIPT_DIR/environmentNormalization/herokuCli $PROJECT set $HEROKU_SETTINGS
-    fi
-}
-
-
-# pre-push tasks
-if [[ "$SERVICE" == "heroku" ]]
-then
-    HEROKU_SETTINGS=""
-    queueHerokuSetting "IS_HEROKU" "1"
-
-    if [[ "$CIRCLE_PROJECT_USERNAME" == "realtymaps" ]]
-    then
-        # this is a prod push
-        queueHerokuSetting "NODE_ENV" "production"
-    else
-        # this is a staging push
-        queueHerokuSetting "NODE_ENV" "staging"
-    fi
-
-    setQueuedHerokuSettings
-fi
-
 
 # do the push
 echo "PUSH_TO: pushing to ${SERVICE}"

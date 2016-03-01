@@ -3,16 +3,23 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsCampaignInfoCtrl', ($rootScope, $scope, rmapsUsStatesService, rmapsMailTemplateService) ->
+app.controller 'rmapsCampaignInfoCtrl', ($rootScope, $scope, $log, $validation, rmapsUsStatesService) ->
+
+  $log = $log.spawn 'frontend:mail:campaignInfo'
   $scope.us_states = []
 
+  $log.debug $validation.checkValid
+  $scope.form =
+    checkValid: $validation.checkValid
+    submit: ->
+      $log.debug 'campaign info valid'
+
   $rootScope.registerScopeData () ->
-    $scope.$parent.initMailTemplate()
+    $scope.ready()
     .then () ->
-      rmapsMailTemplateService.getSenderData()
+      $scope.wizard.mail.getSenderData()
       .then (senderData) ->
         $scope.senderData = senderData
-        $scope.campaign = rmapsMailTemplateService.getCampaign()
 
       rmapsUsStatesService.getAll().then (states) ->
         $scope.us_states = states

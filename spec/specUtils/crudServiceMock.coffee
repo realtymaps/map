@@ -8,49 +8,61 @@ SqlMock = require './sqlMock'
 #wraps a crud instance to return all db functions as sql query or a sql payload object
 #TODO: Overwrite @dbFn with SqlMock
 toTestableCrudInstance = (crudInstance, mockResponse, doRetAsPromise, doLog) ->
-  if doLog
-    logger.debug '\n\narguments:'
-    logger.debug "crudInstance.dbFn.tableName: #{crudInstance.dbFn.tableName}"
-    logger.debug "mockResponse: #{JSON.stringify(mockResponse)}"
-    logger.debug "doRetAsPromise: #{doRetAsPromise}"
-    logger.debug 'crudInstance.dbFn() instanceof SqlMock?'
-    logger.debug crudInstance.dbFn() instanceof SqlMock
+  _initLogger = logger.spawn("init")
+  _initLogger.debug '\n\narguments:'
+  _initLogger.debug "crudInstance.dbFn.tableName: #{crudInstance.dbFn.tableName}"
+  _initLogger.debug "mockResponse: #{JSON.stringify(mockResponse)}"
+  _initLogger.debug "doRetAsPromise: #{doRetAsPromise}"
+  _initLogger.debug 'crudInstance.dbFn() instanceof SqlMock?'
+  _initLogger.debug crudInstance.dbFn() instanceof SqlMock
 
   for fnName in dbFnCalls
     do (fnName) ->
       origFn = crudInstance[fnName]
       stub = crudInstance[fnName + 'Stub'] = sinon.stub()
+      if crudInstance?.logger?.namespace
+        fnNameLog = logger.spawn("#{fnName}:#{crudInstance.logger.namespace}")
+      else
+        fnNameLog = logger.spawn(fnName)
       stub.sqls = []
       crudInstance[fnName] = () ->
         potentialKnexPromise = origFn.apply(crudInstance, arguments)
         maybeSql = potentialKnexPromise.toString()
 
-        if doLog
-          logger.debug "\n\n#{fnName}: maybeSql, potentialKnexPromise:"
-          logger.debug maybeSql
-          logger.debug potentialKnexPromise
+
+        fnNameLog.debug "\n\n#{fnName}: maybeSql, potentialKnexPromise:"
+        fnNameLog.debug maybeSql
+        fnNameLog.debug potentialKnexPromise
 
         if maybeSql != "[object Promise]"
           calledSql = maybeSql
 
         unless mockResponse?[fnName]
-          if doLog
-            logger.debug "\n\nreturning stub calledSql:"
-            logger.debug calledSql
+          fnNameLog.debug "\n\nreturning stub calledSql:"
+          fnNameLog.debug calledSql
           stub.returns(calledSql)
           return stub(arguments...)
 
         resp = mockResponse[fnName]
         stub.sqls.push calledSql
-        if doLog
-          logger.debug '\n\nstub.sqls, mockResponse, resp, fnName:'
-          logger.debug stub.sqls
-          logger.debug "mockResponse[#{fnName}]"
-          logger.debug resp, true
-          logger.debug fnName
+
+        stubLogger = fnNameLog.spawn("stub")
+        stubLogger.debug '\n\nstub.sqls, mockResponse, resp, fnName:'
+        stubLogger.debug stub.sqls
+        stubLogger.debug "mockResponse[#{fnName}]"
+        stubLogger.debug resp, true
+        stubLogger.debug fnName
+
         stub.returns(resp)
         resp =  stub(arguments...)
-        return Promise.resolve resp if doRetAsPromise
+
+        if doRetAsPromise
+          fnNameLog.debug "doRetAsPromise"
+          fnNameLog.debug resp
+          return Promise.resolve resp
+
+        fnNameLog.debug "resp"
+        fnNameLog.debug resp
         resp
 
   crudInstance.resetStubs = (doLog, stubNameToLog) ->

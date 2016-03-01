@@ -1,3 +1,20 @@
+.mail-wizard-steps
+  header.send-progress(ng-hide="hideProgress()")
+    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
+    div.pathway
+      ul
+        li
+          span Recipients
+        li
+          span Campaign Info
+        li.active
+          span Select Template
+        li
+          span Edit Template
+        li
+          span Review
+
 .select-template
   .inner
     .container
@@ -22,5 +39,5 @@
                 .tmpl-item(ng-click="selectTemplate($index)")
                   .tmpl-data
                     h3.tmpl-title {{template.name}}
-                    img.tmpl-image(src="{{template.thumb}}" ng-class="{'selected':campaign.template_type == template.type}")
+                    img.tmpl-image(ng-src="{{template.thumb}}" ng-class="{'selected':wizard.mail.campaign.template_type == template.type}")
                 .btn(ng-click="previewTemplate(template)") Preview
