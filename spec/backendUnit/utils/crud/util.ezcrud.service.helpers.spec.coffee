@@ -5,6 +5,7 @@ SqlMock = require '../../../specUtils/sqlMock'
 ServiceCrud = require "#{basePath}/utils/crud/util.ezcrud.service.helpers"
 {expect} = require 'chai'
 require('chai').should()
+dbs = require("#{basePath}/config/dbs")
 
 describe 'util.ezcrud.service.helpers', ->
 
@@ -27,27 +28,28 @@ describe 'util.ezcrud.service.helpers', ->
       (-> new ServiceCrud()).should.throw()
 
     it 'returns correct upsert query string', ->
-      expectedSql = "INSERT INTO temp_table (id,lorem) VALUES ( 1 , 'ipsum''s' ) ON CONFLICT (id) DO UPDATE SET (lorem) = ( 'ipsum''s' ) RETURNING id"
+      # it's not SQL standard, but \' is acceptable to postgres: http://www.postgresql.org/docs/9.4/interactive/sql-syntax-lexical.html#SQL-SYNTAX-CONSTANTS
+      expectedSql = """INSERT INTO "temp_table" ("id", "lorem") VALUES ('1', 'ipsum\\'s') ON CONFLICT ("id") DO UPDATE SET ("lorem") = ('ipsum\\'s') RETURNING "id" """
       ids =
         id: 1
       entity =
         lorem: "ipsum's"
       tableName = 'temp_table'
-      qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      expect(qstr.trim()).to.equal expectedSql
+      query = ServiceCrud.getUpsertQueryString ids, entity, tableName
+      expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
 
-    it 'returns correct upsert query string with null pk', ->
-      expectedSql = "INSERT INTO temp_table (id,lorem) VALUES ( DEFAULT , 'ipsum''s' ) ON CONFLICT (id) DO UPDATE SET (lorem) = ( 'ipsum''s' ) RETURNING id"
+    it 'returns correct upsert query string with null pk and null values', ->
+      expectedSql = """INSERT INTO "temp_table" ("id", "lorem") VALUES (DEFAULT, NULL) ON CONFLICT ("id") DO UPDATE SET ("lorem") = (NULL) RETURNING "id" """
       ids =
         id: null
       entity =
-        lorem: "ipsum's"
+        lorem: null
       tableName = 'temp_table'
-      qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      expect(qstr.trim()).to.equal expectedSql
+      query = ServiceCrud.getUpsertQueryString ids, entity, tableName
+      expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
 
     it 'returns correct upsert query string with objects and json', ->
-      expectedSql = """INSERT INTO temp_table (id_one,id_two,lorem,some_json,an_array) VALUES ( DEFAULT, DEFAULT , 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) ON CONFLICT (id_one,id_two) DO UPDATE SET (lorem,some_json,an_array) = ( 'ipsum''s',  '{"one":1,"two":["spec''s","array","of","strings"]}',  '[1,2,3]' ) RETURNING id_one,id_two""".replace(/\n/g,'')
+      expectedSql = """INSERT INTO "temp_table" ("id_one", "id_two", "lorem", "some_json", "an_array") VALUES (DEFAULT, DEFAULT, 'ipsum\\'s', '{\\"one\\":1,\\"two\\":[\\"spec\\'s\\",\\"array\\",\\"of\\",\\"strings\\"]}', '[1,2,3]') ON CONFLICT ("id_one", "id_two") DO UPDATE SET ("lorem", "some_json", "an_array") = ('ipsum\\'s', '{\\"one\\":1,\\"two\\":[\\"spec\\'s\\",\\"array\\",\\"of\\",\\"strings\\"]}', '[1,2,3]') RETURNING "id_one", "id_two" """.replace(/\n/g,'')
 
       ids =
         id_one: null
@@ -57,8 +59,8 @@ describe 'util.ezcrud.service.helpers', ->
         some_json: {'one': 1, 'two':["spec's", "array", "of", "strings"]}
         an_array: [1, 2, 3]
       tableName = 'temp_table'
-      qstr = ServiceCrud.getUpsertQueryString ids, entity, tableName
-      expect(qstr.trim()).to.equal expectedSql
+      query = ServiceCrud.getUpsertQueryString ids, entity, tableName
+      expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
 
     it 'gets id obj', ->
       idObj = @serviceCrud._getIdObj(@query)

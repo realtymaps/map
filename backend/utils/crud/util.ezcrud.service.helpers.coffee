@@ -44,7 +44,7 @@ class ServiceCrud extends BaseObject
 
     sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
     bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
-    
+
 
   # helpers for query / id mgmt
   _getIdObj: (sourceObj) ->

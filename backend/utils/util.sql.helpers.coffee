@@ -3,7 +3,7 @@ coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
 logger = require('../config/logger').spawn('backend:utils:sql.helpers')
-connectionlessKnex = require('knex')(client: 'pg')
+dbs = require("../config/dbs")
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -190,14 +190,16 @@ buildRawBindings = (obj, opts={}) ->
   valBindings = []
   for k,v of obj
     colPlaceholders.push('??')
-    colBindings.push(JSON.stringify(k))
+    colBindings.push(k)
     valPlaceholders.push('?')
-    if v?
+    if _.isObject(v)
       valBindings.push(JSON.stringify(v))
+    else if v?
+      valBindings.push(v)
     else if opts.defaultNulls
-      valBindings.push(connectionlessKnex.raw('DEFAULT'))
+      valBindings.push(dbs.connectionless.raw('DEFAULT'))
     else
-      valBindings.push(connectionlessKnex.raw('NULL'))
+      valBindings.push(dbs.connectionless.raw('NULL'))
   cols:
     placeholder: colPlaceholders.join(', ')
     bindings: colBindings
