@@ -39,8 +39,10 @@ fi
 
 
 export LOG_LEVEL='warn'
-SQL_COMMAND=`foreman run coffee --eval "require('./backend/services/service.externalAccounts').${ACTION_TYPE}AccountInfo(${ACTION_TARGET}, {logOnly: true}).then (result) -> process.exit(0)"`
-echo "SQL command: ${SQL_COMMAND//\"/}"
+SQL_COMMAND=`foreman run coffee --eval "require('./backend/services/service.externalAccounts').${ACTION_TYPE}AccountInfo('''${ACTION_TARGET}''', {logOnly: true}).then (result) -> process.exit(0)"`
+# handle bad knex escaping
+SQL_COMMAND=${SQL_COMMAND//\\"/"}
+echo "SQL command: $SQL_COMMAND"
 
 
 for app in $DB_TARGETS
