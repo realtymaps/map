@@ -25,7 +25,7 @@
             |  Review
       .row.review-items
         .pdf-review(ng-show="details.pdf != null")
-          embed(embed-src="{{details.pdf}}" src="{{details.pdf}}")
+          embed(embed-src="{{details.pdf}}" src="")
         div(ng-class="{'content-with-pdf-review': details.pdf != null}")
           .col-md-12
             .row.separator
@@ -36,29 +36,29 @@
                   .col-md-2
                     p Name:
                   .col-md-10
-                    p {{templObj.mailCampaign.name}}
+                    p {{wizard.mail.campaign.name}}
                 .row
                   .col-md-2
                     p Status:
                   .col-md-10
-                    span(class="{{templObj.mailCampaign.status}}") {{templObj.mailCampaign.status}}
+                    span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
 
               .col-md-2
-                 button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="campaignInfo({id:templObj.mailCampaign.id})") edit
+                 button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit
 
             .row.separator.recipients
               .col-md-10
                 .row
                   h2 Recipients
                 .row
-                  p(ng-click="showAddresses(templObj.mailCampaign.recipients)" ng-show="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
-                    when="{'0': 'No recipients were selected for this mailing.', '1': 'Mailing was sent to 1 recipient.', 'other': 'Mailing was sent to {{templObj.mailCampaign.recipients.length}} recipients.'}")
+                  p(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-show="sentFlag" ng-pluralize count="wizard.mail.campaign.recipients.length"
+                    when="{'0': 'No recipients were selected for this mailing.', '1': 'Mailing was sent to 1 recipient.', 'other': 'Mailing was sent to {{wizard.mail.campaign.recipients.length}} recipients.'}")
 
-                  p(ng-click="showAddresses(templObj.mailCampaign.recipients)" ng-hide="sentFlag" ng-pluralize count="templObj.mailCampaign.recipients.length"
-                    when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing will be sent to 1 recipient.', 'other': 'Mailing will be sent to {{templObj.mailCampaign.recipients.length}} recipients.'}")
+                  p(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-hide="sentFlag" ng-pluralize count="wizard.mail.campaign.recipients.length"
+                    when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing will be sent to 1 recipient.', 'other': 'Mailing will be sent to {{wizard.mail.campaign.recipients.length}} recipients.'}")
 
               .col-md-2
-                 button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="recipientInfo({id:templObj.mailCampaign.id})") edit
+                 button.btn.btn-primary.review-edit-button(ng-hide="sentFlag" ui-sref="recipientInfo({id:wizard.mail.campaign.id})") edit
 
             .row.separator(ng-show="sentFlag")
               .col-md-12
@@ -73,10 +73,10 @@
                   h2 Price Quote
                 .row
                   .btn.btn-danger(ng-show="priceQuote == null") Refreshing price data...
-                  .btn.btn-danger(ng-show="templObj.mailCampaign.recipients.length == 0") N/A
+                  .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
                   //- p.getting-quote(ng-show="priceQuote == null") Calculating price quote...
                   .btn.btn-success(
-                    ng-hide="priceQuote == null || templObj.mailCampaign.recipients.length == 0"
+                    ng-hide="priceQuote == null || wizard.mail.campaign.recipients.length == 0"
                     tooltip-trigger="mousehover"
                     uib-tooltip="Click to submit this mailing!"
                     tooltip-enable="true"

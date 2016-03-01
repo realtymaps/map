@@ -2,22 +2,22 @@ app = require '../../app.coffee'
 
 
 app.controller 'rmapsMailTemplateIFramePreviewCtrl',
-  ($scope, $modalInstance, $log, $window, $timeout, template, rmapsMailTemplateService, rmapsMailTemplateTypeService) ->
+  ($scope, $modalInstance, $log, $window, $timeout, template) ->
     $scope.template = template
     $scope.mediaType = 'iframe'
     $timeout () ->
-      $window.document.getElementById('mail-preview-iframe').srcdoc = rmapsMailTemplateService.createPreviewHtml(template.content)
+      $window.document.getElementById('mail-preview-iframe').srcdoc = $scope.template.content
 
     $scope.close = () ->
       $modalInstance.dismiss()
 
 
 app.controller 'rmapsMailTemplatePdfPreviewCtrl',
-  ($scope, $modalInstance, $log, $window, $timeout, $sce, template, rmapsMailTemplateService, rmapsLobService) ->
+  ($scope, $modalInstance, $log, $sce, template, rmapsLobService) ->
     $scope.template = template
     $scope.mediaType = 'pdf'
     $scope.processing = true
-    rmapsLobService.getPdf(rmapsMailTemplateService.getLobData())
+    rmapsLobService.getPdf(template.campaign.id)
     .then (pdf) ->
       $scope.template.pdf = $sce.trustAsResourceUrl(pdf)
       $scope.processing = false

@@ -6,6 +6,8 @@ auth = require '../utils/util.auth'
 jobQueue = require '../utils/util.jobQueue'
 userSession =  require '../services/service.userSession'
 ExpressResponse = require '../utils/util.expressResponse'
+logger = require('../config/logger').spawn('jobQueue:manual')
+
 
 class JobCrud extends RouteCrud
   init: () ->
@@ -39,7 +41,7 @@ class JobCrud extends RouteCrud
         next new ExpressResponse alert: msg: "Started #{req.params.name}"
 
     @cancelTask = (req, res, next) ->
-      logger.info("Cancelling task via admin: #{taskName} (requested by #{req.user.username})")
+      logger.info("Cancelling task via admin: #{req.params.name} (requested by #{req.user.username})")
       jobQueue.cancelTask(req.params.name)
       .then () ->
         next new ExpressResponse alert: msg: "Canceled #{req.params.name}"

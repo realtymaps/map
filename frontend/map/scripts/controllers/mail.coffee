@@ -23,5 +23,10 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipa
     .then () ->
       _.remove $scope.mailCampaigns, 'id', campaign.id
 
+  $scope.statusNames =
+    'ready': 'draft'
+    'sending': 'pending'
+    'paid': 'sent'
+
   $rootScope.registerScopeData () ->
     $scope.loadMailCampaigns()

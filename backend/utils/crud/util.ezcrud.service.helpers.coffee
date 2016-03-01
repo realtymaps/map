@@ -38,6 +38,8 @@ class ServiceCrud extends BaseObject
       v = JSON.stringify(v) if _.isObject v
       # use placeholder for single quotes in strings (incl for JSON)
       v = v.replace(/'/g,'__SINGLE_QUOTE__') if _.isString v
+      # use placeholder for question marks in strings
+      v = v.replace(/\?/g,'__QUESTION__') if _.isString v
       entityObj[k] = v
 
     # some string processing to help give us good query values:
@@ -54,6 +56,7 @@ class ServiceCrud extends BaseObject
     entityValues = "#{util.inspect(_.values(entityObj))}"
     entityValues = entityValues.substring(1,entityValues.length-1)
     entityValues = entityValues.replace(/__SINGLE_QUOTE__/g,"''")
+    entityValues = entityValues.replace(/__QUESTION__/g,"\\?")
     allValues = "#{idValues},#{entityValues}"
 
     # postgresql template for raw query

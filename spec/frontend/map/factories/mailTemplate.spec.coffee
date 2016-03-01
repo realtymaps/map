@@ -5,34 +5,31 @@ describe 'mailTemplate service', ->
   beforeEach ->
     angular.mock.module('rmapsMapApp')
 
-    inject (rmapsMailTemplateService) =>
+    inject (rmapsMailTemplateFactory) =>
       @type = 'basicLetter'
-      @template = rmapsMailTemplateService
+      @template = new rmapsMailTemplateFactory()
 
   it 'passes sanity check', ->
     expect(@template).to.be.ok
-    expect(@template.getCampaign().content).to.not.exist
+    expect(@template.campaign.content).to.not.exist
     @template.setTemplateType(@type)
-    expect(@template.getCampaign().content).to.have.length.above 0
+    expect(@template.campaign.content).to.have.length.above 0
 
-  describe 'service members', ->
+  describe 'factory members', ->
 
     it 'returns correct defaults', ->
       expected =
         id: null
         auth_user_id: null
-        lob_batch_id: null
         name: 'New Mailing'
-        count: 0
-        status: 'pending'
+        status: 'ready'
         content: null
         template_type: ''
         lob_content: null
         sender_info: null
         recipients: []
-        submitted: null
 
-      actual = @template.getCampaign()
+      actual = @template.campaign
       expect(actual).to.eql expected
 
     it 'returns correct lob entity', ->
@@ -63,16 +60,12 @@ describe 'mailTemplate service', ->
         email: 'mailtest@realtymaps.com'
         name: 'Fname Lname'
 
-      @template.setCampaign(campaignFixture)
-      actual = @template.getLobData()
-
-      expect(actual.campaign).to.eql campaignFixture
-      expect(actual.file).to.contain '<div class="letter-page"><p>Content</p></div></body>'
-      expect(actual.recipients).to.eql lobRecipients
-      expect(actual.from).to.eql lobFrom
+      @template.campaign = campaignFixture
+      expect(@template.campaign.content).to.contain '<div class="letter-page"><p>Content</p></div>'
+      expect(@template.createLobHtml()).to.contain '<body class=\'letter-body\'><div class=\"letter-page\"><p>Content</p></div></body>'
 
     it 'returns correct template category', ->
-      @template.setCampaign(campaignFixture)
+      @template.campaign = campaignFixture
       category = @template.getCategory()
       expect(category).to.eql 'letter'
 

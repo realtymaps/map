@@ -91,8 +91,14 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           #pull out of drawItems cache and put it back on the map
         scope.clickedUndo = (event) ->
           #pull out of drawItems cache and put it back on the map
+
+        scope.clickedEdit = (event) ->
+          _enableHandle editModeHandles?.edit, scope
+          scope.canSave = true
+
         scope.clickedTrash = (event) ->
           _enableHandle editModeHandles?.remove, scope
+          scope.canSave = true
 
         if scope.events
           leafletIterators.each scope.events, (handle, eventName) ->
@@ -105,6 +111,10 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         scope.$watch 'enabled', (newVal) ->
           if newVal == false
             scope.disable()
+
+        scope.save = () ->
+          _currentHandler.save()
+          scope.canSave = false
 
         scope.$on '$destroy', ->
           scope.disable()
