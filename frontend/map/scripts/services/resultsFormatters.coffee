@@ -145,7 +145,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       $state.go "property", { id: result.rm_property_id }
 
     clickSaveResultFromList: (result, event = {}) =>
-      $log.debug "CLICK to PIN with result:", result
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
       rmapsPropertiesService.pinUnpinProperty(result).then =>
@@ -162,10 +161,8 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
     clickFavoriteResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-      wasFavorite = result?.savedDetails?.isFavorite
-      @mapCtrl.favoriteProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+
+      rmapsPropertiesService.favoriteProperty(result).then =>
         @reset()
-        if wasFavorite and !@mapCtrl.scope.results[result.rm_property_id]
-          result.isMousedOver = undefined
 
       return false

@@ -11,6 +11,7 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
       property: '='
       zoomClick: '&?'
       pinClick: '&?'
+      favoriteClick: '&?'
     template: template()
     controller: ($scope, $element, $attrs, $transclude) ->
       $log.debug "PROPERTY BUTTONS with property", $scope.property
@@ -42,5 +43,11 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
       $scope.favorite = ($event) ->
         $event.stopPropagation() if $event
 
+        proceed = true
+        if $scope.favoriteClick
+          proceed = $scope.favoriteClick { property: $scope.property }
+
+        if proceed
+          rmapsPropertiesService.favoriteProperty($scope.property)
 
   }

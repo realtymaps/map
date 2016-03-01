@@ -1,5 +1,5 @@
 div.btn-actions
-  button.favorite(ng-click="formatters.results.clickFavoriteResultFromList(property, $event); $event.stopPropagation()" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
+  button.favorite(ng-click="favorite($event)" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }" popover-placement="left" popover-trigger="mouseenter" popover="Favorite")
     i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(property)") &nbsp;
     i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(property)") &nbsp;
 
