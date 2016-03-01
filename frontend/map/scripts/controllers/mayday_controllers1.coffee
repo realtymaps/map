@@ -19,23 +19,6 @@ module.exports = (app) ->
     $scope.toggled = (open) ->
       $scope.isOpened = open
 
-  .controller 'PopoverCtrl', ($scope) ->
-    $scope.staticPopover = title: 'Title'
-
-  .controller 'CollapseCtrl', ($scope) ->
-    $scope.isCollapsed = true
-
-  .controller 'rmapsMailCtrl', ($scope, $http) ->
-    $scope.emailsArray = []
-
-    ###emails json###
-
-    $http.get(frontendRoutes.mocks.email).success((response) ->
-      $scope.emailsArray = response
-    ).error (data, status, headers, config) ->
-      alert status
-
-
   .controller 'rmapsHistoryCtrl', ($scope, $http) ->
     $scope.historyArray = []
 
@@ -45,5 +28,3 @@ module.exports = (app) ->
       $scope.historyArray = response
     ).error (data, status, headers, config) ->
       alert status
-
-  .controller 'ContentController', ($scope) ->

@@ -3,7 +3,8 @@
   "auth_user_id": 7,
   "name": "Campaign 1",
   "status": "ready",
-  "content": "<div class=\"amazing-html-5-content\">Dear Reader...</div>",
+  "content": "<div class=\"letter-page\">Dear Reader...</div>",
+  "lob_content": "<html><head></head><body class=\"letter-body\"><div class=\"letter-page\">Dear Reader...</div></body></html>",
   "sender_info": {
     "first_name": "Spammy",
     "last_name": "McMailer",

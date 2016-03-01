@@ -4,27 +4,24 @@ _ = require 'lodash'
 
 app.service 'rmapsLobService', ($log, $http) ->
   $log = $log.spawn 'service:rmapsLobService'
-  quoteUrl = backendRoutes.snail.quote
-  sendUrl = backendRoutes.snail.send
 
-  _handlePost = (postParams...) ->
-    $http.post(postParams...).success (data) ->
-      $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"
-      data
-
-  _getQuoteAndPdf = (lobData) ->
-    _handlePost(quoteUrl, lobData, alerts:false).then (response) ->
+  _getQuoteAndPdf = (campaignId) ->
+    $http.get(backendRoutes.snail.quote.replace(':campaign_id', campaignId), alerts: false)
+    .then (response) ->
       $log.debug () -> "_getQuoteAndPdf response: #{JSON.stringify(response)}"
       response.data
 
-  getPdf: (lobData) ->
-    _getQuoteAndPdf(lobData).then (data)->
+  getPdf: (campaignId) ->
+    _getQuoteAndPdf(campaignId).then (data) ->
       data.pdf
 
-  getQuote: (lobData) ->
-    _getQuoteAndPdf(lobData).then (data)->
+  getQuote: (campaignId) ->
+    _getQuoteAndPdf(campaignId).then (data) ->
       data.price
 
-  submit: (lobData) ->
-    url = sendUrl.replace(':campaign_id', lobData.campaign.id)
-    _handlePost(url, lobData, alerts:false)
+  send: (campaignId) ->
+    url = backendRoutes.snail.send.replace(':campaign_id', campaignId)
+    $http.post(url, {}, alerts: false)
+    .success (data) ->
+      $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"
+      data

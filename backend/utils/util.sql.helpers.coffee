@@ -3,6 +3,7 @@ coordSys = require '../../common/utils/enums/util.enums.map.coord_system'
 Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
 logger = require('../config/logger').spawn('backend:utils:sql.helpers')
+dbs = require("../config/dbs")
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -182,6 +183,31 @@ sqlizeColName = (fullName) ->
     '"' + name + '"'
   .join('.')
 
+buildRawBindings = (obj, opts={}) ->
+  colPlaceholders = []
+  colBindings = []
+  valPlaceholders = []
+  valBindings = []
+  for k,v of obj
+    colPlaceholders.push('??')
+    colBindings.push(k)
+    valPlaceholders.push('?')
+    if _.isObject(v)
+      valBindings.push(JSON.stringify(v))
+    else if v?
+      valBindings.push(v)
+    else if opts.defaultNulls
+      valBindings.push(dbs.connectionless.raw('DEFAULT'))
+    else
+      valBindings.push(dbs.connectionless.raw('NULL'))
+  cols:
+    placeholder: colPlaceholders.join(', ')
+    bindings: colBindings
+  vals:
+    placeholder: valPlaceholders.join(', ')
+    bindings: valBindings
+
+
 module.exports =
   between: between
   ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
@@ -202,3 +228,4 @@ module.exports =
   columns: columns
   whereIntersects: whereIntersects
   sqlizeColName: sqlizeColName
+  buildRawBindings: buildRawBindings

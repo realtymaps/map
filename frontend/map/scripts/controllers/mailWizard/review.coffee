@@ -24,7 +24,6 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
         $state.go('review', { id: $scope.wizard.mail.campaign.id }, { reload: true })
 
   $scope.showAddresses = (addresses) ->
-    $log.debug addresses
     $scope.addressList = addresses
     modalInstance = $modal.open
       template: require('../../../html/views/templates/modals/addressList.jade')()
@@ -37,12 +36,17 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
   $scope.details =
     pdf: null
 
+  $scope.statusNames =
+    'ready': 'draft'
+    'sending': 'pending'
+    'paid': 'sent'
+
   getQuote = () ->
     if $scope.wizard.mail.isSent()
       return $q.when("Mailing submitted. Lob Batch Id: #{$scope.wizard.mail.campaign.lob_batch_id}")
     if $scope.wizard.mail.campaign?.recipients?.length == 0
       return $q.when("0.00")
-    rmapsLobService.getQuote $scope.wizard.mail.getLobData()
+    rmapsLobService.getQuote $scope.wizard.mail.campaign.id
     .then (quote) ->
       $log.debug -> "getquote data: #{JSON.stringify(quote)}"
       quote

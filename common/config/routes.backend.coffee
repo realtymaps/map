@@ -149,7 +149,7 @@ module.exports =
     details: "#{apiBase}/properties/details/"
     drawnShapes: "#{apiBase}/properties/drawnShapes/"
   snail:
-    quote: "#{apiBase}/snail/quote"
+    quote: "#{apiBase}/snail/quote/:campaign_id"
     send: "#{apiBase}/snail/send/:campaign_id"
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"

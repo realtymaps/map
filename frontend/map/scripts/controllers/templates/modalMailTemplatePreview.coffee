@@ -17,7 +17,7 @@ app.controller 'rmapsMailTemplatePdfPreviewCtrl',
     $scope.template = template
     $scope.mediaType = 'pdf'
     $scope.processing = true
-    rmapsLobService.getPdf($scope.template.lobData)
+    rmapsLobService.getPdf(template.campaign.id)
     .then (pdf) ->
       $scope.template.pdf = $sce.trustAsResourceUrl(pdf)
       $scope.processing = false
