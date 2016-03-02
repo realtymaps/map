@@ -2,28 +2,16 @@ tables = require '../config/tables'
 logger = require('../config/logger').spawn('service:project')
 {profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
-EzServiceCrud = require('../utils/crud/util.ezcrud.service.helpers')
 {basicColumns, joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
-{toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
+DrawnShapesCrud = require './service.drawnShapes'
+
 Promise = require 'bluebird'
+_ = require 'lodash'
 
 safeProject = basicColumns.project
 safeProfile = basicColumns.profile
 safeNotes = basicColumns.notes
-
-
-class DrawnShapesCrud extends EzServiceCrud
-  constructor: () ->
-    super(arguments...)
-    @drawnShapeCols = basicColumns.drawnShapes
-
-  getAll: () ->
-    super(arguments...)
-    .then toGeoFeatureCollection
-      toMove: @drawnShapeCols
-      geometry: ['geom_point_json', 'geom_polys_json', 'geom_line_json']
-      deletes: ['rm_inserted_time', 'rm_modified_time', 'geom_point_raw', 'geom_polys_raw', 'geom_line_raw']
 
 class ProjectCrud extends ThenableCrud
   constructor: () ->

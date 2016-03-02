@@ -4,7 +4,7 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
   ul.dropdown-menu.btnblock
     li
       button.btn.btn-transparent.nav-btn(
-        ng-click="Toggles.toggleIsSketchMode(); Toggles.togglePropertiesInShapes(true);"
+        ng-click="Toggles.toggleIsSketchMode()"
         popover-placement="right"
         popover="Sketch Mode"
         popover-trigger="mouseenter"
@@ -34,10 +34,10 @@ span.dropdown.btn-group.add-project-list(dropdown on-toggle="toggled(open)")
         ng-click="addMail()")
           span.icon.icon-send_email
     li
+      //ng-controller="rmapsNeighbourhoodsModalCtrl"
       button.btn.btn-transparent.nav-btn.add-neighbour(
-        ng-controller="rmapsNeighbourhoodsModalCtrl"
         popover-placement="right"
         popover-trigger="mouseenter"
         popover="Add Neighbor"
-        ng-click="Toggles.enableNeighbourhoodTap()")
+        ng-click="Toggles.toggleIsNeighborhoodDraw();")
           span.icon.icon-add_neighbourhood

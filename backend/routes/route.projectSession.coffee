@@ -50,4 +50,11 @@ merged = mergeHandles routeCrud,
       auth.requireLogin(redirectOnFail: true)
     ]
 
+
+merged.neighborhoods =
+  middleware: [
+    auth.requireLogin(redirectOnFail: true)
+  ]
+  handle: routeCrud.drawnShapesCrud.neighborhoods
+
 module.exports = merged
