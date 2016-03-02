@@ -4,6 +4,7 @@ Promise = require 'bluebird'
 sqlColumns = require('./util.sql.columns')
 logger = require('../config/logger').spawn('backend:utils:sql.helpers')
 dbs = require("../config/dbs")
+clone = require 'clone'
 
 # MARGIN IS THE PERCENT THE BOUNDS ARE EXPANDED TO GRAB Extra Data around the view
 _MARGIN = .25
@@ -208,24 +209,49 @@ buildRawBindings = (obj, opts={}) ->
     bindings: valBindings
 
 
-module.exports =
-  between: between
-  ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
-  orderByDistanceFromPoint: orderByDistanceFromPoint
-  allPatternsInAnyColumn: allPatternsInAnyColumn
-  select: select
-  selectCountDistinct: selectCountDistinct
-  singleRow: singleRow
-  expectSingleRow: expectSingleRow
-  whereIn: whereIn
-  orWhereIn: orWhereIn
-  whereNotIn: whereNotIn
-  orWhereNotIn: orWhereNotIn
-  whereInBounds: whereInBounds
-  getClauseString: getClauseString
-  safeJsonArray: safeJsonArray
-  isUnique: isUnique
-  columns: columns
-  whereIntersects: whereIntersects
-  sqlizeColName: sqlizeColName
-  buildRawBindings: buildRawBindings
+buildQuery = ({knex, entity, orHash}) ->
+  query = knex
+
+  if !Object.keys(entity).length #GTFO
+    return query.where({})
+
+  clonedEntity = clone entity
+
+  #iterate to build query and omit entity keys all in one
+  for key, val of clonedEntity
+    do (key, val) ->
+      if _.isArray val
+        if orHash?[key]?
+          query = orWhereIn(knex, key, val)
+        else
+          query = whereIn(knex, key, val)
+        delete clonedEntity[key]
+
+  if Object.keys(clonedEntity).length
+    return query.where(clonedEntity)
+
+  query
+
+module.exports = {
+  between
+  ageOrDaysFromStartToNow
+  orderByDistanceFromPoint
+  allPatternsInAnyColumn
+  select
+  selectCountDistinct
+  singleRow
+  expectSingleRow
+  whereIn
+  orWhereIn
+  whereNotIn
+  orWhereNotIn
+  whereInBounds
+  getClauseString
+  safeJsonArray
+  isUnique
+  columns
+  whereIntersects
+  sqlizeColName
+  buildRawBindings
+  buildQuery
+}

@@ -183,7 +183,7 @@ class ProjectRouteCrud extends RouteCrud
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
-      drawnShapes: do =>
+      drawnShapes:
         @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
       favorites: @profilesCrud.rootGET req, res, next
     .then (props) ->
