@@ -25,6 +25,7 @@ apiBaseAccountUseTypes = "#{apiBase}/accountUseTypes"
 apiBaseAccountImages = "#{apiBase}/accountImages"
 apiBaseNotes = "#{apiBaseSession}/notes"
 apiBaseMailCampaigns = "#{apiBase}/mailCampaigns"
+apiBaseMailPdf = "#{apiBase}/mailPdf"
 apiBaseProjectsSession = "#{apiBaseSession}/projects"
 apiBasePlans = "#{apiBase}/plans"
 apiBaseEmail = "#{apiBase}/email"
@@ -209,6 +210,10 @@ module.exports =
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
+  mail_pdf:
+    apiBaseMailPdf: apiBaseMailPdf
+    root: apiBaseMailPdf
+    byId: "#{apiBaseMailPdf}/:id"
   plans:
     apiBase: apiBasePlans
     root: apiBasePlans

@@ -11,6 +11,13 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
+
+  $scope.displayCategory = 'all'
+  $scope.categories = rmapsMailTemplateTypeService.getCategories()
+  $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
+  $scope.oldTemplateType = ""
+  $scope.sentFile = false
+
   $scope.uploadFile = (file, errFiles) ->
     console.log "got a file!"
 
@@ -43,6 +50,14 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           file.result = response.data
           $scope.wizard.mail.campaign.aws_key = key
           $scope.wizard.mail.save()
+          $scope.sentFile = true
+          console.log "sentfile turned ON"
+
+          $timeout () ->
+            $scope.sentFile = false
+            file.progress = -1
+            console.log "sentfile turned OFF"
+          , 4000
 
       , (response) ->
         if (response.status > 0)
@@ -64,11 +79,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
     #     console.log data, 'uploaded'
    
 
-  $scope.displayCategory = 'all'
-
-  $scope.categories = rmapsMailTemplateTypeService.getCategories()
-  $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
-  $scope.oldTemplateType = ""
   
 
   $scope.isEmptyCategory = () ->

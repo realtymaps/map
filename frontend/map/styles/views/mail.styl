@@ -31,32 +31,6 @@
         height 30px
         width 30px
 
-.file-select input
-  position relative
-  display inline
-  width 200px
-  font-size 15px
-  top -8px
-
-.file-progress
-  display inline
-
-  .progress
-    position relative
-    top 18px
-    color black
-    line-height 15px
-    font-size 15px
-    display inline-block
-    width 130px
-    border 3px groove #CCC
-    
-    div
-      font-size smaller
-      background #35a7e0
-      width 0
-
-
   .iframe-preview-postcard, .modal-dialog
     width 10in
     height 90%
@@ -84,6 +58,56 @@
     width 100%
     td
       padding 5px
+
+
+.pdf-upload
+  float right
+  
+  .file-select
+    position relative
+    overflow hidden
+    margin 10px
+    
+    input.upload
+      position absolute
+      top 0
+      right 0
+      margin 0
+      padding 0
+      font-size 20px
+      cursor pointer
+      opacity 0
+      @css {filter alpha(opacity=0)}
+
+
+  .file-progress
+    .file-progress-indicator
+      position relative
+      top 18px
+      color black
+      // line-height 15px
+      // font-size 15px
+      display inline-block
+      width 130px
+      border 3px groove #CCC
+      
+      .file-upload-bar
+        background #35a7e0        
+        height 20px
+        width 0
+
+      .progress-text
+        position relative
+        top -20px
+        text-align center
+        font-size smaller
+        line-height 20px
+        font-size 15px
+
+  .done-fade
+    -webkit-transition opacity 4s
+    transition opacity 4s
+    opacity 0
 
 .mail
   @extends .font-regular
@@ -242,6 +266,7 @@
               margin 0
               display inline-block
               vertical-align top
+              height 35px
             button
               display inline-block
               position absolute
