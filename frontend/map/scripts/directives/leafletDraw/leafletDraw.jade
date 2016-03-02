@@ -1,6 +1,6 @@
 //- Basic glued template driven by a drictives controller for custom templates
 //- Binding is one time (::) for everything to keep from having excessive evaluations
-div(ng-if="!$$destroyed")
+div
   button(
     ng-repeat="toDraw in ::drawContexts"
     ng-class="::button.getClass(toDraw)" ng-click="::button.click(toDraw, $event)")

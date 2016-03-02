@@ -18,6 +18,7 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @showNotes = false
     @propertiesInShapes = false
     @isSketchMode = false
+    @isNeighborhoodDraw = false
     @showOldToolbar = false
 
     @enableNoteTap = () =>
@@ -61,6 +62,12 @@ app.factory 'rmapsMapTogglesFactory', () ->
 
     @toggleIsSketchMode = () =>
       @isSketchMode = !@isSketchMode
+
+    @toggleIsNeighborhoodDraw = () =>
+      @isNeighborhoodDraw = !@isNeighborhoodDraw
+
+    @getHideAnyDraw = () =>
+      @isSketchMode or @isNeighborhoodDraw
 
     @toggleSearch = (val) =>
       if val?

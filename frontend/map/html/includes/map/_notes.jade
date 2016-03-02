@@ -1,6 +1,6 @@
 include ../mixins/_noteMixin.jade
 
-span(ng-hide="Toggles.isSketchMode" ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list"
+span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class="dropdown btn-group notes-list"
  dropdown on-toggle="toggled(open)" auto-close="disabled")
   button.btn.btn-transparent.nav-btn.dropdown-toggle.notes(dropdown-toggle)
     span.icon.icon-note

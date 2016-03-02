@@ -5,6 +5,7 @@ isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
 factory = require '../util.factory'
+sqlHelpers = require '../util.sql.helpers'
 
 
 class ServiceCrud extends BaseObject
@@ -28,50 +29,22 @@ class ServiceCrud extends BaseObject
   # This exposes upsert query string for any other modules to use if desired and only
   # requires ids and entity as objects (idobj helps for support on multi-id pks)
   @getUpsertQueryString: (idObj, entityObj, tableName) ->
-    # "pre-process" data
-    for k,v of idObj
-      # upsert doesn't seem to know what to do w/ given 'null' pk
-      idObj[k] = '__DEFAULT__' if !v?
-
-    for k,v of entityObj
-      # stringify any JSON data and arrays
-      v = JSON.stringify(v) if _.isObject v
-      # use placeholder for single quotes in strings (incl for JSON)
-      v = v.replace(/'/g,'__SINGLE_QUOTE__') if _.isString v
-      # use placeholder for question marks in strings
-      v = v.replace(/\?/g,'__QUESTION__') if _.isString v
-      entityObj[k] = v
-
-    # some string processing to help give us good query values:
-    #   util.inspect gives good array repr of entity values that can be used for sql values
-    #   substring out non-JSON field brackets (to avoid risk removing brackets from json arrays)
-    idKeys = "#{_.keys(idObj)}"
-    entityKeys = "#{_.keys(entityObj)}"
-    allKeys = "#{idKeys},#{entityKeys}"
-
-    idValues = "#{util.inspect(_.values(idObj))}"
-    idValues = idValues.substring(1,idValues.length-1)
-    idValues = idValues.replace(/__SINGLE_QUOTE__/g,"''")
-    idValues = idValues.replace(/\'__DEFAULT__\'/g,'DEFAULT')
-    entityValues = "#{util.inspect(_.values(entityObj))}"
-    entityValues = entityValues.substring(1,entityValues.length-1)
-    entityValues = entityValues.replace(/__SINGLE_QUOTE__/g,"''")
-    entityValues = entityValues.replace(/__QUESTION__/g,"\\?")
-    allValues = "#{idValues},#{entityValues}"
+    id = sqlHelpers.buildRawBindings(idObj, defaultNulls: true)
+    entity = sqlHelpers.buildRawBindings(entityObj)
 
     # postgresql template for raw query
     # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
-    qstr = """
-     INSERT INTO #{tableName} (#{allKeys})
-      VALUES (#{allValues})
-      ON CONFLICT (#{idKeys})
-      DO UPDATE SET (#{entityKeys}) = (#{entityValues})
-      RETURNING #{idKeys}
+    templateStr = """
+     INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
+      VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
+      ON CONFLICT (#{id.cols.placeholder})
+      DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
+      RETURNING #{id.cols.placeholder}
     """
 
-    # "post-process" data, sanitize the resulting string above suitable as raw query
-    qstr = qstr.replace(/\n/g,'')
-    qstr
+    sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
+    bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
+
 
   # helpers for query / id mgmt
   _getIdObj: (sourceObj) ->
@@ -100,11 +73,11 @@ class ServiceCrud extends BaseObject
     @
 
   # centralized handling, such as catching errors, for all queries including custom ones
-  _wrapTransaction: (transaction) ->
+  _wrapTransaction: (transaction, options) ->
     @logger.debug () -> transaction.toString()
 
     # return an objectified handle to knex obj if flagged
-    if @returnKnex or @returnKnexTempFlag
+    if @returnKnex or @returnKnexTempFlag or options?.returnKnex
       @returnKnexTempFlag = false
       return {knex: transaction} # exposes unevaluated knex
 
@@ -117,11 +90,11 @@ class ServiceCrud extends BaseObject
 
   getAll: (query = {}, options = {}) ->
     @logger.debug () -> "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(query)
+    @_wrapTransaction(options.transaction ? @dbFn().where(query), options)
 
   create: (query, options = {}) ->
     @logger.debug () -> "create(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().insert(query)
+    @_wrapTransaction(options.transaction ? @dbFn().insert(query), options)
 
   # implies restrictions and forces on id matches
   getById: (query, options = {}) =>
@@ -129,7 +102,7 @@ class ServiceCrud extends BaseObject
     query = {"#{@idKeys[0]}": query} unless _.isObject query or @idkeys.length > 1
     @logger.debug () -> "getById(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
     throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
-    @_wrapTransaction options.transaction ? @dbFn().where @_getIdObj query
+    @_wrapTransaction(options.transaction ? @dbFn().where @_getIdObj query, options)
 
   update: (query, options = {}) ->
     @logger.debug () -> "update(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -138,7 +111,7 @@ class ServiceCrud extends BaseObject
     entity = _.omit query, @idKeys
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(@_getIdObj query).update(_.omit query, @idKeys)
+    @_wrapTransaction(options.transaction ? @dbFn().where(@_getIdObj query).update(_.omit query, @idKeys), options)
 
   upsert: (query, options = {}) ->
     @logger.debug () -> "upsert(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -147,11 +120,11 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
 
-    upsertQueryString = ServiceCrud.getUpsertQueryString ids, entity, @dbFn.tableName
-    @_wrapTransaction options.transaction ? @dbFn().raw upsertQueryString
+    upsertQuery = ServiceCrud.getUpsertQueryString ids, entity, @dbFn.tableName
+    @_wrapTransaction(options.transaction ? @dbFn().raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (query, options = {}) ->
     @logger.debug () -> "delete(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(query).delete()
+    @_wrapTransaction(options.transaction ? @dbFn().where(query).delete(), options)
 
 module.exports = ServiceCrud

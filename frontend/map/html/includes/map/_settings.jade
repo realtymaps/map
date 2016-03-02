@@ -1,4 +1,4 @@
-.settings-tool(ng-hide="Toggles.isSketchMode")
+.settings-tool(ng-hide="Toggles.getHideAnyDraw()")
   .desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(dropdown-toggle)
