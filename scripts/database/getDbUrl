@@ -40,7 +40,7 @@ else
 
     INDIRECT="${VARIABLE_BASE}_URL"
     DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
-    if [[ "$INDIRECT" == "" ]]
+    if [[ "$DIRECT" == "" ]]
     then
         INDIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${VARIABLE_HOLDER}`
         DIRECT=`./environmentNormalization/herokuCli $SOURCE_APP_NAME get ${INDIRECT}`
