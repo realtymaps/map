@@ -4,8 +4,7 @@ BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
-factory = require '../util.factory'
-sqlHelpers = require '../util.sql.helpers'
+{buildRawBindings, entityToQuery} = require '../util.sql.helpers'
 
 
 class ServiceCrud extends BaseObject
@@ -29,8 +28,8 @@ class ServiceCrud extends BaseObject
   # This exposes upsert query string for any other modules to use if desired and only
   # requires ids and entity as objects (idobj helps for support on multi-id pks)
   @getUpsertQueryString: (idObj, entityObj, tableName) ->
-    id = sqlHelpers.buildRawBindings(idObj, defaultNulls: true)
-    entity = sqlHelpers.buildRawBindings(entityObj)
+    id = buildRawBindings(idObj, defaultNulls: true)
+    entity = buildRawBindings(entityObj)
 
     # postgresql template for raw query
     # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
@@ -90,9 +89,10 @@ class ServiceCrud extends BaseObject
 
   getAll: (query = {}, options = {}) ->
     @logger.debug () -> "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction(options.transaction ? @dbFn().where(query), options)
+    @_wrapTransaction(options.transaction ? entityToQuery(knex: @dbFn(), entity: query), options)
 
   create: (query, options = {}) ->
+    #TODO should there be options to handle where / orWhereIn for inserts w/o the need to override?
     @logger.debug () -> "create(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
     @_wrapTransaction(options.transaction ? @dbFn().insert(query), options)
 
