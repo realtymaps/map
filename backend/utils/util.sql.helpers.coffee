@@ -222,10 +222,11 @@ entityToQuery = ({knex, entity, orHash}) ->
           query = whereIn(knex, key, val)
         delete clonedEntity[key]
 
-  console.log clonedEntity,true
-
   query = query ? knex
-  query.where(clonedEntity)
+
+  if Object.keys(clonedEntity).length
+    return query.where(clonedEntity)
+  query
 
 module.exports = {
   between

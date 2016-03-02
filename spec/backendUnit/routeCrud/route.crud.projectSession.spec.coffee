@@ -17,6 +17,7 @@ mockCls = require '../../specUtils/mockCls'
 tables = require "#{basePath}/config/tables"
 sinon = require 'sinon'
 require "#{basePath}/extensions"
+_ = require 'lodash'
 
 
 ServiceCrudProject = require "#{basePath}/services/service.user.project"
@@ -48,7 +49,12 @@ class TestServiceCrudProject extends ServiceCrudProject
 
   #overide the generators so we can inject fresh mocks without destroying the singleton tables
   clientsFact: () ->
-    clientsSvcCrud = super sqlMock('auth', 'user').dbFn(), new ServiceCrud(sqlMock('user', 'profile').dbFn())
+    clientAuthMock = sqlMock('auth', 'user')
+    clientProfileMock = sqlMock('user', 'profile')
+    clientsSvcCrud = super(clientAuthMock.dbFn(), new ServiceCrud(clientProfileMock.dbFn()))
+    #expose service mocks on the svc object
+    _.extend clientsSvcCrud, {clientAuthMock, clientProfileMock}
+    clientsSvcCrud
     # console.log.cyan  "clientsSvcCrud: #{clientsSvcCrud.dbFn().tableName}"
     # console.log.cyan  "clientsSvcCrud: joinCrud: #{clientsSvcCrud.joinCrud.dbFn().tableName}"
 
@@ -60,7 +66,12 @@ class TestServiceCrudProject extends ServiceCrudProject
     toTestThenableCrudInstance clientsSvcCrud, clientResponses, false
 
   notesFact: () ->
-    noteSvcCrud = super sqlMock('user', 'project').dbFn(), new ServiceCrud(sqlMock('user', 'notes').dbFn())
+    noteProjectMock = sqlMock('user', 'project')
+    noteMock = sqlMock('user', 'notes')
+
+    noteSvcCrud = super noteProjectMock.dbFn(), new ServiceCrud(noteMock.dbFn())
+    #expose service mocks on the svc object
+    _.extend noteSvcCrud, {noteProjectMock, noteMock}
     noteSvcCrud.resetSpies = () =>
       @svc.resetSpies()
       @joinCrud.svc.resetSpies()
@@ -171,18 +182,16 @@ describe 'route.projectSession', ->
         obj[joinColumnNames.client.project_id] = [@mockRequest.params.id]
         @subject.clientsCrud.svc.getAllStub.args[0][0].should.be.eql obj
         logger.debug.green @subject.clientsCrud.svc.getAllStub.sqls[0]
-        @subject.clientsCrud.svc.getAllStub.sqls[0].should.be.equal """
-        select "user_profile"."id" as "id", "user_profile"."auth_user_id" as "auth_user_id",
-         "user_profile"."parent_auth_user_id" as "parent_auth_user_id", "user_profile"."project_id" as "project_id",
-         "user_profile"."favorites" as "favorites",
-         "auth_user"."email" as "email", "auth_user"."first_name" as "first_name", "auth_user"."last_name" as "last_name",
-         "auth_user"."username" as "username", "auth_user"."address_1" as "address_1", "auth_user"."address_2" as "address_2",
-         "auth_user"."city" as "city", "auth_user"."zip" as "zip",
-         "auth_user"."us_state_id" as "us_state_id", "auth_user"."cell_phone" as "cell_phone",
-         "auth_user"."work_phone" as "work_phone", "auth_user"."parent_id" as "parent_id" from
-         "user_profile" inner join "auth_user" on "auth_user"."id" = #{sqlHelpers.sqlizeColName joinColumnNames.client.auth_user_id}
-         where #{sqlHelpers.sqlizeColName joinColumnNames.client.project_id} in ('1') and "parent_auth_user_id" = '2'
-        """.replace(/\n/g,'')
+
+        #note that if we add more project_id's then they will be in whereIn
+        @subject.clientsCrud.svc.clientProfileMock
+        .whereSpy.args.should.be.eql  [
+          ['user_profile.project_id', 1 ]
+          [parent_auth_user_id: 2]
+        ]
+        @subject.clientsCrud.svc.clientProfileMock
+        .whereInSpy.args.should.be.eql []
+
 
     it 'notes', ->
       @subject.rootGET(@mockRequest,mockRes,(->))
@@ -195,14 +204,13 @@ describe 'route.projectSession', ->
         @subject.notesCrud.svc.getAllStub.args[0][0].should.be.eql obj
         @subject.notesCrud.svc.getAllStub.args[0][1].should.be.eql false
         assert.isTrue @subject.notesCrud.svc.getAllStub.sqls.length > 0
-        @subject.notesCrud.svc.getAllStub.sqls[0].should.be.equal """
-          select "user_notes"."id" as "id", "user_notes"."auth_user_id" as "auth_user_id",
-           "user_notes"."project_id" as "project_id", "user_notes"."rm_property_id" as "rm_property_id",
-           "user_notes"."geom_point_json" as "geom_point_json", "user_notes"."comments" as "comments",
-           "user_notes"."text" as "text", "user_notes"."title" as "title", "user_notes"."rm_modified_time" as "rm_modified_time",
-           "user_notes"."rm_inserted_time" as "rm_inserted_time" from "user_notes"
-           inner join "user_project" on "user_project"."id" = "user_notes"."project_id" where
-           "user_notes"."project_id" in ('1')""".replace(/\n/g,'')
+
+        @subject.notesCrud.svc.noteMock.whereSpy.args.should.eql [
+          [ 'user_notes.project_id', 1 ]
+        ]
+
+        @subject.notesCrud.svc.noteMock.whereInSpy.args.length.should.be.equal 0
+
 
     it 'drawnShapes', ->
       @subject.rootGET(@mockRequest,mockRes,(->))
