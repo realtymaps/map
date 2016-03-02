@@ -22,6 +22,14 @@ else
       names[i] = name+':*'
   debug.enable(names.join(','))
 
+# fixing it so we don't get redundant timestamps on prod
+# https://github.com/visionmedia/debug/issues/161
+debug.formatArgs = ()->
+  if this.useColors
+    arguments[0] = '  \u001b[9' + this.color + 'm' + this.namespace + ' ' + '\u001b[0m' + arguments[0]
+  else
+    arguments[0] = '  ' + this.namespace + ' ' + arguments[0]
+  return arguments;
 
 _utils = ['functions', 'profilers', 'rewriters', 'transports', 'exitOnError', 'stripColors', 'emitErrs', 'padLevels']
 _levelFns = ['info', 'warn', 'error']
