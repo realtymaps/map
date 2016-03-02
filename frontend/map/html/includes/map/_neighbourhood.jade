@@ -1,7 +1,7 @@
-span(ng-hide="Toggles.isSketchMode" class="dropdown btn-group neighbourhood-list"
+span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-list"
 	ng-controller="rmapsMapNeighbourhoodsCtrl" ng-model="isOpen"
 	dropdown on-toggle="neighbourhoodListToggled(open);isOpen = open" auto-close="disabled")
-		div(ng-if="isOpen" ng-controller="rmapsMapDrawCtrl")
+		div(ng-if="isOpen" ng-controller="rmapsDrawNeighborhoodCtrl")
 		button.btn.btn-transparent.dropdown-toggle.neighbour.nav-btn(dropdown-toggle)
 			span.icon.icon-neighbourhood
 		.dropdown-menu.whiteblock.no-margin

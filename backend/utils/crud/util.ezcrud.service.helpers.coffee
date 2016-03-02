@@ -73,11 +73,11 @@ class ServiceCrud extends BaseObject
     @
 
   # centralized handling, such as catching errors, for all queries including custom ones
-  _wrapTransaction: (transaction) ->
+  _wrapTransaction: (transaction, options) ->
     @logger.debug () -> transaction.toString()
 
     # return an objectified handle to knex obj if flagged
-    if @returnKnex or @returnKnexTempFlag
+    if @returnKnex or @returnKnexTempFlag or options?.returnKnex
       @returnKnexTempFlag = false
       return {knex: transaction} # exposes unevaluated knex
 
@@ -90,11 +90,11 @@ class ServiceCrud extends BaseObject
 
   getAll: (query = {}, options = {}) ->
     @logger.debug () -> "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(query)
+    @_wrapTransaction(options.transaction ? @dbFn().where(query), options)
 
   create: (query, options = {}) ->
     @logger.debug () -> "create(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().insert(query)
+    @_wrapTransaction(options.transaction ? @dbFn().insert(query), options)
 
   # implies restrictions and forces on id matches
   getById: (query, options = {}) =>
@@ -102,7 +102,7 @@ class ServiceCrud extends BaseObject
     query = {"#{@idKeys[0]}": query} unless _.isObject query or @idkeys.length > 1
     @logger.debug () -> "getById(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
     throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idkeys}` missing") unless @_hasIdKeys query
-    @_wrapTransaction options.transaction ? @dbFn().where @_getIdObj query
+    @_wrapTransaction(options.transaction ? @dbFn().where @_getIdObj query, options)
 
   update: (query, options = {}) ->
     @logger.debug () -> "update(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -111,7 +111,7 @@ class ServiceCrud extends BaseObject
     entity = _.omit query, @idKeys
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(@_getIdObj query).update(_.omit query, @idKeys)
+    @_wrapTransaction(options.transaction ? @dbFn().where(@_getIdObj query).update(_.omit query, @idKeys), options)
 
   upsert: (query, options = {}) ->
     @logger.debug () -> "upsert(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -121,10 +121,10 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
 
     upsertQuery = ServiceCrud.getUpsertQueryString ids, entity, @dbFn.tableName
-    @_wrapTransaction options.transaction ? @dbFn().raw(upsertQuery.sql, upsertQuery.bindings)
+    @_wrapTransaction(options.transaction ? @dbFn().raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (query, options = {}) ->
     @logger.debug () -> "delete(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction options.transaction ? @dbFn().where(query).delete()
+    @_wrapTransaction(options.transaction ? @dbFn().where(query).delete(), options)
 
 module.exports = ServiceCrud

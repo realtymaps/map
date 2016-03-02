@@ -1,7 +1,10 @@
-.btn-group.properties-tools.map-navigation.desktop-only(ng-hide="Toggles.isSketchMode" ng-click="Toggles.toggleResults()" ng-class="{'':!isOpened,'opened':isOpened, 'old-controls': oldControls}")
-  span(ng-init="resultsInit('results-list')" class="dropdown btn-group properties-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
-    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
-      span
-        span.icon.icon-property
-        h4 {{resultsPotentialLength}} Results
-      span.caret
+.btn-group.properties-tools.map-navigation.desktop-only(
+  ng-hide="Toggles.getHideAnyDraw()"
+  ng-click="Toggles.toggleResults()"
+  ng-class="{'':!isOpened,'opened':isOpened, 'old-controls': oldControls}")
+    span(ng-init="resultsInit('results-list')" class="dropdown btn-group properties-list" dropdown on-toggle="toggled(open)" auto-close="disabled")
+      button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+        span
+          span.icon.icon-property
+          h4 {{resultsPotentialLength}} Results
+        span.caret

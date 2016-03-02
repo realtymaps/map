@@ -107,6 +107,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
         scope.disable = () ->
           _currentHandler?.disable()
           scope.enabled = false
+          scope.canSave = false
 
         scope.$watch 'enabled', (newVal) ->
           if newVal == false
