@@ -17,14 +17,8 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     recipients: []
 
   class MailTemplateFactory
-    constructor: () ->
-      @campaign = null
-      @senderData = null
-      @_create()
-
-    _create: (newMail = {}, newSender = {}) ->
-      @campaign = _.defaults newMail, campaignDefaults
-      @senderData = newSender
+    constructor: (@campaign = {}) ->
+      _.defaults @campaign, campaignDefaults
 
     getSenderData: () ->
       return $q.when @campaign.sender_info if !_.isEmpty @campaign.sender_info
@@ -59,14 +53,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
 
     isSent: () ->
-      @campaign.status == 'paid'
-
-    load: (campaignId) ->
-      rmapsMailCampaignService.get id: campaignId
-      .then (campaigns) =>
-        @campaign = campaigns[0] if campaigns.length
-        # $log.debug () => "Loaded mail campaign:\n#{JSON.stringify(@campaign, null, 2)}"
-        @campaign
+      @campaign.status != 'ready'
 
     save: () ->
       @getSenderData()
@@ -81,5 +68,4 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
         op = rmapsMailCampaignService.create(toSave) #upserts if not already created (only if using psql 9.5)
         .then ({data}) =>
           @campaign.id = data.rows[0].id
-          # $log.debug () => "Saved mail campaign:\n#{JSON.stringify(@campaign, null, 2)}"
           @campaign
