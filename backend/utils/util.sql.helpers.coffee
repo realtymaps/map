@@ -209,7 +209,7 @@ buildRawBindings = (obj, opts={}) ->
     bindings: valBindings
 
 
-entityToQuery = ({knex, entity, orHash}) ->
+buildQuery = ({knex, entity, orHash}) ->
   query = knex
 
   if !Object.keys(entity).length #GTFO
@@ -253,5 +253,5 @@ module.exports = {
   whereIntersects
   sqlizeColName
   buildRawBindings
-  entityToQuery
+  buildQuery
 }

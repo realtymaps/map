@@ -4,7 +4,7 @@ BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
-{buildRawBindings, entityToQuery} = require '../util.sql.helpers'
+{buildRawBindings, buildQuery} = require '../util.sql.helpers'
 
 
 class ServiceCrud extends BaseObject
@@ -89,7 +89,7 @@ class ServiceCrud extends BaseObject
 
   getAll: (query = {}, options = {}) ->
     @logger.debug () -> "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction(options.transaction ? entityToQuery(knex: @dbFn(), entity: query), options)
+    @_wrapTransaction(options.transaction ? buildQuery(knex: @dbFn(), entity: query), options)
 
   create: (query, options = {}) ->
     #TODO should there be options to handle where / orWhereIn for inserts w/o the need to override?
