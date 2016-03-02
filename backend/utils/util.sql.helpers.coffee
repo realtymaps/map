@@ -210,9 +210,13 @@ buildRawBindings = (obj, opts={}) ->
 
 
 entityToQuery = ({knex, entity, orHash}) ->
+  query = knex
+
+  if !Object.keys(entity).length #GTFO
+    return query.where({})
+
   clonedEntity = clone entity
-  query = null
-  hasQueried = false
+
   #iterate to build query and omit entity keys all in one
   for key, val of clonedEntity
     do (key, val) ->
@@ -221,13 +225,11 @@ entityToQuery = ({knex, entity, orHash}) ->
           query = orWhereIn(knex, key, val)
         else
           query = whereIn(knex, key, val)
-        hasQueried = true
         delete clonedEntity[key]
 
-  query = query ? knex
-
-  if !hasQueried or Object.keys(clonedEntity).length
+  if Object.keys(clonedEntity).length
     return query.where(clonedEntity)
+
   query
 
 module.exports = {
