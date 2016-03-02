@@ -2,6 +2,7 @@ Promise = require 'bluebird'
 basePath = '../../backend'
 logger = require "#{basePath}/config/logger"
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
+shutdown = require '../../backend/config/shutdown'
 
 
 Promise.try () ->
@@ -23,11 +24,11 @@ Promise.try () ->
   .then (sanity) ->
     if newEncryptor.decrypt(sanity) == 'you are using the correct key!'
       logger.warn "#{prefix} Old encryption key detected, but new key is already in use."
-      return Promise.reject(exit: 0)
+      return Promise.reject(exitWithError: false)
 
     if oldEncryptor.decrypt(sanity) != 'you are using the correct key!'
       logger.error "#{prefix} Neither old nor new key checks out!!!  OH NOES!"
-      return Promise.reject(exit: 1)
+      return Promise.reject(exitWithError: true)
 
     logger.info "#{prefix} Old encryption key still in use, updating encrypted payloads."
   .then () ->
@@ -53,19 +54,17 @@ Promise.try () ->
         .select('name')
         .then (externalAccountsList) ->
           Promise.map externalAccountsList, (accountName) ->
-            logger.info "#{prefix} ... changing key for account: #{account.name} ..."
+            logger.info "#{prefix} ... changing key for account: #{accountName} ..."
             externalAccounts.getAccountInfo(accountName, transaction: transaction, cipherKey: process.env.OLD_ENCRYPTION_AT_REST)
             .then (accountInfo) ->
               externalAccounts.updateAccountInfo(accountInfo, transaction: transaction, cipherKey: process.env.ENCRYPTION_AT_REST)
       .then () ->
         logger.info "#{prefix} DONE!"
-    .finally () ->
-      dbs.shutdown()
 .then () ->
-  process.exit(0)
+  shutdown.exit()
 .catch (err) ->
-  if err.exit?
-    process.exit(err.exit)
+  if err.exitWithError?
+    shutdown.exit(error: err.exitWithError)
   else
     logger.error(err.stack||err)
-    process.exit(1)
+    shutdown.exit(error: true)

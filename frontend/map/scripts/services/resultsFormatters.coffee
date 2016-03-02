@@ -76,9 +76,8 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         @loadMore()
 
     getResultsArray: =>
-      results = _.values @mapCtrl.scope.results
-      results
-
+      _.values @mapCtrl.scope.results
+      
     ###
     Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
     ###

@@ -3,7 +3,6 @@ _ = require 'lodash'
 config = require '../../backend/config/config.coffee'
 backendRoutes = require '../../common/config/routes.backend.coffee'
 
-
 beforeEach ->
   window.isTest = true
 

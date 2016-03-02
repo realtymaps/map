@@ -17,8 +17,8 @@ myCustomLevels =
   colors:
     debug: 'cyan'
     info: 'green'
-    warn: 'yellow'
-    error: 'red'
+    warn: ['yellow', 'bold']
+    error: ['red', 'bold']
 
 consoleTransport = new (winston.transports.Console)
   level: config.LOGGING.LEVEL

@@ -51,7 +51,7 @@ sendLetter = (subtask) ->
   if letter.lob_errors?
     lob_errors = lob_errors.concat letter.lob_errors
 
-  lobSvc.createLetterTest letter
+  lobSvc.createLetter letter
 
   .then (lobResponse) ->
     logger.debug -> "#{JSON.stringify lobResponse, null, 2}"

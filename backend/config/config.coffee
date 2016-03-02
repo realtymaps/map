@@ -2,6 +2,10 @@ _ = require 'lodash'
 path = require 'path'
 common =  require '../../common/config/commonConfig.coffee'
 
+scriptName = path.basename(require?.main?.filename, '.coffee')
+if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
+  scriptName = '__REPL'  # this makes it easier to use the result as keys in a hash
+
 
 base =
   DYNO: process.env.DYNO || 'local'
@@ -23,27 +27,15 @@ base =
     MAIN:
       client: 'pg'
       connection: process.env.MAIN_DATABASE_URL
-      pool:
-        min: 2
-        max: if process.env.JQ_QUEUE_NAME then 4 else 10
-        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 20*60*1000
+      pool: pingTimeout: 20*60*1000
     RAW_TEMP:
       client: 'pg'
       connection: process.env.RAW_TEMP_DATABASE_URL
-      pool:
-        min: if process.env.JQ_QUEUE_NAME then 2 else 0
-        max: if process.env.JQ_QUEUE_NAME then 4 else 2
-        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 20*60*1000
+      pool: pingTimeout: 20*60*1000
     NORMALIZED:
       client: 'pg'
       connection: process.env.NORMALIZED_DATABASE_URL
-      pool:
-        min: if process.env.JQ_QUEUE_NAME then 2 else 0
-        max: if process.env.JQ_QUEUE_NAME then 4 else 2
-        # 10 minutes -- this is an arbitrary long time, we might want to bump this up or down if we see problems
-        pingTimeout: 20*60*1000
+      pool: pingTimeout: 20*60*1000
   TRUST_PROXY: 1
   SESSION:
     secret: 'thisistheREALTYMAPSsecretforthesession'
@@ -73,11 +65,9 @@ base =
     LOGLEVEL: 'info'
     API_KEY: process.env.NEW_RELIC_API_KEY
   HIREFIRE:
-    API_KEY: process.env.HIREFIRE_TOKEN||'dummy'
-    BACKUP:
-      DO_BACKUP: process.env.HIREFIRE_BACKUP == 'true'
-      RUN_WINDOW: 120000  # 2 minutes
-      DELAY_VARIATION: 10000  # 10 seconds
+    API_KEY: process.env.HIREFIRE_TOKEN || 'dummy'
+    RUN_WINDOW: 60000  # 1 minute
+    WARN_THRESHOLD: 300000  # 5 minutes
   ENCRYPTION_AT_REST: process.env.ENCRYPTION_AT_REST
   JOB_QUEUE:
     LOCK_KEY: 0x1693F8A6  # random number
@@ -127,7 +117,7 @@ environmentConfig =
       FILE_AND_LINE: true
     USE_ERROR_HANDLER: true
     NEW_RELIC:
-      RUN: Boolean(process.env.NEW_RELIC_RUN)
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else false
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-dev-realtymaps-map" else null
     CLEANUP:
@@ -151,7 +141,7 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       LOGLEVEL: 'info'
       APP_NAME: if process.env.RMAPS_MAP_INSTANCE_NAME then "#{process.env.RMAPS_MAP_INSTANCE_NAME}-staging-realtymaps-map" else null
 
@@ -167,11 +157,67 @@ environmentConfig =
       cookie:
         secure: false
     NEW_RELIC:
-      RUN: true
+      RUN: if process.env.NEW_RELIC_RUN? then Boolean(process.env.NEW_RELIC_RUN) else true
       APP_NAME: 'realtymaps-map'
 
-environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 
+pools =
+  server:
+    MAIN:
+      pool:
+        min: 2
+        max: 10
+    RAW_TEMP:
+      pool:
+        min: 0
+        max: 2
+    NORMALIZED:
+      pool:
+        min: 0
+        max: 2
+  jobQueueWorker:
+    MAIN:
+      pool:
+        min: 2
+        max: 4
+    RAW_TEMP:
+      pool:
+        min: 2
+        max: 4
+    NORMALIZED:
+      pool:
+        min: 2
+        max: 4
+  queueNeedsWorker:
+    MAIN:
+      pool:
+        min: 1
+        max: 2
+    RAW_TEMP:
+      pool:
+        min: 0
+        max: 2
+    NORMALIZED:
+      pool:
+        min: 0
+        max: 2
+  __REPL:
+    MAIN:
+      pool:
+        min: 2
+        max: 4
+    RAW_TEMP:
+      pool:
+        min: 2
+        max: 4
+    NORMALIZED:
+      pool:
+        min: 2
+        max: 4
+
+
+base.DBS = _.merge(base.DBS, pools[scriptName])
+environmentConfig.test = _.merge({}, environmentConfig.development, environmentConfig.test)
 config = _.merge({}, base, environmentConfig[base.ENV])
 
 

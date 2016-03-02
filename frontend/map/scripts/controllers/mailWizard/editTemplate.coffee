@@ -5,15 +5,11 @@ modalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jad
 module.exports = app
 
 app.controller 'rmapsEditTemplateCtrl',
-($rootScope, $scope, $log, $window, $timeout, $document, $state, $modal, rmapsPrincipalService,
-rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplateTypeService) ->
+($rootScope, $scope, $log, $modal, rmapsPrincipalService, textAngularManager, rmapsMainOptions) ->
   $log = $log.spawn 'mail:editTemplate'
   $log.debug 'editTemplate'
 
   editor = {}
-  $scope.templObj = {}
-  $scope.data =
-    htmlcontent: ""
 
   $scope.saveButtonText =
     'saved': 'All Changes Saved'
@@ -21,14 +17,6 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
     'error': 'Error Saving'
 
   $scope.saveStatus = 'saved'
-
-  setTemplObj = () ->
-    $log.debug "Setting templObj.mailCampaign:\n#{JSON.stringify rmapsMailTemplateService.getCampaign()}"
-    $scope.templObj =
-      mailCampaign: rmapsMailTemplateService.getCampaign()
-
-  $scope.quoteAndSend = () ->
-    rmapsMailTemplateService.quote()
 
   $scope.textEditorSetup = () ->
     (el) ->
@@ -47,36 +35,45 @@ rmapsMailTemplateService, textAngularManager, rmapsMainOptions, rmapsMailTemplat
 
   $scope.saveContent = _.debounce () ->
     $scope.saveStatus = 'saving'
-    $log.debug "saving #{$scope.templObj.name}"
-    rmapsMailTemplateService.setCampaign $scope.templObj.mailCampaign
-    rmapsMailTemplateService.save()
+    $log.debug "saving #{$scope.wizard.mail.campaign.name}"
+    $scope.wizard.mail.save()
     .then ->
       $scope.saveStatus = 'saved'
     .catch ->
       $scope.saveStatus = 'error'
   , 1000
 
-  $scope.$watch 'data.htmlcontent', $scope.saveContent
+  $scope.$watch 'wizard.mail.campaign.content', $scope.saveContent
 
   $scope.animationsEnabled = true
+
   $scope.doPreview = () ->
-    # rmapsMailTemplateService.openPreview()
-    modalInstance = $modal.open
-      animation: $scope.animationsEnabled
-      template: modalTemplate
-      controller: 'rmapsMailTemplatePdfPreviewCtrl'
-      openedClass: 'preview-mail-opened'
-      windowClass: 'preview-mail-window'
-      windowTopClass: 'preview-mail-windowTop'
-      resolve:
-        template: () ->
-          content: $scope.data.htmlcontent
-          category: rmapsMailTemplateService.getCategory()
-          title: 'Mail Preview'
+    $scope.wizard.mail.save()
+    .then () ->
+      $modal.open
+        animation: $scope.animationsEnabled
+        template: modalTemplate
+        controller: 'rmapsMailTemplatePdfPreviewCtrl'
+        openedClass: 'preview-mail-opened'
+        windowClass: 'preview-mail-window'
+        windowTopClass: 'preview-mail-windowTop'
+        resolve:
+          template: () ->
+            campaign: $scope.wizard.mail.campaign
+            title: 'Mail Preview'
+
+  $scope.quoteAndSend = () ->
+    $scope.wizard.mail.save()
+    .then () ->
+      $modal.open
+        template: require('../../../html/views/templates/modal-snailPrice.tpl.jade')()
+        controller: 'rmapsModalSnailPriceCtrl'
+        keyboard: false
+        backdrop: 'static'
+        windowClass: 'snail-modal'
+        resolve:
+          template: () ->
+            campaign: $scope.wizard.mail.campaign
 
   $rootScope.registerScopeData () ->
-    $scope.$parent.initMailTemplate()
-    .then () ->
-      setTemplObj()
-      $scope.data =
-        htmlcontent: $scope.templObj.mailCampaign.content
+    $scope.ready()

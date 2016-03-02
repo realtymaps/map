@@ -3,7 +3,6 @@ log = require('gulp-util').log
 config = require '../../backend/config/config'
 
 nodemon = require 'gulp-nodemon'
-do require '../../common/config/dbChecker.coffee'
 coffeelint = require 'gulp-coffeelint'
 argv = require('yargs').argv
 

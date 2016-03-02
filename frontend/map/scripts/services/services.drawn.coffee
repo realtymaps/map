@@ -29,5 +29,18 @@ app.service 'rmapsDrawnService',
           drawnItems.addLayer layer
       drawnItems
 
-  getDrawnShapesSvc: getDrawnShapesSvc
-  getDrawnItems: getDrawnItems
+  _getShapeModel = (layer) ->
+    _.merge layer.model, layer.toGeoJSON()
+
+  eachLayerModel = (layersObj, cb) ->
+    unless layersObj?
+      $log.error("layersObj is undefined")
+      return
+    layersObj.getLayers().forEach (layer) ->
+      cb(_getShapeModel(layer), layer)
+
+  {
+    getDrawnShapesSvc
+    getDrawnItems
+    eachLayerModel
+  }

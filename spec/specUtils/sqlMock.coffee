@@ -5,27 +5,7 @@ _logger = require("./logger").spawn('SqlMock')
 Promise = require 'bluebird'
 dbs = require '../../backend/config/dbs'
 
-_sqlFns = [
-  'select'
-  'groupBy'
-  'where'
-  'orWhere'
-  'whereIn'
-  'insert'
-  'update'
-  'del'
-  'delete'
-  'innerJoin'
-  'leftJoin'
-  'count'
-  'raw'
-  'groupByRaw'
-  'whereRaw'
-
-  'as'
-  'from'
-  'orderBy'
-]
+_sqlFns = ['raw'].concat require 'knex/lib/query/methods'
 
 class SqlMock
   ### Helper class for shielding database from sql queries during tests.  Advantages include:
@@ -167,7 +147,7 @@ class SqlMock
         return Promise.reject(@error).catch handler
 
     result = @getResult()
-    @logger.debug () => "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{result}"
+    @logger.debug () => "resolving UNCAUGHT error tables.#{@groupName}.#{@tableHandle} with #{JSON.stringify result}"
     return Promise.resolve(result)
 
   toString: () ->

@@ -1,3 +1,20 @@
+.mail-wizard-steps
+  header.send-progress(ng-hide="hideProgress()")
+    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
+    div.pathway
+      ul
+        li
+          span Recipients
+        li
+          span Campaign Info
+        li
+          span Select Template
+        li.active
+          span Edit Template
+        li
+          span Review
+
 .edit-template
   .inner
     .container
@@ -13,20 +30,31 @@
                   ta-toolbar="[['redo','undo']]")
 
             .row
-              input.form-control.name-input(ng-model="templObj.mailCampaign.name")
+              input.form-control.name-input(ng-model="wizard.mail.campaign.name")
             .row
               .template-stage-container
                 .template-stage
                   .letter-editor
+                    .return-address-window
+                      .return-address-text
+                        .address-line {{wizard.mail.campaign.sender_info.first_name}} {{wizard.mail.campaign.sender_info.last_name}}
+                        .address-line {{wizard.mail.campaign.sender_info.address_line1}}
+                        .address-line {{wizard.mail.campaign.sender_info.address_city}}, {{wizard.mail.campaign.sender_info.address_state}} {{wizard.mail.campaign.sender_info.address_zip}}
+                    .recipient-address-window
+                      .recipient-address-text
+                        .address-line {{wizard.mail.campaign.recipients[0].name}}
+                        .address-line {{wizard.mail.campaign.recipients[0].street_address_num}} {{wizard.mail.campaign.recipients[0].street_address_name}}
+                        .address-line {{wizard.mail.campaign.recipients[0].city}}, {{wizard.mail.campaign.recipients[0].state}} {{wizard.mail.campaign.recipients[0].zip}}
                     div(text-angular
                       rmaps-macro-helper
                       rmaps-macro-event-helper
+                      rmaps-page-break-helper
                       name="wysiwyg"
                       ta-default-wrap="p"
-                      ta-text-editor-class="ta-letter-wrapper"
+                      ta-text-editor-class="letter-body"
                       ta-html-editor-setup="htmlEditorSetup()"
                       ta-text-editor-setup="textEditorSetup()"
-                      ng-model="data.htmlcontent"
+                      ng-model="wizard.mail.campaign.content"
                       ta-target-toolbars="fontSizeToolbar")
                       //- ta-target-toolbars="featureToolbar,miscToolbar,colorToolbar,fontTypeToolbar,fontSizeToolbar")
 

@@ -1,6 +1,7 @@
 _ = require 'lodash'
 userExtensions = require('../utils/crud/extensions/util.crud.extension.user.coffee')
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
+EzRouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 logger = require('../config/logger').spawn('routes:crud:projectSession')
 tables = require('../config/tables')
 {joinColumnNames} = require '../utils/util.sql.columns'
@@ -124,28 +125,40 @@ class ProjectRouteCrud extends RouteCrud
     @notes = @notesCrud.root
     @notesById = @notesCrud.byId
 
-    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
-    #                                                     :drawn_shapes_id"  :(id -> project_id)
-    @drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
-    @drawnShapesCrud.doLogRequest = ['params', 'body']
-    @drawnShapesCrud.rootGETTransforms =
-      params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id"
-      query: validators.object isEmptyProtect: true
-      body: validators.object isEmptyProtect: true
-    @drawnShapesCrud.byIdGETTransforms =
-      params: validators.mapKeys {id: "#{tables.user.project.tableName}.id",drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"}
-
     bodyTransform =
       validators.object
         subValidateSeparate:
           geom_point_json: validators.geojson(toCrs:true)
           geom_polys_json: validators.geojson(toCrs:true)
           geom_line_json:  validators.geojson(toCrs:true)
+          shape_extras: validators.object()
 
-    @drawnShapesCrud.rootPOSTTransforms =
-      params: validators.mapKeys id: "#{tables.user.project.tableName}.id"
-      query: validators.object isEmptyProtect: true
-      body: bodyTransform
+    #TODO: need to discuss on how auth_user_id is to be handled or if we need parent_auth_user_id as well?
+    #                                                     :drawn_shapes_id"  :(id -> project_id)
+    #@drawnShapesCrud = routeCrud(@svc.drawnShapes, 'drawn_shapes_id', 'DrawnShapesHasManyRouteCrud')
+    @drawnShapesCrud = new EzRouteCrud @svc.drawnShapes,
+      rootGETTransforms:
+        params: validators.mapKeys id: "project_id"
+        query: validators.object isEmptyProtect: true
+        body: validators.object isEmptyProtect: true
+
+      byIdGETTransforms:
+        params: validators.mapKeys
+          id: "project_id"
+          drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"
+
+      rootPOSTTransforms:
+        params: validators.mapKeys id: 'project_id'
+        query: validators.object isEmptyProtect: true
+        body: bodyTransform
+
+      byIdPUTTransforms:
+        query: validators.object isEmptyProtect: true
+        body: bodyTransform
+
+      byIdDELETETransforms:
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+        query: validators.object isEmptyProtect: true
 
     @profilesCrud = routeCrud(@svc.profiles, 'profile_id', 'ProfilesRouteCrud')
     @profilesCrud.doLogRequest = ['params', 'body']
@@ -154,13 +167,6 @@ class ProjectRouteCrud extends RouteCrud
         validators.mapKeys id: "#{tables.user.profile.tableName}.project_id"
         validators.reqId toKey: "#{tables.user.profile.tableName}.auth_user_id"
       ]
-
-    for route in ['byIdPUT', 'byIdDELETE']
-      do (route) =>
-        @drawnShapesCrud[route + 'Transforms'] =
-          params: validators.mapKeys id: "#{tables.user.drawnShapes.tableName}.project_id", drawn_shapes_id: 'id'
-          query: validators.object isEmptyProtect: true
-          body: bodyTransform
 
     @drawnShapes = @drawnShapesCrud.root
     @drawnShapesById = @drawnShapesCrud.byId
@@ -171,7 +177,8 @@ class ProjectRouteCrud extends RouteCrud
     Promise.props
       clients: @clientsCrud.rootGET req, res, next
       notes: @notesCrud.rootGET req, res, next
-      drawnShapes: @drawnShapesCrud.rootGET req, res, next
+      drawnShapes: do =>
+        @drawnShapesCrud.rootGET {req, res, next, lHandleQuery: false}
       favorites: @profilesCrud.rootGET req, res, next
     .then (props) ->
       grouped = _.mapValues props, (recs) -> _.groupBy recs, 'project_id'

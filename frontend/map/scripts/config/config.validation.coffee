@@ -57,21 +57,21 @@ app.config(($provide, $validationProvider) ->
 
   defaultMsg =
     password:
-      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice!'
+      error: 'Password does not meet minimum requirements! 8 min chars, 1 Capital, 1 Lower, 1 Special Char, and no repeating chars more than twice'
     required:
-      error: 'Required!'
+      error: 'Required'
     url:
-      error: 'Invalid Url!'
+      error: 'Invalid Url'
     optUrl:
-      error: 'Invalid Url!'
+      error: 'Invalid Url'
     email:
-      error: 'Invalid Email!'
+      error: 'Invalid Email'
     checkUniqueEmail:
-      error: 'Email must be unique!'
+      error: 'Email must be unique'
     number:
-      error: 'Invalid Number!'
+      error: 'Invalid Number'
     optNumber:
-      error: 'Invalid Number!'
+      error: 'Invalid Number'
     minlength:
       error: 'This should be longer'
     optMinlength:
@@ -81,12 +81,12 @@ app.config(($provide, $validationProvider) ->
     optMaxlength:
       error: 'This should be shorter'
     phone:
-      error: 'Invalid phone number!'
+      error: 'Invalid phone number'
     optPhone:
-      error: 'Invalid phone number!'
+      error: 'Invalid phone number'
     address:
-      error: 'Invalid addess.'
+      error: 'Invalid address'
     zipcode:
-      error: 'Invalid US zipcode.'
+      error: 'Invalid US zipcode'
 
   $validation.setExpression(expression).setDefaultMsg(defaultMsg)

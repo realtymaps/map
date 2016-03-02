@@ -1,8 +1,8 @@
-_ = require 'lodash'
 tables = require '../config/tables'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('service:project')
 {profile, notes} = require './services.user'
 {ThenableCrud, thenableHasManyCrud} = require '../utils/crud/util.crud.service.helpers'
+EzServiceCrud = require('../utils/crud/util.ezcrud.service.helpers')
 {basicColumns, joinColumns, joinColumnNames} = require '../utils/util.sql.columns'
 sqlHelpers = require '../utils/util.sql.helpers'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
@@ -13,15 +13,10 @@ safeProfile = basicColumns.profile
 safeNotes = basicColumns.notes
 
 
-class DrawnShapesCrud extends ThenableCrud
+class DrawnShapesCrud extends EzServiceCrud
   constructor: () ->
     super(arguments...)
     @drawnShapeCols = basicColumns.drawnShapes
-
-  init:() =>
-    super arguments...
-    @doWrapSingleThen = 'singleRaw'
-    @
 
   getAll: () ->
     super(arguments...)
@@ -35,31 +30,28 @@ class ProjectCrud extends ThenableCrud
     super(arguments...)
 
   profilesFact: (dbFn = tables.user.project, joinCrud = profile) ->
-    # logger.debug.cyan dbFn
-    # logger.debug.cyan joinCrud
+    logger.debug dbFn.tableName
     thenableHasManyCrud dbFn, joinColumns.profile, joinCrud,
       "#{tables.user.profile.tableName}.project_id",
       "#{tables.user.project.tableName}.id",
       "#{tables.user.profile.tableName}.id"
 
   clientsFact: (dbFn = tables.auth.user, joinCrud = profile) ->
-    # logger.debug.cyan dbFn
-    # logger.debug.cyan joinCrud
+    logger.debug dbFn.tableName
     thenableHasManyCrud dbFn, joinColumns.client, joinCrud,
       "#{tables.user.profile.tableName}.auth_user_id",
       "#{tables.auth.user.tableName}.id",
       "#{tables.user.profile.tableName}.id"
 
   notesFact: (dbFn = tables.user.project, joinCrud = notes) ->
-    # logger.debug.cyan dbFn
-    # logger.debug.cyan joinCrud
+    logger.debug dbFn.tableName
     thenableHasManyCrud dbFn, joinColumns.notes, joinCrud,
       "#{tables.user.notes.tableName}.project_id",
       "#{tables.user.project.tableName}.id",
       "#{tables.user.notes.tableName}.id"
 
   drawnShapesFact: (dbFn = tables.user.drawnShapes) ->
-    # logger.debug.cyan dbFn
+    logger.debug dbFn.tableName
     new DrawnShapesCrud(dbFn)
 
   init: () =>
@@ -69,7 +61,7 @@ class ProjectCrud extends ThenableCrud
     @notes = @notesFact().init(arguments...)
     @notes.doLogQuery = true
 
-    @drawnShapes = @drawnShapesFact().init(arguments...)
+    @drawnShapes = @drawnShapesFact()
     # @drawnShapes.doLogQuery = true
 
     @profiles = @profilesFact().init(arguments...)

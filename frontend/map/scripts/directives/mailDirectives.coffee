@@ -37,7 +37,7 @@ app.directive 'rmapsMacroEventHelper', ($rootScope, $log, $timeout, textAngularM
       scope.editor.scope.$broadcast 'rmaps-drag-end'
 
 
-app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document, rmapsMailTemplateService) ->
+app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $document) ->
   $log = $log.spawn('mail:rmapsMacroHelper')
   restrict: 'A'
   require: 'ngModel'
@@ -132,7 +132,7 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
     # filter selected node for macros
     scope.macroFilter = (sel) ->
       # make macro span if it needs
-      if /{{.*?}}/.test(sel.focusNode.data)
+      if /{{.*?}}/.test(sel.focusNode?.data)
         if not scope.isMacroNode(sel.focusNode)
           offset = sel.focusNode.data.indexOf('{{')
           macro = sel.focusNode.data.substring offset, sel.focusNode.data.indexOf('}}')+2
@@ -191,11 +191,50 @@ app.directive 'rmapsMacroHelper', ($log, $rootScope, $timeout, $window, $documen
         if sel?.focusNode?.data? and scope.isMacroNode sel.focusNode
           scope.setMacroClass sel.focusNode
 
-    # keep templateObj updated with bound htmlcontent
-    scope.$watch 'data.htmlcontent', (newC, oldC) ->
-      rmapsMailTemplateService.setContent(scope.data.htmlcontent)
-      #scope.templateObj.mailCampaign.content = scope.data.htmlcontent
 
     # helper for holding a macro value during drag-and-drop
     scope.setMacro = (macro) ->
       scope.macro = macro
+
+app.directive 'rmapsPageBreakHelper', ($log, $timeout) ->
+  restrict: 'A'
+  require: 'ngModel'
+  link: (scope, element, attrs, ngModel) ->
+    $log = $log.spawn('mail:pageBreakHelper')
+
+    # This is fairly conservative to try and ensure a paragraph does not overlap the margin
+    bottomMargin = (1.2*96)
+
+    # Standard letter
+    pxPerPage = (11*96)
+
+    # The padding/margin needs to be set on the page-break (first) element of each page.
+    topMargin = (0.5*96)
+
+    # It isn't necessary to subtract the top margin as long as the nearest position:relative parent is at the top of the page
+    topMarginFirstPage = 0 # (2.7*96)
+
+    # The tag type to consider for page-breaks.
+    tagName = element.attr('ta-default-wrap') || 'p'
+
+    update = () ->
+      toCheck = element.find(tagName)
+      nextBreak = pxPerPage - topMarginFirstPage - bottomMargin
+      for p, i in toCheck
+        offset = p.offsetTop + p.clientHeight
+        # $log.debug -> "##{i} next:#{nextBreak}px/#{(nextBreak/96).toFixed(2)}in offsetTop:#{p.offsetTop}px/#{(p.offsetTop/96).toFixed(2)}in " +
+          # " clientHeight:#{p.clientHeight}px/#{(p.clientHeight/96).toFixed(2)}in total:#{offset}px/#{(offset/96).toFixed(2)}in"
+        if (offset) >= nextBreak && i > 0 # The first paragraph on any page will never be pushed to the next page
+          angular.element(p).addClass 'page-break'
+          nextBreak = p.offsetTop + pxPerPage - bottomMargin
+        else
+          angular.element(p).removeClass 'page-break'
+
+    element.on 'keyup', _.debounce () ->
+      scope.$evalAsync update
+    , 100
+
+    $timeout update, 500
+
+    scope.$on '$destroy', () ->
+      element.unbind 'keyup', element

@@ -3,11 +3,7 @@ var OurToolBar = require('./api.Toolbar.js')
 	editControl: true
 })*/
 
-module.exports = L.EditToolbar.extend({
-	removeToolbar: function() {
-	},
-	addToolbar: function (map) {
-	},
+module.exports = L.EditToolbar.extend(Object.assign({}, OurToolBar, {
 	initialize: function (options) {
 
 		L.setOptions(this, options)
@@ -121,4 +117,4 @@ module.exports = L.EditToolbar.extend({
 			);
 		}
 	}
-})
+}))

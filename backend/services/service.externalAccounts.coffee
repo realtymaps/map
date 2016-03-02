@@ -6,6 +6,8 @@ memoize = require 'memoizee'
 Encryptor = require '../utils/util.encryptor'
 config = require '../config/config'
 logger = require('../config/logger').spawn('externalAccounts')
+JSON5 = require('json5')
+
 
 encryptors = {}
 _getEncryptor = (cipherKey) ->
@@ -56,14 +58,18 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
   .then _transform.bind(null, _decrypt, cipherKey)
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
+  if typeof(accountInfo) == 'string'
+    accountInfo = JSON5.parse(accountInfo)
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
   .insert(_transform(_encrypt, cipherKey, accountInfo))
   if opts.logOnly
-    return logger.info(query.toString())
+    return console.log(query.toString())
   query
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
+  if typeof(accountInfo) == 'string'
+    accountInfo = JSON5.parse(accountInfo)
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: accountInfo.name)
@@ -73,7 +79,7 @@ updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
     query = query.where(environment: accountInfo.environment)
   query = query.update(_transform(_encrypt, cipherKey, accountInfo))
   if opts.logOnly
-    return logger.info(query.toString())
+    return console.log(query.toString())
   query
 
 

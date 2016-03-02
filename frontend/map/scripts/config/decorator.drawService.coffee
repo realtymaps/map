@@ -10,7 +10,6 @@ app.config ($provide) ->
         'rectangle'
         'circle'
         'polygon'
-        'text'
         'edit'
         'trash'
       ]

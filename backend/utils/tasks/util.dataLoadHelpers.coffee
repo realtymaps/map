@@ -69,13 +69,17 @@ recordChangeCounts = (subtask) ->
         .where(subset)
         .whereNull('deleted')
         .update(deleted: subtask.batch_id)
+        .then (count) ->
+          [count: count]
+        .finally () ->
+          logger.spawn('recordChangeCount').debug "'deleted/untouched' subquery finished"
     else if subtask.data.deletes == DELETE.INDICATED
       tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
       .count('*')
       .where(subset)
       .where(deleted: subtask.batch_id)
-      .then (results) ->
-        results[0].count
+      .finally () ->
+        logger.spawn('recordChangeCount').debug "'deleted/indicated' subquery finished"
   # get a count of raw rows from all raw tables from this batch with rm_valid == false
   invalidPromise = _countInvalidRows(subid, true)
   # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
@@ -85,27 +89,35 @@ recordChangeCounts = (subtask) ->
   .where(inserted: subtask.batch_id)
   .where(subset)
   .count('*')
+  .finally () ->
+    logger.spawn('recordChangeCount').debug "'inserted' subquery finished"
   # get a count of rows from this batch without a null change history, i.e. newly-updated rows
   updatedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(updated: subtask.batch_id)
   .where(subset)
   .count('*')
+  .finally () ->
+    logger.spawn('recordChangeCount').debug "'updated' subquery finished"
   touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(batch_id: subtask.batch_id)
   .where(subset)
   .orWhere(deleted: subtask.batch_id)
   .where(subset)
   .count('*')
+  .finally () ->
+    logger.spawn('recordChangeCount').debug "'touched' subquery finished"
   updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, touchedCount) ->
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tables.temp.buildTableName(subid))
     .update
-      invalid_rows: invalidCount
-      unvalidated_rows: unvalidatedCount
-      inserted_rows: insertedCount
-      updated_rows: updatedCount
-      deleted_rows: deletedCount
-      touched_rows: touchedCount
+      invalid_rows: invalidCount[0].count ? 0
+      unvalidated_rows: unvalidatedCount[0].count ? 0
+      inserted_rows: insertedCount[0].count ? 0
+      updated_rows: updatedCount[0].count ? 0
+      deleted_rows: deletedCount[0].count ? 0
+      touched_rows: touchedCount[0].count ? 0
+    .finally () ->
+      logger.spawn('recordChangeCount').debug "dataLoadHistory update finished"
   Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, touchedPromise, updateDataLoadHistory)
 
 

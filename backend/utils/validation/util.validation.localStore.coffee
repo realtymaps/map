@@ -48,4 +48,5 @@ module.exports = (options = {}) ->
       logger.warn space, true
 
     ret[options.toKey] = if firstRest.rest? then _.get(maybeRet, firstRest.rest) else maybeRet
+    logger.debug ret, true
     ret
