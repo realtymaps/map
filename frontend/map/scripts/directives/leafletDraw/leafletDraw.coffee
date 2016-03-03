@@ -136,7 +136,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           if _featureGroup
             map.removeLayer _featureGroup
 
-            _cleanUpEvents()
+            _cleanUpEvents(scope.events)
 
           drawControl?.onRemove()
           drawControl = null
