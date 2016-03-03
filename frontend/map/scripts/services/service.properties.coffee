@@ -149,6 +149,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       promise =
         $http.post(backendRoutes.properties.detail,
         _.extend({}, queryObj,{ state: _getState(mapState), columns: columns }), cache: cache)
+
       _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail)
 
     getProperties: (ids, columns) ->
