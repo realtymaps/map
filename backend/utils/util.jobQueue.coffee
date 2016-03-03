@@ -24,6 +24,9 @@ dbs = require '../config/dbs'
 MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 sendNotification = notification('jobQueue')
 
+_summary = (subtask) ->
+  JSON.stringify(_.omit(subtask.data,['values', 'ids']))
+
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   dbs.get('main').transaction (transaction) ->
@@ -218,7 +221,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
         # return 0 to indicate we queued 0 subtasks
         logger.spawn("task:#{subtask.task_name}").debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
-      suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
+      suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{_summary(subtask)}>"
       logger.spawn("task:#{subtask.task_name}").debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
@@ -347,16 +350,16 @@ executeSubtask = (subtask) ->
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
     if hard
-      logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
+      logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
     else
       if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
         if subtask.hard_fail_after_retries
           hard = true
           status = 'hard fail'
           error = "max retries exceeded due to: #{error}"
-          logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
+          logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
         else
-          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>: #{error}")
+          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
@@ -365,9 +368,9 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         .then (taskData) ->
           # need to make sure we don't continue to retry subtasks if the task has errored in some way
           if taskData == undefined
-            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
+            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
             return
-          logger.info("Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{JSON.stringify(_.omit(retrySubtask.data,'values'))}>: #{error}")
+          logger.info("Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
@@ -644,7 +647,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{JSON.stringify(_.omit(subtask.data,'values'))}>"
+      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{_summary(subtask)}>"
       return executeSubtask(subtask)
       .then nextIteration
 

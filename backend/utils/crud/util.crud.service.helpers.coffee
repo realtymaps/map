@@ -1,7 +1,7 @@
 _ = require 'lodash'
 logger = require('../../config/logger').spawn('crud:serviceHelpers')
 {PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
-{singleRow} = require '../util.sql.helpers'
+{singleRow, buildQuery} = require '../util.sql.helpers'
 factory = require '../util.factory'
 BaseObject = require '../../../common/utils/util.baseObject'
 {IsIdObjError} = require '../errors/util.errors.crud.coffee'
@@ -54,13 +54,7 @@ class Crud extends BaseObject
     @_getAll 'dbFn', arguments...
 
   _getAll: (dbFn, query = {}, doLogQuery = false, fnExec = execQ) ->
-    where = @[dbFn]()
-    _.each query, (val, key) ->
-      if _.isArray val
-        where = where.whereIn(key, val)
-
-    where = where.where(_.omit(query, _.isArray))
-
+    where = buildQuery(knex: @[dbFn](), entity: query)
     fnExec where, doLogQuery or @doLogQuery
 
   getById: () ->
