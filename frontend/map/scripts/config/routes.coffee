@@ -142,6 +142,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
   buildState 'mail'
   buildState 'mailWizard',
+    abstract: true
     sticky: true
 
   buildChildState 'selectTemplate', 'mailWizard'

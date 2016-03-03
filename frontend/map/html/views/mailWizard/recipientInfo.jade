@@ -1,7 +1,7 @@
 .mail-wizard-steps
   header.send-progress(ng-hide="hideProgress()")
     button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!wizard.mail.campaign.recipientType") Next
+    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!wizard.mail.campaign.recipients.length") Next
     div.pathway
       ul
         li.active
@@ -19,7 +19,7 @@
   .inner
     .container
       h1.pageTitle Recipients
-      form(ng-show="wizard.mail.campaign.property_ids.length > 0")
+      form(ng-show="property_ids.length > 0")
         .send-to
           label
             input(type="radio" name="sendTo" ng-model="wizard.mail.campaign.recipientType" value="property" ng-change="changeRecipients()")
@@ -40,7 +40,7 @@
               div Send to both addresses
               .total(ng-click="showAddresses(propertyAndOwner)") {{propertyAndOwner.length}} total
 
-      form(ng-show="!wizard.mail.campaign.property_ids.length")
+      form(ng-show="!property_ids.length")
         .send-to
           label
             input(disabled type="radio" checked)
