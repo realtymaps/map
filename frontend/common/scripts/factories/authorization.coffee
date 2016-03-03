@@ -7,14 +7,13 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
 
   goToStateFu = (stateName, event) ->
     #as stated in stackoverflow this avoids race hell in ui-router
-    event.preventDefault if event
+    event.preventDefault() if event
     $timeout -> $state.go stateName
 
   doPermsCheck = (event, toState, goToLocation) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
-      event.preventDefault
       goToStateFu routes.login, event
       return
 
