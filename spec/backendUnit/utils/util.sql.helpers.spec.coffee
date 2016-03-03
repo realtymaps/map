@@ -1,4 +1,4 @@
-{basePath} = require '../../globalSetup'
+{basePath} = require '../globalSetup'
 dbs = require("#{basePath}/config/dbs")
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 {expect} = require 'chai'
