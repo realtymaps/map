@@ -114,6 +114,11 @@ describe "service.lob", ->
         test: lobSvc
         live: lobSvc
 
+      svc.__set__ 'awsService',
+        getTimedDownloadUrl: (bucket, key) -> Promise.try ->
+          return "http://aws-pdf-downloads/#{key}"
+        buckets: PDF: 'aws-pdf-downloads'
+
     it 'should update campaign status and create letters', (done) ->
 
       svc.sendCampaign mockPdfCampaign.id, mockAuthUser.id

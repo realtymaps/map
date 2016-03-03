@@ -11,7 +11,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
-
   $scope.displayCategory = 'all'
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
@@ -19,21 +18,14 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.sentFile = false
 
   $scope.uploadFile = (file, errFiles) ->
-    console.log "got a file!"
-
     $scope.f = file
     $scope.errFile = errFiles && errFiles[0]
     key = "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
-
-    console.log "s3_upload creds:"
-    console.log "#{JSON.stringify(rmapsMainOptions.mail.s3_upload, null, 2)}"
-    console.log "key: #{key}"
 
     if (file)
       file.upload = Upload.upload(
         url: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
         method: 'POST'
-        #data: {data: file}
         data:
           key: key
           AWSAccessKeyId: rmapsMainOptions.mail.s3_upload.AWSAccessKeyId
@@ -41,7 +33,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           policy: rmapsMainOptions.mail.s3_upload.policy
           signature: rmapsMainOptions.mail.s3_upload.signature
           'Content-Type': 'application/pdf'
-          #filename: file.name
           file: file
       )
 

@@ -70,9 +70,6 @@ module.exports =
   temp: 'raw_temp.raw'
 
 
-
-
-
 _setup = (baseObject) ->
   for key, value of baseObject
     if typeof(value) == 'object'

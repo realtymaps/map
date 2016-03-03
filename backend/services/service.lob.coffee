@@ -192,53 +192,61 @@ sendCampaign = (campaignId, userId) ->
               throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
 
 queueLetters = (campaign, tx) ->
-  tables.mail.letters(transaction: tx)
-  .insert _.map campaign.recipients, (recipient) ->
+  Promise.map campaign.recipients, (recipient) ->
     buildLetter campaign, recipient
+    .then (letter) ->
+      letter
+  .then (letters) ->
+    tables.mail.letters(transaction: tx)
+    .insert letters
 
 buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
+  template = true
 
-  # If this letter is a pdf, template must be set to false so the address is on a separate page
-  if campaign.aws_key
-    template = false
-    # 10 minute expiration for url below
-    file = awsService.getTimedDownloadUrl awsService.buckets.PDF, campaign.aws_key
-  else
-    file = campaign.lob_content
+  Promise.try ->
+    if campaign.aws_key
+      template = false
+      # 10 minute expiration for url below
+      awsService.getTimedDownloadUrl awsService.buckets.PDF, campaign.aws_key
+      .then (file) ->
+        file
+    else
+      return campaign.lob_content
 
-  letter =
-    auth_user_id: campaign.auth_user_id
-    user_mail_campaign_id: campaign.id
-    address_to: address_to
-    address_from: address_from
-    file: file
-    status: 'ready'
-    options:
-      template: template
-      metadata:
-        campaignId: campaign.id
-        userId: campaign.auth_user_id
-        uuid: uuid.v1()
-      data:
-        campaign_name: campaign.name
-        recipient_name: address_to.name
-        recipient_address_line1: address_to.address_line1
-        recipient_address_line2: address_to.address_line2
-        recipient_city: address_to.address_city
-        recipient_state: address_to.address_state
-        recipient_zip: address_to.address_zip
-        sender_name: address_from.name
-        sender_address_line1: address_from.address_line1
-        sender_address_line2: address_from.address_line2
-        sender_city: address_from.address_city
-        sender_state: address_from.address_state
-        sender_zip: address_from.address_zip
+  .then (file) ->
+    letter =
+      auth_user_id: campaign.auth_user_id
+      user_mail_campaign_id: campaign.id
+      address_to: address_to
+      address_from: address_from
+      file: file
+      status: 'ready'
+      options:
+        template: template
+        metadata:
+          campaignId: campaign.id
+          userId: campaign.auth_user_id
+          uuid: uuid.v1()
+        data:
+          campaign_name: campaign.name
+          recipient_name: address_to.name
+          recipient_address_line1: address_to.address_line1
+          recipient_address_line2: address_to.address_line2
+          recipient_city: address_to.address_city
+          recipient_state: address_to.address_state
+          recipient_zip: address_to.address_zip
+          sender_name: address_from.name
+          sender_address_line1: address_from.address_line1
+          sender_address_line2: address_from.address_line2
+          sender_city: address_from.address_city
+          sender_state: address_from.address_state
+          sender_zip: address_from.address_zip
 
-  _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
+    _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
 
-  letter
+    letter
 
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
@@ -249,12 +257,13 @@ getPriceQuote = (userId, campaignId) ->
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
 
     letter = buildLetter campaign, campaign.recipients[0]
-    createLetterTest letter
+    .then () ->
+      createLetterTest letter
 
-    .then (lobResponse) ->
-      res =
-        pdf: lobResponse.url
-        price: lobResponse.price * campaign.recipients.length
+      .then (lobResponse) ->
+        res =
+          pdf: lobResponse.url
+          price: lobResponse.price * campaign.recipients.length
 
 getDetails = (lobId) ->
   lobPromise()
