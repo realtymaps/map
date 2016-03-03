@@ -232,6 +232,31 @@ buildQuery = ({knex, entity, orHash}) ->
 
   query
 
+
+# Static function that produces an upsert query string given ids and entity of model.
+buildUpsertBindings = (idObj, entityObj, tableName) ->
+  id = buildRawBindings(idObj, defaultNulls: true)
+  entity = buildRawBindings(entityObj)
+
+  # postgresql template for raw query
+  # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
+  templateStr = """
+   INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
+    VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
+    ON CONFLICT (#{id.cols.placeholder})
+    DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
+    RETURNING #{id.cols.placeholder}
+  """
+
+  sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
+  bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
+
+
+upsert = (idObj, entityObj, dbFn) -> Promise.try () ->
+  upsertBindings = buildUpsertBindings(idObj, entityObj, dbFn.tableName)
+  dbFn().raw(upsertBindings.sql, upsertBindings.bindings)
+
+
 module.exports = {
   between
   ageOrDaysFromStartToNow
@@ -254,4 +279,6 @@ module.exports = {
   sqlizeColName
   buildRawBindings
   buildQuery
+  buildUpsertBindings
+  upsert
 }
