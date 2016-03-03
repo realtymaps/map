@@ -11,6 +11,7 @@ LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
+awsService = require('./service.aws')
 paymentSvc = null
 
 LOB_LETTER_DEFAULTS =
@@ -195,9 +196,6 @@ queueLetters = (campaign, tx) ->
   .insert _.map campaign.recipients, (recipient) ->
     buildLetter campaign, recipient
 
-buildS3Url = (key) ->
-  return "http://s3.url.example.com/uploads/#{key}"
-
 buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
@@ -205,7 +203,8 @@ buildLetter = (campaign, recipient) ->
   # If this letter is a pdf, template must be set to false so the address is on a separate page
   if campaign.aws_key
     template = false
-    file = buildS3Url campaign.aws_key
+    # 10 minute expiration for url below
+    file = awsService.getTimedDownloadUrl awsService.buckets.PDF, campaign.aws_key
   else
     file = campaign.lob_content
 
