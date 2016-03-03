@@ -234,7 +234,7 @@ buildQuery = ({knex, entity, orHash}) ->
 
 
 # Static function that produces an upsert query string given ids and entity of model.
-buildUpsertBindings: (idObj, entityObj, tableName) ->
+buildUpsertBindings = (idObj, entityObj, tableName) ->
   id = buildRawBindings(idObj, defaultNulls: true)
   entity = buildRawBindings(entityObj)
 
