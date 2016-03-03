@@ -74,6 +74,3 @@ app.controller 'rmapsEditTemplateCtrl',
         resolve:
           template: () ->
             campaign: $scope.wizard.mail.campaign
-
-  $rootScope.registerScopeData () ->
-    $scope.ready()
