@@ -214,7 +214,7 @@ chargeCampaign = (subtask) ->
 
 subtasks =
   findLetters: findLetters
-  sendLetter: sendLetter
+  createLetter: createLetter
   findCampaigns: findCampaigns
   chargeCampaign: chargeCampaign
 
