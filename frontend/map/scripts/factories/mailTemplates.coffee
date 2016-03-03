@@ -59,6 +59,9 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
 
+    isSubmitted: () ->
+      @campaign.status != 'ready'
+
     isSent: () ->
       @campaign.status == 'paid'
 

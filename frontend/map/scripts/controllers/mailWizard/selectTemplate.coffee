@@ -51,12 +51,10 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           $scope.wizard.mail.campaign.aws_key = key
           $scope.wizard.mail.save()
           $scope.sentFile = true
-          console.log "sentfile turned ON"
 
           $timeout () ->
             $scope.sentFile = false
             file.progress = -1
-            console.log "sentfile turned OFF"
           , 4000
 
       , (response) ->
@@ -65,21 +63,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
       , (evt) ->
         file.progress = Math.min(100, parseInt(100.0 * evt.loaded / evt.total))
-
-
-    # $scope.fileSelected = (files) ->
-    #   if (files && files.length)
-    #     $scope.file = files[0]
-
-    #   $upload.upload(
-    #     url: 'http://localhost:8085/assets'
-    #     file: $scope.file
-    #   )
-    #   .success (data) ->
-    #     console.log data, 'uploaded'
-   
-
-  
 
   $scope.isEmptyCategory = () ->
     return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0

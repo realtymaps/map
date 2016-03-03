@@ -1,7 +1,7 @@
 .mail-wizard-steps
   header.send-progress(ng-hide="hideProgress()")
     button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!campaign.template_type") Next
+    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!(wizard.mail.campaign.template_type || wizard.mail.campaign.aws_key)") Next
     div.pathway
       ul
         li

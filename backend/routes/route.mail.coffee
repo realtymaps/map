@@ -3,7 +3,6 @@ RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 mailCampaignService = require '../services/service.mail_campaigns'
 {validators} = require '../utils/util.validation'
-sqlHelpers = require '../utils/util.sql.helpers'
 
 
 reqTransforms =

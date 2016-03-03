@@ -42,8 +42,8 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
     'paid': 'sent'
 
   getQuote = () ->
-    if $scope.wizard.mail.isSent()
-      return $q.when("Mailing submitted. Lob Batch Id: #{$scope.wizard.mail.campaign.lob_batch_id}")
+    if $scope.wizard.mail.isSubmitted()
+      return $q.when("Mailing submitted.")
     if $scope.wizard.mail.campaign?.recipients?.length == 0
       return $q.when("0.00")
     rmapsLobService.getQuote $scope.wizard.mail.campaign.id
@@ -58,7 +58,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
     $scope.ready()
     .then () ->
       $scope.category = $scope.wizard.mail.getCategory()
-      $scope.sentFlag = $scope.wizard.mail.isSent()
+      $scope.sentFlag = $scope.wizard.mail.isSubmitted()
       getQuote()
       .then (response) ->
         $scope.priceQuote = response

@@ -3,12 +3,16 @@ RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
 pdfUploadService = require '../services/service.pdfUpload'
 {validators} = require '../utils/util.validation'
-sqlHelpers = require '../utils/util.sql.helpers'
+
+reqTransforms =
+  body:
+    validators.reqId toKey: "auth_user_id"
 
 class PdfUploadRoute extends RouteCrud
 
 instance = new PdfUploadRoute pdfUploadService,
   debugNS: "pdfUploadRoute"
+  reqTransforms: reqTransforms
 
 module.exports = routeHelpers.mergeHandles instance,
   root:

@@ -34,7 +34,9 @@ class MailService extends ServiceCrud
     .where user_mail_campaign_id: campaign_id
     .limit 1
     .then (result) ->
-      if !result?.length? or result.length == 0 then throw new PartiallyHandledError("No letters have been sent from this campaign!")
+      # null lob response indicates the tasks in queue have not completed sending any letters yet
+      if !result[0].lob_response?
+        return details: pdf: null
       sample = result[0]
       lobId = sample.lob_response.id
       lobService.getDetails lobId
