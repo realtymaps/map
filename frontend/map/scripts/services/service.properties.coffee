@@ -112,6 +112,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       delete _favoriteProperties[rm_property_id]
       model.savedDetails.isFavorite = false
 
+  _setFlags = (model) ->
+    return if not model or not model.rm_property_id
+    rm_property_id = model.rm_property_id
+
+    model.savedDetails ?= new rmapsPropertyFactory(rm_property_id)
+    model.savedDetails.isSaved = !!_savedProperties[rm_property_id]
+    model.savedDetails.isFavorite = !!_favoriteProperties[rm_property_id]
+
   _loadProperties = (col = _savedProperties) ->
     service.getProperties (_.pluck _.filter(col, (p) -> !p.rm_status?), 'rm_property_id'), 'filter'
     .then (response) ->
@@ -150,9 +158,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
         _.extend({}, queryObj,{ state: _getState(mapState), columns: columns }), cache: cache)
 
       return _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail).then (property) ->
-        _saveProperty property
-        _favoriteProperty property
-
+        _setFlags property
         return property
 
     getProperties: (ids, columns) ->
