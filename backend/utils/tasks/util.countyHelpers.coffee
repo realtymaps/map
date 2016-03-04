@@ -176,7 +176,9 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
 finalizeData = (subtask, id) ->
   tables.property.tax(subid: subtask.data.normalSubid)
   .select('*')
-  .where(rm_property_id: id)
+  .where
+    rm_property_id: id
+    data_source_id: subtask.task_name
   .whereNull('deleted')
   .orderBy('rm_property_id')
   .orderBy('deleted')
@@ -197,7 +199,9 @@ finalizeData = (subtask, id) ->
       return
     tables.property.deed(subid: subtask.data.normalSubid)
     .select('*')
-    .where(rm_property_id: id)
+    .where
+      rm_property_id: id
+      data_source_id: subtask.task_name
     .whereNull('deleted')
     .orderBy('rm_property_id')
     .orderBy('deleted')
@@ -208,7 +212,9 @@ finalizeData = (subtask, id) ->
         return
       mortgagePromise = tables.property.mortgage(subid: subtask.data.normalSubid)
       .select('*')
-      .where(rm_property_id: id)
+      .where
+        rm_property_id: id
+        data_source_id: subtask.task_name
       .whereNull('deleted')
       .orderBy('rm_property_id')
       .orderBy('deleted')
@@ -241,8 +247,11 @@ finalizeData = (subtask, id) ->
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-        tables.property.combined()
-        .insert(tax)
+        ident =
+          rm_property_id: id
+          data_source_id: subtask.task_name
+          active: false
+        sqlHelpers.upsert(ident, tax, tables.property.combined)
 
 
 ###

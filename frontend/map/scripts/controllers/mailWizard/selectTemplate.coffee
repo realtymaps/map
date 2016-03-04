@@ -13,8 +13,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
 
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
-  $scope.oldTemplateType = ""
-  
+  $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
+
 
   $scope.isEmptyCategory = () ->
     return $scope.displayCategory not of $scope.categoryLists or $scope.categoryLists[$scope.displayCategory].length == 0
@@ -62,12 +62,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, rma
           content: rmapsMailTemplateTypeService.getHtml(template.type)
           category: template.category
           title: template.name
-
-  $rootScope.registerScopeData () ->
-    $scope.ready()
-    .then () ->
-      $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
-
 
 app.controller 'rmapsConfirmCtrl',
   ($scope, modalBody, modalTitle) ->

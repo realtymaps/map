@@ -44,7 +44,7 @@ findLetters = (subtask, cb) ->
 # This task sends a _single_ letter via the LOB API and saves the response data (or error) returned
 #   https://lob.com/docs#letters_create)
 #
-sendLetter = (subtask) ->
+createLetter = (subtask) ->
   letter = subtask.data
 
   lob_errors = []
@@ -214,7 +214,7 @@ chargeCampaign = (subtask) ->
 
 subtasks =
   findLetters: findLetters
-  sendLetter: sendLetter
+  createLetter: createLetter
   findCampaigns: findCampaigns
   chargeCampaign: chargeCampaign
 
