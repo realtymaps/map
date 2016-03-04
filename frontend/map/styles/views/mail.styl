@@ -101,14 +101,26 @@
       background-color #123d74
 
     .toolGroup
-      width 370px
+      width 8.5in
       margin auto
+      display flex
+      justify-content space-between
+
+      .btns
+        display flex
+
+      input
+        display inline-block
+        align-self center
+        text-align left
+        padding 0
 
       .btn-toolbar
         margin 0
       button
-        margin 5px
+        margin-left 5px
         height 2.5em
+        align-self center
 
       .miscTools::before, .btn-toolbar::before
         display initial
