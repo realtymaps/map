@@ -15,8 +15,9 @@ app.controller 'rmapsProjectCtrl',
     property: new rmapsPropertyFormatterService
 
   # Override for property button
-  $scope.formatters.results.zoomTo = (result) ->
+  $scope.zoomClick = (result) ->
     $state.go 'map', project_id: $state.params.id, property_id: result.rm_property_id
+    return false
 
   $scope.project = null
   clientsService = null

@@ -138,7 +138,8 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
           $timeout ->
             return if _handleManualMarkerCluster(model)
             if event.ctrlKey or event.metaKey
-              return mapCtrl.saveProperty(model, lObject)
+#              return mapCtrl.saveProperty(model, lObject)
+              rmapsPropertiesService.pinUnpinProperty model
             unless _lastEvents.last == 'dblclick'
               $scope.formatters.results.showModel(model)
           , limits.clickDelayMilliSeconds
@@ -148,7 +149,7 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
         {originalEvent} = event
         if originalEvent.stopPropagation then originalEvent.stopPropagation() else (originalEvent.cancelBubble=true)
 
-        mapCtrl.saveProperty model, lObject
+        rmapsPropertiesService.pinUnpinProperty model
         $timeout ->
           #cleanup
           _lastEvents.last = undefined

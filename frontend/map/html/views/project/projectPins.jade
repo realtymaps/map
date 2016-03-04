@@ -1,5 +1,4 @@
 include ../../includes/mixins/property/_propertyAttributes.jade
-include ../../includes/mixins/property/_propertyButtons.jade
 
 .collapse-header
   h2.title Pinned ({{_.keys(project.properties_selected).length}})
@@ -12,4 +11,4 @@ include ../../includes/mixins/property/_propertyButtons.jade
         img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
       .property-data
         +propertyAttributes('property')
-        +propertyButtons('property')
+        property-buttons(property='property' zoom-click='zoomClick(property)')
