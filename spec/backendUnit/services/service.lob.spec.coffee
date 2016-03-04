@@ -77,7 +77,7 @@ describe "service.lob", ->
 
         @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.lob_content
 
-        @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal true
+        expect(@tables.mail.letters().insertSpy.args[0][0][0].options.template).to.be.undefined
 
         done()
 
@@ -137,7 +137,7 @@ describe "service.lob", ->
         @tables.mail.letters().insertSpy.callCount.should.equal 1
         @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
-        @tables.mail.letters().insertSpy.args[0][0][0].file.should.contain mockPdfCampaign.aws_key
+        @tables.mail.letters().insertSpy.args[0][0][0].options.aws_key.should.contain mockPdfCampaign.aws_key
 
         done()
 
@@ -147,4 +147,5 @@ describe "service.lob", ->
       .then ({letter, lob}) ->
         letter.file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
         letter.template.should.be.false
+        letter.color.should.be.true
         done()

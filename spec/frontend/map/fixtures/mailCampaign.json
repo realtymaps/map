@@ -12,7 +12,7 @@
   "content": "<div class=\"letter-page\"><p>Content</p></div>",
   "template_type": "basicLetter",
   "lob_content": "<head></head><body><div class=\"letter-page\"><p>Content</p></div></body>",
-  "aws_key": "asdf.pdf",
+  "aws_key": "uploads/herpderp_l337.pdf",
   "sender_info": {
     "first_name": "Fname",
     "last_name": "Lname",

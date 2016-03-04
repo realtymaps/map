@@ -18,22 +18,25 @@
     "address_zip": "55555"
   },
   "file": "<div class=\"amazing-html-5-content\">Dear Reader...</div>",
-  "metadata": {
-    "campaignId": 1,
-    "userId": 7,
-    "uuid": "e9222641-cf54-11e5-96bc-9319592f8499"
-  },
-  "data": {
-    "campaign_name": "Campaign 1",
-    "recipient_name": "Homeowner",
-    "recipient_address_line1": "2917 Poplar St",
-    "recipient_address_city": "Naples",
-    "recipient_address_state": "FL",
-    "recipient_address_zip": "34112-5830",
-    "sender_name": "Homeowner",
-    "sender_address_line1": "123 Main St",
-    "sender_address_city": "Springfield",
-    "sender_address_state": "FL",
-    "sender_address_zip": "55555"
+  "options": {
+    "aws_key": "uploads/herpderp_l337.pdf",
+    "metadata": {
+      "campaignId": 1,
+      "userId": 7,
+      "uuid": "e9222641-cf54-11e5-96bc-9319592f8499"
+    },
+    "data": {
+      "campaign_name": "Campaign 1",
+      "recipient_name": "Homeowner",
+      "recipient_address_line1": "2917 Poplar St",
+      "recipient_address_city": "Naples",
+      "recipient_address_state": "FL",
+      "recipient_address_zip": "34112-5830",
+      "sender_name": "Homeowner",
+      "sender_address_line1": "123 Main St",
+      "sender_address_city": "Springfield",
+      "sender_address_state": "FL",
+      "sender_address_zip": "55555"
+    }
   }
 }

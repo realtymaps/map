@@ -43,22 +43,5 @@ class MailService extends ServiceCrud
         pdf: url
 
 
-
-#       sample = result[0]
-#       lobId = sample.lob_response.id
-#       lobService.getDetails lobId
-#       .then (lob_response) ->
-#         details =
-#           pdf: lob_response.url
-# =======
-#     .then ([result]) ->
-#       if !result
-#         pdf: null
-#       else
-#         lobService.getDetails result.lob_response.id
-#         .then ({url}) ->
-#           pdf: url
-# >>>>>>> origin/master
-
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance
