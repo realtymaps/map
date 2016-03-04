@@ -16,7 +16,10 @@ rmapsDrawPostActionFactory) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     if Object.keys(drawnItems._layers).length
-      $scope.Toggles.propertiesInShapes = true
+      unWatch = $scope.$watch 'Toggles', (newVal) ->
+        if newVal
+          $scope.Toggles.propertiesInShapes = true
+          unWatch()
 
     _handles = rmapsMapDrawHandlesFactory {
       drawnShapesSvc
