@@ -1,6 +1,8 @@
 extends ./_layout
 block content
   .full-width.container
+    main.site-main.map-container(ui-view="main-map" class="{{pageClass}}")
+
     main.site-main.page-container(ui-view="main-page" class="{{pageClass}}" ng-show="rmapsPageService.isPage()")
       include ../views/home.jade
 

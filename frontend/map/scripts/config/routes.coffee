@@ -41,6 +41,18 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     delete state.template
     delete state.controller
 
+  buildMapState = (overrides = {}) ->
+    name = 'map'
+    state = baseState name, overrides
+    appendTemplateProvider name, state
+    createView name, state, 'main-map'
+
+    # Set the page type
+    state.pageType = 'map'
+
+    $stateProvider.state(state)
+    state
+
   buildModalState = (name, overrides = {}) ->
     state = baseState name, overrides
     appendTemplateProvider name, state
@@ -75,9 +87,9 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
 
-  buildState 'map',
-    sticky: true,
-    reloadOnSearch: false,
+  buildMapState
+    sticky: true
+    reloadOnSearch: false
     params:
       project_id:
         value: null
