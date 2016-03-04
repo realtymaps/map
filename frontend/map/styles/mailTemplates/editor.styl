@@ -16,16 +16,18 @@ $wysiwyg-scale-factor = 1.0
       background-color $gray_lighter
       margin-bottom $template-stage-margin
       text-align center
+      overflow auto
 
       .letter-editor
         margin auto // centers the editor
-        box-shadow 4px 4px 20px #888888
         zoom $wysiwyg-scale-factor
-        overflow scroll
         height 6.5in
         width 8.5in
         background-color $white
         position relative // Important for address positioning and page breaks
+
+        .ta-root
+          box-shadow 4px 4px 20px #888888
 
         .wysiwygOnly
           display block
@@ -63,6 +65,7 @@ $wysiwyg-scale-factor = 1.0
       .ta-scroll-window > .ta-bind
         padding 0
         outline none // prevents blue outline around the editor
+        padding-bottom 1em
 
       .return-address-window,
       .recipient-address-window
