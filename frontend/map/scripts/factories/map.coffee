@@ -131,21 +131,6 @@ app.factory 'rmapsMapFactory',
 
           @redraw(false)
 
-#        @saveProperty = (model) =>
-#          lObject = leafletDataMainMap.get(model.rm_property_id, 'filterSummary')?.lObject
-#
-#          #TODO: Need to debounce / throttle
-#          if model.savedDetails?.isSaved
-#            saved = rmapsPropertiesService.unpinProperty(model)
-#          else
-#            saved = rmapsPropertiesService.pinProperty(model)
-#
-#          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-#          lObject?.setIcon(new L.divIcon(model.icon))
-#          return unless saved
-#          saved.then (savedDetails) =>
-#            @redraw(false)
-
         @favoritePropertyEventHandler = (event, eventData) =>
           result = eventData.property
 
@@ -158,12 +143,6 @@ app.factory 'rmapsMapFactory',
             rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
             lObject?.setIcon(new L.divIcon(result.icon))
 
-  #        @favoriteProperty = (model, lObject) =>
-  #          #TODO: Need to debounce / throttle
-  #          saved = rmapsPropertiesService.favoriteProperty(model)
-  #          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-  #          lObject?.setIcon(new L.divIcon(model.icon))
-  #          saved
 
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = _.extend {}, @getMapStateObj(), overrideObj

@@ -166,39 +166,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     pinProperty: (models) =>
       @pinUnpinProperty models
-#      if _.isArray models
-#        _.each models, (model) ->
-#          _saveProperty model, true
-#          true
-#      else
-#        _saveProperty models, true
-#
-#      _loadProperties()
-#      .then () ->
-#        $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
-#
-#      #post state to database
-#      toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
-#      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
-#      _saveThrottler.invokePromise statePromise
-#      statePromise.error (data, status) -> $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
 
     unpinProperty: (models) =>
       @pinUnpinProperty models
-#      if _.isArray models
-#        _.each models, (model) ->
-#          _saveProperty model, false
-#          true
-#      else
-#        _saveProperty models, false
-#
-#      $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
-#
-#      #post state to database
-#      toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
-#      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
-#      _saveThrottler.invokePromise statePromise
-#      statePromise.error (data, status) -> $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
 
     pinUnpinProperty: (models) ->
       if !_.isArray models

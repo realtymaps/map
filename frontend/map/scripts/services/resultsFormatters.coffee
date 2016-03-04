@@ -77,7 +77,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
     getResultsArray: =>
       _.values @mapCtrl.scope.results
-      
+
     ###
     Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
     ###
@@ -151,11 +151,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
       return false
 
-#      wasSaved = result?.savedDetails?.isSaved
-#      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
-#        @reset()
-#        if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
-#          result.isMousedOver = undefined
 
 
     clickFavoriteResultFromList: (result, event = {}) =>
