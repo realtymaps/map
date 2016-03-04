@@ -10,6 +10,7 @@ loginTemplate = require '../../../common/html/login.jade'
 stateDefaults =
   sticky: true
   loginRequired: true
+  profileRequired: false
 
 app.run ($rootScope) ->
   $rootScope.navbarPages = [

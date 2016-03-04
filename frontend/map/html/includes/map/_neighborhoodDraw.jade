@@ -2,4 +2,4 @@ include ../mixins/_drawToolMixin.jade
 +drawToolMixin('neighborhood', 'Neighborhood', 
   'Toggles.isNeighborhoodDraw', 
   'Toggles.toggleIsNeighborhoodDraw(); Toggles.setPropetiesInShapes(false)',
-  'rmapsDrawNeighborhoodCtrl')(ng-init="Toggles.togglePropertiesInShapes()")
+  'rmapsDrawNeighborhoodCtrl')(ng-init="Toggles.togglePropertiesInShapes()" ng-controller="rmapsNeighbourhoodsModalCtrl")

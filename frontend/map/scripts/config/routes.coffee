@@ -8,6 +8,8 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 stateDefaults =
   sticky: false
   loginRequired: true
+  profileRequired: true
+  persist: false
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
 rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
@@ -70,7 +72,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       createView name, state, 'main-page'
 
     # Set the page type
-    state.pageType = 'page'
+    state.pageType = state.pageType or 'page'#could already be set from overrides
 
     $stateProvider.state(state)
     state
@@ -84,9 +86,10 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     state
 
   buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
+
   buildMapState
-    sticky: true,
-    reloadOnSearch: false,
+    sticky: true
+    reloadOnSearch: false
     params:
       project_id:
         value: null
@@ -124,8 +127,8 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       showSteps: true
 
   buildState 'snail'
-  buildState 'user'
-  buildState 'profiles'
+  buildState 'user', profileRequired: false
+  buildState 'profiles', profileRequired: false
   buildState 'history'
   buildState 'properties'
   buildModalState 'property', page: { title: 'Property Detail' }
