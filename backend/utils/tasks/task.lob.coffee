@@ -34,7 +34,6 @@ findLetters = (subtask, cb) ->
   .whereIn('status', [ 'ready', 'error-transient' ])
   .then (letters) ->
     Promise.map letters, (letter) ->
-      # letterRequest = _.merge letter, letter.options
       if _.isFunction cb
         cb batch_id: subtask.batch_id, data: letterRequest
       else

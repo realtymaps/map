@@ -40,8 +40,6 @@ validation =
     (?=.*[a-z])             #one lowercase
     (?=.*[A-Z]).*$///       #one uppercase
 
-  pdfUpload: /uploads\/([a-zA-Z0-9]){7,9}_([a-zA-Z0-9]){3,4}\.pdf/
-
 commonConfig =
   SUPPORT_EMAIL: 'support@realtymaps.com'
   UNEXPECTED_MESSAGE: (troubleshooting) ->
