@@ -9,7 +9,7 @@ findLettersTest = () ->
   .select('*')
   .where name: 'lob_findLetters'
   .then (subtask) ->
-    findLetters(subtask, sendLetter)
+    findLetters(subtask, createLetter)
 
 findCampaignsTest = () ->
   tables.jobQueue.currentSubtasks()

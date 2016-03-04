@@ -1,4 +1,5 @@
 app = require '../../app.coffee'
+commonConfig = require '../../../../../common/config/commonConfig.coffee'
 _ = require 'lodash'
 confirmModalTemplate = require('../../../html/views/templates/modals/confirm.jade')()
 previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
@@ -14,13 +15,13 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.displayCategory = 'all'
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
-  $scope.oldTemplateType = ""
+  $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
   $scope.sentFile = false
 
   $scope.uploadFile = (file, errFiles) ->
     $scope.f = file
     $scope.errFile = errFiles && errFiles[0]
-    key = "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
+    key = commonConfig.pdfUpload.getKey()
 
     if (file)
       file.upload = Upload.upload(
@@ -101,12 +102,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           content: rmapsMailTemplateTypeService.getHtml(template.type)
           category: template.category
           title: template.name
-
-  $rootScope.registerScopeData () ->
-    $scope.ready()
-    .then () ->
-      $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
-
 
 app.controller 'rmapsConfirmCtrl',
   ($scope, modalBody, modalTitle) ->

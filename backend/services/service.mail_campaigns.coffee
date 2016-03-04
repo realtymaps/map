@@ -32,17 +32,33 @@ class MailService extends ServiceCrud
     tables.mail.letters()
     .select 'lob_response'
     .where user_mail_campaign_id: campaign_id
+    .whereNotNull 'lob_response'
     .limit 1
-    .then (result) ->
+    .then ([result]) ->
       # null lob response indicates the tasks in queue have not completed sending any letters yet
-      if !result[0].lob_response?
-        return details: pdf: null
-      sample = result[0]
-      lobId = sample.lob_response.id
-      lobService.getDetails lobId
-      .then (lob_response) ->
-        details =
-          pdf: lob_response.url
+      if !result.lob_response?
+        return pdf: null
+      lobService.getDetails result.lob_response.id
+      .then ({url}) ->
+        pdf: url
+
+
+
+#       sample = result[0]
+#       lobId = sample.lob_response.id
+#       lobService.getDetails lobId
+#       .then (lob_response) ->
+#         details =
+#           pdf: lob_response.url
+# =======
+#     .then ([result]) ->
+#       if !result
+#         pdf: null
+#       else
+#         lobService.getDetails result.lob_response.id
+#         .then ({url}) ->
+#           pdf: url
+# >>>>>>> origin/master
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance

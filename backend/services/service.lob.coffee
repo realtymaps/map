@@ -1,4 +1,5 @@
-externalAccounts = require '../services/service.externalAccounts'
+externalAccounts = require './service.externalAccounts'
+commonConfig = require '../../common/config/commonConfig'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
@@ -67,41 +68,46 @@ _getAddress = (r) ->
   address_state: r.address_state ? r.state ? ''
   address_zip: r.address_zip ? r.zip ? ''
 
-createLetter = (letter) ->
+_maybeUseSignedUrl = (letter) ->
+  Promise.try ->
+    # assign a temporary signed url for the campaign pdf we host in s3
+    if commonConfig.validation.pdfUpload.test(letter.file)
+      # 10 minute expiration for url below
+      awsService.getTimedDownloadUrl awsService.buckets.PDF, letter.file
+      .then (file) ->
+        letter.file = file
+        letter.template = false
+
+  .catch (err) ->
+    throw new Error(err, "Could not acquire a signed url.")
+
+prepareLobLetter = (letter) ->
   lobPromise()
   .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
+    _maybeUseSignedUrl letter
+    .then () ->
+      _.defaultsDeep letter, LOB_LETTER_DEFAULTS
+      letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+      letter.to = letter.address_to
+      letter.from = letter.address_from
+      {letter: letter, lob: lob}
 
-    letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
-    letter.to = letter.address_to
-    letter.from = letter.address_from
-
+createLetter = (letter) ->
+  prepareLobLetter letter
+  .then ({letter, lob}) ->
     if config.ENV != 'production'
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
-
-    logger.debug -> "createLetter() #{JSON.stringify letter, null, 2}"
     lob.live.letters.create _.pick letter, LOB_LETTER_FIELDS
-
     .catch isUnhandled, handleError('live')
 
 createLetterTest = (letter) ->
-  lobPromise()
-  .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
-
-    letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
-    letter.to = letter.address_to
-    letter.from = letter.address_from
-
-    logger.debug () -> "createLetterTest() #{JSON.stringify letter, null, 2}"
-    lob.test.letters.create _.pick(letter, LOB_LETTER_FIELDS)
-
+  prepareLobLetter letter
+  .then ({letter, lob}) ->
+    lob.test.letters.create _.pick letter, LOB_LETTER_FIELDS
     .catch isUnhandled, handleError('test')
 
 sendCampaign = (campaignId, userId) ->
-
   logger.debug "Sending campaign #{campaignId}"
-
   Promise.props({
 
     authUser: tables.auth.user()
@@ -192,61 +198,44 @@ sendCampaign = (campaignId, userId) ->
               throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
 
 queueLetters = (campaign, tx) ->
-  Promise.map campaign.recipients, (recipient) ->
+  tables.mail.letters(transaction: tx)
+  .insert _.map campaign.recipients, (recipient) ->
     buildLetter campaign, recipient
-    .then (letter) ->
-      letter
-  .then (letters) ->
-    tables.mail.letters(transaction: tx)
-    .insert letters
 
 buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
-  template = true
 
-  Promise.try ->
-    if campaign.aws_key
-      template = false
-      # 10 minute expiration for url below
-      awsService.getTimedDownloadUrl awsService.buckets.PDF, campaign.aws_key
-      .then (file) ->
-        file
-    else
-      return campaign.lob_content
+  letter =
+    auth_user_id: campaign.auth_user_id
+    user_mail_campaign_id: campaign.id
+    address_to: address_to
+    address_from: address_from
+    file: if campaign.aws_key then campaign.aws_key else campaign.lob_content
+    status: 'ready'
+    options:
+      metadata:
+        campaignId: campaign.id
+        userId: campaign.auth_user_id
+        uuid: uuid.v1()
+      data:
+        campaign_name: campaign.name
+        recipient_name: address_to.name
+        recipient_address_line1: address_to.address_line1
+        recipient_address_line2: address_to.address_line2
+        recipient_city: address_to.address_city
+        recipient_state: address_to.address_state
+        recipient_zip: address_to.address_zip
+        sender_name: address_from.name
+        sender_address_line1: address_from.address_line1
+        sender_address_line2: address_from.address_line2
+        sender_city: address_from.address_city
+        sender_state: address_from.address_state
+        sender_zip: address_from.address_zip
 
-  .then (file) ->
-    letter =
-      auth_user_id: campaign.auth_user_id
-      user_mail_campaign_id: campaign.id
-      address_to: address_to
-      address_from: address_from
-      file: file
-      status: 'ready'
-      options:
-        template: template
-        metadata:
-          campaignId: campaign.id
-          userId: campaign.auth_user_id
-          uuid: uuid.v1()
-        data:
-          campaign_name: campaign.name
-          recipient_name: address_to.name
-          recipient_address_line1: address_to.address_line1
-          recipient_address_line2: address_to.address_line2
-          recipient_city: address_to.address_city
-          recipient_state: address_to.address_state
-          recipient_zip: address_to.address_zip
-          sender_name: address_from.name
-          sender_address_line1: address_from.address_line1
-          sender_address_line2: address_from.address_line2
-          sender_city: address_from.address_city
-          sender_state: address_from.address_state
-          sender_zip: address_from.address_zip
+  _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
 
-    _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
-
-    letter
+  letter
 
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
@@ -257,13 +246,11 @@ getPriceQuote = (userId, campaignId) ->
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
 
     letter = buildLetter campaign, campaign.recipients[0]
-    .then () ->
-      createLetterTest letter
-
-      .then (lobResponse) ->
-        res =
-          pdf: lobResponse.url
-          price: lobResponse.price * campaign.recipients.length
+    createLetterTest letter
+    .then (lobResponse) ->
+      res =
+        pdf: lobResponse.url
+        price: lobResponse.price * campaign.recipients.length
 
 getDetails = (lobId) ->
   lobPromise()
