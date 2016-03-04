@@ -110,7 +110,7 @@ StripeCustomers = (stripe) ->
       args: opts
       required: ['amount', 'currency', 'source', 'description']
 
-    opts.amount = opts.amount * 100 # dollars to cents
+    opts.amount = Math.round(opts.amount * 100) # dollars to cents
 
     if idempotency_key
       headers = {idempotency_key}
@@ -124,7 +124,7 @@ StripeCustomers = (stripe) ->
       required: [ 'charge' ]
 
     if opts.amount
-      opts.amount = opts.amount * 100 # dollars to cents
+      opts.amount = Math.round(opts.amount * 100) # dollars to cents
 
     logger.debug -> "Capturing stripe charge: #{JSON.stringify opts}"
     stripe.charges.capture opts.charge, _.pick opts, [ 'amount', 'receipt_email', 'statement_descriptor' ]

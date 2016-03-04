@@ -13,14 +13,3 @@ describe 'rmapsMailWizardCtrl', ->
       @$rootScope = $rootScope
       @scope = @$rootScope.$new()
       @rmapsMailTemplateFactory = rmapsMailTemplateFactory
-
-  describe 'controller behavior', ->
-    it 'vetting controller logic', (done) ->
-      controller = @$controller 'rmapsMailWizardCtrl', { $scope: @scope, $state: @state }
-      logic = @scope.ready()
-      .then () =>
-        expect(@scope.wizard.mail).to.be.ok
-        done()
-
-      @digestor.digest @scope, logic
-

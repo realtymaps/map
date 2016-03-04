@@ -4,7 +4,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $location, $q, rmapsMailTemplateFactory) ->
+app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $location, $q, rmapsMailTemplateFactory, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:mailWizard'
   $log.debug 'rmapsMailWizardCtrl'
   $scope.steps = [
@@ -16,7 +16,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
   ]
 
   $scope.wizard =
-    mail: new rmapsMailTemplateFactory()
+    mail: null
 
   $scope.hideBackButton = () ->
     thisStep = _getStep $state.current.name
@@ -39,12 +39,11 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
   _changeStep = (next = 1) ->
     $scope.wizard.mail.save()
     .then (campaign) ->
-      $location.search 'id', campaign.id
       thisStep = _getStep $state.current.name
       newStep = $scope.steps[thisStep + next]
       if thisStep == -1 or !newStep? then return
       $log.debug "_changeStep() going to #{newStep}"
-      $state.go($state.get(newStep))
+      $state.go($state.get(newStep), id: campaign.id)
 
   $scope.nextStep = () ->
     _changeStep(1)
@@ -53,13 +52,13 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
     _changeStep(-1)
 
   # accessed in child controllers for maintaining mailTemplate object
-  $scope.ready = () ->
+  $rootScope.registerScopeData () ->
     if $state.params.id
-      $log.debug "Loading mail campaign #{$state.params.id}"
-      return $scope.wizard.mail.load $state.params.id # return promise
+      rmapsMailCampaignService.get id: $state.params.id
+      .then ([campaign]) ->
+        $scope.wizard.mail = new rmapsMailTemplateFactory(campaign)
+    else if $state.current.name == 'recipientInfo'
+      $log.debug "Creating new mail campaign"
+      $scope.wizard.mail = new rmapsMailTemplateFactory()
     else
-      if $state.current.name != 'recipientInfo' and !$scope.wizard.mail.campaign.id?
-        $state.go('mail') # redirect
-      else
-        $log.debug "Continuing with mail campaign #{$scope.wizard.mail.campaign.id}"
-        return $q.when $scope.wizard.mail.campaign # return promise
+      $state.go('mail')
