@@ -1,4 +1,4 @@
-externalAccounts = require '../services/service.externalAccounts'
+externalAccounts = require './service.externalAccounts'
 promisify = require '../config/promisify'
 Promise = require 'bluebird'
 LobFactory = require 'lob'
@@ -11,11 +11,8 @@ LobErrors = require '../utils/errors/util.errors.lob.coffee'
 logger = require('../config/logger').spawn('service:lob')
 dbs = require('../config/dbs')
 uuid = require 'node-uuid'
+awsService = require('./service.aws')
 paymentSvc = null
-
-LOB_LETTER_DEFAULTS =
-  color: true
-  template: true
 
 LOB_LETTER_FIELDS = [
    'to'
@@ -66,41 +63,51 @@ _getAddress = (r) ->
   address_state: r.address_state ? r.state ? ''
   address_zip: r.address_zip ? r.zip ? ''
 
-createLetter = (letter) ->
+_maybeUseSignedUrl = (letter) ->
+  Promise.try ->
+    # assign a temporary signed url for the campaign pdf we host in s3
+    if letter.options.aws_key
+      # 10 minute expiration for url below
+      awsService.getTimedDownloadUrl awsService.buckets.PDF, letter.options.aws_key
+      .then (file) ->
+        letter.file = file
+        letter.options.template = false
+        letter.options.color = true
+    else
+      letter.options.template = true
+      letter.options.color = false
+
+  .catch (err) ->
+    throw new Error(err, "Could not acquire a signed url.")
+
+prepareLobLetter = (letter) ->
   lobPromise()
   .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
+    _maybeUseSignedUrl letter
+    .then () ->
+      letter = _.merge letter, letter.options
+      letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
+      letter.to = letter.address_to
+      letter.from = letter.address_from
+      letter = _.pick letter, LOB_LETTER_FIELDS
+      {letter: letter, lob: lob}
 
-    letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
-    letter.to = letter.address_to
-    letter.from = letter.address_from
-
+createLetter = (letter) ->
+  prepareLobLetter letter
+  .then ({letter, lob}) ->
     if config.ENV != 'production'
       throw new Error("Refusing to use LOB-live API from #{config.ENV}")
-
-    logger.debug -> "createLetter() #{JSON.stringify letter, null, 2}"
-    lob.live.letters.create _.pick letter, LOB_LETTER_FIELDS
-
+    lob.live.letters.create letter
     .catch isUnhandled, handleError('live')
 
 createLetterTest = (letter) ->
-  lobPromise()
-  .then (lob) ->
-    _.defaultsDeep letter, LOB_LETTER_DEFAULTS
-
-    letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
-    letter.to = letter.address_to
-    letter.from = letter.address_from
-
-    logger.debug () -> "createLetterTest() #{JSON.stringify letter, null, 2}"
-    lob.test.letters.create _.pick(letter, LOB_LETTER_FIELDS)
-
+  prepareLobLetter letter
+  .then ({letter, lob}) ->
+    lob.test.letters.create letter
     .catch isUnhandled, handleError('test')
 
 sendCampaign = (campaignId, userId) ->
-
   logger.debug "Sending campaign #{campaignId}"
-
   Promise.props({
 
     authUser: tables.auth.user()
@@ -108,7 +115,7 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire
@@ -199,22 +206,15 @@ buildLetter = (campaign, recipient) ->
   address_to = _getAddress recipient
   address_from = _getAddress campaign.sender_info
 
-  # If this letter is a pdf, template must be set to false so the address is on a separate page
-  if campaign.content_url
-    template = false
-    file = campaign.content_url
-  else
-    file = campaign.lob_content
-
   letter =
     auth_user_id: campaign.auth_user_id
     user_mail_campaign_id: campaign.id
     address_to: address_to
     address_from: address_from
-    file: file
+    file: campaign.lob_content
     status: 'ready'
     options:
-      template: template
+      aws_key: campaign.aws_key
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
@@ -234,13 +234,9 @@ buildLetter = (campaign, recipient) ->
         sender_state: address_from.address_state
         sender_zip: address_from.address_zip
 
-  _.defaultsDeep letter.options, LOB_LETTER_DEFAULTS
-
-  letter
-
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'lob_content', 'content_url', 'status', 'sender_info', 'recipients')
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
@@ -248,7 +244,6 @@ getPriceQuote = (userId, campaignId) ->
 
     letter = buildLetter campaign, campaign.recipients[0]
     createLetterTest letter
-
     .then (lobResponse) ->
       res =
         pdf: lobResponse.url

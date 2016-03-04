@@ -8,6 +8,7 @@ if scriptName not in ['server','jobQueueWorker','queueNeedsWorker']
 
 
 base =
+  COFFEE_SOURCE_MAP: process.env.COFFEE_SOURCE_MAP || true
   DYNO: process.env.DYNO || 'local'
   NAMESPACE: 'rmaps'
   JQ_QUEUE_NAME: process.env.JQ_QUEUE_NAME || null

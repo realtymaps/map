@@ -38,7 +38,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
     'sending': 'pending'
     'paid': 'sent'
 
-  if !$scope.wizard.mail.isSent()
+  if !$scope.wizard.mail.isSubmitted()
     rmapsLobService.getQuote($scope.wizard.mail.campaign.id)
     .then (quote) ->
       $scope.priceQuote = quote

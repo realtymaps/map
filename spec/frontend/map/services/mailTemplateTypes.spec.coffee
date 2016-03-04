@@ -23,5 +23,5 @@ describe 'mailTemplateType service', ->
         ['letter', 'Letters']
         ['postcard', 'Postcards']
         ['favorite', 'Favorites']
-        ['custom', 'Custom']
+        #['custom', 'Custom']
       ]

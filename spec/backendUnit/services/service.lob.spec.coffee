@@ -16,7 +16,7 @@ mockAuthUser =
   stripe_customer_id: 'cus_7r3jpOU0t3LQ9k'
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
-mockPdfCampaign = _.extend {}, mockCampaign, content_url: 'https://s3-us-west-2.amazonaws.com/lob-assets/letter-goblue.pdf'
+mockPdfCampaign = _.extend {}, mockCampaign, aws_key: 'uploads/herpderp_l337.pdf'
 mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
@@ -77,7 +77,7 @@ describe "service.lob", ->
 
         @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.lob_content
 
-        @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal true
+        expect(@tables.mail.letters().insertSpy.args[0][0][0].options.template).to.be.undefined
 
         done()
 
@@ -114,6 +114,11 @@ describe "service.lob", ->
         test: lobSvc
         live: lobSvc
 
+      svc.__set__ 'awsService',
+        getTimedDownloadUrl: (bucket, key) -> Promise.try ->
+          return "http://aws-pdf-downloads/#{key}"
+        buckets: PDF: 'aws-pdf-downloads'
+
     it 'should update campaign status and create letters', (done) ->
 
       svc.sendCampaign mockPdfCampaign.id, mockAuthUser.id
@@ -132,8 +137,15 @@ describe "service.lob", ->
         @tables.mail.letters().insertSpy.callCount.should.equal 1
         @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
-        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockPdfCampaign.content_url
+        @tables.mail.letters().insertSpy.args[0][0][0].options.aws_key.should.contain mockPdfCampaign.aws_key
 
-        @tables.mail.letters().insertSpy.args[0][0][0].options.template.should.equal false
+        done()
 
+    it 'should prepare pdf letters with valid `file` and `template` values', (done) ->
+      mockLetter.file = 'uploads/herpderp_l337.pdf'
+      svc.__get__('prepareLobLetter')(mockLetter)
+      .then ({letter, lob}) ->
+        letter.file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
+        letter.template.should.be.false
+        letter.color.should.be.true
         done()

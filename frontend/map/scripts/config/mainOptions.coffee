@@ -49,4 +49,11 @@ app.constant 'rmapsMainOptions', do () ->
       macros:
         address: '{{address}}'
         name: '{{name}}'
+      s3_upload:
+        AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
+        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgICB7ImJ1Y2tldCI6ICJybWFwcy1wZG' +
+          'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +
+          'FydHMtd2l0aCIsICIkQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL3BkZiJdLAogICAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
+        signature: 'wvcT2Cp1Qb6a2XI59tr/vwjN1Vs='
+
   res

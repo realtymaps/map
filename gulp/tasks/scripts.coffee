@@ -11,6 +11,8 @@ buffer = require 'vinyl-buffer'
 prettyHrtime = require 'pretty-hrtime'
 through = require 'through2'
 conf = require './conf'
+mainConfig = require '../../backend/config/config'
+console.log mainConfig.COFFEE_SOURCE_MAP
 require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'
@@ -111,7 +113,7 @@ browserifyTask = (app, watch = false) ->
       #  NOTE this cannot be in the config above as coffeelint will fail so the order is coffeelint first
       #  this is not needed if the transforms are in the package.json . If in JSON the transformsare ran post
       #  coffeelint.
-      .transform('coffeeify')
+      .transform('coffeeify', sourceMap: mainConfig.COFFEE_SOURCE_MAP)
       .transform('browserify-ngannotate', { "ext": ".coffee" })
       .transform('jadeify')
       .transform('stylusify')
