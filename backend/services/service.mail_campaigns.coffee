@@ -35,12 +35,13 @@ class MailService extends ServiceCrud
     .whereNotNull 'lob_response'
     .limit 1
     .then ([result]) ->
-      if !result
-        pdf: null
-      else
-        lobService.getDetails result.lob_response.id
-        .then ({url}) ->
-          pdf: url
+      # null lob response indicates the tasks in queue have not completed sending any letters yet
+      if !result.lob_response?
+        return pdf: null
+      lobService.getDetails result.lob_response.id
+      .then ({url}) ->
+        pdf: url
+
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance
