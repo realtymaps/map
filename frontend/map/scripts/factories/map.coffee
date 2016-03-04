@@ -67,11 +67,9 @@ app.factory 'rmapsMapFactory',
         $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
           self.zoomTo result, doChangeZoom
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, (event, result) ->
-          self.pinPropertyEventHandler event, result
+        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
 
-        $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, (event, result) ->
-          self.favoritePropertyEventHandler event, result
+        $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
 
         #
         # End Property Button Events
@@ -111,22 +109,25 @@ app.factory 'rmapsMapFactory',
 
         @layerFormatter = rmapsLayerFormattersService
 
-        @pinPropertyEventHandler = (event, result) =>
-          wasSaved = result?.savedDetails?.isSaved
+        @pinPropertyEventHandler = (event, eventData) =>
+          result = eventData.property
 
-          # Handle the leaflet object
-          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
-          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
-          lObject?.setIcon(new L.divIcon(result.icon))
+          if result
+            wasSaved = result?.savedDetails?.isSaved
 
-          #make sure selectedResult is updated if it exists
-          summary = @scope.map?.markers?.filterSummary
-          if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
-            delete @scope.selectedResult.savedDetails
-            angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
+            # Handle the leaflet object
+            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+            lObject?.setIcon(new L.divIcon(result.icon))
 
-          if wasSaved and !@scope.results[result.rm_property_id]
-            result.isMousedOver = undefined
+            #make sure selectedResult is updated if it exists
+            summary = @scope.map?.markers?.filterSummary
+            if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
+              delete @scope.selectedResult.savedDetails
+              angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
+
+            if wasSaved and !@scope.results[result.rm_property_id]
+              result.isMousedOver = undefined
 
           @redraw(false)
 
@@ -145,21 +146,24 @@ app.factory 'rmapsMapFactory',
 #          saved.then (savedDetails) =>
 #            @redraw(false)
 
-        @favoritePropertyEventHandler = (event, result) =>
-          wasFavorite = result?.savedDetails?.isFavorite
-          if wasFavorite and !@scope.results[result.rm_property_id]
-            result.isMousedOver = undefined
+        @favoritePropertyEventHandler = (event, eventData) =>
+          result = eventData.property
 
-          lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
-          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
-          lObject?.setIcon(new L.divIcon(result.icon))
+          if result
+            wasFavorite = result?.savedDetails?.isFavorite
+            if wasFavorite and !@scope.results[result.rm_property_id]
+              result.isMousedOver = undefined
 
-#        @favoriteProperty = (model, lObject) =>
-#          #TODO: Need to debounce / throttle
-#          saved = rmapsPropertiesService.favoriteProperty(model)
-#          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-#          lObject?.setIcon(new L.divIcon(model.icon))
-#          saved
+            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+            lObject?.setIcon(new L.divIcon(result.icon))
+
+  #        @favoriteProperty = (model, lObject) =>
+  #          #TODO: Need to debounce / throttle
+  #          saved = rmapsPropertiesService.favoriteProperty(model)
+  #          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
+  #          lObject?.setIcon(new L.divIcon(model.icon))
+  #          saved
 
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = _.extend {}, @getMapStateObj(), overrideObj

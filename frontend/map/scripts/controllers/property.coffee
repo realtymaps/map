@@ -23,7 +23,6 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, rmapsProperties
 
     rmapsPropertiesService.getPropertyDetail(null, {rm_property_id: propertyId }, 'all', false)
     .then (property) ->
-      property.savedDetails = _.extend {}, property
       $scope.selectedResult = property
 
   getPropertyDetail $stateParams.id

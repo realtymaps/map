@@ -22,7 +22,6 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
   # Reset the properties hash when switching profiles
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, profile) ->
-
     propertyIds = _.union _.keys(profile.properties_selected), _.keys(profile.favorites)
 
     service.getProperties propertyIds, 'filter'
@@ -35,8 +34,8 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
           _.extend model, detail
           _favoriteProperty model
 
-      $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
-      $rootScope.$emit rmapsEventConstants.update.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.pin, properties: _savedProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.favorite, properties: _favoriteProperties
 
   _getState = (mapState = {}, filters) ->
     # $log.debug "mapState: #{JSON.stringify mapState}"
@@ -150,7 +149,11 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
         $http.post(backendRoutes.properties.detail,
         _.extend({}, queryObj,{ state: _getState(mapState), columns: columns }), cache: cache)
 
-      _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail)
+      return _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail).then (property) ->
+        _saveProperty property
+        _favoriteProperty property
+
+        return property
 
     getProperties: (ids, columns) ->
       $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
@@ -206,9 +209,13 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       if needLoad
         _loadProperties()
         .then () ->
-          $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
+          $rootScope.$emit rmapsEventConstants.update.properties.pin,
+            property: models[0],
+            properties: _savedProperties
       else
-        $rootScope.$emit rmapsEventConstants.update.properties.pin, _savedProperties
+        $rootScope.$emit rmapsEventConstants.update.properties.pin,
+          property: models[0],
+          properties: _savedProperties
 
       #post state to database
       toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
@@ -219,7 +226,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     favoriteProperty: (model) ->
       _favoriteProperty model
-      $rootScope.$emit rmapsEventConstants.update.properties.favorite, _favoriteProperties
+      $rootScope.$emit rmapsEventConstants.update.properties.favorite,
+        property: model,
+        properties: _favoriteProperties
 
       #post state to database
       toSave = _.mapValues _favoriteProperties, (model) -> model.savedDetails
