@@ -72,5 +72,4 @@ app.controller 'rmapsJobsHealthCtrl',
     .then (health) ->
       $scope.jobsGrid.data = health.plain()
 
-  $rootScope.registerScopeData () ->
-    $scope.loadHealth($scope.healthTimerange)
+  $scope.loadHealth($scope.healthTimerange)

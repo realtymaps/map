@@ -114,5 +114,4 @@ app.controller 'rmapsProjectCtrl',
   $rootScope.$onRootScope rmapsEventConstants.notes, () ->
     $scope.loadProject() unless !$state.params.id
 
-  $rootScope.registerScopeData () ->
-    $scope.loadProject()
+  $scope.loadProject()

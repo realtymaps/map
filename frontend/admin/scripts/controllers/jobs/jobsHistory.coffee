@@ -193,7 +193,7 @@ app.controller 'rmapsJobsHistoryCtrl',
     errorFilters = _.clone filters
     if task.name != 'All Tasks'
       filters.name = errorFilters.task_name = task.name
-      
+
     $scope.jobsBusy = rmapsJobsService.getHistory(filters)
     .then (history, errorHistory) ->
       $scope.jobsGrid.data = history.plain()
@@ -224,5 +224,4 @@ app.controller 'rmapsJobsHistoryCtrl',
         else # account for a certain case where a previous search was done, but new timerange selected that invalidates it since dropdown is refreshed, but $state.params remain
           $state.params = {}
 
-  $rootScope.registerScopeData () ->
-    $scope.loadReadyHistory()
+  $scope.loadReadyHistory()

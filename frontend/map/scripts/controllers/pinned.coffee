@@ -16,10 +16,6 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
     $scope.favoriteProperties = favorites or rmapsPropertiesService.getFavoriteProperties()
     $scope.favoriteTotal = _.keys($scope.favoriteProperties).length
 
-  $rootScope.registerScopeData () ->
-    getPinned()
-    getFavorites()
-
   $scope.pinResults = ($event) ->
     toPin = $scope.formatters.results.getResultsArray()
     $log.debug toPin
@@ -67,3 +63,6 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
 
   $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, getPinned
   $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, getFavorites
+
+  getPinned()
+  getFavorites()

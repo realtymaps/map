@@ -51,14 +51,12 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
   $scope.prevStep = () ->
     _changeStep(-1)
 
-  # accessed in child controllers for maintaining mailTemplate object
-  $rootScope.registerScopeData () ->
-    if $state.params.id
-      rmapsMailCampaignService.get id: $state.params.id
-      .then ([campaign]) ->
-        $scope.wizard.mail = new rmapsMailTemplateFactory(campaign)
-    else if $state.current.name == 'recipientInfo'
-      $log.debug "Creating new mail campaign"
-      $scope.wizard.mail = new rmapsMailTemplateFactory()
-    else
-      $state.go('mail')
+  if $state.params.id
+    rmapsMailCampaignService.get id: $state.params.id
+    .then ([campaign]) ->
+      $scope.wizard.mail = new rmapsMailTemplateFactory(campaign)
+  else if $state.current.name == 'recipientInfo'
+    $log.debug "Creating new mail campaign"
+    $scope.wizard.mail = new rmapsMailTemplateFactory()
+  else
+    $state.go('mail')
