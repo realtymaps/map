@@ -49,6 +49,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     setTemplateType: (type) ->
       @campaign.template_type = type
       @campaign.content = rmapsMailTemplateTypeService.getMailContent(type)
+      @campaign.aws_key = if @getCategory() == 'pdf' then type else null
 
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)

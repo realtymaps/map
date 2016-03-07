@@ -33,5 +33,8 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
         category: 'pdf'
         type: pdf.aws_key
 
-  # getPdfs: () ->
-  #   @get
+  getSignedUrl: (aws_key) ->
+    keyEncoded = encodeURIComponent(aws_key)
+    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded)
+    .then ({data}) ->
+      data

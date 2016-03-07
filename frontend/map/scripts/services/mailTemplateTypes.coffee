@@ -1,7 +1,7 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailTemplateTypeService', ($log) ->
+app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
 
   _categoryLists = {}
   _meta =
@@ -44,6 +44,12 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       _categoryLists['all'].push obj
       _categoryLists[_meta[templateType].category].push obj
 
+    # since pdfs are, themselves, categorically a template type, retrieve them and include them here 
+    rmapsMailPdfService.getAsCategory()
+    .then (pdfs) ->
+      _appendCategoryList 'pdf', pdfs
+
+
   _getTypeNames = () ->
     return Object.keys _meta
 
@@ -55,8 +61,6 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       ['letter', 'Letters']
       ['postcard', 'Postcards']
       ['pdf', 'Uploaded PDFs']
-      # ['favorite', 'Favorites']
-      # ['custom', 'Custom']
     ]
 
   _getMeta = () ->
@@ -69,10 +73,7 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
     if !(type of _categoryLists)
       _categoryLists[type] = []
 
-    # angular.extend _categoryLists['all'], list
-    # angular.extend _categoryLists[type], list
-    console.log "\n\nlist:"
-    console.log "#{JSON.stringify(list, null, 2)}"
+    # nestle the items within maintenence structs as appropriate
     for item in list
       _categoryLists['all'].push item
       _categoryLists[type].push item
@@ -80,6 +81,7 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
         _meta[item.type] = {}
       _meta[item.type].content = item.type
       _meta[item.type].category = 'pdf'
+
 
   _buildCategoryLists()
 

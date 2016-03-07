@@ -9,6 +9,9 @@ reqTransforms =
     validators.reqId toKey: "auth_user_id"
 
 class PdfUploadRoute extends RouteCrud
+  getSignedUrl: (req, res, next) =>
+    @custom @svc.getSignedUrl(req.params.id), res
+
 
 instance = new PdfUploadRoute pdfUploadService,
   debugNS: "pdfUploadRoute"
@@ -26,4 +29,9 @@ module.exports = routeHelpers.mergeHandles instance,
     middleware: [
       auth.requireLogin(redirectOnFail: true)
       # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
+    ]
+  getSignedUrl:
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
     ]

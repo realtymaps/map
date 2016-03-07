@@ -1,7 +1,7 @@
 .mail-wizard-steps
   header.send-progress(ng-hide="hideProgress()")
     button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
-    button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()" ng-disabled="!(wizard.mail.campaign.template_type || wizard.mail.campaign.aws_key)") Next
+    button.btn.btn-primary.pull-right(ng-click="nextStep(wizard.mail.getCategory()=='pdf'?2:1)" ng-hide="hideNextButton()" ng-disabled="!(wizard.mail.campaign.template_type || wizard.mail.campaign.aws_key)") Next
     div.pathway
       ul
         li
@@ -23,7 +23,7 @@
         .pdf-upload
           .file-select.btn.btn-primary
             span Upload A PDF
-            input.upload(type="file" ngf-select="uploadFile($file, $invalidFiles)" ngf-accept="'application/pdf'")
+            input.upload(type="file" ngf-select="uploadFile($file, $invalidFiles)" ngf-accept="'application/pdf'" ng-model="uploadfile")
 
           .file-progress
             .file-progress-indicator.progress(ng-show="f.progress > 0" ng-class="{'done-fade': sentFile}")
