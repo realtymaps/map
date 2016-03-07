@@ -11,7 +11,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
     $timeout ->
       $state.go stateName
 
-  doPermsCheck = (event, toState) ->
+  doPermsCheck = ({event, toState}) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
@@ -36,13 +36,13 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
 
     # if we can, do check now (synchronously)
     if rmapsPrincipalService.isIdentityResolved()
-      return doPermsCheck(event, toState)
+      return doPermsCheck({event, toState})
 
     # otherwise, go to temporary view and do check ASAP
-    $state.go routes.authenticating
+    redirect routes.authenticating, event
 
     rmapsPrincipalService.getIdentity().then () ->
-      return doPermsCheck(event, toState)
+      return doPermsCheck({event, toState})
 
 
 mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state) ->
