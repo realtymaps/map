@@ -16,7 +16,7 @@ console.log mainConfig.COFFEE_SOURCE_MAP
 require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'
-logger = require '../util/logger'
+logger = (require '../util/logger').spawn('scripts')
 
 coffeelint = require('coffeelint')
 coffeelint.reporter = require('coffeelint-stylish').reporter
