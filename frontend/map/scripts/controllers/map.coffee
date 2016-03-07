@@ -124,11 +124,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       else
         $location.search 'property_id', undefined
 
-  #this kicks off eveything and should be called last
-  $rootScope.registerScopeData () ->
-    $rootScope.principal.getIdentity()
-    .then (identity) ->
-      $scope.loadIdentity identity, Number($state.params.project_id)
+  $rootScope.principal.getIdentity()
+  .then (identity) ->
+    $scope.loadIdentity identity, Number($state.params.project_id)
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

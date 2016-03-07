@@ -60,8 +60,7 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
     .catch (error) ->
       $log.error error
 
-  $rootScope.registerScopeData () ->
-    $scope.loadProjects()
+  $scope.loadProjects()
 
   # When a project is added or removed elsewhere, this event will fire
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->

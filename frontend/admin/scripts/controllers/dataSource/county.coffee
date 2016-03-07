@@ -295,8 +295,4 @@ app.controller 'rmapsCountyCtrl',
         loadCounty($scope.countyData)
 
   # Load MLS list
-  # Register the logic that acquires data so it can be evaluated after auth
-  $rootScope.registerScopeData () ->
-    $scope.loadReadyCounty()
-
-
+  $scope.loadReadyCounty()

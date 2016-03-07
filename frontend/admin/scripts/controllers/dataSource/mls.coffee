@@ -68,18 +68,16 @@ app.controller 'rmapsMlsCtrl',
     ]
 
     # extract existing configs, populate idOptions
-    # Register the logic that acquires data so it can be evaluated after auth
-    $rootScope.registerScopeData () ->
-      $scope.loading = true
-      rmapsMlsService.getConfigs()
-      .then (configs) ->
-        for config in configs
-          config.ready = if $scope.isReady(config) then 'ready' else 'incomplete'
-        $scope.idOptions = configs
-      .catch (err) ->
-        $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: 'Error in retrieving existing configs.' }
-      .finally () ->
-        $scope.loading = false
+    $scope.loading = true
+    rmapsMlsService.getConfigs()
+    .then (configs) ->
+      for config in configs
+        config.ready = if $scope.isReady(config) then 'ready' else 'incomplete'
+      $scope.idOptions = configs
+    .catch (err) ->
+      $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: 'Error in retrieving existing configs.' }
+    .finally () ->
+      $scope.loading = false
 
     $scope.activatePasswordButton = () ->
       $scope.allowPasswordReset = true

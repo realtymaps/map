@@ -224,5 +224,4 @@ app.controller 'rmapsJobsCurrentCtrl',
         job.status_changed = new Date(job.status_changed)
       $scope.jobsGrid.data = jobs.plain()
 
-  $rootScope.registerScopeData () ->
-    $scope.loadSummary()
+  $scope.loadSummary()
