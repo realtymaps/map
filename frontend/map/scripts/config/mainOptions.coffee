@@ -50,6 +50,7 @@ app.constant 'rmapsMainOptions', do () ->
         address: '{{address}}'
         name: '{{name}}'
       s3_upload:
+        host: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
         AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
         policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgICB7ImJ1Y2tldCI6ICJybWFwcy1wZG' +
           'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +

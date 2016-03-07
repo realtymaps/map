@@ -3,6 +3,7 @@ _ = require 'lodash'
 
 app.service 'rmapsMailTemplateTypeService', ($log) ->
 
+  _categoryLists = {}
   _meta =
     'basicLetter':
       content: require('../../html/includes/mail/basic-letter-template.jade')()
@@ -29,6 +30,20 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       category: 'letter'
 
 
+  _buildCategoryLists = () ->
+    _categoryLists = {}
+    _categoryLists['all'] = []
+    for templateType of _meta
+      _categoryLists[_meta[templateType].category] = [] unless _meta[templateType].category of _categoryLists
+      obj =
+        name: _meta[templateType].name
+        thumb: _meta[templateType].thumb
+        category: _meta[templateType].category
+        type: templateType
+
+      _categoryLists['all'].push obj
+      _categoryLists[_meta[templateType].category].push obj
+
   _getTypeNames = () ->
     return Object.keys _meta
 
@@ -39,7 +54,8 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       ['all', 'All Templates']
       ['letter', 'Letters']
       ['postcard', 'Postcards']
-      ['favorite', 'Favorites']
+      ['pdf', 'Uploaded PDFs']
+      # ['favorite', 'Favorites']
       # ['custom', 'Custom']
     ]
 
@@ -47,19 +63,25 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
     return _meta
 
   _getCategoryLists = () ->
-    t = {}
-    t['all'] = []
-    for templateType of _meta
-      t[_meta[templateType].category] = [] unless _meta[templateType].category of t
-      obj =
-        name: _meta[templateType].name
-        thumb: _meta[templateType].thumb
-        category: _meta[templateType].category
-        type: templateType
+    return _categoryLists
 
-      t['all'].push obj
-      t[_meta[templateType].category].push obj
-    t
+  _appendCategoryList = (type, list) ->
+    if !(type of _categoryLists)
+      _categoryLists[type] = []
+
+    # angular.extend _categoryLists['all'], list
+    # angular.extend _categoryLists[type], list
+    console.log "\n\nlist:"
+    console.log "#{JSON.stringify(list, null, 2)}"
+    for item in list
+      _categoryLists['all'].push item
+      _categoryLists[type].push item
+      if !(item.type of _meta)
+        _meta[item.type] = {}
+      _meta[item.type].content = type
+      _meta[item.type].category = 'pdf'
+
+  _buildCategoryLists()
 
   #### public
   getTypeNames: _getTypeNames
@@ -69,6 +91,7 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
   getCategories: _getCategories
 
   getCategoryLists: _getCategoryLists
+  appendCategoryList: _appendCategoryList
 
   getHtml: (type) ->
     _meta[type].content

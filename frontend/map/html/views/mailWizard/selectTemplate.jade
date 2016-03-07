@@ -36,8 +36,8 @@
         .filters
           span(ng-repeat="category in categories")
             button.btn.btn-filter(ng-click="setCategory(category[0])" ng-class="{ 'active': displayCategory == category[0]}") {{category[1]}}
-          span
-            button.btn.btn-filter(ng-click="" ng-class="{ 'active': displayCategory == category[0]}") Uploaded PDFs
+          //- span
+          //-   button.btn.btn-filter(ng-click="" ng-class="{ 'active': displayCategory == category[0]}") Uploaded PDFs
         .row
           ul.tmpl-list
             li.col-md-3(ng-show="isEmptyCategory()")

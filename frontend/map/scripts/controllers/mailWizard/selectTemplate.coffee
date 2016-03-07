@@ -7,16 +7,48 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 module.exports = app
 
 app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload,
-  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions) ->
+  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions, rmapsMailPdfService) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
 
   $scope.displayCategory = 'all'
   $scope.categories = rmapsMailTemplateTypeService.getCategories()
+  # $scope.categoryLists = []
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
   $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
   $scope.sentFile = false
+
+  #$scope.$watch()
+  # $scope.getSelCatList = () -> $scope.categoryLists[$scope.displayCategory]
+  # $scope.selectedCategoryList = $scope.getSelCatList()
+
+  rmapsMailPdfService.getAsCategory()
+  .then (pdfs) ->
+    # console.log "categories:\n#{JSON.stringify($scope.categories,null,2)}"
+    # console.log "categoryLists:\n#{JSON.stringify($scope.categoryLists,null,2)}"
+    #rmapsMailTemplateTypeService.appendCategoryList 'pdf', pdfs
+#    $timeout () ->
+    # console.log "pdfs:"
+    # console.log "#{JSON.stringify(pdfs, null, 2)}"
+    # if !('pdf' of $scope.categoryLists)
+    #   $scope.categoryLists['pdf'] = []
+    # for pdf in pdfs
+    #   $scope.categoryLists['all'].push pdf
+    #   $scope.categoryLists['pdf'] = pdfs
+
+    $timeout ->
+      $scope.$apply () ->
+        rmapsMailTemplateTypeService.appendCategoryList 'pdf', pdfs
+        console.log "NEW LIST:\n#{JSON.stringify($scope.categoryLists, null, 2)}"
+
+    # console.log "NEW LIST:\n#{JSON.stringify($scope.categoryLists, null, 2)}"
+
+      
+    # $timeout ->
+    #   $scope.$apply()
+    # $scope.categories.all.push(pdfs)
+    # $scope.categories.pdf.push(pdfs)
 
   $scope.uploadFile = (file, errFiles) ->
     $scope.f = file
@@ -25,7 +57,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
     if (file)
       file.upload = Upload.upload(
-        url: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
+        url: rmapsMainOptions.mail.s3_upload.host
         method: 'POST'
         data:
           key: key
@@ -39,9 +71,18 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
       file.upload.then (response) ->
         $timeout () ->
+          #console.log "\nresponse:\n#{JSON.stringify(response,null,2)}"
+          console.log "response:"
+          console.log response
+          console.log "file:"
+          console.log file
           file.result = response.data
           $scope.wizard.mail.campaign.aws_key = key
           $scope.wizard.mail.save()
+          rmapsMailPdfService.create
+            aws_key: key
+            filename: file.name.replace(/\.[^/.]+$/, "")
+            last_used_mail_campaign_id: $scope.wizard.mail.campaign.id
           $scope.sentFile = true
 
           $timeout () ->
@@ -83,9 +124,13 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
       modalInstance.result.then (result) ->
         $log.debug "Confirmation result: #{result}"
+        console.log "\nTEMPLATE TYPE: #{templateType}"
         if result
           $scope.wizard.mail.setTemplateType(templateType)
           $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
+          console.log "\n\ncampaign changed:"
+          console.log "#{JSON.stringify($scope.wizard.mail)}"
+
 
     else
       $scope.wizard.mail.setTemplateType(templateType)
