@@ -126,6 +126,25 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
       for result in response.data
         _.extend col[result.rm_property_id], result
 
+  _processPropertyPins = (models, needLoad) ->
+    if needLoad
+      _loadProperties()
+      .then () ->
+        $rootScope.$emit rmapsEventConstants.update.properties.pin,
+          property: models[0],
+          properties: _savedProperties
+    else
+      $rootScope.$emit rmapsEventConstants.update.properties.pin,
+        property: models[0],
+        properties: _savedProperties
+
+    #post state to database
+    toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
+    statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
+    _saveThrottler.invokePromise statePromise
+    statePromise.error (data, status) ->
+      $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
+
   service =
 
     # will receive results from backend, which will be organzed either as
@@ -164,41 +183,45 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
     getProperties: (ids, columns) ->
       $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns
 
-    pinProperty: (models) =>
-      @pinUnpinProperty models
+    pinProperty: (models) ->
+      if !_.isArray models
+        models = [ models ]
 
-    unpinProperty: (models) =>
-      @pinUnpinProperty models
+      # In case this is a list of models, determine if *any* of them are being pinned... if so, invoke the _loadProperties()
+      needLoad = false
+      _.each models, (model) ->
+        if !model.savedDetails?.isSaved
+          needLoad = true
+
+        _saveProperty model, true
+        return
+
+      _processPropertyPins models, needLoad
+
+    unpinProperty: (models) ->
+      if !_.isArray models
+        models = [ models ]
+
+      _.each models, (model) ->
+        _saveProperty model, false
+        return
+
+      _processPropertyPins models, false
 
     pinUnpinProperty: (models) ->
       if !_.isArray models
         models = [ models ]
 
-      # In case this is a list of models, determine if *any* of them are being pinned... if so, invoke the pinProperty
+      # In case this is a list of models, determine if *any* of them are being pinned... if so, invoke the _loadProperties()
       needLoad = false
       _.each models, (model) ->
         if !model.savedDetails?.isSaved
           needLoad = true
 
         _saveProperty model, !model.savedDetails?.isSaved
+        return
 
-      if needLoad
-        _loadProperties()
-        .then () ->
-          $rootScope.$emit rmapsEventConstants.update.properties.pin,
-            property: models[0],
-            properties: _savedProperties
-      else
-        $rootScope.$emit rmapsEventConstants.update.properties.pin,
-          property: models[0],
-          properties: _savedProperties
-
-      #post state to database
-      toSave = _.mapValues _savedProperties, (model) -> model.savedDetails
-      statePromise = $http.post(backendRoutes.userSession.updateState, properties_selected: toSave)
-      _saveThrottler.invokePromise statePromise
-      statePromise.error (data, status) ->
-        $rootScope.$emit(rmapsEventConstants.alert, {type: 'danger', msg: data})
+      _processPropertyPins models, needLoad
 
     favoriteProperty: (model) ->
       _favoriteProperty model
