@@ -5,7 +5,7 @@ mapId = 'mainMap'
 originator = 'map'
 popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
-app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsEventConstants) ->
+app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsEventConstants, rmapsPrincipalService) ->
   _signalUpdate = (promise) ->
     return $rootScope.$emit rmapsEventConstants.notes unless promise
     promise.then ->
@@ -28,7 +28,7 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
         _.extend note,
           rm_property_id : model.rm_property_id || undefined
           geom_point_json : model.geom_point_json
-          project_id: $scope.selectedProject.project_id || undefined
+          project_id: rmapsPrincipalService.getCurrentProfileId() || undefined
         _signalUpdate rmapsNotesService.create note
 
     update: (note) ->
