@@ -143,20 +143,16 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       @mapCtrl.centerOn result
       $state.go "property", { id: result.rm_property_id }
 
-    clickSaveResultFromList: (result, event = {}) =>
+    clickSaveResultFromList: (result, event = {}) ->
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
-      rmapsPropertiesService.pinUnpinProperty(result).then =>
-        @reset()
+      rmapsPropertiesService.pinUnpinProperty(result)
 
       return false
 
-
-
-    clickFavoriteResultFromList: (result, event = {}) =>
+    clickFavoriteResultFromList: (result, event = {}) ->
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
 
-      rmapsPropertiesService.favoriteProperty(result).then =>
-        @reset()
+      rmapsPropertiesService.favoriteProperty(result)
 
       return false
