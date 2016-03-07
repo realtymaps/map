@@ -36,7 +36,7 @@ class MailService extends ServiceCrud
     .limit 1
     .then ([result]) ->
       # null lob response indicates the tasks in queue have not completed sending any letters yet
-      if !result.lob_response?
+      if !result?.lob_response?
         return pdf: null
       lobService.getDetails result.lob_response.id
       .then ({url}) ->
