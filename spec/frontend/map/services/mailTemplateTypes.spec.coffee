@@ -22,6 +22,5 @@ describe 'mailTemplateType service', ->
         ['all', 'All Templates']
         ['letter', 'Letters']
         ['postcard', 'Postcards']
-        ['favorite', 'Favorites']
-        #['custom', 'Custom']
+        ['pdf', 'Uploaded PDFs']
       ]
