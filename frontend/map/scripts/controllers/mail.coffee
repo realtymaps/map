@@ -28,5 +28,4 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipa
     'sending': 'pending'
     'paid': 'sent'
 
-  $rootScope.registerScopeData () ->
-    $scope.loadMailCampaigns()
+  $scope.loadMailCampaigns()

@@ -19,7 +19,7 @@ app.config ['$provide', ($provide) ->
 ]
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmapsSpinnerService, rmapsEventConstants, rmapsRunnerHelpersService) ->
+app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmapsSpinnerService, rmapsEventConstants) ->
   $rootScope.alerts = []
   $rootScope.adminRoutes = adminRoutes
   $rootScope.frontendRoutes = frontendRoutes
@@ -29,8 +29,6 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmap
   $rootScope.$stateParams = $stateParams
   $rootScope.Spinner = rmapsSpinnerService
   $rootScope.stateData = []
-
-  rmapsRunnerHelpersService.setRegisterScopeData()
 
 app.run ($log, $rootScope, Restangular, rmapsEventConstants) ->
   Restangular.setErrorInterceptor (response, deferred, responseHandler) ->

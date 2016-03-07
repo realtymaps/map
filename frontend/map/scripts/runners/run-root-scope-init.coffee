@@ -4,7 +4,7 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
 # there are some values we want to save onto the root scope
-app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmapsSpinnerService, rmapsEventConstants, rmapsRunnerHelpersService, rmapsPageService) ->
+app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmapsSpinnerService, rmapsEventConstants, rmapsPageService) ->
   $rootScope.alerts = []
   $rootScope.adminRoutes = adminRoutes
   $rootScope.frontendRoutes = frontendRoutes
@@ -17,4 +17,3 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmap
   $rootScope.page = rmapsPageService
   $rootScope._ = window._
 
-  rmapsRunnerHelpersService.setRegisterScopeData()

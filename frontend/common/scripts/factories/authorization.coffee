@@ -5,32 +5,29 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
-  goToStateFu = (stateName, event) ->
+  redirect = (stateName, event) ->
     #as stated in stackoverflow this avoids race hell in ui-router
-    event.preventDefault() if event
-    $timeout -> $state.go stateName
+    event?.preventDefault()
+    $timeout ->
+      $state.go stateName
 
   doPermsCheck = (event, toState, goToLocation) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
-      goToStateFu routes.login, event
+      redirect routes.login, event
       return
 
     if not rmapsPrincipalService.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
       # $log.debug 'redirected to accessDenied'
-      goToStateFu routes.accessDenied, event
+      redirect routes.accessDenied, event
       return
 
     if toState?.profileRequired and !rmapsPrincipalService.isCurrentProfileResolved()
       # $log.debug 'redirected to profiles'
-      goToStateFu routes.profiles, event
+      redirect routes.profiles, event
       return
-
-    if goToLocation
-      goToStateFu toState
-
 
   return authorize: ({event, toState}) ->
     if !toState?.permissionsRequired && !toState?.loginRequired
