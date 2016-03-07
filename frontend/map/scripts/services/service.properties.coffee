@@ -65,7 +65,7 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     route = backendRoutes.properties[pathId]
 
-    $log.debug("filters: #{JSON.stringify filters}")
+    $log.debug () -> "filters: #{JSON.stringify filters}"
     $log.debug mapState
     $log.debug(route)
 
