@@ -1,7 +1,6 @@
 Promise = require 'bluebird'
 {basePath} = require '../../globalSetup'
 _ = require 'lodash'
-expect = require('chai').expect
 colorWrap = require 'color-wrap'
 colorWrap(console)
 

@@ -236,7 +236,7 @@ buildQuery = ({knex, entity, orHash}) ->
 # Static function that produces an upsert query string given ids and entity of model.
 buildUpsertBindings = (idObj, entityObj, tableName) ->
   id = buildRawBindings(idObj, defaultNulls: true)
-  entity = buildRawBindings(entityObj)
+  entity = buildRawBindings(_.omit(entityObj, Object.keys(idObj)))
 
   # postgresql template for raw query
   # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)

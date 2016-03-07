@@ -141,7 +141,7 @@ checkFtpDrop = (subtask) ->
     .then (newFolders) ->
       drops = Object.keys(newFolders).sort()  # sorts by date, with Refresh before Update
       if drops.length == 0
-        logger.debug "No new blackknight directories to process"
+        logger.info "No new blackknight directories to process"
       else
         logger.debug "Found #{drops.length} blackknight dates to process"
       processInfo = {dates: processDates}
