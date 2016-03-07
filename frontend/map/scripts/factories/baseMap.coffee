@@ -1,3 +1,4 @@
+###globals angular,L,_###
 app = require '../app.coffee'
 _eventThrottler = require '../utils/util.event-throttler.coffee'
 _baseLayers = require '../utils/util.layers.base.coffee'

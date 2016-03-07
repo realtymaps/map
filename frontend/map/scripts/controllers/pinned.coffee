@@ -4,11 +4,15 @@ _ = require 'lodash'
 app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventConstants, rmapsPrincipalService, rmapsPropertiesService) ->
   $log = $log.spawn('map:rmapsPinnedCtrl')
 
-  getPinned = (event, pinned) ->
+  getPinned = (event, eventData) ->
+    pinned = eventData.properties if eventData
+
     $scope.pinnedProperties = pinned or rmapsPropertiesService.getSavedProperties()
     $scope.pinnedTotal = _.keys($scope.pinnedProperties).length
 
-  getFavorites = (event, favorites) ->
+  getFavorites = (event, eventData) ->
+    favorites = eventData.properties if favorites
+
     $scope.favoriteProperties = favorites or rmapsPropertiesService.getFavoriteProperties()
     $scope.favoriteTotal = _.keys($scope.favoriteProperties).length
 
@@ -61,5 +65,5 @@ app.controller 'rmapsPinnedCtrl', ($log, $scope, $rootScope, $modal, rmapsEventC
       modalInstance.dismiss('ok')
       rmapsPropertiesService.unpinProperty toPin
 
-  $rootScope.$onRootScope rmapsEventConstants.map.properties.pin, getPinned
-  $rootScope.$onRootScope rmapsEventConstants.map.properties.favorite, getFavorites
+  $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, getPinned
+  $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, getFavorites

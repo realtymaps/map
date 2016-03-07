@@ -11,6 +11,8 @@ mod.constant 'rmapsEventConstants',
     map:
       results: 1
       center: 1
+      centerOnProperty: 1
+      zoomToProperty: 1
       mainMap:
         reDraw: 1
       drawPolys:
@@ -35,3 +37,7 @@ mod.constant 'rmapsEventConstants',
       prevent: 1
     snail:
       initiateSend: 1
+    update:
+      properties:
+        pin: 1
+        favorite: 1

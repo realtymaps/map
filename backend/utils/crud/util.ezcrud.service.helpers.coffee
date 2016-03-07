@@ -4,7 +4,7 @@ BaseObject = require '../../../common/utils/util.baseObject'
 isUnhandled = require('../errors/util.error.partiallyHandledError').isUnhandled
 ServiceCrudError = require('../errors/util.errors.crud').ServiceCrudError
 _ = require 'lodash'
-{buildRawBindings, buildQuery} = require '../util.sql.helpers'
+sqlHelpers = require '../util.sql.helpers'
 
 
 class ServiceCrud extends BaseObject
@@ -23,27 +23,6 @@ class ServiceCrud extends BaseObject
     unless _.isFunction @dbFn
       throw new ServiceCrudError('dbFn must be a knex function')
     @logger.debug () -> "Crud service instance made with options: #{util.inspect(options, false, 0)}"
-
-  # Static function that produces an upsert query string given ids and entity of model.
-  # This exposes upsert query string for any other modules to use if desired and only
-  # requires ids and entity as objects (idobj helps for support on multi-id pks)
-  @getUpsertQueryString: (idObj, entityObj, tableName) ->
-    id = buildRawBindings(idObj, defaultNulls: true)
-    entity = buildRawBindings(entityObj)
-
-    # postgresql template for raw query
-    # (no real native knex support yet: https://github.com/tgriesser/knex/issues/1121)
-    templateStr = """
-     INSERT INTO ?? (#{id.cols.placeholder}, #{entity.cols.placeholder})
-      VALUES (#{id.vals.placeholder}, #{entity.vals.placeholder})
-      ON CONFLICT (#{id.cols.placeholder})
-      DO UPDATE SET (#{entity.cols.placeholder}) = (#{entity.vals.placeholder})
-      RETURNING #{id.cols.placeholder}
-    """
-
-    sql: templateStr.replace(/\n/g,'').replace(/\s+/g,' ')
-    bindings: [tableName].concat(id.cols.bindings, entity.cols.bindings, id.vals.bindings, entity.vals.bindings, id.cols.bindings, entity.cols.bindings, entity.vals.bindings, id.cols.bindings)
-
 
   # helpers for query / id mgmt
   _getIdObj: (sourceObj) ->
@@ -89,7 +68,7 @@ class ServiceCrud extends BaseObject
 
   getAll: (query = {}, options = {}) ->
     @logger.debug () -> "getAll(), query=#{util.inspect(query,false,0)}, options=#{util.inspect(options,false,0)}"
-    @_wrapTransaction(options.transaction ? buildQuery(knex: @dbFn(), entity: query), options)
+    @_wrapTransaction(options.transaction ? sqlHelpers.buildQuery(knex: @dbFn(), entity: query), options)
 
   create: (query, options = {}) ->
     #TODO should there be options to handle where / orWhereIn for inserts w/o the need to override?
@@ -120,7 +99,7 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @logger.debug () -> "entity: #{JSON.stringify(entity)}"
 
-    upsertQuery = ServiceCrud.getUpsertQueryString ids, entity, @dbFn.tableName
+    upsertQuery = sqlHelpers.buildUpsertBindings ids, entity, @dbFn.tableName
     @_wrapTransaction(options.transaction ? @dbFn().raw(upsertQuery.sql, upsertQuery.bindings), options)
 
   delete: (query, options = {}) ->

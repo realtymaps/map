@@ -1,7 +1,7 @@
+###globals _, google###
 app = require '../app.coffee'
 require '../factories/map.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
-backendRoutes = require '../../../../common/config/routes.backend.coffee'
 {Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 {uiProfile} = require('../../../../common/utils/util.profile.coffee')
 
@@ -15,7 +15,7 @@ map = undefined
 module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMapFactory,
-  rmapsMainOptions, rmapsMapTogglesFactory, rmapsPrincipalService, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
+  rmapsMainOptions, rmapsMapTogglesFactory, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
   rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
 
   $log = nemSimpleLogger.spawn("map:controller")
@@ -40,9 +40,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       project.totalFavorites = (_.keys project.favorites)?.length
 
   $scope.loadIdentity = (identity, project_id) ->
-    if not identity?.currentProfileId and not project_id
-      $state.go 'profiles'
-    else
+    if identity?.currentProfileId? and project_id?
       getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
       $scope.loadProject projectToLoad
@@ -128,7 +126,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   #this kicks off eveything and should be called last
   $rootScope.registerScopeData () ->
-    rmapsPrincipalService.getIdentity()
+    $rootScope.principal.getIdentity()
     .then (identity) ->
       $scope.loadIdentity identity, Number($state.params.project_id)
 

@@ -15,6 +15,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     lob_content: null
     sender_info: null
     recipients: []
+    aws_key: null
 
   class MailTemplateFactory
     constructor: (@campaign = {}) ->
@@ -52,8 +53,11 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
 
-    isSent: () ->
+    isSubmitted: () ->
       @campaign.status != 'ready'
+
+    isSent: () ->
+      @campaign.status == 'sent'
 
     save: () ->
       @getSenderData()

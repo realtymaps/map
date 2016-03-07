@@ -1,6 +1,7 @@
 ###globals L,_###
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
+Point = require('../../../../common/utils/util.geometries.coffee').Point
 
 _encode = require('geohash64').encode
 _emptyGeoJsonData =
@@ -21,8 +22,9 @@ app.factory 'rmapsMapFactory',
   (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService) ->
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsLeafletObjectFetcherFactory) ->
 
+    leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
 
     $log = nemSimpleLogger.spawn("map:factory:normal")
@@ -45,7 +47,6 @@ app.factory 'rmapsMapFactory',
       $scope.Toggles = toggles
 
     class Map extends rmapsBaseMapFactory
-      baseIsLoaded = false
 
       constructor: ($scope) ->
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
@@ -56,7 +57,24 @@ app.factory 'rmapsMapFactory',
         $scope.zoomLevelService = rmapsZoomLevelService
         self = @
 
-        leafletData.getMap('mainMap').then (map) =>
+        #
+        # Property Button events
+        #
+        $rootScope.$onRootScope rmapsEventConstants.map.centerOnProperty, (event, result) ->
+          self.zoomTo result, false
+
+        $rootScope.$onRootScope rmapsEventConstants.map.zoomToProperty, (event, result, doChangeZoom) ->
+          self.zoomTo result, doChangeZoom
+
+        $rootScope.$onRootScope rmapsEventConstants.update.properties.pin, self.pinPropertyEventHandler
+
+        $rootScope.$onRootScope rmapsEventConstants.update.properties.favorite, self.favoritePropertyEventHandler
+
+        #
+        # End Property Button Events
+        #
+
+        leafletData.getMap('mainMap').then () =>
 
           $scope.$watch 'Toggles.showPrices', (newVal) ->
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
@@ -90,25 +108,40 @@ app.factory 'rmapsMapFactory',
 
         @layerFormatter = rmapsLayerFormattersService
 
-        @saveProperty = (model, lObject) =>
-          #TODO: Need to debounce / throttle
-          if model.savedDetails?.isSaved
-            saved = rmapsPropertiesService.unpinProperty(model)
-          else
-            saved = rmapsPropertiesService.pinProperty(model)
+        @pinPropertyEventHandler = (event, eventData) =>
+          result = eventData.property
 
-          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-          lObject?.setIcon(new L.divIcon(model.icon))
-          return unless saved
-          saved.then (savedDetails) =>
-            @redraw(false)
+          if result
+            wasSaved = result?.savedDetails?.isSaved
 
-        @favoriteProperty = (model, lObject) =>
-          #TODO: Need to debounce / throttle
-          saved = rmapsPropertiesService.favoriteProperty(model)
-          rmapsLayerFormattersService.MLS.setMarkerPriceOptions(model, @scope)
-          lObject?.setIcon(new L.divIcon(model.icon))
-          saved
+            # Handle the leaflet object
+            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+            lObject?.setIcon(new L.divIcon(result.icon))
+
+            #make sure selectedResult is updated if it exists
+            summary = @scope.map?.markers?.filterSummary
+            if @scope.selectedResult? and summary[@scope.selectedResult.rm_property_id]?
+              delete @scope.selectedResult.savedDetails
+              angular.extend(@scope.selectedResult, summary[@scope.selectedResult.rm_property_id])
+
+            if wasSaved and !@scope.results[result.rm_property_id]
+              result.isMousedOver = undefined
+
+          @redraw(false)
+
+        @favoritePropertyEventHandler = (event, eventData) =>
+          result = eventData.property
+
+          if result
+            wasFavorite = result?.savedDetails?.isFavorite
+            if wasFavorite and !@scope.results[result.rm_property_id]
+              result.isMousedOver = undefined
+
+            lObject = leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject
+            rmapsLayerFormattersService.MLS.setMarkerPriceOptions(result, @scope)
+            lObject?.setIcon(new L.divIcon(result.icon))
+
 
         @scope.refreshState = (overrideObj = {}) =>
           @mapState = _.extend {}, @getMapStateObj(), overrideObj
@@ -374,5 +407,23 @@ app.factory 'rmapsMapFactory',
 
       closeWindow: ->
         rmapsPopupLoaderService.close()
+
+      centerOn: (result) =>
+        @zoomTo(result, false)
+
+      zoomTo: (result, doChangeZoom) ->
+        console.log  "CAUGHT zoomToProperty event"
+        return if not result?.coordinates?
+
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        old = _.cloneDeep @scope.map.center
+        resultCenter.zoom = old.zoom
+        @scope.map.center = resultCenter
+        return unless doChangeZoom
+        zoomLevel = @scope.options.zoomThresh.addressParcel
+        zoomLevel = @scope.map.center.zoom if @scope.map.center.zoom > @scope.options.zoomThresh.addressParcel
+        @scope.map.center.zoom = zoomLevel
+
+        resultCenter.zoom = 20 if @scope.satMap?
 
       #END PUBLIC HANDLES /////////////////////////////////////////////////////////////////////////////////////////

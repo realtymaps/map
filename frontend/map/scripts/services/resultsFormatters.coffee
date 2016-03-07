@@ -50,11 +50,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
         @mapCtrl.scope.resultsPotentialLength = undefined
         @filterSummaryInBounds = undefined
 
-        #make sure selectedResult is updated if it exists
-        summary = @mapCtrl.scope.map?.markers?.filterSummary
-        if @mapCtrl.scope.selectedResult? and summary[@mapCtrl.scope.selectedResult.rm_property_id]?
-          delete @mapCtrl.scope.selectedResult.savedDetails
-          angular.extend(@mapCtrl.scope.selectedResult, summary[@mapCtrl.scope.selectedResult.rm_property_id])
         @loadMore()
       , 5
 
@@ -82,7 +77,7 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
 
     getResultsArray: =>
       _.values @mapCtrl.scope.results
-      
+
     ###
     Disabling animation speeds up scrolling and makes it smoother by around 30~40ms
     ###
@@ -102,23 +97,6 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       if toMatchSortStr != @mapCtrl.scope.resultsPredicate
         return ''
       return 'active-sort'
-
-    centerOn: (result) =>
-      @zoomTo(result,false)
-
-    zoomTo: (result, doChangeZoom = true) =>
-      return if not result?.coordinates?
-
-      resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-      old = _.cloneDeep @mapCtrl.scope.map.center
-      resultCenter.zoom = old.zoom
-      @mapCtrl.scope.map.center = resultCenter
-      return unless doChangeZoom
-      zoomLevel = @mapCtrl.scope.options.zoomThresh.addressParcel
-      zoomLevel = @mapCtrl.scope.map.center.zoom if @mapCtrl.scope.map.center.zoom > @mapCtrl.scope.options.zoomThresh.addressParcel
-      @mapCtrl.scope.map.center.zoom = zoomLevel
-
-      resultCenter.zoom = 20 if @mapCtrl.scope.satMap?
 
     loadMore: (cancel = true) =>
       #debugging
@@ -162,27 +140,23 @@ app.service 'rmapsResultsFormatterService', ($rootScope, $timeout, $filter, $log
       @click(@mapCtrl.scope.map.markers.filterSummary[model.rm_property_id]||model, window.event, 'map')
 
     click: (result, event, context) ->
-      #immediatley show something
-#      @mapCtrl.scope.streetViewPanorama.status = 'OK'
-#      resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-#      resultCenter.zoom = 20 if @mapCtrl.scope.satMap?
-#      @mapCtrl.scope.satMap.center= resultCenter
-
-      @centerOn result
+      @mapCtrl.centerOn result
       $state.go "property", { id: result.rm_property_id }
 
     clickSaveResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-      wasSaved = result?.savedDetails?.isSaved
-      @mapCtrl.saveProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+
+      rmapsPropertiesService.pinUnpinProperty(result).then =>
         @reset()
-        if wasSaved and !@mapCtrl.scope.results[result.rm_property_id]
-          result.isMousedOver = undefined
+
+      return false
+
+
 
     clickFavoriteResultFromList: (result, event = {}) =>
       if event.stopPropagation then event.stopPropagation() else (event.cancelBubble=true)
-      wasFavorite = result?.savedDetails?.isFavorite
-      @mapCtrl.favoriteProperty(result, leafletDataMainMap.get(result.rm_property_id, 'filterSummary')?.lObject).then =>
+
+      rmapsPropertiesService.favoriteProperty(result).then =>
         @reset()
-        if wasFavorite and !@mapCtrl.scope.results[result.rm_property_id]
-          result.isMousedOver = undefined
+
+      return false

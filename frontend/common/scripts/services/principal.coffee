@@ -58,8 +58,12 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   getCurrentProfileId = () ->
     return getCurrentProfile()?.id
 
+  isCurrentProfileResolved = () ->
+    _identity?.currentProfileId?
+
   getCurrentProfile = () ->
-    return if _identity?.currentProfileId then _identity.profiles[_identity.currentProfileId] else null
+    if isCurrentProfileResolved()
+      return _identity.profiles[_identity.currentProfileId]
 
   notifyProfileUpdated = (profile) ->
     $rootScope.$emit rmapsEventConstants.principal.profile.updated, profile
@@ -101,6 +105,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
       _isStaff = permissionsUtil.checkAllowed('access_staff', _identity.permissions)
     return _authenticated && _isStaff
 
+  isCurrentProfileResolved: isCurrentProfileResolved
   ##
   ## Query and Update Identity
   ##
@@ -114,5 +119,5 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   ##
 
   setCurrentProfile: setCurrentProfile
-  getCurrentProfileId: getCurrentProfileId
   getCurrentProfile: getCurrentProfile
+  getCurrentProfileId: getCurrentProfileId

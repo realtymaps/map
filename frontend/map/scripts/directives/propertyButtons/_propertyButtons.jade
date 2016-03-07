@@ -1,0 +1,21 @@
+div.btn-actions
+  button.favorite(ng-click="favorite($event)" ng-class="{ 'button-is-favorite': formatters.property.isFavoriteResult(property) }")
+    i.fa.fa-heart(ng-show="formatters.property.isFavoriteResult(property)") &nbsp;
+    i.fa.fa-heart-o(ng-show="!formatters.property.isFavoriteResult(property)") &nbsp;
+    .button-help Favorite
+
+  button.pinto(ng-click="pin($event)" ng-class="{ 'button-is-pin': formatters.property.isSavedResult(property) }")
+    span.icon.icon-pin
+    .button-help {{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}
+
+  button.send(ng-controller="rmapsMapMailCtrl" ng-click="addMail(property)")
+    span.icon.icon-send_email
+    .button-help Mailing
+
+  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()")
+    i.fa.fa-sticky-note &nbsp;
+    .button-help Note
+
+  button.snail(ng-click="zoomTo($event);")
+    i.fa.fa-map-marker &nbsp;
+    .button-help Zoom

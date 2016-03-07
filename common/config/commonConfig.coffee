@@ -67,5 +67,9 @@ commonConfig =
         width: 200
         height: 200
         quality: .8
+
+  pdfUpload:
+    getKey: () -> "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
+
   validation: validation
 module.exports = commonConfig
