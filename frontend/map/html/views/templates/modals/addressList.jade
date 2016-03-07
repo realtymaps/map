@@ -1,8 +1,11 @@
-h3 {{addressList.length}} Addresses
-table.table-striped
-  tbody
-    tr(ng-repeat="address in addressList track by $index")
-      td
-        .address-line {{address.name}}
-        .address-line {{address.street_address_num}} {{address.street_address_name}}
-        .address-line {{address.city}}, {{address.state}} {{address.zip}}
+.modal-header
+  h3.modal-title {{addressList.length}} Addresses
+  i.icon.icon-close(ng-click="close()")
+.modal-body
+  table.table-striped
+    tbody
+      tr(ng-repeat="address in addressList track by $index")
+        td
+          .address-line {{address.name}}
+          .address-line {{address.street_address_num}} {{address.street_address_name}}
+          .address-line {{address.city}}, {{address.state}} {{address.zip}}

@@ -1,5 +1,4 @@
 {basePath} = require '../../globalSetup'
-expect = require('chai').expect
 colorWrap = require 'color-wrap'
 colorWrap(console)
 
