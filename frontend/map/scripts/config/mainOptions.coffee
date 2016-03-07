@@ -1,7 +1,7 @@
+###globals _###
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
-
 
 app.constant 'rmapsMainOptions', do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
@@ -26,7 +26,6 @@ app.constant 'rmapsMainOptions', do () ->
           space: 2
         json:
           center: _.extend Point(lat: 26.148111, lon: -81.790809), zoom: 15
-
 
     # do logging for local dev only
     doLog: if isDev then true else false

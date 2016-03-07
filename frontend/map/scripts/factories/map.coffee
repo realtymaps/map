@@ -1,4 +1,4 @@
-###globals L,_###
+###globals L,_,angular###
 app = require '../app.coffee'
 {NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
 Point = require('../../../../common/utils/util.geometries.coffee').Point
@@ -19,7 +19,7 @@ _wrapGeomPointJson = (obj) ->
   Our Main Map Implementation
 ###
 app.factory 'rmapsMapFactory',
-  (nemSimpleLogger, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
+  ($log, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
   rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsLeafletObjectFetcherFactory) ->
@@ -27,8 +27,9 @@ app.factory 'rmapsMapFactory',
     leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
 
-    $log = nemSimpleLogger.spawn("map:factory:normal")
-    verboseLogger = nemSimpleLogger.spawn("map:factory:verbose")
+    normal = $log.spawn("map:factory:normal")
+    verboseLogger = $log.spawn("map:factory:verbose")
+    $log = normal
 
     _initToggles = ($scope, toggles) ->
       return unless toggles?
@@ -80,7 +81,8 @@ app.factory 'rmapsMapFactory',
             $scope.map.layers.overlays?.filterSummary?.visible = newVal
 
           $scope.$watch 'Toggles.showAddresses', (newVal) ->
-            $scope.map.layers.overlays?.parcelsAddresses?.visible = newVal
+            if(_.get($scope, 'map.layers.overlays.parcelsAddresses')?)
+              $scope.map.layers.overlays.parcelsAddresses.visible = newVal
 
           $scope.$watch 'Toggles.propertiesInShapes', (newVal) =>
             $rootScope.propertiesInShapes = newVal
@@ -251,7 +253,7 @@ app.factory 'rmapsMapFactory',
       drawFilterSummary:(cache) =>
         promises = []
         overlays = @scope.map.layers.overlays
-        Toggles = @scope.Toggles
+        {Toggles} = @scope
 
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
@@ -278,22 +280,20 @@ app.factory 'rmapsMapFactory',
             return if !data? or _.isString data
             @handleSummaryResults(data)
 
-            mapZoom = @scope.map.center.zoom
+            if @isParcel() or @isAddressParcel()
 
-            if rmapsZoomLevelService.isParcel(mapZoom) or rmapsZoomLevelService.isAddressParcel(mapZoom)
-
-              if rmapsZoomLevelService.isAddressParcel mapZoom
-                if rmapsZoomLevelService.isBeyondCartoDb mapZoom
+              if @isAddressParcel()
+                if @isBeyondCartoDb()
                   zoomLvl = 'addressParcelBeyondCartoDB'
                 else
                   zoomLvl = 'addressParcel'
 
-              else if rmapsZoomLevelService.isParcel mapZoom
+              else if @isParcel()
                 zoomLvl = 'parcel'
 
-              overlays?.parcels?.visible = not rmapsZoomLevelService.isBeyondCartoDb mapZoom
+              overlays?.parcels?.visible = not @isBeyondCartoDb()
               Toggles.showPrices = false
-              Toggles.showAddresses = rmapsZoomLevelService.isAddressParcel mapZoom
+              Toggles.showAddresses = @isAddressParcel()
               overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
               @handleGeoJsonResults(filters, cache)
@@ -306,16 +306,30 @@ app.factory 'rmapsMapFactory',
               Toggles.showAddresses = false
               overlays?.parcelsAddresses?.visible = false
 
-            $log.debug "drawFilterSummary zoom=#{mapZoom} (@#{zoomLvl})"
+            $log.debug "drawFilterSummary zoom=#{@scope.map.center.zoom} (@#{zoomLvl})"
 
         promises.push p
         promises
 
+      isZoomLevel: (key, doSetState) =>
+        if doSetState
+          return rmapsZoomLevelService[key](@scope.map.center.zoom, @scope)
+        rmapsZoomLevelService[key](@scope.map.center.zoom)
+
+      isAddressParcel: (doSetState) =>
+        @isZoomLevel('isAddressParcel', doSetState)
+
+      isParcel: () =>
+        @isZoomLevel('isParcel')
+
+      isBeyondCartoDb: () =>
+        @isZoomLevel('isBeyondCartoDb')
+
       redraw: (cache = true) =>
         promises = []
+
         #consider renaming parcels to addresses as that is all they are used for now
-        if (rmapsZoomLevelService.isAddressParcel(@scope.map.center.zoom, @scope) or
-             rmapsZoomLevelService.isParcel(@scope.map.center.zoom)) and rmapsZoomLevelService.isBeyondCartoDb(@scope.map.center.zoom)
+        if @isAddressParcel(true) or @isParcel() or @isBeyondCartoDb()
           verboseLogger.debug 'isAddressParcel'
           promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
