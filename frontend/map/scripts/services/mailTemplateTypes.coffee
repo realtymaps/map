@@ -78,7 +78,7 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       _categoryLists[type].push item
       if !(item.type of _meta)
         _meta[item.type] = {}
-      _meta[item.type].content = type
+      _meta[item.type].content = item.type
       _meta[item.type].category = 'pdf'
 
   _buildCategoryLists()
@@ -93,7 +93,7 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
   getCategoryLists: _getCategoryLists
   appendCategoryList: _appendCategoryList
 
-  getHtml: (type) ->
+  getMailContent: (type) ->
     _meta[type].content
 
   getCategoryFromType: (type) ->

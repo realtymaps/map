@@ -136,6 +136,10 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       $scope.wizard.mail.setTemplateType(templateType)
 
   $scope.previewTemplate = (template) ->
+    console.log "previewing template:"
+    console.log "#{JSON.stringify(template, null, 2)}"
+    console.log "getMailContent:"
+    console.log "#{JSON.stringify(rmapsMailTemplateTypeService.getMailContent(template.type), null, 2)}"
     modalInstance = $modal.open
       template: previewModalTemplate
       controller: 'rmapsMailTemplateIFramePreviewCtrl'
@@ -144,7 +148,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () ->
-          content: rmapsMailTemplateTypeService.getHtml(template.type)
+          content: rmapsMailTemplateTypeService.getMailContent(template.type)
           category: template.category
           title: template.name
 
