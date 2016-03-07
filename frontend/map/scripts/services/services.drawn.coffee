@@ -1,36 +1,94 @@
-###globals L###
+###globals _,L###
 app = require '../app.coffee'
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.service 'rmapsDrawnService',
-($http, $log, $rootScope, rmapsPrincipalService, rmapsProjectsService) ->
-  $log = $log.spawn("map:rmapsDrawnService")
+app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
+  (profile) ->
+    ###eslint-disable###
+    $logDraw = $log.spawn("projects:drawnShapes")
+    ###eslint-enable###
+    rootUrl = backendRoutes.projectSession.drawnShapes.replace(":id",profile.project_id)
+    neighborhoodUrl = backendRoutes.projectSession.neighborhoods.replace(":id",profile.project_id)
 
-  getDrawnShapesSvc = () ->
-    drawnShapesFact = rmapsProjectsService.drawnShapes
-    drawnShapesSvc = null
+    getList = (cache = false) ->
+      $http.getData rootUrl, cache: cache
+
+    getNeighborhoods = (cache = false) ->
+      $http.getData neighborhoodUrl, cache: cache
+
+    _byIdUrl = (shape) ->
+      backendRoutes.projectSession.drawnShapesById
+      .replace(":id", profile.project_id)
+      .replace(":drawn_shapes_id",shape.id || shape.properties.id)
+
+    _getGeomName = (type) ->
+      switch type
+        when 'Point' then 'geom_point_json'
+        when 'Polygon' then 'geom_polys_json'
+        when 'LineString' then 'geom_line_json'
+        else
+          throw new Error 'geom type not supported'
+
+
+    _normalize = (shape) ->
+      unless shape.geometry
+        throw new Error("Shape must be GeoJSON with a geometry")
+      normal = {}
+      normal[_getGeomName(shape.geometry.type)] = shape.geometry
+      normal.project_id = profile.project_id
+      if shape.properties?.id?
+        normal.id = shape.properties.id
+      if shape.properties?.shape_extras?
+        normal.shape_extras = shape.properties.shape_extras
+      normal.neighbourhood_name = shape.properties.neighbourhood_name || null
+      normal.neighbourhood_details = shape.properties.neighbourhood_details || null
+      normal
+
+    getList: getList
+
+    getNeighborhoods: getNeighborhoods
+
+    getListNormalized: (cache = false) ->
+      getList(cache).then (geojson) ->
+        return [] unless geojson
+        {features} = geojson
+        features
+
+    create: (shape) ->
+      $http.post rootUrl, _normalize shape
+
+    update: (shape) ->
+      $http.put _byIdUrl(shape), _normalize shape
+
+    delete: (shape) ->
+      $http.delete _byIdUrl(shape)
+
+    getDrawnItems: (mainFn = 'getList') ->
+      drawnItems = new L.FeatureGroup()
+      @[mainFn]()
+      .then (drawnShapes) ->
+        # TODO: drawn shapes will get its own tables for GIS queries
+        $log.debug 'fetched shapes'
+        L.geoJson drawnShapes,
+          onEachFeature: (feature, layer) ->
+            $log.debug feature
+            if feature.properties?.shape_extras?.type = 'Circle'
+              layer = L.Circle.createFromFeature feature
+            layer.model = feature
+            drawnItems.addLayer layer
+        drawnItems
+
+    getDrawnItemsNeighborhoods: () ->
+      @getDrawnItems('getNeighborhoods')
+
+app.service 'rmapsDrawnUtilsService',
+($http, $log, $rootScope, rmapsPrincipalService, rmapsDrawnProfileFactory) ->
+  $log = $log.spawn("map:rmapsDrawnUtilsService")
+
+  createDrawnSvc = () ->
     if profile = rmapsPrincipalService.getCurrentProfile()
       $log.debug('profile: project_id' + profile.project_id)
-      drawnShapesSvc = drawnShapesFact(profile) unless drawnShapesSvc
-
-    drawnShapesSvc
-
-  getDrawnItems = (mainFn = 'getList') ->
-    drawnItems = new L.FeatureGroup()
-    getDrawnShapesSvc()?[mainFn]()
-    .then (drawnShapes) ->
-      # TODO: drawn shapes will get its own tables for GIS queries
-      $log.debug 'fetched shapes'
-      L.geoJson drawnShapes,
-        onEachFeature: (feature, layer) ->
-          $log.debug feature
-          if feature.properties?.shape_extras?.type = 'Circle'
-            layer = L.Circle.createFromFeature feature
-          layer.model = feature
-          drawnItems.addLayer layer
-      drawnItems
-
-  getDrawnItemsNeighborhoods = () ->
-    getDrawnItems('getNeighborhoods')
+      rmapsDrawnProfileFactory(profile)
 
   _getShapeModel = (layer) ->
     _.merge layer.model, layer.toGeoJSON()
@@ -43,8 +101,6 @@ app.service 'rmapsDrawnService',
       cb(_getShapeModel(layer), layer)
 
   {
-    getDrawnShapesSvc
-    getDrawnItems
-    getDrawnItemsNeighborhoods
+    createDrawnSvc
     eachLayerModel
   }

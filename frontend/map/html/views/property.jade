@@ -1,4 +1,3 @@
-include ../includes/mixins/property/_propertyButtons.jade
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 .property-detail-modal
@@ -27,7 +26,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
 
             .col-sm-6.text-right.desktop-only
-              +propertyButtons('selectedResult')
+              property-buttons(property='selectedResult')
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-8
@@ -127,7 +126,7 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
   .mobile-only
     mobile-header-buttons(header-id="page-modal-header")
       .property-modal-buttons
-        +propertyButtons('selectedResult')
+        property-buttons(property = 'selectedResult')
 
     .property-detail-container
       //+spinnerMixin()

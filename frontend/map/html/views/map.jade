@@ -1,4 +1,4 @@
-section.map(ng-cloak ng-init="init('page-map')")
+section.map(ng-cloak ng-init="init('page-map')" ng-if="principal.getCurrentProfile()")
   include ../includes/mixins/_leafletMixin.jade
   include ../includes/map/_sketchDraw.jade
   include ../includes/map/_neighborhoodDraw.jade
@@ -10,4 +10,3 @@ section.map(ng-cloak ng-init="init('page-map')")
   include ../includes/map/_properties.jade 
   include ../includes/map/_searchbox.jade
   include ../includes/map/_notesTap.jade
-  include ../includes/map/_neighbourhoodsTap.jade

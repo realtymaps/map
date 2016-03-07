@@ -31,7 +31,6 @@
         height 30px
         width 30px
 
-
   .iframe-preview-postcard, .modal-dialog
     width 10in
     height 90%
@@ -59,6 +58,56 @@
     width 100%
     td
       padding 5px
+
+
+.pdf-upload
+  float right
+  
+  .file-select
+    position relative
+    overflow hidden
+    margin 10px
+    
+    input.upload
+      position absolute
+      top 0
+      right 0
+      margin 0
+      padding 0
+      font-size 20px
+      cursor pointer
+      opacity 0
+      @css {filter alpha(opacity=0)}
+
+
+  .file-progress
+    .file-progress-indicator
+      position relative
+      top 18px
+      color black
+      // line-height 15px
+      // font-size 15px
+      display inline-block
+      width 130px
+      border 3px groove #CCC
+      
+      .file-upload-bar
+        background #35a7e0        
+        height 20px
+        width 0
+
+      .progress-text
+        position relative
+        top -20px
+        text-align center
+        font-size smaller
+        line-height 20px
+        font-size 15px
+
+  .done-fade
+    -webkit-transition opacity 4s
+    transition opacity 4s
+    opacity 0
 
 .mail
   @extends .font-regular
@@ -101,14 +150,26 @@
       background-color #123d74
 
     .toolGroup
-      width 370px
+      width 8.5in
       margin auto
+      display flex
+      justify-content space-between
+
+      .btns
+        display flex
+
+      input
+        display inline-block
+        align-self center
+        text-align left
+        padding 0
 
       .btn-toolbar
         margin 0
       button
-        margin 5px
+        margin-left 5px
         height 2.5em
+        align-self center
 
       .miscTools::before, .btn-toolbar::before
         display initial
@@ -217,6 +278,7 @@
               margin 0
               display inline-block
               vertical-align top
+              height 35px
             button
               display inline-block
               position absolute

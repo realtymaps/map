@@ -11,10 +11,19 @@ Property Detail Modal
     padding-top: 25px;
 
   .btn-actions
+    margin-top: 0px;
+    margin-right: -10px;
+
     button
       border: none;
       background: transparent;
-      font-size: 19px;
+      //font-size: 19px;
+
+      &.button-is-pin
+        color: $rm_saved
+
+      &.button-is-favorite
+        color: $rm_favorite
 
 .mobile-view
   .property-detail-modal
