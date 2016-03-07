@@ -20,6 +20,8 @@ app.controller 'rmapsRecipientInfoCtrl', ($rootScope, $modal, $scope, $log, $sta
       windowClass: 'address-list-modal'
       scope: $scope
 
+    $scope.close = modalInstance.dismiss
+
   if !$scope.wizard.mail.campaign.recipients?.length
 
     $scope.property_ids = $state.params.property_ids
