@@ -206,13 +206,12 @@ app.factory 'rmapsMapFactory',
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
-      clearBurdenLayers: =>
-        $timeout =>
-          if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
-            @scope.map.markers.addresses = {}
-            @scope.map.markers.notes = []
-            _.each @scope.map.geojson, (val) ->
-              val.data = _emptyGeoJsonData
+      clearBurdenLayers: () =>
+        if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
+          @scope.map.markers.addresses = {}
+          @scope.map.markers.notes = []
+          _.each @scope.map.geojson, (val) ->
+            val.data = _emptyGeoJsonData
 
       clearFilterSummary: =>
         @scope.map.geojson.filterSummaryPoly =
