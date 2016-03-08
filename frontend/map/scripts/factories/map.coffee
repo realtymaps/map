@@ -331,8 +331,8 @@ app.factory 'rmapsMapFactory',
 
       showClientSideParcels: () ->
         ###
-        isBeyondCartoDb is what is important here as we are beyond the context of what
-        cartodb can show us server side. We no will put the work load on the client for parcels.
+        isBeyondCartoDb is important as we are beyond the context of what
+        cartodb can show us server side. We now will put the work load on the client for parcels.
         However, this is ok as we should be zoomed in a significant amount where (n) parcels should be
         smaller.
         ###
