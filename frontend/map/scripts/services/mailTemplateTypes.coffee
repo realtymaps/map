@@ -1,8 +1,9 @@
 app = require '../app.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailTemplateTypeService', ($log) ->
+app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
 
+  _categoryLists = {}
   _meta =
     'basicLetter':
       content: require('../../html/includes/mail/basic-letter-template.jade')()
@@ -29,6 +30,26 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       category: 'letter'
 
 
+  _buildCategoryLists = () ->
+    _categoryLists = {}
+    _categoryLists['all'] = []
+    for templateType of _meta
+      _categoryLists[_meta[templateType].category] = [] unless _meta[templateType].category of _categoryLists
+      obj =
+        name: _meta[templateType].name
+        thumb: _meta[templateType].thumb
+        category: _meta[templateType].category
+        type: templateType
+
+      _categoryLists['all'].push obj
+      _categoryLists[_meta[templateType].category].push obj
+
+    # since pdfs are, themselves, categorically a template type, retrieve them and include them here 
+    rmapsMailPdfService.getAsCategory()
+    .then (pdfs) ->
+      _appendCategoryList 'pdf', pdfs
+
+
   _getTypeNames = () ->
     return Object.keys _meta
 
@@ -39,27 +60,30 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
       ['all', 'All Templates']
       ['letter', 'Letters']
       ['postcard', 'Postcards']
-      ['favorite', 'Favorites']
-      # ['custom', 'Custom']
+      ['pdf', 'Uploaded PDFs']
     ]
 
   _getMeta = () ->
     return _meta
 
   _getCategoryLists = () ->
-    t = {}
-    t['all'] = []
-    for templateType of _meta
-      t[_meta[templateType].category] = [] unless _meta[templateType].category of t
-      obj =
-        name: _meta[templateType].name
-        thumb: _meta[templateType].thumb
-        category: _meta[templateType].category
-        type: templateType
+    return _categoryLists
 
-      t['all'].push obj
-      t[_meta[templateType].category].push obj
-    t
+  _appendCategoryList = (type, list) ->
+    if !(type of _categoryLists)
+      _categoryLists[type] = []
+
+    # nestle the items within maintenence structs as appropriate
+    for item in list
+      _categoryLists['all'].push item
+      _categoryLists[type].push item
+      if !(item.type of _meta)
+        _meta[item.type] = {}
+      _meta[item.type].content = item.type
+      _meta[item.type].category = 'pdf'
+
+
+  _buildCategoryLists()
 
   #### public
   getTypeNames: _getTypeNames
@@ -69,8 +93,9 @@ app.service 'rmapsMailTemplateTypeService', ($log) ->
   getCategories: _getCategories
 
   getCategoryLists: _getCategoryLists
+  appendCategoryList: _appendCategoryList
 
-  getHtml: (type) ->
+  getMailContent: (type) ->
     _meta[type].content
 
   getCategoryFromType: (type) ->

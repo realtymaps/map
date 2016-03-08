@@ -45,11 +45,11 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
       $log.debug "_changeStep() going to #{newStep}"
       $state.go($state.get(newStep), id: campaign.id)
 
-  $scope.nextStep = () ->
-    _changeStep(1)
+  $scope.nextStep = (next = 1) ->
+    _changeStep(next)
 
-  $scope.prevStep = () ->
-    _changeStep(-1)
+  $scope.prevStep = (next = -1) ->
+    _changeStep(next)
 
   if $state.params.id
     rmapsMailCampaignService.get id: $state.params.id
