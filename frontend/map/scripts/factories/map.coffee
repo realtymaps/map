@@ -207,11 +207,12 @@ app.factory 'rmapsMapFactory',
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: =>
-        if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
-          @scope.map.markers.addresses = {}
-          @scope.map.markers.notes = []
-          _.each @scope.map.geojson, (val) ->
-            val.data = _emptyGeoJsonData
+        $timeout =>
+          if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
+            @scope.map.markers.addresses = {}
+            @scope.map.markers.notes = []
+            _.each @scope.map.geojson, (val) ->
+              val.data = _emptyGeoJsonData
 
       clearFilterSummary: =>
         @scope.map.geojson.filterSummaryPoly =
@@ -266,19 +267,22 @@ app.factory 'rmapsMapFactory',
         # $log.debug "hash: #{@hash}"
         # $log.debug "mapState: #{@mapState}"
         #NOTE THE PROMISE of getFilterResults being coupled with the mutated (.then) is important otherwise the workflow gets messed up
-        #mess up in that parcels are not always rendered when they should be
-        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache).then (data) =>
+        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
+        .then (data) =>
+
           if Object.prototype.toString.call(data) is '[object Array]'
-            return if !data? or _.isString data
-            @handleClusterResults(data)
+            if !data? or _.isString data
+              return $q.resolve()
+            $q.resolve @handleClusterResults(data)
 
           else
             #needed for results list, rendering price markers, and address Markers
-            #depending on zoome we want address or price
+            #depending on zoom we want address or price
             #the data structure is the same (do we clone and hide one?)
             #or do we have the results list view grab one that exists with items?
-            return if !data? or _.isString data
-            @handleSummaryResults(data)
+            if !data? or _.isString data
+              return $q.resolve()
+            $q.resolve @handleSummaryResults(data)
 
             if @isParcel() or @isAddressParcel()
 
@@ -296,7 +300,7 @@ app.factory 'rmapsMapFactory',
               Toggles.showAddresses = @isAddressParcel()
               overlays?.parcelsAddresses?.visible = Toggles.showAddresses
 
-              @handleGeoJsonResults(filters, cache)
+              return @handleGeoJsonResults(filters, cache)
 
             else
               zoomLvl = 'price'
@@ -305,8 +309,9 @@ app.factory 'rmapsMapFactory',
               Toggles.showPrices = true
               Toggles.showAddresses = false
               overlays?.parcelsAddresses?.visible = false
+              return $q.resolve()
 
-            $log.debug "drawFilterSummary zoom=#{@scope.map.center.zoom} (@#{zoomLvl})"
+            # $log.debug "drawFilterSummary zoom=#{@scope.map.center.zoom} (@#{zoomLvl})"
 
         promises.push p
         promises
@@ -325,11 +330,23 @@ app.factory 'rmapsMapFactory',
       isBeyondCartoDb: () =>
         @isZoomLevel('isBeyondCartoDb')
 
+      showClientSideParcels: () ->
+        ###
+        isBeyondCartoDb is what is important here as we are beyond the context of what
+        cartodb can show us server side. We no will put the work load on the client for parcels.
+        However, this is ok as we should be zoomed in a significant amount where (n) parcels should be
+        smaller.
+        ###
+        (@isAddressParcel(true) or @isParcel()) and @isBeyondCartoDb()
+
+      showVectorPolys: () ->
+        !@showClientSidePolys()
+
       redraw: (cache = true) =>
         promises = []
 
         #consider renaming parcels to addresses as that is all they are used for now
-        if @isAddressParcel(true) or @isParcel() or @isBeyondCartoDb()
+        if @showClientSideParcels()
           verboseLogger.debug 'isAddressParcel'
           promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
@@ -342,7 +359,7 @@ app.factory 'rmapsMapFactory',
         else
           verboseLogger.debug 'not, isAddressParcel'
           rmapsZoomLevelService.dblClickZoom.enable(@scope)
-          @clearBurdenLayers()
+          promises.push @clearBurdenLayers()
 
         promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes()]
 
