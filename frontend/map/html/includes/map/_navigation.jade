@@ -2,7 +2,7 @@
   div.projects-tools
     div.btn-group.desktop-only(ng-hide="Toggles.getHideAnyDraw()")
       include ./_buttons_drop_down.jade
-    
+
     div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
       include ./_projects.jade
       //- Todo: conditionally show pinned or favorites depending on user role
@@ -10,6 +10,7 @@
       include ./_favorites.jade
       include ./_notes.jade
       include ./_neighbourhood.jade
+      include ./_mail.jade
 
     div.btn-group
       include ./_settings.jade

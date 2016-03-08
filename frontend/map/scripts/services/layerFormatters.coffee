@@ -129,6 +129,15 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
           iconSize: [30, 30]
           html: require('../../html/includes/_circleNr.jade')(number+1)
 
+    setMarkerMailOptions: (model, number) ->
+      _.extend model,
+        $index: number
+        markerType: 'mail'
+        icon:
+          type: 'div'
+          iconSize: [30, 30]
+          html: "<i class=\"icon fa fa-envelope\"></i>"
+
     setMarkerManualClusterOptions: (model) ->
       return {} unless model
       #important for the clusterer css a div must have child span

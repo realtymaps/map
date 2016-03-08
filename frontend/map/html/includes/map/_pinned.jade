@@ -10,7 +10,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="d
       span
         a(ng-show="pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") {{pinnedTotal}} Pinned Properties
         a(ng-show="!pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") No Pinned Properties
-        span.results-btn(ng-controller="rmapsMapMailCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
+        span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
           span.icon.icon-send_email
         span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
           span.fa.fa-minus-circle

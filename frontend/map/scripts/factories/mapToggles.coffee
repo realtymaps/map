@@ -16,6 +16,7 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @showPrices = true
     @showNeighbourhoodTap = false
     @showNotes = false
+    @showMail = false
     @propertiesInShapes = false
     @isSketchMode = false
     @isNeighborhoodDraw = false
@@ -32,6 +33,9 @@ app.factory 'rmapsMapTogglesFactory', () ->
 
     @toggleNoteTap = () =>
       @showNoteTap = !@showNoteTap
+
+    @toggleMail = () =>
+      @showMail = !@showMail
 
     @toggleAddresses = () =>
       @showAddresses = !@showAddresses

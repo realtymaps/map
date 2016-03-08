@@ -1,8 +1,10 @@
 app = require '../app.coffee'
 module.exports = app
+backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService) ->
-  $log = $log.spawn 'mail:rmapsMapMailCtrl'
+app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, $http, rmapsPropertiesService, rmapsPrincipalService, leafletData, rmapsLayerFormattersService) ->
+  $log = $log.spawn 'mail:rmapsMailModalCtrl'
+  $log.debug 'MailModalCtrl'
 
   $scope.addMail = (maybeParcel) ->
 
@@ -41,3 +43,21 @@ app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, rmapsPropertie
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
+
+app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, $http, rmapsPropertiesService, rmapsPrincipalService, leafletData, rmapsLayerFormattersService) ->
+  $log = $log.spawn 'mail:rmapsMapMailCtrl'
+  $log.debug 'MapMailCtrl'
+
+  getMail = () ->
+    profile = rmapsPrincipalService.getCurrentProfile()
+    $http.get("/mailProperties/#{profile.project_id}", cache: false)
+    .then ({data}) ->
+      $log.debug "received mail data #{data.length} " if data?.length
+      $scope.map.markers.mail = rmapsLayerFormattersService.setDataOptions data, rmapsLayerFormattersService.MLS.setMarkerMailOptions
+
+  $scope.map.getMail = getMail
+
+  $scope.$watch 'Toggles.showMail', (newVal) ->
+    $scope.map.layers.overlays.mail.visible = newVal
+
+  getMail()
