@@ -18,7 +18,7 @@ CAMPAIGN_BILLING_DELAY = 1
 #
 # This task find letters that have been queued from a mail campaign
 #
-findLetters = (subtask, cb) ->
+findLetters = (subtask) ->
   tables.mail.letters()
   .select(
     [
@@ -34,10 +34,7 @@ findLetters = (subtask, cb) ->
   .whereIn('status', [ 'ready', 'error-transient' ])
   .then (letters) ->
     Promise.map letters, (letter) ->
-      if _.isFunction cb
-        cb batch_id: subtask.batch_id, data: letterRequest
-      else
-        jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letterRequest, true
+      jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
 
 #
 # This task sends a _single_ letter via the LOB API and saves the response data (or error) returned
@@ -125,7 +122,7 @@ createLetter = (subtask) ->
 # This task finds campaigns that are ready for final billing
 #   The charge will not be captured before the day after the charge was initiated
 #
-findCampaigns = (subtask, cb) ->
+findCampaigns = (subtask) ->
   tables.mail.campaign()
   .select(
     [
@@ -157,10 +154,7 @@ findCampaigns = (subtask, cb) ->
           logger.debug "Campaign #{campaign.id} still has #{unsent.length} unsent letters and/or errors - skipping billing for now"
           return
         else
-          if _.isFunction cb
-            cb batch_id: subtask.batch_id, data: campaign
-          else
-            jobQueue.queueSubsequentSubtask null, subtask, 'lob_chargeCampaign', campaign, true
+          jobQueue.queueSubsequentSubtask null, subtask, 'lob_chargeCampaign', campaign, true
 
 #
 # This task finalizes the charges for a campaign that has finished sending
