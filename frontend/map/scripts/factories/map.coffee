@@ -315,18 +315,18 @@ app.factory 'rmapsMapFactory',
         promises.push p
         promises
 
-      isZoomLevel: (key, doSetState) =>
+      isZoomLevel: (key, doSetState) ->
         if doSetState
           return rmapsZoomLevelService[key](@scope.map.center.zoom, @scope)
         rmapsZoomLevelService[key](@scope.map.center.zoom)
 
-      isAddressParcel: (doSetState) =>
+      isAddressParcel: (doSetState) ->
         @isZoomLevel('isAddressParcel', doSetState)
 
-      isParcel: () =>
+      isParcel: () ->
         @isZoomLevel('isParcel')
 
-      isBeyondCartoDb: () =>
+      isBeyondCartoDb: () ->
         @isZoomLevel('isBeyondCartoDb')
 
       showClientSideParcels: () ->
@@ -341,7 +341,7 @@ app.factory 'rmapsMapFactory',
       showVectorPolys: () ->
         !@showClientSidePolys()
 
-      redraw: (cache = true) =>
+      redraw: (cache = true) ->
         promises = []
 
         #consider renaming parcels to addresses as that is all they are used for now
