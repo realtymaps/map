@@ -116,4 +116,10 @@ app.factory 'rmapsResultsFlow',
   ({scope, filters, hash, mapState, data}) ->
     flow = flowFact({scope, filters, hash, mapState, data})
 
-    flow.mutateCluster().mutateSummary().mutateParcel().promise
+    promise = flow.mutateCluster().mutateSummary().mutateParcel().promise
+
+    #make the promise apparent as an undefined promise will just pass through and make
+    #q.all a nightmare to debug. This was the main big bug originally in here
+    if !promise
+      throw new Error 'rmapsResultsFlow promise is undefined'
+    promise
