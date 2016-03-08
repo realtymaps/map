@@ -12,7 +12,7 @@ div.btn-actions
     span.icon.icon-send_email
     .button-help Mailing
 
-  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()")
+  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()" ng-class="{ 'button-has-notes': hasNotes(property) }")
     i.fa.fa-sticky-note &nbsp;
     .button-help Note
 

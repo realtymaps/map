@@ -27,6 +27,8 @@ mod.constant 'rmapsEventConstants',
     principal:
       login:
         success: 1
+      logout:
+        success: 1
       profile:
         updated: 1
         add: 1

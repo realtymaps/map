@@ -14,6 +14,9 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
   _.extend $scope,
     activeView: 'notes'
 
+    hasNotes: (property) ->
+      rmapsNotesService.hasNotes(property?.rm_property_id)
+
     createModal: (note = {}) ->
       modalInstance = $modal.open
         animation: rmapsMainOptions.modals.animationsEnabled
