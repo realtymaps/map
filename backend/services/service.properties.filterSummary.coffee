@@ -2,7 +2,6 @@ config = require '../../common/config/commonConfig'
 base = require './service.properties.base.filterSummary'
 sqlHelpers = require './../utils/util.sql.helpers.coffee'
 indexBy = require '../../common/utils/util.indexByWLength'
-Point = require('../../common/utils/util.geometries').Point
 sqlCluster = require '../utils/util.sql.manual.cluster'
 Promise = require 'bluebird'
 logger = require('../config/logger').spawn('service:filterSummary')
@@ -34,7 +33,8 @@ _limitByPinnedProps = (query, state, queryParams) ->
 _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
   returnAs = queryParams.returnType
   logger.debug "_handleReturnType: " + returnAs
-  _default = ->
+
+  defaultFn = () ->
     query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 800)
     query = _limitByPinnedProps(query, state, queryParams)
     # remove dupes
@@ -48,14 +48,14 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
       props = indexBy(properties, false)
       props
 
-  _cluster = ->
+  cluster = ->
     filterSummaryImpl.getFilterSummary(queryParams, limit, sqlCluster.clusterQuery(zoom))
     .then (properties) ->
       sqlCluster.fillOutDummyClusterIds(properties)
     .then (properties) ->
       properties
 
-  _geojsonPolys = ->
+  geojsonPolys = () ->
     query = filterSummaryImpl.getFilterSummaryAsQuery(queryParams, 2000, query)
     return Promise.resolve([]) unless query
 
@@ -66,26 +66,26 @@ _handleReturnType = (filterSummaryImpl, state, queryParams, limit, zoom = 13) ->
 
     # data formatting
     query.then (data) ->
-      geojson =
-        'type': 'FeatureCollection'
-        'features': propMerge.updateSavedProperties(state, data).map (d) ->
-          d.type = 'Feature'
-          d.properties = {}
-          d
+      'type': 'FeatureCollection'
+      'features': propMerge.updateSavedProperties(state, data).map (d) ->
+        d.type = 'Feature'
+        d.properties = {}
+        d
 
-  _clusterOrDefault = () ->
+  clusterOrDefault = () ->
     _limitByPinnedProps(filterSummaryImpl.getResultCount(queryParams), state, queryParams)
     .then (data) ->
       if data[0].count > config.backendClustering.resultThreshold
-        return _cluster()
+        return cluster()
       else
-        return _default()
+        return defaultFn()
 
-  handles =
-    cluster: _cluster
-    geojsonPolys: _geojsonPolys
-    default: _default
-    clusterOrDefault: _clusterOrDefault
+  handles = {
+    cluster
+    geojsonPolys
+    default: defaultFn
+    clusterOrDefault
+  }
 
   handle = handles[returnAs] or handles.default
   handle()
