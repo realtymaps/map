@@ -14,12 +14,12 @@ mod.config ($provide) ->
       deferCb(d)
       d.promise
 
-    $delegate.resolve = (val) ->
-      _promise @, (d) ->
-        d.resolve(val)
-
-    $delegate.reject = (reason) ->
-      _promise @, (d) ->
-        d.reject(reason)
+    if !$delegate.resolve
+      $delegate.resolve = $delegate.when
+      
+    if !$delegate.reject
+      $delegate.reject = (reason) ->
+        _promise @, (d) ->
+          d.reject(reason)
 
     $delegate
