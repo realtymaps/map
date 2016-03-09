@@ -81,38 +81,38 @@ class RouteCrud
     @logger.debug "Handling query"
     handleQuery query, res, lHandleQuery
 
-  getEntity: (req, crudMethodStr) =>
+  getEntity: (req, crudMethodStr) ->
     @logRequest req, 'initial req'
     @exec(req, crudMethodStr).then (tReq) =>
       @logRequest tReq, 'transformed tReq', 'tReq'
       entity = _.merge({}, tReq.params, tReq.body, tReq.query)
       entity
 
-  rootGET: ({req, res, next, lHandleQuery}) =>
+  rootGET: ({req, res, next, lHandleQuery}) ->
     @getEntity(req, 'rootGET').then (entity) =>
       @_wrapRoute @svc.getAll(entity), res, lHandleQuery
 
-  rootPOST: ({req, res, next, lHandleQuery}) =>
+  rootPOST: ({req, res, next, lHandleQuery}) ->
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
     @getEntity(req, 'rootPOST').then (entity) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
       return @_wrapRoute @svc.create(entity), res, lHandleQuery
 
-  byIdGET: ({req, res, next, lHandleQuery}) =>
+  byIdGET: ({req, res, next, lHandleQuery}) ->
     @getEntity(req, 'byIdGET').then (entity) =>
       @_wrapRoute @svc.getById(entity), res, lHandleQuery
 
-  byIdPUT: ({req, res, next, lHandleQuery}) =>
+  byIdPUT: ({req, res, next, lHandleQuery}) ->
     @getEntity(req, 'byIdPUT').then (entity) =>
       @_wrapRoute @svc.update(entity), res, lHandleQuery
 
-  byIdPOST: ({req, res, next, lHandleQuery}) =>
+  byIdPOST: ({req, res, next, lHandleQuery}) ->
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
     @getEntity(req, 'byIdPOST').then (entity) =>
       if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
       return @_wrapRoute @svc.create(entity), res, lHandleQuery
 
-  byIdDELETE: ({req, res, next, lHandleQuery}) =>
+  byIdDELETE: ({req, res, next, lHandleQuery}) ->
     @getEntity(req, 'byIdDELETE').then (entity) =>
       @_wrapRoute @svc.delete(entity), res,
 
