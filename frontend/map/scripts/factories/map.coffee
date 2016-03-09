@@ -83,6 +83,9 @@ app.factory 'rmapsMapFactory',
             $rootScope.propertiesInShapes = newVal
             @redraw()
 
+          $scope.$on rmapsEventConstants.map.redraw, () =>
+            @redraw()
+
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
             if newVal != oldVal

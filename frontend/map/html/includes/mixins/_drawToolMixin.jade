@@ -13,7 +13,8 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl)
               id="#{drawToolId}"
               mapPromise="draw.mapPromise"
               options="draw.leafletDrawOptions"
-              events="draw.leafletDrawEvents")
+              events="draw.leafletDrawEvents"
+              enabled="draw.enabled")
           
       .col.col-md-3.col-sm-3.col-xs-3
         button.btn.btn-primary.close-btn.pull-right(

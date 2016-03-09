@@ -8,14 +8,13 @@ app.factory "rmapsMapDrawHandlesFactory", ($log, rmapsDrawnUtilsService) ->
   _makeDrawKeys = (handles) ->
     _.mapKeys handles, (val, key) -> 'draw:' + key
 
-  return (opts) ->
-    {drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, create} = opts
+  return ({drawnShapesSvc, drawnItems, endDrawAction, commonPostDrawActions, announceCb, createPromise}) ->
     _makeDrawKeys
       created: ({layer,layerType}) ->
         drawnItems.addLayer(layer)
         geojson = layer.toGeoJSON()
 
-        promise = create or drawnShapesSvc?.create
+        promise = createPromise or drawnShapesSvc?.create
         promise(geojson).then ({data}) ->
           newId = data
           layer.model =

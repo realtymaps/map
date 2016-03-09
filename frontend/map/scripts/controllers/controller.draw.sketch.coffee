@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 mapId = 'mainMap'
+color = 'blue'
 
 app.controller "rmapsDrawSketchCtrl", (
 $scope, $log, $rootScope, rmapsEventConstants
@@ -32,6 +33,19 @@ rmapsDrawPostActionFactory) ->
         drawnItems
         postDrawAction: rmapsDrawPostActionFactory($scope)
         name: "sketch"
+        itemsOptions:
+          color: color
+          fillColor: color
+        drawOptions:
+          draw:
+            polyline:
+              shapeOptions: {color}
+            polygon:
+              shapeOptions: {color}
+            rectangle:
+              shapeOptions: {color}
+            circle:
+              shapeOptions: {color}
       }
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->

@@ -9,6 +9,7 @@ mod.constant 'rmapsEventConstants',
       createClick: 1
       listToggled: 1
     map:
+      redraw: 1
       results: 1
       center: 1
       centerOnProperty: 1

@@ -30,6 +30,9 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
     create: (model) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
+        if !model?.properties?.neighbourhood_name
+          #makes the model a neighborhood with a defined empty string
+          model.properties.neighbourhood_name = ''
         _signalUpdate(drawnShapesSvc.create model)
 
     update: (model) ->
