@@ -7,16 +7,16 @@ dbs = require '../config/dbs'
 db = dbs.get('main')
 
 class MailService extends ServiceCrud
-  getAll: (query = {}) ->
-    # resolve fields of ambiguity in query string
-    if 'auth_user_id' of query
-      query["#{tables.mail.campaign.tableName}.auth_user_id"] = query.auth_user_id
-      delete query.auth_user_id
-    if 'id' of query
-      query["#{tables.mail.campaign.tableName}.id"] = query.id
-      delete query.id
+  getAll: (entity = {}) ->
+    # resolve fields of ambiguity in entity string
+    if 'auth_user_id' of entity
+      entity["#{tables.mail.campaign.tableName}.auth_user_id"] = entity.auth_user_id
+      delete entity.auth_user_id
+    if 'id' of entity
+      entity["#{tables.mail.campaign.tableName}.id"] = entity.id
+      delete entity.id
 
-    transaction = @dbFn().select(
+    query = @dbFn().select(
       "#{tables.mail.campaign.tableName}.*",
       db.raw("#{tables.user.project.tableName}.name as project_name"),
       db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
@@ -24,8 +24,8 @@ class MailService extends ServiceCrud
     .join("#{tables.user.project.tableName}", () ->
       this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
     )
-    .where(query)
-    super(query, transaction: transaction)
+
+    super(entity, query: query)
 
   # any details for a mail review shall be delivered upon this service call
   getReviewDetails: (campaign_id) ->

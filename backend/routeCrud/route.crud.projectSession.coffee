@@ -141,8 +141,8 @@ class ProjectRouteCrud extends RouteCrud
     class DrawnShapeCrud extends EzRouteCrud
 
       neighborhoods: (req, res, next) =>
-        @getQuery(req, 'rootGET').then (query) =>
-          @_wrapRoute @svc.neighborhoods(query), res
+        @getEntity(req, 'rootGET').then (entity) =>
+          @_wrapRoute @svc.neighborhoods(entity), res
 
     @drawnShapesCrud = new DrawnShapeCrud @svc.drawnShapes,
       rootGETTransforms:
