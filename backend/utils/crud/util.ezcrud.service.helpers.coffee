@@ -79,7 +79,7 @@ class ServiceCrud extends BaseObject
     @_wrapQuery (options.query ? @dbFn()).insert(entity), options
 
   # implies restrictions and forces on id matches
-  getById: (entity, options = {}) =>
+  getById: (entity, options = {}) ->
     @logger.debug () -> "getById() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
 
     # allow `entity` to represent a primitive
@@ -89,7 +89,7 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @_wrapQuery (options.query ? @dbFn()).where(ids), options
 
-  update: (entity, options = {}) =>
+  update: (entity, options = {}) ->
     @logger.debug () -> "update() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
     throw new ServiceCrudError("update on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys entity
     ids = @_getIdObj entity

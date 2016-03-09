@@ -56,7 +56,7 @@ class RouteCrud
         return validateAndTransform tReq, specificTransforms
       tReq
 
-  logRequest: (req, addMsg, type = 'req') =>
+  logRequest: (req, addMsg, type = 'req') ->
     if addMsg
       @logger.debug.cyan(addMsg)
     @logger.debug () -> "#{type}.params=#{JSON.stringify(req.params)}"
@@ -65,7 +65,7 @@ class RouteCrud
     @logger.debug () -> "#{type}.method=#{req.method}"
     return
 
-  exec: (req, crudMethodStr) =>
+  exec: (req, crudMethodStr) ->
     if req.originalUrl
       @logger.debug req.originalUrl
     @validRequest(req, crudMethodStr).then (tReq) ->
@@ -77,7 +77,7 @@ class RouteCrud
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
-  _wrapRoute: (query, res, lHandleQuery) =>
+  _wrapRoute: (query, res, lHandleQuery) ->
     @logger.debug "Handling query"
     handleQuery query, res, lHandleQuery
 
