@@ -31,7 +31,7 @@ class ServiceCrud extends BaseObject
     @logger.debug () -> "_getIdObj(), keys=#{JSON.stringify(keys)}"
     keys
 
-  _hasIdKeys: (testObj) =>
+  _hasIdKeys: (testObj) ->
     @logger.debug () -> "_hasIdKeys:"
     @logger.debug () => "idKeys=#{@idKeys}"
     @logger.debug () -> "testObj=#{testObj}"
