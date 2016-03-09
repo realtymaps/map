@@ -33,11 +33,11 @@ app.service 'rmapsPropertyFormatterService', ($rootScope, $timeout, $filter, $lo
       _.extend @, rmapsFormattersService.Common
       _.extend @, google: rmapsGoogleService
 
-    isSavedResult:(result) ->
-      result?.savedDetails?.isSaved == true
+    isSavedResult: (result) ->
+      rmapsPropertiesService.isSavedProperty result?.rm_property_id
 
-    isFavoriteResult:(result) ->
-      result?.savedDetails?.isFavorite == true
+    isFavoriteResult: (result) ->
+      rmapsPropertiesService.isFavoriteProperty result?.rm_property_id
 
     getCurrentOwnersTitle: (result) =>
       title = result?.owner_title
