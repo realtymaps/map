@@ -11,12 +11,14 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipa
   $scope.searchName = ''
 
   $scope.loadMailCampaigns = () ->
-    rmapsPrincipalService.getIdentity()
-    .then (identity) ->
-      $log.debug 'getting campaign list'
-      rmapsMailCampaignService.get auth_user_id: identity.id
-      .then (list) ->
-        $scope.mailCampaigns = list
+    $log.debug 'getting campaign list'
+    query = {
+      # If we decide to restrict list to current project, uncomment this line
+      # project_id: rmapsPrincipalService.getCurrentProjectId()
+    }
+    rmapsMailCampaignService.get query
+    .then (list) ->
+      $scope.mailCampaigns = list
 
   $scope.deleteCampaign = (campaign) ->
     rmapsMailCampaignService.remove campaign.id

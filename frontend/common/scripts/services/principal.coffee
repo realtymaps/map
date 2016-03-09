@@ -59,6 +59,9 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   getCurrentProfileId = () ->
     return getCurrentProfile()?.id
 
+  getCurrentProjectId = () ->
+    return getCurrentProfile()?.project_id
+
   isCurrentProfileResolved = () ->
     _identity?.currentProfileId?
 
@@ -122,3 +125,5 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   setCurrentProfile: setCurrentProfile
   getCurrentProfile: getCurrentProfile
   getCurrentProfileId: getCurrentProfileId
+  getCurrentProjectId: getCurrentProjectId
+

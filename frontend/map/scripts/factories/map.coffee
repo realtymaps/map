@@ -158,6 +158,9 @@ app.factory 'rmapsMapFactory',
             getNotes: () ->
               $q.resolve() #place holder for rmapsMapNotesCtrl so we can access it here in this parent directive
 
+            getMail: () ->
+              $q.resolve() #place holder for rmapsMapMailCtrl so we can access it here in this parent directive
+
             layers:
               overlays: _overlays($log)
 
@@ -254,7 +257,7 @@ app.factory 'rmapsMapFactory',
           rmapsZoomLevelService.dblClickZoom.enable(@scope)
           promise = @clearBurdenLayers()
 
-        $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes()]
+        $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes(), @scope.map.getMail()]
         .then () =>
         # $q.all(promises).then =>
           #every thing is setup, only draw once
