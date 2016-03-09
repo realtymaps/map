@@ -1,4 +1,5 @@
 var OurToolBar = require('./api.Toolbar.js')
+Object.assign = Object.assign || require('object-assign')
 /*L.Map.mergeOptions({
 	editControl: true
 })*/
