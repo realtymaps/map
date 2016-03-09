@@ -1,4 +1,5 @@
 var OurToolBar = require('./api.Toolbar.js')
+Object.assign = Object.assign || require('object-assign')
 /*
   Mods: L.DrawToolbar
   Goal:

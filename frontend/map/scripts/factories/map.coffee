@@ -8,13 +8,6 @@ _emptyGeoJsonData =
   type: 'FeatureCollection'
   features: []
 
-_wrapGeomPointJson = (obj) ->
-  unless obj?.geom_point_json
-    obj.geom_point_json =
-      coordinates: obj.coordinates
-      type: obj.type
-  obj
-
 ###
   Our Main Map Implementation
 ###
@@ -22,7 +15,8 @@ app.factory 'rmapsMapFactory',
   ($log, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
   rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
   rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService, rmapsLeafletObjectFetcherFactory) ->
+  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService,
+  rmapsLeafletObjectFetcherFactory, rmapsZoomLevelStateFactory, rmapsResultsFlow) ->
 
     leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
@@ -50,6 +44,7 @@ app.factory 'rmapsMapFactory',
     class Map extends rmapsBaseMapFactory
 
       constructor: ($scope) ->
+        _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'
 
@@ -189,8 +184,6 @@ app.factory 'rmapsMapFactory',
               rmapsControlsService.LocationControl scope: $scope
             ]
 
-
-
           formatters:
             results: new rmapsResultsFormatterService(self)
             property: new rmapsPropertyFormatterService()
@@ -210,11 +203,15 @@ app.factory 'rmapsMapFactory',
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
       clearBurdenLayers: () =>
-        if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
-          @scope.map.markers.addresses = {}
-          @scope.map.markers.notes = []
-          _.each @scope.map.geojson, (val) ->
-            val.data = _emptyGeoJsonData
+        d = $q.defer()
+        @scope.$evalAsync =>
+          if @map? and not rmapsZoomLevelService.isParcel(@scope.map.center.zoom)
+            @scope.map.markers.addresses = {}
+            @scope.map.markers.notes = []
+            _.each @scope.map.geojson, (val) ->
+              val.data = _emptyGeoJsonData
+          d.resolve()
+        d.promise
 
       clearFilterSummary: =>
         @scope.map.geojson.filterSummaryPoly =
@@ -223,134 +220,31 @@ app.factory 'rmapsMapFactory',
 
         @scope.map.markers.filterSummary = {}
 
-      handleClusterResults: (data) =>
-        @scope.map.markers.filterSummary = {}
-        clusters = {}
-        for k, model of data
-          # Need to ensure unique keys for markers so old ones get removed, new ones get added. Dashes must be removed.
-          clusters["#{model.count}:#{model.lat}:#{model.lng}".replace('-','N')] = @layerFormatter.MLS.setMarkerManualClusterOptions(model)
-        @scope.map.markers.backendPriceCluster = clusters
-
-      handleSummaryResults: (data) =>
-        @scope.map.markers.backendPriceCluster = {}
-        @layerFormatter.setDataOptions(data, @layerFormatter.MLS.setMarkerPriceOptions)
-
-        for key, model of data
-          _wrapGeomPointJson model
-          rmapsPropertiesService.updateProperty model
-
-        @scope.map.markers.filterSummary = data
-
-      handleGeoJsonResults: (filters, cache) =>
-        rmapsPropertiesService.getFilterSummaryAsGeoJsonPolys(@hash, @mapState, filters, cache)
-        .then (data) =>
-          return if !data? or _.isString data
-
-          for key, model of data
-            rmapsPropertiesService.updateProperty model
-
-          @scope.map.geojson.filterSummaryPoly =
-            data: data
-            style: @layerFormatter.Parcels.getStyle
-
-      drawFilterSummary:(cache) =>
-        promises = []
-        overlays = @scope.map.layers.overlays
-        {Toggles} = @scope
-
+      drawFilterSummary: (cache) ->
         # result-count-based clustering, backend will either give clusters or summary.  Get and test here.
         # no need to query backend if no status is designated (it would error out by default right now w/ no status constraint)
         filters = rmapsFilterManagerService.getFilters()
-        # $log.debug filters
         unless filters?.status?
           @clearFilterSummary()
-          return promises
+          return $q.resolve()
 
-        # $log.debug "hash: #{@hash}"
-        # $log.debug "mapState: #{@mapState}"
-        #NOTE THE PROMISE of getFilterResults being coupled with the mutated (.then) is important otherwise the workflow gets messed up
-        p = rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
+        rmapsPropertiesService.getFilterResults(@hash, @mapState, filters, cache)
         .then (data) =>
-
-          if Object.prototype.toString.call(data) is '[object Array]'
-            if !data? or _.isString data
-              return $q.resolve()
-            $q.resolve @handleClusterResults(data)
-
-          else
-            #needed for results list, rendering price markers, and address Markers
-            #depending on zoom we want address or price
-            #the data structure is the same (do we clone and hide one?)
-            #or do we have the results list view grab one that exists with items?
-            if !data? or _.isString data
-              return $q.resolve()
-            $q.resolve @handleSummaryResults(data)
-
-            if @isParcel() or @isAddressParcel()
-
-              if @isAddressParcel()
-                if @isBeyondCartoDb()
-                  zoomLvl = 'addressParcelBeyondCartoDB'
-                else
-                  zoomLvl = 'addressParcel'
-
-              else if @isParcel()
-                zoomLvl = 'parcel'
-
-              overlays?.parcels?.visible = not @isBeyondCartoDb()
-              Toggles.showPrices = false
-              Toggles.showAddresses = @isAddressParcel()
-              overlays?.parcelsAddresses?.visible = Toggles.showAddresses
-
-              return @handleGeoJsonResults(filters, cache)
-
-            else
-              zoomLvl = 'price'
-
-              overlays?.parcels?.visible = false
-              Toggles.showPrices = true
-              Toggles.showAddresses = false
-              overlays?.parcelsAddresses?.visible = false
-              return $q.resolve()
-
-            # $log.debug "drawFilterSummary zoom=#{@scope.map.center.zoom} (@#{zoomLvl})"
-
-        promises.push p
-        promises
-
-      isZoomLevel: (key, doSetState) ->
-        if doSetState
-          return rmapsZoomLevelService[key](@scope.map.center.zoom, @scope)
-        rmapsZoomLevelService[key](@scope.map.center.zoom)
-
-      isAddressParcel: (doSetState) ->
-        @isZoomLevel('isAddressParcel', doSetState)
-
-      isParcel: () ->
-        @isZoomLevel('isParcel')
-
-      isBeyondCartoDb: () ->
-        @isZoomLevel('isBeyondCartoDb')
-
-      showClientSideParcels: () ->
-        ###
-        isBeyondCartoDb is important as we are beyond the context of what
-        cartodb can show us server side. We now will put the work load on the client for parcels.
-        However, this is ok as we should be zoomed in a significant amount where (n) parcels should be
-        smaller.
-        ###
-        (@isAddressParcel(true) or @isParcel()) and @isBeyondCartoDb()
-
-      showVectorPolys: () ->
-        !@showClientSidePolys()
+          rmapsResultsFlow({
+            @scope
+            filters
+            @hash
+            @mapState
+            data
+            cache
+          })
 
       redraw: (cache = true) ->
-        promises = []
-
+        promise = null
         #consider renaming parcels to addresses as that is all they are used for now
         if @showClientSideParcels()
           verboseLogger.debug 'isAddressParcel'
-          promises.push rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
+          promise = rmapsPropertiesService.getParcelBase(@hash, @mapState, cache).then (data) =>
             return unless data?
             @scope.map.geojson.parcelBase =
               data: data
@@ -361,11 +255,11 @@ app.factory 'rmapsMapFactory',
         else
           verboseLogger.debug 'not, isAddressParcel'
           rmapsZoomLevelService.dblClickZoom.enable(@scope)
-          promises.push @clearBurdenLayers()
+          promise = @clearBurdenLayers()
 
-        promises = promises.concat @drawFilterSummary(cache), [@scope.map.getNotes(), @scope.map.getMail()]
-
-        $q.all(promises).then =>
+        $q.all [promise, @drawFilterSummary(cache), @scope.map.getNotes(), @scope.map.getMail()]
+        .then () =>
+        # $q.all(promises).then =>
           #every thing is setup, only draw once
           ###
           Not only is this efficent but it avoids (worksaround) ng-leaflet race
