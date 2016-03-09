@@ -17,6 +17,9 @@ class MailService extends ServiceCrud
     if 'id' of query
       query["#{tables.mail.campaign.tableName}.id"] = query.id
       delete query.id
+    if 'project_id' of query
+      query["#{tables.mail.campaign.tableName}.project_id"] = query.project_id
+      delete query.project_id
 
     transaction = @dbFn().select(
       "#{tables.mail.campaign.tableName}.*",
