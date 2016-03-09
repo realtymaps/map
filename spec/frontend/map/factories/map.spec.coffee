@@ -1,4 +1,5 @@
-{Point, NgLeafletCenter} = require('../../../../common/utils/util.geometries.coffee')
+###globals _, angular, inject, should###
+{Point} = require('../../../../common/utils/util.geometries.coffee')
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 mockRoutes = require '../fixtures/propertyData.coffee'
 
@@ -53,11 +54,12 @@ describe "rmapsMapFactory factory", ->
     describe 'drawFilterSummary', ->
       it 'can run', ->
         @subject.drawFilterSummary(false)
+        return
 
-      it 'has zero promises, with no filter', ->
-        promises = @subject.drawFilterSummary(false)
-        promises.should.be.ok
-        promises.length.should.be.equal 0
+      it 'returns a promise', ->
+        promise = @subject.drawFilterSummary(false)
+        promise.should.be.ok
+        promise.then.should.be.ok
 
       describe 'with filters', ->
         beforeEach ->
@@ -66,10 +68,6 @@ describe "rmapsMapFactory factory", ->
             sold: true
             pending: true
 
-        it 'has 1 promise', ->
-          promises = @subject.drawFilterSummary(false)
-          promises.should.be.ok
-          promises.length.should.be.equal 1
 
         it 'has mocked clusterOrDefault response', ->
           @subject.hash = mockRoutes.hash
@@ -78,14 +76,10 @@ describe "rmapsMapFactory factory", ->
           @subject.scope.Toggles = @rmapsMapTogglesFactory()
 
           # showResults: true
-          promises = @subject.drawFilterSummary(true)
+          promise = @subject.drawFilterSummary(true)
           @digestor.digest()
 
-          promises.length.should.be.equal 1
-          # promises[0].then ({data}) ->
-          #   angular.equals(data,mockRoutes.clusterOrDefault.response).should.equal true
-          #   done()
-          promises[0].catch ->
+          promise.catch ->
             should.fail()
           @digestor.digest()
 

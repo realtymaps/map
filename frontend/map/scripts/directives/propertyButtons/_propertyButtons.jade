@@ -8,11 +8,11 @@ div.btn-actions
     span.icon.icon-pin
     .button-help {{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}
 
-  button.send(ng-controller="rmapsMapMailCtrl" ng-click="addMail(property)")
+  button.send(ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)")
     span.icon.icon-send_email
     .button-help Mailing
 
-  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()")
+  button.note(ng-controller="rmapsNotesModalCtrl" ng-click="create(property); $event.stopPropagation()" ng-class="{ 'button-has-notes': hasNotes(property) }")
     i.fa.fa-sticky-note &nbsp;
     .button-help Note
 

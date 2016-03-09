@@ -13,6 +13,8 @@ class MailCampaignRoute extends RouteCrud
   getReviewDetails: (req, res, next) =>
     @custom @svc.getReviewDetails(req.params.id, req.body), res
 
+  getProperties: (req, res, next) =>
+    @custom @svc.getProperties(req.params.project_id, req.query.status, req.user.id), res
 
 instance = new MailCampaignRoute mailCampaignService,
   debugNS: "mailRoute"
@@ -33,6 +35,11 @@ module.exports = routeHelpers.mergeHandles instance,
       # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
     ]
   getReviewDetails:
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  getProperties:
     methods: ['get']
     middleware: [
       auth.requireLogin(redirectOnFail: true)

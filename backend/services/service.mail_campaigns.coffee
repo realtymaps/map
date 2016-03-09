@@ -3,8 +3,10 @@ ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 lobService = require './service.lob'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
-
+_ = require 'lodash'
 db = dbs.get('main')
+propertySvc = require './service.properties.details'
+logger = require('../config/logger').spawn('route:mail_campaigns')
 
 class MailService extends ServiceCrud
   getAll: (entity = {}) ->
@@ -15,6 +17,9 @@ class MailService extends ServiceCrud
     if 'id' of entity
       entity["#{tables.mail.campaign.tableName}.id"] = entity.id
       delete entity.id
+    if 'project_id' of entity
+      entity["#{tables.mail.campaign.tableName}.project_id"] = entity.project_id
+      delete entity.project_id
 
     query = @dbFn().select(
       "#{tables.mail.campaign.tableName}.*",
@@ -42,6 +47,27 @@ class MailService extends ServiceCrud
       .then ({url}) ->
         pdf: url
 
+  getProperties: (project_id, status, auth_user_id) ->
+    if status == 'all' || !status
+      status = ['ready', 'sending', 'paid']
+    if !_.isArray status
+      status = [status]
+    tables.mail.campaign()
+    .select('recipients')
+    .where
+      project_id: project_id
+      auth_user_id: auth_user_id
+    .whereIn 'status', status
+    .then (results) ->
+      properties = _.flatten(_.pluck(results, 'recipients'))
+      propertyIndex = _.indexBy properties, 'rm_property_id'
+      propertySvc.getDetails rm_property_id: _.pluck properties, 'rm_property_id'
+      .then (details) ->
+        _.map details, (detail) ->
+          _.assign detail,
+            mail: propertyIndex[detail.rm_property_id]
+            coordinates: detail.geom_point_json.coordinates
+            type: detail.geom_point_json.type
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance

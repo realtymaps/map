@@ -239,8 +239,14 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
     getSavedProperties: ->
       _savedProperties
 
+    isSavedProperty: (propertyId) ->
+      !!_savedProperties[propertyId]
+
     getFavoriteProperties: ->
       _favoriteProperties
+
+    isFavoriteProperty: (propertyId) ->
+      !!_favoriteProperties[propertyId]
 
     setSavedProperties: (props) ->
       _savedProperties = props
