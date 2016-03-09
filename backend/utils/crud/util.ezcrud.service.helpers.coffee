@@ -43,7 +43,6 @@ class ServiceCrud extends BaseObject
   #   that we develop in the future
   custom: (query) ->
     @logger.debug () -> "Using custom query"
-    console.log "\nEZCRUD using custom query:\n#{query.toString()}"
     @_wrapQuery query
 
   # intermediate function to flag _wrapQuery to return unevaluated knex
