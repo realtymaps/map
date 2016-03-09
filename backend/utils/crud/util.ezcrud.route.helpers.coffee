@@ -56,7 +56,7 @@ class RouteCrud
         return validateAndTransform tReq, specificTransforms
       tReq
 
-  logRequest: (req, addMsg, type = 'req') =>
+  logRequest: (req, addMsg, type = 'req') ->
     if addMsg
       @logger.debug.cyan(addMsg)
     @logger.debug () -> "#{type}.params=#{JSON.stringify(req.params)}"
@@ -65,7 +65,7 @@ class RouteCrud
     @logger.debug () -> "#{type}.method=#{req.method}"
     return
 
-  exec: (req, crudMethodStr) =>
+  exec: (req, crudMethodStr) ->
     if req.originalUrl
       @logger.debug req.originalUrl
     @validRequest(req, crudMethodStr).then (tReq) ->
@@ -77,44 +77,44 @@ class RouteCrud
     @_wrapRoute data, res
 
   # wrappers for route centralization and mgmt
-  _wrapRoute: (q, res, lHandleQuery) =>
+  _wrapRoute: (query, res, lHandleQuery) ->
     @logger.debug "Handling query"
-    handleQuery q, res, lHandleQuery
+    handleQuery query, res, lHandleQuery
 
-  getQuery: (req, crudMethodStr) =>
+  getEntity: (req, crudMethodStr) ->
     @logRequest req, 'initial req'
     @exec(req, crudMethodStr).then (tReq) =>
       @logRequest tReq, 'transformed tReq', 'tReq'
-      query = _.merge({}, tReq.params, tReq.body, tReq.query)
-      query
+      entity = _.merge({}, tReq.params, tReq.body, tReq.query)
+      entity
 
-  rootGET: ({req, res, next, lHandleQuery}) =>
-    @getQuery(req, 'rootGET').then (query) =>
-      @_wrapRoute @svc.getAll(query), res, lHandleQuery
+  rootGET: ({req, res, next, lHandleQuery}) ->
+    @getEntity(req, 'rootGET').then (entity) =>
+      @_wrapRoute @svc.getAll(entity), res, lHandleQuery
 
-  rootPOST: ({req, res, next, lHandleQuery}) =>
+  rootPOST: ({req, res, next, lHandleQuery}) ->
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
-    @getQuery(req, 'rootPOST').then (query) =>
-      if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-      return @_wrapRoute @svc.create(query), res, lHandleQuery
+    @getEntity(req, 'rootPOST').then (entity) =>
+      if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
+      return @_wrapRoute @svc.create(entity), res, lHandleQuery
 
-  byIdGET: ({req, res, next, lHandleQuery}) =>
-    @getQuery(req, 'byIdGET').then (query) =>
-      @_wrapRoute @svc.getById(query), res, lHandleQuery
+  byIdGET: ({req, res, next, lHandleQuery}) ->
+    @getEntity(req, 'byIdGET').then (entity) =>
+      @_wrapRoute @svc.getById(entity), res, lHandleQuery
 
-  byIdPUT: ({req, res, next, lHandleQuery}) =>
-    @getQuery(req, 'byIdPUT').then (query) =>
-      @_wrapRoute @svc.update(query), res, lHandleQuery
+  byIdPUT: ({req, res, next, lHandleQuery}) ->
+    @getEntity(req, 'byIdPUT').then (entity) =>
+      @_wrapRoute @svc.update(entity), res, lHandleQuery
 
-  byIdPOST: ({req, res, next, lHandleQuery}) =>
+  byIdPOST: ({req, res, next, lHandleQuery}) ->
     @logger.debug () -> "POST, @enableUpsert:#{@enableUpsert}"
-    @getQuery(req, 'byIdPOST').then (query) =>
-      if @enableUpsert then return @_wrapRoute @svc.upsert(query), res
-      return @_wrapRoute @svc.create(query), res, lHandleQuery
+    @getEntity(req, 'byIdPOST').then (entity) =>
+      if @enableUpsert then return @_wrapRoute @svc.upsert(entity), res
+      return @_wrapRoute @svc.create(entity), res, lHandleQuery
 
-  byIdDELETE: ({req, res, next, lHandleQuery}) =>
-    @getQuery(req, 'byIdDELETE').then (query) =>
-      @_wrapRoute @svc.delete(query), res,
+  byIdDELETE: ({req, res, next, lHandleQuery}) ->
+    @getEntity(req, 'byIdDELETE').then (entity) =>
+      @_wrapRoute @svc.delete(entity), res,
 
   # some other 3rd party crud libraries consolidate params & body for brevity and
   #   simplicity (perhaps for one example multi-pk handling) so lets do that here

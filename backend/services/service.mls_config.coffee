@@ -11,22 +11,22 @@ jobQueueTaskDefaults = require '../../common/config/jobQueueTaskDefaults'
 
 class MlsConfigService extends ServiceCrud
 
-  getAll: (query = {}) ->
-    transaction = @dbFn()
+  getAll: (entity = {}) ->
+    query = @dbFn()
     # schemaReady enacts a filter to return only mls configs with completed listing_data
-    if query?.schemaReady?
-      if query.schemaReady == 'true'
+    if entity?.schemaReady?
+      if entity.schemaReady == 'true'
 
         # for "schemaReady" to be true, the listing_data json fields
         # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
-        transaction
+        query
         .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'field\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'queryTemplate\' as text)) > ?", [0])
-      delete query.schemaReady
-    transaction.where(query)
-    super(query, transaction: transaction)
+      delete entity.schemaReady
+
+    super(entity, query: query)
     .map (mlsConfig) ->
       externalAccounts.getAccountInfo(mlsConfig.id)
       .then (accountInfo) ->
@@ -34,9 +34,9 @@ class MlsConfigService extends ServiceCrud
         mlsConfig.username = accountInfo.username
         mlsConfig
 
-  update: (query) ->
+  update: (entity) ->
     # as config options are added to the mls_config table, they need to be added here as well
-    super(_.pick(query, ['id', 'name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip']))
+    super(_.pick(entity, ['id', 'name', 'notes', 'active', 'listing_data', 'data_rules', 'static_ip']))
 
   updatePropertyData: (id, propertyData) ->
     @update({id: id, listing_data: propertyData})
@@ -55,54 +55,54 @@ class MlsConfigService extends ServiceCrud
       throw new PartiallyHandledError(error, "Error updating external account for MLS: #{id}")
 
   # Privileged
-  create: (query) ->
-    @logger.debug () -> "create() query: #{JSON.stringify(query)}"
-    entity = _.omit(query, ['url', 'username', 'password'])
-    @logger.debug () -> "create() entity: #{JSON.stringify(entity)}"
-    entity.id = query.id
+  create: (entity) ->
+    @logger.debug () -> "create() arguments: entity=#{JSON.stringify(entity)}"
+    newMls = _.omit(entity, ['url', 'username', 'password'])
+    @logger.debug () -> "create() newMls: #{JSON.stringify(newMls)}"
+    newMls.id = entity.id
 
     # once MLS has been saved with no critical errors, create a task & subtasks
     # note: tasks will still be created if new MLS has wrong credentials
-    super(entity)
+    super(newMls)
     .then () ->
       accountInfo = _.pick(entity, ['url', 'username', 'password'])
-      accountInfo.name = entity.id
+      accountInfo.name = newMls.id
       externalAccounts.insertAccountInfo(accountInfo)
     .then () ->
       # prepare a queue task for this new MLS
       taskObj = _.merge _.clone(jobQueueTaskDefaults.task),
-        name: entity.id
+        name: newMls.id
 
       # prepare subtasks for this new MLS
       subtaskObjs = [
         _.merge _.clone(jobQueueTaskDefaults.subtask_loadRawData),
-          task_name: entity.id
-          name: "#{entity.id}_loadRawData"
+          task_name: newMls.id
+          name: "#{newMls.id}_loadRawData"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_normalizeData),
-          task_name: entity.id
-          name: "#{entity.id}_normalizeData"
+          task_name: newMls.id
+          name: "#{newMls.id}_normalizeData"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_recordChangeCounts),
-          task_name: entity.id
-          name: "#{entity.id}_recordChangeCounts"
+          task_name: newMls.id
+          name: "#{newMls.id}_recordChangeCounts"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_finalizeDataPrep),
-          task_name: entity.id
-          name: "#{entity.id}_finalizeDataPrep"
+          task_name: newMls.id
+          name: "#{newMls.id}_finalizeDataPrep"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_finalizeData),
-          task_name: entity.id
-          name: "#{entity.id}_finalizeData"
+          task_name: newMls.id
+          name: "#{newMls.id}_finalizeData"
       ,
         _.merge _.clone(jobQueueTaskDefaults.subtask_activateNewData),
-          task_name: entity.id
-          name: "#{entity.id}_activateNewData"
+          task_name: newMls.id
+          name: "#{newMls.id}_activateNewData"
       ]
       Promise.join(jobService.tasks.create(taskObj), jobService.subtasks.create(subtaskObjs), () ->)
       .catch isUnhandled, (error) ->
-        throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{entity.id}")
+        throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
 
 
-instance = new MlsConfigService tables.config.mls
+instance = new MlsConfigService tables.config.mls, {debugNS: "mlsConfigService"}
 module.exports = instance
