@@ -30,6 +30,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
     _authenticated = false
     _resolved = false
     _isStaff = null
+    $rootScope.$emit rmapsEventConstants.principal.logout.success
 
   # Returns a promise that is resolved/rejected based on the result of API call
   getIdentity = () ->
@@ -57,6 +58,9 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
 
   getCurrentProfileId = () ->
     return getCurrentProfile()?.id
+
+  getCurrentProjectId = () ->
+    return getCurrentProfile()?.project_id
 
   isCurrentProfileResolved = () ->
     _identity?.currentProfileId?
@@ -121,3 +125,5 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
   setCurrentProfile: setCurrentProfile
   getCurrentProfile: getCurrentProfile
   getCurrentProfileId: getCurrentProfileId
+  getCurrentProjectId: getCurrentProjectId
+

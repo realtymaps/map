@@ -2,7 +2,7 @@ app = require '../app.coffee'
 module.exports = app
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, $http, rmapsPropertiesService, rmapsPrincipalService, leafletData, rmapsLayerFormattersService) ->
+app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService, rmapsLayerFormattersService) ->
   $log = $log.spawn 'mail:rmapsMailModalCtrl'
   $log.debug 'MailModalCtrl'
 
@@ -44,16 +44,15 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, $http, rmaps
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
 
-app.controller 'rmapsMapMailCtrl', ($scope, $state, $modal, $log, $http, rmapsPropertiesService, rmapsPrincipalService, leafletData, rmapsLayerFormattersService) ->
+app.controller 'rmapsMapMailCtrl', ($scope, $log, rmapsLayerFormattersService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:rmapsMapMailCtrl'
   $log.debug 'MapMailCtrl'
 
   getMail = () ->
-    profile = rmapsPrincipalService.getCurrentProfile()
-    $http.get("/mailProperties/#{profile.project_id}", cache: false)
-    .then ({data}) ->
-      $log.debug "received mail data #{data.length} " if data?.length
-      $scope.map.markers.mail = rmapsLayerFormattersService.setDataOptions data, rmapsLayerFormattersService.MLS.setMarkerMailOptions
+    rmapsMailCampaignService.getProjectMail()
+    .then (mail) ->
+      $log.debug "received mail data #{mail.length} " if mail?.length
+      $scope.map.markers.mail = rmapsLayerFormattersService.setDataOptions mail, rmapsLayerFormattersService.MLS.setMarkerMailOptions
 
   $scope.map.getMail = getMail
 
