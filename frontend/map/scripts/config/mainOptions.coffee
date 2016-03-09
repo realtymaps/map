@@ -1,7 +1,7 @@
+###globals _###
 app = require '../app.coffee'
 common = require '../../../../common/config/commonConfig.coffee'
 Point = require('../../../../common/utils/util.geometries.coffee').Point
-
 
 app.constant 'rmapsMainOptions', do () ->
   isDev = (window.location.hostname == 'localhost' || window.location.hostname == '127.0.0.1')
@@ -27,7 +27,6 @@ app.constant 'rmapsMainOptions', do () ->
         json:
           center: _.extend Point(lat: 26.148111, lon: -81.790809), zoom: 15
 
-
     # do logging for local dev only
     doLog: if isDev then true else false
     # logoutDelayMillis is how long to pause on the logout view before redirecting
@@ -50,6 +49,7 @@ app.constant 'rmapsMainOptions', do () ->
         address: '{{address}}'
         name: '{{name}}'
       s3_upload:
+        host: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
         AWSAccessKeyId: 'AKIAI2DY7QCTZ2U3DJJQ'
         policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgICB7ImJ1Y2tldCI6ICJybWFwcy1wZG' +
           'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +

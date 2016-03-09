@@ -7,7 +7,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 module.exports = app
 
 app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload,
-  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions) ->
+  rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions, rmapsMailPdfService) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
   $log.debug 'rmapsSelectTemplateCtrl'
@@ -17,15 +17,20 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.categoryLists = rmapsMailTemplateTypeService.getCategoryLists()
   $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
   $scope.sentFile = false
+  $scope.uploadfile = null
 
   $scope.uploadFile = (file, errFiles) ->
-    $scope.f = file
-    $scope.errFile = errFiles && errFiles[0]
-    key = commonConfig.pdfUpload.getKey()
+    confirmTemplateChange()
+    .then (result) ->
+      if !result or !file
+        $scope.uploadfile = null
+        return
+      $scope.f = file
+      $scope.errFile = errFiles && errFiles[0]
+      key = commonConfig.pdfUpload.getKey()
 
-    if (file)
       file.upload = Upload.upload(
-        url: 'https://rmaps-pdf-uploads.s3.amazonaws.com'
+        url: rmapsMainOptions.mail.s3_upload.host
         method: 'POST'
         data:
           key: key
@@ -38,12 +43,37 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       )
 
       file.upload.then (response) ->
+        console.log "response:"
+        console.log response
+
         $timeout () ->
           file.result = response.data
-          $scope.wizard.mail.campaign.aws_key = key
-          $scope.wizard.mail.save()
-          $scope.sentFile = true
 
+          # create the new item to add to our categories
+          newPdfItem =
+            name: file.name.replace(/\.[^/.]+$/, "")
+            thumb: '/assets/base/template_pdf_img.png'
+            category: 'pdf'
+            type: key
+
+          # create and save new pdf model
+          rmapsMailPdfService.create
+            aws_key: key
+            filename: newPdfItem.name
+            last_used_mail_campaign_id: $scope.wizard.mail.campaign.id
+
+          # add to category
+          rmapsMailTemplateTypeService.appendCategoryList 'pdf', [newPdfItem]
+
+          # select the item and update our campaign
+          $scope.wizard.mail.setTemplateType(key)
+          $scope.wizard.mail.save()
+          $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
+
+          # open preview
+          $scope.previewTemplate newPdfItem
+
+          $scope.sentFile = true
           $timeout () ->
             $scope.sentFile = false
             file.progress = -1
@@ -64,6 +94,21 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       category = 'all'
     $scope.displayCategory = category
 
+  confirmTemplateChange = () ->
+    modalInstance = $modal.open
+      animation: true
+      template: confirmModalTemplate
+      controller: 'rmapsConfirmCtrl'
+      resolve:
+        modalTitle: () ->
+          return "Confirm template change"
+        modalBody: () ->
+          return "Selecting a different template or PDF will reset your letter content. Are you sure you wish to continue?"
+
+    modalInstance.result.then (result) ->
+      $log.debug "Confirmation result: #{result}"
+      result
+
   $scope.selectTemplate = (idx) ->
     templateType = $scope.categoryLists[$scope.displayCategory][idx].type
     $log.debug "Selected template type: #{templateType}"
@@ -71,21 +116,12 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
     $log.debug "Current campaign template type: #{$scope.wizard.mail.campaign.template_type}"
 
     if $scope.oldTemplateType != "" and $scope.oldTemplateType != templateType
-      modalInstance = $modal.open
-        animation: true
-        template: confirmModalTemplate
-        controller: 'rmapsConfirmCtrl'
-        resolve:
-          modalTitle: () ->
-            return "Confirm template change"
-          modalBody: () ->
-            return "Selecting a different template will reset your letter content. Are you sure you wish to continue?"
-
-      modalInstance.result.then (result) ->
-        $log.debug "Confirmation result: #{result}"
-        if result
-          $scope.wizard.mail.setTemplateType(templateType)
-          $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
+      confirmTemplateChange(templateType)
+      .then (result) ->
+        if !result
+          return
+        $scope.wizard.mail.setTemplateType(templateType)
+        $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
 
     else
       $scope.wizard.mail.setTemplateType(templateType)
@@ -93,13 +129,13 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.previewTemplate = (template) ->
     modalInstance = $modal.open
       template: previewModalTemplate
-      controller: 'rmapsMailTemplateIFramePreviewCtrl'
+      controller: if template.category == 'pdf' then 'rmapsUploadedPdfPreviewCtrl' else 'rmapsMailTemplateIFramePreviewCtrl'
       openedClass: 'preview-mail-opened'
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () ->
-          content: rmapsMailTemplateTypeService.getHtml(template.type)
+          content: rmapsMailTemplateTypeService.getMailContent(template.type)
           category: template.category
           title: template.name
 

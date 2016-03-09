@@ -1,3 +1,4 @@
+###globals _###
 app = require '../app.coffee'
 
 keysToValue = require '../../../../common/utils/util.keysToValues.coffee'
@@ -25,7 +26,7 @@ app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
   _enumFromMap = (scope) ->
     _enumFromLevel scope.map?.center?.zoom
 
-  _is = (gMapOrInt, stateObj, stateToCheck, isGreater) ->
+  _is = (gMapOrInt, stateObj = {}, stateToCheck, isGreater) ->
     stateObj.zoomLevel = if _.isNumber(gMapOrInt) or _.isString(gMapOrInt) then _enumFromLevel(gMapOrInt) else _enumFromMap gMapOrInt
     stateToCheck == stateObj.zoomLevel
 
@@ -40,18 +41,16 @@ app.service 'rmapsZoomLevelService', (rmapsMainOptions, $log) ->
   Enum: _enum
   enumFromLevel: _enumFromLevel
   enumFromMap: _enumFromMap
-
-
   getZoom: _getZoom
 
   doCluster: (scope) ->
     _getZoom(scope) <= _zoomThresh.roundOne
   #boolean checks with side effects to save the enum state to some object
-  isPrice: (gMapOrInt, stateObj = {}) ->
+  isPrice: (gMapOrInt, stateObj) ->
     _is(gMapOrInt, stateObj, _enum.price)
-  isParcel: (gMapOrInt, stateObj = {}) ->
+  isParcel: (gMapOrInt, stateObj) ->
     _is(gMapOrInt, stateObj, _enum.parcel)
-  isAddressParcel: (gMapOrInt, stateObj = {}) ->
+  isAddressParcel: (gMapOrInt, stateObj) ->
     _is(gMapOrInt, stateObj, _enum.addressParcel)
 
   isBeyondCartoDb: (currentLevel) ->

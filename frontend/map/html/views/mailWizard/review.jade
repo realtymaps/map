@@ -1,6 +1,6 @@
 .mail-wizard-steps
   header.send-progress(ng-hide="hideProgress()")
-    button.btn.btn-default.pull-left(ng-click="prevStep()" ng-hide="hideBackButton()") Back
+    button.btn.btn-default.pull-left(ng-click="prevStep(wizard.mail.getCategory()=='pdf'?-2:-1)" ng-hide="hideBackButton()") Back
     button.btn.btn-primary.pull-right(ng-click="nextStep()" ng-hide="hideNextButton()") Next
     div.pathway
       ul
