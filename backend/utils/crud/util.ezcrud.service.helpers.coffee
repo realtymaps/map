@@ -43,6 +43,7 @@ class ServiceCrud extends BaseObject
   #   that we develop in the future
   custom: (query) ->
     @logger.debug () -> "Using custom query"
+    console.log "\nEZCRUD using custom query:\n#{query.toString()}"
     @_wrapQuery query
 
   # intermediate function to flag _wrapQuery to return unevaluated knex
@@ -66,7 +67,6 @@ class ServiceCrud extends BaseObject
     .catch isUnhandled, (error) =>
       @logger.debug () -> error
       throw new ServiceCrudError(error, "Error evaluating query: #{query}")
-    query
 
   getAll: (entity = {}, options = {}) ->
     @logger.debug () -> "getAll() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
@@ -81,9 +81,11 @@ class ServiceCrud extends BaseObject
   # implies restrictions and forces on id matches
   getById: (entity, options = {}) =>
     @logger.debug () -> "getById() arguments: entity=#{util.inspect(entity,false,0)}, options=#{util.inspect(options,false,0)}"
-    # allow `entity` to represent a single, simple num/str id
-    ids = {"#{@idKeys[0]}": entity} unless _.isObject entity or @idKeys.length > 1
+
+    # allow `entity` to represent a primitive
+    ids = if _.isObject entity or @idKeys.length > 1 then entity else {"#{@idKeys[0]}": entity}
     throw new ServiceCrudError("getById on #{@dbFn.tableName}: required id fields `#{@idKeys}` missing") unless @_hasIdKeys ids
+
     @logger.debug () -> "ids: #{JSON.stringify(ids)}"
     @_wrapQuery (options.query ? @dbFn()).where(ids), options
 
