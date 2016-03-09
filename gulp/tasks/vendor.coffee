@@ -57,7 +57,9 @@ gulp.task 'vendor_assets', ->
 gulp.task 'vendor_scripts', ->
   gulp.src(vendorPipe)
   .pipe plumber()
+  .pipe(sourcemaps.init())
   .pipe(concat('vendor.js'))
+  .pipe(sourcemaps.write())
   .pipe(gulp.dest paths.destFull.scripts)
 
 gulp.task 'vendor', gulp.parallel 'vendor_json', 'vendor_scripts', 'vendor_css', 'vendor_fonts', 'vendor_assets'

@@ -11,23 +11,20 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
     $timeout ->
       $state.go stateName
 
-  doPermsCheck = ({event, toState}) ->
+  doPermsCheck = (toState) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
-      redirect routes.login, event
-      return
+      return routes.login
 
     if not rmapsPrincipalService.hasPermission(toState?.permissionsRequired)
       # user is signed in but not authorized for desired state
       # $log.debug 'redirected to accessDenied'
-      redirect routes.accessDenied, event
-      return
+      return routes.accessDenied
 
     if toState?.profileRequired and !rmapsPrincipalService.isCurrentProfileResolved()
       # $log.debug 'redirected to profiles'
-      redirect routes.profiles, event
-      return
+      return routes.profiles
 
   return authorize: ({event, toState}) ->
     if !toState?.permissionsRequired && !toState?.loginRequired
@@ -36,14 +33,17 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
 
     # if we can, do check now (synchronously)
     if rmapsPrincipalService.isIdentityResolved()
-      return doPermsCheck({event, toState})
+      stateName = doPermsCheck(toState)
+      if stateName
+        redirect stateName, event
 
     # otherwise, go to temporary view and do check ASAP
-    redirect routes.authenticating, event
+    else
+      redirect routes.authenticating, event
 
-    rmapsPrincipalService.getIdentity().then () ->
-      return doPermsCheck({event, toState})
-
+      rmapsPrincipalService.getIdentity().then () ->
+        stateName = doPermsCheck(toState) || toState.name
+        redirect stateName
 
 mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state) ->
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
