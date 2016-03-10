@@ -55,6 +55,7 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
     rmapsMailCampaignService.get id: $state.params.id
     .then ([campaign]) ->
       $scope.wizard.mail = new rmapsMailTemplateFactory(campaign)
+      console.log "got campaign"
   else if $state.current.name == 'recipientInfo'
     $log.debug "Creating new mail campaign"
     $scope.wizard.mail = new rmapsMailTemplateFactory()
