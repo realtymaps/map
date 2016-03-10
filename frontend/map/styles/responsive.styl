@@ -13,13 +13,19 @@ $desktop= "(min-width:" + md + ")"
 /*
  *  MARKER Classes to be used as parent selectors
  */
-.desktop-view {
+.desktop-view {}
 
-}
+.mobile-view {}
 
-.mobile-view {
+/*
+ *  DIRECTIVE Class targets where child nodes will be removed from DOM
+ */
+.desktop-only
+  // Used by desktop-only directive
 
-}
+
+.mobile-only
+  // Used by mobile-only directive
 
 /*
  * Minimum allowable width of $desktoppage
@@ -60,15 +66,3 @@ $desktop= "(min-width:" + md + ")"
 .visible-lg
   @media $desktop
     display block!important
-
-.desktop-only
-  //display none
-  //@media $desktop  //    display block!important
-  //@media $tablet  //    display block!important
-  //@media $mobileUp
-  //    display block!important
-
-.mobile-only
-  //display none
-  //@media $mobile
-  //  display block!important
