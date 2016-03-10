@@ -143,6 +143,7 @@ module.exports =
     asyncAPIs: "#{apiBaseConfig}/asyncAPIs"
     debugLevels: "#{apiBaseConfig}/debugLevels"
   properties:
+    mapState: "#{apiBase}/properties/mapState"
     filterSummary: "#{apiBase}/properties/filter_summary/"
     parcelBase: "#{apiBase}/properties/parcel_base/"
     addresses: "#{apiBase}/properties/addresses/"

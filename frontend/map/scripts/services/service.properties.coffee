@@ -176,9 +176,12 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
         $http.post(backendRoutes.properties.detail,
         _.extend({}, queryObj,{ state: _getState(mapState), columns: columns }), cache: cache)
 
-      return _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail).then (property) ->
+      _detailThrottler.invokePromise(promise, http: route: backendRoutes.properties.detail).then (property) ->
         _setFlags property
-        return property
+        property
+
+    updateMapState: (mapState) ->
+      $http.post backendRoutes.properties.mapState, state: _getState(mapState)
 
     getProperties: (ids, columns) ->
       $http.post backendRoutes.properties.details, rm_property_id: ids, columns: columns

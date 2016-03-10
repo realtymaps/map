@@ -14,15 +14,9 @@ ExpressResponse = require '../utils/util.expressResponse'
 {currentProfile, CurrentProfileError} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
 {basicColumns} = require '../utils/util.sql.columns'
+_ = require 'lodash'
 
-_transforms =
-  bounds: validators.string()
-  returnType: validators.string()
-  columns: validators.string()
-  isNeighbourhood: validators.boolean(truthy: true, falsy: false)
-  properties_selected: validators.object()
-  geom_point_json: validators.object()
-  rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
+_stateTransforms =
   state: [
     validators.object
       subValidateSeparate:
@@ -37,13 +31,29 @@ _transforms =
     validators.defaults(defaultValue: {})
   ]
 
+_transforms = _.extend {}, _stateTransforms,
+  bounds: validators.string()
+  returnType: validators.string()
+  columns: validators.string()
+  isNeighbourhood: validators.boolean(truthy: true, falsy: false)
+  properties_selected: validators.object()
+  geom_point_json: validators.object()
+  rm_property_id: transform: any: [validators.string(minLength:1), validators.array()]
+
+
 _appendProjectId = (req, obj) ->
   obj.project_id = currentProfile(req).project_id
   obj
 
-captureMapFilterState =  (handleStr, saveState = true) -> (req, res, next) -> Promise.try () ->
-  logger.debug "handle: #{handleStr}"
-  validateAndTransformRequest req.body, _transforms
+captureMapFilterState =  (opts) -> (req, res, next) -> Promise.try () ->
+  {handleStr, saveState, transforms} = opts
+  saveState ?= true
+  transforms ?= _transforms
+
+  if handleStr
+    logger.debug "handle: #{handleStr}"
+
+  validateAndTransformRequest req.body, transforms
   .then (body) ->
     {state} = body
     if state? and saveState
@@ -72,11 +82,19 @@ handleRoute = (res, next, serviceCall) ->
 
 module.exports =
 
+  mapState:
+    method: "post"
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+      captureMapFilterState(handleStr:'mapState', transforms: _stateTransforms)
+    ]
+    handle: (req, res) -> res.json req.validBody
+
   filterSummary:
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("filterSummary")
+      captureMapFilterState(handleStr: "filterSummary")
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
@@ -86,7 +104,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("parcelBase")
+      captureMapFilterState(handleStr: "parcelBase")
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
@@ -96,7 +114,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("address")
+      captureMapFilterState(handleStr:"address")
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
@@ -106,7 +124,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("detail")
+      captureMapFilterState(handleStr:"detail")
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
@@ -123,7 +141,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("details", false)
+      captureMapFilterState(handleStr:"details", saveState: false)
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
@@ -133,7 +151,7 @@ module.exports =
     method: "post"
     middleware: [
       auth.requireLogin(redirectOnFail: true)
-      captureMapFilterState("drawnShapes")
+      captureMapFilterState(handleStr:"drawnShapes")
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
