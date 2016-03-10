@@ -5,8 +5,7 @@ color = 'red'
 app.controller "rmapsDrawNeighborhoodCtrl", (
 $scope, $log, $rootScope, rmapsEventConstants
 rmapsNgLeafletEventGateService, rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory,
-rmapsDrawPostActionFactory) ->
+rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
 
   $log = $log.spawn("map:rmapsDrawNeighborhoodCtrl")
 
@@ -27,13 +26,17 @@ rmapsDrawPostActionFactory) ->
       drawnItems
       endDrawAction: () ->
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
-      commonPostDrawActions: rmapsDrawPostActionFactory($scope)
+
+      commonPostDrawActions: () ->
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+
       announceCb: () ->
         rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
+
       createPromise: (geoJson) ->
         #requires rmapsNeighbourhoodsModalCtrl to be in scope (parent)
         $scope.create(geoJson).then ->
-          $scope.$emit rmapsEventConstants.map.redraw
+          $scope.$emit rmapsEventConstants.map.mainMap.redraw
     }
 
     _drawCtrlFactory = (handles) ->
@@ -42,7 +45,8 @@ rmapsDrawPostActionFactory) ->
         $scope
         handles
         drawnItems
-        postDrawAction: rmapsDrawPostActionFactory($scope)
+        postDrawAction: ->
+          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "neighborhood"
         itemsOptions:
           color: color

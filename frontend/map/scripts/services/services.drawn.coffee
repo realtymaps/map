@@ -19,7 +19,7 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
       .replace(":id", profile.project_id)
-      .replace(":drawn_shapes_id",shape.id || shape.properties.id)
+      .replace(":drawn_shapes_id", shape.id || shape.properties.id)
 
     _getGeomName = (type) ->
       switch type

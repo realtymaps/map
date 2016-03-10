@@ -1,11 +1,6 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory "rmapsDrawPostActionFactory", ($rootScope, rmapsEventConstants) ->
-  ($scope) -> () ->
-    if $scope.Toggles.propertiesInShapes
-      $rootScope.$emit rmapsEventConstants.map.mainMap.reDraw
-
 app.factory "rmapsDrawCtrlFactory", (
 $rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnUtilsService) ->

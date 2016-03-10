@@ -83,8 +83,12 @@ app.factory 'rmapsMapFactory',
             $rootScope.propertiesInShapes = newVal
             @redraw()
 
-          $scope.$on rmapsEventConstants.map.redraw, () =>
-            @redraw()
+          [
+            rmapsEventConstants.map.filters.updated
+            rmapsEventConstants.map.mainMap.redraw
+          ].forEach (eventName) =>
+            $scope.$on eventName, => @redraw()
+
 
           _firstCenter = true
           @scope.$watchCollection 'map.center', (newVal, oldVal) =>
@@ -98,10 +102,6 @@ app.factory 'rmapsMapFactory',
               @scope.Toggles.hasPreviousLocation = false
 
         @singleClickCtrForDouble = 0
-
-        [rmapsEventConstants.map.filters.updated, rmapsEventConstants.map.mainMap.redraw].forEach (eventName) =>
-          $rootScope.$onRootScope eventName, =>
-            @redraw()
 
         $rootScope.$onRootScope rmapsEventConstants.map.center, (evt, location) ->
           $scope.Toggles.setLocation location

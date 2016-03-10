@@ -9,13 +9,12 @@ mod.constant 'rmapsEventConstants',
       createClick: 1
       listToggled: 1
     map:
-      redraw: 1
       results: 1
       center: 1
       centerOnProperty: 1
       zoomToProperty: 1
       mainMap:
-        reDraw: 1
+        redraw: 1
       drawPolys:
         isEnabled: 1
         clear: 1
