@@ -25,27 +25,22 @@ _transforms =
     transform: [validators.object(),validators.geojson(toCrs:true)]
 
 _getDetailByPropertyId = (queryParams) ->
-
-  query = sqlHelpers.select(tables.property.combined(), 'new_all') # queryParams.columns was used before
-  .where(rm_property_id: queryParams.rm_property_id)
-
-  # logger.debug query.toString()
-  query
+  sqlHelpers.select(tables.property.combined(), 'new_all') # queryParams.columns was used before, probably will be again
+  .where
+    active: true
+    rm_property_id: queryParams.rm_property_id
 
 _getDetailByPropertyIds = (queryParams) ->
-
   query = sqlHelpers.select(tables.property.combined(), 'new_all')
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
+  query.where(active: true)
 
-  # logger.debug query.toString()
-  query
 
 _getDetailByGeomPointJson = (queryParams) ->
   query = tables.property.combined()
   sqlHelpers.select(query, 'new_all')
   sqlHelpers.whereIntersects(query, queryParams.geom_point_json, 'geometry_raw')
-  # logger.debug query.toString()
-  query
+  query.where(active: true)
 
 module.exports =
 
