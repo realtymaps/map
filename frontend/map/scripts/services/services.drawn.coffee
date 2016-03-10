@@ -19,7 +19,7 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
       .replace(":id", profile.project_id)
-      .replace(":drawn_shapes_id",shape.id || shape.properties.id)
+      .replace(":drawn_shapes_id", shape.id || shape.properties.id)
 
     _getGeomName = (type) ->
       switch type
@@ -40,7 +40,7 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
         normal.id = shape.properties.id
       if shape.properties?.shape_extras?
         normal.shape_extras = shape.properties.shape_extras
-      normal.neighbourhood_name = shape.properties.neighbourhood_name || null
+      normal.neighbourhood_name = if shape.properties.neighbourhood_name? then shape.properties.neighbourhood_name else null
       normal.neighbourhood_details = shape.properties.neighbourhood_details || null
       normal
 
@@ -87,7 +87,7 @@ app.service 'rmapsDrawnUtilsService',
 
   createDrawnSvc = () ->
     if profile = rmapsPrincipalService.getCurrentProfile()
-      $log.debug('profile: project_id' + profile.project_id)
+      $log.debug('profile: project_id ' + profile.project_id)
       rmapsDrawnProfileFactory(profile)
 
   _getShapeModel = (layer) ->

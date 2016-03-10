@@ -1,21 +1,16 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory "rmapsDrawPostActionFactory", ($rootScope, rmapsEventConstants) ->
-  ($scope) -> () ->
-    if $scope.Toggles.propertiesInShapes
-      $rootScope.$emit rmapsEventConstants.map.mainMap.reDraw
-
 app.factory "rmapsDrawCtrlFactory", (
 $rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
 leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnUtilsService) ->
   {eachLayerModel} = rmapsDrawnUtilsService
 
-  ({$scope, mapId, handles, drawnItems, postDrawAction, name, colorOptions}) ->
+  ({$scope, mapId, handles, drawnItems, postDrawAction, name, itemsOptions, drawOptions}) ->
 
-    if colorOptions
+    if itemsOptions?
       drawnItems.getLayers().forEach (layer) ->
-        _.extend layer.options, colorOptions
+        _.extend layer.options, itemsOptions
 
     $scope.draw =
       ready: false
@@ -55,7 +50,7 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         mapPromise: mapPromise
         drawState: {}
         leafletDrawEvents: handles
-        leafletDrawOptions:
+        leafletDrawOptions: _.merge(
           ngOptions:
             cssClass: 'btn btn-transparent nav-btn'
           position:"bottomright"
@@ -79,10 +74,10 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
           edit:
             featureGroup: drawnItems
             remove: true
+        , drawOptions || {})
         events:
           draw:
             enable: leafletDrawEvents.getAvailableEvents()
-
       #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
       $rootScope.$on rmapsEventConstants.neighbourhoods.listToggled, (event, args...) ->
         [isOpen] = args

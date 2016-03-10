@@ -1,11 +1,11 @@
 app = require '../app.coffee'
 mapId = 'mainMap'
+color = 'blue'
 
 app.controller "rmapsDrawSketchCtrl", (
 $scope, $log, $rootScope, rmapsEventConstants
 rmapsNgLeafletEventGateService, rmapsDrawnUtilsService
-rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory,
-rmapsDrawPostActionFactory) ->
+rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
 
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
 
@@ -19,7 +19,9 @@ rmapsDrawPostActionFactory) ->
       drawnItems
       endDrawAction: () ->
         rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
-      commonPostDrawActions: rmapsDrawPostActionFactory($scope)
+      commonPostDrawActions: () ->
+        $scope.$emit rmapsEventConstants.map.mainMap.redraw
+
       announceCb: () ->
         rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
     }
@@ -30,8 +32,22 @@ rmapsDrawPostActionFactory) ->
         $scope
         handles
         drawnItems
-        postDrawAction: rmapsDrawPostActionFactory($scope)
+        postDrawAction: () ->
+          $scope.$emit rmapsEventConstants.map.mainMap.redraw
         name: "sketch"
+        itemsOptions:
+          color: color
+          fillColor: color
+        drawOptions:
+          draw:
+            polyline:
+              shapeOptions: {color}
+            polygon:
+              shapeOptions: {color}
+            rectangle:
+              shapeOptions: {color}
+            circle:
+              shapeOptions: {color}
       }
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->

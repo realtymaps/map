@@ -150,17 +150,16 @@ class ProjectRouteCrud extends RouteCrud
         query: validators.object isEmptyProtect: true
         body: validators.object isEmptyProtect: true
 
-      byIdGETTransforms:
-        params: validators.mapKeys
-          id: "project_id"
-          drawn_shapes_id: "#{tables.user.drawnShapes.tableName}.id"
-
       rootPOSTTransforms:
-        params: validators.mapKeys id: 'project_id'
+        params: validators.mapKeys id: "project_id"
         query: validators.object isEmptyProtect: true
         body: bodyTransform
 
+      byIdGETTransforms:
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
+
       byIdPUTTransforms:
+        params: validators.mapKeys id: "project_id", drawn_shapes_id: 'id'
         query: validators.object isEmptyProtect: true
         body: bodyTransform
 
