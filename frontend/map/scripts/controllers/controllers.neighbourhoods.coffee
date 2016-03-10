@@ -55,12 +55,13 @@ $log, rmapsDrawnUtilsService, rmapsEventConstants) ->
 
   $log = $log.spawn("map:neighbourhoods")
 
-  getAll = () ->
-    drawnShapesSvc.getNeighborhoodsNormalized().then (data) ->
+  getAll = (cache) ->
+    drawnShapesSvc.getNeighborhoodsNormalized(cache).then (data) ->
       $log.debug "received data #{data.length} " if data?.length
       $scope.neighbourhoods = data
 
   $scope.neighbourhoodListToggled = (isOpen) ->
+    getAll(false)
     $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
 
   getAll()
