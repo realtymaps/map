@@ -16,9 +16,9 @@ module.exports = app
 
 app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMapFactory,
   rmapsMainOptions, rmapsMapTogglesFactory, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
-  rmapsParcelEnums, rmapsPropertiesService, nemSimpleLogger, rmapsSearchboxService) ->
+  rmapsParcelEnums, rmapsPropertiesService, $log, rmapsSearchboxService) ->
 
-  $log = nemSimpleLogger.spawn("map:controller")
+  $log = $log.spawn("map:controller")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -111,9 +111,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
         $location.search 'property_id', selectedResultId
 
-        rmapsPropertiesService.getPropertyDetail(map.scope.refreshState(map_results: selectedResultId: selectedResultId),
-          rm_property_id: selectedResultId, 'all')
-        .then (result) ->
+        rmapsPropertiesService.getPropertyDetail(
+          map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+          rm_property_id: selectedResultId, 'all'
+        ).then (result) ->
           return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
           $timeout () ->
             map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
@@ -121,6 +122,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
           resultCenter = new Point(result.coordinates[1],result.coordinates[0])
           resultCenter.zoom = 18
           map.scope.map.center = resultCenter
+        .catch () ->
+          $location.search 'property_id', undefined
+          newState = map.scope.refreshState(map_results: selectedResultId: undefined)
+          rmapsPropertiesService.updateMapState newState
       else
         $location.search 'property_id', undefined
 

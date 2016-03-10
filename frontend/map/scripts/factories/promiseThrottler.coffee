@@ -1,4 +1,4 @@
-##globals _###
+###globals _###
 app = require '../app.coffee'
 
 app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
@@ -43,6 +43,8 @@ app.factory 'rmapsPromiseThrottlerFactory', ($log, $timeout, $q) ->
 
       cancelablePromise.then (data) ->
         deferred.resolve(data.data) if data?
+      .catch (error) ->
+        deferred.reject(error)
       .finally () =>
         delete promiseHash[@name + myId]
 
