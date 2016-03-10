@@ -3,7 +3,8 @@ app = require '../../app.coffee'
 template = require './leafletDraw.jade'
 LeafletDrawApi = require './api.draw.js'
 
-app.directive 'rmapsLeafletDraw', ($log, leafletData, leafletDrawEvents, $timeout, leafletIterators,
+app.directive 'rmapsLeafletDraw', ($log, $timeout, leafletData,
+leafletDrawEvents, leafletIterators,
 rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
   errorHeader = "rmapsLeafletDraw"
@@ -12,11 +13,27 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
 
   $log = $log.spawn('rmapsLeafletDraw')
 
+  setUpNgShow = ({attrs, scope, map, featureGroup}) ->
+    if attrs.hasOwnProperty("ngShow")
+      ngShow = (newVal) ->
+        if newVal == true
+          if !map.hasLayer(featureGroup)
+            map.addLayer(featureGroup)
+          return
+
+        if newVal == false
+          if map.hasLayer(featureGroup)
+            map.removeLayer(featureGroup)
+
+      scope.$watch('ngShow', ngShow)
+      $timeout ngShow
+
   scope:
     mappromise: '='
     options: '=?'
     events: '=?'
     enabled: '=?'
+    ngShow: '=?'
 
   template: template()
   replace: false
@@ -85,7 +102,10 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           $timeout -> _optionsEditedInDirective = false #skip extra digest due to above mod
 
         _featureGroup = options.edit.featureGroup
+
         map.addLayer(_featureGroup)
+
+        setUpNgShow {attrs, scope, featureGroup: _featureGroup, map}
 
         drawControl = new LeafletDrawApi options
         drawControl.onAdd map
@@ -123,7 +143,7 @@ rmapsLeafletDrawDirectiveCtrlDefaultsService) ->
           scope.canSave = false
 
         scope.$watch 'enabled', (newVal) ->
-          if newVal == false
+          if !newVal
             scope.disable()
 
         scope.save = () ->

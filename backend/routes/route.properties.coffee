@@ -1,7 +1,8 @@
 logger = require '../config/logger'
 Promise = require 'bluebird'
 
-detailService = require '../services/service.properties.details'
+detailServiceOld = require '../services/service.properties.details'
+detailService = require '../services/service.properties.combined.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 DrawnShapesFiltSvc = require '../services/service.properties.drawnShapes.filterSummary'
 parcelService = require '../services/service.properties.parcels'
@@ -109,14 +110,14 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        promise = detailService.getDetail(req.validBody)
-        if req.validBody.rm_property_id?
-          promise.then (property) ->
-            if property
-              return property
-            return Promise.reject(new ExpressResponse(
-              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"}), httpStatus.NOT_FOUND)
-        return promise
+        detailService.getDetail(req.validBody)
+        .then (property) -> Promise.try () ->
+          if req.validBody.rm_property_id? && !property
+            throw new ExpressResponse(
+              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
+               httpStatus.NOT_FOUND)
+
+          property
 
   details:
     method: "post"
@@ -126,7 +127,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        detailService.getDetails(req.validBody)
+        detailServiceOld.getDetails(req.validBody)
 
   drawnShapes:
     method: "post"

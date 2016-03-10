@@ -40,8 +40,8 @@ describe 'util.ezcrud.route.helpers', ->
       (-> new RouteCrud()).should.throw()
 
     it 'produces a "tReq" and combines params and body', (done) ->
-      @routeCrud.getQuery(makeRequest()).then (query) ->
-        expect(query).to.deep.equal {"id":1,"lorem":"ipsum"}
+      @routeCrud.getEntity(makeRequest()).then (entity) ->
+        expect(entity).to.deep.equal {"id":1,"lorem":"ipsum"}
         done()
 
     it 'performs root GET', (done) ->

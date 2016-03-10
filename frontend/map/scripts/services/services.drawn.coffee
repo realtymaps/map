@@ -19,7 +19,7 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
     _byIdUrl = (shape) ->
       backendRoutes.projectSession.drawnShapesById
       .replace(":id", profile.project_id)
-      .replace(":drawn_shapes_id",shape.id || shape.properties.id)
+      .replace(":drawn_shapes_id", shape.id || shape.properties.id)
 
     _getGeomName = (type) ->
       switch type
@@ -40,19 +40,24 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
         normal.id = shape.properties.id
       if shape.properties?.shape_extras?
         normal.shape_extras = shape.properties.shape_extras
-      normal.neighbourhood_name = shape.properties.neighbourhood_name || null
+      normal.neighbourhood_name = if shape.properties.neighbourhood_name? then shape.properties.neighbourhood_name else null
       normal.neighbourhood_details = shape.properties.neighbourhood_details || null
       normal
+
+    _normalizedList = (geojson) ->
+      return [] unless geojson
+      {features} = geojson
+      features
 
     getList: getList
 
     getNeighborhoods: getNeighborhoods
 
+    getNeighborhoodsNormalized: (cache) ->
+      getNeighborhoods(cache).then _normalizedList
+
     getListNormalized: (cache = false) ->
-      getList(cache).then (geojson) ->
-        return [] unless geojson
-        {features} = geojson
-        features
+      getList(cache).then _normalizedList
 
     create: (shape) ->
       $http.post rootUrl, _normalize shape
@@ -63,9 +68,9 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
     delete: (shape) ->
       $http.delete _byIdUrl(shape)
 
-    getDrawnItems: (mainFn = 'getList') ->
+    getDrawnItems: (cache = false, mainFn = 'getList') ->
       drawnItems = new L.FeatureGroup()
-      @[mainFn]()
+      @[mainFn](cache)
       .then (drawnShapes) ->
         # TODO: drawn shapes will get its own tables for GIS queries
         $log.debug 'fetched shapes'
@@ -78,8 +83,8 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
             drawnItems.addLayer layer
         drawnItems
 
-    getDrawnItemsNeighborhoods: () ->
-      @getDrawnItems('getNeighborhoods')
+    getDrawnItemsNeighborhoods: (cache) ->
+      @getDrawnItems(cache, 'getNeighborhoods')
 
 app.service 'rmapsDrawnUtilsService',
 ($http, $log, $rootScope, rmapsPrincipalService, rmapsDrawnProfileFactory) ->
@@ -87,7 +92,7 @@ app.service 'rmapsDrawnUtilsService',
 
   createDrawnSvc = () ->
     if profile = rmapsPrincipalService.getCurrentProfile()
-      $log.debug('profile: project_id' + profile.project_id)
+      $log.debug('profile: project_id ' + profile.project_id)
       rmapsDrawnProfileFactory(profile)
 
   _getShapeModel = (layer) ->

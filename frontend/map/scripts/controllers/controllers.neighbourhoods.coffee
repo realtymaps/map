@@ -30,6 +30,9 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
     create: (model) ->
       $scope.createModal().then (modalModel) ->
         _.merge(model, modalModel)
+        if !model?.properties?.neighbourhood_name
+          #makes the model a neighborhood with a defined empty string
+          model.properties.neighbourhood_name = ''
         _signalUpdate(drawnShapesSvc.create model)
 
     update: (model) ->
@@ -53,18 +56,11 @@ $log, rmapsDrawnUtilsService, rmapsEventConstants) ->
   $log = $log.spawn("map:neighbourhoods")
 
   getAll = () ->
-    drawnShapesSvc.getListNormalized().then (data) ->
-      data = _.filter data, (d) ->
-        d.properties.neighbourhood_name?
+    drawnShapesSvc.getNeighborhoodsNormalized().then (data) ->
       $log.debug "received data #{data.length} " if data?.length
       $scope.neighbourhoods = data
 
-  $rootScope.$onRootScope rmapsEventConstants.neighbourhoods, ->
-    getAll()
-
   $scope.neighbourhoodListToggled = (isOpen) ->
-    #originally was not going to put this into state but it is needed for service.properties
-    $rootScope.neighbourhoodsListIsOpen = isOpen
-    $rootScope.$emit rmapsEventConstants.neighbourhoods.listToggled, isOpen
+    $rootScope.$emit rmapsEventConstants.neighbourhoods.dropdownToggled, isOpen
 
   getAll()

@@ -30,7 +30,7 @@ describe "rmapsFilterManagerService", ->
         @digestor.digest()
 
         spyCb = sinon.spy @$rootScope, '$emit'
-        @$rootScope.$onRootScope @rmapsEventConstants.map.filters.updated, (event, filters) ->
+        @$rootScope.$on @rmapsEventConstants.map.filters.updated, (event, filters) ->
           expect(filters).to.eql status: ['for sale']
           done()
 

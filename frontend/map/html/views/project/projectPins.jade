@@ -11,4 +11,4 @@ include ../../includes/mixins/property/_propertyAttributes.jade
         img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
       .property-data
         +propertyAttributes('property')
-        property-buttons(property='property' zoom-click='zoomClick(property)')
+        property-buttons(property='property' project='project' zoom-click='zoomClick(property)')

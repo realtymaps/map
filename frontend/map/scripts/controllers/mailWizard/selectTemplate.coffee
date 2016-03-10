@@ -47,6 +47,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       )
 
       file.upload.then (response) ->
+
         $timeout () ->
           file.result = response.data
 
