@@ -3,8 +3,7 @@ app = require '../app.coffee'
 
 app.factory "rmapsDrawCtrlFactory", (
 $rootScope, $log, rmapsNgLeafletEventGateService, toastr, rmapsMapDrawHandlesFactory,
-leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmapsDrawnUtilsService) ->
-  {eachLayerModel} = rmapsDrawnUtilsService
+leafletData, leafletDrawEvents) ->
 
   ({$scope, mapId, handles, drawnItems, postDrawAction, name, itemsOptions, drawOptions}) ->
 
@@ -14,8 +13,6 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
 
     $scope.draw =
       ready: false
-
-    _hiddenDrawnItems = []
 
     # shapesSvc = rmapsProfileDawnShapesService #will be using project serice or a drawService
     $log = $log.spawn("map:rmapsDrawCtrlFactory:#{name}")
@@ -29,22 +26,6 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
     mapPromise.then (lMap) ->
 
       _destroy = () ->
-        _hiddenDrawnItems = []
-
-      _showHiddenLayers = () ->
-        return unless _hiddenDrawnItems?._layers?
-
-        $log.spawn("_hiddenDrawnItems").debug(Object.keys(_hiddenDrawnItems._layers).length)
-
-        for layer in _hiddenDrawnItems
-          drawnItems.addLayer(layer)
-        _hiddenDrawnItems = []
-
-      _hideNonNeighbourHoodLayers  = () ->
-        eachLayerModel drawnItems, (model, layer) ->
-          if !model?.properties?.neighbourhood_name?
-            _hiddenDrawnItems.push layer
-            drawnItems.removeLayer(layer)
 
       _.extend $scope.draw,
         mapPromise: mapPromise
@@ -78,24 +59,6 @@ leafletData, leafletDrawEvents, rmapsPrincipalService, rmapsEventConstants, rmap
         events:
           draw:
             enable: leafletDrawEvents.getAvailableEvents()
-      #BEGIN SCOPE Extensions (better to be at bottom) if we ever start using this `this` instead of scope
-      $rootScope.$on rmapsEventConstants.neighbourhoods.listToggled, (event, args...) ->
-        [isOpen] = args
-        if !isOpen
-          _showHiddenLayers()
-        else
-          _hideNonNeighbourHoodLayers()
-        postDrawAction()
-
-      $scope.$watch 'Toggles.showNeighbourhoodTap', (newVal) ->
-        eachLayerModel drawnItems, (model, layer) ->
-          if newVal
-            $log.debug "bound: #{rmapsEventConstants.neighbourhoods.createClick}"
-            layer.on 'click', () ->
-              $rootScope.$emit rmapsEventConstants.neighbourhoods.createClick, model, layer
-            return
-          layer.clearAllEventListeners()
-
 
       $scope.$on '$destroy', ->
         _destroy()

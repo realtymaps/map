@@ -7,7 +7,7 @@ mod.constant 'rmapsEventConstants',
     notes: 1
     neighbourhoods:
       createClick: 1
-      listToggled: 1
+      dropdownToggled: 1
     map:
       results: 1
       center: 1
