@@ -29,6 +29,8 @@ describe 'mailTemplate service', ->
         sender_info: null
         recipients: []
         aws_key: null
+        options:
+          color: false
 
       actual = @template.campaign
       expect(actual).to.eql expected

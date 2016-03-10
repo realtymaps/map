@@ -136,5 +136,8 @@
     }
   ],
   "submitted": null,
-  "recipientType": "property"
+  "recipientType": "property",
+  "options": {
+    "color": true
+  }
 }

@@ -39,5 +39,6 @@
       "sender_address_zip": "55555"
     }
   },
-  "retries": 0
+  "retries": 0,
+  "color": true
 }
