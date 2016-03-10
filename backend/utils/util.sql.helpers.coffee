@@ -29,7 +29,6 @@ _orWhereRawSafe = (query, rawSafe) ->
 _orderByRawSafe = (query, rawSafe) ->
   query.orderByRaw rawSafe.sql, rawSafe.bindings
 
-#TODO in sep PR remove this and all its dependencies
 columns = sqlColumns.basicColumns
 
 _getPartialPoint = (objOrArray, arrayDex, param) ->
@@ -144,7 +143,7 @@ select = (knex, which, passedFilters=null, prepend='') ->
 selectCountDistinct = (knex, distinctField='rm_property_id') ->
   # some other (possibly preferred) query structure not available,
   # using tip described via https://github.com/tgriesser/knex/issues/238
-  knex.select(knex.raw("count(distinct #{distinctField})"))
+  knex.select(knex.raw("count(distinct \"#{distinctField}\")"))
   knex
 
 singleRow = (rows) -> Promise.try ->

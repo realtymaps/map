@@ -42,11 +42,9 @@ module.exports = (app) ->
         .catch isUnhandled, (error) ->
           throw new PartiallyHandledError(error)
         .catch (error) ->
-          if isCausedBy(validation.DataValidationError, error) or
-          isCausedBy(ValidateEmailHashTimedOutError, error)
+          if isCausedBy(validation.DataValidationError, error) || isCausedBy(ValidateEmailHashTimedOutError, error)
             returnStatus = status.BAD_REQUEST
-          if isCausedBy(InValidEmailError, error) or
-          isCausedBy(InActiveUserError, error)
+          else if isCausedBy(InValidEmailError, error) || isCausedBy(InActiveUserError, error)
             returnStatus = status.UNAUTHORIZED
           else
             returnStatus = status.INTERNAL_SERVER_ERROR

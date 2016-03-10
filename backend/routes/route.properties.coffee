@@ -1,7 +1,8 @@
 logger = require '../config/logger'
 Promise = require 'bluebird'
 
-detailService = require '../services/service.properties.details'
+detailServiceOld = require '../services/service.properties.details'
+detailService = require '../services/service.properties.combined.details'
 filterSummaryService = require '../services/service.properties.filterSummary'
 DrawnShapesFiltSvc = require '../services/service.properties.drawnShapes.filterSummary'
 parcelService = require '../services/service.properties.parcels'
@@ -126,7 +127,7 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        detailService.getDetails(req.validBody)
+        detailServiceOld.getDetails(req.validBody)
 
   drawnShapes:
     method: "post"
