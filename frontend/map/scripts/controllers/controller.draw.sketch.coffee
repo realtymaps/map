@@ -27,7 +27,7 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
     }
 
     _drawCtrlFactory = (handles) ->
-      rmapsDrawCtrlFactory {
+      rmapsDrawCtrlFactory({
         mapId
         $scope
         handles
@@ -48,7 +48,12 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
               shapeOptions: {color}
             circle:
               shapeOptions: {color}
-      }
+      })
+      .then () ->
+        $scope.draw.show = true
+
+        $rootScope.$onRootScope rmapsEventConstants.neighbourhoods.dropdownToggled, (event, isOpen) ->
+          $scope.draw.show = !isOpen
 
     $scope.$watch 'Toggles.isSketchMode', (newVal) ->
       if newVal
