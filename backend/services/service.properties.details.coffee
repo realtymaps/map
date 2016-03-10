@@ -28,7 +28,6 @@ _getDetailByPropertyId = (queryParams) ->
 
   query = sqlHelpers.select(tables.property.combined(), 'new_all') # queryParams.columns was used before
   .where(rm_property_id: queryParams.rm_property_id)
-  .limit(1)
 
   # logger.debug query.toString()
   query
@@ -45,7 +44,6 @@ _getDetailByGeomPointJson = (queryParams) ->
   query = tables.property.combined()
   sqlHelpers.select(query, 'new_all')
   sqlHelpers.whereIntersects(query, queryParams.geom_point_json, 'geometry_raw')
-  query.limit(1)
   # logger.debug query.toString()
   query
 
