@@ -89,7 +89,5 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
       for c in $scope.columnDefs
         $scope.fieldTypeMap[c.name] = c.type
 
-    $rootScope.registerScopeData () ->
-      $scope.load()
-      $scope.refreshFieldTypes()
-
+    $scope.load()
+    $scope.refreshFieldTypes()
