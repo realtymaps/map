@@ -3,13 +3,12 @@ logger = require '../config/logger'
 validation = require '../utils/util.validation'
 {validators} = validation
 sqlHelpers = require './../utils/util.sql.helpers'
-{property} = require '../config/tables'
-{propertyDetails} = property
+tables = require '../config/tables'
 {toLeafletMarker} = (require './../utils/crud/extensions/util.crud.extension.user').route
 
 columnSets = ['filter', 'address', 'detail', 'all']
 
-_transforms =
+transforms =
   rm_prop_id_or_geom_json:
     input: ["rm_property_id", "geom_point_json"]
     transform: validators.pickFirst()
@@ -25,41 +24,34 @@ _transforms =
   geom_point_json:
     transform: [validators.object(),validators.geojson(toCrs:true)]
 
+
 _getDetailByPropertyId = (queryParams) ->
-
-  query = sqlHelpers.select(propertyDetails(), queryParams.columns)
-  .where(rm_property_id: queryParams.rm_property_id)
-  .limit(1)
-
-  # logger.debug query.toString()
-  query
+  sqlHelpers.select(tables.property.combined(), 'new_all') # queryParams.columns was used before, probably will be again
+  .where
+    active: true
+    rm_property_id: queryParams.rm_property_id
 
 _getDetailByPropertyIds = (queryParams) ->
-
-  query = sqlHelpers.select(propertyDetails(), 'filter')
+  query = sqlHelpers.select(tables.property.combined(), 'new_all')
   sqlHelpers.orWhereIn(query, 'rm_property_id', queryParams.rm_property_id)
+  query.where(active: true)
 
-  # logger.debug query.toString()
-  query
 
 _getDetailByGeomPointJson = (queryParams) ->
-  query = propertyDetails()
-  sqlHelpers.select(query, queryParams.columns, false, 'distinct on (rm_property_id)')
-  sqlHelpers.whereIntersects(query, queryParams.geom_point_json)
-  query.limit(1)
-  # logger.debug query.toString()
-  query
+  query = tables.property.combined()
+  sqlHelpers.select(query, 'new_all')
+  sqlHelpers.whereIntersects(query, queryParams.geom_point_json, 'geometry_raw')
+  query.where(active: true)
+
 
 module.exports =
 
   getDetail: (queryParams) -> Promise.try () ->
-
-    validation.validateAndTransform(queryParams, _transforms).then (validRequest) ->
-
+    validation.validateAndTransform(queryParams, transforms).then (validRequest) ->
       if validRequest.rm_property_id?
-        return _getDetailByPropertyId(validRequest)
-      _getDetailByGeomPointJson(validRequest)
-
+        _getDetailByPropertyId(validRequest)
+      else
+        _getDetailByGeomPointJson(validRequest)
     .then (data) ->
       return data?[0]
     .then (data) ->
