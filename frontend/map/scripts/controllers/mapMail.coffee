@@ -2,9 +2,12 @@ app = require '../app.coffee'
 module.exports = app
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService, rmapsLayerFormattersService) ->
+app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropertiesService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:rmapsMailModalCtrl'
   $log.debug 'MailModalCtrl'
+
+  $scope.hasMail = (property) ->
+    rmapsMailCampaignService.hasMail(property?.rm_property_id)
 
   $scope.addMail = (maybeParcel) ->
 
