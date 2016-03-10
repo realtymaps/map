@@ -84,8 +84,11 @@ basicColumns = do ->
 
     mls: ['id', 'state', 'full_name', 'mls']
 
+    new_all: '*'
+
   ret.all = "#{ret.filter}, #{ret.detail}"
   ret
+
 
 safeFromQuery =
   profile: _.without basicColumns.profile, 'id', 'auth_user_id', 'parent_auth_user_id'
@@ -169,9 +172,10 @@ joinColumnNames = do ->
       obj[key] = val
     obj
 
-module.exports =
-  basicColumns: basicColumns
-  safeFromQuery: safeFromQuery
-  joinColumns: joinColumns
-  joinColumnNames: joinColumnNames
-  ageOrDaysFromStartToNow: ageOrDaysFromStartToNow
+module.exports = {
+  basicColumns
+  safeFromQuery
+  joinColumns
+  joinColumnNames
+  ageOrDaysFromStartToNow
+}
