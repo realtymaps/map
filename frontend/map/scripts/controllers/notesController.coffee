@@ -26,12 +26,12 @@ app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesSer
 
       modalInstance.result
 
-    create: (model) ->
+    create: (model, projectId) ->
       $scope.createModal().then (note) ->
         _.extend note,
           rm_property_id : model.rm_property_id || undefined
           geom_point_json : model.geom_point_json
-          project_id: rmapsPrincipalService.getCurrentProfile().project_id || undefined
+          project_id: projectId || rmapsPrincipalService.getCurrentProfile().project_id || undefined
         _signalUpdate rmapsNotesService.create note
 
     update: (note) ->
