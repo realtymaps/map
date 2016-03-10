@@ -110,14 +110,14 @@ module.exports =
     ]
     handle: (req, res, next) ->
       handleRoute res, next, () ->
-        promise = detailService.getDetail(req.validBody)
-        if req.validBody.rm_property_id?
-          promise.then (property) ->
-            if property
-              return property
-            return Promise.reject(new ExpressResponse(
-              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"}), httpStatus.NOT_FOUND)
-        return promise
+        detailService.getDetail(req.validBody)
+        .then (property) -> Promise.try () ->
+          if req.validBody.rm_property_id? && !property
+            throw new ExpressResponse(
+              alert: {msg: "property with id #{req.validBody.rm_property_id} not found"},
+               httpStatus.NOT_FOUND)
+
+          property
 
   details:
     method: "post"

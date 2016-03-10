@@ -1,4 +1,4 @@
-mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl)
+mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl, directiveNgShow)
   //.desktop-only TODO (wont show)
   //hint if you want only drawings to show sometimes use ng-if (will kill controller)
   .draw-tools.container(ng-show="#{toggleBoolean}")&attributes(attributes)
@@ -8,13 +8,23 @@ mixin drawToolMixin(drawToolId, h4, toggleBoolean, toggleFn, ctrl)
       
       .col.col-md-6.col-sm-6.col-xs-3
         .tools(ng-controller="#{ctrl}")
-          div(ng-if="draw.ready")
-            div.rmaps-leaflet-draw(
-              id="#{drawToolId}"
-              mapPromise="draw.mapPromise"
-              options="draw.leafletDrawOptions"
-              events="draw.leafletDrawEvents"
-              enabled="draw.enabled")
+          if directiveNgShow
+            div(ng-if="draw.ready")
+              div.rmaps-leaflet-draw(
+                id="#{drawToolId}"
+                mapPromise="draw.mapPromise"
+                options="draw.leafletDrawOptions"
+                events="draw.leafletDrawEvents"
+                enabled="draw.enabled"
+                ng-show="#{directiveNgShow}")
+          else
+            div(ng-if="draw.ready")
+              div.rmaps-leaflet-draw(
+                id="#{drawToolId}"
+                mapPromise="draw.mapPromise"
+                options="draw.leafletDrawOptions"
+                events="draw.leafletDrawEvents"
+                enabled="draw.enabled")
           
       .col.col-md-3.col-sm-3.col-xs-3
         button.btn.btn-primary.close-btn.pull-right(

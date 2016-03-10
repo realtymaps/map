@@ -44,15 +44,20 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
       normal.neighbourhood_details = shape.properties.neighbourhood_details || null
       normal
 
+    _normalizedList = (geojson) ->
+      return [] unless geojson
+      {features} = geojson
+      features
+
     getList: getList
 
     getNeighborhoods: getNeighborhoods
 
+    getNeighborhoodsNormalized: (cache) ->
+      getNeighborhoods(cache).then _normalizedList
+
     getListNormalized: (cache = false) ->
-      getList(cache).then (geojson) ->
-        return [] unless geojson
-        {features} = geojson
-        features
+      getList(cache).then _normalizedList
 
     create: (shape) ->
       $http.post rootUrl, _normalize shape
@@ -63,9 +68,9 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
     delete: (shape) ->
       $http.delete _byIdUrl(shape)
 
-    getDrawnItems: (mainFn = 'getList') ->
+    getDrawnItems: (cache = false, mainFn = 'getList') ->
       drawnItems = new L.FeatureGroup()
-      @[mainFn]()
+      @[mainFn](cache)
       .then (drawnShapes) ->
         # TODO: drawn shapes will get its own tables for GIS queries
         $log.debug 'fetched shapes'
@@ -78,8 +83,8 @@ app.factory 'rmapsDrawnProfileFactory', ($log, $http) ->
             drawnItems.addLayer layer
         drawnItems
 
-    getDrawnItemsNeighborhoods: () ->
-      @getDrawnItems('getNeighborhoods')
+    getDrawnItemsNeighborhoods: (cache) ->
+      @getDrawnItems(cache, 'getNeighborhoods')
 
 app.service 'rmapsDrawnUtilsService',
 ($http, $log, $rootScope, rmapsPrincipalService, rmapsDrawnProfileFactory) ->
