@@ -348,8 +348,9 @@ _getRowChanges = (row1, row2, diffExcludeKeys=[]) ->
   for fieldName, value1 of fields1
     if fieldName in diffExcludeKeys
       continue
-    if !_.isEqual value1, fields2[fieldName]
-      result[fieldName] = (fields2[fieldName] ? null)
+    if _.isMatch(value1, fields2[fieldName])
+      continue
+    result[fieldName] = (fields2[fieldName] ? null)
 
   # then get fields missing from row1
   _.extend result, _.omit(fields2, Object.keys(fields1))

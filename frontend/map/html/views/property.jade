@@ -11,10 +11,16 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
               a(ng-click="tab = 'current'" ng-class="{active: tab == 'current'}") Current
             li
               a(ng-click="tab = 'revised'" ng-class="{active: tab == 'revised'}") Revised
+            li
+              a(ng-click="tab = 'raw'" ng-class="{active: tab == 'raw'}") Raw
+
+        .col-sm-8(ng-show="tab == 'raw'")
+          .content-heading Full raw data
+          json-formatter(json="selectedResult" open="3")
 
         .col-sm-8(ng-show="tab == 'revised'")
           .row.content-block.prop-attrs.border-bottom
-            .col-sm-8
+            .col-sm-12
               .content-heading NEW DATA GOES HERE
               p.content-body {{selectedResult.property_information}}
 

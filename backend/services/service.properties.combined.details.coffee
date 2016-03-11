@@ -47,20 +47,29 @@ _getDetailByGeomPointJson = (queryParams) ->
 module.exports =
 
   getDetail: (queryParams) -> Promise.try () ->
-    validation.validateAndTransform(queryParams, transforms).then (validRequest) ->
+    validation.validateAndTransform(queryParams, transforms)
+    .then (validRequest) ->
       if validRequest.rm_property_id?
         _getDetailByPropertyId(validRequest)
       else
         _getDetailByGeomPointJson(validRequest)
-    .then (data) ->
-      return data?[0]
-    .then (data) ->
-      if data?
-        return toLeafletMarker data
-      data
+    .then (data=[]) ->
+      result = { county: null, mls: null }
+      for row in data
+        result[row.data_source_type] ?= {}
+        result[row.data_source_type][row.data_source_id] = row
+      result
 
-  getDetails: (queryParams) -> Promise.try () ->
-    if queryParams.rm_property_id?
-      _getDetailByPropertyIds(queryParams)
-    else
-      []
+  getDetails: (queryParams) ->
+    Promise.try () ->
+      if queryParams.rm_property_id?
+        _getDetailByPropertyIds(queryParams)
+      else
+        []
+    .then (data=[]) ->
+      result = {}
+      for row in data
+        result[row.rm_property_id] ?= { county: null, mls: null }
+        result[row.rm_property_id][row.data_source_type] ?= {}
+        result[row.rm_property_id][row.data_source_type][row.data_source_id] = row
+      result
