@@ -51,10 +51,21 @@ app.controller 'rmapsMailWizardCtrl', ($rootScope, $scope, $log, $state, $locati
   $scope.prevStep = (next = -1) ->
     _changeStep(next)
 
+  ensureValidState = () ->
+    # if requesting state requiring template_type...
+    if (_getStep($state.current.name) > 2 and !$scope.wizard.mail.campaign.template_type) or
+    # or requesting state requiring content...
+    (_getStep($state.current.name) > 3 and !$scope.wizard.mail.campaign.content)
+      $state.go 'campaignInfo'
+    # if explicitly requesting edit template for pdf campaign...
+    else if $state.current.name == 'editTemplate' and $scope.wizard.mail.campaign.aws_key?
+      $state.go 'review'
+
   if $state.params.id
     rmapsMailCampaignService.get id: $state.params.id
     .then ([campaign]) ->
       $scope.wizard.mail = new rmapsMailTemplateFactory(campaign)
+      ensureValidState()
   else if $state.current.name == 'recipientInfo'
     $log.debug "Creating new mail campaign"
     $scope.wizard.mail = new rmapsMailTemplateFactory()
