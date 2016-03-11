@@ -19,7 +19,6 @@
   .inner
     .container
       form
-        //- input(type="checkbox" ng-model="sentFile")
         .pdf-upload
           .file-select.btn.btn-primary
             span Upload A PDF
@@ -31,13 +30,15 @@
               .progress-text(ng-show="f.progress > 0 && f.progress < 100") {{f.progress}}%
               .progress-text(ng-show="f.progress >= 100") Complete!
 
+        .color-toggle(ng-class="{'disabled': !wizard.mail.campaign.aws_key}" title="Only PDF content can be printed in color." data-toggle="tooltip")
+          label Print in Color?
+          input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key")
+
         h1.pageTitle Select A Template
 
         .filters
           span(ng-repeat="category in categories")
             button.btn.btn-filter(ng-click="setCategory(category[0])" ng-class="{ 'active': displayCategory == category[0]}") {{category[1]}}
-          //- span
-          //-   button.btn.btn-filter(ng-click="" ng-class="{ 'active': displayCategory == category[0]}") Uploaded PDFs
         .row
           ul.tmpl-list
             li.col-md-3(ng-show="isEmptyCategory()")

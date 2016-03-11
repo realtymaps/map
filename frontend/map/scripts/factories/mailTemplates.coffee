@@ -16,6 +16,8 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     sender_info: null
     recipients: []
     aws_key: null
+    options:
+      color: false
 
   class MailTemplateFactory
     constructor: (@campaign = {}) ->
@@ -49,7 +51,11 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     setTemplateType: (type) ->
       @campaign.template_type = type
       @campaign.content = rmapsMailTemplateTypeService.getMailContent(type)
-      @campaign.aws_key = if @getCategory() == 'pdf' then type else null
+      if @getCategory() == 'pdf'
+        @campaign.aws_key = type
+      else
+        @campaign.aws_key = null
+        @campaign.options.color = false
 
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)

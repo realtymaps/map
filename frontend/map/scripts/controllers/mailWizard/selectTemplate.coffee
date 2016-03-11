@@ -6,7 +6,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, Upload,
+app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $timeout, $q, Upload,
   rmapsMailTemplateTypeService, rmapsMailTemplateFactory, rmapsMainOptions, rmapsMailPdfService) ->
 
   $log = $log.spawn 'mail:rmapsSelectTemplateCtrl'
@@ -20,7 +20,11 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.uploadfile = null
 
   $scope.uploadFile = (file, errFiles) ->
-    confirmTemplateChange()
+    if $scope.oldTemplateType != "" and $scope.oldTemplateType != templateType
+      confirm = confirmTemplateChange()
+    else
+      confirm = $q.when(true)
+    confirm
     .then (result) ->
       if !result or !file
         $scope.uploadfile = null

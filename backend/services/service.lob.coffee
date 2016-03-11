@@ -72,7 +72,6 @@ _maybeUseSignedUrl = (letter) ->
       .then (file) ->
         letter.file = file
         letter.options.template = false
-        letter.options.color = true
     else
       letter.options.template = true
       letter.options.color = false
@@ -115,7 +114,7 @@ sendCampaign = (campaignId, userId) ->
       .where(id: userId)
 
     campaign: tables.mail.campaign()
-      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
+      .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
       .where(id: campaignId, auth_user_id: userId)
 
     payment: paymentSvc or require('./services.payment') # allows rewire
@@ -215,6 +214,7 @@ buildLetter = (campaign, recipient) ->
     status: 'ready'
     options:
       aws_key: campaign.aws_key
+      color: campaign.options?.color? or false
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
@@ -236,7 +236,7 @@ buildLetter = (campaign, recipient) ->
 
 getPriceQuote = (userId, campaignId) ->
   tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients')
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
