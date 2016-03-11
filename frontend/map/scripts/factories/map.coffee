@@ -333,7 +333,11 @@ app.factory 'rmapsMapFactory',
         stateObj
 
       openWindow: (model, lTriggerObject) =>
-        rmapsPopupLoaderService.load(@scope, @map, model, lTriggerObject)
+        if model.mail?
+          template = require('../../html/includes/map/_mailPopup.jade')()
+        else
+          template = null
+        rmapsPopupLoaderService.load({@scope, @map, model, lTriggerObject, template})
 
       closeWindow: ->
         rmapsPopupLoaderService.close()

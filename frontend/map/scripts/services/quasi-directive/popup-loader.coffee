@@ -41,7 +41,10 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
       when quadrant is 'br' then new L.Point offsets.right, offsets.bottom
       else new L.Point offsets.left, offsets.bottom
 
-  _popup = ($scope, map, model, lTriggerObject, opts = _defaultOptions, template = _defaultTemplate, needToCompile = true) ->
+  _popup = ({scope, map, model, lTriggerObject, opts, template, needToCompile}) ->
+    opts ?= _defaultOptions
+    template ?= _defaultTemplate
+    needToCompile ?= true
     _map = map
     return if model?.markerType == 'cluster'
     content = null
@@ -50,7 +53,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
 
     # template for the popup box
     if needToCompile
-      _templateScope = $scope.$new() unless _templateScope?
+      _templateScope = scope.$new() unless _templateScope?
       _templateScope.model = model
       compiled = $compile(template)(_templateScope)
       content = compiled[0]
@@ -81,14 +84,14 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
 
     _lObj
 
-  load: () ->
+  load: (opts) ->
     $log.debug "popup loading in #{_delay}ms..."
     _popupArgs = arguments
 
     $timeout.cancel _timeoutPromise if _timeoutPromise
 
     _timeoutPromise = $timeout () ->
-      _popup _popupArgs...
+      _popup opts
     , _delay
 
   close: _close
