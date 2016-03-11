@@ -14,6 +14,7 @@ app = window.angular.module appName, [
   'ct.ui.router.extras'
   'google.places'
   'infinite-scroll'
+  'jsonFormatter'
   'nemLogging'
   'ngAnimate'
   'ngCookies'

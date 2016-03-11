@@ -9,6 +9,8 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, rmapsProperties
   _.extend $scope, rmapsFormattersService.Common
   _.extend $scope, google: rmapsGoogleService
 
+  $scope.tab = 'current'
+
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
     property: new rmapsPropertyFormatterService
