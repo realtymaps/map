@@ -5,11 +5,13 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
-  redirect = (stateName, event) ->
+  redirect = ({state, params, event, options}) ->
     #as stated in stackoverflow this avoids race hell in ui-router
     event?.preventDefault()
+
+    $log.debug "Redirect to #{state.name || state}"
     $timeout ->
-      $state.go stateName
+      $state.go state, params, options
 
   doPermsCheck = (toState) ->
     if not rmapsPrincipalService.isAuthenticated()
@@ -26,29 +28,41 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       # $log.debug 'redirected to profiles'
       return routes.profiles
 
-  return authorize: ({event, toState}) ->
+  return authorize: ({event, toState, toParams}) ->
     if !toState?.permissionsRequired && !toState?.loginRequired
       # anyone can go to this state
       return
 
     # if we can, do check now (synchronously)
     if rmapsPrincipalService.isIdentityResolved()
-      stateName = doPermsCheck(toState)
-      if stateName
-        redirect stateName, event
+      redirectState = doPermsCheck(toState)
+      if redirectState
+        redirect {state: redirectState, event}
 
     # otherwise, go to temporary view and do check ASAP
     else
-      redirect routes.authenticating, event
+      redirect {state: routes.authenticating, event, options: notify: false}
 
       rmapsPrincipalService.getIdentity().then () ->
-        stateName = doPermsCheck(toState) || toState.name
-        redirect stateName
+        redirectState = doPermsCheck(toState)
+        if redirectState
+          redirect {state: redirectState}
+        else
+          # authentication and permissions are ok, return to your regularly scheduled program
+          redirect {state: toState, params: toParams}
 
-mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state) ->
+mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
+  $log = $log.spawn('map:router')
+  $log.debug "attaching $stateChangeStart event"
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
+    $log.debug -> "$stateChangeStart: #{toState.name} params: #{JSON.stringify toParams} from: #{fromState?.name} params: #{JSON.stringify fromParams}"
     rmapsAuthorizationFactory.authorize({event, toState, toParams, fromState, fromParams})
     return
 
+  $rootScope.$on '$stateChangeSuccess', (event, toState, toParams, fromState, fromParams) ->
+    $log.debug -> "$stateChangeSuccess: to: #{toState.name} params: #{JSON.stringify toParams} from: #{fromState?.name} params: #{JSON.stringify fromParams}"
+    return
+
   $rootScope.$on rmapsEventConstants.principal.profile.addremove, (event, identity) ->
+    $log.debug -> "profile.addremove: identity"
     rmapsAuthorizationFactory.authorize {event, toState: $state.current}
