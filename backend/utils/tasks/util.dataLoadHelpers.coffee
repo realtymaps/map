@@ -42,7 +42,7 @@ _countInvalidRows = (subid, assignedFalse) ->
     results?[0].count ? 0
 
 
-recordChangeCounts = (subtask) ->
+recordChangeCounts = (subtask) -> Promise.try () ->
   subid = buildUniqueSubtaskName(subtask)
   subset =
     data_source_id: subtask.task_name
@@ -110,7 +110,7 @@ recordChangeCounts = (subtask) ->
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
-activateNewData = (subtask) ->
+activateNewData = (subtask) -> Promise.try () ->
   # wrapping this in a transaction improves performance, since we're editing some rows twice
   dbs.get('main').transaction (transaction) ->
     if subtask.data.deletes == DELETE.UNTOUCHED
