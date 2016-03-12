@@ -58,11 +58,13 @@ describe 'util.ezcrud.service.returning', ->
       @instance.update(@query).then (result) =>
         @sqlMock.whereSpy.calledOnce.should.be.true
         @sqlMock.updateSpy.calledOnce.should.be.true
+        @sqlMock.returningSpy.calledOnce.should.be.true
         done()
 
     it 'passes upsert', (done) ->
       @instance.upsert(@query).then (result) =>
         @sqlMock.rawSpy.calledOnce.should.be.true
+        @sqlMock.returningSpy.calledOnce.should.be.true
         done()
 
     it 'passes delete', (done) ->
