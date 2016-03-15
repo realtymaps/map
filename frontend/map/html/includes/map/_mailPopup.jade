@@ -5,14 +5,11 @@
       tr
         td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt
       tr
-        td Campaign ID
-        td {{ model.mail.campaign.id }}
-        tr
         td Campaign Name
-        td {{ model.mail.campaign.name }}
+        td(ui-sref="review({id:campaign.id})") {{ model.mail.campaign.name }}
       tr
         td Sent To
-        td {{ model.mail.type }}
+        td {{ model.mail.type.toInitCaps() }}
       tr
         td Sent On
         td {{ (model.mail.campaign.submitted | date:'MM/dd/yyyy') || 'never' }}

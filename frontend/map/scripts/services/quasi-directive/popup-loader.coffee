@@ -1,7 +1,6 @@
 #TODO: This really should be a directive in angular-leaflet eventually (nmccready)
 app = require '../../app.coffee'
 _defaultOptions = {closeButton: false, offset: new L.Point(0, -5), autoPan: false}
-_defaultTemplate = do require '../../../html/includes/map/_smallDetailsPopup.jade'
 
 app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupConstants, rmapsRenderingService, $timeout) ->
   _map = null #TODO this ref shouldn't be global if so this should become a factory
@@ -16,6 +15,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
   $log = $log.spawn("map:popupLoader")
 
   _close =  ->
+    return
     return unless _map
     $log.debug 'closing popup'
     _map.closePopup()
@@ -23,7 +23,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
     _templateScope = null
     $timeout.cancel _timeoutPromise if _timeoutPromise
 
-  _getOffset = (map, model, offsets = rmapsPopupConstants.offsets) ->
+  _getOffset = (map, model, offsets) ->
     # get center and point container coords
     return if !model?.coordinates?.length
     center = map.latLngToContainerPoint map.getCenter()
@@ -41,9 +41,11 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
       when quadrant is 'br' then new L.Point offsets.right, offsets.bottom
       else new L.Point offsets.left, offsets.bottom
 
-  _popup = ({scope, map, model, lTriggerObject, opts, template, needToCompile}) ->
+  _popup = ({scope, map, model, opts, needToCompile, popupType, templateVars}) ->
+    popup = rmapsPopupConstants[popupType]
+    popup ?= rmapsPopupConstants.default
     opts ?= _defaultOptions
-    template ?= _defaultTemplate
+    template = popup.templateFn(templateVars)
     needToCompile ?= true
     _map = map
     return if model?.markerType == 'cluster'
@@ -61,14 +63,14 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
       content = template
 
     # set the offset
-    opts.offset = _getOffset map, model
+    opts.offset = _getOffset map, model, popup.offsets
 
     # generate and apply popup object
     if _lObj
-      $log.debug 'L.Util.setOptions: ' + opts
+      $log.debug "L.Util.setOptions (#{popupType}): " + opts
       L.Util.setOptions _lObj, opts
     else
-      $log.debug 'new L.popup: ' + opts
+      $log.debug "new L.popup (#{popupType}): " + opts
       _lObj = new L.popup opts
 
     _lObj.setLatLng
@@ -80,6 +82,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
     # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
     # This is an attempt to make sure the popup goes away once the cursor is moved away
     _lObj._container?.addEventListener 'mouseleave', (e) ->
+      return
       map.closePopup()
 
     _lObj
