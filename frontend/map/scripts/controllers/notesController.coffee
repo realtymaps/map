@@ -3,7 +3,6 @@ notesTemplate = do require '../../html/views/templates/modals/note.jade'
 confirmTemplate = do require '../../html/views/templates/modals/confirm.jade'
 mapId = 'mainMap'
 originator = 'map'
-popupTemplate = require '../../html/includes/map/_notesPopup.jade'
 
 app.controller 'rmapsNotesModalCtrl', ($rootScope, $scope, $modal, rmapsNotesService, rmapsMainOptions, rmapsEventConstants, rmapsPrincipalService) ->
   _signalUpdate = (promise) ->
@@ -129,8 +128,16 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
 
       mouseover: (event, lObject, model, modelName, layerName, type, originator, maybeCaller) ->
         return if model.markerType != 'note'
-        popup.load($scope, lMap, model, undefined, undefined,
-          popupTemplate({title:model.title, text: model.text, circleNrArg: model.$index + 1}), false)
+        popup.load({
+          popupType: 'note'
+          map: lMap
+          model
+          templateVars:
+            title: model.title
+            text: model.text
+            circleNrArg: model.$index + 1
+          needToCompile: false
+        })
 
     markersUnSubs = linker.hookMarkers(mapId, _markerGeoJsonHandle, originator)
 

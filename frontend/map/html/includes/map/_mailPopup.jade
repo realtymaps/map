@@ -1,0 +1,15 @@
+.small-details.panel.panel-primary( ng-controller='rmapsMapSmallDetailsCtrl' ng-cloak)
+  .panel-heading(ng-class="statusClass") {{street_address_num}} {{street_address_name}}
+  .panel-body
+    table(class="table table-condensed table-hover")
+      tr
+        td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt
+      tr
+        td Campaign Name
+        td(ui-sref="review({id:campaign.id})") {{ model.mail.campaign.name }}
+      tr
+        td Sent To
+        td {{ model.mail.type.toInitCaps() }}
+      tr
+        td Sent On
+        td {{ (model.mail.campaign.submitted | date:'MM/dd/yyyy') || 'never' }}

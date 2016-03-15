@@ -52,18 +52,34 @@ class MailService extends ServiceCrud
       status = ['ready', 'sending', 'paid']
     if !_.isArray status
       status = [status]
+
     tables.mail.campaign()
-    .select('recipients')
+    .select('recipients', 'id', 'template_type', 'stripe_charge', 'name')
     .where
       project_id: project_id
       auth_user_id: auth_user_id
     .whereIn 'status', status
-    .then (results) ->
-      properties = _.flatten(_.pluck(results, 'recipients'))
-      propertyIndex = _.indexBy properties, 'rm_property_id'
-      propertySvc.getDetails rm_property_id: _.pluck properties, 'rm_property_id'
+    .then (campaigns) ->
+
+      propertyIndex = {}
+
+      # Add campaign info to each address
+      _.each campaigns, (campaign) ->
+        c =
+          id: campaign.id
+          name: campaign.name
+          submitted: campaign.stripe_charge?.created
+          template_type: campaign.template_type
+
+        _.each campaign.recipients, (r) ->
+          r.campaign = c
+          propertyIndex[r.rm_property_id] = r
+
+      propertySvc.getDetails rm_property_id: _.keys propertyIndex
       .then (details) ->
         _.map details, (detail) ->
+
+          # Combined mailing and property info
           _.assign detail,
             mail: propertyIndex[detail.rm_property_id]
             coordinates: detail.geom_point_json.coordinates
