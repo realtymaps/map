@@ -61,19 +61,21 @@ class MailService extends ServiceCrud
     .whereIn 'status', status
     .then (campaigns) ->
 
+      propertyIndex = {}
+
       # Add campaign info to each address
       _.each campaigns, (campaign) ->
         c =
           id: campaign.id
           name: campaign.name
           submitted: campaign.stripe_charge?.created
+          template_type: campaign.template_type
 
         _.each campaign.recipients, (r) ->
           r.campaign = c
+          propertyIndex[r.rm_property_id] = r
 
-      properties = _.flatten(_.pluck(campaigns, 'recipients'))
-      propertyIndex = _.indexBy properties, 'rm_property_id'
-      propertySvc.getDetails rm_property_id: _.pluck properties, 'rm_property_id'
+      propertySvc.getDetails rm_property_id: _.keys propertyIndex
       .then (details) ->
         _.map details, (detail) ->
 
