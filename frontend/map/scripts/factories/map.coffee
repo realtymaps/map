@@ -332,10 +332,11 @@ app.factory 'rmapsMapFactory',
               selectedResultId: @scope.selectedResult.rm_property_id
         stateObj
 
-      openWindow: (model, lTriggerObject) =>
+      openWindow: (model) =>
+        opts = {@map, model}
         if model.mail?
-          popupType = 'mail'
-        rmapsPopupLoaderService.load({@scope, @map, model, popupType})
+          opts.popupType = 'mail'
+        rmapsPopupLoaderService.load(opts)
 
       closeWindow: ->
         rmapsPopupLoaderService.close()

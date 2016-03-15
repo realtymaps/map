@@ -90,7 +90,7 @@ rmapsPropertiesService, rmapsMapEventEnums, $log) ->
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
         if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-          mapCtrl.openWindow?(model, lObject)
+          mapCtrl.openWindow?(model)
 
         # Update model
         model.isMousedOver = true

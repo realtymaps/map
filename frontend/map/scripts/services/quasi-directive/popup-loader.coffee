@@ -15,7 +15,6 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
   $log = $log.spawn("map:popupLoader")
 
   _close =  ->
-    return
     return unless _map
     $log.debug 'closing popup'
     _map.closePopup()
@@ -41,7 +40,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
       when quadrant is 'br' then new L.Point offsets.right, offsets.bottom
       else new L.Point offsets.left, offsets.bottom
 
-  _popup = ({scope, map, model, opts, needToCompile, popupType, templateVars}) ->
+  _popup = ({map, model, opts, needToCompile, popupType, templateVars}) ->
     popup = rmapsPopupConstants[popupType]
     popup ?= rmapsPopupConstants.default
     opts ?= _defaultOptions
@@ -55,7 +54,7 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
 
     # template for the popup box
     if needToCompile
-      _templateScope = scope.$new() unless _templateScope?
+      _templateScope = $rootScope.$new() unless _templateScope?
       _templateScope.model = model
       compiled = $compile(template)(_templateScope)
       content = compiled[0]
@@ -82,7 +81,6 @@ app.service 'rmapsPopupLoaderService', ($log, $rootScope, $compile, rmapsPopupCo
     # If popup appears under the mouse cursor, it may 'steal' the events that would have fired on the marker
     # This is an attempt to make sure the popup goes away once the cursor is moved away
     _lObj._container?.addEventListener 'mouseleave', (e) ->
-      return
       map.closePopup()
 
     _lObj

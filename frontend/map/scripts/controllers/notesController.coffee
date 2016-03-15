@@ -130,8 +130,7 @@ rmapsEventConstants, rmapsLayerFormattersService, leafletData, leafletIterators,
         return if model.markerType != 'note'
         popup.load({
           popupType: 'note'
-          scope: $scope,
-          map: lMap,
+          map: lMap
           model
           templateVars:
             title: model.title
