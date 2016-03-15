@@ -40,6 +40,14 @@ fi
 
 export LOG_LEVEL='warn'
 SQL_COMMAND=`foreman run coffee --eval "require('./backend/services/service.externalAccounts').${ACTION_TYPE}AccountInfo('''${ACTION_TARGET}''', {logOnly: true}).then (result) -> process.exit(0)"`
+
+if [[ "${ACTION_TYPE}" == "get" ]]
+then
+    echo "$SQL_COMMAND"
+    exit 0
+fi
+
+
 # handle bad knex escaping
 SQL_COMMAND=${SQL_COMMAND//\\"/"}
 echo "SQL command: $SQL_COMMAND"

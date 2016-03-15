@@ -156,6 +156,15 @@ _rules =
         alias: 'Discontinued Date'
         type: name: 'datetime'
 
+      year_built:
+        alias: 'Year Built'
+        type: name: 'integer'
+
+      property_type:
+        alias: 'Property Type'
+        config:
+          transformString: 'forceInitCaps'
+
 
   county:
     tax:
@@ -223,6 +232,15 @@ _rules =
         valid: () ->
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
+
+      year_built:
+        alias: 'Year Built'
+        type: name: 'integer'
+
+      property_type:
+        alias: 'Property Type'
+        config:
+          transformString: 'forceInitCaps'
 
     deed:
       data_source_uuid:

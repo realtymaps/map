@@ -503,6 +503,8 @@ ensureNormalizedTable = (dataType, subid) ->
         table.integer('baths_full')
         table.decimal('acres', 11, 3)
         table.integer('sqft_finished')
+        table.integer('year_built')
+        table.text('property_type')
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS FIRST)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
