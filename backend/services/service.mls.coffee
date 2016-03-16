@@ -36,7 +36,7 @@ toFipsCounties =
     logger.debug q.toString()
     q
 
-mls =
+module.exports = {
   getAll: (queryObj) ->
     query = lookup.mls().select(basicColumns.mls)
     if queryObj?
@@ -51,8 +51,6 @@ mls =
       query.where queryObj
     query
 
-
-mls.toFipsCounties = toFipsCounties
-mls.supported = supported
-
-module.exports = mls
+  toFipsCounties
+  supported
+}

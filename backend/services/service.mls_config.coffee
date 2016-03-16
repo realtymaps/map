@@ -104,5 +104,5 @@ class MlsConfigService extends ServiceCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
 
 
-instance = new MlsConfigService tables.config.mls, {debugNS: "mlsConfigService"}
+instance = new MlsConfigService tables.config.mls
 module.exports = instance
