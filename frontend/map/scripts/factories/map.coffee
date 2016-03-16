@@ -43,7 +43,11 @@ app.factory 'rmapsMapFactory',
 
     class Map extends rmapsBaseMapFactory
 
+      @currentMainMap: null
+
       constructor: ($scope) ->
+        @constructor.currentMainMap = @
+
         _.extend @, rmapsZoomLevelStateFactory(scope: $scope)
         _overlays = require '../utils/util.layers.overlay.coffee' #don't get overlays until your logged in
         super $scope, limits.options, limits.redrawDebounceMilliSeconds, 'map' ,'mainMap'

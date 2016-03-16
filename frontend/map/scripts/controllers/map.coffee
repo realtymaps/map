@@ -45,19 +45,46 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
       $scope.loadProject projectToLoad
 
+  $scope.loadProperty = (property) ->
+    selectedResultId = $state.params.property_id or $scope.selectedProject.map_results?.selectedResultId
+
+    if selectedResultId?.match(/\w+_\w*_\w+/) and map?
+      $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+      $location.search 'property_id', selectedResultId
+
+#      rmapsPropertiesService.getPropertyDetail(
+#        map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+#        rm_property_id: selectedResultId, 'all'
+#      ).then (result) ->
+#        return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
+#        $timeout () ->
+#          map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
+#        , 50
+#        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+#        resultCenter.zoom = 18
+#        map.scope.map.center = resultCenter
+#      .catch () ->
+#        $location.search 'property_id', undefined
+#        newState = map.scope.refreshState(map_results: selectedResultId: undefined)
+#        rmapsPropertiesService.updateMapState newState
+#    else
+#      $location.search 'property_id', undefined
+
   $scope.loadProject = (project) ->
     if project == $scope.selectedProject
       return
 
     # If switching projects, ensure the old one is up-to-date
-    if $scope.selectedProject
-      $scope.selectedProject.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-      $scope.selectedProject.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-      $scope.selectedProject.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
-      $scope.selectedProject.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
+#    if $scope.selectedProject
+#      $scope.selectedProject.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+#      $scope.selectedProject.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+#      $scope.selectedProject.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
+#      $scope.selectedProject.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
 
-    rmapsProfilesService.setCurrent $scope.selectedProject, project
+    rmapsProfilesService.setCurrentProfile project
     .then () ->
+      $log.debug "!!! PROFILE PROJECT CHANGED"
       $scope.selectedProject = project
 
       $location.search 'project_id', project.project_id
@@ -86,12 +113,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
       if $scope.map?
         if map_position?.center?
+          $log.debug "Project changed and map factory exists, recentering map"
           $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
           $scope.map.center.zoom = Number map_position.zoom
         $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
       else
         if map_position?
+          $log.debug "Project set first time, recentering map"
           if map_position.center? and
           map_position.center.latitude? and
           map_position.center.latitude != 'NaN' and
@@ -104,30 +133,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
         map = new rmapsMapFactory($scope)
 
-      selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
-
-      if selectedResultId?.match(/\w+_\w*_\w+/) and map?
-        $log.debug 'attempting to reinstate selectedResult', selectedResultId
-
-        $location.search 'property_id', selectedResultId
-
-        rmapsPropertiesService.getPropertyDetail(
-          map.scope.refreshState(map_results: selectedResultId: selectedResultId),
-          rm_property_id: selectedResultId, 'all'
-        ).then (result) ->
-          return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
-          $timeout () ->
-            map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
-          , 50
-          resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-          resultCenter.zoom = 18
-          map.scope.map.center = resultCenter
-        .catch () ->
-          $location.search 'property_id', undefined
-          newState = map.scope.refreshState(map_results: selectedResultId: undefined)
-          rmapsPropertiesService.updateMapState newState
-      else
-        $location.search 'property_id', undefined
+      $scope.loadProperty()
 
   $rootScope.principal.getIdentity()
   .then (identity) ->
