@@ -1,9 +1,9 @@
-EzServiceCrud = require('../utils/crud/util.ezcrud.service.helpers')
+ReturningServiceEzCrud = require '../utils/crud/util.ezcrud.service.returning'
 {toGeoFeatureCollection} = require '../utils/util.geomToGeoJson'
 {basicColumns} = require '../utils/util.sql.columns'
 
 module.exports =
-  class DrawnShapesServiceCrud extends EzServiceCrud
+  class DrawnShapesServiceCrud extends ReturningServiceEzCrud
     constructor: () ->
       super(arguments...)
       @drawnShapeCols = basicColumns.drawnShapes
@@ -17,7 +17,7 @@ module.exports =
 
     getAllBase: (query, options = {}, nullClause = 'whereNull') ->
       options.returnKnex = true
-      @toGeoJson(EzServiceCrud::getAll.call(@, query, options)
+      @toGeoJson(ReturningServiceEzCrud::getAll.call(@, query, options)
         .knex[nullClause]('neighbourhood_name')
       )
 

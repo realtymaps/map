@@ -60,6 +60,9 @@ class ServiceCrud extends BaseObject
       @returnKnexTempFlag = false
       return {knex: query} # exposes unevaluated knex
 
+    if options?.returning?
+      query.returning(options.returning)
+
     # evaluate
     query.then (result) ->
       result
