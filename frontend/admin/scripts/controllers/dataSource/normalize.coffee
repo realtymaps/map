@@ -27,8 +27,8 @@ app.controller 'rmapsNormalizeCtrl',
     current: null
 
   $scope.transformOptions =
-    'Uppercase': 'forceUpperCase'
-    'Lowercase': 'forceLowerCase'
+    'UPPERCASE': 'forceUpperCase'
+    'lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
 
   $scope.nullifyOptions =

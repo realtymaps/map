@@ -56,8 +56,8 @@ module.exports =
     .then (data=[]) ->
       result = { county: null, mls: null }
       for row in data
-        result[row.data_source_type] ?= {}
-        result[row.data_source_type][row.data_source_id] = row
+        result[row.data_source_type] ?= []
+        result[row.data_source_type].push(row)
       result
 
   getDetails: (queryParams) ->
@@ -70,6 +70,6 @@ module.exports =
       result = {}
       for row in data
         result[row.rm_property_id] ?= { county: null, mls: null }
-        result[row.rm_property_id][row.data_source_type] ?= {}
-        result[row.rm_property_id][row.data_source_type][row.data_source_id] = row
+        result[row.rm_property_id][row.data_source_type] ?= []
+        result[row.rm_property_id][row.data_source_type].push(row)
       result

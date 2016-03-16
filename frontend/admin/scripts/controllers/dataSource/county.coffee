@@ -27,8 +27,8 @@ app.controller 'rmapsCountyCtrl',
     totalCount: 0
 
   $scope.transformOptions =
-    'Uppercase': 'forceUpperCase'
-    'Lowercase': 'forceLowerCase'
+    'UPPERCASE': 'forceUpperCase'
+    'lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
 
   $scope.nullifyOptions =
