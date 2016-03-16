@@ -22,6 +22,10 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @isNeighborhoodDraw = false
     @showOldToolbar = false
 
+    if json?
+      _.extend @, _.mapValues json, (val) ->
+        return val == 'true'
+
     @enableNoteTap = () =>
       @showNoteTap = true
 
@@ -98,7 +102,4 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @setLocation = (location) ->
       _locationCb?(location)
 
-    if json?
-      _.extend @, _.mapValues json, (val) ->
-        return val == 'true'
     @
