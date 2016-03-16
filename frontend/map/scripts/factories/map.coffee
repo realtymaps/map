@@ -334,7 +334,7 @@ app.factory 'rmapsMapFactory',
 
       openWindow: (model) =>
         opts = {@map, model}
-        if model.mail?
+        if model.mailings?
           opts.popupType = 'mail'
         rmapsPopupLoaderService.load(opts)
 

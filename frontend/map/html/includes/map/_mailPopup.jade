@@ -4,12 +4,13 @@
     table(class="table table-condensed table-hover")
       tr
         td(colspan="2") {{beds_total}} Bed &nbsp; {{baths_total}} Bath {{baths_half}} &nbsp; {{finished_sqft}} SqFt
+    table(class="table table-condensed table-hover" ng-repeat="mail in model.mailings")
       tr
         td Campaign Name
-        td(ui-sref="review({id:campaign.id})") {{ model.mail.campaign.name }}
+        td(ui-sref="review({id:mail.campaign_id})") {{ mail.campaign_name }}
       tr
         td Sent To
-        td {{ model.mail.type.toInitCaps() }}
+        td {{ mail.type.toInitCaps() }}
       tr
         td Sent On
-        td {{ (model.mail.campaign.submitted | date:'MM/dd/yyyy') || 'never' }}
+        td {{ (mail.submitted | date:'MM/dd/yyyy') || 'never' }}

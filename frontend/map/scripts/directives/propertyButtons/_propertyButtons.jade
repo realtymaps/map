@@ -8,7 +8,7 @@ div.btn-actions
     span.icon.icon-pin
     .button-help {{formatters.property.isSavedResult(property) ? 'Unpin' : 'Pin'}}
 
-  button.send(ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': hasMail(property) }")
+  button.send(ng-controller="rmapsMailModalCtrl" ng-click="addMail(property)" ng-class="{ 'button-has-mail': getMail(property) }")
     i.fa.fa-envelope
     .button-help Mailing
 

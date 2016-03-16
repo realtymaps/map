@@ -32,10 +32,10 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
       else
         getPromise
 
-    hasMail: (propertyId) ->
+    getMail: (propertyId) ->
       return false unless propertyId
 
-      !!_.find _mail, (mail) ->
+      _.find _mail, (mail) ->
         mail.rm_property_id == propertyId
 
     clear: () ->
