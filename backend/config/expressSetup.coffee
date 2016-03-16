@@ -11,7 +11,7 @@ _ = require 'lodash'
 
 commonConfig = require '../../common/config/commonConfig'
 dbs = require './dbs'
-logger = require './logger'
+logger = require('./logger').spawn('express')
 auth = require '../utils/util.auth'
 uuid = require '../utils/util.uuid'
 ExpressResponse = require '../utils/util.expressResponse'
@@ -99,12 +99,14 @@ swagger.initializeMiddleware swaggerObject, (middleware) ->
   if process.env.NODE_ENV == 'development'
     app.use middleware.swaggerUi()
 
-  # bootstrap routes
-  require('../routes')(app)
+# bootstrap routes
+require('../routes')(app)
 
 app.use (data, req, res, next) ->
+  logger.debug 'ExpressResponse Middleware'
   if data instanceof ExpressResponse
     # this response is intentional
+    logger.debug "data.status: #{data.status}"
     if !status.isWithinOK(data.status)
       # this is not strictly an error handler now, it is also used for routine final handling of a response,
       # something not easily done with the standard way of using express -- so only log as an error if the
