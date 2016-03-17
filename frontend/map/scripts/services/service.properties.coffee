@@ -26,6 +26,9 @@ app.service 'rmapsPropertiesService', ($rootScope, $http, rmapsPropertyFactory, 
 
     service.getProperties propertyIds, 'filter'
     .then ({data}) ->
+      _savedProperties = {}
+      _favoriteProperties = {}
+
       for detail in data
         if model = profile.properties_selected[detail.rm_property_id]
           _.extend model, detail
