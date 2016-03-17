@@ -6,8 +6,8 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropert
   $log = $log.spawn 'mail:rmapsMailModalCtrl'
   $log.debug 'MailModalCtrl'
 
-  $scope.hasMail = (property) ->
-    rmapsMailCampaignService.hasMail(property?.rm_property_id)
+  $scope.getMail = (property) ->
+    rmapsMailCampaignService.getMail(property?.rm_property_id)
 
   $scope.addMail = (maybeParcel) ->
 
@@ -46,6 +46,8 @@ app.controller 'rmapsMailModalCtrl', ($scope, $state, $modal, $log, rmapsPropert
       animation: true
       scope: $scope
       template: require('../../html/views/templates/modals/confirm.jade')()
+
+  rmapsMailCampaignService.getProjectMail()
 
 app.controller 'rmapsMapMailCtrl', ($scope, $log, rmapsLayerFormattersService, rmapsMailCampaignService) ->
   $log = $log.spawn 'mail:rmapsMapMailCtrl'

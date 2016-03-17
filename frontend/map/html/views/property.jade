@@ -1,6 +1,7 @@
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 .property-detail-modal
+
   .desktop-only
     .property-detail-container.container
       //+spinnerMixin()
@@ -43,6 +44,20 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='selectedResult')
+
+          .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+            .content-heading Mail Campaigns
+
+            .row.content-row(ng-repeat="mail in getMail().mailings | orderBy: 'submitted'")
+              .col-sm-4.content-body {{mail.campaign_name}}
+              .col-sm-3.content-body
+                span(ng-show="mail.submitted") Sent {{ (mail.submitted | date:'MM/dd/yyyy') || 'unsent' }}
+                span(ng-show="!mail.submitted") Unsent
+              .col-sm-3.content-body
+                span(ng-show="mail.submitted") To {{mail.type}} address
+              .col-sm-2.content-body.pull-right.text-right
+                button.btn.btn-sm.btn-white(ui-sref="review({id:mail.campaign_id})") Preview
+                  i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-8
@@ -161,6 +176,20 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
           .content-emphasis.content-lg {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
           .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
+
+        .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+            .content-heading Mail Campaigns
+
+            .row.content-row(ng-repeat="mail in getMail().mailings")
+              .col-xs-4.content-body {{mail.campaign_name}}
+              .col-xs-3.content-body
+                span(ng-show="mail.submitted") Sent {{ (mail.submitted | date:'MM/dd/yyyy') || 'unsent' }}
+                span(ng-show="!mail.submitted") Unsent
+              .col-xs-3.content-body
+                span(ng-show="mail.submitted") To {{mail.type.toInitCaps()}} address
+              .col-xs-2.content-body.pull-right.text-right
+                button.btn.btn-sm.btn-white(ui-sref="review({id:mail.campaign_id})") Preview
+                  i.fa.fa-envelope
 
         .content-block.prop-attrs.border-bottom
           .content-heading Property Info

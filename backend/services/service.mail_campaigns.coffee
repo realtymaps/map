@@ -4,6 +4,7 @@ lobService = require './service.lob'
 tables = require '../config/tables'
 dbs = require '../config/dbs'
 _ = require 'lodash'
+moment = require 'moment'
 db = dbs.get('main')
 propertySvc = require './service.properties.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
@@ -66,14 +67,16 @@ class MailService extends ServiceCrud
       # Add campaign info to each address
       _.each campaigns, (campaign) ->
         c =
-          id: campaign.id
-          name: campaign.name
-          submitted: campaign.stripe_charge?.created
+          campaign_id: campaign.id
+          campaign_name: campaign.name
           template_type: campaign.template_type
 
+        if campaign.stripe_charge?.created
+          c.submitted = moment(campaign.stripe_charge.created, 'X').format()
+
         _.each campaign.recipients, (r) ->
-          r.campaign = c
-          propertyIndex[r.rm_property_id] = r
+          propertyIndex[r.rm_property_id] ?= []
+          propertyIndex[r.rm_property_id].push _.assign r, c
 
       propertySvc.getDetails rm_property_id: _.keys propertyIndex
       .then (details) ->
@@ -81,7 +84,7 @@ class MailService extends ServiceCrud
 
           # Combined mailing and property info
           _.assign detail,
-            mail: propertyIndex[detail.rm_property_id]
+            mailings: propertyIndex[detail.rm_property_id]
             coordinates: detail.geom_point_json.coordinates
             type: detail.geom_point_json.type
 
