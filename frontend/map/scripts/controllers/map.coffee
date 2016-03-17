@@ -75,63 +75,12 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     if project == $scope.selectedProject
       return
 
-    # If switching projects, ensure the old one is up-to-date
-#    if $scope.selectedProject
-#      $scope.selectedProject.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-#      $scope.selectedProject.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-#      $scope.selectedProject.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
-#      $scope.selectedProject.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
-
     rmapsProfilesService.setCurrentProfile project
     .then () ->
       $log.debug "!!! PROFILE PROJECT CHANGED"
       $scope.selectedProject = project
 
       $location.search 'project_id', project.project_id
-
-#      $rootScope.selectedFilters = {}
-
-#      map_position = project.map_position
-#      #fix messed center
-#      if !map_position?.center?.lng or !map_position?.center?.lat
-#        map_position =
-#          center:
-#            lat: 26.129241
-#            lng: -81.782227
-#            zoom: 15
-#
-#      map_position =
-#        center: NgLeafletCenter map_position.center
-
-#      if project.filters
-#        statusList = project.filters.status || []
-#        for key,status of rmapsParcelEnums.status
-#          project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-#        #TODO: this is a really ugly hack to workaround our poor state design in our app
-#        #filters and mapState need to be combined, also both should be moved to rootScope
-#        #the omits here are to keep from saving off duplicate data where project.filters is from the backend
-#        _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
-
-#      if $scope.map?
-#        if map_position?.center?
-#          $log.debug "Project changed and map factory exists, recentering map"
-#          $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
-#        if map_position?.zoom?
-#          $scope.map.center.zoom = Number map_position.zoom
-#        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
-#      else
-#        if map_position?
-#          $log.debug "Project set first time, recentering map"
-#          if map_position.center? and
-#          map_position.center.latitude? and
-#          map_position.center.latitude != 'NaN' and
-#          map_position.center.longitude? and
-#          map_position.center.longitude != 'NaN'
-#            rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
-#          if map_position.zoom?
-#            rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
-#
-#        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
 
       if !$scope.map?
         map = new rmapsMapFactory($scope)
