@@ -112,14 +112,14 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
         #the omits here are to keep from saving off duplicate data where project.filters is from the backend
         _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
 
-      if $scope.map?
+#      if $scope.map?
 #        if map_position?.center?
 #          $log.debug "Project changed and map factory exists, recentering map"
 #          $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
 #        if map_position?.zoom?
 #          $scope.map.center.zoom = Number map_position.zoom
-        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
-      else
+#        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
+#      else
 #        if map_position?
 #          $log.debug "Project set first time, recentering map"
 #          if map_position.center? and
@@ -130,8 +130,10 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 #            rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
 #          if map_position.zoom?
 #            rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
+#
+#        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
 
-        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
+      if !$scope.map?
         map = new rmapsMapFactory($scope)
 
       $scope.loadProperty()

@@ -81,7 +81,6 @@ app.service 'rmapsProfilesService', (
           rmapsMapFactory.currentMainMap.scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
         if map_position?.zoom?
           rmapsMapFactory.currentMainMap.scope.map.center.zoom = Number map_position.zoom
-#        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
       else
         if map_position?
           $log.debug "Project set first time, recentering map"
@@ -94,6 +93,9 @@ app.service 'rmapsProfilesService', (
           if map_position.zoom?
             rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
 
-#        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
+      if rmapsMapFactory.currentMainMap?
+        rmapsMapFactory.currentMainMap.updateToggles project.map_toggles
+      else
+        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
 
       return project

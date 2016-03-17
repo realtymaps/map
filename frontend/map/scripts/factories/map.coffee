@@ -12,11 +12,31 @@ _emptyGeoJsonData =
   Our Main Map Implementation
 ###
 app.factory 'rmapsMapFactory',
-  ($log, $timeout, $q, $rootScope, $http, rmapsBaseMapFactory,
-  rmapsPropertiesService, rmapsEventConstants, rmapsLayerFormattersService, rmapsMainOptions,
-  rmapsFilterManagerService, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsZoomLevelService,
-  rmapsPopupLoaderService, leafletData, rmapsControlsService, rmapsRenderingService, rmapsMapEventsHandlerService,
-  rmapsLeafletObjectFetcherFactory, rmapsZoomLevelStateFactory, rmapsResultsFlow) ->
+  (
+    $http,
+    $log,
+    $q,
+    $rootScope,
+    $timeout,
+    leafletData,
+    rmapsBaseMapFactory,
+    rmapsControlsService,
+    rmapsEventConstants,
+    rmapsFilterManagerService,
+    rmapsLayerFormattersService,
+    rmapsLeafletObjectFetcherFactory,
+    rmapsMainOptions,
+    rmapsMapEventsHandlerService,
+    rmapsPopupLoaderService,
+    rmapsPropertiesService,
+    rmapsPropertyFormatterService,
+    rmapsRenderingService,
+    rmapsResultsFlow
+    rmapsResultsFormatterService,
+    rmapsMapTogglesFactory,
+    rmapsZoomLevelService,
+    rmapsZoomLevelStateFactory,
+  ) ->
 
     leafletDataMainMap = new rmapsLeafletObjectFetcherFactory('mainMap')
     limits = rmapsMainOptions.map
@@ -209,6 +229,9 @@ app.factory 'rmapsMapFactory',
         #END CONSTRUCTOR
 
       #BEGIN PUBLIC HANDLES /////////////////////////////////////////////////////////////
+      updateToggles: (map_toggles) =>
+        @scope.Toggles = rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(map_toggles)
+
       clearBurdenLayers: () =>
         d = $q.defer()
         @scope.$evalAsync =>
