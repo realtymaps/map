@@ -45,8 +45,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
       $scope.loadProject projectToLoad
 
-  $scope.loadProperty = (property) ->
-    selectedResultId = $state.params.property_id or $scope.selectedProject.map_results?.selectedResultId
+  $scope.loadProperty = (project) ->
+    selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
     if selectedResultId?.match(/\w+_\w*_\w+/) and map?
       $log.debug 'attempting to reinstate selectedResult', selectedResultId
@@ -85,7 +85,11 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       if !$scope.map?
         map = new rmapsMapFactory($scope)
 
-      $scope.loadProperty()
+      $scope.loadProperty(project)
+
+  #
+  # Load data when the controller initially loads
+  #
 
   $rootScope.principal.getIdentity()
   .then (identity) ->

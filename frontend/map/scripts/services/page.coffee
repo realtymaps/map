@@ -76,7 +76,7 @@ app.provider 'rmapsPageService', () ->
           @goToMap()
 
       goToMap: () ->
-        $state.go 'map', { project_id: rmapsProfilesService.selectedProfile?.project_id }
+        $state.go 'map', { project_id: rmapsProfilesService.currentProfile?.project_id }
 
       #
       # Accessors

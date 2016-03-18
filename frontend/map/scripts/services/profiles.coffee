@@ -42,27 +42,27 @@ app.service 'rmapsProfilesService', (
     else
       _current newProfile
 
-  selectedProfile: null
+  currentProfile: null
   setCurrentProfile: (project) ->
-    if project == @selectedProfile
+    if project == @currentProfile
       return
 
     # If switching projects, ensure the old one is up-to-date
-    if @selectedProfile
+    if @currentProfile
       $log.debug "!!!! Profile change... save current before switching !!!!!"
-      @selectedProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-      @selectedProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-      @selectedProfile.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
+      @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
+      @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
+      @currentProfile.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
 
       # Get the center of the main map if it has been created
       if rmapsMapFactory.currentMainMap
-        @selectedProfile.map_position = center: NgLeafletCenter(_.pick rmapsMapFactory.currentMainMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
+        @currentProfile.map_position = center: NgLeafletCenter(_.pick rmapsMapFactory.currentMainMap.scope?.map?.center, ['lat', 'lng', 'zoom'])
 
     # Save the old and load the new projects
-    return @setCurrent @selectedProfile, project
+    return @setCurrent @currentProfile, project
     .then () =>
       $log.debug "Set current profile to: #{project.project_id}"
-      @selectedProfile = project
+      @currentProfile = project
 
       # Center and zoom the map for the new project
       map_position = project.map_position
