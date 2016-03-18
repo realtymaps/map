@@ -1,7 +1,7 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
 mod = require '../module.coffee'
 
-mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
+mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsProfilesService, rmapsUrlHelpersService) ->
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
@@ -13,7 +13,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
     $timeout ->
       $state.go state, params, options
 
-  doPermsCheck = (toState) ->
+  doPermsCheck = (toState, toParams) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
@@ -24,7 +24,11 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       # $log.debug 'redirected to accessDenied'
       return routes.accessDenied
 
-    if toState?.profileRequired and !rmapsPrincipalService.isCurrentProfileResolved()
+    if toState?.profileRequired and !rmapsProfilesService.currentProfile?
+      # Determine if this route can load its own profile based on a state params
+      if _.isString(toState.profileRequired) and toParams[toState.profileRequired]?
+        return
+
       # $log.debug 'redirected to profiles'
       return routes.profiles
 
@@ -35,7 +39,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
 
     # if we can, do check now (synchronously)
     if rmapsPrincipalService.isIdentityResolved()
-      redirectState = doPermsCheck(toState)
+      redirectState = doPermsCheck(toState, toParams)
       if redirectState
         redirect {state: redirectState, event}
 
@@ -44,7 +48,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       redirect {state: routes.authenticating, event, options: notify: false}
 
       rmapsPrincipalService.getIdentity().then () ->
-        redirectState = doPermsCheck(toState)
+        redirectState = doPermsCheck(toState, toParams)
         if redirectState
           redirect {state: redirectState}
         else

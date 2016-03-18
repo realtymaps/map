@@ -19,6 +19,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapsParcelEnums, rmapsPropertiesService, $log, rmapsSearchboxService) ->
 
   $log = $log.spawn("map:controller")
+  $log.debug "!!!! Create Maps Controller !!!!"
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -32,6 +33,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $scope.loadIdentity identity
 
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    $scope.loadIdentity identity
+
   getProjects = (identity) ->
     $scope.projects = _.values identity.profiles
     $scope.totalProjects = $scope.projects.length
@@ -40,7 +44,8 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       project.totalFavorites = (_.keys project.favorites)?.length
 
   $scope.loadIdentity = (identity, project_id) ->
-    if identity?.currentProfileId? and project_id?
+    $log.debug "loadIdentity"
+    if identity?.currentProfileId? or project_id?
       getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
       $scope.loadProject projectToLoad
@@ -72,15 +77,16 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 #      $location.search 'property_id', undefined
 
   $scope.loadProject = (project) ->
+    $log.debug 'loadProject()', project, $scope.selectedProject
     if project == $scope.selectedProject
       return
+
+    $scope.selectedProject = project
+    $location.search 'project_id', project.project_id
 
     rmapsProfilesService.setCurrentProfile project
     .then () ->
       $log.debug "!!! PROFILE PROJECT CHANGED"
-      $scope.selectedProject = project
-
-      $location.search 'project_id', project.project_id
 
       if !$scope.map?
         map = new rmapsMapFactory($scope)
@@ -91,6 +97,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   # Load data when the controller initially loads
   #
 
+  $log.debug "Get principal identity"
   $rootScope.principal.getIdentity()
   .then (identity) ->
     $scope.loadIdentity identity, Number($state.params.project_id)

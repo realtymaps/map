@@ -13,11 +13,14 @@ module.exports =
   property:       'property/:id'
   projects:       'projects'
   project:        'project/:id'
-  projectClients: 'project/:id/clients'
-  projectFavorites: 'project/:id/favorites'
-  projectNotes:   'project/:id/notes'
-  projectPins:    'project/:id/pins'
-  projectNeighbourhoods: 'project/:id/neighbourhoods'
+
+  # Child state URLs must start with / to avoid doubles
+  projectClients: '/clients'
+  projectFavorites: '/favorites'
+  projectNotes:   '/notes'
+  projectPins:    '/pins'
+  projectNeighbourhoods: '/neighbourhoods'
+  
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'
   favorites:      'favorites'

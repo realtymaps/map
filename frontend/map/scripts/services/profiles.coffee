@@ -11,6 +11,7 @@ app.service 'rmapsCurrentProfilesService', ($http) ->
 app.service 'rmapsProfilesService', (
   $http,
   $log
+  $q,
   $rootScope,
   rmapsCurrentProfilesService,
   rmapsEventConstants,
@@ -43,9 +44,17 @@ app.service 'rmapsProfilesService', (
       _current newProfile
 
   currentProfile: null
+
+  setCurrentProfileByProjectId: (project_id) ->
+    project_id = Number(project_id) if _.isString project_id
+    rmapsPrincipalService.getIdentity()
+    .then (identity) =>
+      profile = (_.find(identity.profiles, project_id: project_id))
+      return @setCurrentProfile profile
+
   setCurrentProfile: (project) ->
     if project == @currentProfile
-      return
+      return $q.resolve project
 
     # If switching projects, ensure the old one is up-to-date
     if @currentProfile
