@@ -1,4 +1,3 @@
-_ = require 'lodash'
 mlsConfigService = require '../services/service.mls_config'
 auth = require '../utils/util.auth'
 RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
@@ -13,7 +12,7 @@ class MlsConfigCrud extends RouteCrud
     @custom @svc.updateServerInfo(req.params.id, req.body), res
 
 
-module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService, {debugNS: "mlsConfigRoute"}),
+module.exports = routeHelpers.mergeHandles new MlsConfigCrud(mlsConfigService),
   root:
     methods: ['get', 'post']
     middleware: [

@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require './errors/util.error.partiallyHandledError'
 rets = require 'rets-client'
 moment = require('moment')
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('retsHelpers')
 require '../config/promisify'
 memoize = require 'memoizee'
 through2 = require 'through2'
@@ -12,11 +12,11 @@ externalAccounts = require '../services/service.externalAccounts'
 
 _getRetsClientInternal = (loginUrl, username, password, static_ip, dummyCounter) ->
   Promise.try () ->
-    new rets.Client
-      loginUrl: loginUrl
-      username: username
-      password: password
-      proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)
+    new rets.Client {
+      loginUrl
+      username
+      password
+      proxyUrl: (if static_ip then process.env.PROXIMO_URL else null)}
   .catch isUnhandled, (error) ->
     _getRetsClientInternal.delete(loginUrl, username, password, static_ip)
     throw new PartiallyHandledError(error, 'RETS client could not be created')
@@ -139,7 +139,7 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
           limit: limit
           count: 0
         total = 0
-        subcount = 0
+
         columns = null
         delimiter = null
         done = false
@@ -222,9 +222,21 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
       throw new PartiallyHandledError(error, 'failed to query RETS system')
 
 
-module.exports =
-  getDatabaseList: getDatabaseList
-  getTableList: getTableList
-  getColumnList: getColumnList
-  getLookupTypes: getLookupTypes
-  getDataStream: getDataStream
+getPhotosObject = ({serverInfo, databaseName, photoIds, objectsOpts, photoType}) ->
+  objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
+
+  externalAccounts.getAccountInfo(serverInfo.id)
+  .then (creds) ->
+    _getRetsClient creds.url, creds.username, creds.password, serverInfo.static_ip, (retsClient) ->
+      logger.debug 'getPhotosObject logged in'
+      retsClient.objects.stream.getObjects(databaseName, photoType || 'Photo', photoIds, objectsOpts)
+
+
+module.exports = {
+  getDatabaseList
+  getTableList
+  getColumnList
+  getLookupTypes
+  getDataStream
+  getPhotosObject
+}

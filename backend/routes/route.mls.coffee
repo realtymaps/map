@@ -19,6 +19,48 @@ lookupMlsTransforms =
     mls: validators.string(minLength:2)
     id: validators.integer()
 
+_handleRetsObject = (res, next, object) ->
+  logger.debug object.headerInfo, true
+  res.type object.headerInfo.contentType
+
+  everSentData = false
+
+  object.objectStream.on 'data', (event) ->
+    if !event.error
+      everSentData = true
+      event.dataStream.pipe(res)
+
+  object.objectStream.on 'end', () ->
+    if !everSentData
+      next new ExpressResponse 'No object events', 404
+
+_getPhoto = ({req, res, next, photoType}) ->
+  validateAndTransformRequest req,
+    params: validators.object subValidateSeparate:
+      photoIds: validators.string(minLength:2)
+      mlsId: validators.string(minLength:2)
+      databaseId: validators.string(minLength:2)
+    query: validators.object isEmptyProtect: true
+    body: validators.object isEmptyProtect: true
+  .then (validReq) ->
+    {photoIds, mlsId, databaseId} = validReq.params
+    mlsConfigService.getById(mlsId)
+    .then ([mlsConfig]) ->
+      if !mlsConfig
+        next new ExpressResponse
+          alert:
+            msg: "Config not found for MLS #{mlsId}, try adding it first"
+          404
+      else
+        retsHelpers.getPhotosObject
+          serverInfo:mlsConfig
+          databaseName:databaseId
+          photoIds: photoIds
+          photoType: photoType
+        .then _handleRetsObject.bind(null, res, next)
+        .catch (error) ->
+          next new ExpressResponse error, 500
+
 module.exports =
   root:
     method: 'post'
@@ -69,6 +111,16 @@ module.exports =
           retsHelpers.getTableList mlsConfig, req.params.databaseId
           .then (list) ->
             next new ExpressResponse(list)
+
+  getPhotos:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) -> _getPhoto({req, res, next})
+
+  getLargePhotos:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) -> _getPhoto({req, res, next, photoType: 'LargePhoto'})
 
   getColumnList:
     method: 'get'
