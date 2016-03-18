@@ -1,7 +1,7 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
-mod = require '../module.coffee'
+app = require '../app.coffee'
 
-mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsProfilesService, rmapsUrlHelpersService) ->
+app.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
@@ -23,14 +23,6 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       # user is signed in but not authorized for desired state
       # $log.debug 'redirected to accessDenied'
       return routes.accessDenied
-
-    if toState?.profileRequired and !rmapsProfilesService.currentProfile?
-      # Determine if this route can load its own profile based on a state params
-      if _.isString(toState.profileRequired) and toParams[toState.profileRequired]?
-        return
-
-      # $log.debug 'redirected to profiles'
-      return routes.profiles
 
   return authorize: ({event, toState, toParams}) ->
     if !toState?.permissionsRequired && !toState?.loginRequired
@@ -55,7 +47,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
           # authentication and permissions are ok, return to your regularly scheduled program
           redirect {state: toState, params: toParams}
 
-mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
+app.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
   $log = $log.spawn('map:router')
   $log.debug "attaching $stateChangeStart event"
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
