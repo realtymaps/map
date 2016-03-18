@@ -17,7 +17,7 @@ app.provider 'rmapsPageService', () ->
   #
   #  Get an instance of rmapsPageService
   #
-  $get: ($rootScope, $window, $state, $log) ->
+  $get: ($rootScope, $window, $state, $log, rmapsProfilesService) ->
     $log = $log.spawn 'map:rmapsPageService'
 
     class RmapsPageService
@@ -73,7 +73,10 @@ app.provider 'rmapsPageService', () ->
         if $window.history.length > @historyLength
           $window.history.back()
         else
-          $state.go 'map', {}, {reload: true}
+          @goToMap()
+
+      goToMap: () ->
+        $state.go 'map', { project_id: rmapsProfilesService.selectedProfile?.project_id }
 
       #
       # Accessors
