@@ -19,7 +19,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   rmapsParcelEnums, rmapsPropertiesService, $log, rmapsSearchboxService) ->
 
   $log = $log.spawn("map:controller")
-  $log.debug "!!!! Create Maps Controller !!!!"
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -58,23 +57,23 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
       $location.search 'property_id', selectedResultId
 
-#      rmapsPropertiesService.getPropertyDetail(
-#        map.scope.refreshState(map_results: selectedResultId: selectedResultId),
-#        rm_property_id: selectedResultId, 'all'
-#      ).then (result) ->
-#        return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
-#        $timeout () ->
-#          map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
-#        , 50
-#        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-#        resultCenter.zoom = 18
-#        map.scope.map.center = resultCenter
-#      .catch () ->
-#        $location.search 'property_id', undefined
-#        newState = map.scope.refreshState(map_results: selectedResultId: undefined)
-#        rmapsPropertiesService.updateMapState newState
-#    else
-#      $location.search 'property_id', undefined
+      rmapsPropertiesService.getPropertyDetail(
+        map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+        rm_property_id: selectedResultId, 'all'
+      ).then (result) ->
+        return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
+        $timeout () ->
+          map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
+        , 50
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        resultCenter.zoom = 18
+        map.scope.map.center = resultCenter
+      .catch () ->
+        $location.search 'property_id', undefined
+        newState = map.scope.refreshState(map_results: selectedResultId: undefined)
+        rmapsPropertiesService.updateMapState newState
+    else
+      $location.search 'property_id', undefined
 
   $scope.loadProject = (project) ->
     $log.debug 'loadProject()', project, $scope.selectedProject
@@ -86,8 +85,6 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     rmapsProfilesService.setCurrentProfile project
     .then () ->
-      $log.debug "!!! PROFILE PROJECT CHANGED"
-
       if !$scope.map?
         map = new rmapsMapFactory($scope)
 

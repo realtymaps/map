@@ -58,7 +58,6 @@ app.service 'rmapsProfilesService', (
 
     # If switching projects, ensure the old one is up-to-date
     if @currentProfile
-      $log.debug "!!!! Profile change... save current before switching !!!!!"
       @currentProfile.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
       @currentProfile.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
       @currentProfile.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
