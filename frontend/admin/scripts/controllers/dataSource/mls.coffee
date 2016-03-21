@@ -1,6 +1,7 @@
+###globals angular###
 _ = require 'lodash'
 app = require '../../app.coffee'
-mlsConfigService = require '../../services/mlsConfig.coffee'
+
 adminRoutes = require '../../../../../common/config/routes.admin.coffee'
 modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
@@ -101,8 +102,7 @@ app.controller 'rmapsMlsCtrl',
     # when getting new mlsData, update the dropdowns as needed
     $scope.updateObjectOptions = (obj) ->
       $scope.loading = true
-      deferred = $q.defer()
-      promises = []
+
       getDbOptions()
       .then (dbData) ->
         getTableOptions()
@@ -137,7 +137,7 @@ app.controller 'rmapsMlsCtrl',
           $timeout () ->
             restoreInitDbValueHack()
           data
-        .catch (err) ->
+        .catch () ->
           $scope.dbOptions = []
           $scope.tableOptions = []
           $scope.columnOptions = []
@@ -165,7 +165,7 @@ app.controller 'rmapsMlsCtrl',
           for datum in data
             $scope.fieldNameMap.tableNames[datum.ClassName] = datum.VisibleName
           data
-        .catch (err) ->
+        .catch () ->
           $scope.tableOptions = []
           $scope.columnOptions = []
           $scope.formItems[2].disabled = true
@@ -192,7 +192,7 @@ app.controller 'rmapsMlsCtrl',
           for datum in data
             $scope.fieldNameMap.columnNames[datum.SystemName] = datum.LongName
           data
-        .catch (err) ->
+        .catch () ->
           $scope.columnOptions = []
           $q.reject(new Error('Error retrieving columns from MLS.'))
       else
@@ -205,7 +205,7 @@ app.controller 'rmapsMlsCtrl',
       rmapsMlsService.postServerData($scope.mlsData.current.id, { url: $scope.mlsData.current.url, username: $scope.mlsData.current.username })
       .then (res) ->
         $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "#{$scope.mlsData.current.id} server data saved.", type: 'rm-success' }
-      .catch (err) ->
+      .catch () ->
         $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: 'Error in saving server data.' }
       .finally () ->
         $scope.loading = false
@@ -215,7 +215,7 @@ app.controller 'rmapsMlsCtrl',
       rmapsMlsService.postServerPassword($scope.mlsData.current.id, { password: $scope.mlsData.current.password })
       .then (res) ->
         $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: "#{$scope.mlsData.current.id} server password saved.", type: 'rm-success' }
-      .catch (err) ->
+      .catch () ->
         $rootScope.$emit rmapsEventConstants.alert.spawn, { msg: 'Error in saving server password.' }
       .finally () ->
         $scope.allowPasswordReset = false
