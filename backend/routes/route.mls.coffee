@@ -186,7 +186,7 @@ module.exports =
           .then (csvPayload) ->
             resObj = new ExpressResponse(csvPayload)
             resObj.format = 'csv'
-            resObj.filename = 'mlsdata.csv'
+            resObj.filename = req.params.mlsId.toLowerCase() + '_mlsdata.csv'
             next(resObj)
 
   getLookupTypes:

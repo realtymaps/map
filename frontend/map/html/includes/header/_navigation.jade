@@ -5,7 +5,7 @@ nav.navigation.pull-left(role="navigation")
     span(ng-click="toggleMainNav()") toggle menu
   ul(ng-class="{'nav':!toggleMainOn,'nav on':toggleMainOn}")
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('map') }")
-      a(ui-sref="map")
+      a(ng-click="page.goToMap()")
         span map
     li(ng-cloak ng-show="principal.isAuthenticated()" ng-class="{ 'active': $state.is('mail') }")
       a(ui-sref="mail")

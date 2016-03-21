@@ -1,7 +1,7 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
-mod = require '../module.coffee'
+app = require '../app.coffee'
 
-mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
+app.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
   $log = $log.spawn('map:rmapsAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
@@ -13,7 +13,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
     $timeout ->
       $state.go state, params, options
 
-  doPermsCheck = (toState) ->
+  doPermsCheck = (toState, toParams) ->
     if not rmapsPrincipalService.isAuthenticated()
       # user is not authenticated, but needs to be.
       # $log.debug 'redirected to login'
@@ -24,10 +24,6 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       # $log.debug 'redirected to accessDenied'
       return routes.accessDenied
 
-    if toState?.profileRequired and !rmapsPrincipalService.isCurrentProfileResolved()
-      # $log.debug 'redirected to profiles'
-      return routes.profiles
-
   return authorize: ({event, toState, toParams}) ->
     if !toState?.permissionsRequired && !toState?.loginRequired
       # anyone can go to this state
@@ -35,7 +31,7 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
 
     # if we can, do check now (synchronously)
     if rmapsPrincipalService.isIdentityResolved()
-      redirectState = doPermsCheck(toState)
+      redirectState = doPermsCheck(toState, toParams)
       if redirectState
         redirect {state: redirectState, event}
 
@@ -44,14 +40,14 @@ mod.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
       redirect {state: routes.authenticating, event, options: notify: false}
 
       rmapsPrincipalService.getIdentity().then () ->
-        redirectState = doPermsCheck(toState)
+        redirectState = doPermsCheck(toState, toParams)
         if redirectState
           redirect {state: redirectState}
         else
           # authentication and permissions are ok, return to your regularly scheduled program
           redirect {state: toState, params: toParams}
 
-mod.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
+app.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
   $log = $log.spawn('map:router')
   $log.debug "attaching $stateChangeStart event"
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->

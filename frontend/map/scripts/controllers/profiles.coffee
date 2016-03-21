@@ -17,7 +17,7 @@ app.controller 'rmapsProfilesCtrl', ($scope, $rootScope, $state, rmapsPrincipalS
         $event.stopPropagation()
         #https://github.com/angular/angular.js/pull/10288
         return if profile.showProfileNameInput#needed for spaces in input name
-        rmapsProfilesService.setCurrent undefined, profile
+        rmapsProfilesService.setCurrentProfile profile
         .then ->
           $state.go('map', project_id: profile.project_id)
 
