@@ -35,7 +35,7 @@ class MailService extends ServiceCrud
 
   # any details for a mail review shall be delivered upon this service call
   getReviewDetails: (user_id, campaign_id) ->
-    details = {}
+
 
     # flattening a variety of review details & statistics into a single row response
     tables.mail.letters()
@@ -70,11 +70,11 @@ class MailService extends ServiceCrud
 
       query.then (response) ->
         # 'sent' and 'total' statistics
-        details.sent = letterResults.sent
-        details.total = letterResults.count
-        details.pdf = response.pdf
-        details.price = response.price
-        console.log "details:\n#{JSON.stringify(details,null,2)}\n\n"
+        details =
+          sent: letterResults.sent
+          total: letterResults.count
+          pdf: response.pdf
+          price: response.price
         details
 
 
