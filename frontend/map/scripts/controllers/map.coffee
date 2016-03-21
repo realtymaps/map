@@ -32,6 +32,9 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $scope.loadIdentity identity
 
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    $scope.loadIdentity identity
+
   getProjects = (identity) ->
     $scope.projects = _.values identity.profiles
     $scope.totalProjects = $scope.projects.length
@@ -40,95 +43,58 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
       project.totalFavorites = (_.keys project.favorites)?.length
 
   $scope.loadIdentity = (identity, project_id) ->
-    if identity?.currentProfileId? and project_id?
+    $log.debug "loadIdentity"
+    if identity?.currentProfileId? or project_id?
       getProjects identity
       projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
       $scope.loadProject projectToLoad
 
+  $scope.loadProperty = (project) ->
+    selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
+
+    if selectedResultId?.match(/\w+_\w*_\w+/) and map?
+      $log.debug 'attempting to reinstate selectedResult', selectedResultId
+
+      $location.search 'property_id', selectedResultId
+
+      rmapsPropertiesService.getPropertyDetail(
+        map.scope.refreshState(map_results: selectedResultId: selectedResultId),
+        rm_property_id: selectedResultId, 'all'
+      ).then (result) ->
+        return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
+        $timeout () ->
+          map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
+        , 50
+        resultCenter = new Point(result.coordinates[1],result.coordinates[0])
+        resultCenter.zoom = 18
+        map.scope.map.center = resultCenter
+      .catch () ->
+        $location.search 'property_id', undefined
+        newState = map.scope.refreshState(map_results: selectedResultId: undefined)
+        rmapsPropertiesService.updateMapState newState
+    else
+      $location.search 'property_id', undefined
+
   $scope.loadProject = (project) ->
+    $log.debug 'loadProject()', project, $scope.selectedProject
     if project == $scope.selectedProject
       return
 
-    # If switching projects, ensure the old one is up-to-date
-    if $scope.selectedProject
-      $scope.selectedProject.filters = _.omit $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]?
-      $scope.selectedProject.filters.status = _.keys _.pick $rootScope.selectedFilters, (status, key) -> rmapsParcelEnums.status[key]? and status
-      $scope.selectedProject.map_position = center: NgLeafletCenter(_.pick $scope.map.center, ['lat', 'lng', 'zoom'])
-      $scope.selectedProject.properties_selected = _.mapValues rmapsPropertiesService.getSavedProperties(), 'savedDetails'
+    $scope.selectedProject = project
+    $location.search 'project_id', project.project_id
 
-    rmapsProfilesService.setCurrent $scope.selectedProject, project
+    rmapsProfilesService.setCurrentProfile project
     .then () ->
-      $scope.selectedProject = project
-
-      $location.search 'project_id', project.project_id
-
-      $rootScope.selectedFilters = {}
-
-      map_position = project.map_position
-      #fix messed center
-      if !map_position?.center?.lng or !map_position?.center?.lat
-        map_position =
-          center:
-            lat: 26.129241
-            lng: -81.782227
-            zoom: 15
-
-      map_position =
-        center: NgLeafletCenter map_position.center
-
-      if project.filters
-        statusList = project.filters.status || []
-        for key,status of rmapsParcelEnums.status
-          project.filters[key] = (statusList.indexOf(status) > -1) or (statusList.indexOf(key) > -1)
-        #TODO: this is a really ugly hack to workaround our poor state design in our app
-        #filters and mapState need to be combined, also both should be moved to rootScope
-        #the omits here are to keep from saving off duplicate data where project.filters is from the backend
-        _.extend($rootScope.selectedFilters, _.omit(project.filters, ['status', 'current_project_id']))
-      if $scope.map?
-        if map_position?.center?
-          $scope.map.center = NgLeafletCenter(map_position.center or rmapsMainOptions.map.options.json.center)
-        if map_position?.zoom?
-          $scope.map.center.zoom = Number map_position.zoom
-        $scope.rmapsMapTogglesFactory = new rmapsMapTogglesFactory(project.map_toggles)
-      else
-        if map_position?
-          if map_position.center? and
-          map_position.center.latitude? and
-          map_position.center.latitude != 'NaN' and
-          map_position.center.longitude? and
-          map_position.center.longitude != 'NaN'
-            rmapsMainOptions.map.options.json.center = NgLeafletCenter map_position.center
-          if map_position.zoom?
-            rmapsMainOptions.map.options.json.center.zoom = +map_position.zoom
-
-        rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
+      if !$scope.map?
         map = new rmapsMapFactory($scope)
 
-      selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
+      $scope.loadProperty(project)
 
-      if selectedResultId?.match(/\w+_\w*_\w+/) and map?
-        $log.debug 'attempting to reinstate selectedResult', selectedResultId
+  #
+  # Load data when the controller initially loads
+  #
 
-        $location.search 'property_id', selectedResultId
-
-        rmapsPropertiesService.getPropertyDetail(
-          map.scope.refreshState(map_results: selectedResultId: selectedResultId),
-          rm_property_id: selectedResultId, 'all'
-        ).then (result) ->
-          return if _.isString result #not sure how this was happening but if we get it bail (should be an object)
-          $timeout () ->
-            map.scope.selectedResult = _.extend {}, map.scope.selectedResult, result
-          , 50
-          resultCenter = new Point(result.coordinates[1],result.coordinates[0])
-          resultCenter.zoom = 18
-          map.scope.map.center = resultCenter
-        .catch () ->
-          $location.search 'property_id', undefined
-          newState = map.scope.refreshState(map_results: selectedResultId: undefined)
-          rmapsPropertiesService.updateMapState newState
-      else
-        $location.search 'property_id', undefined
-
+  $log.debug "Get principal identity"
   $rootScope.principal.getIdentity()
   .then (identity) ->
     $scope.loadIdentity identity, Number($state.params.project_id)

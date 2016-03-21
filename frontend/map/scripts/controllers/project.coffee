@@ -5,10 +5,31 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 module.exports = app
 
 app.controller 'rmapsProjectCtrl',
-($rootScope, $scope, $http, $log, $state, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsClientsFactory, rmapsResultsFormatterService, rmapsPropertyFormatterService, rmapsPropertiesService, rmapsPageService, rmapsEventConstants) ->
+(
+  $http,
+  $log,
+  $modal,
+  $rootScope,
+  $scope,
+  $state,
+  rmapsClientsFactory,
+  rmapsEventConstants
+  rmapsPageService,
+  rmapsPrincipalService,
+  rmapsProfilesService,
+  rmapsProjectsService,
+  rmapsPropertiesService,
+  rmapsPropertyFormatterService,
+  rmapsResultsFormatterService,
+
+  currentProfile
+) ->
   $scope.activeView = 'project'
   $log = $log.spawn("map:projects")
-  $log.debug 'projectCtrl'
+  $log.debug 'projectCtrl', currentProfile
+
+  # Current project is injected by route resolves
+  project = currentProfile
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
@@ -81,23 +102,21 @@ app.controller 'rmapsProjectCtrl',
         template: require('../../html/views/templates/modals/propertyDetail.jade')()
 
   $scope.loadProject = () ->
-    rmapsProjectsService.getProject $state.params.id
-    .then (project) ->
-      # It is important to load property details before properties are added to scope to prevent template breaking
-      toLoad = _.merge {}, project.properties_selected, project.favorites
-      if not _.isEmpty toLoad
-        $scope.loadProperties toLoad
-        .then (properties) ->
-          project.properties_selected = _.pick properties, _.keys(project.properties_selected)
-          project.favorites = _.pick properties, _.keys(project.favorites)
+    # It is important to load property details before properties are added to scope to prevent template breaking
+    toLoad = _.merge {}, project.properties_selected, project.favorites
+    if not _.isEmpty toLoad
+      $scope.loadProperties toLoad
+      .then (properties) ->
+        project.properties_selected = _.pick properties, _.keys(project.properties_selected)
+        project.favorites = _.pick properties, _.keys(project.favorites)
 
-      clientsService = new rmapsClientsFactory project.id unless clientsService
-      $scope.loadClients()
+    clientsService = new rmapsClientsFactory project.id unless clientsService
+    $scope.loadClients()
 
-      $scope.project = project
+    $scope.project = project
 
-      # Set the project name as the page title
-      rmapsPageService.setDynamicTitle(project.name)
+    # Set the project name as the page title
+    rmapsPageService.setDynamicTitle(project.name)
 
   $scope.loadProperties = (properties) ->
     rmapsPropertiesService.getProperties _.keys(properties), 'filter'
