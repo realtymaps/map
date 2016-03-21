@@ -1,5 +1,3 @@
-util = require 'util'
-
 auth = require '../utils/util.auth'
 RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
