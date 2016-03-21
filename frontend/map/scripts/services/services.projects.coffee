@@ -55,8 +55,12 @@ app.service 'rmapsProjectsService', ($http, $log, $rootScope, rmapsPrincipalServ
         rmapsPrincipalService.setIdentity response.data.identity
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
 
+        return response.data.identity
+
     delete: (project) ->
       $http.delete backendRoutes.projectSession.root + "/#{project.id}"
       .then (response) ->
         rmapsPrincipalService.setIdentity response.data.identity
         $rootScope.$emit rmapsEventConstants.principal.profile.addremove, response.data.identity
+        
+        return response.data.identity

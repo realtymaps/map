@@ -52,6 +52,13 @@ app.service 'rmapsProfilesService', (
       profile = (_.find(identity.profiles, project_id: project_id))
       return @setCurrentProfile profile
 
+  setCurrentProfileByProfileId: (profile_id) ->
+    profile_id = Number(project_id) if _.isString profile_id
+    rmapsPrincipalService.getIdentity()
+    .then (identity) =>
+      profile = (_.find(identity.profiles, id: profile_id))
+      return @setCurrentProfile profile
+
   setCurrentProfile: (project) ->
     if project == @currentProfile
       return $q.resolve project
