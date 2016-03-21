@@ -235,11 +235,14 @@ buildLetter = (campaign, recipient) ->
         sender_zip: address_from.address_zip
 
 getPriceQuote = (userId, campaignId) ->
+  #console.log "getPriceQuote(), userId: #{userId}, campaignId: #{campaignId}"
   tables.mail.campaign()
     .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
     .where(id: campaignId, auth_user_id: userId)
 
   .then ([campaign]) ->
+
+    #console.log "getPriceQuote(), campaign:\n#{JSON.stringify(campaign,null,2)}"
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
 
     letter = buildLetter campaign, campaign.recipients[0]

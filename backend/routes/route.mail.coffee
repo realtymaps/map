@@ -1,3 +1,5 @@
+util = require 'util'
+
 auth = require '../utils/util.auth'
 RouteCrud = require '../utils/crud/util.ezcrud.route.helpers'
 routeHelpers = require '../utils/util.route.helpers'
@@ -11,7 +13,8 @@ reqTransforms =
 
 class MailCampaignRoute extends RouteCrud
   getReviewDetails: (req, res, next) =>
-    @custom @svc.getReviewDetails(req.params.id, req.body), res
+    #console.log "getReviewDetails() route, req.params: #{util.inspect(req.user,false,0)}"
+    @custom @svc.getReviewDetails(req.user.id, req.params.id, req.body), res
 
   getProperties: (req, res, next) =>
     @custom @svc.getProperties(req.params.project_id, req.query.status, req.user.id), res

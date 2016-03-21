@@ -57,6 +57,7 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
       $http.get url
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
+        console.log "getReviewDetails data:\n#{JSON.stringify(data,null,2)}"
         if 'pdf' of data
           data.pdf = $sce.trustAsResourceUrl(data.pdf)
         data
