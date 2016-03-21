@@ -13,7 +13,6 @@ reqTransforms =
 
 class MailCampaignRoute extends RouteCrud
   getReviewDetails: (req, res, next) =>
-    #console.log "getReviewDetails() route, req.params: #{util.inspect(req.user,false,0)}"
     @custom @svc.getReviewDetails(req.user.id, req.params.id, req.body), res
 
   getProperties: (req, res, next) =>
