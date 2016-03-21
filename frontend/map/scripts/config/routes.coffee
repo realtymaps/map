@@ -14,6 +14,8 @@ stateDefaults =
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
 rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
 
+#  $stickyStateProvider.enableDebug(true)
+
   baseState = (name, overrides = {}) ->
     state =
       name:         name
@@ -90,6 +92,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildMapState
     sticky: true
     reloadOnSearch: false
+    profileRequired: 'project_id'
     params:
       project_id:
         value: null
@@ -132,13 +135,21 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'history'
   buildState 'properties'
   buildModalState 'property', page: { title: 'Property Detail' }
-  buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
-  buildState 'project', page: { title: 'Project', dynamicTitle: true }, mobile: { modal: true }
-  buildChildState 'projectClients', 'project', page: { title: 'My Clients' }, mobile: { modal: true }
-  buildChildState 'projectNotes', 'project', page: { title: 'Notes' }, mobile: { modal: true }
-  buildChildState 'projectFavorites', 'project', page: { title: 'Favorites' }, mobile: { modal: true }
-  buildChildState 'projectNeighbourhoods', 'project', page: { title: 'Neighborhoods' }, mobile: { modal: true }
-  buildChildState 'projectPins', 'project', page: { title: 'Pinned Properties' }, mobile: { modal: true }
+  buildState 'projects', profileRequired: false, page: { title: 'Projects' }, mobile: { modal: true }
+  buildState 'project',
+    profileRequired: 'id',
+    page: { title: 'Project', dynamicTitle: true },
+    mobile: { modal: true },
+    resolve:
+      currentProfile: ($stateParams, rmapsProjectsService, rmapsProfilesService) ->
+        return rmapsProjectsService.getProject $stateParams.id
+        .then (project) ->
+          return rmapsProfilesService.setCurrentProfileByProjectId $stateParams.id
+  buildChildState 'projectClients', 'project', profileRequired: 'id', page: { title: 'My Clients' }, mobile: { modal: true }
+  buildChildState 'projectNotes', 'project', profileRequired: 'id', page: { title: 'Notes' }, mobile: { modal: true }
+  buildChildState 'projectFavorites', 'project', profileRequired: 'id', page: { title: 'Favorites' }, mobile: { modal: true }
+  buildChildState 'projectNeighbourhoods', 'project', profileRequired: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }
+  buildChildState 'projectPins', 'project', profileRequired: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
@@ -161,3 +172,11 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'pageNotFound', controller: null, sticky: false, loginRequired: false
 
   $urlRouterProvider.when '', frontendRoutes.index
+
+#
+# Log errors in Resolves
+#
+app.run ($rootScope, $log) ->
+  $log = $log.spawn "ui-router"
+  $rootScope.$on '$stateChangeError', (event, toState, toParams, fromState, fromParams, error) ->
+    $log.error "State change error: ", error
