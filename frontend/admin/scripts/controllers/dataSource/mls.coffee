@@ -135,8 +135,8 @@ app.controller 'rmapsMlsCtrl',
 
     getObjectOptions = () ->
       rmapsMlsService.getObjectList($scope.mlsData.current.id)
-      .then ({data}) ->
-        $scope.fieldNameMap.objects = data
+      .then (data) ->
+        $scope.fieldNameMap.objects = data.map (v) -> v.VisibleName
 
     # pull db options and enable next step as appropriate
     getDbOptions = () ->
