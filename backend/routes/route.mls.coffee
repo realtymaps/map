@@ -7,8 +7,8 @@ mlsService = require '../services/service.mls'
 auth = require '../utils/util.auth'
 Promise = require 'bluebird'
 through2 = require 'through2'
-
 {handleRoute} =  require '../utils/util.route.helpers'
+{getQueryPhoto, getParamPhoto} = require '../utils/util.route.rets.helpers'
 
 lookupMlsTransforms =
   params: validators.object isEmptyProtect: true
@@ -18,48 +18,6 @@ lookupMlsTransforms =
     full_name: validators.string(minLength:2)
     mls: validators.string(minLength:2)
     id: validators.integer()
-
-_handleRetsObject = (res, next, object) ->
-  logger.debug object.headerInfo, true
-  res.type object.headerInfo.contentType
-
-  everSentData = false
-
-  object.objectStream.on 'data', (event) ->
-    if !event.error
-      everSentData = true
-      event.dataStream.pipe(res)
-
-  object.objectStream.on 'end', () ->
-    if !everSentData
-      next new ExpressResponse 'No object events', 404
-
-_getPhoto = ({req, res, next, photoType}) ->
-  validateAndTransformRequest req,
-    params: validators.object subValidateSeparate:
-      photoIds: validators.string(minLength:2)
-      mlsId: validators.string(minLength:2)
-      databaseId: validators.string(minLength:2)
-    query: validators.object isEmptyProtect: true
-    body: validators.object isEmptyProtect: true
-  .then (validReq) ->
-    {photoIds, mlsId, databaseId} = validReq.params
-    mlsConfigService.getById(mlsId)
-    .then ([mlsConfig]) ->
-      if !mlsConfig
-        next new ExpressResponse
-          alert:
-            msg: "Config not found for MLS #{mlsId}, try adding it first"
-          404
-      else
-        retsHelpers.getPhotosObject
-          serverInfo:mlsConfig
-          databaseName:databaseId
-          photoIds: photoIds
-          photoType: photoType
-        .then _handleRetsObject.bind(null, res, next)
-        .catch (error) ->
-          next new ExpressResponse error, 500
 
 module.exports =
   root:
@@ -96,6 +54,22 @@ module.exports =
           .then (list) ->
             next new ExpressResponse(list)
 
+  getObjectList:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) ->
+      mlsConfigService.getById(req.params.mlsId)
+      .then ([mlsConfig]) ->
+        if !mlsConfig
+          next new ExpressResponse
+            alert:
+              msg: "Config not found for MLS #{req.params.mlsId}, try adding it first"
+            404
+        else
+          retsHelpers.getObjectList mlsConfig
+          .then (list) ->
+            next new ExpressResponse(list)
+
   getTableList:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
@@ -115,12 +89,24 @@ module.exports =
   getPhotos:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) -> _getPhoto({req, res, next})
+    handle: (req, res, next) ->
+      getQueryPhoto({req, res, next})
 
   getLargePhotos:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) -> _getPhoto({req, res, next, photoType: 'LargePhoto'})
+    handle: (req, res, next) -> getQueryPhoto({req, res, next, photoType: 'LargePhoto'})
+
+  getParamsPhotos:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) ->
+      getParamPhoto({req, res, next})
+
+  getParamsLargePhotos:
+    method: 'get'
+    middleware: auth.requireLogin(redirectOnFail: true)
+    handle: (req, res, next) -> getParamPhoto({req, res, next, photoType: 'LargePhoto'})
 
   getColumnList:
     method: 'get'
@@ -157,6 +143,7 @@ module.exports =
             retsHelpers.getDataStream(mlsConfig, result.limit)
           .then (retsStream) ->
             columns = null
+            # consider just streaming the file as building up data takes up a considerable amount of memory
             data = []
             new Promise (resolve, reject) ->
               delimiter = null
