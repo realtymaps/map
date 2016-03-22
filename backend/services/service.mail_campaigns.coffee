@@ -55,7 +55,7 @@ class MailService extends ServiceCrud
       query = null
 
       # if it looks like lob has sent some letters...
-      if letterResults?.lob_response? and letterResults?.stripe_charge
+      if letterResults?.lob_response? and letterResults?.stripe_charge?
         query = lobService.getDetails letterResults.lob_response.id
         .then ({url}) ->
           pdf: url
