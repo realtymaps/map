@@ -3,7 +3,7 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService, rmapsMailCampaignService) ->
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService, rmapsMailCampaignService, rmapsMainOptions) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -32,11 +32,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
 
   $scope.priceQuote = null
   $scope.review = null
-
-  $scope.statusNames =
-    'ready': 'draft'
-    'sending': 'pending'
-    'paid': 'sent'
+  $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   if !$scope.wizard.mail.isSubmitted()
     rmapsLobService.getQuote($scope.wizard.mail.campaign.id)
