@@ -10,6 +10,9 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipa
 
   $scope.searchName = ''
 
+  $scope.sortField = 'rm_inserted_time'
+  $scope.sortReverse = true
+
   $scope.loadMailCampaigns = () ->
     $log.debug 'getting campaign list'
     query = {

@@ -15,23 +15,43 @@
             thead
               tr
                 th
-                  span Title
+                  span(ng-click="sortField = 'name'; sortReverse = !sortReverse") Title
+                  span.fa.fa-caret-down(ng-show="sortField == 'name' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'name' && sortReverse")
                 th
-                  span Project
+                  span(ng-click="sortField = 'project_name'; sortReverse = !sortReverse") Project
+                  span.fa.fa-caret-down(ng-show="sortField == 'project_name' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'project_name' && sortReverse")
+
                 th.col-md-1
-                  span Recipients
+                  span(ng-click="sortField = 'recipients'; sortReverse = !sortReverse") Recipients
+                  span.fa.fa-caret-down(ng-show="sortField == 'recipients' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'recipients' && sortReverse")
+
                 th
-                  span Type
+                  span(ng-click="sortField = 'template_type'; sortReverse = !sortReverse") Type
+                  span.fa.fa-caret-down(ng-show="sortField == 'template_type' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'template_type' && sortReverse")
+
                 th.col-md-1
-                  span Status
+                  span(ng-click="sortField = 'status'; sortReverse = !sortReverse") Status
+                  span.fa.fa-caret-down(ng-show="sortField == 'status' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'status' && sortReverse")
+
                 th.col-md-1
-                  span Created
+                  span(ng-click="sortField = 'rm_inserted_time'; sortReverse = !sortReverse") Created
+                  span.fa.fa-caret-down(ng-show="sortField == 'rm_inserted_time' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'rm_inserted_time' && sortReverse")
+
                 th.col-md-1
-                  span Sent
+                  span(ng-click="sortField = 'stripe_charge'; sortReverse = !sortReverse") Sent
+                  span.fa.fa-caret-down(ng-show="sortField == 'stripe_charge' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'stripe_charge' && sortReverse")
+
                 th.col-md-1
 
             tbody
-              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName}" ui-sref="review({id:campaign.id})" ui-sref-opts="{reload: true}")
+              tr(ng-repeat="campaign in mailCampaigns | filter:{name:searchName} | orderBy:sortField:sortReverse" ui-sref="review({id:campaign.id})" ui-sref-opts="{reload: true}")
                 td
                   h4 {{campaign.name}}
                 td
