@@ -7,7 +7,11 @@ modalTemplate = require('../../../html/views/templates/newMlsConfig.jade')()
 changePasswordTemplate = require('../../../html/views/templates/changePassword.jade')()
 
 app.controller 'rmapsMlsCtrl',
-  ($rootScope, $scope, $location, $state, $timeout, rmapsMlsService, $modal, $q, rmapsEventConstants, rmapsAdminConstants, rmapsPrincipalService,
+  ($rootScope, $scope, $location, $state, $timeout, $modal, $q,
+  rmapsMlsService,
+  rmapsEventConstants,
+  rmapsAdminConstants,
+  rmapsPrincipalService,
   rmapsJobsService) ->
 
     # return new object with base defaults
@@ -56,6 +60,7 @@ app.controller 'rmapsMlsCtrl',
       dbNames: {}
       tableNames: {}
       columnNames: {}
+      objects: {}
 
     # simple tracking for listing_data dropdowns
     $scope.formItems = [
@@ -103,15 +108,20 @@ app.controller 'rmapsMlsCtrl',
     $scope.updateObjectOptions = (obj) ->
       $scope.loading = true
 
-      getDbOptions()
-      .then (dbData) ->
-        getTableOptions()
-        .then (tableData) ->
-          getColumnOptions()
-          .then (columnData) ->
-            rmapsJobsService.getTask($scope.mlsData.current.id)
-            .then (task) ->
-              $scope.mlsData.task.active = if task.length > 0 and task[0].active? then task[0].active else false
+      #NOTE: must be sequential to not have multiple logins for MRED?
+      _.reduce [
+          getDbOptions
+          getTableOptions
+          getColumnOptions
+          getObjectOptions
+      ], (res, promise) ->
+        if !res.then?
+          res = res()
+        res.then () -> promise()
+      .then () ->
+        rmapsJobsService.getTask($scope.mlsData.current.id)
+      .then (task) ->
+        $scope.mlsData.task.active = if task.length > 0 and task[0].active? then task[0].active else false
 
       .then (results) ->
         # populate undefined fields with the defaults
@@ -122,6 +132,11 @@ app.controller 'rmapsMlsCtrl',
         $q.reject(new Error(msg))
       .finally () ->
         $scope.loading = false
+
+    getObjectOptions = () ->
+      rmapsMlsService.getObjectList($scope.mlsData.current.id)
+      .then ({data}) ->
+        $scope.fieldNameMap.objects = data
 
     # pull db options and enable next step as appropriate
     getDbOptions = () ->

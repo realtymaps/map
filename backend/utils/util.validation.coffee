@@ -74,6 +74,10 @@ notRequired = (transform) ->
   transform.notRequired = true
   transform
 
+required = (transform) ->
+  transform: transform
+  required: true
+
 module.exports =
   validateAndTransform: validateAndTransform
   validateAndTransformRequest: validateAndTransformRequest
@@ -86,3 +90,4 @@ module.exports =
   falsyDefaultTransformsToNoop: falsyDefaultTransformsToNoop
   requireAllTransforms: requireAllTransforms
   notRequired: notRequired
+  required: required

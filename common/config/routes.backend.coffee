@@ -177,8 +177,11 @@ module.exports =
     getColumnList: "#{apiBaseMls}/:mlsId/databases/:databaseId/tables/:tableId/columns"
     getDataDump: "#{apiBaseMls}/:mlsId/data"
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
-    getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
-    getLargePhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/largePhotos/:photoIds"
+    getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
+    getLargePhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/largePhotos"
+    getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
+    getParamsLargePhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/largePhotos/:photoIds"
+    getObjectList: "#{apiBaseMls}/:mlsId/objects"
   data_source:
     apiBaseDataSource: apiBaseDataSource
     apiBaseDataSourceLookups: apiBaseDataSourceLookups
