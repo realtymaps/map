@@ -65,6 +65,18 @@ getDatabaseList = (serverInfo) ->
         _.map response.results[0].metadata, (r) ->
           _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
 
+getObjectList = (serverInfo) ->
+  externalAccounts.getAccountInfo(serverInfo.id)
+  .then (creds) ->
+    _getRetsClient creds.url, creds.username, creds.password, serverInfo.static_ip, (retsClient) ->
+      retsClient.metadata.getObject('0')
+      .catch (error) ->
+        throw new PartiallyHandledError(error, 'Failed to retrieve RETS objects')
+      .then (response) ->
+        _.map response.results[0].metadata, (r) ->
+          _.pick r, ['ResourceID', 'StandardName', 'VisibleName', 'ObjectVersion']
+
+
 getTableList = (serverInfo, databaseName) ->
   externalAccounts.getAccountInfo(serverInfo.id)
   .then (creds) ->
@@ -224,12 +236,15 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
 
 getPhotosObject = ({serverInfo, databaseName, photoIds, objectsOpts, photoType}) ->
   objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
+  photoType ?= 'Photo'
+
+  logger.debug "photoType: #{photoType}"
 
   externalAccounts.getAccountInfo(serverInfo.id)
   .then (creds) ->
     _getRetsClient creds.url, creds.username, creds.password, serverInfo.static_ip, (retsClient) ->
       logger.debug 'getPhotosObject logged in'
-      retsClient.objects.stream.getObjects(databaseName, photoType || 'Photo', photoIds, objectsOpts)
+      retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
 
 
 module.exports = {
@@ -239,4 +254,5 @@ module.exports = {
   getLookupTypes
   getDataStream
   getPhotosObject
+  getObjectList
 }

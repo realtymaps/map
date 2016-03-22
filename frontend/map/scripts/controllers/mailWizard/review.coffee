@@ -15,7 +15,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
       backdrop: 'static'
       windowClass: 'confirm-mail-modal'
       resolve:
-        price: $scope.priceQuote
+        price: $scope.review.price
         mail: $scope.wizard.mail
 
     modalInstance.result.then (result) ->
@@ -30,15 +30,9 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
       windowClass: 'address-list-modal'
       scope: $scope
 
-  $scope.priceQuote = null
   $scope.review = null
   $scope.statusNames = rmapsMainOptions.mail.statusNames
 
-  if !$scope.wizard.mail.isSubmitted()
-    rmapsLobService.getQuote($scope.wizard.mail.campaign.id)
-    .then (quote) ->
-      $scope.priceQuote = quote
-  else
-    rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
-    .then (review) ->
-      $scope.review = review
+  rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
+  .then (review) ->
+    $scope.review = review
