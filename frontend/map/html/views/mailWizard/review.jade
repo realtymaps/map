@@ -20,13 +20,20 @@
     .container
       .row
         .col-md-12
-          h1.pageTitle
-            span(style="text-transform: capitalize;") {{wizard.mail.getCategory()}}
-            |  Review
+          .row
+            .col-md-10
+              h1.pageTitle
+                span(style="text-transform: capitalize;") {{wizard.mail.getCategory()}}
+                |  Review
+            .col-md-2
+              button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()") View Letter Content
       .row.review-items
-        .pdf-review(ng-show="review.pdf != null")
-          embed(embed-src="{{review.pdf}}" src="")
-        div(ng-class="{'content-with-pdf-review': review.pdf != null}")
+        //- .pdf-review
+        //-   img.tmpl-image(ng-src="{{review.thumb}}" ng-click="reviewPreview()")
+        //- .pdf-review(ng-show="review.pdf != null")
+        //-   embed(embed-src="{{review.pdf}}" src="")
+        //- div(ng-class="{'content-with-pdf-review': review.pdf != null}")
+        div
           .col-md-12
             .row.separator
               .col-md-10

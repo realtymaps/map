@@ -1,9 +1,11 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
+previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService, rmapsMailCampaignService) ->
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService,
+rmapsMailCampaignService, rmapsMailTemplateTypeService) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -37,6 +39,20 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
     'sending': 'pending'
     'paid': 'sent'
 
+  $scope.reviewPreview = () ->
+    modalInstance = $modal.open
+      template: previewModalTemplate
+      controller: 'rmapsReviewPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () -> $scope.review
+          # content: rmapsMailTemplateTypeService.getMailContent(template.type)
+          # category: template.category
+          # title: template.name
+
   rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
   .then (review) ->
-    $scope.review = review
+    $scope.review = _.merge review, rmapsMailTemplateTypeService.getMeta()[$scope.wizard.mail.campaign.template_type]
+
