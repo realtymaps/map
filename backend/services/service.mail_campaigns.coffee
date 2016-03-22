@@ -34,19 +34,49 @@ class MailService extends ServiceCrud
     super(entity, query: query)
 
   # any details for a mail review shall be delivered upon this service call
-  getReviewDetails: (campaign_id) ->
+  getReviewDetails: (user_id, campaign_id) ->
+
+
+    # flattening a variety of review details & statistics into a single row response
     tables.mail.letters()
-    .select 'lob_response'
-    .where user_mail_campaign_id: campaign_id
-    .whereNotNull 'lob_response'
-    .limit 1
-    .then ([result]) ->
-      # null lob response indicates the tasks in queue have not completed sending any letters yet
-      if !result?.lob_response?
-        return pdf: null
-      lobService.getDetails result.lob_response.id
-      .then ({url}) ->
-        pdf: url
+    .select(
+      # sum of letters that have been sent
+      db.raw("SUM(CASE WHEN (status='sent') THEN 1 ELSE 0 END) as sent"),
+
+      # sample response from a letter to extract details, such as url
+      db.raw("(select lob_response from user_mail_letters where lob_response::text is not NULL and user_mail_campaign_id = #{campaign_id} limit 1)"),
+
+      # stripe_charge from campaign to extract details, such as amount charged
+      db.raw("(select stripe_charge from user_mail_campaigns where user_mail_campaigns.stripe_charge::text is not NULL and user_mail_campaigns.id = #{campaign_id} limit 1)")
+    )
+    .count '*'
+    .where {'user_mail_campaign_id': campaign_id}
+    .then ([letterResults]) ->      
+      query = null
+
+      # if it looks like lob has sent some letters...
+      if letterResults?.lob_response? and letterResults?.stripe_charge?
+        query = lobService.getDetails letterResults.lob_response.id
+        .then ({url}) ->
+          pdf: url
+          price: letterResults.stripe_charge.amount/100
+
+      # if lob has not sent any letters for this campaign...
+      else
+        query = lobService.getPriceQuote user_id, campaign_id
+        .then ({pdf,price}) ->
+          pdf: pdf
+          price: price
+
+      query.then (response) ->
+        # 'sent' and 'total' statistics
+        details =
+          sent: letterResults.sent
+          total: letterResults.count
+          pdf: response.pdf
+          price: response.price
+        details
+
 
   getProperties: (project_id, status, auth_user_id) ->
     if status == 'all' || !status
