@@ -48,35 +48,34 @@ class MailService extends ServiceCrud
       .then ({url}) ->
         pdf: url
 
-  getProperties: (project_id, status, auth_user_id) ->
-    if status == 'all' || !status
-      status = ['ready', 'sending', 'paid']
-    if !_.isArray status
-      status = [status]
-
-    tables.mail.campaign()
-    .select('recipients', 'id', 'template_type', 'stripe_charge', 'name')
+  getProperties: (project_id, auth_user_id) ->
+    query = tables.mail.campaign()
+    query = query.select([
+      "#{tables.mail.campaign.tableName}.id as campaign_id"
+      "#{tables.mail.campaign.tableName}.name as campaign_name"
+      "#{tables.mail.campaign.tableName}.template_type as template_type"
+      "#{tables.mail.letters.tableName}.id as letter_id"
+      "#{tables.mail.letters.tableName}.lob_response as lob_response"
+      "#{tables.mail.letters.tableName}.rm_property_id as rm_property_id"
+    ])
+    .join("#{tables.mail.letters.tableName}", () ->
+      this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
+    )
     .where
-      project_id: project_id
-      auth_user_id: auth_user_id
-    .whereIn 'status', status
-    .then (campaigns) ->
+      "#{tables.mail.campaign.tableName}.project_id": project_id
+      "#{tables.mail.campaign.tableName}.auth_user_id": auth_user_id
+    .whereNotNull "#{tables.mail.letters.tableName}.lob_response"
+
+    query
+    .then (letters) ->
 
       propertyIndex = {}
 
-      # Add campaign info to each address
-      _.each campaigns, (campaign) ->
-        c =
-          campaign_id: campaign.id
-          campaign_name: campaign.name
-          template_type: campaign.template_type
-
-        if campaign.stripe_charge?.created
-          c.submitted = moment(campaign.stripe_charge.created, 'X').format()
-
-        _.each campaign.recipients, (r) ->
-          propertyIndex[r.rm_property_id] ?= []
-          propertyIndex[r.rm_property_id].push _.assign r, c
+      _.each letters, (letter) ->
+        letter.lob = _.pick letter.lob_response, ['id', 'date_created', 'url']
+        delete letter.lob_response
+        propertyIndex[letter.rm_property_id] ?= []
+        propertyIndex[letter.rm_property_id].push letter
 
       propertySvc.getDetails rm_property_id: _.keys propertyIndex
       .then (details) ->
