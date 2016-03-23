@@ -48,9 +48,6 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService) ->
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () -> $scope.review
-          # content: rmapsMailTemplateTypeService.getMailContent(template.type)
-          # category: template.category
-          # title: template.name
 
   rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
   .then (review) ->

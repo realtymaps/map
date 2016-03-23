@@ -19,10 +19,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.sentFile = false
   $scope.uploadfile = null
 
-  console.log "categoryLists!!!!:\n#{JSON.stringify($scope.categoryLists,null,2)}"
-
-  console.log "mail:\n#{JSON.stringify($scope.wizard.mail,null,2)}"
-
   $scope.uploadFile = (file, errFiles) ->
     if $scope.oldTemplateType != "" and $scope.oldTemplateType != templateType
       confirm = confirmTemplateChange()
