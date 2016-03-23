@@ -30,6 +30,7 @@ class MailService extends ServiceCrud
     .join("#{tables.user.project.tableName}", () ->
       this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
     )
+    .orderBy 'rm_inserted_time', 'DESC'
 
     super(entity, query: query)
 
