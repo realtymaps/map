@@ -25,14 +25,16 @@ app.controller 'rmapsPropertyCtrl', ($scope, $stateParams, $log, $modal, rmapsPr
     control: {}
 
   $scope.previewLetter = (mail) ->
-    $log.debug mail
-    $scope.mail = mail
-    modalInstance = $modal.open
-      template: require('../../html/views/templates/modals/letterPreview.jade')()
-      windowClass: 'letter-preview-modal'
-      scope: $scope
-
-    $scope.close = modalInstance.dismiss
+    $modal.open
+      template: require('../../html/views/templates/modal-mailPreview.tpl.jade')()
+      controller: 'rmapsReviewPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          pdf: mail.lob.url
+          title: 'Mail Review'
 
   getPropertyDetail = (propertyId) ->
     $log.debug "Getting property detail for #{propertyId}"
