@@ -113,6 +113,12 @@
   @extends .font-regular
   @extends .table-view
 
+  .table .fa-caret-down, .table .fa-caret-up
+    margin-left 4px
+  
+  .table th
+    cursor pointer
+
   .inner
     overflow auto
 
@@ -345,7 +351,7 @@
           margin-top 30px
 
         .recipients
-          p
+          .recipient-link
             text-decoration underline
             cursor pointer
 

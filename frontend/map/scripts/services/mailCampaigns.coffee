@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPrincipalService, rmapsEventConstants) ->
+app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPrincipalService, rmapsProfilesService, rmapsEventConstants) ->
   $log = $log.spawn 'mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
@@ -25,7 +25,7 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
 
     getProjectMail: (force = false) ->
       if !getPromise || force
-        project_id = rmapsPrincipalService.getCurrentProjectId()
+        project_id = rmapsProfilesService.currentProfile?.project_id
         getPromise = $http.get("/mailProperties/#{project_id}", cache: false)
         .then ({data}) ->
           _mail = data
@@ -57,6 +57,7 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
       $http.get url
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
+        console.log "getReviewDetails data:\n#{JSON.stringify(data,null,2)}"
         if 'pdf' of data
           data.pdf = $sce.trustAsResourceUrl(data.pdf)
         data
