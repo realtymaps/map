@@ -53,6 +53,4 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
     if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
       err.data.alert.msg = 'Uploaded file length/width is incorrect size, and cannot be sent.  Please select/upload a file that has correct dimensions for its type: 4.25"x6.25" or 6.25"x11.25" for Postcards, or 8.5"x11" for Letters.'
     $scope.review = _.merge $scope.review, err
-
-
-
+    $scope.review.price = "N/A"

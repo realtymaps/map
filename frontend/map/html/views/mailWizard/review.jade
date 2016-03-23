@@ -86,4 +86,7 @@
                   tooltip-trigger="mousehover"
                   uib-tooltip="Click to submit this mailing!"
                   tooltip-enable="true"
-                  ng-click="sendMail()") Submit campaign for {{review.price | currency}}
+                  ng-disabled="review.data.alert.msg"
+                  ng-click="sendMail()") 
+                    span(ng-show="review.data.alert.msg") Issues Exist
+                    span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}
