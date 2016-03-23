@@ -52,7 +52,7 @@ class MailService extends ServiceCrud
     )
     .count '*'
     .where {'user_mail_campaign_id': campaign_id}
-    .then ([letterResults]) ->      
+    .then ([letterResults]) ->
       query = null
 
       # if it looks like lob has sent some letters...
