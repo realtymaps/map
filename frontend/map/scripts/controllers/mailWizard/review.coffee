@@ -33,7 +33,7 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
       windowClass: 'address-list-modal'
       scope: $scope
 
-  $scope.review = null
+  $scope.review = {}
   $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   $scope.reviewPreview = () ->
@@ -49,4 +49,10 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
   rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
   .then (review) ->
     $scope.review = _.merge review, rmapsMailTemplateTypeService.getMeta()[$scope.wizard.mail.campaign.template_type]
+  .catch (err) ->
+    if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
+      err.data.alert.msg = 'Uploaded file length/width is incorrect size, and cannot be sent.  Please select/upload a file that has correct dimensions for its type: 4.25"x6.25" or 6.25"x11.25" for Postcards, or 8.5"x11" for Letters.'
+    $scope.review = _.merge $scope.review, err
+
+
 

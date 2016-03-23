@@ -20,7 +20,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.uploadfile = null
 
   $scope.uploadFile = (file, errFiles) ->
-    if $scope.oldTemplateType != "" and $scope.oldTemplateType != templateType
+    if $scope.oldTemplateType != ""
       confirm = confirmTemplateChange()
     else
       confirm = $q.when(true)
@@ -47,7 +47,6 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
       )
 
       file.upload.then (response) ->
-
         $timeout () ->
           file.result = response.data
 
