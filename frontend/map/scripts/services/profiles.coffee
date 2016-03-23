@@ -53,7 +53,7 @@ app.service 'rmapsProfilesService', (
       return @setCurrentProfile profile
 
   setCurrentProfileByProfileId: (profile_id) ->
-    profile_id = Number(project_id) if _.isString profile_id
+    profile_id = Number(profile_id) if _.isString profile_id
     rmapsPrincipalService.getIdentity()
     .then (identity) =>
       profile = (_.find(identity.profiles, id: profile_id))
