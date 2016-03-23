@@ -48,15 +48,14 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
           .content-block.prop-attrs.border-bottom(ng-show="getMail()")
             .content-heading Mail Campaigns
 
-            .row.content-row(ng-repeat="mail in getMail().mailings | orderBy: 'submitted'")
-              .col-sm-4.content-body {{mail.campaign_name}}
+            .row.content-row(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
+              a.col-sm-4.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
               .col-sm-3.content-body
-                span(ng-show="mail.submitted") Sent {{ (mail.submitted | date:'MM/dd/yyyy') || 'unsent' }}
-                span(ng-show="!mail.submitted") Unsent
+                span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
               .col-sm-3.content-body
-                span(ng-show="mail.submitted") To {{mail.type}} address
+                span(ng-show="mail.lob.date_created") To {{mail.type}} address
               .col-sm-2.content-body.pull-right.text-right
-                button.btn.btn-sm.btn-white(ui-sref="review({id:mail.campaign_id})") Preview
+                button.btn.btn-sm.btn-white(ng-click="previewLetter(mail)") Preview
                   i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
@@ -183,10 +182,10 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
             .row.content-row(ng-repeat="mail in getMail().mailings")
               .col-xs-4.content-body {{mail.campaign_name}}
               .col-xs-3.content-body
-                span(ng-show="mail.submitted") Sent {{ (mail.submitted | date:'MM/dd/yyyy') || 'unsent' }}
-                span(ng-show="!mail.submitted") Unsent
+                span(ng-show="mail.lob.date_created") Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+                span(ng-show="!mail.lob.date_created") Unsent
               .col-xs-3.content-body
-                span(ng-show="mail.submitted") To {{mail.type.toInitCaps()}} address
+                span(ng-show="mail.lob.date_created") To {{mail.type.toInitCaps()}} address
               .col-xs-2.content-body.pull-right.text-right
                 button.btn.btn-sm.btn-white(ui-sref="review({id:mail.campaign_id})") Preview
                   i.fa.fa-envelope
