@@ -57,8 +57,6 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
       $http.get url, cache: false
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
-        if 'pdf' of data
-          data.pdf = $sce.trustAsResourceUrl(data.pdf)
         data
 
     create: (entity) ->
