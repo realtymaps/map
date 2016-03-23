@@ -84,6 +84,10 @@ _rules =
         alias: 'MLS Number'
         required: true
 
+      photo_id:
+        alias: 'Photo ID'
+        required: false
+
       address:
         alias: 'Address'
         input: {}
