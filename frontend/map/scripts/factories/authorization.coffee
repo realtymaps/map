@@ -47,7 +47,10 @@ app.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
     else
       redirect {state: routes.authenticating, event, options: notify: false}
 
-      rmapsPrincipalService.getIdentity().then () ->
+      rmapsPrincipalService.getIdentity()
+      .then (identity) ->
+        return rmapsProfilesService.setCurrentProfileByIdentity identity
+      .then () ->
         redirectState = doPermsCheck(toState, toParams)
         if redirectState
           redirect {state: redirectState}

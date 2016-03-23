@@ -47,7 +47,7 @@ mod.service 'rmapsPrincipalService', ($rootScope, $q, $http, rmapsEventConstants
       defer.resolve data.identity
     .error (err) ->
       unsetIdentity()
-      defer.resolve null
+      defer.reject null
 
     return defer.promise
 

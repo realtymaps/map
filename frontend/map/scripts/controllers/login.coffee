@@ -9,7 +9,7 @@ httpStatus = require '../../../../common/utils/httpStatus.coffee'
 ###
 
 module.exports = app.controller 'rmapsLoginCtrl',
-  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsEventConstants) ->
+  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsProfilesService, rmapsEventConstants) ->
 
     $scope.form = {}
     $scope.doLoginPost = () ->
@@ -19,13 +19,16 @@ module.exports = app.controller 'rmapsLoginCtrl',
           return
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
-        $location.replace()
-        $location.url($location.search().next || frontendRoutes.map)
+        rmapsProfilesService.setCurrentProfileByIdentity data.identity
+        .then () ->
+          $location.replace()
+          $location.url($location.search().next || frontendRoutes.map)
 
 app.run ($rootScope, $location, rmapsPrincipalService) ->
 
   doNextRedirect = (toState, nextLocation) ->
     if rmapsPrincipalService.isAuthenticated()
+
       $location.replace()
       $location.url(nextLocation || frontendRoutes.map)
 
