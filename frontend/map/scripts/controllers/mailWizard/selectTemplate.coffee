@@ -141,6 +141,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           category: template.category
           title: template.name
 
+
 app.controller 'rmapsConfirmCtrl',
   ($scope, modalBody, modalTitle) ->
     $scope.modalBody = modalBody

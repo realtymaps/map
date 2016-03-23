@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+var coffee = require('coffee-script')
+coffee.register()
+
+var externalAccounts = require('../../backend/services/service.externalAccounts')
+
+externalAccounts.getAccountInfo(process.argv[2])
+.then(function(creds){
+  console.log(creds)
+  process.exit(0)
+})

@@ -81,6 +81,7 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
         _meta[item.type] = {}
       _meta[item.type].content = item.type
       _meta[item.type].category = 'pdf'
+      _meta[item.type].thumb = '/assets/base/template_pdf_img.png'
 
 
   _buildCategoryLists()
