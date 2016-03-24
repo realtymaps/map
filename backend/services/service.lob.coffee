@@ -219,6 +219,7 @@ buildLetter = (campaign, recipient) ->
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
+        recipientType: recipient.type
         uuid: uuid.v1()
         recipientType: recipient.type
       data:
