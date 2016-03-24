@@ -75,7 +75,7 @@ before attempting the push/deploy.
 credentialled user.  For example, `./scripts/misc/allHerokuApps config:set FOO=bar`
 * `./scripts/misc/externalAccount <action> <data> [app list...]` will set API keys and other account info in one or more
 app databases.
-  * `action` can be either 'insert' or 'update'
+  * `action` can be either 'insert', 'update', and 'delete'
   * `data` is a coffeescript-style object string, such as
 `'name: "test", api_key: "1234qwert5678"'` or `'{name: "foo", username: "bar", password: "baz", environment: "production"}'`
   * The remaining arguments are the apps on which to set the values.  Each argument can be a staging prefix (such as
