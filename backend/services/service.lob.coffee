@@ -212,7 +212,6 @@ buildLetter = (campaign, recipient) ->
     address_from: address_from
     file: campaign.lob_content
     status: 'ready'
-    rm_property_id: recipient.rm_property_id
     options:
       aws_key: campaign.aws_key
       color: campaign.options?.color? or false

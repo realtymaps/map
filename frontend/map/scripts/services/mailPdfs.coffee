@@ -35,6 +35,6 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
 
   getSignedUrl: (aws_key) ->
     keyEncoded = encodeURIComponent(aws_key)
-    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded)
+    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded), cache: false
     .then ({data}) ->
       data

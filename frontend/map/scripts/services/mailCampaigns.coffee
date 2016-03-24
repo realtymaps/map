@@ -54,7 +54,7 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
     getReviewDetails: (id) ->
       throw new Error('entity must have id') unless id
       url = backendRoutes.mail.getReviewDetails.replace ':id', id
-      $http.get url
+      $http.get url, cache: false
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
         data
