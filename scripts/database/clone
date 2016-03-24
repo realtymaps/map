@@ -2,7 +2,7 @@
 set -e
 DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null && pwd )"
 cd "$DIR/.."
-
+# set -x
 
 ###########################
 ####### set up dump #######
@@ -54,6 +54,14 @@ then
     DUMP_COMMAND="$DUMP_COMMAND -o"
     shift
 fi
+
+if [[ "$1" == "--table" && "$2" != "" ]]
+then
+  DUMP_COMMAND="$DUMP_COMMAND -t $2"
+  shift
+  shift
+fi
+
 if [[ "$1" == "--clean" ]]
 then
     # drop existing objects before trying to create them
