@@ -80,7 +80,6 @@ class MailService extends ServiceCrud
           price: response.price
         details
 
-
   getProperties: (project_id, auth_user_id) ->
     tables.mail.campaign().select([
       "#{tables.mail.campaign.tableName}.id as campaign_id"

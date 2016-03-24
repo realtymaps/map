@@ -6,7 +6,7 @@ app.service 'rmapsLobService', ($log, $http) ->
   $log = $log.spawn 'service:rmapsLobService'
 
   _getQuoteAndPdf = (campaignId) ->
-    $http.get(backendRoutes.snail.quote.replace(':campaign_id', campaignId), alerts: false)
+    $http.get(backendRoutes.snail.quote.replace(':campaign_id', campaignId), alerts: false, cache: false)
     .then (response) ->
       $log.debug () -> "_getQuoteAndPdf response: #{JSON.stringify(response)}"
       response.data
