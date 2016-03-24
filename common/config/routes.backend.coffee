@@ -219,6 +219,8 @@ module.exports =
     byId: "#{apiBaseMailCampaigns}/:id"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
     getProperties: "/mailProperties/:project_id"
+    getLetters: "/mailLetters"
+    testLetter: "/testLetter/:letter_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf

@@ -8,6 +8,8 @@ moment = require 'moment'
 db = dbs.get('main')
 propertySvc = require './service.properties.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
+lobSvc = require './service.lob'
+LobErrors = require '../utils/errors/util.errors.lob'
 
 class MailService extends ServiceCrud
   getAll: (entity = {}) ->
@@ -118,6 +120,64 @@ class MailService extends ServiceCrud
             mailings: propertyIndex[detail.rm_property_id]
             coordinates: detail.geom_point_json.coordinates
             type: detail.geom_point_json.type
+
+  getLetters: (auth_user_id) ->
+    tables.mail.campaign().select([
+      "#{tables.mail.campaign.tableName}.id as campaign_id"
+      "#{tables.mail.campaign.tableName}.name as campaign_name"
+      "#{tables.mail.campaign.tableName}.template_type as template_type"
+      "#{tables.mail.letters.tableName}.id as id"
+      "#{tables.mail.letters.tableName}.address_to as to"
+      "#{tables.mail.letters.tableName}.address_from as from"
+      "#{tables.mail.letters.tableName}.rm_property_id as rm_property_id"
+      "#{tables.mail.letters.tableName}.status as status"
+      "#{tables.mail.letters.tableName}.options as options"
+    ])
+    .join("#{tables.mail.letters.tableName}", () ->
+      this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
+    )
+    .where
+      "#{tables.mail.campaign.tableName}.auth_user_id": auth_user_id
+      "#{tables.mail.campaign.tableName}.status": "sending"
+
+  testLetter: (letter_id, auth_user_id) ->
+    tables.mail.letters()
+    .select(
+      [
+        'id'
+        'address_to'
+        'address_from'
+        'file'
+        'options'
+        'retries',
+        'lob_errors'
+        'status'
+      ]
+    )
+    .where(
+      'id': letter_id
+      'auth_user_id': auth_user_id
+    )
+
+    .then ([letter]) ->
+      if !letter
+        throw new PartiallyHandledError("Letter #{letter_id} not found")
+      if !(letter.status == "ready" || letter.status == "error-transient")
+        throw new PartiallyHandledError("Letter #{letter_id} must be ready or have only transient error status")
+
+      lobSvc.createLetterTest letter
+
+      .then (lobResponse) ->
+        logger.debug -> "#{JSON.stringify lobResponse, null, 2}"
+        tables.mail.letters()
+        .update
+          lob_response: lobResponse
+          status: 'sent'
+          retries: letter.retries + 1
+        .where
+          id: letter.id
+
+        lobResponse
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance
