@@ -223,6 +223,7 @@ module.exports =
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf
     byId: "#{apiBaseMailPdf}/:id"
+    validatePdf: "#{apiBaseMailPdf}/:id/validate"
     getSignedUrl: "#{apiBaseMailPdf}/:id/url"
   plans:
     apiBase: apiBasePlans

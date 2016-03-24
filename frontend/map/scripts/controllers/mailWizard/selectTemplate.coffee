@@ -50,35 +50,61 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
         $timeout () ->
           file.result = response.data
 
-          # create the new item to add to our categories
-          newPdfItem =
-            name: file.name.replace(/\.[^/.]+$/, "")
-            thumb: '/assets/base/template_pdf_img.png'
-            category: 'pdf'
-            type: key
+          # validate file integrity
+          rmapsMailPdfService.validatePdf(key).then (validation) ->
+            if !validation.isValid
+              $scope.sentFile = false
+              $scope.uploadfile = null
+              file.progress = -1
 
-          # create and save new pdf model
-          rmapsMailPdfService.create
-            aws_key: key
-            filename: newPdfItem.name
-            last_used_mail_campaign_id: $scope.wizard.mail.campaign.id
+              modalInstance = $modal.open
+                animation: true
+                template: confirmModalTemplate
+                controller: 'rmapsConfirmCtrl'
+                resolve:
+                  modalTitle: () ->
+                    return "Invalid PDF Dimensions"
+                  modalBody: () ->
+                    return "#{validation.message} #{rmapsMainOptions.mail.sizeErrorMsg}"
+                  showCancelButton: () ->
+                    return false
 
-          # add to category
-          rmapsMailTemplateTypeService.appendCategoryList 'pdf', [newPdfItem]
+              modalInstance.result.then (result) ->
+                $log.debug "Confirmation result: #{result}"
+                result
+              return
 
-          # select the item and update our campaign
-          $scope.wizard.mail.setTemplateType(key)
-          $scope.wizard.mail.save()
-          $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
+            $scope.uploadfile = null
 
-          # open preview
-          $scope.previewTemplate newPdfItem
+            # create the new item to add to our categories
+            newPdfItem =
+              name: file.name.replace(/\.[^/.]+$/, "")
+              thumb: '/assets/base/template_pdf_img.png'
+              category: 'pdf'
+              type: key
 
-          $scope.sentFile = true
-          $timeout () ->
-            $scope.sentFile = false
-            file.progress = -1
-          , 4000
+            # create and save new pdf model
+            rmapsMailPdfService.create
+              aws_key: key
+              filename: newPdfItem.name
+              last_used_mail_campaign_id: $scope.wizard.mail.campaign.id
+
+            # add to category
+            rmapsMailTemplateTypeService.appendCategoryList 'pdf', [newPdfItem]
+
+            # select the item and update our campaign
+            $scope.wizard.mail.setTemplateType(key)
+            $scope.wizard.mail.save()
+            $scope.oldTemplateType = $scope.wizard.mail.campaign.templateType
+
+            # open preview
+            $scope.previewTemplate newPdfItem
+
+            $scope.sentFile = true
+            $timeout () ->
+              $scope.sentFile = false
+              file.progress = -1
+            , 4000
 
       , (response) ->
         if (response.status > 0)
@@ -105,6 +131,8 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
           return "Confirm template change"
         modalBody: () ->
           return "Selecting a different template or PDF will reset your letter content. Are you sure you wish to continue?"
+        showCancelButton: () ->
+          return true
 
     modalInstance.result.then (result) ->
       $log.debug "Confirmation result: #{result}"
@@ -142,10 +170,10 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
 
 app.controller 'rmapsConfirmCtrl',
-  ($scope, modalBody, modalTitle) ->
+  ($scope, modalBody, modalTitle, showCancelButton) ->
     $scope.modalBody = modalBody
     $scope.modalTitle = modalTitle
-    $scope.showCancelButton = true
+    $scope.showCancelButton = showCancelButton
     $scope.modalCancel = ->
       $scope.$close(false)
     $scope.modalOk = ->

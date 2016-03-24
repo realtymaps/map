@@ -38,3 +38,9 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
     $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded)
     .then ({data}) ->
       data
+
+  validatePdf: (aws_key) ->
+    keyEncoded = encodeURIComponent(aws_key)
+    $http.get backendRoutes.pdfUpload.validatePdf.replace(':id', keyEncoded)
+    .then ({data}) ->
+      data
