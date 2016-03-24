@@ -26,7 +26,7 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
     getProjectMail: (force = false) ->
       if !getPromise || force
         project_id = rmapsProfilesService.currentProfile?.project_id
-        getPromise = $http.get("/mailProperties/#{project_id}", cache: false)
+        getPromise = $http.get(backendRoutes.mail.getProperties.replace(':project_id', project_id), cache: false)
         .then ({data}) ->
           _mail = data
 

@@ -23,8 +23,8 @@ findLetters = (subtask) ->
   .select(
     [
       'id'
-      'address_to as to'
-      'address_from as from'
+      'address_to'
+      'address_from'
       'file'
       'options'
       'retries',
