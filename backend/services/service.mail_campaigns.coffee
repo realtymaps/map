@@ -80,14 +80,14 @@ class MailService extends ServiceCrud
 
 
   getProperties: (project_id, auth_user_id) ->
-    query = tables.mail.campaign()
-    query = query.select([
+    tables.mail.campaign().select([
       "#{tables.mail.campaign.tableName}.id as campaign_id"
       "#{tables.mail.campaign.tableName}.name as campaign_name"
       "#{tables.mail.campaign.tableName}.template_type as template_type"
       "#{tables.mail.letters.tableName}.id as letter_id"
       "#{tables.mail.letters.tableName}.lob_response as lob_response"
       "#{tables.mail.letters.tableName}.rm_property_id as rm_property_id"
+      "#{tables.mail.letters.tableName}.options as options"
     ])
     .join("#{tables.mail.letters.tableName}", () ->
       this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
@@ -97,14 +97,15 @@ class MailService extends ServiceCrud
       "#{tables.mail.campaign.tableName}.auth_user_id": auth_user_id
     .whereNotNull "#{tables.mail.letters.tableName}.lob_response"
 
-    query
     .then (letters) ->
 
       propertyIndex = {}
 
       _.each letters, (letter) ->
-        letter.lob = _.pick letter.lob_response, ['id', 'date_created', 'url']
+        letter.lob = _.pick letter.lob_response, ['id', 'date_created', 'url', 'thumbnails']
         delete letter.lob_response
+        letter.recipientType = letter.options?.metadata?.recipientType
+        delete letter.options
         propertyIndex[letter.rm_property_id] ?= []
         propertyIndex[letter.rm_property_id].push letter
 

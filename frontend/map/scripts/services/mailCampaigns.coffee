@@ -29,14 +29,14 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
         getPromise = $http.get("/mailProperties/#{project_id}", cache: false)
         .then ({data}) ->
           _mail = data
+
       else
         getPromise
 
     getMail: (propertyId) ->
       return false unless propertyId
 
-      _.find _mail, (mail) ->
-        mail.rm_property_id == propertyId
+      _.find(_mail, 'rm_property_id', propertyId)
 
     clear: () ->
       getPromise = null

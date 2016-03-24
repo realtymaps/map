@@ -10,7 +10,7 @@
         td(ui-sref="review({id:mail.campaign_id})") {{ mail.campaign_name }}
       tr
         td Sent To
-        td {{ mail.type.toInitCaps() }}
+        td {{ mail.recipientType.toInitCaps() }}
       tr
         td Sent On
         td {{ (mail.submitted | date:'MM/dd/yyyy') || 'never' }}
