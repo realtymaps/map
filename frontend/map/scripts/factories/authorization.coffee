@@ -9,9 +9,6 @@ app.factory 'rmapsMapAuthorizationFactory', ($rootScope, $timeout, $location, $l
     #as stated in stackoverflow this avoids race hell in ui-router
     event?.preventDefault()
 
-#    $timeout () ->
-#      $log.debug "Redirect to #{state.name || state}"
-#      return $state.go state, params, options
     $log.debug "Redirect to #{state.name || state}"
     return $state.go state, params, options
 
