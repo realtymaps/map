@@ -1,0 +1,45 @@
+#!/usr/bin/env node
+var coffee = require('coffee-script')
+coffee.register()
+
+var aws = require('../../backend/services/service.aws'),
+  argv = require('yargs').argv,
+  fs = require('fs'),
+  path = require('path')
+
+
+handle = aws[argv.action] || aws.postObject
+
+if (!argv.bucket) {
+  console.error('--bucket required')
+  process.exit(122)
+}
+
+if (!argv.fileName) {
+  console.error('--fileName required to postObject!')
+  process.exit(123)
+}
+
+function getUserHome() {
+  return process.env.HOME || process.env.USERPROFILE;
+}
+
+fileName = argv.fileName
+
+if(fileName.indexOf('~') > -1){
+  fileName = argv.fileName.replace('~',getUserHome())
+}
+console.log("attempting to load file: " + fileName)
+
+handle({
+  bucket:argv.bucket,
+  key:argv.fileName,
+  body: fs.createReadStream(fileName)
+})
+.then(function(){
+  process.exit(0)
+})
+.catch(function(error){
+  console.error(error)
+  process.exit(200)
+})

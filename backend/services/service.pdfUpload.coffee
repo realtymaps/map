@@ -4,7 +4,9 @@ ServiceCrud = require '../utils/crud/util.ezcrud.service.helpers'
 
 class PdfUploadService extends ServiceCrud
   getSignedUrl: (aws_key) ->
-    awsService.getTimedDownloadUrl awsService.buckets.PDF, aws_key
+    awsService.getTimedDownloadUrl
+      bucket: awsService.buckets.PDF
+      key: aws_key
     .then (url) ->
       url
 
