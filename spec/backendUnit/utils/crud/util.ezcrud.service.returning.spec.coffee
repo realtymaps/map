@@ -13,6 +13,7 @@ describe 'util.ezcrud.service.returning', ->
       @sqlMock = new SqlMock 'config', 'dataSourceFields'
       dbFn = () =>
         @sqlMock
+      dbFn.tableName = 'data_source_fields'
 
       @instance = new ReturningServiceCrud(dbFn, {debugNS:'ezcrud:service'})
       @query =
