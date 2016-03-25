@@ -69,8 +69,8 @@ _maybeUseSignedUrl = (letter) ->
     if letter.options.aws_key
       # 10 minute expiration for url below
       awsService.getTimedDownloadUrl
-        bucket: awsService.buckets.PDF
-        key: letter.options.aws_key
+        extAcctName: awsService.buckets.PDF
+        Key: letter.options.aws_key
       .then (file) ->
         letter.file = file
         letter.options.template = false

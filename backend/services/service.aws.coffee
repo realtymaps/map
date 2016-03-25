@@ -1,7 +1,11 @@
 externalAccounts = require './service.externalAccounts'
+#http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html
 AWS = require('aws-sdk')
 Promise = require 'bluebird'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
+_ = require 'lodash'
+{arrayify} = require '../utils/util.array'
+logger = require('../config/logger').spawn('service.aws')
 
 buckets =
   PDF: 'aws-pdf-downloads'
@@ -15,35 +19,65 @@ _s3Factory = (s3Info) ->
 
   Promise.promisifyAll new AWS.S3()
 
-getTimedDownloadUrl = (opts) ->
-  {bucket, key} = onMissingArgsFail
+_debug = (thing, thingName) ->
+  logger.debug "begin #{thingName} !!!!!!!!!"
+  logger.debug thing
+  logger.debug "end #{thingName} !!!!!!!!!!!"
+
+_handler = (handlerOpts, opts) ->
+
+  _debug handlerOpts, 'handlerOpts'
+
+  {required, s3FnName, binds} = onMissingArgsFail
+    args: handlerOpts
+    required: s3FnName
+
+  defaultRequired = ['extAcctName','Key']
+
+  if required?
+    required = defaultRequired.concat arrayify(required)
+  else
+    required = defaultRequired
+
+  _debug required, 'required'
+  _debug s3FnName, 's3FnName'
+  _debug binds, 'binds'
+
+  {extAcctName} = opts
+  opts = onMissingArgsFail
     args: opts
-    required: ['bucket','key']
+    required: required
+    omit: 'extAcctName'
 
-  externalAccounts.getAccountInfo(bucket)
+  externalAccounts.getAccountInfo(extAcctName)
   .then (s3Info) ->
-    _s3Factory(s3Info)
-    .getSignedUrlAsync 'getObject',
-      Bucket: s3Info.other.bucket
-      Key: key
-      Expires: (opts.minutes||10)*60
+    s3 = _s3Factory(s3Info)
 
+    handle = s3[s3FnName]
+
+    if binds?
+      handle = handle.bind(s3, binds...)
+
+    handle.call s3, _.extend {},
+      Bucket: s3Info.other.bucket
+    , opts
+
+getTimedDownloadUrl = (opts) ->
+  _handler
+    binds: ['getObject']
+    s3FnName: 'getSignedUrlAsync'
+  ,
+    _.extend {}, opts, Expires: (opts.minutes||10)*60
 
 putObject = (opts) ->
-  {bucket, key, body} = onMissingArgsFail
-    args: opts
-    required: ['bucket','key','body']
+  _handler {required: 'Body', s3FnName: 'putObjectAsync'}, opts
 
-  externalAccounts.getAccountInfo(bucket)
-  .then (s3Info) ->
-    _s3Factory(s3Info)
-    .putObjectAsync
-      Bucket: s3Info.other.bucket
-      Key: key
-      Body: body
+getObject = (opts) ->
+  _handler {s3FnName: 'getObjectAsync'}, opts
 
 module.exports = {
   getTimedDownloadUrl
   buckets
   putObject
+  getObject
 }

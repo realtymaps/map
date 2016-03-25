@@ -5,8 +5,10 @@ Simple script to utilize our aws service
 
 options:
 --action: function to call on service.aws
---fileName: full path of whatever file
---bucket: bucket name in config_external_accounts
+--fileName || --Key: full path of whatever file
+--bucket || --extAcctName: bucket name in config_external_accounts
+
+--*(any other S3 option for a interactive S3 function), example ContentType
 */
 
 var coffee = require('coffee-script')
@@ -15,7 +17,8 @@ coffee.register()
 var aws = require('../../backend/services/service.aws'),
   argv = require('yargs').argv,
   fs = require('fs'),
-  path = require('path')
+  path = require('path'),
+  _ = require('lodash')
 
 
 handle = aws[argv.action] || aws.postObject
@@ -34,22 +37,28 @@ function getUserHome() {
   return process.env.HOME || process.env.USERPROFILE;
 }
 
-var fileName = argv.fileName
+var fileName = argv.fileName || argv.Key
 
 if (fileName.indexOf('~') > -1) {
   fileName = argv.fileName.replace('~', getUserHome())
 }
 console.log("attempting to load file: " + fileName)
 
-var uploadFileName = path.parse(argv.fileName).base
+var uploadFileName = path.parse(fileName).base,
+  params = _.extend({},{
+    extAcctName: argv.bucket,
+    Key: uploadFileName,
+    Body: fs.createReadStream(fileName)
+  }, _.omit(argv, ['bucket', 'action', 'fileName', 'Key', 'Body', '$0', '_']))
 
-handle({
-  bucket: argv.bucket,
-  key: uploadFileName,
-  body: fs.createReadStream(fileName)
-})
-.then(function() {
+// console.log(params)
+
+handle(params)
+.then(function(ret) {
   console.log(argv.action + ' success!!' + ' for filenamed ' + uploadFileName)
+  if(argv.action === 'getObject' && ret){
+    fs.createWriteStream(uploadFileName).pipe(ret)
+  }
   process.exit(0)
 })
 .catch(function(error) {
