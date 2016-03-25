@@ -218,11 +218,12 @@ module.exports =
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
-    getProperties: "/mailProperties/:project_id"
+    getProperties: "#{apiBase}/mailProperties/:project_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf
     byId: "#{apiBaseMailPdf}/:id"
+    validatePdf: "#{apiBaseMailPdf}/:id/validate"
     getSignedUrl: "#{apiBaseMailPdf}/:id/url"
   plans:
     apiBase: apiBasePlans

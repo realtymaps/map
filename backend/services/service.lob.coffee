@@ -212,12 +212,14 @@ buildLetter = (campaign, recipient) ->
     address_from: address_from
     file: campaign.lob_content
     status: 'ready'
+    rm_property_id: recipient.rm_property_id
     options:
       aws_key: campaign.aws_key
       color: campaign.options?.color? or false
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
+        recipientType: recipient.type
         uuid: uuid.v1()
       data:
         campaign_name: campaign.name

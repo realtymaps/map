@@ -34,10 +34,9 @@ class MailService extends ServiceCrud
 
     super(entity, query: query)
 
+
   # any details for a mail review shall be delivered upon this service call
   getReviewDetails: (user_id, campaign_id) ->
-
-
     # flattening a variety of review details & statistics into a single row response
     tables.mail.letters()
     .select(
@@ -78,36 +77,35 @@ class MailService extends ServiceCrud
           price: response.price
         details
 
-
-  getProperties: (project_id, status, auth_user_id) ->
-    if status == 'all' || !status
-      status = ['ready', 'sending', 'paid']
-    if !_.isArray status
-      status = [status]
-
-    tables.mail.campaign()
-    .select('recipients', 'id', 'template_type', 'stripe_charge', 'name')
+  getProperties: (project_id, auth_user_id) ->
+    tables.mail.campaign().select([
+      "#{tables.mail.campaign.tableName}.id as campaign_id"
+      "#{tables.mail.campaign.tableName}.name as campaign_name"
+      "#{tables.mail.campaign.tableName}.template_type as template_type"
+      "#{tables.mail.letters.tableName}.id as letter_id"
+      "#{tables.mail.letters.tableName}.lob_response as lob_response"
+      "#{tables.mail.letters.tableName}.rm_property_id as rm_property_id"
+      "#{tables.mail.letters.tableName}.options as options"
+    ])
+    .join("#{tables.mail.letters.tableName}", () ->
+      this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
+    )
     .where
-      project_id: project_id
-      auth_user_id: auth_user_id
-    .whereIn 'status', status
-    .then (campaigns) ->
+      "#{tables.mail.campaign.tableName}.project_id": project_id
+      "#{tables.mail.campaign.tableName}.auth_user_id": auth_user_id
+    .whereNotNull "#{tables.mail.letters.tableName}.lob_response"
+
+    .then (letters) ->
 
       propertyIndex = {}
 
-      # Add campaign info to each address
-      _.each campaigns, (campaign) ->
-        c =
-          campaign_id: campaign.id
-          campaign_name: campaign.name
-          template_type: campaign.template_type
-
-        if campaign.stripe_charge?.created
-          c.submitted = moment(campaign.stripe_charge.created, 'X').format()
-
-        _.each campaign.recipients, (r) ->
-          propertyIndex[r.rm_property_id] ?= []
-          propertyIndex[r.rm_property_id].push _.assign r, c
+      _.each letters, (letter) ->
+        letter.lob = _.pick letter.lob_response, ['id', 'date_created', 'url', 'thumbnails']
+        delete letter.lob_response
+        letter.recipientType = letter.options?.metadata?.recipientType
+        delete letter.options
+        propertyIndex[letter.rm_property_id] ?= []
+        propertyIndex[letter.rm_property_id].push letter
 
       propertySvc.getDetails rm_property_id: _.keys propertyIndex
       .then (details) ->

@@ -65,6 +65,13 @@
             .col-md-2
                button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="recipientInfo({id:wizard.mail.campaign.id})") edit
 
+          .row.separator.errors(ng-show="review.data.alert.msg")
+            .col-md-10
+              .row
+                h2 Issues
+              .row
+                p {{review.data.alert.msg}}
+
           .row.separator(ng-show="wizard.mail.isSubmitted()")
             .col-md-12
               .row
@@ -84,4 +91,7 @@
                   tooltip-trigger="mousehover"
                   uib-tooltip="Click to submit this mailing!"
                   tooltip-enable="true"
-                  ng-click="sendMail()") Submit campaign for {{review.price | currency}}
+                  ng-disabled="review.data.alert.msg"
+                  ng-click="sendMail()") 
+                    span(ng-show="review.data.alert.msg") Issues Exist
+                    span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}
