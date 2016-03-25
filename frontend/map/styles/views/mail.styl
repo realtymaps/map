@@ -122,6 +122,9 @@
   .inner
     overflow auto
 
+  .disabled
+    opacity 0.3
+
   .mail-wizard-steps
     header.send-progress
       background-color $dark_white
@@ -241,15 +244,6 @@
 
       .filters
         margin 0px -10px 20px
-
-      .color-toggle
-        float right
-        position relative
-        top 16px
-        margin-right 50px
-
-      .disabled
-        opacity 0.3
 
       ul.tmpl-list
         list-style none
@@ -371,8 +365,6 @@
           height 600px
           float right
           text-align center
-          // border 1px solid black
-          // // box-shadow 3px 3px 15px #888
 
           embed
             width 100%
@@ -380,6 +372,6 @@
             border 1px solid black
             margin auto
             
-        // .btn-review-preview
-        //   float right
+        .color-toggle input
+          margin 0
 
