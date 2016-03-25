@@ -28,7 +28,7 @@ if (!argv.bucket) {
   process.exit(122)
 }
 
-if (!argv.fileName) {
+if (!argv.fileName && (argv.action == 'putObject' || !argv.action)) {
   console.error('--fileName required to postObject!')
   process.exit(123)
 }
@@ -37,19 +37,27 @@ function getUserHome() {
   return process.env.HOME || process.env.USERPROFILE;
 }
 
-var fileName = argv.fileName || argv.Key
 
-if (fileName.indexOf('~') > -1) {
-  fileName = argv.fileName.replace('~', getUserHome())
+var fileName = argv.fileName || argv.Key,
+  uploadFileName
+
+if (fileName &&  !(['listObjects'].indexOf(argv.action) > -1)){
+  if (fileName.indexOf('~') > -1) {
+    fileName = argv.fileName.replace('~', getUserHome())
+  }
+  console.log("attempting to load file: " + fileName)
+
+  uploadFileName = path.parse(fileName).base
 }
-console.log("attempting to load file: " + fileName)
 
-var uploadFileName = path.parse(fileName).base,
-  params = _.extend({},{
-    extAcctName: argv.bucket,
-    Key: uploadFileName,
-    Body: fs.createReadStream(fileName)
-  }, _.omit(argv, ['bucket', 'action', 'fileName', 'Key', 'Body', '$0', '_']))
+params = _.extend({},{
+  extAcctName: argv.bucket
+}, _.omit(argv, ['bucket', 'action', 'fileName', 'Key', 'Body', '$0', '_']))
+
+if (uploadFileName){
+  params.Key = uploadFileName
+  params.Body = fs.createReadStream(fileName)
+}
 
 // console.log(params)
 
@@ -59,6 +67,9 @@ handle(params)
   if(argv.action === 'getObject' && ret){
     fs.createWriteStream(uploadFileName).pipe(ret)
   }
+  if(argv.action === 'listObjects')
+    console.log(ret)
+    
   process.exit(0)
 })
 .catch(function(error) {

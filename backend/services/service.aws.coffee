@@ -28,11 +28,13 @@ _handler = (handlerOpts, opts) ->
 
   _debug handlerOpts, 'handlerOpts'
 
-  {required, s3FnName, binds} = onMissingArgsFail
+  {required, s3FnName, binds, omit} = onMissingArgsFail
     args: handlerOpts
     required: s3FnName
 
-  defaultRequired = ['extAcctName','Key']
+  omit ?= arrayify omit
+
+  defaultRequired = _.filter ['extAcctName','Key'], (n) -> !(omit.indexOf(n) > -1)
 
   if required?
     required = defaultRequired.concat arrayify(required)
@@ -75,9 +77,13 @@ putObject = (opts) ->
 getObject = (opts) ->
   _handler {s3FnName: 'getObjectAsync'}, opts
 
+listObjects = (opts) ->
+  _handler {s3FnName: 'listObjectsAsync', omit: 'Key'}, opts
+
 module.exports = {
   getTimedDownloadUrl
   buckets
   putObject
   getObject
+  listObjects
 }
