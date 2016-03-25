@@ -36,7 +36,6 @@ putObject = (opts) ->
 
   externalAccounts.getAccountInfo(bucket)
   .then (s3Info) ->
-    console.log s3Info
     _s3Factory(s3Info)
     .putObjectAsync
       Bucket: s3Info.other.bucket
