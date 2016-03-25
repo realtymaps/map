@@ -20,8 +20,7 @@
     .container
       .row
         h1.pageTitle
-          span(style="text-transform: capitalize;") {{wizard.mail.getCategory()}}
-          |  Review
+          span(style="text-transform: capitalize;") Campaign Review
 
         button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()") View Letter
       .row.review-items
@@ -45,6 +44,12 @@
                   p Letters Shipped:
                 .col-md-8
                   p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
+
+              .row
+                .col-md-12
+                  .color-toggle(ng-class="{'disabled': !wizard.mail.campaign.aws_key}" title="Only PDF content can be printed in color." data-toggle="tooltip")
+                    label Print in Color?
+                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key")
 
             .col-md-2
                button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit
