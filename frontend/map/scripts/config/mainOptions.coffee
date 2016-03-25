@@ -59,5 +59,5 @@ app.constant 'rmapsMainOptions', do () ->
         ready: 'draft'
         sending: 'pending'
         paid: 'sent'
-
+      sizeErrorMsg: 'Please select/upload a file that has correct dimensions for its type: 8.5" x 11" for Letters.'
   res
