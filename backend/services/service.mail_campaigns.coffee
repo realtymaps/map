@@ -34,10 +34,9 @@ class MailService extends ServiceCrud
 
     super(entity, query: query)
 
+
   # any details for a mail review shall be delivered upon this service call
   getReviewDetails: (user_id, campaign_id) ->
-
-
     # flattening a variety of review details & statistics into a single row response
     tables.mail.letters()
     .select(

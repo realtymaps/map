@@ -33,7 +33,7 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
       windowClass: 'address-list-modal'
       scope: $scope
 
-  $scope.review = null
+  $scope.review = {}
   $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   $scope.reviewPreview = () ->
@@ -49,4 +49,8 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
   rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
   .then (review) ->
     $scope.review = _.merge review, rmapsMailTemplateTypeService.getMeta()[$scope.wizard.mail.campaign.template_type]
-
+  .catch (err) ->
+    if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
+      err.data.alert.msg = rmapsMainOptions.mail.sizeErrorMsg
+    $scope.review = _.merge $scope.review, err
+    $scope.review.price = "N/A"
