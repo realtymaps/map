@@ -44,3 +44,9 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
     $http.get backendRoutes.pdfUpload.validatePdf.replace(':id', keyEncoded)
     .then ({data}) ->
       data
+    .catch (err) ->
+      # server errors will have been handled in our alert framework, so here we send appropriate invalidation msg
+      {
+        isValid: false
+        message: err.data.alert.msg
+      }

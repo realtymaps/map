@@ -52,7 +52,7 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
 
           # validate file integrity
           rmapsMailPdfService.validatePdf(key).then (validation) ->
-            if !validation.isValid
+            if !validation? or !validation.isValid
               $scope.sentFile = false
               $scope.uploadfile = null
               file.progress = -1
@@ -63,9 +63,9 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
                 controller: 'rmapsConfirmCtrl'
                 resolve:
                   modalTitle: () ->
-                    return "Invalid PDF Dimensions"
+                    return "Validation failed."
                   modalBody: () ->
-                    return "#{validation.message} #{rmapsMainOptions.mail.sizeErrorMsg}"
+                    return "#{validation.message}"
                   showCancelButton: () ->
                     return false
 
