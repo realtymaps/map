@@ -11,6 +11,11 @@ buckets =
   PDF: 'aws-pdf-downloads'
   ListingPhotos: 'aws-listing-photos'
 
+_handleAsyncStyle = (fnName, opts) ->
+  s3FnName = if opts.nodeStyle then fnName else fnName + 'Async'
+  delete opts.nodeStyle #note mutation on purpose
+  s3FnName
+
 _s3Factory = (s3Info) ->
   AWS.config.update
     accessKeyId: s3Info.api_key
@@ -51,6 +56,8 @@ _handler = (handlerOpts, opts) ->
     required: required
     omit: 'extAcctName'
 
+  _debug opts
+
   externalAccounts.getAccountInfo(extAcctName)
   .then (s3Info) ->
     s3 = _s3Factory(s3Info)
@@ -72,13 +79,13 @@ getTimedDownloadUrl = (opts) ->
     _.extend {}, opts, Expires: (opts.minutes||10)*60
 
 putObject = (opts) ->
-  _handler {required: 'Body', s3FnName: 'putObjectAsync'}, opts
+  _handler {required: 'Body', s3FnName: _handleAsyncStyle('putObject', opts)}, opts
 
 getObject = (opts) ->
-  _handler {s3FnName: 'getObjectAsync'}, opts
+  _handler s3FnName: _handleAsyncStyle('getObject', opts), opts
 
 listObjects = (opts) ->
-  _handler {s3FnName: 'listObjectsAsync', omit: 'Key'}, opts
+  _handler {s3FnName: _handleAsyncStyle('listObjects', opts), omit: 'Key'}, opts
 
 module.exports = {
   getTimedDownloadUrl

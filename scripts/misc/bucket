@@ -56,21 +56,31 @@ params = _.extend({},{
 
 if (uploadFileName){
   params.Key = uploadFileName
-  params.Body = fs.createReadStream(fileName)
+  if(!(['getObject'].indexOf(argv.action) > -1))
+    params.Body = fs.createReadStream(fileName)
 }
 
-// console.log(params)
+if(argv.action === 'getObject')//force node style
+  params.nodeStyle = true
 
 handle(params)
 .then(function(ret) {
+  var wait = false
   console.log(argv.action + ' success!!' + ' for filenamed ' + uploadFileName)
   if(argv.action === 'getObject' && ret){
-    fs.createWriteStream(uploadFileName).pipe(ret)
+    wait = true
+    // console.log(ret)
+    ret.createReadStream()
+    .on('end', function(){
+      process.exit(0)
+    })
+    .pipe(fs.createWriteStream(uploadFileName))
   }
   if(argv.action === 'listObjects')
     console.log(ret)
-    
-  process.exit(0)
+
+  if(!wait)
+    process.exit(0)
 })
 .catch(function(error) {
   console.error(error)
