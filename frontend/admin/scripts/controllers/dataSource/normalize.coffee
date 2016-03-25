@@ -27,8 +27,8 @@ app.controller 'rmapsNormalizeCtrl',
     current: null
 
   $scope.transformOptions =
-    'Uppercase': 'forceUpperCase'
-    'Lowercase': 'forceLowerCase'
+    'UPPERCASE': 'forceUpperCase'
+    'lowercase': 'forceLowerCase'
     'Init Caps': 'forceInitCaps'
 
   $scope.nullifyOptions =
@@ -59,6 +59,7 @@ app.controller 'rmapsNormalizeCtrl',
     rowCount: 1000
     getUrl: (rows) ->
       rmapsMlsService.getDataDumpUrl($scope.mlsData.current.id, rows)
+
   $scope.dlCSV = (url) ->
     $window.open url, '_self'
     return true

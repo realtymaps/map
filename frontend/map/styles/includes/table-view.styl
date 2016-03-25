@@ -33,30 +33,18 @@
       &.draft
       &.pending
         background $white
-        border 1px solid $gray_lighter
-        padding 5px 10px
-        border-radius 3px
-        font-size 12px
+        font-size 14px
         text-transform capitalize
-        @extends .global-transition
 
       &.sent
-        border-color $success
-        &:hover
-          background $success
-          color $white
+        color $success
 
       &.pending
-        border-color $warning
-        &:hover
-          background $warning
-          color $white
+        color $warning
 
       &.draft
-        border-color $gray_lighter
-        &:hover
-          background $gray_lighter
-          color $white
+        color $gray
+
     table.table
       border-top 1px solid $gray_lighter
       thead

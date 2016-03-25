@@ -106,7 +106,6 @@ finalizeData = (subtask, id) ->
   parcelsPromise = tables.property.parcel()
   .select('geom_polys_raw AS geometry_raw', 'geom_polys_json AS geometry', 'geom_point_json AS geometry_center')
   .where(rm_property_id: id)
-  # TODO: we also need to select from the tax table for owner name info
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
@@ -115,11 +114,34 @@ finalizeData = (subtask, id) ->
         rm_property_id: id
         data_source_id: subtask.task_name
         batch_id: subtask.batch_id
-    listing = dataLoadHelpers.finalizeEntry(listings)
-    listing.data_source_type = 'mls'
-    _.extend(listing, parcel[0])
-    tables.property.combined()
-    .insert(listing)
+
+    # owner name promotion logic
+    if !listings[0].owner_name? && !listings[0].owner_name_2?
+      if !listings[1]?.owner_name? || !listings[1]?.owner_name_2?
+        # keep the previously-promoted values
+        promotionPromise = Promise.resolve(owner_name: listings[1].owner_name, owner_name_2: listings[1].owner_name_2)
+      else
+        # need to query the tax table to get values to promote
+        promotionPromise = tables.property.combined()
+        .select('owner_name', 'owner_name_2')
+        .where
+          rm_property_id: id
+          data_source_type: 'county'
+        .then (results=[]) ->
+          results[0]
+    else
+      promotionPromise = Promise.resolve()
+
+    promotionPromise
+    .then (promotion) ->
+      listing = dataLoadHelpers.finalizeEntry(listings)
+      listing.data_source_type = 'mls'
+      _.extend(listing, parcel[0], promotion)
+      ident =
+        rm_property_id: id
+        data_source_id: subtask.task_name
+        active: false
+      sqlHelpers.upsert(ident, listing, tables.property.combined)
 
 module.exports =
   loadUpdates: loadUpdates

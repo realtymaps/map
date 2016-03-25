@@ -19,6 +19,7 @@ class MlsConfigService extends ServiceCrud
 
         # for "schemaReady" to be true, the listing_data json fields
         # "db", "table", "field" and "queryTemplate" need to exist and have length > 0
+        #TODO: schemaReady could be a column with an eventTrigger
         query
         .whereRaw("char_length(cast(listing_data->>\'db\' as text)) > ?", [0])
         .whereRaw("char_length(cast(listing_data->>\'table\' as text)) > ?", [0])
@@ -104,5 +105,5 @@ class MlsConfigService extends ServiceCrud
         throw new PartiallyHandledError(error, "Failed to create task/subtasks for new MLS: #{newMls.id}")
 
 
-instance = new MlsConfigService tables.config.mls, {debugNS: "mlsConfigService"}
+instance = new MlsConfigService tables.config.mls
 module.exports = instance

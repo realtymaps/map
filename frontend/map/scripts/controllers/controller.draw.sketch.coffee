@@ -3,8 +3,7 @@ mapId = 'mainMap'
 color = 'blue'
 
 app.controller "rmapsDrawSketchCtrl", (
-$scope, $log, $rootScope, rmapsEventConstants
-rmapsNgLeafletEventGateService, rmapsDrawnUtilsService
+$scope, $log, $rootScope, rmapsEventConstants, rmapsDrawnUtilsService
 rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
 
   $log = $log.spawn("map:rmapsDrawSketchCtrl")
@@ -15,15 +14,13 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
     _handles = rmapsMapDrawHandlesFactory {
+      mapId
       drawnShapesSvc
       drawnItems
       endDrawAction: () ->
-        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
       commonPostDrawActions: () ->
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
-
       announceCb: () ->
-        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
     }
 
     _drawCtrlFactory = (handles) ->

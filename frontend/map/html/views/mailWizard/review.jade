@@ -19,61 +19,79 @@
   .inner
     .container
       .row
-        .col-md-12
-          h1.pageTitle
-            span(style="text-transform: capitalize;") {{wizard.mail.getCategory()}}
-            |  Review
+        h1.pageTitle
+          span(style="text-transform: capitalize;") Campaign Review
+
+        button.btn.btn-primary.review-preview-button(ng-click="reviewPreview()" ng-disabled="!review.pdf") View Letter
       .row.review-items
-        .pdf-review(ng-show="review.pdf != null")
-          embed(embed-src="{{review.pdf}}" src="")
-        div(ng-class="{'content-with-pdf-review': review.pdf != null}")
-          .col-md-12
-            .row.separator
-              .col-md-10
-                .row
-                  h2 Campaign Name
-                .row
-                  .col-md-2
-                    p Name:
-                  .col-md-10
-                    p {{wizard.mail.campaign.name}}
-                .row
-                  .col-md-2
-                    p Status:
-                  .col-md-10
-                    span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
+        div
+          .row.separator
+            .col-md-10
+              .row
+                h2 Campaign Name
+              .row
+                .col-md-3
+                  p Name:
+                .col-md-9
+                  p {{wizard.mail.campaign.name}}
+              .row
+                .col-md-3
+                  p Status:
+                .col-md-9
+                  span(class="{{statusNames[wizard.mail.campaign.status]}}") {{statusNames[wizard.mail.campaign.status].toInitCaps()}}
+              .row(ng-show="wizard.mail.isSubmitted()")
+                .col-md-3
+                  p Letters Shipped:
+                .col-md-9
+                  p(ng-if="review.sent && review.total") {{review.sent}} of {{review.total}} have been shipped.
 
-              .col-md-2
-                 button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSent()" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit
+              .row.color-toggle(ng-class="{'disabled': !wizard.mail.campaign.aws_key}" title="Only PDF content can be printed in color." data-toggle="tooltip")
+                .col-md-3
+                  label Print in Color?
+                .col-md-9
+                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key")
 
-            .row.separator.recipients
-              .col-md-10
-                .row
-                  h2 Recipients
-                .row
-                  p(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-pluralize count="wizard.mail.campaign.recipients.length"
-                    when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
+            .col-md-2
+               button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit
 
-              .col-md-2
-                 button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSent()" ui-sref="recipientInfo({id:wizard.mail.campaign.id})") edit
+          .row.separator.recipients
+            .col-md-10
+              .row
+                h2 Recipients
+              .row
+                p.recipient-link(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-pluralize count="wizard.mail.campaign.recipients.length"
+                  when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
 
-            .row.separator(ng-show="wizard.mail.isSent()")
-              .col-md-12
-                .row
-                  h2 Paid Amount
-                .row
-                  p Mailing submitted for {{(wizard.mail.campaign.stripe_charge.amount/100) | currency}}
+            .col-md-2
+               button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="recipientInfo({id:wizard.mail.campaign.id})") edit
 
-            .row.separator(ng-hide="wizard.mail.isSent()")
-              .col-md-12
-                .row
-                  h2 Price Quote
-                .row
-                  .btn.btn-danger(ng-show="priceQuote == null") Refreshing price data...
-                  .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
-                  .btn.btn-success(
-                    ng-hide="priceQuote == null || wizard.mail.campaign.recipients.length == 0"
-                    tooltip-trigger="mousehover"
-                    uib-tooltip="Click to submit this mailing!"
-                    tooltip-enable="true"
-                    ng-click="sendMail()") Submit campaign for {{priceQuote | currency}}
+          .row.separator.errors(ng-show="review.data.alert.msg")
+            .col-md-10
+              .row
+                h2 Issues
+              .row
+                p {{review.data.alert.msg}}
+
+          .row.separator(ng-show="wizard.mail.isSubmitted()")
+            .col-md-12
+              .row
+                h2 Paid Amount
+              .row
+                p Mailing submitted for {{(wizard.mail.campaign.stripe_charge.amount/100) | currency}}
+
+          .row.separator(ng-hide="wizard.mail.isSubmitted()")
+            .col-md-12
+              .row
+                h2 Price Quote
+              .row
+                .btn.btn-danger(ng-show="review.price == null") Refreshing price data...
+                .btn.btn-danger(ng-show="wizard.mail.campaign.recipients.length == 0") N/A
+                .btn.btn-success(
+                  ng-hide="review.price == null || wizard.mail.campaign.recipients.length == 0"
+                  tooltip-trigger="mousehover"
+                  uib-tooltip="Click to submit this mailing!"
+                  tooltip-enable="true"
+                  ng-disabled="review.data.alert.msg"
+                  ng-click="sendMail()") 
+                    span(ng-show="review.data.alert.msg") Issues Exist
+                    span(ng-show="!review.data.alert.msg") Submit campaign for {{review.price | currency}}

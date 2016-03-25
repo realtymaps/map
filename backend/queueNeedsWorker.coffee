@@ -59,11 +59,11 @@ if require.main == module  # run directly, not require()d
         cluster.fork()
         return
       intervalsWaited++
-      if intervalsWaited == 1
+      if intervalsWaited <= 2
         logger.spawn('processes').debug "silent wait..."
         return
       logger.warn "Waited #{intervalsWaited} intervals, worker has not finished"
-      if intervalsWaited == 4
+      if intervalsWaited == 5
         logger.warn 'Attempting to terminate gracefully (SIGTERM)'
         cluster.workers[workerId].kill('SIGTERM')
       else if intervalsWaited == 6

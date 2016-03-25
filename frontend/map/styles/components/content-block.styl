@@ -68,3 +68,17 @@
 
     .content-emphasis
       font-weight: 400;
+
+.vertical-align
+  display flex
+  flex-direction row
+
+.vertical-align > [class^="col-"],
+.vertical-align > [class*=" col-"]
+  display flex
+  align-items center
+
+.vertical-align > [class^="col-"]:last-child,
+.vertical-align > [class*=" col-"]:last-child
+  justify-content flex-end
+

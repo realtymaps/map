@@ -30,10 +30,6 @@
               .progress-text(ng-show="f.progress > 0 && f.progress < 100") {{f.progress}}%
               .progress-text(ng-show="f.progress >= 100") Complete!
 
-        .color-toggle(ng-class="{'disabled': !wizard.mail.campaign.aws_key}" title="Only PDF content can be printed in color." data-toggle="tooltip")
-          label Print in Color?
-          input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key")
-
         h1.pageTitle Select A Template
 
         .filters

@@ -55,5 +55,9 @@ app.constant 'rmapsMainOptions', do () ->
           'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +
           'FydHMtd2l0aCIsICIkQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL3BkZiJdLAogICAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
         signature: 'wvcT2Cp1Qb6a2XI59tr/vwjN1Vs='
-
+      statusNames:
+        ready: 'draft'
+        sending: 'pending'
+        paid: 'sent'
+      sizeErrorMsg: 'Please select/upload a file that has correct dimensions for its type: 8.5" x 11" for Letters.'
   res

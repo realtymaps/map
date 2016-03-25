@@ -135,8 +135,8 @@ app.service 'rmapsLayerFormattersService', ($log, rmapsParcelEnums, $rootScope, 
         markerType: 'mail'
         icon:
           type: 'div'
-          iconSize: [30, 30]
-          html: "<i class=\"icon fa fa-envelope\"></i>"
+          iconSize: [12, 12]
+          html: "<i class=\"mail-marker icon fa fa-envelope\"></i>"
 
     setMarkerManualClusterOptions: (model) ->
       return {} unless model

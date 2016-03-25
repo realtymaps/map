@@ -3,8 +3,7 @@ mapId = 'mainMap'
 color = 'red'
 
 app.controller "rmapsDrawNeighborhoodCtrl", (
-$scope, $log, $rootScope, rmapsEventConstants
-rmapsNgLeafletEventGateService, rmapsDrawnUtilsService
+$scope, $log, $rootScope, rmapsEventConstants, rmapsDrawnUtilsService
 rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
 
   $log = $log.spawn("map:rmapsDrawNeighborhoodCtrl")
@@ -22,16 +21,15 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
           unWatch()
 
     _handles = rmapsMapDrawHandlesFactory {
+      mapId
       drawnShapesSvc
       drawnItems
       endDrawAction: () ->
-        rmapsNgLeafletEventGateService.enableMapCommonEvents(mapId)
 
       commonPostDrawActions: () ->
         $scope.$emit rmapsEventConstants.map.mainMap.redraw
 
       announceCb: () ->
-        rmapsNgLeafletEventGateService.disableMapCommonEvents(mapId)
 
       createPromise: (geoJson) ->
         #requires rmapsNeighbourhoodsModalCtrl to be in scope (parent)

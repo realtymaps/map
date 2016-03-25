@@ -2,7 +2,7 @@ app = require '../app.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 _ = require 'lodash'
 
-app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPrincipalService, rmapsEventConstants) ->
+app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPrincipalService, rmapsProfilesService, rmapsEventConstants) ->
   $log = $log.spawn 'mail:mailCampaignService'
   mailAPI = backendRoutes.mail.apiBaseMailCampaigns
 
@@ -25,18 +25,18 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
 
     getProjectMail: (force = false) ->
       if !getPromise || force
-        project_id = rmapsPrincipalService.getCurrentProjectId()
-        getPromise = $http.get("/mailProperties/#{project_id}", cache: false)
+        project_id = rmapsProfilesService.currentProfile?.project_id
+        getPromise = $http.get(backendRoutes.mail.getProperties.replace(':project_id', project_id), cache: false)
         .then ({data}) ->
           _mail = data
+
       else
         getPromise
 
-    hasMail: (propertyId) ->
+    getMail: (propertyId) ->
       return false unless propertyId
 
-      !!_.find _mail, (mail) ->
-        mail.rm_property_id == propertyId
+      _.find(_mail, 'rm_property_id', propertyId)
 
     clear: () ->
       getPromise = null
@@ -54,11 +54,9 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
     getReviewDetails: (id) ->
       throw new Error('entity must have id') unless id
       url = backendRoutes.mail.getReviewDetails.replace ':id', id
-      $http.get url
+      $http.get url, cache: false
       .then ({data}) ->
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
-        if 'pdf' of data
-          data.pdf = $sce.trustAsResourceUrl(data.pdf)
         data
 
     create: (entity) ->

@@ -21,14 +21,14 @@ _lastHoveredFactory = (lObject, model, layerName, type) ->
 
 app.service 'rmapsMapEventsHandlerService', (nemSimpleLogger, $timeout, rmapsMainOptions,
 rmapsNgLeafletHelpersService, rmapsNgLeafletEventGateService, rmapsMapEventsLinkerService, rmapsLayerFormattersService,
-rmapsPropertiesService, rmapsMapEventEnums) ->
+rmapsPropertiesService, rmapsMapEventEnums, $log) ->
 
   _gate = rmapsNgLeafletEventGateService
   limits = rmapsMainOptions.map
   _markerEvents = rmapsNgLeafletHelpersService.events.markerEvents
   _geojsonEvents = rmapsNgLeafletHelpersService.events.geojsonEvents
 
-  $log = nemSimpleLogger.spawn("map:rmapsMapEventsHandlerService")
+  $log = $log.spawn("map:rmapsMapEventsHandlerService")
 
   (mapCtrl, mapPath = 'map', thisOriginator = 'map') ->
     $scope = mapCtrl.scope
@@ -90,7 +90,7 @@ rmapsPropertiesService, rmapsMapEventEnums) ->
         # Show popup
         # not opening window until it is fixed from resutlsView, basic parcels have no info so skip
         if model.markerType != 'note' and !_gate.isDisabledEvent(mapCtrl.mapId, rmapsMapEventEnums.window.mouseover)
-          mapCtrl.openWindow?(model, lObject)
+          mapCtrl.openWindow?(model)
 
         # Update model
         model.isMousedOver = true

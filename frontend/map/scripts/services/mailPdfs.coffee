@@ -35,6 +35,18 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
 
   getSignedUrl: (aws_key) ->
     keyEncoded = encodeURIComponent(aws_key)
-    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded)
+    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded), cache: false
     .then ({data}) ->
       data
+
+  validatePdf: (aws_key) ->
+    keyEncoded = encodeURIComponent(aws_key)
+    $http.get backendRoutes.pdfUpload.validatePdf.replace(':id', keyEncoded)
+    .then ({data}) ->
+      data
+    .catch (err) ->
+      # server errors will have been handled in our alert framework, so here we send appropriate invalidation msg
+      {
+        isValid: false
+        message: err.data.alert.msg
+      }

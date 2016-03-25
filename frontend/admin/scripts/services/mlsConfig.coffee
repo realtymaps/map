@@ -36,6 +36,9 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
   getDatabaseList = (configId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').getList()
 
+  getObjectList = (configId) ->
+    Restangular.all(mlsAPI).one(configId).all('objects').getList()
+
   getTableList = (configId, databaseId) ->
     Restangular.all(mlsAPI).one(configId).all('databases').one(databaseId).all('tables').getList()
 
@@ -49,18 +52,19 @@ app.service 'rmapsMlsService', ['Restangular', (Restangular) ->
     # bypass XHR / $http file-dl drama, and Restangular req/res complication.
     backendRoutes.mls.getDataDump.replace(':mlsId', configId) + "?limit=#{limit}"
 
-  service =
-    getConfigs: getConfigs,
-    postConfig: postConfig,
-    update: update,
-    postMainPropertyData: postMainPropertyData,
-    postServerData: postServerData,
-    postServerPassword: postServerPassword,
-    getDatabaseList: getDatabaseList,
-    getTableList: getTableList,
-    getColumnList: getColumnList,
-    getLookupTypes: getLookupTypes
-    getDataDumpUrl: getDataDumpUrl
+  {
+    getConfigs
+    postConfig
+    update
+    postMainPropertyData
+    postServerData
+    postServerPassword
+    getDatabaseList
+    getTableList
+    getColumnList
+    getLookupTypes
+    getDataDumpUrl
+    getObjectList
+  }
 
-  service
 ]

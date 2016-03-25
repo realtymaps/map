@@ -5,7 +5,7 @@
 
 
 
-.normalize-container
+.county.normalize-container
 
   .row.mls-select
     .col-md-4 Select {{countyData.dataSourceType.name}} Source
@@ -159,7 +159,7 @@
         .col-md-2
           select(ng-model="fieldData.current.config.transformString" ng-options="v as k for (k, v) in transformOptions" ng-disabled="fieldData.current.config.advanced" ng-change="updateRule()")
             option(value="") None
-        .col-md-8.help Value will be changed to uppercase, lowercase or capitalized
+        .col-md-8.help Value will be changed to UPPERCASE, lowercase or Capitalized
       .row(ng-if="fieldData.current.type.name == 'string' && fieldData.current.Interpretation == 'LookupMulti'")
         .col-md-2 Split by
         .col-md-2
@@ -463,7 +463,7 @@
         .col-md-6.help Date formatting, as documented #{''}
           a(href="http://momentjs.com/docs/#/parsing/string-format/", target="_blank") here
 
-    .col-md-12.scroll(ng-show="fieldData.current.type.name == 'integer'")
+    .col-md-12.scroll(ng-show="fieldData.current.type.name == 'integer' && fieldData.current.list != 'base'")
       .row
         .col-md-2 Implicit Decimal Places
         .col-md-4
@@ -484,4 +484,3 @@
         .col-md-2
         .col-md-10
           textarea.inputTextarea.transform(ng-bind="JSON.stringify(fieldData.current.input,null,2)" disabled)
-

@@ -1,9 +1,12 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
+previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService, rmapsMailCampaignService) ->
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService,
+rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
+
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -15,7 +18,7 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
       backdrop: 'static'
       windowClass: 'confirm-mail-modal'
       resolve:
-        price: $scope.priceQuote
+        price: $scope.review.price
         mail: $scope.wizard.mail
 
     modalInstance.result.then (result) ->
@@ -30,19 +33,24 @@ app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal,
       windowClass: 'address-list-modal'
       scope: $scope
 
-  $scope.priceQuote = null
-  $scope.review = null
+  $scope.review = {}
+  $scope.statusNames = rmapsMainOptions.mail.statusNames
 
-  $scope.statusNames =
-    'ready': 'draft'
-    'sending': 'pending'
-    'paid': 'sent'
+  $scope.reviewPreview = () ->
+    modalInstance = $modal.open
+      template: previewModalTemplate
+      controller: 'rmapsReviewPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () -> $scope.review
 
-  if !$scope.wizard.mail.isSubmitted()
-    rmapsLobService.getQuote($scope.wizard.mail.campaign.id)
-    .then (quote) ->
-      $scope.priceQuote = quote
-  else
-    rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
-    .then (review) ->
-      $scope.review = review
+  rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
+  .then (review) ->
+    $scope.review = _.merge review, rmapsMailTemplateTypeService.getMeta()[$scope.wizard.mail.campaign.template_type]
+  .catch (err) ->
+    if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
+      err.data.alert.msg = rmapsMainOptions.mail.sizeErrorMsg
+    $scope.review = _.merge $scope.review, err
+    $scope.review.price = "N/A"

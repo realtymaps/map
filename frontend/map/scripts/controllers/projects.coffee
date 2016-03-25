@@ -2,7 +2,18 @@ app = require '../app.coffee'
 
 module.exports = app
 
-app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $modal, rmapsPrincipalService, rmapsProjectsService, rmapsEventConstants) ->
+app.controller 'rmapsProjectsCtrl', (
+  $rootScope,
+  $scope,
+  $http,
+  $state,
+  $log,
+  $modal,
+  rmapsPrincipalService,
+  rmapsProfilesService,
+  rmapsProjectsService,
+  rmapsEventConstants
+) ->
   $scope.activeView = 'projects'
   $log = $log.spawn("map:projects")
   $log.debug 'projectsCtrl'
@@ -27,7 +38,14 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
 
     $scope.saveProject = () ->
       modalInstance.dismiss('save')
+      currentProfileId = null
+
       rmapsProjectsService.createProject $scope.newProject
+      .then (identity) ->
+        currentProfileId = identity.currentProfileId
+        return $scope.loadProjects()
+      .then () ->
+        rmapsProfilesService.setCurrentProfileByProfileId currentProfileId
 
   $scope.loadMap = (project) ->
     $state.go 'map', project_id: project.id, {reload: true}
@@ -50,8 +68,14 @@ app.controller 'rmapsProjectsCtrl', ($rootScope, $scope, $http, $state, $log, $m
 
     $scope.modalOk = () ->
       modalInstance.dismiss('ok')
+      currentProfileId = null
+
       rmapsProjectsService.delete project
-      .then $scope.loadProjects
+      .then (identity) ->
+        currentProfileId = identity.currentProfileId
+        return $scope.loadProjects
+      .then () ->
+        rmapsProfilesService.setCurrentProfileByProfileId currentProfileId
 
   $scope.loadProjects = () ->
     rmapsProjectsService.getProjects()

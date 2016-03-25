@@ -20,16 +20,24 @@ rework = require 'gulp-rework'
 rework_url = require 'rework-plugin-url'
 path = require 'path'
 
+logger = (require '../util/logger').spawn('vendor')
+
 gulp.task 'vendor_css', ->
   gulp.src(vendorCssPipe)
   .pipe plumber()
   .pipe(onlyDirs es)
   .pipe(concat 'vendor.css')
   .pipe rework rework_url  (url) ->
-    if url.match /[.](woff|woff2|ttf|eot|otf)(#.*)?$/ and !url.match /^\/\//
-      "./#{url}".replace path.dirname("./#{url}"), '/fonts'
-    else if url.match /[.](jpg|jpeg|gif|png|svg|ico)$/ and !url.match /^\/\//
-      "./#{url}".replace path.dirname("./#{url}"), '/assets'
+    # logger.debug "URL (#{url})"
+    if url.match(/[.](woff|woff2|ttf|eot|otf)([?].*)?(#.*)?$/) and !url.match(/^\/\//)
+      r_url = url.replace '@{font-path}', ''
+      r_url = "./#{r_url}".replace path.dirname("./#{r_url}"), '/fonts'
+      logger.debug "rework_url #{url} -> #{r_url}"
+      r_url
+    else if url.match(/[.](jpg|jpeg|gif|png|svg|ico)([?].*)?(#.*)?$/) and !url.match(/^\/\//)
+      r_url = "./#{url}".replace path.dirname("./#{url}"), '/assets'
+      logger.debug "rework_url #{url} -> #{r_url}"
+      r_url
     else
       url
   .pipe(gulp.dest paths.destFull.styles)

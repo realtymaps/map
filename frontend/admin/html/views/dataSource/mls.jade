@@ -129,7 +129,7 @@
 
 
 
-    .col-md-6(ng-show="mlsData.current.id")
+    .col-md-6.mls-data(ng-show="mlsData.current.id")
       .progressPills(ng-show="mlsData.current.id")
         tabset(type="pills")
           tab(heading="MLS Data")
@@ -186,6 +186,11 @@
                       span.data-entry {{mlsData.current.listing_data.queryTemplate}}
             tr
               td
+                label.data-label Objects:
+              td
+                span.data-entry {{fieldNameMap.objects}}
+            tr
+              td
                 label.data-label Notes:
               td
                 span.data-entry {{mlsData.current.notes}}
@@ -211,4 +216,3 @@
                 label.data-label {{ui.otherConfig[field].label}}:
               td
                 span.data-entry {{mlsData.current[field] | emptyValueOutput }}
-

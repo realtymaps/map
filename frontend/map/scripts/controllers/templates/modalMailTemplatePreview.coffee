@@ -38,3 +38,13 @@ app.controller 'rmapsUploadedPdfPreviewCtrl',
 
     $scope.close = () ->
       $modalInstance.dismiss()
+
+
+app.controller 'rmapsReviewPreviewCtrl',
+  ($scope, $modalInstance, $log, $sce, template, rmapsLobService) ->
+    $scope.template = template
+    $scope.mediaType = 'pdf'
+    $scope.template.pdf = $sce.trustAsResourceUrl($scope.template.pdf)
+
+    $scope.close = () ->
+      $modalInstance.dismiss()

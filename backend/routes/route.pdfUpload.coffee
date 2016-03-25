@@ -12,6 +12,9 @@ class PdfUploadRoute extends RouteCrud
   getSignedUrl: (req, res, next) =>
     @custom @svc.getSignedUrl(req.params.id), res
 
+  validatePdf: (req, res, next) =>
+    @custom @svc.validatePdf(req.params.id), res
+
 
 instance = new PdfUploadRoute pdfUploadService,
   debugNS: "pdfUploadRoute"
@@ -31,6 +34,11 @@ module.exports = routeHelpers.mergeHandles instance,
       # auth.requirePermissions({all:['add_','change_', 'delete_']}, logoutOnFail:true)
     ]
   getSignedUrl:
+    methods: ['get']
+    middleware: [
+      auth.requireLogin(redirectOnFail: true)
+    ]
+  validatePdf:
     methods: ['get']
     middleware: [
       auth.requireLogin(redirectOnFail: true)

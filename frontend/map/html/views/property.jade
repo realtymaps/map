@@ -1,6 +1,7 @@
 include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
 .property-detail-modal
+
   .desktop-only
     .property-detail-container.container
       //+spinnerMixin()
@@ -43,6 +44,19 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
             .col-sm-6.text-right.desktop-only
               property-buttons(property='selectedResult')
+
+          .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+            .content-heading Mail Campaigns
+
+            .row.content-row.vertical-align(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
+              a.col-sm-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+              .col-sm-3.content-body
+                span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+              .col-sm-3.content-body
+                span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
+              .col-sm-3.content-body.pull-right.text-right
+                button.btn.btn-sm.btn-white(ng-click="previewLetter(mail)") Preview
+                  i.fa.fa-envelope
 
           .row.content-block.prop-attrs.border-bottom
             .col-sm-8
@@ -161,6 +175,23 @@ include ../../../common/html/includes/mixins/_spinnerMixin.jade
 
           .content-emphasis.content-lg {{selectedResult.street_address_num}} {{selectedResult.street_address_name}} {{selectedResult.street_address_unit}}
           .content-muted {{formatters.property.getCityStateZip(selectedResult)}}
+
+        .content-block.prop-attrs.border-bottom(ng-show="getMail()")
+            .content-heading Mail Campaigns
+
+            .row.content-row.vertical-align(ng-repeat="mail in getMail().mailings | orderBy: 'lob.date_created'")
+              a.col-xs-3.content-body(ui-sref="review({id:mail.campaign_id})") {{mail.campaign_name}}
+              .col-xs-3.content-body
+                span Sent {{ (mail.lob.date_created | date:'MM/dd/yyyy') || 'unsent' }}
+              .col-xs-3.content-body
+                span(ng-show="mail.lob.date_created") To {{mail.recipientType}} address
+              .col-xs-3.content-body
+                button.btn.btn-sm.btn-white(mobile-modal modal-template="'MailReview'" modal-title="'Mail Review'" ng-show="mail.lob.thumbnails.length") Preview
+                  i.fa.fa-envelope
+                script(type="text/ng-template" id="MailReview")
+                  .preview-mail-window
+                    .modal-body
+                      img(ng-src="{{mail.lob.thumbnails[0].medium}}")
 
         .content-block.prop-attrs.border-bottom
           .content-heading Property Info
