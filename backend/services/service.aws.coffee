@@ -26,6 +26,8 @@ _handler = (handlerOpts, opts) ->
     args: handlerOpts
     required: 's3FnName'
 
+  extraArgs ?= {}
+  
   _debug required, 'required'
   _debug s3FnName, 's3FnName'
   _debug extraArgs, 'extraArgs'
@@ -36,7 +38,7 @@ _handler = (handlerOpts, opts) ->
     required: required
     omit: ['extAcctName', 'nodeStyle']
 
-  _debug opts
+  _debug opts, 'opts'
 
   externalAccounts.getAccountInfo(extAcctName)
   .then (s3Info) ->
