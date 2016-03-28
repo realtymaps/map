@@ -1,6 +1,5 @@
 app = require '../../app.coffee'
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
-_ = require 'lodash'
 confirmModalTemplate = require('../../../html/views/templates/modals/confirm.jade')()
 previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.tpl.jade')()
 
@@ -178,4 +177,3 @@ app.controller 'rmapsConfirmCtrl',
       $scope.$close(false)
     $scope.modalOk = ->
       $scope.$close(true)
-

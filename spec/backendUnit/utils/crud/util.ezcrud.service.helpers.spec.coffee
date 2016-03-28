@@ -14,6 +14,7 @@ describe 'util.ezcrud.service.helpers', ->
       @sqlMock = new SqlMock 'config', 'dataSourceFields'
       dbFn = () =>
         @sqlMock
+      dbFn.tableName = 'data_source_fields'
 
       @serviceCrud = new ServiceCrud(dbFn, {debugNS:'ezcrud:service'})
       @query =

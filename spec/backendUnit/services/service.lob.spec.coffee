@@ -115,8 +115,8 @@ describe "service.lob", ->
         live: lobSvc
 
       svc.__set__ 'awsService',
-        getTimedDownloadUrl: (bucket, key) -> Promise.try ->
-          return "http://aws-pdf-downloads/#{key}"
+        getTimedDownloadUrl: ({extAcctName, Key}) -> Promise.try ->
+          return "http://aws-pdf-downloads/#{Key}"
         buckets: PDF: 'aws-pdf-downloads'
 
     it 'should update campaign status and create letters', (done) ->

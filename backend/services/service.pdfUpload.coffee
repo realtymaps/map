@@ -7,7 +7,9 @@ mockLobData = require '../../spec/fixtures/backend/services/lob/mail.letter.json
 
 class PdfUploadService extends ServiceCrud
   getSignedUrl: (aws_key) ->
-    awsService.getTimedDownloadUrl awsService.buckets.PDF, aws_key
+    awsService.getTimedDownloadUrl
+      extAcctName: awsService.buckets.PDF
+      Key: aws_key
     .then (url) ->
       url
 
