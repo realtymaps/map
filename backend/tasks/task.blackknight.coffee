@@ -1,21 +1,21 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
-jobQueue = require '../util.jobQueue'
-{SoftFail} = require '../errors/util.error.jobQueue'
-tables = require '../../config/tables'
-logger = require('../../config/logger').spawn('task:blackknight')
-sqlHelpers = require '../util.sql.helpers'
+jobQueue = require '../utils/util.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
+tables = require '../config/tables'
+logger = require('../config/logger').spawn('task:blackknight')
+sqlHelpers = require '../utils/util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
-externalAccounts = require '../../services/service.externalAccounts'
+externalAccounts = require '../services/service.externalAccounts'
 PromiseSftp = require 'promise-sftp'
 _ = require 'lodash'
-keystore = require '../../services/service.keystore'
+keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
-dbs = require '../../config/dbs'
+dbs = require '../config/dbs'
 path = require 'path'
 moment = require 'moment'
 constants = require './task.blackknight.constants'
-validation = require '../util.validation'
+validation = require '../utils/util.validation'
 
 
 

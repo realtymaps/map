@@ -1,17 +1,17 @@
-tables = require '../../config/tables'
+tables = require '../config/tables'
 Promise = require 'bluebird'
-jobQueue = require '../util.jobQueue'
-validation = require '../util.validation'
-validatorBuilder = require '../../../common/utils/util.validatorBuilder'
+jobQueue = require '../utils/util.jobQueue'
+validation = require '../utils/util.validation'
+validatorBuilder = require '../../common/utils/util.validatorBuilder'
 memoize = require 'memoizee'
 vm = require 'vm'
 _ = require 'lodash'
-logger = require('../../config/logger').spawn('task')
-sqlHelpers = require '../util.sql.helpers'
-dbs = require '../../config/dbs'
-{HardFail, SoftFail} = require '../errors/util.error.jobQueue'
+logger = require('../config/logger').spawn('task')
+sqlHelpers = require '../utils/util.sql.helpers'
+dbs = require '../config/dbs'
+{HardFail, SoftFail} = require '../utils/errors/util.error.jobQueue'
 copyStream = require 'pg-copy-streams'
-utilStreams = require '../util.streams'
+utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
 
 

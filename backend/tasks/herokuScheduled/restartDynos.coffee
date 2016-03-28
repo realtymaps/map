@@ -1,7 +1,7 @@
-logger = require '../../../config/logger'
+logger = require '../../config/logger'
 Heroku = require 'heroku-client'
-externalAccounts = require '../../../services/service.externalAccounts'
-shutdown = require '../../../config/shutdown'
+externalAccounts = require '../../services/service.externalAccounts'
+shutdown = require '../../config/shutdown'
 
 restart = (appName = 'realtymaps-map') ->
   externalAccounts.getAccountInfo('heroku')

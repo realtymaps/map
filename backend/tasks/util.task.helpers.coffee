@@ -1,6 +1,6 @@
-logger = require('../../config/logger').spawn('task:helpers')
-{notImplemented} = require '../util.interface.helpers'
-Composable = require '../util.composable'
+logger = require('../config/logger').spawn('task:helpers')
+{notImplemented} = require '../utils/util.interface.helpers'
+Composable = require '../utils/util.composable'
 
 SubtaskHandlerInterface = Composable.compose
   handler: (subtask) ->
