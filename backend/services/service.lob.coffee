@@ -30,7 +30,7 @@ LOB_LETTER_FIELDS = [
 
 class LobAPI extends LobFactory
   constructor: ({@apiKey, @apiName}) ->
-    logger.debug "Initialized LOB API #{@apiName} with key '#{@apiKey.substring(0,5)}..'"
+    logger.debug "Initialized LOB API #{@apiName}"
     super(@apiKey)
 
     _handleError = (err) ->
