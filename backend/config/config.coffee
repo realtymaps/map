@@ -94,6 +94,7 @@ base =
     RETRY_DELAY_MILLI: 2000
   MAILING_PLATFORM:
     LIVE_MODE: process.env.MAILING_IS_LIVE or false
+  ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS or false
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =

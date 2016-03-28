@@ -87,7 +87,7 @@ lobPromise = () ->
 
       # Depending on environment settings, mail is sent using either the live or test API
       if config.MAILING_PLATFORM.LIVE_MODE
-        if config.ENV != 'production' && !process.env.ALLOW_LIVE_APIS
+        if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
           throw new Error("Refusing to use LOB-live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
         apis.live = new LobAPI(apiKey: accountInfo.api_key, apiName: 'live')
       else
