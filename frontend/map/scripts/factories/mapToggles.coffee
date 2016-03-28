@@ -2,7 +2,6 @@
 app = require '../app.coffee'
 
 app.factory 'rmapsMapTogglesFactory', () ->
-
   (json) ->
     _locationCb = null
     @showResults = false
@@ -23,8 +22,7 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @showOldToolbar = false
 
     if json?
-      _.extend @, _.mapValues json, (val) ->
-        return val == 'true'
+      _.extend @, json
 
     @enableNoteTap = () =>
       @showNoteTap = true
@@ -60,13 +58,13 @@ app.factory 'rmapsMapTogglesFactory', () ->
     @toggleFilters = () =>
       @showFilters = !@showFilters
 
-    @setPropetiesInShapes = (bool) ->
+    @setPropertiesInShapes = (bool) ->
       if bool != @propertiesInShapes
         @propertiesInShapes = bool
 
     @togglePropertiesInShapes = () ->
       return if @isSketchMode && @propertiesInShapes
-      @setPropetiesInShapes !@propertiesInShapes
+      @setPropertiesInShapes !@propertiesInShapes
 
     @toggleIsSketchMode = () =>
       @isSketchMode = !@isSketchMode

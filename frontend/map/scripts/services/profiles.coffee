@@ -67,6 +67,7 @@ app.service 'rmapsProfilesService', (
 
   setCurrentProfile: (project) ->
     if project == @currentProfile
+      $log.debug "Profile is already set as current project, returning"
       return $q.resolve project
 
     # If switching projects, ensure the old one is up-to-date
@@ -141,8 +142,10 @@ app.service 'rmapsProfilesService', (
       #
 
       if rmapsMapFactory.currentMainMap?
+        $log.debug "Profile change, updating current map Toggles"
         rmapsMapFactory.currentMainMap.updateToggles project.map_toggles
       else
+        $log.debug "Initial profile set, create Map Toggles Factory"
         rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
 
       return project
