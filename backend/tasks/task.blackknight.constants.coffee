@@ -1,6 +1,6 @@
 _ = require 'lodash'
 Promise = require "bluebird"
-svc = require '../../services/service.dataSource'
+svc = require '../services/service.dataSource'
 
 
 columns = {}

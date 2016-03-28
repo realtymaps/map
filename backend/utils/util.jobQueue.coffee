@@ -13,7 +13,7 @@ memoize = require 'memoizee'
 config = require '../config/config'
 keystore = require '../services/service.keystore'
 {PartiallyHandledError, isUnhandled} = require './errors/util.error.partiallyHandledError'
-TaskImplementation = require './tasks/util.taskImplementation'
+TaskImplementation = require '../tasks/util.taskImplementation'
 dbs = require '../config/dbs'
 {HardFail, SoftFail, TaskNotImplemented} = require './errors/util.error.jobQueue'
 
@@ -45,7 +45,7 @@ queueReadyTasks = (opts={}) -> Promise.try () ->
   overrideSkipNames = []
   readyPromises = []
   # load all task definitions to check for overridden "ready" method
-  taskImpls = loaders.loadSubmodules(path.join(__dirname, 'tasks'), /^task\.(\w+)\.coffee$/)
+  taskImpls = loaders.loadSubmodules(path.join(__dirname, '../tasks'), /^task\.(\w+)\.coffee$/)
   Promise.map Object.keys(taskImpls), (taskName) ->
     taskImpl = taskImpls[taskName]
     # task might define its own logic for determining if it should run

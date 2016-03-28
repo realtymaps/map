@@ -1,8 +1,8 @@
 Promise = require 'bluebird'
-tables = require '../../config/tables'
-logger = require '../../config/logger'
-config = require '../../config/config'
-dbs = require '../../config/dbs'
+tables = require '../config/tables'
+logger = require '../config/logger'
+config = require '../config/config'
+dbs = require '../config/dbs'
 TaskImplementation = require './util.taskImplementation'
 
 
@@ -14,7 +14,7 @@ rawTables = (subtask) ->
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_TABLE_DAYS} days'::INTERVAL")
   .map (loadEntry) ->
     logger.debug("cleaning up old raw table: #{loadEntry.raw_table_name}")
-    
+
     # for now, try to clean the raw table from both dbs...  eventually we'll change this to just the raw db
     mainCleanup = dbs.get('main').schema.dropTableIfExists(loadEntry.raw_table_name)
     rawCleanup = dbs.get('raw_temp').schema.dropTableIfExists(loadEntry.raw_table_name)
