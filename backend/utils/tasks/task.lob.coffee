@@ -28,7 +28,8 @@ findLetters = (subtask) ->
       'file'
       'options'
       'retries',
-      'lob_errors'
+      'lob_errors',
+      'lob_api'
     ]
   )
   .whereIn('status', [ 'ready', 'error-transient' ])
@@ -47,7 +48,7 @@ createLetter = (subtask) ->
   if letter.lob_errors?
     lob_errors = lob_errors.concat letter.lob_errors
 
-  lobSvc.createLetter letter
+  lobSvc.sendLetter letter, letter.lob_api
 
   .then (lobResponse) ->
     logger.debug -> "#{JSON.stringify lobResponse, null, 2}"

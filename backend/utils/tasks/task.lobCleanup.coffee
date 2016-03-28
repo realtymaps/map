@@ -20,7 +20,7 @@ updateLetters = (subtask) ->
   query = tables.mail.letters()
   query
   .select(
-    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date")
+    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date, lob_api")
   )
   .whereNull('lob_response')
   .where(status: 'error-transient')
@@ -56,6 +56,8 @@ getLetter = (subtask) ->
       gte: created_date
     metadata:
       uuid: letter.uuid # unique identifier we generated
+   ,
+    letter.lob_api
 
   .then ({data}) ->
     # In this case we know the letter was recieved by LOB so we can mark it sent
