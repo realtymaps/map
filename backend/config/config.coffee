@@ -92,6 +92,9 @@ base =
     LIVE_MODE: process.env.EMAIL_IS_LIVE or false
     MAX_RETRIES: 4
     RETRY_DELAY_MILLI: 2000
+  MAILING_PLATFORM:
+    LIVE_MODE: process.env.MAILING_IS_LIVE or false
+
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
   conString: base.DBS.MAIN.connection

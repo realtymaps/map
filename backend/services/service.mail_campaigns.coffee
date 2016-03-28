@@ -58,7 +58,7 @@ class MailService extends ServiceCrud
 
       # if it looks like lob has sent some letters...
       if letterResults?.lob_response? and letterResults?.stripe_charge?
-        query = lobService.getDetails letterResults.lob_response.id
+        query = lobService.getLetter letterResults.lob_response.id
         .then ({url}) ->
           pdf: url
           price: letterResults.stripe_charge.amount/100
@@ -148,7 +148,8 @@ class MailService extends ServiceCrud
         'file'
         'options'
         'retries',
-        'lob_errors'
+        'lob_errors',
+        'lob_api'
         'status'
       ]
     )
@@ -163,7 +164,7 @@ class MailService extends ServiceCrud
       if !(letter.status == "ready" || letter.status == "error-transient")
         throw new PartiallyHandledError("Letter #{letter_id} must be ready or have only transient error status")
 
-      lobSvc.createLetterTest letter
+      lobSvc.sendLetter letter, 'test'
 
       .then (lobResponse) ->
         logger.debug -> "#{JSON.stringify lobResponse, null, 2}"
