@@ -37,6 +37,9 @@ finalizeDataPrep = (subtask) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
       NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
+finalizeData = (subtask) ->
+  Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
+
 storePhotosPrep = (subtask) ->
   _getUniqueRmIds(subtask, tables.property.combined).then (ids) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
@@ -44,9 +47,6 @@ storePhotosPrep = (subtask) ->
 
 storePhotos = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
-
-finalizeData = (subtask) ->
-  Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
 deletePhotosPrep = (subtask) ->
   tables.deletes.photo()
