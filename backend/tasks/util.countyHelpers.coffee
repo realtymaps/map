@@ -20,7 +20,6 @@ PromiseSftp = require 'promise-sftp'
 unzip = require 'unzip2'
 fs = require 'fs'
 path = require 'path'
-through = require 'through2'
 rimraf = require 'rimraf'
 zlib = require 'zlib'
 

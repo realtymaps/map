@@ -1,20 +1,21 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
-dbs = require '../config/dbs'
-config = require '../config/config'
 logger = require '../config/logger'
 jobQueue = require '../utils/util.jobQueue'
-validation = require '../utils/util.validation'
-vm = require 'vm'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
 retsHelpers = require '../utils/util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
 {SoftFail} = require '../utils/errors/util.error.jobQueue'
-through2 = require 'through2'
+awsService = require '../services/service.aws'
+mlsPhotoUtil = require '../utils/util.mls.photos'
+uuid = require '../utils/util.uuid'
+externalAccounts = require '../services/service.externalAccounts'
+photoExtBucketName = 'aws-listing-photos'
 
+ONE_DAY_MILLISEC = 24*60*60*1000
 
 # loads all records from a given (conceptual) table that have changed since the last successful run of the task
 loadUpdates = (subtask, options) ->
@@ -22,7 +23,7 @@ loadUpdates = (subtask, options) ->
   jobQueue.getLastTaskStartTime(subtask.task_name)
   .then (lastSuccess) ->
     now = new Date()
-    if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
+    if now.getTime() - lastSuccess.getTime() > ONE_DAY_MILLISEC || now.getDate() != lastSuccess.getDate()
       # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
       logger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
       return new Date(0)
@@ -148,7 +149,116 @@ finalizeData = (subtask, id) ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
 
-module.exports =
-  loadUpdates: loadUpdates
-  buildRecord: buildRecord
-  finalizeData: finalizeData
+_getPhotoSettings = (subtask, rm_property_id) ->
+  photoTypePromise = tables.config.mls().where id: subtask.task_name
+  .then sqlHelpers.expectSingleRow
+  .then (mlsConfig) ->
+    photoType = mlsConfig.listing_data.largestPhotoObject || 'Photo'
+    logger.debug  "#{mlsConfig.id} photoType: #{photoType}"
+    {photoType, photoRes:mlsConfig.photoRes}
+
+  query = tables.property.combined()
+  .where
+    rm_property_id: rm_property_id
+    data_source_type: 'mls'
+    data_source_id: subtask.task_name
+
+  logger.debug query.toString()
+
+  Promise.all [photoTypePromise, query]
+
+_updatePhotoUrl = (subtask, {newFileName, imageId, photo_id}) -> Promise.try () ->
+  externalAccounts.getAccountInfo(photoExtBucketName)
+  .then (s3Info) ->
+    ###
+    Update photo's hash in a data_combined col
+    example:
+      photos:
+        1: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
+        2: https://s3.amazonaws.com/uuid/swflmls/mls_id_2.jpeg
+        3: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
+    ###
+    url = "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
+
+    query = tables.property.combined()
+    .raw("""
+      UPDATE config_mls set
+      photos=jsonb_set(photos, '{#{imageId}}', '"#{url}"', true)"""
+    )
+    .where
+      data_source_type: 'mls'
+      data_source_id: subtask.task_name
+      photo_id: photo_id
+
+    logger.debug query.toString()
+    query
+
+_enqueuePhotoToDelete = (key, batch_id) ->
+  if key?
+    tables.deletes.photos()
+    .insert {key, batch_id}
+  else
+    Promise.resolve()
+
+storePhotos = (subtask, rm_property_id) ->
+  logger.debug subtask.task_name
+
+  _getPhotoSettings(subtask, rm_property_id)
+  .then ([{photoType, photoRes}, rows]) ->
+    Promise.all rows.map (row) ->
+      {photo_id} = row
+      photoIds = {}
+      #get all photos for a specific property
+      photoIds[photo_id] = '*'
+
+      retsHelpers.getPhotosObject {
+        serverInfo: subtask.task_name
+        databaseName: 'Property'
+        photoIds
+        photoType
+      }
+      .then (obj) ->
+        new Promise (resolve, reject) ->
+          mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
+            if(err)
+              reject err
+
+            if(isEnd)
+              resolve()
+
+            newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
+            {imageId} = payload
+            #file naming consideratons
+            #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+            awsService.putObject
+              extAcctName: photoExtBucketName
+              Key: newFileName
+              Body: payload.data
+              Metadata:
+                rm_property_id: row.rm_property_id
+                height: photoRes.height
+                width: photoRes.width
+            .then () ->
+              _enqueuePhotoToDelete row.photos[imageId], subtask.batch_id
+            .then () ->
+              {newFileName, imageId, photo_id}
+        .then _updatePhotoUrl.bind(null, subtask)
+
+deleteOldPhoto = (subtask, id) ->
+  tables.deletes.photo()
+  .where {id}
+  .then sqlHelpers.expectSingleRow
+  .then ({id, key}) ->
+    logger.debug "deleting: id: #{id}, key: #{key}"
+
+    awsService.deleteObject
+      extAcctName: photoExtBucketName
+      Key: key
+
+module.exports = {
+  loadUpdates
+  buildRecord
+  finalizeData
+  storePhotos
+  deleteOldPhoto
+}

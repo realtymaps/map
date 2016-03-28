@@ -56,7 +56,7 @@ params = _.extend({},{
 
 if (uploadFileName){
   params.Key = uploadFileName
-  if(!(['getObject'].indexOf(argv.action) > -1))
+  if(!(['getObject', 'deleteObject'].indexOf(argv.action) > -1))
     params.Body = fs.createReadStream(fileName)
 }
 

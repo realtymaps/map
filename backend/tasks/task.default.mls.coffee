@@ -3,15 +3,11 @@ dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 logger = require '../config/logger'
-sqlHelpers = require '../utils/util.sql.helpers'
 mlsHelpers = require './util.mlsHelpers'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
 
-
 # NOTE: This file a default task definition used for MLSs that have no special cases
-
-
 NUM_ROWS_TO_PAGINATE = 2500
 
 
@@ -28,22 +24,51 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
 
-finalizeDataPrep = (subtask) ->
-  tables.property.listing()
+_getUniqueRmIds = (subtask, dbFn) ->
+  #should order by be in here
+  dbFn()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+
+finalizeDataPrep = (subtask) ->
+  _getUniqueRmIds(subtask, tables.property.listing).then (ids) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
+      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+
+storePhotosPrep = (subtask) ->
+  _getUniqueRmIds(subtask, tables.property.combined).then (ids) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
+      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
+
+storePhotos = (subtask) ->
+  Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
+deletePhotosPrep = (subtask) ->
+  tables.deletes.photo()
+  .select('id')
+  .where(batch_id: subtask.batch_id)
+  .orderBy 'id'
+  .then (ids) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
+      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_deletePhotos")
 
-module.exports = new TaskImplementation
-  loadRawData: loadRawData
-  normalizeData: normalizeData
-  recordChangeCounts: dataLoadHelpers.recordChangeCounts
-  finalizeDataPrep: finalizeDataPrep
-  finalizeData: finalizeData
+deletePhotos = (subtask) ->
+  Promise.map subtask.data.values, mlsHelpers.deleteOldPhoto.bind(null, subtask)
+
+module.exports = new TaskImplementation {
+  loadRawData
+  normalizeData
+  finalizeDataPrep
+  finalizeData
+  storePhotosPrep
+  storePhotos
+  deletePhotosPrep
+  deletePhotos
   activateNewData: dataLoadHelpers.activateNewData
+  recordChangeCounts: dataLoadHelpers.recordChangeCounts
+}
