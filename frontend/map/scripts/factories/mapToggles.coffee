@@ -25,12 +25,15 @@ app.factory 'rmapsMapTogglesFactory', ($log) ->
       @showNotes = false
       @showMail = false
       @propertiesInShapes = false
-      @isSketchMode = false
-      @isNeighborhoodDraw = false
-      @showOldToolbar = false
 
       if json?
         _.extend @, json
+
+      # Don't load any of the following from the database
+
+      @isSketchMode = false
+      @isNeighborhoodDraw = false
+      @showOldToolbar = false
 
       @enableNoteTap = () =>
         @showNoteTap = true
