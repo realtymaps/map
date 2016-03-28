@@ -117,7 +117,7 @@ finalizeData = (subtask, id) ->
 
     # owner name promotion logic
     if !listings[0].owner_name? && !listings[0].owner_name_2?
-      if !listings[1]?.owner_name? || !listings[1]?.owner_name_2?
+      if listings[1]?.owner_name? || listings[1]?.owner_name_2?
         # keep the previously-promoted values
         promotionPromise = Promise.resolve(owner_name: listings[1].owner_name, owner_name_2: listings[1].owner_name_2)
       else
@@ -137,11 +137,16 @@ finalizeData = (subtask, id) ->
       listing = dataLoadHelpers.finalizeEntry(listings)
       listing.data_source_type = 'mls'
       _.extend(listing, parcel[0], promotion)
-      ident =
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        active: false
-      sqlHelpers.upsert(ident, listing, tables.property.combined)
+      dbs.get('main').transaction (transaction) ->
+        tables.property.combined(transaction: transaction)
+        .where
+          rm_property_id: id
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
+        .then () ->
+          tables.property.combined(transaction: transaction)
+          .insert(listing)
 
 module.exports =
   loadUpdates: loadUpdates

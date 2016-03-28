@@ -247,11 +247,16 @@ finalizeData = (subtask, id) ->
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-        ident =
-          rm_property_id: id
-          data_source_id: subtask.task_name
-          active: false
-        sqlHelpers.upsert(ident, tax, tables.property.combined)
+        dbs.get('main').transaction (transaction) ->
+          tables.property.combined(transaction: transaction)
+          .where
+            rm_property_id: id
+            data_source_id: subtask.task_name
+            active: false
+          .delete()
+          .then () ->
+            tables.property.combined(transaction: transaction)
+            .insert(listing)
 
 
 ###
