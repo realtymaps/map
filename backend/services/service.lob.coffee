@@ -28,12 +28,39 @@ LOB_LETTER_FIELDS = [
    'metadata'
 ]
 
-class LobAPI extends LobFactory
-  constructor: ({@apiKey, @apiName}) ->
-    logger.debug "Initialized LOB API #{@apiName}"
-    super(@apiKey)
+#
+# Retrieve API keys from external accounts (once)
+#  The test API is always available for price quotes / previews
+#  The live API is only initialized if the environment is configured as follows:
+#    - MAILING_PLATFORM.LIVE_MODE is on
+#    - Either environment is production, or ALLOW_LIVE_APIS is on
+#    - Note that even if both of these things are true, the API key in the database ultimately determines how 'live' behaves
+#
+_apiPromise = null
+lobPromise = () ->
 
-    _handleError = (err) ->
+  # This class definition is here so it is easier to rewire
+  class LobAPI extends LobFactory
+    constructor: ({@apiKey, @apiName}) ->
+      logger.debug "Initialized LOB API-#{@apiName}"
+      super(@apiKey)
+
+    getLetter: (letterId) ->
+      logger.debug "API-#{@apiName} getLetter #{letterId}"
+      @letters.retrieve letterId
+      .catch @handleError.bind(@)
+
+    listLetters: (opts) ->
+      logger.debug "API-#{@apiName} listLetters opts: #{opts}"
+      @letters.list opts
+      .catch @handleError.bind(@)
+
+    sendLetter: (letter) ->
+      logger.debug "API-#{@apiName} sendLetter #{letter.metadata?.uuid}"
+      @letters.create letter
+      .catch @handleError.bind(@)
+
+    handleError: (err) ->
       lobError = new Error(err.message)
       msg = "LOB-#{@apiName} API responded #{err.status_code}"
       if err.status_code == 401
@@ -49,35 +76,9 @@ class LobAPI extends LobFactory
       else if err.status_code == 500
         throw new LobErrors.LobServerError(lobError, msg)
 
-    @handleError = _handleError.bind(@)
-
-  getLetter: (letterId) ->
-    logger.debug "API-#{@apiName} getLetter #{letterId}"
-    @letters.retrieve letterId
-    .catch @handleError
-
-  listLetters: (opts) ->
-    logger.debug "API-#{@apiName} listLetters opts: #{opts}"
-    @letters.list opts
-    .catch @handleError
-
-  sendLetter: (letter) ->
-    logger.debug "API-#{@apiName} sendLetter #{letter.metadata?.uuid}"
-    @letters.create letter
-    .catch @handleError
-
-#
-# Retrieve API keys from external accounts (once)
-#  The test API is always available for price quotes / previews
-#  The live API is only initialized with the live api key if the environment is configured as follows:
-#    - MAILING_PLATFORM.LIVE_MODE is on
-#    - Either environment is production, or ALLOW_LIVE_APIS is on
-#    - Note that even if both of these things are true, the API key in the database ultimately determines how 'live' behaves
-#
-_apiPromise = null
-lobPromise = () ->
+  # Get account info
   if _apiPromise
-    console.log 'Returning cached promise'
+    logger.debug 'Returning cached promise'
     _apiPromise
   else
   _apiPromise = externalAccounts.getAccountInfo('lob')
