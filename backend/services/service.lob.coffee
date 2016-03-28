@@ -68,7 +68,9 @@ _maybeUseSignedUrl = (letter) ->
     # assign a temporary signed url for the campaign pdf we host in s3
     if letter.options.aws_key
       # 10 minute expiration for url below
-      awsService.getTimedDownloadUrl awsService.buckets.PDF, letter.options.aws_key
+      awsService.getTimedDownloadUrl
+        extAcctName: awsService.buckets.PDF
+        Key: letter.options.aws_key
       .then (file) ->
         letter.file = file
         letter.options.template = false
