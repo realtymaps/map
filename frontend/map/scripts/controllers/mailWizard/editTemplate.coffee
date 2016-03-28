@@ -47,6 +47,9 @@ app.controller 'rmapsEditTemplateCtrl',
 
   $scope.animationsEnabled = true
 
+  $scope.sanitizeContent = () ->
+    $scope.wizard.mail.campaign.content.replace('  ', '&nbsp; ')
+
   $scope.doPreview = () ->
     $scope.wizard.mail.save()
     .then () ->
