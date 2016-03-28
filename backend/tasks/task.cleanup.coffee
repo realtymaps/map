@@ -46,7 +46,6 @@ deleteInactiveRows = (subtask) ->
     logger.debug "Deleted #{count} rows from combined data table"
 
 
-
 module.exports = new TaskImplementation {
   rawTables
   subtaskErrors
