@@ -15,7 +15,7 @@ class PdfUploadService extends ServiceCrud
 
   validatePdf: (aws_key) ->
     mockLobData.options.aws_key = aws_key
-    lobService.createLetterTest mockLobData
+    lobService.sendLetter mockLobData, 'test'
     .then (res) ->
       return {isValid: true}
 
