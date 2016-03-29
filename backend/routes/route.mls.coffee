@@ -92,21 +92,11 @@ module.exports =
     handle: (req, res, next) ->
       getQueryPhoto({req, res, next})
 
-  getLargePhotos:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) -> getQueryPhoto({req, res, next, photoType: 'LargePhoto'})
-
   getParamsPhotos:
     method: 'get'
     middleware: auth.requireLogin(redirectOnFail: true)
     handle: (req, res, next) ->
       getParamPhoto({req, res, next})
-
-  getParamsLargePhotos:
-    method: 'get'
-    middleware: auth.requireLogin(redirectOnFail: true)
-    handle: (req, res, next) -> getParamPhoto({req, res, next, photoType: 'LargePhoto'})
 
   getColumnList:
     method: 'get'

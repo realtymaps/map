@@ -218,7 +218,7 @@ getDataStream = (mlsInfo, limit, minDate=0) ->
                 resultStream.end()
                 callback()
             when 'error'
-              if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND" && total > 0
+              if event.payload instanceof rets.RetsReplyError && event.payload.replyTag == "NO_RECORDS_FOUND"
                 # code for 0 results, not really an error (DMQL is a clunky language)
                 @push(type: 'done', payload: total)
                 resultStream.end()

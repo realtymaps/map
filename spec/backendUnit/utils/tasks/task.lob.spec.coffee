@@ -27,7 +27,7 @@ describe 'task.lob', ->
 
     svc.__set__ 'tables', @tables
 
-    @lobSvc = createLetter: sinon.spy (letter) -> Promise.try ->
+    @lobSvc = sendLetter: sinon.spy (letter) -> Promise.try ->
       mockLobLetter
 
     svc.__set__ 'lobSvc', @lobSvc
@@ -38,6 +38,11 @@ describe 'task.lob', ->
     svc.__set__ 'jobQueue', @jobQueue
 
     svc.__set__ 'dbs', transaction: (name, cb) -> cb()
+
+    svc.__set__ 'awsService',
+      getTimedDownloadUrl: (bucket, key) -> Promise.try ->
+        return "http://aws-pdf-downloads/#{key}"
+      buckets: PDF: 'aws-pdf-downloads'
 
     @subtasks =
       findLetters:
@@ -55,7 +60,7 @@ describe 'task.lob', ->
     svc.executeSubtask(@subtasks.findLetters)
     .then () =>
       @tables.mail.letters().selectSpy.callCount.should.equal 1
-      @tables.mail.letters().whereInSpy.args[0][1].should.deep.equal [ 'ready', 'error-transient' ]
+      @tables.mail.letters().whereSpy.args[0].should.deep.equal ['status', 'ready']
       @jobQueue.queueSubsequentSubtask.callCount.should.equal @letters.length
       expect(@jobQueue.queueSubsequentSubtask.args[0][0]).to.be.null
       @jobQueue.queueSubsequentSubtask.args[0][1].should.equal @subtasks.findLetters
@@ -65,8 +70,8 @@ describe 'task.lob', ->
   it 'send a letter and capture LOB response', ->
     svc.executeSubtask(@subtasks.createLetter)
     .then () =>
-      @lobSvc.createLetter.callCount.should.equal 1
-      @lobSvc.createLetter.args[0][0].should.equal mockLetter
+      @lobSvc.sendLetter.callCount.should.equal 1
+      @lobSvc.sendLetter.args[0][0].should.equal mockLetter
       @tables.mail.letters().updateSpy.callCount.should.deep.equal 1
       @tables.mail.letters().updateSpy.args[0][0].should.deep.equal
         lob_response: mockLobLetter

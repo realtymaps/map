@@ -1,0 +1,31 @@
+.letters
+  h2 Outgoing Letters
+  .content-block
+    .row
+      .col-md-2 Campaign
+      .col-md-2 Template
+      .col-md-2 To
+      .col-md-2 From
+      .col-md-1 Status
+      .col-md-1 API
+      .col-md-2
+    .row.vertical-align(ng-repeat="letter in letters")
+      .col-md-2 {{letter.campaign_name}}
+      .col-md-2 {{letter.template_type}}
+      .col-md-2
+        .address
+          .address-line {{letter.to.name}}
+          .address-line {{letter.to.address_line1}}
+          .address-line(ng-if="letter.to.address_line2") {{letter.to.address_line2}}
+          .address-line {{letter.to.address_city}}, {{letter.to.address_state}} {{letter.to.address_zip}}
+      .col-md-2
+        .address
+          .address-line {{letter.from.name}}
+          .address-line {{letter.from.address_line1}}
+          .address-line(ng-if="letter.from.address_line2") {{letter.from.address_line2}}
+          .address-line {{letter.from.address_city}}, {{letter.from.address_state}} {{letter.from.address_zip}}
+      .col-md-1 {{letter.status}}
+      .col-md-1 {{letter.lob_api}}
+      .col-md-2
+        button.btn(ng-click="sendLetter(letter)" ng-disabled="letter.status != 'ready'") Send
+         i.fa.fa-envelope

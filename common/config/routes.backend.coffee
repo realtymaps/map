@@ -178,9 +178,7 @@ module.exports =
     getDataDump: "#{apiBaseMls}/:mlsId/data"
     getLookupTypes: "#{apiBaseMls}/:mlsId/databases/:databaseId/lookups/:lookupId/types"
     getPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos"
-    getLargePhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/largePhotos"
     getParamsPhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/photos/:photoIds"
-    getParamsLargePhotos: "#{apiBaseMls}/:mlsId/databases/:databaseId/largePhotos/:photoIds"
     getObjectList: "#{apiBaseMls}/:mlsId/objects"
   data_source:
     apiBaseDataSource: apiBaseDataSource
@@ -218,7 +216,9 @@ module.exports =
     root: apiBaseMailCampaigns
     byId: "#{apiBaseMailCampaigns}/:id"
     getReviewDetails: "#{apiBaseMailCampaigns}/:id/thumb"
-    getProperties: "#{apiBase}/mailProperties/:project_id"
+    getProperties: "#{apiBase}/getProperties/:project_id"
+    getLetters: "#{apiBase}/getLetters"
+    testLetter: "#{apiBase}/testLetter/:letter_id"
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf

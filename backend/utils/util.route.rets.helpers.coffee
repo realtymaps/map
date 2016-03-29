@@ -4,70 +4,42 @@ ExpressResponse =  require './util.expressResponse'
 retsHelpers = require './util.retsHelpers'
 mlsConfigService = require '../services/service.mls_config'
 _ = require 'lodash'
-Archiver = require 'archiver'
+photoUtil = require './util.mls.photos'
+
+_handleGenericImage = ({setContentTypeFn, getStreamFn, next, res}) ->
+  setContentTypeFn()
+  getStreamFn()
+  .on 'error', (error) ->
+    next new ExpressResponse error.message, 500
+  .pipe(res)
 
 _handleImage = ({res, next, object}) ->
-  res.type object.headerInfo.contentType
-
-  everSentData = false
-
-  object.objectStream.on 'data', (event) ->
-    if !event.error
-      everSentData = true
-      event.dataStream.pipe(res)
-
-  object.objectStream.on 'end', () ->
-    if !everSentData
-      next new ExpressResponse 'No object events', 404
+  _handleGenericImage {
+    res
+    next
+    setContentTypeFn: () ->
+      res.type object.headerInfo.contentType
+    getStreamFn: () ->
+      photoUtil.imageStream(object)
+  }
 
 _handleImages = ({res, next, object, mlsId, photoIds}) ->
-  listingIds = _.keys(photoIds).join('_')
-
-  archive = Archiver('zip')
-
-  archive.on 'error', (err)  ->
-    next new ExpressResponse err.message, 500
-
-  res.attachment("#{mlsId}_#{listingIds}_photos.zip")
-
-  everSentData = false
-
-  object.objectStream.on 'data', (event) ->
-    if !event.error
-      imageId = event.headerInfo.objectId
-      listingId = event.headerInfo.contentId
-      fileExt = event.headerInfo.contentType.replace('image/','')
-
-      everSentData = true
-      fileName = "#{listingId}_#{imageId}.#{fileExt}"
-      logger.debug "fileName: #{fileName}"
-      archive.append(event.dataStream, name: fileName)
-
-  object.objectStream.on 'end', () ->
-    archive.finalize()
-    logger.debug("Archive wrote #{archive.pointer()} bytes")
-
-    if !everSentData
-      next new ExpressResponse 'No object events', 404
-
-  archive.pipe(res)
-
-_hasNoStar = (photoIds) ->
-  JSON.stringify(photoIds).indexOf('*') == -1
-
-_isSingleImage = (photoIds) ->
-  if _.isString(photoIds)
-    return true
-  if _.keys(photoIds).length == 1 and _hasNoStar(photoIds)
-    return true
-  false
+  _handleGenericImage {
+    res
+    next
+    setContentTypeFn: () ->
+      listingIds = _.keys(photoIds).join('_')
+      res.attachment("#{mlsId}_#{listingIds}_photos.zip")
+    getStreamFn: () ->
+      photoUtil.imagesStream(object)
+  }
 
 handleRetsObjectResponse = (res, next, photoIds, mlsId, object) ->
   opts = {res, next, photoIds, mlsId, object}
 
   logger.debug opts.object.headerInfo, true
 
-  if _isSingleImage(opts.photoIds)
+  if photoUtil.isSingleImage(opts.photoIds)
     return _handleImage(opts)
   _handleImages(opts)
 

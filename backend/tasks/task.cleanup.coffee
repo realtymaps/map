@@ -4,6 +4,11 @@ logger = require '../config/logger'
 config = require '../config/config'
 dbs = require '../config/dbs'
 TaskImplementation = require './util.taskImplementation'
+jobQueue = require '../utils/util.jobQueue'
+mlsHelpers = require './util.mlsHelpers'
+
+# NOTE: This file a default task definition used for MLSs that have no special cases
+NUM_ROWS_TO_PAGINATE = 2500
 
 
 rawTables = (subtask) ->
@@ -37,7 +42,32 @@ deleteMarkers = (subtask) ->
   .then (count) ->
     logger.debug "Deleted #{count} rows from delete marker table"
 
-module.exports = new TaskImplementation
-  rawTables: rawTables
-  subtaskErrors: subtaskErrors
-  deleteMarkers: deleteMarkers
+deleteInactiveRows = (subtask) ->
+  tables.property.combined()
+  .where(active: false)
+  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
+  .delete()
+  .then (count) ->
+    logger.debug "Deleted #{count} rows from combined data table"
+
+deletePhotosPrep = (subtask) ->
+  tables.deletes.photo()
+  .select('id')
+  .where(batch_id: subtask.batch_id)
+  .orderBy 'id'
+  .then (ids) ->
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
+      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_deletePhotos")
+
+deletePhotos = (subtask) ->
+  Promise.map subtask.data.values, mlsHelpers.deleteOldPhoto.bind(null, subtask)
+
+
+module.exports = new TaskImplementation {
+  rawTables
+  subtaskErrors
+  deleteMarkers
+  deleteInactiveRows
+  deletePhotosPrep
+  deletePhotos
+}

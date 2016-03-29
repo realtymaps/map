@@ -81,6 +81,7 @@ base =
     OLD_TABLE_DAYS: 7
     SUBTASK_ERROR_DAYS: 90
     OLD_DELETE_MARKER_DAYS: 7
+    INACTIVE_ROW_DAYS: 7
   EMAIL_VERIFY:
     HASH_MIN_LENGTH: 20
   PAYMENT_PLATFORM:
@@ -92,6 +93,13 @@ base =
     LIVE_MODE: process.env.EMAIL_IS_LIVE or false
     MAX_RETRIES: 4
     RETRY_DELAY_MILLI: 2000
+  MAILING_PLATFORM:
+    LIVE_MODE: process.env.MAILING_IS_LIVE or false
+    CAMPAIGN_BILLING_DELAY_DAYS: 1
+    LOB_MAX_RETRIES: 5
+
+  ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS or false
+
 # this one's separated out so we can re-use the DBS.MAIN.connection value
 base.SESSION_STORE =
   conString: base.DBS.MAIN.connection

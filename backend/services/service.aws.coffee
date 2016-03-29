@@ -27,7 +27,7 @@ _handler = (handlerOpts, opts) ->
     required: 's3FnName'
 
   extraArgs ?= {}
-  
+
   _debug required, 'required'
   _debug s3FnName, 's3FnName'
   _debug extraArgs, 'extraArgs'
@@ -71,6 +71,12 @@ getObject = (opts) ->
     required: ['extAcctName','Key']
   , opts
 
+deleteObject = (opts) ->
+  _handler
+    s3FnName: 'deleteObject'
+    required: ['extAcctName','Key']
+  , opts
+
 listObjects = (opts) ->
   _handler
     s3FnName: 'listObjects'
@@ -83,5 +89,6 @@ module.exports = {
   buckets
   putObject
   getObject
+  deleteObject
   listObjects
 }
