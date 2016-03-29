@@ -45,7 +45,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     createLobHtml: (content = @campaign.content, extraStyles = "") ->
       fragStyles = (require '../../styles/mailTemplates/template-frags.styl').replace(/\n/g,'')
       classStyles = (require '../../styles/mailTemplates/template-classes.styl').replace(/\n/g,'')
-      "<html><head><title>#{@campaign.name}</title><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
+      "<html><head><title>#{@campaign.name}</title><meta charset='UTF-8'><link href='https://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>" +
       "<style>#{fragStyles}#{classStyles}#{extraStyles}</style></head><body class='letter-body'>#{content}</body></html>"
 
     setTemplateType: (type) ->
