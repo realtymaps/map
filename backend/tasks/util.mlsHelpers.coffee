@@ -244,7 +244,7 @@ storePhotos = (subtask, rm_property_id) ->
               {newFileName, imageId, photo_id}
         .then _updatePhotoUrl.bind(null, subtask)
 
-deleteOldPhoto = (subtask, id) ->
+deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
   .where {id}
   .then sqlHelpers.expectSingleRow
@@ -254,6 +254,16 @@ deleteOldPhoto = (subtask, id) ->
     awsService.deleteObject
       extAcctName: photoExtBucketName
       Key: key
+    .then () ->
+      tables.deletes.photo()
+      .where {id}
+      .del()
+    #.catch (error) ->
+      #add error to a col in delete_photos for failures? w/ error detail?
+      #or let subtask itself handle the error
+
+
+
 
 module.exports = {
   loadUpdates

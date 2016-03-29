@@ -25,7 +25,6 @@ normalizeData = (subtask) ->
     buildRecord: mlsHelpers.buildRecord
 
 _getUniqueRmIds = (subtask, dbFn) ->
-  #should order by be in here
   dbFn()
   .select('rm_property_id')
   .where(batch_id: subtask.batch_id)
@@ -33,7 +32,8 @@ _getUniqueRmIds = (subtask, dbFn) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
 
 finalizeDataPrep = (subtask) ->
-  _getUniqueRmIds(subtask, tables.property.listing).then (ids) ->
+  _getUniqueRmIds(subtask, tables.property.listing)
+  .then (ids) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
       NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
 
@@ -41,7 +41,8 @@ finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
 storePhotosPrep = (subtask) ->
-  _getUniqueRmIds(subtask, tables.property.combined).then (ids) ->
+  _getUniqueRmIds(subtask, tables.property.combined)
+  .then (ids) ->
     jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
       NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
 
