@@ -1,7 +1,7 @@
 stripeFactory = require 'stripe'
 externalAccounts = require '../../service.externalAccounts'
 {CriticalError} = require '../../../utils/errors/util.errors.critical'
-{PAYMENT_PLATFORM} = require '../../../config/config'
+config = require '../../../config/config'
 plansService = require '../../service.plans'
 {onMissingArgsFail} = require '../../../utils/errors/util.errors.args'
 logger = require('../../../config/logger').spawn('stripe')

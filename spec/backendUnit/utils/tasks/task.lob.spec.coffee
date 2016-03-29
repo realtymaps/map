@@ -27,7 +27,7 @@ describe 'task.lob', ->
 
     svc.__set__ 'tables', @tables
 
-    @lobSvc = createLetter: sinon.spy (letter) -> Promise.try ->
+    @lobSvc = sendLetter: sinon.spy (letter) -> Promise.try ->
       mockLobLetter
 
     svc.__set__ 'lobSvc', @lobSvc
@@ -65,8 +65,8 @@ describe 'task.lob', ->
   it 'send a letter and capture LOB response', ->
     svc.executeSubtask(@subtasks.createLetter)
     .then () =>
-      @lobSvc.createLetter.callCount.should.equal 1
-      @lobSvc.createLetter.args[0][0].should.equal mockLetter
+      @lobSvc.sendLetter.callCount.should.equal 1
+      @lobSvc.sendLetter.args[0][0].should.equal mockLetter
       @tables.mail.letters().updateSpy.callCount.should.deep.equal 1
       @tables.mail.letters().updateSpy.args[0][0].should.deep.equal
         lob_response: mockLobLetter
