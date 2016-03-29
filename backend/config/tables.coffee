@@ -67,6 +67,8 @@ module.exports =
     campaign: 'user_mail_campaigns'
     letters: 'user_mail_letters'
     pdfUpload: 'user_pdf_uploads'
+  deletes:
+    photos: 'delete_photos'
   temp: 'raw_temp.raw'
 
 

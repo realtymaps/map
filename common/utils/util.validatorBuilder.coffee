@@ -88,6 +88,10 @@ _rules =
         alias: 'Photo ID'
         required: false
 
+      photo_count:
+        alias: 'Photo Count'
+        required: false
+
       address:
         alias: 'Address'
         input: {}
