@@ -86,7 +86,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     $stateProvider.state(state)
     state
 
-  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
+  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false, permissionsRequired: false
 
   buildMapState
     sticky: true
@@ -163,10 +163,9 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildChildState 'recipientInfo', 'mailWizard', params: {property_ids: null}
   buildChildState 'review', 'mailWizard'
 
-  buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
-  buildState 'logout', sticky: false, loginRequired: false
+  buildState 'login', url: null, template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
+  buildState 'logout', url: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
-  buildState 'authenticating', controller: null, sticky: false, loginRequired: false
 
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null, sticky: false, loginRequired: false

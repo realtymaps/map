@@ -18,11 +18,11 @@ div(role="navigation").navbar.navbar-inverse.navbar-fixed-top
           +spinnerMixin()(ng-if="Spinner.getLoadingCount() > 0")
       ul.nav.navbar-nav.navbar-right
         li.navbar-float-right(ng-hide="principal.isAuthenticated()", ng-cloak)
-          a(href="{{frontendRoutes.login}}") Sign In
+          a(ui-sref='login') Sign In
         li.navbar-float-right(ng-show="principal.isAuthenticated()", ng-cloak)
-          a(href="{{frontendRoutes.logout}}") Sign Out
+          a(ui-sref='logout') Sign Out
         li.navbar-float-right(ng-show="principal.isAuthenticated()", ng-cloak)
           a(href="{{frontendRoutes.user}}" target="_self") {{user.username}}
         li.navbar-float-right(ng-show="principal.isStaff()", ng-cloak)
           a(href="{{adminRoutes.index}}" target="_self") Admin
-        
+
