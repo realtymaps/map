@@ -12,8 +12,7 @@ logger = require('../config/logger').spawn('task:lob')
 {safeJsonArray} = require '../utils/util.sql.helpers'
 moment = require 'moment'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
-
-CAMPAIGN_BILLING_DELAY = 1
+config = require '../config/config'
 
 #
 # This task find letters that have been queued from a mail campaign
@@ -32,7 +31,7 @@ findLetters = (subtask) ->
       'lob_api'
     ]
   )
-  .whereIn('status', [ 'ready', 'error-transient' ])
+  .where(status, 'ready')
   .then (letters) ->
     Promise.map letters, (letter) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
@@ -140,7 +139,7 @@ findCampaigns = (subtask) ->
 
     Promise.map campaigns, (campaign) ->
 
-      readyDate = moment(campaign.stripe_charge.created, 'X').add(CAMPAIGN_BILLING_DELAY, 'days')
+      readyDate = moment(campaign.stripe_charge.created, 'X').add(config.MAILING_PLATFORM.CAMPAIGN_BILLING_DELAY_DAYS, 'days')
       if not readyDate.isBefore(moment())
         logger.debug "Campaign #{campaign.id} will be ignored until #{readyDate.format()}"
         return

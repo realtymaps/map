@@ -95,6 +95,9 @@ base =
     RETRY_DELAY_MILLI: 2000
   MAILING_PLATFORM:
     LIVE_MODE: process.env.MAILING_IS_LIVE or false
+    CAMPAIGN_BILLING_DELAY_DAYS: 1
+    LOB_MAX_RETRIES: 5
+
   ALLOW_LIVE_APIS: process.env.ALLOW_LIVE_APIS or false
 
 # this one's separated out so we can re-use the DBS.MAIN.connection value
