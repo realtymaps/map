@@ -31,7 +31,7 @@ findLetters = (subtask) ->
       'lob_api'
     ]
   )
-  .where(status, 'ready')
+  .where('status', 'ready')
   .then (letters) ->
     Promise.map letters, (letter) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true

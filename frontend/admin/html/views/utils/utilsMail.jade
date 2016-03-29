@@ -26,5 +26,5 @@
       .col-md-2 {{letter.status}}
       //- .col-md-2.json {{letter.options}}
       .col-md-2
-        button.btn(ng-click="sendLetter(letter)" ng-show="letter.status == 'ready'") Send
+        button.btn(ng-click="sendLetter(letter)" ng-show="letter.status == 'ready'") Send ({{letter.lob_api}})
          i.fa.fa-envelope

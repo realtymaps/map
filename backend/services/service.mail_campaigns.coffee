@@ -130,6 +130,7 @@ class MailService extends ServiceCrud
       "#{tables.mail.letters.tableName}.rm_property_id as rm_property_id"
       "#{tables.mail.letters.tableName}.status as status"
       "#{tables.mail.letters.tableName}.options as options"
+      "#{tables.mail.letters.tableName}.lob_api as lob_api"
     ])
     .join("#{tables.mail.letters.tableName}", () ->
       this.on("#{tables.mail.campaign.tableName}.id", "#{tables.mail.letters.tableName}.user_mail_campaign_id")
