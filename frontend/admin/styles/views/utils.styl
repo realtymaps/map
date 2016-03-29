@@ -1,3 +1,35 @@
 @import '../../../common/styles/makeFormGroup.styl'
 .utils
   $fnMakeFormGroup()
+
+  .letters
+
+    .row
+      // max-height 5em
+      overflow hidden
+
+      .address
+        display block
+
+      .json
+        font courier
+        align-items flex-start
+        overflow hidden
+
+      > *
+        padding 1em
+
+    .row:first-child
+      font-size 120%
+
+    .row:nth-child(even)
+      background-color #111
+
+.vertical-align
+  display flex
+  flex-direction row
+
+.vertical-align > [class^="col-"],
+.vertical-align > [class*=" col-"]
+  display flex
+  align-items center

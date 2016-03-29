@@ -54,17 +54,6 @@ Promise.promisifyAll fs, filter: (name, func, target) ->
 rimraf = require 'rimraf'
 rimraf.async = Promise.promisify(rimraf)
 
-# a function to properly promisify an instantiated Lob object, since we can't promisify the module
-module.exports.lob = (Lob) ->
-  for name,submodule of Lob
-    if typeof(submodule) != 'object'
-      continue
-    for key,val of submodule
-      if typeof(val) != 'function'
-        continue
-      submodule[key+'Async'] = Promise.promisify(val)
-  Lob
-
 _ = require 'lodash'
 memoize = require 'memoizee'
 memoize.promise = (promiseFunc, options={}) ->

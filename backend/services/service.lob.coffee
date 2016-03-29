@@ -28,85 +28,204 @@ LOB_LETTER_FIELDS = [
    'metadata'
 ]
 
-handleError = (env) -> (err) ->
-  lobError = new Error(err.message)
-  msg = "LOB-#{env} API responded #{err.status_code}"
-  if err.status_code == 401
-    throw new LobErrors.LobUnauthorizedError(lobError, msg)
-  else if err.status_code == 403
-    throw new LobErrors.LobForbiddenError(lobError, msg)
-  else if err.status_code == 404
-    throw new LobErrors.LobNotFoundError(lobError, msg)
-  else if err.status_code == 422
-    throw new LobErrors.LobBadRequestError(lobError, msg)
-  else if err.status_code == 429
-    throw new LobErrors.LobRateLimitError(lobError, msg)
-  else if err.status_code == 500
-    throw new LobErrors.LobServerError(lobError, msg)
-
+#
+# Retrieve API keys from external accounts (once)
+#  The test API is always available for price quotes / previews
+#  The live API is only initialized if the environment is configured as follows:
+#    - MAILING_PLATFORM.LIVE_MODE is on
+#    - Either environment is production, or ALLOW_LIVE_APIS is on
+#    - Note that even if both of these things are true, the API key in the database ultimately determines how 'live' behaves
+#
+_apiPromise = null
 lobPromise = () ->
-  externalAccounts.getAccountInfo('lob')
-  .then (accountInfo) ->
-    test = new LobFactory(accountInfo.other.test_api_key)
-    test.rm_type = 'test'
-    promisify.lob(test)
-    live = new LobFactory(accountInfo.api_key)
-    live.rm_type = 'live'
-    promisify.lob(live)
-    { test, live }
 
-_getAddress = (r) ->
-  name: (r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()) || 'Homeowner'
-  address_line1: r.address_line1 ? "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
-  address_line2: r.address_line2 ? r.street_address_unit ? ''
-  address_city: r.address_city ? r.city ? ''
-  address_state: r.address_state ? r.state ? ''
-  address_zip: r.address_zip ? r.zip ? ''
+  # This class definition is here so it is easier to rewire
+  class LobAPI extends LobFactory
+    constructor: ({@apiKey, @apiName}) ->
+      logger.debug "Initialized LOB API-#{@apiName}"
+      super(@apiKey)
 
-_maybeUseSignedUrl = (letter) ->
-  Promise.try ->
-    # assign a temporary signed url for the campaign pdf we host in s3
-    if letter.options.aws_key
-      # 10 minute expiration for url below
-      awsService.getTimedDownloadUrl
-        extAcctName: awsService.buckets.PDF
-        Key: letter.options.aws_key
-      .then (file) ->
-        letter.file = file
-        letter.options.template = false
-    else
-      letter.options.template = true
-      letter.options.color = false
+    getLetter: (letterId) ->
+      logger.debug "API-#{@apiName} getLetter #{letterId}"
+      @letters.retrieve letterId
+      .catch @handleError.bind(@)
 
-  .catch (err) ->
-    throw new Error(err, "Could not acquire a signed url.")
+    listLetters: (opts) ->
+      logger.debug "API-#{@apiName} listLetters opts: #{opts}"
+      @letters.list opts
+      .catch @handleError.bind(@)
 
-prepareLobLetter = (letter) ->
+    sendLetter: (letter) ->
+      logger.debug "API-#{@apiName} sendLetter #{letter.metadata?.uuid}"
+      @letters.create letter
+      .catch @handleError.bind(@)
+
+    handleError: (err) ->
+      lobError = new Error(err.message)
+      msg = "LOB-#{@apiName} API responded #{err.status_code}"
+      if err.status_code == 401
+        throw new LobErrors.LobUnauthorizedError(lobError, msg)
+      else if err.status_code == 403
+        throw new LobErrors.LobForbiddenError(lobError, msg)
+      else if err.status_code == 404
+        throw new LobErrors.LobNotFoundError(lobError, msg)
+      else if err.status_code == 422
+        throw new LobErrors.LobBadRequestError(lobError, msg)
+      else if err.status_code == 429
+        throw new LobErrors.LobRateLimitError(lobError, msg)
+      else if err.status_code == 500
+        throw new LobErrors.LobServerError(lobError, msg)
+
+  # Get account info
+  if _apiPromise
+    logger.debug 'Returning cached promise'
+    _apiPromise
+  else
+  _apiPromise = externalAccounts.getAccountInfo('lob')
+    .then (accountInfo) ->
+      # The test API is always needed for price quotes and previews
+      apis = test: new LobAPI(apiKey: accountInfo.other.test_api_key, apiName: 'test')
+
+      # Depending on environment settings, mail is sent using either the live or test API
+      if config.MAILING_PLATFORM.LIVE_MODE
+        if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
+          throw new Error("Refusing to use LOB-live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
+        apis.live = new LobAPI(apiKey: accountInfo.api_key, apiName: 'live')
+      else
+        apis.live = apis.test
+
+      apis
+
+#
+# Create letter for outgoing mail table. sendLetter() expects object with this structure
+#
+buildLetter = (campaign, recipient) ->
+
+  getAddress = (r) ->
+    name: (r.name ? "#{r.first_name ? ''} #{r.last_name ? ''}".trim()) || 'Homeowner'
+    address_line1: r.address_line1 ? "#{r.street_address_num ? ''} #{r.street_address_name ? ''}"
+    address_line2: r.address_line2 ? r.street_address_unit ? ''
+    address_city: r.address_city ? r.city ? ''
+    address_state: r.address_state ? r.state ? ''
+    address_zip: r.address_zip ? r.zip ? ''
+
+  address_to = getAddress recipient
+  address_from = getAddress campaign.sender_info
+
+  letter =
+    auth_user_id: campaign.auth_user_id
+    user_mail_campaign_id: campaign.id
+    address_to: address_to
+    address_from: address_from
+    file: campaign.lob_content
+    status: 'ready'
+    rm_property_id: recipient.rm_property_id
+    options:
+      aws_key: campaign.aws_key
+      color: campaign.options?.color? or false
+      metadata:
+        campaignId: campaign.id
+        userId: campaign.auth_user_id
+        recipientType: recipient.type
+        uuid: uuid.v1() # important for retries
+      data: # These may act as placeholders in HTML content
+        campaign_name: campaign.name
+        recipient_name: address_to.name
+        recipient_address_line1: address_to.address_line1
+        recipient_address_line2: address_to.address_line2
+        recipient_city: address_to.address_city
+        recipient_state: address_to.address_state
+        recipient_zip: address_to.address_zip
+        sender_name: address_from.name
+        sender_address_line1: address_from.address_line1
+        sender_address_line2: address_from.address_line2
+        sender_city: address_from.address_city
+        sender_state: address_from.address_state
+        sender_zip: address_from.address_zip
+
+
+################
+# Public methods
+################
+
+#
+# Retrieves LOB letter object by id
+#  https://lob.com/docs#letters_retrieve
+#
+getLetter = (lobId, apiName = 'live') ->
   lobPromise()
   .then (lob) ->
-    _maybeUseSignedUrl letter
-    .then () ->
+    lob[apiName].getLetter lobId
+
+#
+# Sends letter to the LOB test API to figure out the total cost and get a preview url for the letter
+#
+getPriceQuote = (userId, campaignId) ->
+  tables.mail.campaign()
+    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
+    .where(id: campaignId, auth_user_id: userId)
+
+  .then ([campaign]) ->
+    throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
+
+    letter = buildLetter campaign, campaign.recipients[0]
+    sendLetter letter, 'test'
+    .then (lobResponse) ->
+      res =
+        pdf: lobResponse.url
+        price: lobResponse.price * campaign.recipients.length
+
+#
+# Retrieves LOB letters by metadata
+#  https://lob.com/docs#letters_retrieve
+#
+listLetters = (opts, apiName = 'live') ->
+  lobPromise()
+  .then (lob) ->
+    lob[apiName].listLetters opts
+
+#
+# Sets appropriate LOB options depending on whether letter is HTML or PDF and sends it
+#  https://lob.com/docs#letters_create
+#
+# The apiName must explicitly passed by caller. This is aimed to avoid mistakenly using live in the wrong place.
+#
+sendLetter = (letter, apiName) ->
+  if !apiName
+    throw new Error("apiName is required")
+
+  lobPromise()
+  .then (lob) ->
+    Promise.try ->
+      # assign a temporary signed url for the campaign pdf we host in s3
+      if letter.options.aws_key
+        # 10 minute expiration for url below
+        awsService.getTimedDownloadUrl
+          extAcctName: awsService.buckets.PDF
+          Key: letter.options.aws_key
+        .then (file) ->
+          letter.file = file
+          letter.options.template = false
+      else
+        letter.options.template = true
+        letter.options.color = false
+
+    .catch (err) ->
+      throw new Error(err, "Could not acquire a signed url.")
+
+    .then ->
       letter = _.merge letter, letter.options
       letter.data = _.pick letter.data, (v) -> v # empty values are disallowed
       letter.to = letter.address_to
       letter.from = letter.address_from
       letter = _.pick letter, LOB_LETTER_FIELDS
-      {letter: letter, lob: lob}
 
-createLetter = (letter) ->
-  prepareLobLetter letter
-  .then ({letter, lob}) ->
-    if config.ENV != 'production'
-      throw new Error("Refusing to use LOB-live API from #{config.ENV}")
-    lob.live.letters.create letter
-    .catch isUnhandled, handleError('live')
+      lob[apiName].sendLetter letter
 
-createLetterTest = (letter) ->
-  prepareLobLetter letter
-  .then ({letter, lob}) ->
-    lob.test.letters.create letter
-    .catch isUnhandled, handleError('test')
-
+#
+# Creates a CC hold for the mail campaign and places letters in the outgoing mail table
+#  https://stripe.com/docs/api#create_charge
+#
 sendCampaign = (campaignId, userId) ->
   logger.debug "Sending campaign #{campaignId}"
   Promise.props({
@@ -121,13 +240,14 @@ sendCampaign = (campaignId, userId) ->
 
     payment: paymentSvc or require('./services.payment') # allows rewire
 
+    lob: lobPromise()
   })
 
   .catch isUnhandled, (err) ->
 
     throw new PartiallyHandledError(err, "Campaign cannot be sent right now -- try again later")
 
-  .then ({authUser, campaign, payment}) ->
+  .then ({authUser, campaign, payment, lob}) ->
 
     [authUser] = authUser
     [campaign] = campaign
@@ -179,9 +299,17 @@ sendCampaign = (campaignId, userId) ->
 
           .then (stripeCharge) ->
 
-            logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId}"
+            # Whether or not mailing API is turned on, only queue real letters if payment is live
+            apiName = if config.PAYMENT_PLATFORM.LIVE_MODE then lob.live.apiName else lob.test.apiName
+
+            logger.debug "Queueing #{campaign.recipients.length} letters for campaign #{campaignId} using API #{apiName}"
             logger.debug -> "#{JSON.stringify stripeCharge}"
-            queueLetters(campaign, tx)
+
+            tables.mail.letters(transaction: tx)
+            .insert _.map campaign.recipients, (recipient) ->
+              letter = buildLetter campaign, recipient
+              letter.lob_api = apiName
+              letter
 
             .catch isUnhandled, (err) ->
 
@@ -198,73 +326,9 @@ sendCampaign = (campaignId, userId) ->
 
               throw new PartiallyHandledError(err, "Failed to update campaign #{campaignId}")
 
-queueLetters = (campaign, tx) ->
-  tables.mail.letters(transaction: tx)
-  .insert _.map campaign.recipients, (recipient) ->
-    buildLetter campaign, recipient
-
-buildLetter = (campaign, recipient) ->
-  address_to = _getAddress recipient
-  address_from = _getAddress campaign.sender_info
-
-  letter =
-    auth_user_id: campaign.auth_user_id
-    user_mail_campaign_id: campaign.id
-    address_to: address_to
-    address_from: address_from
-    file: campaign.lob_content
-    status: 'ready'
-    rm_property_id: recipient.rm_property_id
-    options:
-      aws_key: campaign.aws_key
-      color: campaign.options?.color? or false
-      metadata:
-        campaignId: campaign.id
-        userId: campaign.auth_user_id
-        recipientType: recipient.type
-        uuid: uuid.v1()
-      data:
-        campaign_name: campaign.name
-        recipient_name: address_to.name
-        recipient_address_line1: address_to.address_line1
-        recipient_address_line2: address_to.address_line2
-        recipient_city: address_to.address_city
-        recipient_state: address_to.address_state
-        recipient_zip: address_to.address_zip
-        sender_name: address_from.name
-        sender_address_line1: address_from.address_line1
-        sender_address_line2: address_from.address_line2
-        sender_city: address_from.address_city
-        sender_state: address_from.address_state
-        sender_zip: address_from.address_zip
-
-getPriceQuote = (userId, campaignId) ->
-  tables.mail.campaign()
-    .select('id', 'auth_user_id', 'name', 'lob_content', 'aws_key', 'status', 'sender_info', 'recipients', 'options')
-    .where(id: campaignId, auth_user_id: userId)
-
-  .then ([campaign]) ->
-    throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
-
-    letter = buildLetter campaign, campaign.recipients[0]
-    createLetterTest letter
-    .then (lobResponse) ->
-      res =
-        pdf: lobResponse.url
-        price: lobResponse.price * campaign.recipients.length
-
-getDetails = (lobId) ->
-  lobPromise()
-  .then (lob) ->
-    lob.live.letters.retrieve lobId
-    .then (response) ->
-      response
-    .catch isUnhandled, handleError('live')
-
-
 module.exports =
+  getLetter: getLetter
   getPriceQuote: getPriceQuote
-  createLetter: createLetter
-  createLetterTest: createLetterTest
+  listLetters: listLetters
+  sendLetter: sendLetter
   sendCampaign: sendCampaign
-  getDetails: getDetails
