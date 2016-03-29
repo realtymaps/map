@@ -3,7 +3,7 @@ Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 config = require '../config/config'
-logger = require '../config/logger'
+logger = require('../config/logger')
 jobQueue = require '../utils/util.jobQueue'
 validation = require '../utils/util.validation'
 vm = require 'vm'
@@ -24,10 +24,10 @@ loadUpdates = (subtask, options) ->
     now = new Date()
     if now.getTime() - lastSuccess.getTime() > 24*60*60*1000 || now.getDate() != lastSuccess.getDate()
       # if more than a day has elapsed or we've crossed a calendar date boundary, refresh everything and handle deletes
-      logger.debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
+      logger.spawn('task:mls:'+subtask.task_name).debug("Last successful run: #{lastSuccess} === performing full refresh for #{subtask.task_name}")
       return new Date(0)
     else
-      logger.debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
+      logger.spawn('task:mls:'+subtask.task_name).debug("Last successful run: #{lastSuccess} --- performing incremental update for #{subtask.task_name}")
       return lastSuccess
   .then (refreshThreshold) ->
     tables.config.mls()
