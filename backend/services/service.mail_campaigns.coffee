@@ -176,8 +176,8 @@ class MailService extends ServiceCrud
           retries: letter.retries + 1
         .where
           id: letter.id
-
-        lobResponse
+        .then () ->
+          lobResponse
 
 instance = new MailService(tables.mail.campaign, {debugNS: "mailService"})
 module.exports = instance

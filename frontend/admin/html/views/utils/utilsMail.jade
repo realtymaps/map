@@ -6,7 +6,8 @@
       .col-md-2 Template
       .col-md-2 To
       .col-md-2 From
-      .col-md-2 Status
+      .col-md-1 Status
+      .col-md-1 API
       .col-md-2
     .row.vertical-align(ng-repeat="letter in letters")
       .col-md-2 {{letter.campaign_name}}
@@ -23,8 +24,8 @@
           .address-line {{letter.from.address_line1}}
           .address-line(ng-if="letter.from.address_line2") {{letter.from.address_line2}}
           .address-line {{letter.from.address_city}}, {{letter.from.address_state}} {{letter.from.address_zip}}
-      .col-md-2 {{letter.status}}
-      //- .col-md-2.json {{letter.options}}
+      .col-md-1 {{letter.status}}
+      .col-md-1 {{letter.lob_api}}
       .col-md-2
-        button.btn(ng-click="sendLetter(letter)" ng-show="letter.status == 'ready'") Send ({{letter.lob_api}})
+        button.btn(ng-click="sendLetter(letter)" ng-disabled="letter.status != 'ready'") Send
          i.fa.fa-envelope

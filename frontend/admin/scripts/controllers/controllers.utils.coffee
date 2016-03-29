@@ -24,3 +24,4 @@ app.controller 'rmapsUtilsMailCtrl', ($scope, $http, $log) ->
     $http.post backendRoutes.mail.testLetter.replace(':letter_id', letter.id), {}
     .then ({data}) ->
       $log.debug data
+      letter.status = 'sent'
