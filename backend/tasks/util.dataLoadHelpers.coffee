@@ -76,6 +76,8 @@ recordChangeCounts = (subtask) -> Promise.try () ->
       .count('*')
       .where(subset)
       .where(deleted: subtask.batch_id)
+    else if subtask.data.deletes == DELETE.NONE
+      [count: 0]
   # get a count of raw rows from all raw tables from this batch with rm_valid == false
   invalidPromise = _countInvalidRows(subid, true)
   # get a count of raw rows from all raw tables from this batch with rm_valid == NULL
