@@ -39,6 +39,11 @@ describe 'task.lob', ->
 
     svc.__set__ 'dbs', transaction: (name, cb) -> cb()
 
+    svc.__set__ 'awsService',
+      getTimedDownloadUrl: (bucket, key) -> Promise.try ->
+        return "http://aws-pdf-downloads/#{key}"
+      buckets: PDF: 'aws-pdf-downloads'
+
     @subtasks =
       findLetters:
         name: 'lob_findLetters'
@@ -55,7 +60,7 @@ describe 'task.lob', ->
     svc.executeSubtask(@subtasks.findLetters)
     .then () =>
       @tables.mail.letters().selectSpy.callCount.should.equal 1
-      @tables.mail.letters().whereInSpy.args[0][1].should.deep.equal [ 'ready', 'error-transient' ]
+      @tables.mail.letters().whereSpy.args[0].should.deep.equal ['status', 'ready']
       @jobQueue.queueSubsequentSubtask.callCount.should.equal @letters.length
       expect(@jobQueue.queueSubsequentSubtask.args[0][0]).to.be.null
       @jobQueue.queueSubsequentSubtask.args[0][1].should.equal @subtasks.findLetters
