@@ -49,18 +49,6 @@ storePhotosPrep = (subtask) ->
 storePhotos = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
 
-deletePhotosPrep = (subtask) ->
-  tables.deletes.photo()
-  .select('id')
-  .where(batch_id: subtask.batch_id)
-  .orderBy 'id'
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
-      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_deletePhotos")
-
-deletePhotos = (subtask) ->
-  Promise.map subtask.data.values, mlsHelpers.deleteOldPhoto.bind(null, subtask)
-
 module.exports = new TaskImplementation {
   loadRawData
   normalizeData
@@ -68,8 +56,6 @@ module.exports = new TaskImplementation {
   finalizeData
   storePhotosPrep
   storePhotos
-  deletePhotosPrep
-  deletePhotos
   activateNewData: dataLoadHelpers.activateNewData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
 }

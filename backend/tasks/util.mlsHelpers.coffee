@@ -258,11 +258,10 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
       tables.deletes.photo()
       .where {id}
       .del()
-    #.catch (error) ->
-      #add error to a col in delete_photos for failures? w/ error detail?
-      #or let subtask itself handle the error
-
-
+      .catch (error) ->
+        throw SoftFail(error, "Transient Photo Deletion error; try again later. Failed to delete from database.")
+    .catch (error) ->
+      throw SoftFail(error, "Transient AWS Photo Deletion error; try again later")
 
 
 module.exports = {
