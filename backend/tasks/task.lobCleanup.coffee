@@ -2,15 +2,13 @@ Promise = require "bluebird"
 jobQueue = require '../utils/util.jobQueue'
 {SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
 tables = require '../config/tables'
-logger = require '../config/logger'
 _ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
 lobSvc = require '../services/service.lob'
 LobErrors = require '../utils/errors/util.errors.lob'
 {isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 logger = require('../config/logger').spawn('task:lob')
-
-LOB_MAX_RETRIES = 10
+config = require '../config/config'
 
 #
 # This task identifies letters that were sent to LOB but we have no response/status data saved
@@ -20,11 +18,11 @@ updateLetters = (subtask) ->
   query = tables.mail.letters()
   query
   .select(
-    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date")
+    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date, lob_api")
   )
   .whereNull('lob_response')
   .where(status: 'error-transient')
-  .where('retries', '<=', LOB_MAX_RETRIES)
+  .where('retries', '<=', config.MAILING_PLATFORM.LOB_MAX_RETRIES)
   .then (letters) ->
     Promise.map letters, (letter) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_getLetter', letter, true
@@ -56,6 +54,8 @@ getLetter = (subtask) ->
       gte: created_date
     metadata:
       uuid: letter.uuid # unique identifier we generated
+   ,
+    letter.lob_api
 
   .then ({data}) ->
     # In this case we know the letter was recieved by LOB so we can mark it sent

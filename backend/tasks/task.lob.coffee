@@ -12,8 +12,7 @@ logger = require('../config/logger').spawn('task:lob')
 {safeJsonArray} = require '../utils/util.sql.helpers'
 moment = require 'moment'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
-
-CAMPAIGN_BILLING_DELAY = 1
+config = require '../config/config'
 
 #
 # This task find letters that have been queued from a mail campaign
@@ -28,10 +27,11 @@ findLetters = (subtask) ->
       'file'
       'options'
       'retries',
-      'lob_errors'
+      'lob_errors',
+      'lob_api'
     ]
   )
-  .whereIn('status', [ 'ready', 'error-transient' ])
+  .where('status', 'ready')
   .then (letters) ->
     Promise.map letters, (letter) ->
       jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
@@ -47,7 +47,7 @@ createLetter = (subtask) ->
   if letter.lob_errors?
     lob_errors = lob_errors.concat letter.lob_errors
 
-  lobSvc.createLetter letter
+  lobSvc.sendLetter letter, letter.lob_api
 
   .then (lobResponse) ->
     logger.debug -> "#{JSON.stringify lobResponse, null, 2}"
@@ -139,7 +139,7 @@ findCampaigns = (subtask) ->
 
     Promise.map campaigns, (campaign) ->
 
-      readyDate = moment(campaign.stripe_charge.created, 'X').add(CAMPAIGN_BILLING_DELAY, 'days')
+      readyDate = moment(campaign.stripe_charge.created, 'X').add(config.MAILING_PLATFORM.CAMPAIGN_BILLING_DELAY_DAYS, 'days')
       if not readyDate.isBefore(moment())
         logger.debug "Campaign #{campaign.id} will be ignored until #{readyDate.format()}"
         return

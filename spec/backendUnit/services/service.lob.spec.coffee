@@ -18,6 +18,7 @@ mockAuthUser =
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
 mockPdfCampaign = _.extend {}, mockCampaign, aws_key: 'uploads/herpderp_l337.pdf'
 mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockPdfLetter = _.extend {}, mockLetter, options: aws_key: 'uploads/herpderp_l337.pdf'
 mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 mockCustomer = require '../../fixtures/backend/services/stripe/customer.subscription.verified.json'
 mockCharge = require '../../fixtures/backend/services/stripe/charge.uncaptured.json'
@@ -41,21 +42,29 @@ describe "service.lob", ->
 
       svc.__set__ 'tables', @tables
 
-      svc.__set__ 'dbs', transaction: (name, cb) -> cb()
+      svc.__set__ 'dbs',
+        transaction: (name, cb) -> cb()
 
-      @paymentSvc = customers:
-        get: -> Promise.try -> mockCustomer
-        charge: -> Promise.try -> mockCharge
+      svc.__set__ 'paymentSvc',
+        customers:
+          get: -> Promise.try -> mockCustomer
+          charge: -> Promise.try -> mockCharge
 
-      svc.__set__ 'paymentSvc', @paymentSvc
+      svc.__set__ 'externalAccounts',
+        getAccountInfo: -> Promise.try ->
+          apiKey: 'abc123'
+          other:
+            test_api_key: 'test_abc123'
 
-      svc.__set__ 'externalAccounts', getAccountInfo: Promise.try ->
-      lobSvc = letters:
-        create: -> Promise.try -> mockLobLetter
+      svc.__set__ 'LobFactory',
+        class
+          letters:
+            create: sinon.spy -> Promise.try -> mockLobLetter
 
-      svc.__set__ 'lobPromise', -> Promise.try ->
-        test: lobSvc
-        live: lobSvc
+      svc.__set__ 'awsService',
+        getTimedDownloadUrl: (bucket, key) -> Promise.try ->
+          return "http://aws-pdf-downloads/#{key}"
+        buckets: PDF: 'aws-pdf-downloads'
 
     it 'should update campaign status and create letters', (done) ->
 
@@ -76,10 +85,20 @@ describe "service.lob", ->
         @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
 
         @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockCampaign.lob_content
-
-        expect(@tables.mail.letters().insertSpy.args[0][0][0].options.template).to.be.undefined
+        @tables.mail.letters().insertSpy.args[0][0][0].lob_api.should.equal 'test'
 
         done()
+
+    it 'should send html letter with valid `file` and `template` values', (done) ->
+      svc.sendLetter mockLetter, 'test'
+      .then (result) =>
+        svc.__get__('lobPromise')()
+        .then ({test}) ->
+          test.letters.create.callCount.should.equal 1
+          test.letters.create.args[0][0].file.should.equal mockLetter.file
+          test.letters.create.args[0][0].template.should.be.true
+          test.letters.create.args[0][0].color.should.be.false
+          done()
 
   describe 'sending pdf campaigns', ->
 
@@ -87,7 +106,7 @@ describe "service.lob", ->
 
       user = new SqlMock 'auth', 'user', result: [mockAuthUser]
       campaigns = new SqlMock 'mail', 'campaign', results: [[mockPdfCampaign],[mockPdfCampaign]]
-      letters = new SqlMock 'mail', 'letters', result: [mockLetter]
+      letters = new SqlMock 'mail', 'letters', result: [mockPdfLetter]
 
       @tables =
         auth:
@@ -98,21 +117,24 @@ describe "service.lob", ->
 
       svc.__set__ 'tables', @tables
 
-      svc.__set__ 'dbs', transaction: (name, cb) -> cb()
+      svc.__set__ 'dbs',
+        transaction: (name, cb) -> cb()
 
-      @paymentSvc = customers:
-        get: -> Promise.try -> mockCustomer
-        charge: -> Promise.try -> mockCharge
+      svc.__set__ 'paymentSvc',
+        customers:
+          get: -> Promise.try -> mockCustomer
+          charge: -> Promise.try -> mockCharge
 
-      svc.__set__ 'paymentSvc', @paymentSvc
+      svc.__set__ 'externalAccounts',
+        getAccountInfo: -> Promise.try ->
+          apiKey: 'abc123'
+          other:
+            test_api_key: 'test_abc123'
 
-      svc.__set__ 'externalAccounts', getAccountInfo: Promise.try ->
-      lobSvc = letters:
-        create: -> Promise.try -> mockLobLetter
-
-      svc.__set__ 'lobPromise', -> Promise.try ->
-        test: lobSvc
-        live: lobSvc
+      svc.__set__ 'LobFactory',
+        class
+          letters:
+            create: sinon.spy -> Promise.try -> mockLobLetter
 
       svc.__set__ 'awsService',
         getTimedDownloadUrl: ({extAcctName, Key}) -> Promise.try ->
@@ -128,24 +150,28 @@ describe "service.lob", ->
         @tables.auth.user().whereSpy.args[0][0].should.deep.equal id: mockAuthUser.id
 
         @tables.mail.campaign().selectSpy.callCount.should.equal 2
-        @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
+        @tables.mail.campaign().whereSpy.args[0][0].should.deep.equal id: mockPdfCampaign.id, auth_user_id: mockAuthUser.id
 
         @tables.mail.campaign().updateSpy.callCount.should.equal 1
         @tables.mail.campaign().updateSpy.args[0][0].should.deep.equal status: 'sending', stripe_charge: mockCharge
-        @tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockCampaign.id, auth_user_id: mockAuthUser.id
+        @tables.mail.campaign().whereSpy.args[1][0].should.deep.equal id: mockPdfCampaign.id, auth_user_id: mockAuthUser.id
 
         @tables.mail.letters().insertSpy.callCount.should.equal 1
-        @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockCampaign.recipients.length
+        @tables.mail.letters().insertSpy.args[0][0].length.should.equal mockPdfCampaign.recipients.length
 
-        @tables.mail.letters().insertSpy.args[0][0][0].options.aws_key.should.contain mockPdfCampaign.aws_key
+        @tables.mail.letters().insertSpy.args[0][0][0].file.should.equal mockPdfCampaign.lob_content
+        @tables.mail.letters().insertSpy.args[0][0][0].lob_api.should.equal 'test'
+        @tables.mail.letters().insertSpy.args[0][0][0].options.aws_key.should.equal mockPdfCampaign.aws_key
 
         done()
 
-    it 'should prepare pdf letters with valid `file` and `template` values', (done) ->
-      mockLetter.file = 'uploads/herpderp_l337.pdf'
-      svc.__get__('prepareLobLetter')(mockLetter)
-      .then ({letter, lob}) ->
-        letter.file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
-        letter.template.should.be.false
-        letter.color.should.be.true
-        done()
+    it 'should send pdf letter with valid `file` and `template` values', (done) ->
+      svc.sendLetter mockPdfLetter, 'test'
+      .then (result) =>
+        svc.__get__('lobPromise')()
+        .then ({test}) ->
+          test.letters.create.callCount.should.equal 1
+          test.letters.create.args[0][0].file.should.equal "http://aws-pdf-downloads/uploads/herpderp_l337.pdf"
+          test.letters.create.args[0][0].template.should.be.false
+          test.letters.create.args[0][0].color.should.be.true
+          done()

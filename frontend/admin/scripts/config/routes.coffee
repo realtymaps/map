@@ -65,6 +65,7 @@ module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterPro
 
   buildState 'utils'
   buildState 'utilsFipsCodes', parent: 'utils'
+  buildState 'utilsMail', parent: 'utils'
 
   buildState 'authenticating', controller: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false

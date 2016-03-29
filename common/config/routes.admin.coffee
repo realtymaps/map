@@ -18,6 +18,10 @@ module.exports =
   jobsTask: '/task'
   jobsSubtask: '/subtask'
 
+  utils: 'utils'
+  utilsFipsCodes: '/fips'
+  utilsMail: '/mail'
+
   authenticating: 'authenticating'
   accessDenied: 'accessDenied'
   pageNotFound: '*path'
