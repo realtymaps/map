@@ -44,6 +44,15 @@ _transform = (fieldTransform, cipherKey, accountInfo) ->
       fieldTransform(accountInfo.other, result.other, key, cipherKey)
   return result
 
+_handleAccountInfoTypes = (accountInfo) ->
+  if typeof(accountInfo) == 'string'
+    accountInfo = JSON5.parse(accountInfo)
+  accountInfo
+
+_logResult = (opts, result) ->
+  if opts.logOnly
+    return console.log(JSON.stringify(result,null,2))
+  result
 
 getAccountInfo = (name, opts={}) -> Promise.try () ->
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
@@ -56,14 +65,10 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
   .orderBy('environment')
   .then expectSingleRow
   .then _transform.bind(null, _decrypt, cipherKey)
-  .then (result) ->
-    if opts.logOnly
-      return console.log(JSON.stringify(result,null,2))
-    result
+  .then _logResult.bind(null, opts)
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
-  if typeof(accountInfo) == 'string'
-    accountInfo = JSON5.parse(accountInfo)
+  accountInfo = _handleAccountInfoTypes(accountInfo)
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
   .insert(_transform(_encrypt, cipherKey, accountInfo))
@@ -72,8 +77,7 @@ insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   query
 
 updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
-  if typeof(accountInfo) == 'string'
-    accountInfo = JSON5.parse(accountInfo)
+  accountInfo = _handleAccountInfoTypes(accountInfo)
   cipherKey = opts.cipherKey ? config.ENCRYPTION_AT_REST
   query = tables.config.externalAccounts(transaction: opts.transaction)
   .where(name: accountInfo.name)
@@ -86,6 +90,18 @@ updateAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
     return console.log(query.toString())
   query
 
+deleteAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
+  accountInfo = _handleAccountInfoTypes(accountInfo)
+  query = tables.config.externalAccounts(transaction: opts.transaction)
+  .where(name: accountInfo.name)
+  .del()
+
+  if opts.logOnly
+    return console.log(query.toString())
+
+  query.then _logResult.bind(null, opts)
+
+
 
 module.exports =
   getAccountInfo: memoize.promise(getAccountInfo, maxAge: 15*60*1000)
@@ -95,3 +111,6 @@ module.exports =
   updateAccountInfo:  (accountInfo, opts={}) ->
     module.exports.getAccountInfo.delete(accountInfo.name, cipherKey: opts.cipherKey, environment: opts.environment)
     updateAccountInfo(accountInfo, opts)
+  deleteAccountInfo:  (accountInfo, opts={}) ->
+    module.exports.getAccountInfo.delete(accountInfo.name, cipherKey: opts.cipherKey, environment: opts.environment)
+    deleteAccountInfo(accountInfo, opts)

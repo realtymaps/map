@@ -1,11 +1,11 @@
 Promise = require 'bluebird'
-{uploadToParcelsDb} = require '../../services/service.parcels.saver'
-{parcel} = require '../../services/service.cartodb'
-jobQueue = require '../util.jobQueue'
+{uploadToParcelsDb} = require '../services/service.parcels.saver'
+{parcel} = require '../services/service.cartodb'
+jobQueue = require '../utils/util.jobQueue'
 _ = require 'lodash'
-tables = require '../../config/tables'
-dbs = require '../../config/dbs'
-externalAccounts =  require '../../services/service.externalAccounts'
+tables = require '../config/tables'
+dbs = require '../config/dbs'
+externalAccounts =  require '../services/service.externalAccounts'
 
 
 _subtasks =

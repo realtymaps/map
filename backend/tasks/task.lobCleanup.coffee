@@ -1,14 +1,14 @@
 Promise = require "bluebird"
-jobQueue = require '../util.jobQueue'
-{SoftFail, HardFail} = require '../errors/util.error.jobQueue'
-tables = require '../../config/tables'
-logger = require '../../config/logger'
+jobQueue = require '../utils/util.jobQueue'
+{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+tables = require '../config/tables'
+logger = require '../config/logger'
 _ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
-lobSvc = require '../../services/service.lob'
-LobErrors = require '../errors/util.errors.lob'
-{isCausedBy} = require '../errors/util.error.partiallyHandledError'
-logger = require('../../config/logger').spawn('task:lob')
+lobSvc = require '../services/service.lob'
+LobErrors = require '../utils/errors/util.errors.lob'
+{isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+logger = require('../config/logger').spawn('task:lob')
 
 LOB_MAX_RETRIES = 10
 

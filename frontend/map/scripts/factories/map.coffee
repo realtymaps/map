@@ -372,7 +372,7 @@ app.factory 'rmapsMapFactory',
         @zoomTo(result, false)
 
       zoomTo: (result, doChangeZoom) ->
-        console.log  "CAUGHT zoomToProperty event"
+        verboseLogger.debug "CAUGHT zoomToProperty event"
         return if not result?.coordinates?
 
         resultCenter = new Point(result.coordinates[1],result.coordinates[0])

@@ -1,13 +1,13 @@
 Promise = require "bluebird"
-jobQueue = require '../util.jobQueue'
-{HardFail} = require '../errors/util.error.jobQueue'
-tables = require '../../config/tables'
-logger = require('../../config/logger').spawn('task:stripe')
+jobQueue = require '../utils/util.jobQueue'
+{HardFail} = require '../utils/errors/util.error.jobQueue'
+tables = require '../config/tables'
+logger = require('../config/logger').spawn('task:stripe')
 TaskImplementation = require './util.taskImplementation'
-stripeErrorEnums = require '../../enums/enum.stripe.errors'
+stripeErrorEnums = require '../enums/enum.stripe.errors'
 stripe = null
 {SubtaskHandlerThirdparty} = require './util.task.helpers'
-stripeErrors  = require '../../utils/errors/util.errors.stripe'
+stripeErrors  = require '../utils/errors/util.errors.stripe'
 
 ###
   ratelimits: (RPS)
@@ -107,7 +107,7 @@ subtasks =
 class StipeTask extends TaskImplementation
   initialize: () ->
     #delay stripe initialization here to get no errors in specs
-    require('../../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
+    require('../services/payment/stripe/service.payment.impl.stripe.bootstrap').then (s) -> stripe = s
     super(arguments...)
 
 module.exports = new StipeTask(subtasks)

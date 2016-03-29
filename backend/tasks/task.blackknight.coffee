@@ -1,21 +1,21 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
-jobQueue = require '../util.jobQueue'
-{SoftFail} = require '../errors/util.error.jobQueue'
-tables = require '../../config/tables'
-logger = require('../../config/logger').spawn('task:blackknight')
-sqlHelpers = require '../util.sql.helpers'
+jobQueue = require '../utils/util.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
+tables = require '../config/tables'
+logger = require('../config/logger').spawn('task:blackknight')
+sqlHelpers = require '../utils/util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
-externalAccounts = require '../../services/service.externalAccounts'
+externalAccounts = require '../services/service.externalAccounts'
 PromiseSftp = require 'promise-sftp'
 _ = require 'lodash'
-keystore = require '../../services/service.keystore'
+keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
-dbs = require '../../config/dbs'
+dbs = require '../config/dbs'
 path = require 'path'
 moment = require 'moment'
 constants = require './task.blackknight.constants'
-validation = require '../util.validation'
+validation = require '../utils/util.validation'
 
 
 
@@ -45,13 +45,13 @@ _checkFolder = (ftp, folderInfo, processLists) -> Promise.try () ->
         if file.name.startsWith('metadata_')
           continue
         if file.name.indexOf('_Delete_') == -1
-          logger.warn("Unexpected file found in blackknight FTP drop: /#{folderInfo.path}/#{file.name}")
+          logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
           continue
         if file.size == 0
           continue
         fileType = constants.DELETE
       else if !file.name.endsWith('.gz')
-        logger.warn("Unexpected file found in blackknight FTP drop: /#{folderInfo.path}/#{file.name}")
+        logger.warn("Unexpected file found in blackknight FTP drop: #{folderInfo.path}/#{file.name}")
         continue
       else
         fileType = folderInfo.action
@@ -92,22 +92,22 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
   deleteDataList = []
   countDataList = []
   for file in files
-    rawTableSuffix = "#{file.name.slice(0, -7)}"
     loadData =
       path: "#{file.path}/#{file.name}"
-      rawTableSuffix: rawTableSuffix
       dataType: file.type
       action: file.action
-      normalSubid: file.name.slice(0, 5)
     if action == constants.DELETE
       loadData.fileType = constants.DELETE
+      loadData.rawTableSuffix = "#{file.name.slice(0, -4)}"
     else
       loadData.fileType = constants.LOAD
+      loadData.rawTableSuffix = "#{file.name.slice(0, -7)}"
+      loadData.normalSubid = file.name.slice(0, 5)
       countDataList.push
-        rawTableSuffix: rawTableSuffix
+        rawTableSuffix: loadData.rawTableSuffix
+        normalSubid: loadData.normalSubid
         dataType: file.type
         deletes: dataLoadHelpers.DELETE.INDICATED
-        normalSubid: file.name.slice(0, 5)
     loadDataList.push(loadData)
   loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
   recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
@@ -173,8 +173,10 @@ checkFtpDrop = (subtask) ->
 
 
 loadRawData = (subtask) ->
-  # first ensure a normalized data table exists
-  dataLoadHelpers.ensureNormalizedTable(subtask.data.dataType, subtask.data.normalSubid)
+  Promise.try () ->
+    if subtask.data.fileType != constants.DELETE
+      # first ensure a normalized data table exists
+      dataLoadHelpers.ensureNormalizedTable(subtask.data.dataType, subtask.data.normalSubid)
   .then () ->
     constants.getColumns(subtask.data.fileType, subtask.data.action, subtask.data.dataType)
   .then (columns) ->
@@ -205,7 +207,7 @@ deleteData = (subtask) ->
   .then (rows) ->
     promises = for row in rows then do (row) ->
       if subtask.data.action == constants.REFRESH
-        normalDataTable(subtask.data.normalSubid)
+        normalDataTable(subid: row['FIPS Code'])
         .where
           data_source_id: 'blackknight'
           fips_code: row['FIPS Code']
@@ -218,7 +220,7 @@ deleteData = (subtask) ->
           .then (validationInfo) ->
             Promise.props(_.mapValues(validationInfo.validationMap, validation.validateAndTransform.bind(null, row)))
           .then (normalizedData) ->
-            normalDataTable(subtask.data.normalSubid)
+            normalDataTable(subid: row['FIPS Code'])
             .where
               data_source_id: 'blackknight'
               fips_code: row['FIPS Code']
@@ -226,7 +228,7 @@ deleteData = (subtask) ->
             .whereNull('deleted')
             .update(deleted: subtask.batch_id)
         else
-          normalDataTable(subtask.data.normalSubid)
+          normalDataTable(subid: row['FIPS Code'])
           .where
             data_source_id: 'blackknight'
             fips_code: row['FIPS Code']

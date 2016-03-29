@@ -1,0 +1,88 @@
+#!/usr/bin/env node
+
+/*
+Simple script to utilize our aws service
+
+options:
+--action: function to call on service.aws
+--fileName || --Key: full path of whatever file
+--bucket || --extAcctName: bucket name in config_external_accounts
+
+--*(any other S3 option for a interactive S3 function), example ContentType
+*/
+
+var coffee = require('coffee-script')
+coffee.register()
+
+var aws = require('../../backend/services/service.aws'),
+  argv = require('yargs').argv,
+  fs = require('fs'),
+  path = require('path'),
+  _ = require('lodash')
+
+
+handle = aws[argv.action] || aws.postObject
+
+if (!argv.bucket) {
+  console.error('--bucket required')
+  process.exit(122)
+}
+
+if (!argv.fileName && (argv.action == 'putObject' || !argv.action)) {
+  console.error('--fileName required to postObject!')
+  process.exit(123)
+}
+
+function getUserHome() {
+  return process.env.HOME || process.env.USERPROFILE;
+}
+
+
+var fileName = argv.fileName || argv.Key,
+  uploadFileName
+
+if (fileName &&  !(['listObjects'].indexOf(argv.action) > -1)){
+  if (fileName.indexOf('~') > -1) {
+    fileName = argv.fileName.replace('~', getUserHome())
+  }
+  console.log("attempting to load file: " + fileName)
+
+  uploadFileName = path.parse(fileName).base
+}
+
+params = _.extend({},{
+  extAcctName: argv.bucket
+}, _.omit(argv, ['bucket', 'action', 'fileName', 'Key', 'Body', '$0', '_']))
+
+if (uploadFileName){
+  params.Key = uploadFileName
+  if(!(['getObject'].indexOf(argv.action) > -1))
+    params.Body = fs.createReadStream(fileName)
+}
+
+if(argv.action === 'getObject')//force node style
+  params.nodeStyle = true
+
+handle(params)
+.then(function(ret) {
+  var wait = false
+  console.log(argv.action + ' success!!' + ' for filenamed ' + uploadFileName)
+  if(argv.action === 'getObject' && ret){
+    wait = true
+    // console.log(ret)
+    ret.createReadStream()
+    .on('end', function(){
+      process.exit(0)
+    })
+    .pipe(fs.createWriteStream(uploadFileName))
+  }
+  if(argv.action === 'listObjects')
+    console.log(ret)
+
+  if(!wait)
+    process.exit(0)
+})
+.catch(function(error) {
+  console.error(error)
+  process.exit(200)
+})

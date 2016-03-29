@@ -12,7 +12,6 @@ prettyHrtime = require 'pretty-hrtime'
 through = require 'through2'
 conf = require './conf'
 mainConfig = require '../../backend/config/config'
-console.log mainConfig.COFFEE_SOURCE_MAP
 require './markup'
 ignore = require 'ignore'
 _ = require 'lodash'

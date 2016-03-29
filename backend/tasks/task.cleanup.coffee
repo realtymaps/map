@@ -1,8 +1,8 @@
 Promise = require 'bluebird'
-tables = require '../../config/tables'
-logger = require '../../config/logger'
-config = require '../../config/config'
-dbs = require '../../config/dbs'
+tables = require '../config/tables'
+logger = require '../config/logger'
+config = require '../config/config'
+dbs = require '../config/dbs'
 TaskImplementation = require './util.taskImplementation'
 
 
@@ -14,7 +14,7 @@ rawTables = (subtask) ->
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_TABLE_DAYS} days'::INTERVAL")
   .map (loadEntry) ->
     logger.debug("cleaning up old raw table: #{loadEntry.raw_table_name}")
-    
+
     # for now, try to clean the raw table from both dbs...  eventually we'll change this to just the raw db
     mainCleanup = dbs.get('main').schema.dropTableIfExists(loadEntry.raw_table_name)
     rawCleanup = dbs.get('raw_temp').schema.dropTableIfExists(loadEntry.raw_table_name)
@@ -37,7 +37,18 @@ deleteMarkers = (subtask) ->
   .then (count) ->
     logger.debug "Deleted #{count} rows from delete marker table"
 
-module.exports = new TaskImplementation
-  rawTables: rawTables
-  subtaskErrors: subtaskErrors
-  deleteMarkers: deleteMarkers
+deleteInactiveRows = (subtask) ->
+  tables.property.combined()
+  .where(active: false)
+  .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.INACTIVE_ROW_DAYS} days'::INTERVAL")
+  .delete()
+  .then (count) ->
+    logger.debug "Deleted #{count} rows from combined data table"
+
+
+module.exports = new TaskImplementation {
+  rawTables
+  subtaskErrors
+  deleteMarkers
+  deleteInactiveRows
+}

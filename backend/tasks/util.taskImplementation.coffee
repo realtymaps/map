@@ -1,5 +1,5 @@
-tables = require '../../config/tables'
-{TaskNotImplemented} = require '../errors/util.error.jobQueue'
+tables = require '../config/tables'
+{TaskNotImplemented} = require '../utils/errors/util.error.jobQueue'
 Promise = require 'bluebird'
 memoize = require 'memoizee'
 
@@ -39,7 +39,7 @@ class TaskImplementation
     .then (subtasks) ->
       if !subtasks.length
         return 0
-      require('../util.jobQueue').queueSubtasks(transaction, batchId, subtasks)
+      require('../utils/util.jobQueue').queueSubtasks(transaction, batchId, subtasks)
     .then (count) ->
       if count == 0
         throw new Error("0 subtasks enqueued for #{task.name}")

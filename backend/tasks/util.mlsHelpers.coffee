@@ -1,18 +1,18 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled, isCausedBy} = require '../errors/util.error.partiallyHandledError'
-dbs = require '../../config/dbs'
-config = require '../../config/config'
-logger = require '../../config/logger'
-jobQueue = require '../util.jobQueue'
-validation = require '../util.validation'
+{PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+dbs = require '../config/dbs'
+config = require '../config/config'
+logger = require '../config/logger'
+jobQueue = require '../utils/util.jobQueue'
+validation = require '../utils/util.validation'
 vm = require 'vm'
-tables = require '../../config/tables'
-sqlHelpers = require '../util.sql.helpers'
-retsHelpers = require '../util.retsHelpers'
+tables = require '../config/tables'
+sqlHelpers = require '../utils/util.sql.helpers'
+retsHelpers = require '../utils/util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
 rets = require 'rets-client'
-{SoftFail} = require '../errors/util.error.jobQueue'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 through2 = require 'through2'
 
 
@@ -117,7 +117,7 @@ finalizeData = (subtask, id) ->
 
     # owner name promotion logic
     if !listings[0].owner_name? && !listings[0].owner_name_2?
-      if !listings[1]?.owner_name? || !listings[1]?.owner_name_2?
+      if listings[1]?.owner_name? || listings[1]?.owner_name_2?
         # keep the previously-promoted values
         promotionPromise = Promise.resolve(owner_name: listings[1].owner_name, owner_name_2: listings[1].owner_name_2)
       else
@@ -137,11 +137,16 @@ finalizeData = (subtask, id) ->
       listing = dataLoadHelpers.finalizeEntry(listings)
       listing.data_source_type = 'mls'
       _.extend(listing, parcel[0], promotion)
-      ident =
-        rm_property_id: id
-        data_source_id: subtask.task_name
-        active: false
-      sqlHelpers.upsert(ident, listing, tables.property.combined)
+      dbs.get('main').transaction (transaction) ->
+        tables.property.combined(transaction: transaction)
+        .where
+          rm_property_id: id
+          data_source_id: subtask.task_name
+          active: false
+        .delete()
+        .then () ->
+          tables.property.combined(transaction: transaction)
+          .insert(listing)
 
 module.exports =
   loadUpdates: loadUpdates

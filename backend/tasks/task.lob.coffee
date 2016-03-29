@@ -1,17 +1,17 @@
 Promise = require "bluebird"
-jobQueue = require '../util.jobQueue'
-{SoftFail, HardFail} = require '../errors/util.error.jobQueue'
-tables = require '../../config/tables'
-logger = require '../../config/logger'
+jobQueue = require '../utils/util.jobQueue'
+{SoftFail, HardFail} = require '../utils/errors/util.error.jobQueue'
+tables = require '../config/tables'
+logger = require '../config/logger'
 _ = require 'lodash'
 TaskImplementation = require './util.taskImplementation'
-lobSvc = require '../../services/service.lob'
-LobErrors = require '../errors/util.errors.lob'
-{isCausedBy} = require '../errors/util.error.partiallyHandledError'
-logger = require('../../config/logger').spawn('task:lob')
-{safeJsonArray} = require '../util.sql.helpers'
+lobSvc = require '../services/service.lob'
+LobErrors = require '../utils/errors/util.errors.lob'
+{isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
+logger = require('../config/logger').spawn('task:lob')
+{safeJsonArray} = require '../utils/util.sql.helpers'
 moment = require 'moment'
-{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 
 CAMPAIGN_BILLING_DELAY = 1
 
@@ -163,7 +163,7 @@ findCampaigns = (subtask) ->
 chargeCampaign = (subtask) ->
   campaign = subtask.data
 
-  payment = require('../../services/services.payment')
+  payment = require('../services/services.payment')
 
   .then (payment) ->
 

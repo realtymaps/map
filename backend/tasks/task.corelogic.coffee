@@ -1,16 +1,16 @@
 Promise = require "bluebird"
 dataLoadHelpers = require './util.dataLoadHelpers'
-jobQueue = require '../util.jobQueue'
-tables = require '../../config/tables'
-logger = require '../../config/logger'
-sqlHelpers = require '../util.sql.helpers'
+jobQueue = require '../utils/util.jobQueue'
+tables = require '../config/tables'
+logger = require '../config/logger'
+sqlHelpers = require '../utils/util.sql.helpers'
 countyHelpers = require './util.countyHelpers'
-externalAccounts = require '../../services/service.externalAccounts'
+externalAccounts = require '../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
 _ = require 'lodash'
-keystore = require '../../services/service.keystore'
+keystore = require '../services/service.keystore'
 TaskImplementation = require './util.taskImplementation'
-dbs = require '../../config/dbs'
+dbs = require '../config/dbs'
 
 
 NUM_ROWS_TO_PAGINATE = 2500

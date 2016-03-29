@@ -1,20 +1,20 @@
 _ = require 'lodash'
 Promise = require 'bluebird'
-{PartiallyHandledError, isUnhandled} = require '../errors/util.error.partiallyHandledError'
-{SoftFail} = require '../errors/util.error.jobQueue'
+{PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
+{SoftFail} = require '../utils/errors/util.error.jobQueue'
 copyStream = require 'pg-copy-streams'
 from = require 'from'
-utilStreams = require '../util.streams'
-dbs = require '../../config/dbs'
-config = require '../../config/config'
-logger = require '../../config/logger'
-jobQueue = require '../util.jobQueue'
-validation = require '../util.validation'
-tables = require '../../config/tables'
-sqlHelpers = require '../util.sql.helpers'
-retsHelpers = require '../util.retsHelpers'
+utilStreams = require '../utils/util.streams'
+dbs = require '../config/dbs'
+config = require '../config/config'
+logger = require '../config/logger'
+jobQueue = require '../utils/util.jobQueue'
+validation = require '../utils/util.validation'
+tables = require '../config/tables'
+sqlHelpers = require '../utils/util.sql.helpers'
+retsHelpers = require '../utils/util.retsHelpers'
 dataLoadHelpers = require './util.dataLoadHelpers'
-externalAccounts = require '../../services/service.externalAccounts'
+externalAccounts = require '../services/service.externalAccounts'
 PromiseFtp = require 'promise-ftp'
 PromiseSftp = require 'promise-sftp'
 unzip = require 'unzip2'
@@ -247,11 +247,16 @@ finalizeData = (subtask, id) ->
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-        ident =
-          rm_property_id: id
-          data_source_id: subtask.task_name
-          active: false
-        sqlHelpers.upsert(ident, tax, tables.property.combined)
+        dbs.get('main').transaction (transaction) ->
+          tables.property.combined(transaction: transaction)
+          .where
+            rm_property_id: id
+            data_source_id: subtask.task_name
+            active: false
+          .delete()
+          .then () ->
+            tables.property.combined(transaction: transaction)
+            .insert(listing)
 
 
 ###
