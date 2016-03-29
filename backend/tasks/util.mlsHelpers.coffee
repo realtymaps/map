@@ -13,7 +13,7 @@ awsService = require '../services/service.aws'
 mlsPhotoUtil = require '../utils/util.mls.photos'
 uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
-photoExtBucketName = 'aws-listing-photos'
+EXT_AWS_PHOTO_ACCOUNT = 'aws-listing-photos'
 
 ONE_DAY_MILLISEC = 24*60*60*1000
 
@@ -168,7 +168,7 @@ _getPhotoSettings = (subtask, rm_property_id) ->
   Promise.all [photoTypePromise, query]
 
 _updatePhotoUrl = (subtask, {newFileName, imageId, photo_id}) -> Promise.try () ->
-  externalAccounts.getAccountInfo(photoExtBucketName)
+  externalAccounts.getAccountInfo(EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
     Update photo's hash in a data_combined col
@@ -231,7 +231,7 @@ storePhotos = (subtask, rm_property_id) ->
             #file naming consideratons
             #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
             awsService.putObject
-              extAcctName: photoExtBucketName
+              extAcctName: EXT_AWS_PHOTO_ACCOUNT
               Key: newFileName
               Body: payload.data
               Metadata:
@@ -252,7 +252,7 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
     logger.debug "deleting: id: #{id}, key: #{key}"
 
     awsService.deleteObject
-      extAcctName: photoExtBucketName
+      extAcctName: EXT_AWS_PHOTO_ACCOUNT
       Key: key
     .then () ->
       tables.deletes.photo()
