@@ -31,20 +31,19 @@ _getUniqueRmIds = (subtask, dbFn) ->
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
 
-finalizeDataPrep = (subtask) ->
+_pagenate = (subtask, taskName, ids) ->
+  jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, taskName)
+
+finalizeDataPrep = (subtask, pagenateFn = _pagenate) ->
   _getUniqueRmIds(subtask, tables.property.listing)
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
-      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
-storePhotosPrep = (subtask) ->
+storePhotosPrep = (subtask, pagenateFn = _pagenate) ->
   _getUniqueRmIds(subtask, tables.property.combined)
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
-      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
+  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_storePhotos")
 
 storePhotos = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
@@ -54,8 +53,8 @@ module.exports = new TaskImplementation {
   normalizeData
   finalizeDataPrep
   finalizeData
-  storePhotosPrep
-  storePhotos
   activateNewData: dataLoadHelpers.activateNewData
   recordChangeCounts: dataLoadHelpers.recordChangeCounts
+  storePhotosPrep
+  storePhotos
 }
