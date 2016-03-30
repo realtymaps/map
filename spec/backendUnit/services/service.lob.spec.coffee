@@ -12,7 +12,7 @@ mockAuthUser =
   id: 7
   first_name: "Bob"
   last_name: "McMailer"
-  email: "blackholerealtymaps.com"
+  email: "blackhole@realtymaps.com"
   stripe_customer_id: 'cus_7r3jpOU0t3LQ9k'
 
 mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
