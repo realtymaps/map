@@ -53,6 +53,8 @@ loadUpdates = (subtask, options) ->
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->
+      if numRawRows == 0
+        return 0
       # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
       # on whether this is a dump or an update)
       deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE

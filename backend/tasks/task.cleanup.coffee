@@ -20,10 +20,8 @@ rawTables = (subtask) ->
   .map (loadEntry) ->
     logger.debug("cleaning up old raw table: #{loadEntry.raw_table_name}")
 
-    # for now, try to clean the raw table from both dbs...  eventually we'll change this to just the raw db
-    mainCleanup = dbs.get('main').schema.dropTableIfExists(loadEntry.raw_table_name)
-    rawCleanup = dbs.get('raw_temp').schema.dropTableIfExists(loadEntry.raw_table_name)
-    Promise.join mainCleanup, rawCleanup, () ->
+    dbs.get('raw_temp').schema.dropTableIfExists(loadEntry.raw_table_name)
+    .then () ->
       tables.jobQueue.dataLoadHistory()
       .where(raw_table_name: loadEntry.raw_table_name)
       .update(cleaned: true)
