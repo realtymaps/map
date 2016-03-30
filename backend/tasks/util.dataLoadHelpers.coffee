@@ -13,6 +13,7 @@ dbs = require '../config/dbs'
 copyStream = require 'pg-copy-streams'
 utilStreams = require '../utils/util.streams'
 through2 = require 'through2'
+rets = require 'rets-client'
 
 
 DELETE =
@@ -376,11 +377,8 @@ finalizeEntry = (entries) ->
 
 manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
   dbs.getPlainClient 'raw_temp', (promiseQuery, streamQuery) ->
-    tables.jobQueue.dataLoadHistory()
-    .insert(dataLoadHistory)
-    .then () ->
-      promiseQuery('BEGIN TRANSACTION')
-    .then () -> new Promise (resolve, reject) ->
+    startedTransaction = false
+    new Promise (resolve, reject) ->
       # stream the results into a COPY FROM query
       delimiter = null
       dbStream = null
@@ -413,6 +411,12 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
                 .where(raw_table_name: tableName)
                 .delete()
               .then () ->
+                tables.jobQueue.dataLoadHistory()
+                .insert(dataLoadHistory)
+              .then () ->
+                promiseQuery('BEGIN TRANSACTION')
+              .then () ->
+                startedTransaction = true
                 createRawTable = dbs.get('raw_temp').schema.createTable tableName, (table) ->
                   table.increments('rm_raw_id').notNullable()
                   table.boolean('rm_valid')
@@ -429,7 +433,9 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               donePayload = event.payload
               callback()
             when 'error'
-              onError(event.payload)
+              if !event.payload instanceof rets.RetsReplyError || !event.payload.replyTag == "NO_RECORDS_FOUND"
+                # not a true error, just no records returned
+                onError(event.payload)
               callback()
             else
               callback()
@@ -437,10 +443,11 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
           onError(err)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
-        this.push('\\.\n')
+        if startedTransaction
+          this.push('\\.\n')
         callback()
         if !hadError
-          resolve(donePayload)
+          resolve(donePayload||0)
       objectStream.pipe(dbStreamer)
     .catch (err) ->
       logger.error("problem streaming to #{tableName}: #{err}")
@@ -454,14 +461,18 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
       .then () ->
         throw err
     .then (count) ->
-      promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
-      promiseQuery('COMMIT TRANSACTION')
-      .then () ->
-        tables.jobQueue.dataLoadHistory()
-        .where(raw_table_name: tableName)
-        .update(raw_rows: count)
-      .then () ->
-        count
+      if startedTransaction
+        promiseQuery("CREATE INDEX ON \"#{tableName}\" (rm_raw_id)")
+        .then () ->
+          promiseQuery('COMMIT TRANSACTION')
+        .then () ->
+          tables.jobQueue.dataLoadHistory()
+          .where(raw_table_name: tableName)
+          .update(raw_rows: count)
+        .then () ->
+          return count
+      else
+        return count
 
 
 ensureNormalizedTable = (dataType, subid) ->
