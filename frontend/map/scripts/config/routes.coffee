@@ -154,7 +154,7 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildState 'notes'
   buildState 'favorites'
 
-  buildState 'mail'
+  buildState 'mail', profileRequired: false
   buildState 'mailWizard',
     abstract: true
 

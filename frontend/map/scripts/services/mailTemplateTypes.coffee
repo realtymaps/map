@@ -83,6 +83,14 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
       _meta[item.type].category = 'pdf'
       _meta[item.type].thumb = '/assets/base/template_pdf_img.png'
 
+  _removePdf = (pdfType) ->
+    _categoryLists['all'] = _.remove _categoryLists['all'], (obj) ->
+      obj.type != pdfType
+    _categoryLists['pdf'] = _.remove _categoryLists['pdf'], (obj) ->
+      obj.type != pdfType
+    delete _meta[pdfType]
+    _getCategoryLists()
+
 
   _buildCategoryLists()
 
@@ -95,6 +103,7 @@ app.service 'rmapsMailTemplateTypeService', ($log, rmapsMailPdfService) ->
 
   getCategoryLists: _getCategoryLists
   appendCategoryList: _appendCategoryList
+  removePdf: _removePdf
 
   getMailContent: (type) ->
     _meta[type].content

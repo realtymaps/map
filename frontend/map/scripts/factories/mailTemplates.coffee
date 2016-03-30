@@ -57,6 +57,13 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
         @campaign.aws_key = null
         @campaign.options.color = false
 
+    unsetTemplateType: () ->
+      @campaign.template_type = ''
+      @campaign.content = null
+      @campaign.aws_key = null
+      @campaign.options.color = false
+
+
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
 
