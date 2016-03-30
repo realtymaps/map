@@ -17,6 +17,29 @@ app.controller 'rmapsSelectTemplateCtrl', ($rootScope, $scope, $log, $modal, $ti
   $scope.oldTemplateType = $scope.wizard.mail.campaign.template_type
   $scope.sentFile = false
   $scope.uploadfile = null
+  $scope.hovered = -1
+
+  $scope.deletePdf = (template) ->
+    modalInstance = $modal.open
+      animation: true
+      template: confirmModalTemplate
+      controller: 'rmapsConfirmCtrl'
+      resolve:
+        modalTitle: () ->
+          return "Confirm delete."
+        modalBody: () ->
+          return "Delete #{template.name}?"
+        showCancelButton: () ->
+          return true
+
+    modalInstance.result.then (result) ->
+      if !result then return
+      if $scope.wizard.mail.campaign.template_type = template.type
+        $scope.wizard.mail.unsetTemplateType()
+      rmapsMailPdfService.remove template.type
+      .then () ->
+        $scope.categoryLists = rmapsMailTemplateTypeService.removePdf(template.type)
+        $scope.oldTemplateType = ''
 
   $scope.uploadFile = (file, errFiles) ->
     if $scope.oldTemplateType != ""

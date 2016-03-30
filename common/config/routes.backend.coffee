@@ -222,9 +222,9 @@ module.exports =
   pdfUpload:
     apiBaseMailPdf: apiBaseMailPdf
     root: apiBaseMailPdf
-    byId: "#{apiBaseMailPdf}/:id"
-    validatePdf: "#{apiBaseMailPdf}/:id/validate"
-    getSignedUrl: "#{apiBaseMailPdf}/:id/url"
+    byId: "#{apiBaseMailPdf}/:aws_key"
+    validatePdf: "#{apiBaseMailPdf}/:aws_key/validate"
+    getSignedUrl: "#{apiBaseMailPdf}/:aws_key/url"
   plans:
     apiBase: apiBasePlans
     root: apiBasePlans

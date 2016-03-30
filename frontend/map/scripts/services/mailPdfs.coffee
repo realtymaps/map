@@ -14,9 +14,9 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
   create: (entity) ->
     $http.post pdfAPI, entity
 
-  remove: (id) ->
-    throw new Error('must have id') unless id
-    id = '/' + id if id
+  remove: (aws_key) ->
+    throw new Error('must have id') unless aws_key
+    id = '/' + encodeURIComponent aws_key
     $http.delete(pdfAPI + id)
 
   update: (entity) ->
@@ -35,13 +35,13 @@ app.service 'rmapsMailPdfService', ($log, $http, $sce) ->
 
   getSignedUrl: (aws_key) ->
     keyEncoded = encodeURIComponent(aws_key)
-    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':id', keyEncoded), cache: false
+    $http.get backendRoutes.pdfUpload.getSignedUrl.replace(':aws_key', keyEncoded), cache: false
     .then ({data}) ->
       data
 
   validatePdf: (aws_key) ->
     keyEncoded = encodeURIComponent(aws_key)
-    $http.get backendRoutes.pdfUpload.validatePdf.replace(':id', keyEncoded)
+    $http.get backendRoutes.pdfUpload.validatePdf.replace(':aws_key', keyEncoded)
     .then ({data}) ->
       data
     .catch (err) ->

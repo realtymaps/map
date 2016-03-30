@@ -36,6 +36,7 @@ class PdfUploadService extends ServiceCrud
       throw new Error(err, "Error enocuntered while doing file validation.")
 
 instance = new PdfUploadService tables.mail.pdfUpload,
+  idKeys: 'aws_key'
   debugNS: "pdfUploadService"
 
 module.exports = instance
