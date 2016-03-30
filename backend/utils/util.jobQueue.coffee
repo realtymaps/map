@@ -30,14 +30,14 @@ _summary = (subtask) ->
 _withDbLock = (lockId, handler) ->
   id = cluster.worker?.id ? 'X'
   dbs.get('main').transaction (transaction) ->
-    logger.spawn('dbLock').debug "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
+    logger.spawn('dbLock').debug () -> "@@@@@@@@@@@@@@@@@@<#{id}>   Getting lock: #{lockId}"
     transaction
     .select(dbs.get('main').raw("pg_advisory_xact_lock(#{config.JOB_QUEUE.LOCK_KEY}, #{lockId})"))
     .then () ->
-      logger.spawn('dbLock').debug "==================<#{id}>  Acquired lock: #{lockId}"
+      logger.spawn('dbLock').debug () -> "==================<#{id}>  Acquired lock: #{lockId}"
       handler(transaction)
     .finally () ->
-      logger.spawn('dbLock').debug "------------------<#{id}> Releasing lock: #{lockId}"
+      logger.spawn('dbLock').debug () -> "------------------<#{id}> Releasing lock: #{lockId}"
 
 queueReadyTasks = (opts={}) -> Promise.try () ->
   batchId = (Date.now()).toString(36)
@@ -123,7 +123,7 @@ queueManualTask = (taskName, initiator) ->
           queueTask(transaction, batchId, result[0], initiator)
 
 queueTask = (transaction, batchId, task, initiator) -> Promise.try () ->
-  logger.spawn("task:#{task.name}").debug "Queueing task for batchId #{batchId}: #{task.name}"
+  logger.spawn("task").spawn(task.name).debug () -> "Queueing task for batchId #{batchId}: #{task.name}"
   tables.jobQueue.taskHistory(transaction: transaction)
   .where(name: task.name)
   .update(current: false)  # only the most recent entry in the history should be marked current
@@ -178,7 +178,7 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
     # need to make sure we don't continue to queue subtasks if the task has errored in some way
     if taskData == undefined
       # return an array indicating we queued 0 subtasks
-      logger.spawn("task:#{subtasks[0].task_name}").debug "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
+      logger.spawn("task").spawn(subtasks[0].task_name).debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
       return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
       queueSubtask(transaction, batchId, taskData, subtask)
@@ -219,10 +219,10 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       # need to make sure we don't queue the subtask if the task has errored in some way
       if taskData == undefined
         # return 0 to indicate we queued 0 subtasks
-        logger.spawn("task:#{subtask.task_name}").debug "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
+        logger.spawn("task").spawn(subtask.task_name).debug () -> "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
         return 0
       suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{_summary(subtask)}>"
-      logger.spawn("task:#{subtask.task_name}").debug "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
+      logger.spawn("task").spawn(subtask.task_name).debug () -> "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
       if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
         Promise.map subtaskData, (data) ->
           singleSubtask = _.clone(subtask)
@@ -292,7 +292,7 @@ cancelTask = (taskName, status='canceled', withPrejudice=false) ->
         status: 'canceled'
         finished: dbs.get('main').raw('NOW()')
       .then (count) ->
-        logger.spawn("task:#{taskName}").debug("Canceled #{count} subtasks of #{taskName}.")
+        logger.spawn("task").spawn(taskName).debug () -> "Canceled #{count} subtasks of #{taskName}."
 
 # convenience helper for dev/troubleshooting
 requeueManualTask = (taskName, initiator) ->
@@ -638,11 +638,11 @@ runWorker = (queueName, id, quit=false) ->
     prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
   else
     prefix = "<#{queueName}-#{id}>"
-  logger.spawn("queue:#{queueName}").debug "#{prefix} worker starting..."
+  logger.spawn("queue").spawn(queueName).debug () -> "#{prefix} worker starting..."
   _runWorkerImpl(queueName, prefix, quit)
 
 _runWorkerImpl = (queueName, prefix, quit) ->
-  logger.spawn("queue:#{queueName}").debug("#{prefix} Getting next subtask...")
+  logger.spawn("queue").spawn(queueName).debug () -> "#{prefix} Getting next subtask..."
   getQueuedSubtask(queueName)
   .then (subtask) ->
     nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
@@ -661,10 +661,10 @@ _runWorkerImpl = (queueName, prefix, quit) ->
     .whereNull('finished')
     .then (moreSubtasks) ->
       if !parseInt(moreSubtasks?[0]?.count)
-        logger.spawn("queue:#{queueName}").debug "#{prefix} Queue is empty; quitting worker."
+        logger.spawn("queue").spawn(queueName).debug () -> "#{prefix} Queue is empty; quitting worker."
         Promise.resolve()
       else
-        logger.spawn("queue:#{queueName}").debug "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
+        logger.spawn("queue").spawn(queueName).debug () -> "#{prefix} No subtask ready for execution; waiting... (#{moreSubtasks[0].count} unfinished subtasks)"
         Promise.delay(30000) # poll again in 30 seconds
         .then nextIteration
 
