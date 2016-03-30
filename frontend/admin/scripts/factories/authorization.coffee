@@ -1,8 +1,8 @@
 # based on http://stackoverflow.com/questions/22537311/angular-ui-router-login-authentication
 app = require '../app.coffee'
 
-app.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
-  $log = $log.spawn('map:rmapsAuthorizationFactory')
+app.factory 'rmapsAdminAuthorizationFactory', ($rootScope, $timeout, $location, $log, $state, rmapsPrincipalService, rmapsUrlHelpersService) ->
+  $log = $log.spawn('admin:rmapsAdminAuthorizationFactory')
   routes = rmapsUrlHelpersService.getRoutes()
 
   redirect = ({state, params, event, options}) ->
@@ -47,12 +47,12 @@ app.factory 'rmapsAuthorizationFactory', ($rootScope, $timeout, $location, $log,
           # authentication and permissions are ok, return to your regularly scheduled program
           redirect {state: toState, params: toParams}
 
-app.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $log) ->
-  $log = $log.spawn('map:router')
-  $log.debug "attaching $stateChangeStart event"
+app.run ($rootScope, rmapsAdminAuthorizationFactory, rmapsEventConstants, $state, $log) ->
+  $log = $log.spawn('admin:router')
+  $log.debug "attaching Admin $stateChangeStart event"
   $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
     $log.debug -> "$stateChangeStart: #{toState.name} params: #{JSON.stringify toParams} from: #{fromState?.name} params: #{JSON.stringify fromParams}"
-    rmapsAuthorizationFactory.authorize({event, toState, toParams, fromState, fromParams})
+    rmapsAdminAuthorizationFactory.authorize({event, toState, toParams, fromState, fromParams})
     return
 
   $rootScope.$on '$stateChangeSuccess', (event, toState, toParams, fromState, fromParams) ->
@@ -61,4 +61,4 @@ app.run ($rootScope, rmapsAuthorizationFactory, rmapsEventConstants, $state, $lo
 
   $rootScope.$on rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     $log.debug -> "profile.addremove: identity"
-    rmapsAuthorizationFactory.authorize {event, toState: $state.current}
+    rmapsAdminAuthorizationFactory.authorize {event, toState: $state.current}

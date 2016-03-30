@@ -7,15 +7,22 @@ mod = require '../module.coffee'
 defaultInterceptorList = ['rmapsLoadingIconInterceptorFactory', 'rmapsAlertInterceptorFactory', 'rmapsRedirectInterceptorFactory']
 
 interceptors =
-  rmapsRedirectInterceptorFactory: ($location, $rootScope, rmapsUrlHelpersService) ->
+  rmapsRedirectInterceptorFactory: ($location, $rootScope, $injector, $log, rmapsUrlHelpersService) ->
+    $log = $log.spawn "rmapsRedirectInterceptorFactory"
     routes = rmapsUrlHelpersService.getRoutes()
 
     'response': (response) ->
       if response.data?.doLogin and $location.path() != '/'+routes.login
-        $rootScope.principal?.unsetIdentity()
-        $location.url routes.login+'?'+qs.stringify(next: $location.path()+'?'+qs.stringify($location.search()))
+        if $injector.get('rmapsPrincipalService').isAuthenticated()
+          $rootScope.principal?.unsetIdentity()
+
+          # Must use the injector to avoid circular injection issue with $http interceptors and $state
+          $log.debug 'Force login redirect due to API do login'
+          $injector.get('rmapsMapAuthorizationFactory').forceLoginRedirect()
+
       if response.data?.profileIsNeeded
         $location.path routes.profiles
+
       response
 
   rmapsAlertInterceptorFactory: ($rootScope, $q, rmapsEventConstants) ->

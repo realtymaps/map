@@ -9,37 +9,22 @@ httpStatus = require '../../../../common/utils/httpStatus.coffee'
 ###
 
 module.exports = app.controller 'rmapsLoginCtrl',
-  ($rootScope, $scope, $http, $location, rmapsPrincipalService, rmapsEventConstants) ->
+  ($rootScope, $scope, $http, $location, $log, rmapsPrincipalService, rmapsProfilesService, rmapsEventConstants, rmapsMapAuthorizationFactory) ->
 
+    $scope.loginInProgress = false
     $scope.form = {}
     $scope.doLoginPost = () ->
+      $scope.loginInProgress = true
       $http.post backendRoutes.userSession.login, $scope.form
-      .success (data, status) ->
+      .then ({data, status}) ->
         if !httpStatus.isWithinOK status
+          $scope.loginInProgress = false
           return
         $rootScope.$emit rmapsEventConstants.alert.dismiss, alertIds.loginFailure
         rmapsPrincipalService.setIdentity(data.identity)
-        $location.replace()
-        $location.url($location.search().next || frontendRoutes.map)
-
-app.run ($rootScope, $location, rmapsPrincipalService) ->
-
-  doNextRedirect = (toState, nextLocation) ->
-    if rmapsPrincipalService.isAuthenticated()
-      $location.replace()
-      $location.url(nextLocation || frontendRoutes.map)
-
-  $rootScope.$on '$stateChangeStart', (event, toState, toParams, fromState, fromParams) ->
-
-    # if we're entering the login state...
-    if toState?.url != frontendRoutes.login
-      return
-
-    # ... and we're already logged in, we'll move past the login state (now or when we find out)
-    if rmapsPrincipalService.isIdentityResolved()
-
-      doNextRedirect(toState, $location.search().next)
-    else
-      rmapsPrincipalService.getIdentity()
-      .then () ->
-        doNextRedirect(toState, $location.search().next)
+        rmapsProfilesService.setCurrentProfileByIdentity data.identity
+        .then () ->
+          rmapsMapAuthorizationFactory.goToPostLoginState()
+      , (response) ->
+        $log.error "Could not log in", response
+        $scope.loginInProgress = false

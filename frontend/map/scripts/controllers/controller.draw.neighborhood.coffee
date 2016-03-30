@@ -14,11 +14,10 @@ rmapsMapDrawHandlesFactory, rmapsDrawCtrlFactory) ->
     #filter drawItems which are only neighborhoods / frontend or backend
     $log.spawn("drawnItems").debug(Object.keys(drawnItems._layers).length)
 
-    if Object.keys(drawnItems._layers).length
-      unWatch = $scope.$watchCollection 'Toggles', (newVal) ->
-        if newVal
-          $scope.Toggles.propertiesInShapes = true
-          unWatch()
+    if !Object.keys(drawnItems._layers).length
+      # There are zero neighborhoods, force propertiesInShapes to false
+      $scope.Toggles.propertiesInShapes = false
+      $rootScope.propertiesInShapes = false
 
     _handles = rmapsMapDrawHandlesFactory {
       mapId

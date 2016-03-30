@@ -8,7 +8,6 @@ frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 stateDefaults =
   sticky: false
   loginRequired: true
-  profileRequired: true
   persist: false
 
 module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
@@ -87,12 +86,12 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
     $stateProvider.state(state)
     state
 
-  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false
+  buildState 'main', parent: null, url: frontendRoutes.index, loginRequired: false, permissionsRequired: false
 
   buildMapState
     sticky: true
     reloadOnSearch: false
-    profileRequired: 'project_id'
+    projectParam: 'project_id'
     params:
       project_id:
         value: null
@@ -130,14 +129,14 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       showSteps: true
 
   buildState 'snail'
-  buildState 'user', profileRequired: false
-  buildState 'profiles', profileRequired: false
+  buildState 'user'
+  buildState 'profiles'
   buildState 'history'
   buildState 'properties'
   buildModalState 'property', page: { title: 'Property Detail' }
-  buildState 'projects', profileRequired: false, page: { title: 'Projects' }, mobile: { modal: true }
+  buildState 'projects', page: { title: 'Projects' }, mobile: { modal: true }
   buildState 'project',
-    profileRequired: 'id',
+    projectParam: 'id',
     page: { title: 'Project', dynamicTitle: true },
     mobile: { modal: true },
     resolve:
@@ -145,11 +144,11 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
         return rmapsProjectsService.getProject $stateParams.id
         .then (project) ->
           return rmapsProfilesService.setCurrentProfileByProjectId $stateParams.id
-  buildChildState 'projectClients', 'project', profileRequired: 'id', page: { title: 'My Clients' }, mobile: { modal: true }
-  buildChildState 'projectNotes', 'project', profileRequired: 'id', page: { title: 'Notes' }, mobile: { modal: true }
-  buildChildState 'projectFavorites', 'project', profileRequired: 'id', page: { title: 'Favorites' }, mobile: { modal: true }
-  buildChildState 'projectNeighbourhoods', 'project', profileRequired: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }
-  buildChildState 'projectPins', 'project', profileRequired: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }
+  buildChildState 'projectClients', 'project', projectParam: 'id', page: { title: 'My Clients' }, mobile: { modal: true }
+  buildChildState 'projectNotes', 'project', projectParam: 'id', page: { title: 'Notes' }, mobile: { modal: true }
+  buildChildState 'projectFavorites', 'project', projectParam: 'id', page: { title: 'Favorites' }, mobile: { modal: true }
+  buildChildState 'projectNeighbourhoods', 'project', projectParam: 'id', page: { title: 'Neighborhoods' }, mobile: { modal: true }
+  buildChildState 'projectPins', 'project', projectParam: 'id', page: { title: 'Pinned Properties' }, mobile: { modal: true }
   buildState 'neighbourhoods'
   buildState 'notes'
   buildState 'favorites'
@@ -164,10 +163,10 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
   buildChildState 'recipientInfo', 'mailWizard', params: {property_ids: null}
   buildChildState 'review', 'mailWizard'
 
-  buildState 'login', template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
-  buildState 'logout', sticky: false, loginRequired: false
+  buildState 'login', url: null, template: require('../../../common/html/login.jade'), sticky: false, loginRequired: false
+  buildState 'logout', url: null, sticky: false, loginRequired: false
   buildState 'accessDenied', controller: null, sticky: false, loginRequired: false
-  buildState 'authenticating', controller: null, sticky: false, loginRequired: false
+
   # this one has to be last, since it is a catch-all
   buildState 'pageNotFound', controller: null, sticky: false, loginRequired: false
 

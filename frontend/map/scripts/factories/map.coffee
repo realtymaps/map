@@ -103,7 +103,8 @@ app.factory 'rmapsMapFactory',
             if(_.get($scope, 'map.layers.overlays.parcelsAddresses')?)
               $scope.map.layers.overlays.parcelsAddresses.visible = newVal
 
-          $scope.$watch 'Toggles.propertiesInShapes', (newVal) =>
+          $scope.$watch 'Toggles.propertiesInShapes', (newVal, oldVal) =>
+            $log.debug "Map Factory - Watch Toggles.propertiesInShapes: #{newVal} from #{oldVal}"
             $rootScope.propertiesInShapes = newVal
             @redraw()
 

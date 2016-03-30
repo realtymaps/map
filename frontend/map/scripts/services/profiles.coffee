@@ -49,18 +49,27 @@ app.service 'rmapsProfilesService', (
     project_id = Number(project_id) if _.isString project_id
     rmapsPrincipalService.getIdentity()
     .then (identity) =>
-      profile = (_.find(identity.profiles, project_id: project_id))
-      return @setCurrentProfile profile
+      if identity
+        profile = (_.find(identity.profiles, project_id: project_id))
+        return @setCurrentProfile profile
 
   setCurrentProfileByProfileId: (profile_id) ->
     profile_id = Number(profile_id) if _.isString profile_id
     rmapsPrincipalService.getIdentity()
     .then (identity) =>
-      profile = (_.find(identity.profiles, id: profile_id))
-      return @setCurrentProfile profile
+      if identity
+        profile = (_.find(identity.profiles, id: profile_id))
+        return @setCurrentProfile profile
+
+  setCurrentProfileByIdentity: (identity) ->
+    if identity.currentProfileId?
+      return @setCurrentProfileByProfileId identity.currentProfileId
+    else
+      return @setCurrentProfile _.values(identity.profiles)[0]
 
   setCurrentProfile: (project) ->
     if project == @currentProfile
+      $log.debug "Profile is already set as current project, returning"
       return $q.resolve project
 
     # If switching projects, ensure the old one is up-to-date
@@ -135,8 +144,10 @@ app.service 'rmapsProfilesService', (
       #
 
       if rmapsMapFactory.currentMainMap?
+        $log.debug "Profile change, updating current map Toggles"
         rmapsMapFactory.currentMainMap.updateToggles project.map_toggles
       else
+        $log.debug "Initial profile set, create Map Toggles Factory"
         rmapsMainOptions.map.toggles = new rmapsMapTogglesFactory(project.map_toggles)
 
       return project

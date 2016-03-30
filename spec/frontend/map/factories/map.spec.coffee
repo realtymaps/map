@@ -73,7 +73,7 @@ describe "rmapsMapFactory factory", ->
           @subject.hash = mockRoutes.hash
           @subject.mapState = mockRoutes.mapState
           @subject.map = @mockMapData
-          @subject.scope.Toggles = @rmapsMapTogglesFactory()
+          @subject.scope.Toggles = new @rmapsMapTogglesFactory()
 
           # showResults: true
           promise = @subject.drawFilterSummary(true)

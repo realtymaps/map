@@ -1,105 +1,114 @@
 ###globals _###
 app = require '../app.coffee'
 
-app.factory 'rmapsMapTogglesFactory', () ->
+app.factory 'rmapsMapTogglesFactory', ($log) ->
+  $log = $log.spawn 'map:rmapsMapTogglesFactory'
 
-  (json) ->
-    _locationCb = null
-    @showResults = false
-    @showDetails = false
-    @showFilters = false
-    @showSearch = false
-    @isFetchingLocation = false
-    @hasPreviousLocation = false
+  class MapToggles
+    @currentToggles: null
 
-    @showAddresses = true
-    @showPrices = true
-    @showNeighbourhoodTap = false
-    @showNotes = false
-    @showMail = false
-    @propertiesInShapes = false
-    @isSketchMode = false
-    @isNeighborhoodDraw = false
-    @showOldToolbar = false
+    constructor: (json) ->
+      $log.debug 'Contruct Map Toggles from JSON:', json
+      @constructor.currentToggles = @
 
-    if json?
-      _.extend @, _.mapValues json, (val) ->
-        return val == 'true'
+      _locationCb = null
+      @showResults = false
+      @showDetails = false
+      @showFilters = false
+      @showSearch = false
+      @isFetchingLocation = false
+      @hasPreviousLocation = false
 
-    @enableNoteTap = () =>
-      @showNoteTap = true
+      @showAddresses = true
+      @showPrices = true
+      @showNeighbourhoodTap = false
+      @showNotes = false
+      @showMail = false
+      @propertiesInShapes = false
 
-    @enableNeighbourhoodTap = () =>
-      @showNeighbourhoodTap = true
+      if json?
+        _.extend @, json
 
-    @toggleNotes = () =>
-      @showNotes = !@showNotes
+      # Don't load any of the following from the database
 
-    @toggleNoteTap = () =>
-      @showNoteTap = !@showNoteTap
+      @isSketchMode = false
+      @isNeighborhoodDraw = false
+      @showOldToolbar = false
 
-    @toggleMail = () =>
-      @showMail = !@showMail
+      @enableNoteTap = () =>
+        @showNoteTap = true
 
-    @toggleAddresses = () =>
-      @showAddresses = !@showAddresses
+      @enableNeighbourhoodTap = () =>
+        @showNeighbourhoodTap = true
 
-    @togglePrices = () =>
-      @showPrices = !@showPrices
+      @toggleNotes = () =>
+        @showNotes = !@showNotes
 
-    @toggleDetails = () =>
-      @showDetails = !@showDetails
+      @toggleNoteTap = () =>
+        @showNoteTap = !@showNoteTap
 
-    @toggleResults = () =>
-      if @showDetails
-        @showDetails = false
-        @showResults = true
-        return
-      @showResults =  !@showResults
+      @toggleMail = () =>
+        @showMail = !@showMail
 
-    @toggleFilters = () =>
-      @showFilters = !@showFilters
+      @toggleAddresses = () =>
+        @showAddresses = !@showAddresses
 
-    @setPropetiesInShapes = (bool) ->
-      if bool != @propertiesInShapes
-        @propertiesInShapes = bool
+      @togglePrices = () =>
+        @showPrices = !@showPrices
 
-    @togglePropertiesInShapes = () ->
-      return if @isSketchMode && @propertiesInShapes
-      @setPropetiesInShapes !@propertiesInShapes
+      @toggleDetails = () =>
+        @showDetails = !@showDetails
 
-    @toggleIsSketchMode = () =>
-      @isSketchMode = !@isSketchMode
+      @toggleResults = () =>
+        if @showDetails
+          @showDetails = false
+          @showResults = true
+          return
+        @showResults =  !@showResults
 
-    @toggleIsNeighborhoodDraw = () =>
-      @isNeighborhoodDraw = !@isNeighborhoodDraw
+      @toggleFilters = () =>
+        @showFilters = !@showFilters
 
-    @getHideAnyDraw = () =>
-      @isSketchMode or @isNeighborhoodDraw
+      @setPropertiesInShapes = (bool) ->
+        if bool != @propertiesInShapes
+          @propertiesInShapes = bool
 
-    @toggleSearch = (val) =>
-      if val?
-        @showSearch = val
-      else
-        @showSearch = !@showSearch
+      @togglePropertiesInShapes = () ->
+        return if @isSketchMode && @propertiesInShapes
+        @setPropertiesInShapes !@propertiesInShapes
 
-      if @showSearch
-        # let angular have a chance to attach the input box...
-        document.getElementById('places-search-input')?.focus()
+      @toggleIsSketchMode = () =>
+        @isSketchMode = !@isSketchMode
 
-    @setLocationCb = (cb) ->
-      _locationCb = cb
+      @toggleIsNeighborhoodDraw = () =>
+        @isNeighborhoodDraw = !@isNeighborhoodDraw
 
-    @toggleLocation = () =>
-      @isFetchingLocation = true
-      navigator.geolocation.getCurrentPosition (location) =>
-        @isFetchingLocation = false
-        _locationCb(location)
+      @getHideAnyDraw = () =>
+        @isSketchMode or @isNeighborhoodDraw
 
-    @togglePreviousLocation = ->
-      _locationCb()
+      @toggleSearch = (val) =>
+        if val?
+          @showSearch = val
+        else
+          @showSearch = !@showSearch
 
-    @setLocation = (location) ->
-      _locationCb?(location)
+        if @showSearch
+          # let angular have a chance to attach the input box...
+          document.getElementById('places-search-input')?.focus()
 
-    @
+      @setLocationCb = (cb) ->
+        _locationCb = cb
+
+      @toggleLocation = () =>
+        @isFetchingLocation = true
+        navigator.geolocation.getCurrentPosition (location) =>
+          @isFetchingLocation = false
+          _locationCb(location)
+
+      @togglePreviousLocation = ->
+        _locationCb()
+
+      @setLocation = (location) ->
+        _locationCb?(location)
+
+      @

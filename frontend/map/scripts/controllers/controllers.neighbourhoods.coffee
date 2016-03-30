@@ -3,7 +3,7 @@ app = require '../app.coffee'
 template = do require '../../html/views/templates/modals/neighbourhood.jade'
 
 app.controller 'rmapsNeighbourhoodsModalCtrl', ($rootScope, $scope, $modal,
-rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsService) ->
+rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsService, rmapsMapTogglesFactory) ->
 
   _event = rmapsEventConstants.neighbourhoods
 
@@ -34,6 +34,7 @@ rmapsProjectsService, rmapsMainOptions, rmapsEventConstants, rmapsDrawnUtilsServ
           #makes the model a neighborhood with a defined empty string
           model.properties.neighbourhood_name = ''
         _signalUpdate(drawnShapesSvc.create model)
+        rmapsMapTogglesFactory.currentToggles?.setPropertiesInShapes true
 
     update: (model) ->
       $scope.createModal(model).then (modalModel) ->
