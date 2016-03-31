@@ -51,6 +51,7 @@ app.controller 'rmapsCountyCtrl',
     'YYYY-MM-DD'
     'YYYYMMDD'
     'MMDDYYYY'
+    'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
   $scope.getTargetCategories = (dataSourceType, dataListType) ->
