@@ -383,6 +383,8 @@ typeRules =
     type:
       name: 'datetime'
       label: 'Date and Time'
+    valid: () ->
+      !!@input.format
   Boolean:
     type:
       name: 'boolean'
