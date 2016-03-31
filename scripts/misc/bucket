@@ -18,7 +18,8 @@ var aws = require('../../backend/services/service.aws'),
   argv = require('yargs').argv,
   fs = require('fs'),
   path = require('path'),
-  _ = require('lodash')
+  _ = require('lodash'),
+  Promise = require('bluebird')
 
 
 handle = aws[argv.action] || aws.postObject
@@ -62,6 +63,27 @@ if (uploadFileName){
 
 if(argv.action === 'getObject')//force node style
   params.nodeStyle = true
+
+if(argv.action === 'upload'){
+  return handle = new Promise(function(resolve, reject){
+    bodyStream = params.Body
+    delete params.Body
+
+    handle(params).then(function(upload){
+      upload.on('error', function(err){
+        console.error(err);
+        process.exit(122)
+      })
+      upload.on('uploaded', function(details){
+        console.log('success')
+        console.log(details)
+        process.exit(0)
+      })
+
+      bodyStream.pipe(upload)
+    })
+  })
+}
 
 handle(params)
 .then(function(ret) {

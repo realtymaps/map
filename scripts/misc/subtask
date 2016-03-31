@@ -13,7 +13,6 @@ options:
 _ = require 'lodash'
 argv = require('yargs').argv
 task = require('../../backend/tasks/' + argv.task)
-Promise = require 'bluebird'
 subtask = task.subtasks[argv.subtask]
 isPrep = argv.subtask.indexOf 'Prep' != -1
 
@@ -47,7 +46,7 @@ console.log "executing: #{argv.subtask}"
 subtask(payload, secondArg)
 .then (ret) ->
   console.log 'success'
-  console.log ret
+  # console.log ret
   process.exit(0)
 .catch (error) ->
   console.error error

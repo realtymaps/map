@@ -49,16 +49,17 @@ imagesHandle = (object, cb) ->
   object.objectStream.on 'data', (event) ->
     if !event.error
       logger.debug event.headerInfo
-      logger.debug ''
-      
+
       imageId = event.headerInfo.objectId
       listingId = event.headerInfo.contentId
       fileExt = event.headerInfo.contentType.replace('image/','')
+      size = event.headerInfo.objectData.size
+      contentType = event.headerInfo.contentType
 
       everSentData = true
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
       logger.debug "fileName: #{fileName}"
-      cb(null, {data: event.dataStream, name: fileName, imageId})
+      cb(null, {data: event.dataStream, name: fileName, imageId, size, contentType})
 
   object.objectStream.on 'end', () ->
     if !everSentData

@@ -238,12 +238,9 @@ getPhotosObject = ({serverInfo, databaseName, photoIds, objectsOpts, photoType})
   objectsOpts ?= alwaysGroupObjects: true, ObjectData: '*'
   photoType ?= 'Photo'
 
-  logger.debug "photoType: #{photoType}"
-
   externalAccounts.getAccountInfo(serverInfo.id)
   .then (creds) ->
     _getRetsClient creds.url, creds.username, creds.password, serverInfo.static_ip, (retsClient) ->
-      logger.debug 'getPhotosObject logged in'
       retsClient.objects.stream.getObjects(databaseName, photoType, photoIds, objectsOpts)
 
 
