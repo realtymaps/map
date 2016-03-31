@@ -295,9 +295,9 @@ cancelTask = (taskName, status='canceled', withPrejudice=false) ->
         logger.spawn("task:#{taskName}").debug () -> "Canceled #{count} subtasks of #{taskName}."
 
 # convenience helper for dev/troubleshooting
-requeueManualTask = (taskName, initiator) ->
+requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   logger.spawn("manual").debug("Requeuing manual task: #{taskName}, for initiator: #{initiator}")
-  cancelTask(taskName)
+  cancelTask(taskName, 'canceled', withPrejudice)
   .then () ->
     queueManualTask(taskName, initiator)
 
@@ -313,11 +313,14 @@ executeSubtask = (subtask) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "finished subtask #{subtask.name}"
       tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
         finished: dbs.get('main').raw('NOW()')
+    .then () ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "subtask #{subtask.name} updated with success status"
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
@@ -651,7 +654,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
       return executeSubtask(subtask)
       .then nextIteration
 
-    if !quit && logger.isEnabled("queue:#{queueName}")
+    if !quit && !logger.isEnabled("queue:#{queueName}")
       return Promise.delay(30000) # poll again in 30 seconds
       .then nextIteration
 
@@ -660,7 +663,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
     .where(queue_name: queueName)
     .whereNull('finished')
     .then (moreSubtasks) ->
-      if !parseInt(moreSubtasks?[0]?.count)
+      if quit && !parseInt(moreSubtasks?[0]?.count)
         logger.spawn("queue:#{queueName}").debug () -> "#{prefix} Queue is empty; quitting worker."
         Promise.resolve()
       else
