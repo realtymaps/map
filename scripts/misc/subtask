@@ -1,0 +1,55 @@
+#!/usr/bin/env coffee
+
+###
+Simple script to run a subtask at any step directly
+
+options:
+--task - task file name
+--subtask - subtask function to call on the task
+--subtaskStateJson - JSON subtask argument payload
+--subtaskStateFile - coffee or js file to require as a payload subtask object
+###
+
+_ = require 'lodash'
+argv = require('yargs').argv
+task = require('../../backend/tasks/' + argv.task)
+Promise = require 'bluebird'
+subtask = task.subtasks[argv.subtask]
+isPrep = argv.subtask.indexOf 'Prep' != -1
+
+
+if !subtask
+  console.error('subtask not found')
+  process.exit(123)
+
+payload = if argv.subtaskStateJson then JSON.parse(argv.subtaskStateJson) else
+  require('../../' + argv.subtaskStateFile)
+
+# console.log payload
+secondArg = null
+
+idsToSubtaskVals = (subtask, ids) ->
+  # console.log ids
+  subtask.data = _.extend {}, subtask.data,
+    values: ids
+
+getNonPrepSubtask = () ->
+  task.subtasks[argv.subtask.replace('Prep', '')]
+
+if isPrep
+  secondArg = (subtask, taskName, ids) ->
+    idsToSubtaskVals(subtask, ids)
+    getNonPrepSubtask()(subtask)
+
+
+console.log "executing: #{argv.subtask}"
+
+subtask(payload, secondArg)
+.then (ret) ->
+  console.log 'success'
+  console.log ret
+  process.exit(0)
+.catch (error) ->
+  console.error error
+  console.error error.stack
+  process.exit(120)

@@ -99,16 +99,23 @@ recordChangeCounts = (subtask) -> Promise.try () ->
   .orWhere(deleted: subtask.batch_id)
   .where(subset)
   .count('*')
+
   updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, touchedCount) ->
+    args = arguments
+    ['invalidCount', 'unvalidatedCount', 'insertedCount', 'updatedCount', 'touchedCount'].forEach (val, i) ->
+      logger.debug val
+      logger.debug args[i+1]
+
     tables.jobQueue.dataLoadHistory()
     .where(raw_table_name: tables.temp.buildTableName(subid))
     .update
-      invalid_rows: invalidCount[0].count ? 0
-      unvalidated_rows: unvalidatedCount[0].count ? 0
-      inserted_rows: insertedCount[0].count ? 0
-      updated_rows: updatedCount[0].count ? 0
-      deleted_rows: deletedCount[0].count ? 0
-      touched_rows: touchedCount[0].count ? 0
+      invalid_rows: invalidCount ? 0
+      unvalidated_rows: unvalidatedCount ? 0
+      inserted_rows: insertedCount[0]?.count ? 0
+      updated_rows: updatedCount[0]?.count ? 0
+      deleted_rows: deletedCount[0]?.count ? 0
+      touched_rows: touchedCount[0]?.count ? 0
+
   Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, touchedPromise, updateDataLoadHistory)
 
 
