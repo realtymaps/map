@@ -81,20 +81,20 @@ lobPromise = () ->
     logger.debug 'Returning cached promise'
     _apiPromise
   else
-  _apiPromise = externalAccounts.getAccountInfo('lob')
-    .then (accountInfo) ->
-      # The test API is always needed for price quotes and previews
-      apis = test: new LobAPI(apiKey: accountInfo.other.test_api_key, apiName: 'test')
+    _apiPromise = externalAccounts.getAccountInfo('lob')
+      .then (accountInfo) ->
+        # The test API is always needed for price quotes and previews
+        apis = test: new LobAPI(apiKey: accountInfo.other.test_api_key, apiName: 'test')
 
-      # Depending on environment settings, mail is sent using either the live or test API
-      if config.MAILING_PLATFORM.LIVE_MODE
-        if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
-          throw new Error("Refusing to use LOB-live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
-        apis.live = new LobAPI(apiKey: accountInfo.api_key, apiName: 'live')
-      else
-        apis.live = apis.test
+        # Depending on environment settings, mail is sent using either the live or test API
+        if config.MAILING_PLATFORM.LIVE_MODE
+          if config.ENV != 'production' && !config.ALLOW_LIVE_APIS
+            throw new Error("Refusing to use LOB-live API from #{config.ENV} -- set ALLOW_LIVE_APIS to force")
+          apis.live = new LobAPI(apiKey: accountInfo.api_key, apiName: 'live')
+        else
+          apis.live = apis.test
 
-      apis
+        apis
 
 #
 # Create letter for outgoing mail table. sendLetter() expects object with this structure
@@ -168,14 +168,29 @@ getPriceQuote = (userId, campaignId) ->
   .then ([campaign]) ->
     throw new Error("recipients must be an array") unless _.isArray campaign?.recipients
 
-    letter = buildLetter campaign, campaign.recipients[0]
-    sendLetter letter, 'test'
-    .then (lobResponse) ->
-      res =
-        pdf: lobResponse.url
-        price: lobResponse.price * campaign.recipients.length
+    result = null
+    Promise.each campaign.recipients, (r) ->
+      address = "#{r.street_address_num} #{r.street_address_name} #{r.city} #{r.state} #{r.zip}"
+      logger.debug "Checking #{address}"
+      letter = buildLetter campaign, r
+      sendLetter letter, 'test'
+      .then (lobResponse) ->
+        logger.debug "Address was valid: #{address}"
+        result =
+          pdf: lobResponse.url
+          price: lobResponse.price * campaign.recipients.length
+          lobResponse: lobResponse
+        throw "Stop checking addresses" # no need to check more addresses
+      .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
+        logger.debug "Invalid address: #{address}. Trying next recipient"
+    .catch ->
+      result # Probably got a valid address
+    .then ->
+      if result
+        return result
+      else
+        throw new Error("No valid addresses were found")
 
-#
 # Retrieves LOB letters by metadata
 #  https://lob.com/docs#letters_retrieve
 #
