@@ -2,7 +2,7 @@ _ = require 'lodash'
 Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
-logger = require('../config/logger')
+logger = require('../config/logger').spawn('util.mlsHelpers')
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -14,6 +14,7 @@ awsService = require '../services/service.aws'
 mlsPhotoUtil = require '../utils/util.mls.photos'
 uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
+{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 EXT_AWS_PHOTO_ACCOUNT = 'aws-listing-photos'
 
 ONE_DAY_MILLISEC = 24*60*60*1000
@@ -152,25 +153,27 @@ finalizeData = (subtask, id) ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
 
-_getPhotoSettings = (subtask, rm_property_id) ->
-  photoTypePromise = tables.config.mls().where id: subtask.task_name
-  .then sqlHelpers.expectSingleRow
-  .then (mlsConfig) ->
-    photoType = mlsConfig.listing_data.largestPhotoObject || 'Photo'
-    logger.debug  "#{mlsConfig.id} photoType: #{photoType}"
-    {photoType, photoRes:mlsConfig.photoRes}
+_getPhotoSettings = (subtask, id) ->
+  mlsConfigQuery = tables.config.mls().where(id: subtask.task_name).then sqlHelpers.expectSingleRow
 
   query = tables.property.combined()
   .where
-    rm_property_id: rm_property_id
+    id: id
     data_source_type: 'mls'
     data_source_id: subtask.task_name
 
-  logger.debug query.toString()
+  Promise.all [mlsConfigQuery, query]
 
-  Promise.all [photoTypePromise, query]
+_updatePhotoUrl = (subtask, opts) -> Promise.try () ->
+  if !opts
+    logger.debug 'GTFO: _updatePhotoUrl'
+    return
 
-_updatePhotoUrl = (subtask, {newFileName, imageId, photo_id}) -> Promise.try () ->
+  onMissingArgsFail
+    args: opts
+    required: ['newFileName', 'imageId', 'photo_id']
+
+  {newFileName, imageId, photo_id} = opts
   externalAccounts.getAccountInfo(EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
@@ -183,15 +186,16 @@ _updatePhotoUrl = (subtask, {newFileName, imageId, photo_id}) -> Promise.try () 
     ###
     url = "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
 
-    query = tables.property.combined()
-    .raw("""
-      UPDATE config_mls set
-      photos=jsonb_set(photos, '{#{imageId}}', '"#{url}"', true)"""
-    )
-    .where
-      data_source_type: 'mls'
-      data_source_id: subtask.task_name
-      photo_id: photo_id
+    query =
+      tables.property.combined()
+      .raw("""
+        UPDATE data_combined set
+        photos=jsonb_set(photos, '{#{imageId}}', '"#{url}"', true)
+        WHERE data_source_type = 'mls' AND
+         data_source_id = '#{subtask.task_name}' AND
+         photo_id = '#{photo_id}';
+        """
+      )
 
     logger.debug query.toString()
     query
@@ -203,49 +207,114 @@ _enqueuePhotoToDelete = (key, batch_id) ->
   else
     Promise.resolve()
 
-storePhotos = (subtask, rm_property_id) ->
-  logger.debug subtask.task_name
+###
+  using upload see service.aws.putObject comments
 
-  _getPhotoSettings(subtask, rm_property_id)
-  .then ([{photoType, photoRes}, rows]) ->
-    Promise.all rows.map (row) ->
-      {photo_id} = row
-      photoIds = {}
-      #get all photos for a specific property
-      photoIds[photo_id] = '*'
+  The short of it is that we do not know the size of the payload. EVEN if rets-client gives a size if it is invalid
+  it causes too many problems. It is easier to forgoe worying about size and just upload blindly!
+###
+_uploadPhoto = ({photoRes, newFileName, payload, row}) ->
+  new Promise (resolve, reject) ->
+    awsService.upload
+      extAcctName: EXT_AWS_PHOTO_ACCOUNT
+      Key: newFileName
+      ContentType: payload.contentType
+      Metadata:
+        id: row.id
+        rm_property_id: row.rm_property_id
+        height: photoRes.height
+        width: photoRes.width
+    .then (upload) ->
 
-      retsHelpers.getPhotosObject {
-        serverInfo: subtask.task_name
-        databaseName: 'Property'
-        photoIds
-        photoType
-      }
-      .then (obj) ->
-        new Promise (resolve, reject) ->
-          mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
-            if(err)
-              reject err
+      upload.on 'uploaded', (details) ->
+        logger.debug details
+        resolve(details)
 
-            if(isEnd)
-              resolve()
+      upload.on 'error', (error) ->
+        reject error
 
-            newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
-            {imageId} = payload
-            #file naming consideratons
-            #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
-            awsService.putObject
-              extAcctName: EXT_AWS_PHOTO_ACCOUNT
-              Key: newFileName
-              Body: payload.data
-              Metadata:
-                rm_property_id: row.rm_property_id
-                height: photoRes.height
-                width: photoRes.width
+      payload.data.pipe(upload)
+
+storePhotos = (subtask, id) ->
+  # logger.debug subtask.task_name
+
+  _getPhotoSettings(subtask, id)
+  .then ([mlsConfig, [row]]) ->
+    return Promise.resolve() if !row
+    # logger.debug "id: #{id}"
+
+    {photo_id} = row
+    photoIds = {}
+    #get all photos for a specific property
+    photoIds[photo_id] = '*'
+
+    # logger.debug photoIds
+
+    photoType = mlsConfig.listing_data.largestPhotoObject
+    {photoRes} = mlsConfig.listing_data
+
+    retsHelpers.getPhotosObject {
+      serverInfo: mlsConfig
+      databaseName: 'Property'
+      photoIds
+      photoType
+    }
+    .then (obj) ->
+      successCtr = 0
+      errorsCtr = 0
+      promises = []
+
+      savesPromise = new Promise (resolve, reject) ->
+        mlsPhotoUtil.imagesHandle obj, (err, payload, isEnd) ->
+
+          if(err)
+            logger.debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
+            logger.error err
+            return reject err
+
+          if(isEnd)
+            return resolve(
+              Promise.all promises
+              .then (args...) ->
+                logger.debug "Uploaded #{successCtr} photos to aws bucket."
+                logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
+                args
+            )
+
+          #file naming consideratons
+          #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
+          newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
+          {imageId} = payload
+          logger.debug _.omit payload, 'data'
+
+          promises.push(
+            _uploadPhoto({photoRes, newFileName, payload, row})
             .then () ->
               _enqueuePhotoToDelete row.photos[imageId], subtask.batch_id
             .then () ->
-              {newFileName, imageId, photo_id}
-        .then _updatePhotoUrl.bind(null, subtask)
+              logger.debug 'photo upload success'
+              successCtr++
+
+              tables.property.combined()
+              .where(id: row.id)
+              .update(photo_import_error: null)
+              .then () ->
+                {newFileName, imageId, photo_id}
+            .catch (error) ->
+              logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
+              logger.debug error
+              logger.debug error.stack
+              #record the error an move on
+              tables.property.combined()
+              .where(id: row.id)
+              .update(photo_import_error: error.stack)
+              .then () ->
+                null
+          )
+
+      savesPromise.then ([saves]) ->
+        # logger.debug saves
+        Promise.all saves.map _updatePhotoUrl.bind(null, subtask)
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()

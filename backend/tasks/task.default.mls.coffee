@@ -6,6 +6,7 @@ logger = require '../config/logger'
 mlsHelpers = require './util.mlsHelpers'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
+PromiseExt = require '../extensions/promise'
 
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
@@ -24,29 +25,37 @@ normalizeData = (subtask) ->
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
 
-_getUniqueRmIds = (subtask, dbFn) ->
-  dbFn()
-  .select('rm_property_id')
-  .where(batch_id: subtask.batch_id)
-  .then (ids) ->
-    ids = _.uniq(_.pluck(ids, 'rm_property_id'))
-
 _pagenate = (subtask, taskName, ids) ->
   jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, taskName)
 
 finalizeDataPrep = (subtask, pagenateFn = _pagenate) ->
-  _getUniqueRmIds(subtask, tables.property.listing)
+  tables.property.listing()
+  .select('rm_property_id')
+  .where(batch_id: subtask.batch_id)
+  .then (ids) ->
+    ids = _.uniq(_.pluck(ids, 'rm_property_id'))
   .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_finalizeData")
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
 storePhotosPrep = (subtask, pagenateFn = _pagenate) ->
-  _getUniqueRmIds(subtask, tables.property.combined)
+  tables.property.combined()
+  .select('id')
+  .where(batch_id: subtask.batch_id)
+  .orderBy('id', 'desc')
+  # .limit(1)
+  # .returning('id')
+  .then (rows) ->
+    r.id for r in rows
   .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_storePhotos")
 
-storePhotos = (subtask) ->
-  Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
+storePhotos = (subtask) -> Promise.try () ->
+  #NOTE currently we can not do image download at high volume until we pool mls connections
+  #swflmls, MRED and others only allow one connection at a time
+  PromiseExt.reduceSeries subtask.data.values.map (id) -> ->
+    mlsHelpers.storePhotos(subtask, id)
+  # Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
 
 module.exports = new TaskImplementation {
   loadRawData
