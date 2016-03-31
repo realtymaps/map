@@ -17,6 +17,9 @@ module.exports = (options = {}) ->
     if !value? or value == ''
       return null
 
+    if !options.format
+      throw new DataValidationError("no format specified for date field", param, value)
+
     datetime = moment.utc(value, options.format, options.locale, options.strict)
     if !datetime.isValid()
       start = options.format.indexOf('D')
@@ -25,7 +28,7 @@ module.exports = (options = {}) ->
 
       datetime = moment.utc(value, options.format, options.locale, options.strict)
       if !datetime.isValid()
-        return Promise.reject new DataValidationError("invalid data type given for date field (problem determining value for `#{fields[datetime.invalidAt()]}`)", param, value)
+        throw new DataValidationError("invalid data type given for date field (problem determining value for `#{fields[datetime.invalidAt()]}`)", param, value)
 
     if options.utcOffset
       datetime = datetime.utcOffset(options.utcOffset)

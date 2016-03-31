@@ -40,6 +40,7 @@ app.controller 'rmapsNormalizeCtrl',
     'YYYY-MM-DD'
     'YYYYMMDD'
     'MMDDYYYY'
+    'YYYY-MM-DD[T]HH:mm:ss'
   ]
 
   $scope.statusOptions = _.values rmapsParcelEnums.status

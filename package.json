@@ -188,6 +188,7 @@
     "rets-client": "^4.0.3",
     "rework-plugin-url": "^1.0.1",
     "rimraf": "^2.4.3",
+    "s3-upload-stream": "1.0.7",
     "serve-favicon": "2.1.X",
     "serve-static": "1.X.X",
     "shp2jsonx": "^1.0.1",
