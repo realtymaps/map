@@ -157,7 +157,7 @@ activateNewData = (subtask) -> Promise.try () ->
       tables.property.combined(transaction: transaction, as: 'deleter')
       .where(data_source_id: subtask.task_name)
       .whereExists () ->
-        tables.property.deletes(transaction: this)
+        tables.deletes.property(transaction: this)
         .select(1)
         .where
           data_source_id: subtask.task_name

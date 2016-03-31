@@ -185,7 +185,7 @@ finalizeData = (subtask, id) ->
   .then (taxEntries=[]) ->
     if taxEntries.length == 0
       # not sure if this should ever be possible, but we'll handle it anyway
-      return tables.property.deletes()
+      return tables.deletes.property()
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name

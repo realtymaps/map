@@ -27,7 +27,6 @@ module.exports =
     deed: 'normalized.deed'
     mortgage: 'normalized.mortgage'
     combined: 'data_combined'
-    deletes: 'data_combined_deletes'
     # the following are deprecated, so I'm not bothering to standardize their names
     rootParcel: 'parcels'
     parcel: 'mv_parcels'
@@ -69,6 +68,7 @@ module.exports =
     pdfUpload: 'user_pdf_uploads'
   deletes:
     photos: 'delete_photos'
+    property: 'data_combined_deletes'
   temp: 'raw_temp.raw'
 
 
