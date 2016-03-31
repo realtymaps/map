@@ -313,11 +313,14 @@ executeSubtask = (subtask) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "finished subtask #{subtask.name}"
       tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
         finished: dbs.get('main').raw('NOW()')
+    .then () ->
+      logger.spawn("task:#{subtask.task_name}").debug () -> "subtask #{subtask.name} updated with success status"
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
