@@ -113,7 +113,7 @@ finalizeData = (subtask, id) ->
   Promise.join listingsPromise, parcelsPromise, (listings=[], parcel=[]) ->
     if listings.length == 0
       # might happen if a singleton listing is deleted during the day
-      return tables.property.deletes()
+      return tables.deletes.property()
       .insert
         rm_property_id: id
         data_source_id: subtask.task_name

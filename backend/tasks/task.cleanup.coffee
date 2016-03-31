@@ -34,7 +34,7 @@ subtaskErrors = (subtask) ->
     logger.debug "Deleted #{count} rows from subtask error history"
 
 deleteMarkers = (subtask) ->
-  tables.property.deletes()
+  tables.deletes.property()
   .whereRaw("rm_inserted_time < now_utc() - '#{config.CLEANUP.OLD_DELETE_MARKER_DAYS} days'::INTERVAL")
   .delete()
   .then (count) ->
@@ -49,7 +49,7 @@ deleteInactiveRows = (subtask) ->
     logger.debug "Deleted #{count} rows from combined data table"
 
 deletePhotosPrep = (subtask) ->
-  tables.deletes.photo()
+  tables.deletes.photos()
   .select('id')
   .where(batch_id: subtask.batch_id)
   .orderBy 'id'
