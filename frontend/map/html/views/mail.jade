@@ -29,9 +29,9 @@
                   span.fa.fa-caret-up(ng-show="sortField == 'recipients' && sortReverse")
 
                 th
-                  span(ng-click="sortField = 'template_type'; sortReverse = !sortReverse") Type
-                  span.fa.fa-caret-down(ng-show="sortField == 'template_type' && !sortReverse")
-                  span.fa.fa-caret-up(ng-show="sortField == 'template_type' && sortReverse")
+                  span(ng-click="sortField = 'template_name'; sortReverse = !sortReverse") Template
+                  span.fa.fa-caret-down(ng-show="sortField == 'template_name' && !sortReverse")
+                  span.fa.fa-caret-up(ng-show="sortField == 'template_name' && sortReverse")
 
                 th.col-md-1
                   span(ng-click="sortField = 'status'; sortReverse = !sortReverse") Status
@@ -59,7 +59,7 @@
                 td
                   span {{campaign.recipients.length || 0}}
                 td
-                  span {{campaign.template_type}}
+                  span {{campaign.template_name}}
                 td
                   span(class="{{statusNames[campaign.status]}}") {{statusNames[campaign.status].toInitCaps()}}
                 td.col-md-1

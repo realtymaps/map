@@ -26,13 +26,16 @@ class MailService extends ServiceCrud
 
     query = @dbFn().select(
       "#{tables.mail.campaign.tableName}.*",
+      db.raw("#{tables.mail.pdfUpload.tableName}.filename as filename"),
       db.raw("#{tables.user.project.tableName}.name as project_name"),
       db.raw("#{tables.mail.campaign.tableName}.project_id as project_id")
     )
     .join("#{tables.user.project.tableName}", () ->
       this.on("#{tables.mail.campaign.tableName}.project_id", "#{tables.user.project.tableName}.id")
     )
-    .orderBy 'rm_inserted_time', 'DESC'
+    .leftOuterJoin("#{tables.mail.pdfUpload.tableName}", () ->
+      this.on("#{tables.mail.campaign.tableName}.aws_key", "#{tables.mail.pdfUpload.tableName}.aws_key")
+    )
 
     super(entity, query: query)
 
