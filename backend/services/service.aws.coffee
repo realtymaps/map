@@ -5,6 +5,7 @@ Promise = require 'bluebird'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 _ = require 'lodash'
 logger = require('../config/logger').spawn('service.aws')
+loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 
 buckets =
@@ -13,14 +14,14 @@ buckets =
 
 
 _debug = (thing, thingName) ->
-  logger.debug "begin #{thingName} !!!!!!!!!"
-  logger.debug thing
-  logger.debug "end #{thingName} !!!!!!!!!!!"
+  loggerFine.debug "begin #{thingName} !!!!!!!!!"
+  loggerFine.debug thing
+  loggerFine.debug "end #{thingName} !!!!!!!!!!!"
 
 
 _handler = (handlerOpts, opts) ->
 
-  # _debug handlerOpts, 'handlerOpts'
+  _debug handlerOpts, 'handlerOpts'
 
   {required, s3FnName, extraArgs} = onMissingArgsFail
     args: handlerOpts
@@ -28,9 +29,9 @@ _handler = (handlerOpts, opts) ->
 
   extraArgs ?= {}
 
-  # _debug required, 'required'
-  # _debug s3FnName, 's3FnName'
-  # _debug extraArgs, 'extraArgs'
+  _debug required, 'required'
+  _debug s3FnName, 's3FnName'
+  _debug extraArgs, 'extraArgs'
 
   {extAcctName, nodeStyle} = opts
   opts = onMissingArgsFail
@@ -38,7 +39,7 @@ _handler = (handlerOpts, opts) ->
     required: required
     omit: ['extAcctName', 'nodeStyle']
 
-  # _debug opts, 'opts'
+  _debug opts, 'opts'
 
   externalAccounts.getAccountInfo(extAcctName)
   .then (s3Info) ->
