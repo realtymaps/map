@@ -19,10 +19,16 @@ var aws = require('../../backend/services/service.aws'),
   fs = require('fs'),
   path = require('path'),
   _ = require('lodash'),
-  Promise = require('bluebird')
+  Promise = require('bluebird'),
+  STD_OUT_CMDS = ['listObjects', 'countObjects', 'deleteAllObjects']
 
 
 handle = aws[argv.action] || aws.postObject
+
+if(!handle){
+  console.error('handle undefined')
+  process.exit(250)
+}
 
 if (!argv.bucket) {
   console.error('--bucket required')
@@ -42,7 +48,7 @@ function getUserHome() {
 var fileName = argv.fileName || argv.Key,
   uploadFileName
 
-if (fileName &&  !(['listObjects'].indexOf(argv.action) > -1)){
+if (fileName &&  !(STD_OUT_CMDS.indexOf(argv.action) > -1)){
   if (fileName.indexOf('~') > -1) {
     fileName = argv.fileName.replace('~', getUserHome())
   }
@@ -98,7 +104,7 @@ handle(params)
     })
     .pipe(fs.createWriteStream(uploadFileName))
   }
-  if(argv.action === 'listObjects')
+  if(STD_OUT_CMDS.indexOf(argv.action) > -1)
     console.log(ret)
 
   if(!wait)
