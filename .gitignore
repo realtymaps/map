@@ -32,3 +32,5 @@ nginx/
 dumps/
 junit/
 sqlImports/
+
+.vscode/
