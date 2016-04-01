@@ -4,8 +4,8 @@ AWS = require('aws-sdk')
 Promise = require 'bluebird'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
 _ = require 'lodash'
-{arrayify} = require '../utils/util.array'
 logger = require('../config/logger').spawn('service.aws')
+loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
 
 buckets =
@@ -14,9 +14,9 @@ buckets =
 
 
 _debug = (thing, thingName) ->
-  logger.debug "begin #{thingName} !!!!!!!!!"
-  logger.debug thing
-  logger.debug "end #{thingName} !!!!!!!!!!!"
+  loggerFine.debug "begin #{thingName} !!!!!!!!!"
+  loggerFine.debug thing
+  loggerFine.debug "end #{thingName} !!!!!!!!!!!"
 
 
 _handler = (handlerOpts, opts) ->
@@ -89,11 +89,55 @@ deleteObject = (opts) ->
     required: ['extAcctName','Key']
   , opts
 
+deleteObjects = (opts) ->
+  _handler
+    s3FnName: 'deleteObjects'
+    required: ['extAcctName','Delete']
+  , opts
+
+
 listObjects = (opts) ->
   _handler
     s3FnName: 'listObjects'
     required: ['extAcctName']
   , opts
+
+
+#handle things as we go through pages
+#don't stack up memory
+_handleAllObjects = (opts, pageCb = (->)) ->
+  new Promise (resolve, reject) ->
+    ctr = 0
+    pages = 0
+    listObjects(_.extend {}, opts, nodeStyle:true)
+    .then (listObjects) ->
+      #https://github.com/aws/aws-sdk-js/blob/0d19fe976f48860d9e929b027de0b601f55523cb/lib/request.js#L460-L477
+      listObjects.eachPage (err, list, continueCb) ->
+        if err
+          return reject err
+
+        ctr += list.Contents.length
+        pageCb(list, pages)
+
+        if !@hasNextPage()
+          logger.debug "pages: #{pages + 1}"
+          continueCb(false)
+          return resolve(ctr)
+        pages += 1
+        continueCb()
+
+deleteAllObjects = (opts) ->
+  promises = []
+  _handleAllObjects opts, (list, pagesIdx) ->
+    logger.debug "deleting page: #{pagesIdx}"
+    promises.push deleteObjects _.extend {}, opts,
+      Delete: Objects: list.Contents.map (o) -> Key: o.Key
+  .then (ctr) ->
+    logger.debug "deleted #{ctr} files!"
+    Promise.all promises
+
+countObjects = (opts) ->
+  _handleAllObjects opts
 
 #for uploading  / putting streams of unkown exact size
 #node style only!!
@@ -109,6 +153,9 @@ module.exports = {
   putObject
   getObject
   deleteObject
+  deleteObjects
   listObjects
   upload
+  countObjects
+  deleteAllObjects
 }

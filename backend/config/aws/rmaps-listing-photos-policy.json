@@ -1,0 +1,32 @@
+{
+	"Version": "2012-10-17",
+	"Id": "Policy1458844246339",
+	"Statement": [
+		{
+			"Sid": "Stmt1458844239378",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "arn:aws:iam::497823743650:user/rmaps_listing_photos"
+			},
+			"Action": [
+				"s3:ListBucket",
+				"s3:DeleteObject",
+				"s3:GetObject",
+				"s3:PutObject"
+			],
+			"Resource": [
+				"arn:aws:s3:::rmaps-listing-photos/*",
+				"arn:aws:s3:::rmaps-listing-photos"
+			]
+		},
+		{
+			"Sid": "Stmt1458844239379",
+			"Effect": "Allow",
+			"Principal": {
+				"AWS": "*"
+			},
+			"Action": "s3:GetObject",
+			"Resource": "arn:aws:s3:::rmaps-listing-photos/*"
+		}
+	]
+}
