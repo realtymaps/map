@@ -349,7 +349,7 @@ storePhotos = (subtask, id) ->
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
   .where {id}
-  .then sqlHelpers.expectSingleRow
+  .then sqlHelpers.expectSingleRow #might not want to throw and just continue to try and delte the rest
   .then ({id, key}) ->
     logger.debug "deleting: id: #{id}, key: #{key}"
 
