@@ -343,8 +343,8 @@ storePhotos = (subtask, id) ->
           )
 
       savesPromise.then ([saves]) ->
-        saves = _.filter saves #flatMap (remove nulls / GTFOS)
-        Promise.all saves.map _updatePhotoUrl.bind(null, subtask)
+        #filter/flatMap (remove nulls / GTFOS)
+        Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
