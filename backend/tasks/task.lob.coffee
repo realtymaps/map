@@ -72,7 +72,6 @@ createLetter = (subtask) ->
     letter.lob_api
 
   .then ({data}) ->
-    logger.debug data
     if data.length > 0
       logger.info "Letter #{uuid} already exists - unexpected"
       return tables.mail.letters()
