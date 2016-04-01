@@ -530,14 +530,15 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
 
 
-module.exports =
-  buildUniqueSubtaskName: buildUniqueSubtaskName
-  recordChangeCounts: recordChangeCounts
-  activateNewData: activateNewData
-  getValidationInfo: getValidationInfo
-  normalizeData: normalizeData
-  getValues: getValues
-  finalizeEntry: finalizeEntry
-  manageRawDataStream: manageRawDataStream
-  ensureNormalizedTable: ensureNormalizedTable
-  DELETE: DELETE
+module.exports = {
+  buildUniqueSubtaskName
+  recordChangeCounts
+  activateNewData
+  getValidationInfo
+  normalizeData
+  getValues
+  finalizeEntry
+  manageRawDataStream
+  ensureNormalizedTable
+  DELETE
+}

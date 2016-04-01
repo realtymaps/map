@@ -17,16 +17,14 @@ module.exports = (options = {}) ->
     if !value? or value == ''
       return null
 
-    if !options.format
-      throw new DataValidationError("no format specified for date field", param, value)
-
-    datetime = moment.utc(value, options.format, options.locale, options.strict)
+    format = options.format || 'YYYY-MM-DD[T]HH:mm:ss'
+    datetime = moment.utc(value, format, options.locale, options.strict)
     if !datetime.isValid()
       start = options.format.indexOf('D')
       if value.substr(start, 2) == '00'
         value = value.slice(0, start) + '01' + value.slice(start+2)
 
-      datetime = moment.utc(value, options.format, options.locale, options.strict)
+      datetime = moment.utc(value, format, options.locale, options.strict)
       if !datetime.isValid()
         throw new DataValidationError("invalid data type given for date field (problem determining value for `#{fields[datetime.invalidAt()]}`)", param, value)
 
