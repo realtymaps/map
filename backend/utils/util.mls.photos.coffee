@@ -1,4 +1,4 @@
-logger = require('../config/logger').spawn('util.route.rets.helpers')
+logger = require('../config/logger').spawn('util.mls.photos')
 # retsHelpers = require './util.retsHelpers'
 _ = require 'lodash'
 Archiver = require 'archiver'
@@ -55,11 +55,13 @@ imagesHandle = (object, cb) ->
       fileExt = event.headerInfo.contentType.replace('image/','')
       size = event.headerInfo.objectData.size
       contentType = event.headerInfo.contentType
+      uploadDate = event.headerInfo.objectData.uploadDate
+      description = event.headerInfo.objectData.description
 
       everSentData = true
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
       logger.debug "fileName: #{fileName}"
-      cb(null, {data: event.dataStream, name: fileName, imageId, size, contentType})
+      cb(null, {data: event.dataStream, name: fileName, imageId, size, contentType, uploadDate, description})
 
   object.objectStream.on 'end', () ->
     if !everSentData
@@ -86,9 +88,17 @@ imagesStream = (object, archive = Archiver('zip')) ->
   archive
 
 
+hasSameUploadDate = (uploadDate1, uploadDate2, allowNull = false) ->
+  if allowNull && !uploadDate1? && !uploadDate2?
+    return true
+
+  uploadDate1? && uploadDate2? &&
+    (new Date(uploadDate1)).getTime() == (new Date(uploadDate2)).getTime()
+
 module.exports = {
   isSingleImage
   imagesHandle
   imagesStream
   imageStream
+  hasSameUploadDate
 }

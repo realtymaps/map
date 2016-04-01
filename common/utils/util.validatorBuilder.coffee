@@ -92,6 +92,11 @@ _rules =
         alias: 'Photo Count'
         required: false
 
+      photo_last_mod_time:
+        alias: 'Photo Last Mod Time'
+        required: false
+        type: name: 'datetime'
+
       address:
         alias: 'Address'
         input: {}

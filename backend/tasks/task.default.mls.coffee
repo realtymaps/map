@@ -2,7 +2,7 @@ Promise = require 'bluebird'
 dataLoadHelpers = require './util.dataLoadHelpers'
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
-logger = require '../config/logger'
+logger = require('../config/logger').spawn('task.mls')
 mlsHelpers = require './util.mlsHelpers'
 TaskImplementation = require './util.taskImplementation'
 _ = require 'lodash'
@@ -42,10 +42,10 @@ finalizeData = (subtask) ->
 storePhotosPrep = (subtask, pagenateFn = _pagenate) ->
   tables.property.combined()
   .select('id')
-  .where(batch_id: subtask.batch_id)
-  .orderBy('id', 'desc')
-  # .limit(1)
-  # .returning('id')
+  .where(batch_id: subtask.batch_id, id: 793)
+  # .orderBy('id', 'desc')
+  .limit(1)
+  .returning('id')
   .then (rows) ->
     r.id for r in rows
   .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_storePhotos")

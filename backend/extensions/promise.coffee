@@ -14,7 +14,7 @@ defer = () ->
   }
 
 #force a to be called promise chain to wait on one another
-#behave synchronously :( 
+#behave synchronously :(
 reduceSeries = (promisesToCall) ->
   [peek] = promisesToCall
   if peek.then?
@@ -23,7 +23,11 @@ reduceSeries = (promisesToCall) ->
   promisesToCall.reduce (res, promise) ->
     if !res.then?
       res = res()
+
+    if !promise
+      return res
     res.then () -> promise()
+  , Promise.resolve() #handles initial case if size of 1
 
 
 mapSeries = (promisesToCall, mapFn) ->

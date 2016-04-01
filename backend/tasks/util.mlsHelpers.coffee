@@ -3,6 +3,7 @@ Promise = require 'bluebird'
 {PartiallyHandledError, isUnhandled, isCausedBy} = require '../utils/errors/util.error.partiallyHandledError'
 dbs = require '../config/dbs'
 logger = require('../config/logger').spawn('util.mlsHelpers')
+finePhotologger = logger.spawn('photos.fine')
 jobQueue = require '../utils/util.jobQueue'
 tables = require '../config/tables'
 sqlHelpers = require '../utils/util.sql.helpers'
@@ -173,7 +174,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
     args: opts
     required: ['newFileName', 'imageId', 'photo_id']
 
-  {newFileName, imageId, photo_id} = opts
+  {newFileName, imageId, photo_id, uploadDate, description} = opts
   externalAccounts.getAccountInfo(EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
@@ -184,20 +185,28 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
         2: https://s3.amazonaws.com/uuid/swflmls/mls_id_2.jpeg
         3: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
     ###
-    url = "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
+    obj =
+      url: "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
+
+    obj.uploadDate = uploadDate if uploadDate
+    obj.description = description if description
+
+    jsonObjStr = JSON.stringify obj
+
+    finePhotologger.debug jsonObjStr
 
     query =
       tables.property.combined()
       .raw("""
         UPDATE data_combined set
-        photos=jsonb_set(photos, '{#{imageId}}', '"#{url}"', true)
+        photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)
         WHERE data_source_type = 'mls' AND
          data_source_id = '#{subtask.task_name}' AND
          photo_id = '#{photo_id}';
         """
       )
 
-    logger.debug query.toString()
+    finePhotologger.debug query.toString()
     query
 
 _enqueuePhotoToDelete = (key, batch_id) ->
@@ -236,19 +245,32 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
       payload.data.pipe(upload)
 
 storePhotos = (subtask, id) ->
-  # logger.debug subtask.task_name
+  finePhotologger.debug subtask.task_name
 
   _getPhotoSettings(subtask, id)
-  .then ([mlsConfig, [row]]) ->
-    return Promise.resolve() if !row
-    # logger.debug "id: #{id}"
+  .then ([mlsConfig, rows]) ->
+
+    if !rows.length
+      finePhotologger.debug 'No rows GTFO'
+      return Promise.resolve()
+
+    [row] = rows
+    finePhotologger.debug "id: #{id}"
+
+    #if the photo set is not updated GTFO
+    logger.debug row.photo_last_mod_time
+
+    if row.photo_last_mod_time? && row.photo_download_last_mod_time? &&
+    row.photo_last_mod_time == row.photo_download_last_mod_time
+      finePhotologger.debug 'photo_last_mod_time identical  GTFO'
+      return Promise.resolve()
 
     {photo_id} = row
     photoIds = {}
     #get all photos for a specific property
     photoIds[photo_id] = '*'
 
-    # logger.debug photoIds
+    finePhotologger.debug photoIds
 
     photoType = mlsConfig.listing_data.largestPhotoObject
     {photoRes} = mlsConfig.listing_data
@@ -262,6 +284,7 @@ storePhotos = (subtask, id) ->
     .then (obj) ->
       successCtr = 0
       errorsCtr = 0
+      skipsCtr = 0
       promises = []
 
       savesPromise = new Promise (resolve, reject) ->
@@ -277,6 +300,7 @@ storePhotos = (subtask, id) ->
               Promise.all promises
               .then (args...) ->
                 logger.debug "Uploaded #{successCtr} photos to aws bucket."
+                logger.debug "Skipped #{skipsCtr} photos to aws bucket."
                 logger.debug "Failed to upload #{errorsCtr} photos to aws bucket."
                 args
             )
@@ -284,8 +308,14 @@ storePhotos = (subtask, id) ->
           #file naming consideratons
           #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
           newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
-          {imageId} = payload
+          {imageId, uploadDate, description} = payload
+
           logger.debug _.omit payload, 'data'
+
+          if mlsPhotoUtil.hasSameUploadDate(uploadDate, row.photos[imageId]?.uploadDate)
+            skipsCtr++
+            finePhotologger.debug 'photo has same updateDate GTFO.'
+            return promises.push Promise.resolve(null)
 
           promises.push(
             _uploadPhoto({photoRes, newFileName, payload, row})
@@ -299,7 +329,7 @@ storePhotos = (subtask, id) ->
               .where(id: row.id)
               .update(photo_import_error: null)
               .then () ->
-                {newFileName, imageId, photo_id}
+                {newFileName, imageId, photo_id, uploadDate, description}
             .catch (error) ->
               logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
               logger.debug error
@@ -313,7 +343,7 @@ storePhotos = (subtask, id) ->
           )
 
       savesPromise.then ([saves]) ->
-        # logger.debug saves
+        saves = _.filter saves #flatMap (remove nulls / GTFOS)
         Promise.all saves.map _updatePhotoUrl.bind(null, subtask)
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
