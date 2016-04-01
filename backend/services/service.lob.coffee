@@ -75,6 +75,8 @@ lobPromise = () ->
         throw new LobErrors.LobRateLimitError(lobError, msg)
       else if err.status_code == 500
         throw new LobErrors.LobServerError(lobError, msg)
+      else
+        throw new Error(err, "LOB-#{@apiName} API unknown error or timeout")
 
   # Get account info
   if _apiPromise
