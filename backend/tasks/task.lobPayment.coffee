@@ -31,9 +31,11 @@ findCampaigns = (subtask) ->
 
     Promise.map campaigns, (campaign) ->
 
+      campaign.label = "campaign '#{campaign.name}' (id #{campaign.id})"
+
       readyDate = moment(campaign.stripe_charge.created, 'X').add(config.MAILING_PLATFORM.CAMPAIGN_BILLING_DELAY_DAYS, 'days')
       if not readyDate.isBefore(moment())
-        logger.debug "Campaign #{campaign.id} will be ignored until #{readyDate.format()}"
+        logger.debug "#{campaign.label} will be ignored until #{readyDate.format()}"
         return
 
       tables.mail.letters()
@@ -43,9 +45,16 @@ findCampaigns = (subtask) ->
 
       .then (unsent) ->
         if unsent?.length
-          logger.debug "Campaign #{campaign.id} still has #{unsent.length} unsent letters and/or errors - skipping billing for now"
+          logger.debug "#{campaign.label} still has #{unsent.length} unsent letters and/or errors - skipping billing for now"
           return
         else
+          if campaign.stripe_charge?.livemode && !config.PAYMENT_PLATFORM.LIVE_MODE
+            logger.info "#{campaign.label} original payment was live mode but payments not currently live - skipping"
+            return
+          if !campaign.stripe_charge?.livemode && config.PAYMENT_PLATFORM.LIVE_MODE
+            logger.info "#{campaign.label} original payment was test mode but payments are currently live - skipping"
+            return
+
           jobQueue.queueSubsequentSubtask null, subtask, 'lobPayment_chargeCampaign', campaign, true
 
 #
@@ -58,8 +67,7 @@ chargeCampaign = (subtask) ->
 
   .then (payment) ->
 
-    campaignLabel = "campaign '#{campaign.name}' (id #{campaign.id})"
-    logger.debug "Checking whether #{campaignLabel} is ready for billing"
+    logger.debug "Checking whether #{campaign.label} is ready for billing"
 
     tables.mail.letters()
     .select(tables.mail.letters().raw "id, lob_response->'price' as price")
@@ -73,7 +81,7 @@ chargeCampaign = (subtask) ->
       totalPrice = _.reduce (_.pluck letters, 'price'), (total, price) ->
         total + Number(price)
 
-      logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaignLabel}"
+      logger.debug "Attempting to capture $#{totalPrice} (original charge $#{campaign.stripe_charge.amount/100}) for #{campaign.label}"
 
        # Shown on CC statements (all caps, 22-character limit)
       statement_descriptor = "REALTYMAPS #{campaign.stripe_charge.description ? ''}".trim().slice 0, 22
@@ -85,11 +93,11 @@ chargeCampaign = (subtask) ->
 
     .catch isUnhandled, (err) ->
 
-      throw new SoftFail(err, "Failed to capture charge for #{campaignLabel}")
+      throw new SoftFail(err, "Failed to capture charge for #{campaign.label}")
 
     .then (stripeCharge) ->
 
-      logger.info "Captured #{stripeCharge.amount/100} for #{campaignLabel}"
+      logger.info "Captured #{stripeCharge.amount/100} for #{campaign.label}"
 
       tables.mail.campaign()
       .update
@@ -97,8 +105,6 @@ chargeCampaign = (subtask) ->
         stripe_charge: stripeCharge
       .where
         id: campaign.id
-      .then (result) ->
-        result
 
 subtasks =
   findCampaigns: findCampaigns

@@ -18,9 +18,8 @@ updateLetters = (subtask) ->
   query = tables.mail.letters()
   query
   .select(
-    query.raw("id, lob_response, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date, lob_api")
+    query.raw("id, options->'metadata'->'uuid' as uuid, to_char(rm_inserted_time, 'YYYY-MM-DD') as created_date, retries, lob_api")
   )
-  .whereNull('lob_response')
   .where(status: 'error-transient')
   .then (letters) ->
     Promise.map letters, (letter) ->
@@ -37,21 +36,20 @@ getLetter = (subtask) ->
 
   Promise.try ->
     if not letter?.uuid
-      logger.debug "Letter #{letter.id} has no uuid!"
+      logger.debug "Letter #{letter.id} has no uuid! Marking invalid"
       return tables.mail.letters()
       .update
         status: 'error-invalid'
       .where
         id: letter.id
 
-    if letter.retries > config.MAILING_PLATFORM.LOB_MAX_RETRIES
+    if letter.retries >= config.MAILING_PLATFORM.LOB_MAX_RETRIES
       return tables.mail.letters()
       .update
         status: 'error-max-retries'
       .where id: letter.id
 
     lobSvc.listLetters
-      limit: 2 # More than one result is unexpected and we want to know about it
       date_created:
         gte: letter.created_date
       metadata:
@@ -62,6 +60,7 @@ getLetter = (subtask) ->
     .then ({data}) ->
       # In this case we know the letter was recieved by LOB so we can mark it sent
       if data.length == 1
+        logger.debug "Marking letter #{letter.uuid} 'sent', since LOB has a match"
         tables.mail.letters()
         .update
           lob_response: data[0]
@@ -71,6 +70,7 @@ getLetter = (subtask) ->
 
       # In this case we can assume LOB never created the letter, so we want to retry
       else if data.length == 0
+        logger.debug "Marking letter #{letter.uuid} 'ready', since LOB has no match"
         tables.mail.letters()
         .update
           status: 'ready'
@@ -79,6 +79,7 @@ getLetter = (subtask) ->
 
       # Wtf, there should not be two letters with the same uuid
       else
+        logger.debug "Marking letter #{letter.uuid} 'sent', since LOB has matches"
         tables.mail.letters()
         .update
           lob_response: data
@@ -86,22 +87,18 @@ getLetter = (subtask) ->
         .where
           id: letter.id
         .then ->
-          throw new SoftFail("Mutltiple copies of letter ID #{letter.id} returned by LOB!")
+          throw new SoftFail("Mutltiple letters with uuid #{letter.uuid} found. This is unexpected!")
 
-    .catch LobErrors.LobRateLimitError, (error) ->
-      throw new HardFail(error)
+    .catch  LobErrors.LobRateLimitError,
+            LobErrors.LobUnauthorizedError,
+            LobErrors.LobForbiddenError,
+            (error) ->
+              throw new HardFail(error)
 
-    .catch LobErrors.LobUnauthorizedError, (error) ->
-      throw new HardFail(error)
-
-    .catch LobErrors.LobForbiddenError, (error) ->
-      throw new HardFail(error)
-
-    .catch LobErrors.LobBadRequestError, (error) ->
-      throw new SoftFail(error)
-
-    .catch LobErrors.LobServerError, (error) ->
-      throw new SoftFail(error)
+    .catch  LobErrors.LobBadRequestError,
+            LobErrors.LobServerError,
+            (error) ->
+              throw new SoftFail(error)
 
     .catch isUnhandled, (error) ->
       throw new SoftFail(error)
