@@ -180,7 +180,7 @@ getPriceQuote = (userId, campaignId) ->
           pdf: lobResponse.url
           price: lobResponse.price * campaign.recipients.length
           lobResponse: lobResponse
-        throw "Stop checking addresses" # no need to check more addresses
+        throw new Error("Stop checking addresses") # no need to check more addresses
       .catch LobErrors.LobBadRequestError, -> # this address was bad, check the next one
         logger.debug "Invalid address: #{address}. Trying next recipient"
     .catch ->
