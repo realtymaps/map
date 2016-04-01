@@ -3,7 +3,8 @@ _ = require 'lodash'
 
 module.exports = app
 
-app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipalService, rmapsMailCampaignService, rmapsMainOptions) ->
+app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipalService,
+rmapsMailCampaignService, rmapsMainOptions, rmapsMailTemplateTypeService) ->
   $log = $log.spawn 'mail:mailCampaigns'
   $log.debug 'rmapsMailCtrl'
   $scope.mailCampaigns = []
@@ -22,6 +23,9 @@ app.controller 'rmapsMailCtrl', ($rootScope, $scope, $state, $log, rmapsPrincipa
     rmapsMailCampaignService.get query
     .then (list) ->
       $scope.mailCampaigns = list
+      templateTypeMap = rmapsMailTemplateTypeService.getMeta()
+      angular.forEach list, (el) ->
+        el.template_name = el.filename || templateTypeMap[el.template_type].name
 
   $scope.deleteCampaign = (campaign) ->
     rmapsMailCampaignService.remove campaign.id
