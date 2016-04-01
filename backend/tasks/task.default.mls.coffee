@@ -42,9 +42,9 @@ finalizeData = (subtask) ->
 storePhotosPrep = (subtask, pagenateFn = _pagenate) ->
   tables.property.combined()
   .select('id')
-  .where(batch_id: subtask.batch_id, id: 793)
+  .where(batch_id: subtask.batch_id)
   # .orderBy('id', 'desc')
-  .limit(1)
+  # .limit(1)
   .returning('id')
   .then (rows) ->
     r.id for r in rows
