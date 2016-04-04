@@ -24,6 +24,14 @@ dbs = require '../config/dbs'
 MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 sendNotification = notification('jobQueue')
 
+
+_getPrefix = (queueName) ->
+  if cluster.worker?
+    return "<#{queueName}-#{cluster.worker.id}-#{id}>"
+  else
+    return "<#{queueName}-#{id}>"
+
+
 _summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
 
@@ -352,17 +360,18 @@ executeSubtask = (subtask) ->
 
 _handleSubtaskError = (subtask, status, hard, error) ->
   Promise.try () ->
+    prefix = _getPrefix(subtask.queue_name)
     if hard
-      logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
+      logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
     else
       if subtask.retry_max_count? && subtask.retry_num >= subtask.retry_max_count
         if subtask.hard_fail_after_retries
           hard = true
           status = 'hard fail'
           error = "max retries exceeded due to: #{error}"
-          logger.error("Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
+          logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
         else
-          logger.warn("Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
+          logger.warn("#{prefix} Soft error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
       else
         retrySubtask = _.omit(subtask, 'id', 'enqueued', 'started', 'status')
         retrySubtask.retry_num += 1
@@ -371,9 +380,9 @@ _handleSubtaskError = (subtask, status, hard, error) ->
         .then (taskData) ->
           # need to make sure we don't continue to retry subtasks if the task has errored in some way
           if taskData == undefined
-            logger.info("Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
+            logger.info("#{prefix} Can't retry subtask (task is no longer running) for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
             return
-          logger.info("Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
+          logger.info("#{prefix} Queuing retry subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(retrySubtask)}>: #{error}")
           tables.jobQueue.currentSubtasks()
           .insert retrySubtask
   .then () ->
@@ -637,10 +646,7 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
     return subtasks[0]
 
 runWorker = (queueName, id, quit=false) ->
-  if cluster.worker?
-    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
-  else
-    prefix = "<#{queueName}-#{id}>"
+  prefix = _getPrefix(queueName)
   logger.spawn("queue:#{queueName}").debug () -> "#{prefix} worker starting..."
   _runWorkerImpl(queueName, prefix, quit)
 
