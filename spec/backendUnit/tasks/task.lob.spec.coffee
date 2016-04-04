@@ -2,15 +2,15 @@
 should()
 sinon = require 'sinon'
 Promise = require 'bluebird'
-SqlMock = require '../../../specUtils/sqlMock.coffee'
-logger = require('../../../specUtils/logger').spawn('task.lob')
+SqlMock = require '../../specUtils/sqlMock.coffee'
+logger = require('../../specUtils/logger').spawn('task.lob')
 rewire = require 'rewire'
-svc = rewire "../../../../backend/tasks/task.lob"
+svc = rewire "../../../backend/tasks/task.lob"
 _ = require 'lodash'
 
-mockCampaign = require '../../../fixtures/backend/services/lob/mail.campaign.json'
-mockLetter = require '../../../fixtures/backend/services/lob/mail.letter.json'
-mockLobLetter = require '../../../fixtures/backend/services/lob/lob.letter.singlePage.json'
+mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
+mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 
 describe 'task.lob', ->
   beforeEach ->
@@ -18,7 +18,7 @@ describe 'task.lob', ->
     @letters = [mockLetter, mockLetter]
 
     campaigns = new SqlMock 'mail', 'campaign', result: [mockCampaign]
-    letters = new SqlMock 'mail', 'letters', result: @letters
+    letters = new SqlMock 'mail', 'letters', results: [@letters, []]
 
     @tables =
       mail:
@@ -27,8 +27,10 @@ describe 'task.lob', ->
 
     svc.__set__ 'tables', @tables
 
-    @lobSvc = sendLetter: sinon.spy (letter) -> Promise.try ->
-      mockLobLetter
+    @lobSvc =
+      sendLetter: sinon.spy (letter) -> Promise.try ->
+        mockLobLetter
+      listLetters: sinon.spy () -> Promise.try -> data: []
 
     svc.__set__ 'lobSvc', @lobSvc
 
@@ -59,7 +61,7 @@ describe 'task.lob', ->
   it 'should find letters and enqueue them as subtasks', ->
     svc.executeSubtask(@subtasks.findLetters)
     .then () =>
-      @tables.mail.letters().selectSpy.callCount.should.equal 1
+      @tables.mail.letters().selectSpy.callCount.should.equal 2
       @tables.mail.letters().whereSpy.args[0].should.deep.equal ['status', 'ready']
       @jobQueue.queueSubsequentSubtask.callCount.should.equal @letters.length
       expect(@jobQueue.queueSubsequentSubtask.args[0][0]).to.be.null

@@ -95,8 +95,7 @@ _rules =
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'
         required: false
-        getTransform: () ->
-          name: 'datetime', options: ignoreFormat:true
+        type: name: 'datetime'
 
       address:
         alias: 'Address'

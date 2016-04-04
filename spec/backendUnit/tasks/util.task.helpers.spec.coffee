@@ -1,6 +1,6 @@
 require('chai').should()
 sinon = require 'sinon'
-{basePath} = require '../../globalSetup'
+{basePath} = require '../globalSetup'
 taskHelpers = require "#{basePath}/tasks/util.task.helpers"
 stripeErrors = require "#{basePath}/utils/errors/util.errors.stripe"
 Promise = require 'bluebird'

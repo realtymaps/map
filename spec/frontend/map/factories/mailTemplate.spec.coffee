@@ -29,6 +29,7 @@ describe 'mailTemplate service', ->
         sender_info: null
         recipients: []
         aws_key: null
+        project_id: null
         options:
           color: false
 
