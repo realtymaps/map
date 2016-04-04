@@ -1,4 +1,3 @@
-config = require './config/config'
 
 logger = require './config/logger'
 cluster = require './config/cluster'
@@ -6,7 +5,6 @@ tables = require './config/tables'
 jobQueue = require './utils/util.jobQueue'
 # just to make sure we can run the hirefire backup if necessary (in case the web process is down)
 require './routes/route.hirefire'
-dbs = require "./config/dbs"
 shutdown = require './config/shutdown'
 
 

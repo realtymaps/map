@@ -11,22 +11,35 @@ PromiseExt = require '../extensions/promise'
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
 
+_pagenate = (subtask, taskName, ids, data) ->
+  jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, taskName, data)
 
-loadRawData = (subtask) ->
+loadRawData = (subtask, pagenateFn = _pagenate) ->
+  if subtask.data?.limit?
+    limit = subtask.data?.limit
+    logger.debug "limiting raw mls data to #{limit}"
+    
   mlsHelpers.loadUpdates subtask,
     dataSourceId: subtask.task_name
-  .then (numRows) ->
-    jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData",
-      dataType: 'listing'
+    limit: limit
+  .then ({numRawRows, deletes}) ->
+    if numRawRows == 0
+      return 0
+    # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
+    # on whether this is a dump or an update)
+    recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
+    finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
+    storePhotosPrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_storePhotosPrep", null, true)
+    activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
+    Promise.join recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, () ->
+      numRawRows
+  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_normalizeData", dataType: 'listing')
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
     dataSourceId: subtask.task_name
     dataSourceType: 'mls'
     buildRecord: mlsHelpers.buildRecord
-
-_pagenate = (subtask, taskName, ids) ->
-  jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, taskName)
 
 finalizeDataPrep = (subtask, pagenateFn = _pagenate) ->
   tables.property.listing()

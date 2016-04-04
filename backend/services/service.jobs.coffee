@@ -1,7 +1,5 @@
 _ = require 'lodash'
-BaseObject = require '../../common/utils/util.baseObject'
 logger = require('../config/logger').spawn('service:jobs')
-Promise = require 'bluebird'
 tables = require '../config/tables'
 crudService = require '../utils/crud/util.crud.service.helpers'
 jobQueue = require '../utils/util.jobQueue'
@@ -177,18 +175,11 @@ errorHistoryDbFn = () ->
 
   return _queryFn
 
-_summary = new JobService(tables.jobQueue.summary)
-_taskHistory = new JobService(historyDbFn, 'name')
-_subtaskErrorHistory = new JobService(errorHistoryDbFn, 'id')
-_queues = new TaskService(tables.jobQueue.queueConfig, 'name')
-_tasks = new TaskService(tables.jobQueue.taskConfig, 'name')
-_subtasks = new TaskService(tables.jobQueue.subtaskConfig, 'name')
-
 module.exports =
-  taskHistory: _taskHistory
-  subtaskErrorHistory: _subtaskErrorHistory
-  queues: _queues
-  tasks: _tasks
-  subtasks: _subtasks
-  summary: _summary
+  taskHistory: new JobService(historyDbFn, 'name')
+  subtaskErrorHistory: new JobService(errorHistoryDbFn, 'id')
+  queues: new TaskService(tables.jobQueue.queueConfig, 'name')
+  tasks: new TaskService(tables.jobQueue.taskConfig, 'name')
+  subtasks: new TaskService(tables.jobQueue.subtaskConfig, 'name')
+  summary: new JobService(tables.jobQueue.summary)
   health: crudService.crud(healthDbFn)

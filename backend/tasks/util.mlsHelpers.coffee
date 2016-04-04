@@ -38,7 +38,7 @@ loadUpdates = (subtask, options) ->
     .where(id: subtask.task_name)
     .then (mlsInfo) ->
       mlsInfo = mlsInfo?[0]
-      retsHelpers.getDataStream(mlsInfo, null, refreshThreshold)
+      retsHelpers.getDataStream(mlsInfo, options?.limit, refreshThreshold)
       .catch isCausedBy(rets.RetsReplyError), (error) ->
         if error.replyTag in ["MISC_LOGIN_ERROR", "DUPLICATE_LOGIN_PROHIBITED", "SERVER_TEMPORARILY_DISABLED"]
           throw SoftFail(error, "Transient RETS error; try again later")
@@ -55,16 +55,8 @@ loadUpdates = (subtask, options) ->
       .catch isUnhandled, (error) ->
         throw new PartiallyHandledError(error, "failed to stream raw data to temp table: #{rawTableName}")
     .then (numRawRows) ->
-      if numRawRows == 0
-        return 0
-      # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
-      # on whether this is a dump or an update)
       deletes = if refreshThreshold.getTime() == 0 then dataLoadHelpers.DELETE.UNTOUCHED else dataLoadHelpers.DELETE.NONE
-      recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
-      finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-      activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
-      Promise.join recordCountsPromise, finalizePrepPromise, activatePromise, () ->
-        numRawRows
+      {numRawRows, deletes}
   .catch isUnhandled, (error) ->
     throw new PartiallyHandledError(error, 'failed to load RETS data for update')
 
