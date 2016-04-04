@@ -11,14 +11,14 @@ PromiseExt = require '../extensions/promise'
 # NOTE: This file a default task definition used for MLSs that have no special cases
 NUM_ROWS_TO_PAGINATE = 2500
 
-_pagenate = (subtask, taskName, ids, data) ->
+_pagenate = (subtask, taskName, data, ids) ->
   jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, taskName, data)
 
 loadRawData = (subtask, pagenateFn = _pagenate) ->
   if subtask.data?.limit?
     limit = subtask.data?.limit
     logger.debug "limiting raw mls data to #{limit}"
-    
+
   mlsHelpers.loadUpdates subtask,
     dataSourceId: subtask.task_name
     limit: limit
@@ -33,7 +33,10 @@ loadRawData = (subtask, pagenateFn = _pagenate) ->
     activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
     Promise.join recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, () ->
       numRawRows
-  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_normalizeData", dataType: 'listing')
+  # .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_normalizeData", dataType: 'listing')
+  .then (numRows) ->
+    logger.debug("num rows to normalize: #{numRows}")
+    pagenateFn(subtask, "#{subtask.task_name}_normalizeData", {dataType: 'listing'}, numRows)
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
@@ -47,7 +50,7 @@ finalizeDataPrep = (subtask, pagenateFn = _pagenate) ->
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
-  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_finalizeData")
+  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_finalizeData", null)
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
@@ -61,7 +64,7 @@ storePhotosPrep = (subtask, pagenateFn = _pagenate) ->
   .returning('id')
   .then (rows) ->
     r.id for r in rows
-  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_storePhotos")
+  .then pagenateFn.bind(null, subtask, "#{subtask.task_name}_storePhotos", null)
 
 storePhotos = (subtask) -> Promise.try () ->
   #NOTE currently we can not do image download at high volume until we pool mls connections
