@@ -14,6 +14,7 @@ app.controller 'rmapsProjectCtrl',
   $state,
   rmapsClientsFactory,
   rmapsEventConstants
+  rmapsNotesService,
   rmapsPageService,
   rmapsPrincipalService,
   rmapsProfilesService,
@@ -41,6 +42,8 @@ app.controller 'rmapsProjectCtrl',
     return false
 
   $scope.project = null
+  $scope.notes = []
+
   clientsService = null
 
   $scope.getStateName = (name) ->
@@ -101,36 +104,43 @@ app.controller 'rmapsProjectCtrl',
         scope: $scope
         template: require('../../html/views/templates/modals/propertyDetail.jade')()
 
-  $scope.loadProject = () ->
+  loadProject = () ->
     # It is important to load property details before properties are added to scope to prevent template breaking
     toLoad = _.merge {}, project.properties_selected, project.favorites
     if not _.isEmpty toLoad
-      $scope.loadProperties toLoad
+      loadProperties toLoad
       .then (properties) ->
         project.properties_selected = _.pick properties, _.keys(project.properties_selected)
         project.favorites = _.pick properties, _.keys(project.favorites)
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
-    $scope.loadClients()
+    loadClients()
+
+    loadNotes()
 
     $scope.project = project
 
     # Set the project name as the page title
     rmapsPageService.setDynamicTitle(project.name)
 
-  $scope.loadProperties = (properties) ->
+  loadProperties = (properties) ->
     rmapsPropertiesService.getProperties _.keys(properties), 'filter'
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
       properties
 
-  $scope.loadClients = () ->
+  loadClients = () ->
     clientsService.getAll()
     .then (clients) ->
       $scope.project.clients = clients
 
-  $rootScope.$onRootScope rmapsEventConstants.notes, () ->
-    $scope.loadProject() unless !$state.params.id
+  loadNotes = () ->
+    rmapsNotesService.getList()
+    .then (notes) ->
+      $scope.notes = notes
 
-  $scope.loadProject()
+  $rootScope.$onRootScope rmapsEventConstants.notes, () ->
+    loadProject() unless !$state.params.id
+
+  loadProject()
