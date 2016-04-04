@@ -2,15 +2,15 @@
 should()
 sinon = require 'sinon'
 Promise = require 'bluebird'
-SqlMock = require '../../../specUtils/sqlMock.coffee'
-logger = require('../../../specUtils/logger').spawn('task.lob')
+SqlMock = require '../../specUtils/sqlMock.coffee'
+logger = require('../../specUtils/logger').spawn('task.lob')
 rewire = require 'rewire'
-svc = rewire "../../../../backend/tasks/task.lob"
+svc = rewire "../../../backend/tasks/task.lob"
 _ = require 'lodash'
 
-mockCampaign = require '../../../fixtures/backend/services/lob/mail.campaign.json'
-mockLetter = require '../../../fixtures/backend/services/lob/mail.letter.json'
-mockLobLetter = require '../../../fixtures/backend/services/lob/lob.letter.singlePage.json'
+mockCampaign = require '../../fixtures/backend/services/lob/mail.campaign.json'
+mockLetter = require '../../fixtures/backend/services/lob/mail.letter.json'
+mockLobLetter = require '../../fixtures/backend/services/lob/lob.letter.singlePage.json'
 
 describe 'task.lob', ->
   beforeEach ->

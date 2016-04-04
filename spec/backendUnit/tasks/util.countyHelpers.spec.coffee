@@ -1,5 +1,5 @@
 ###
-{basePath} = require '../../globalSetup'
+{basePath} = require '../globalSetup'
 rewire = require 'rewire'
 countyHelpers = rewire "#{basePath}/tasks/util.countyHelpers"
 _listExtend = countyHelpers.__get__('_listExtend')
