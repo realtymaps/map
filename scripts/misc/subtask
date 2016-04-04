@@ -9,12 +9,39 @@ options:
 --subtaskStateJson - JSON subtask argument payload
 --subtaskStateFile - coffee or js file to require as a payload subtask object
 ###
-
+Promise = require 'bluebird'
 _ = require 'lodash'
 argv = require('yargs').argv
-task = require('../../backend/tasks/' + argv.task)
+rewire = require('rewire')
+task = rewire('../../backend/tasks/' + argv.task)
 subtask = task.subtasks[argv.subtask]
-isPrep = argv.subtask.indexOf 'Prep' != -1
+
+idsToSubtaskVals = (subtask, ids) ->
+  # console.log ids
+  subtask.data = _.extend {}, subtask.data,
+    values: ids
+
+getNextSubtask = (taskName) ->
+  taskName = taskName.split('_')[1]
+  console.log "Fake Pagenate: attempting to get #{taskName}"
+  task.subtasks[taskName]
+
+mockPagenate = (tansaction, subtask, ids, maxRowsToPage, taskName) ->
+  console.log "Fake Pagenate taskName: #{taskName}"
+  console.log "Fake Pagenate ids: #{ids}"
+  console.log "Fake Pagenate maxRowsToPage: #{maxRowsToPage}"
+
+  idsToSubtaskVals(subtask, ids)
+  getNextSubtask(taskName)(subtask)
+
+#mock jobQueue to call things directly
+task.__set__ 'jobQueue',
+
+  queueSubsequentSubtask: () ->
+    Promise.resolve()
+
+  queueSubsequentPaginatedSubtask: () ->
+    mockPagenate arguments...
 
 
 if !subtask
@@ -24,29 +51,10 @@ if !subtask
 payload = if argv.subtaskStateJson then JSON.parse(argv.subtaskStateJson) else
   require('../../' + argv.subtaskStateFile)
 
-# console.log payload
-secondArg = null
-
-idsToSubtaskVals = (subtask, ids) ->
-  # console.log ids
-  subtask.data = _.extend {}, subtask.data,
-    values: ids
-
-getNonPrepSubtask = () ->
-  task.subtasks[argv.subtask.replace('Prep', '')]
-
-if isPrep
-  secondArg = (tansaction, subtask, ids, maxRowsToPage, taskName) ->
-    console.log "Fake Prep: #{taskName}"
-    console.log "maxRowsToPage: #{maxRowsToPage}"
-
-    idsToSubtaskVals(subtask, ids)
-    getNonPrepSubtask()(subtask)
-
 
 console.log "executing: #{argv.subtask}"
 
-subtask(payload, secondArg)
+subtask(payload)
 .then (ret) ->
   console.log 'success'
   # console.log ret

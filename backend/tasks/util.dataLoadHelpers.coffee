@@ -259,6 +259,9 @@ normalizeData = (subtask, options) -> Promise.try () ->
   # get rows for this subtask
   rowsPromise = tables.temp(subid: rawSubid)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
+
+  logger.debug rowsPromise.toString()
+
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
   # get start time for "last updated" stamp
