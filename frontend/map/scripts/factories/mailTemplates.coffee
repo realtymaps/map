@@ -16,6 +16,7 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     sender_info: null
     recipients: []
     aws_key: null
+    project_id: null
     options:
       color: false
 
@@ -79,9 +80,8 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
         toSave = _.pick @campaign, _.keys(campaignDefaults)
         toSave.recipients = JSON.stringify toSave.recipients
         toSave.lob_content = @createLobHtml()
-
-        if profile = rmapsPrincipalService.getCurrentProfile()
-          toSave.project_id = profile.project_id
+        if !toSave.project_id?
+          toSave.project_id = rmapsPrincipalService.getCurrentProfile().project_id
 
         op = rmapsMailCampaignService.create(toSave) #upserts if not already created (only if using psql 9.5)
         .then ({data}) =>
