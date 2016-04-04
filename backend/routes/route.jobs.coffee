@@ -1,10 +1,8 @@
-_ = require 'lodash'
 jobs = require '../services/service.jobs'
 {routeCrud, RouteCrud} = require '../utils/crud/util.crud.route.helpers'
 {mergeHandles} = require '../utils/util.route.helpers'
 auth = require '../utils/util.auth'
 jobQueue = require '../utils/util.jobQueue'
-userSession =  require '../services/service.userSession'
 ExpressResponse = require '../utils/util.expressResponse'
 logger = require('../config/logger').spawn('jobQueue:manual')
 

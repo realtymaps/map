@@ -446,8 +446,8 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
               callback()
             else
               callback()
-        catch err
-          onError(err)
+        catch error
+          onError(error)
           callback()
       dbStreamer = through2.obj dbStreamTransform, (callback) ->
         if startedTransaction
@@ -463,7 +463,7 @@ manageRawDataStream = (tableName, dataLoadHistory, objectStream) ->
         tables.jobQueue.dataLoadHistory()
         .where(raw_table_name: tableName)
         .delete()
-      .catch (err2) ->
+      .catch () ->
         throw err
       .then () ->
         throw err
