@@ -36,7 +36,10 @@ getNonPrepSubtask = () ->
   task.subtasks[argv.subtask.replace('Prep', '')]
 
 if isPrep
-  secondArg = (subtask, taskName, ids) ->
+  secondArg = (tansaction, subtask, ids, maxRowsToPage, taskName) ->
+    console.log "Fake Prep: #{taskName}"
+    console.log "maxRowsToPage: #{maxRowsToPage}"
+
     idsToSubtaskVals(subtask, ids)
     getNonPrepSubtask()(subtask)
 
