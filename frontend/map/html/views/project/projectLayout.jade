@@ -1,0 +1,19 @@
+#projects-list.content-section-container
+    .inner
+      .container
+        .row
+          .col-md-3.navbar.desktop-only
+            ul.nav
+              li(ng-class="{active: $state.is('project')}")
+                a(ui-sref="project") Project
+              li(ng-repeat="state in $state.get() | filter:{parent: 'projectLayout'}"
+                ng-class="{active: $state.is(state.name)}")
+                a(ui-sref="{{state.name}}") {{getStateName(state.name)}}
+
+          .col-md-9.content
+            .row
+              .col-md-12
+                ul
+                  li
+                    .data
+                      ul(ui-view ng-class="state.name.replace('project','').toLowerCase()")

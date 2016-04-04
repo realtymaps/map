@@ -11,9 +11,11 @@ module.exports =
   properties:     'properties'
   property:       'property/:id'
   projects:       'projects'
-  project:        'project/:id'
+  projectBase:    'project/:id'
+  project:        ''
 
   # Child state URLs must start with / to avoid doubles
+  projectLayout:  ''
   projectClients: '/clients'
   projectFavorites: '/favorites'
   projectNotes:   '/notes'

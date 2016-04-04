@@ -1,11 +1,7 @@
 #project-dashboard.container-fluid
   .row
     .col-sm-2.hidden-xs
-      ul.nav
-        li
-          a(ui-sref="projects")
-            i.fa.fa-chevron-left.back-button
-            | Projects
+
     .col-sm-8.col-xs-12
       .project-header.desktop-only
         h1.pageTitle
@@ -37,13 +33,15 @@
 
         .col-xs-4
           .neighborhood-widget(style="width: 100%; height: 125px; background-color: white; border: solid black 1px; margin-bottom: 25px; font-size: 14px;")
-            a(ui-sref="projectNeighbourhoods")
+            a(ui-sref="projectNeighbourhoods({ id: project.id})")
               h2.title Neighbourhoods ({{project.neighbourhoods.length}})
           .favorites-widget(style="width: 100%; height: 125px; background-color: white; border: solid black 1px; font-size: 14px;")
-            h2.title Favorites ({{_.keys(project.favorites).length}})
+            a(ui-sref="projectFavorites({ id: project.id})")
+              h2.title Favorites ({{_.keys(project.favorites).length}})
 
       .notes
-        h3 Notes ({{notes.length || 0}})
+        h3
+          a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
 
         li(ng-repeat="note in notes | orderBy:rm_inserted_time:true" class="row")
           .col-md-2

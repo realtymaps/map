@@ -1,10 +1,9 @@
 .project-notes(ng-controller="rmapsNotesModalCtrl")
   .collapse-header
-    h2.title Notes ({{project.notes.length}})
-  li(ng-repeat="note in project.notes" class="row")
+    h2.title Notes ({{notes.length}})
+  li(ng-repeat="note in notes | orderBy:rm_inserted_time:true" class="row")
     .col-md-2
-      a(class="note-img" href="/map")
-        img(src="/assets/test_map.jpg")
+      img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
     .col-md-8
       .data
         h4 {{note.title}}

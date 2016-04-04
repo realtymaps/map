@@ -23,14 +23,16 @@ app.controller 'rmapsProjectCtrl',
   rmapsPropertyFormatterService,
   rmapsResultsFormatterService,
 
-  currentProfile
+  currentProfile,
+  currentProject
 ) ->
   $scope.activeView = 'project'
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl', currentProfile
 
   # Current project is injected by route resolves
-  project = currentProfile
+  project = currentProject
+  profile = currentProfile
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
