@@ -7,13 +7,13 @@ analysisToString = (includeVerbose) ->
   if this.details
     result += "#{module.exports.INDENT}Details: #{this.details}\n"
   if this.stack
-    result += module.exports.INDENT+module.exports.INDENT+this.stack.join("\n#{module.exports.INDENT}#{module.exports.INDENT}")
+    result += module.exports.INDENT+module.exports.INDENT+this.stack.join("\n#{module.exports.INDENT}#{module.exports.INDENT}")+'\n'
   if includeVerbose && this.verbose
     result += "#{module.exports.INDENT}Verbose:\n"
-    result += module.exports.INDENT+module.exports.INDENT+this.verbose.join("\n#{module.exports.INDENT}#{module.exports.INDENT}")
+    result += module.exports.INDENT+module.exports.INDENT+this.verbose.join("\n#{module.exports.INDENT}#{module.exports.INDENT}")+'\n'
   if this.json
     result += "#{module.exports.INDENT}Full Object:\n"
-    result += module.exports.INDENT+module.exports.INDENT+this.json.split('\n').join("\n#{module.exports.INDENT}#{module.exports.INDENT}")
+    result += module.exports.INDENT+module.exports.INDENT+this.json.split('\n').join("\n#{module.exports.INDENT}#{module.exports.INDENT}")+'\n'
   result
 
 
@@ -33,8 +33,8 @@ analyzeValue = (value, fullJson=false) ->
     result.verbose = value.toString().split('\n')
     result.details = getFunctionName(result.verbose) || '<anonymous function>'
   else if result.type == 'object'
-    if value instanceof Error
-      result.type = value.name
+    if value instanceof Error || value.hasOwnProperty('isOperational')
+      result.type = if value.hasOwnProperty('isOperational') then 'KnexError' else value.name
       result.details = value.message
       result.verbose = util.inspect(result, depth: null).split('\n')
       if (value.stack?)

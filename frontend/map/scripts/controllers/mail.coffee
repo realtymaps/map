@@ -25,7 +25,7 @@ rmapsMailCampaignService, rmapsMainOptions, rmapsMailTemplateTypeService) ->
       $scope.mailCampaigns = list
       templateTypeMap = rmapsMailTemplateTypeService.getMeta()
       angular.forEach list, (el) ->
-        el.template_name = el.filename || templateTypeMap[el.template_type].name
+        el.template_name = el.filename || templateTypeMap[el.template_type]?.name || "(none selected)"
 
   $scope.deleteCampaign = (campaign) ->
     rmapsMailCampaignService.remove campaign.id
