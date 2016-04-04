@@ -17,7 +17,7 @@ module.exports = (options = {}) ->
     if !value? or value == ''
       return null
 
-    if !options.format
+    if !options.format and !options.ignoreFormat
       throw new DataValidationError("no format specified for date field", param, value)
 
     datetime = moment.utc(value, options.format, options.locale, options.strict)
