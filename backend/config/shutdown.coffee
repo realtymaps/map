@@ -1,6 +1,5 @@
 Promise = require 'bluebird'
 logger = require('./logger').spawn('shutdown')
-analyze = require('../../common/utils/util.analyzeValue')
 
 
 exitHandlers = []
