@@ -10,10 +10,10 @@ reqTransforms =
 
 class PdfUploadRoute extends RouteCrud
   getSignedUrl: (req, res, next) =>
-    @custom @svc.getSignedUrl(req.params.id), res
+    @custom @svc.getSignedUrl(req.params.aws_key), res
 
   validatePdf: (req, res, next) =>
-    @custom @svc.validatePdf(req.params.id), res
+    @custom @svc.validatePdf(req.params.aws_key), res
 
 
 instance = new PdfUploadRoute pdfUploadService,
