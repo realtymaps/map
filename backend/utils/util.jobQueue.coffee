@@ -25,13 +25,6 @@ MAINTENANCE_TIMESTAMP = 'job queue maintenance timestamp'
 sendNotification = notification('jobQueue')
 
 
-_getPrefix = (queueName) ->
-  if cluster.worker?
-    return "<#{queueName}-#{cluster.worker.id}-#{id}>"
-  else
-    return "<#{queueName}-#{id}>"
-
-
 _summary = (subtask) ->
   JSON.stringify(_.omit(subtask.data,['values', 'ids']))
 
@@ -309,7 +302,7 @@ requeueManualTask = (taskName, initiator, withPrejudice=false) ->
   .then () ->
     queueManualTask(taskName, initiator)
 
-executeSubtask = (subtask) ->
+executeSubtask = (subtask, prefix) ->
   tables.jobQueue.currentSubtasks()
   .where(id: subtask.id)
   .update
@@ -321,25 +314,25 @@ executeSubtask = (subtask) ->
     subtaskPromise = taskImpl.executeSubtask(subtask)
     .cancellable()
     .then () ->
-      logger.spawn("task:#{subtask.task_name}").debug () -> "finished subtask #{subtask.name}"
+      logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} finished subtask #{subtask.name}"
       tables.jobQueue.currentSubtasks()
       .where(id: subtask.id)
       .update
         status: 'success'
         finished: dbs.get('main').raw('NOW()')
     .then () ->
-      logger.spawn("task:#{subtask.task_name}").debug () -> "subtask #{subtask.name} updated with success status"
+      logger.spawn("task:#{subtask.task_name}").debug () -> "#{prefix} subtask #{subtask.name} updated with success status"
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
-      .catch Promise.TimeoutError, _handleSubtaskError.bind(null, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
+      .catch Promise.TimeoutError, _handleSubtaskError.bind(null, prefix, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
     subtaskPromise = subtaskPromise
-    .catch SoftFail, _handleSubtaskError.bind(null, subtask, 'soft fail', false)
-    .catch HardFail, _handleSubtaskError.bind(null, subtask, 'hard fail', true)
-    .catch PartiallyHandledError, _handleSubtaskError.bind(null, subtask, 'infrastructure fail', true)
+    .catch SoftFail, _handleSubtaskError.bind(null, prefix, subtask, 'soft fail', false)
+    .catch HardFail, _handleSubtaskError.bind(null, prefix, subtask, 'hard fail', true)
+    .catch PartiallyHandledError, _handleSubtaskError.bind(null, prefix, subtask, 'infrastructure fail', true)
     .catch isUnhandled, (err) ->
       logger.error("Unexpected error caught during job execution: #{err.stack||err}")
-      _handleSubtaskError(subtask, 'infrastructure fail', true, err)
+      _handleSubtaskError(prefix, subtask, 'infrastructure fail', true, err)
     .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
       sendNotification
         subject: 'major db interaction problem'
@@ -358,9 +351,8 @@ executeSubtask = (subtask) ->
         clearTimeout(warnTimeout)
     return subtaskPromise
 
-_handleSubtaskError = (subtask, status, hard, error) ->
+_handleSubtaskError = (prefix, subtask, status, hard, error) ->
   Promise.try () ->
-    prefix = _getPrefix(subtask.queue_name)
     if hard
       logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
     else
@@ -475,7 +467,7 @@ _handleZombies = (transaction=null) ->
   .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
-      _handleSubtaskError(subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
+      _handleSubtaskError(subtask, "<#{subtask.queue_name}-unknown>", 'zombie', subtask.hard_fail_zombies, 'zombie')
 
 _handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
@@ -646,7 +638,10 @@ getSubtaskConfig = (transaction, subtaskName, taskName) ->
     return subtasks[0]
 
 runWorker = (queueName, id, quit=false) ->
-  prefix = _getPrefix(queueName)
+  if cluster.worker?
+    prefix = "<#{queueName}-#{cluster.worker.id}-#{id}>"
+  else
+    prefix = "<#{queueName}-#{id}>"
   logger.spawn("queue:#{queueName}").debug () -> "#{prefix} worker starting..."
   _runWorkerImpl(queueName, prefix, quit)
 
@@ -657,7 +652,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
     nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
       logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{_summary(subtask)}>"
-      return executeSubtask(subtask)
+      return executeSubtask(subtask, prefix)
       .then nextIteration
 
     if !quit && !logger.isEnabled("queue:#{queueName}")
