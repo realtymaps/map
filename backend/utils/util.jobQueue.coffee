@@ -395,7 +395,7 @@ _handleSubtaskError = (prefix, subtask, status, hard, error) ->
     else
       errorSubtask = updatedSubtask[0]
     errorSubtask.error = "#{error}"
-    details = analyzeValue.getSimpleDetails(err)
+    details = analyzeValue.getSimpleDetails(error)
     if details != errorSubtask.error
       errorSubtask.stack = details
     tables.jobQueue.subtaskErrorHistory()
