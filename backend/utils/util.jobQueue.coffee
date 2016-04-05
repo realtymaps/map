@@ -652,7 +652,7 @@ _runWorkerImpl = (queueName, prefix, quit) ->
   .then (subtask) ->
     nextIteration = _runWorkerImpl.bind(null, queueName, prefix, quit)
     if subtask?
-      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{_summary(subtask)}>"
+      logger.info "#{prefix} Executing subtask for batchId #{subtask.batch_id}: #{subtask.name}<#{_summary(subtask)}>(retry: #{subtask.retry_num})"
       return executeSubtask(subtask, prefix)
       .then nextIteration
 
