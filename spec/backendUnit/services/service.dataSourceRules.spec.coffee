@@ -198,7 +198,6 @@ describe 'service.dataSourceRules.coffee', ->
             # @rulesTableSqlMock.insertSpy.calledOnce).to.be.false
             expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
-            expect(@rulesTableSqlMock.commitSpy.calledOnce).to.be.true
             @rulesTableSqlMock.insertSpy.args[0][0][0].should.be.eql calledWithArgs
       )
 
@@ -306,10 +305,8 @@ describe 'service.dataSourceRules.coffee', ->
           svc.putListRules(@query.data_source_id, @query.data_source_type, @query.data_type, @query.list, @rules).then (queryResults) =>
             expect(@rulesTableSqlMock.deleteSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.insertSpy.calledOnce).to.be.true
-            expect(@rulesTableSqlMock.commitSpy.calledOnce).to.be.true
-            expect(@rulesTableSqlMock.whereSpy.calledOnce).to.be.true
             expect(@rulesTableSqlMock.insertSpy.args).to.deep.equal calledWithArgs
-            expect(@rulesTableSqlMock.whereSpy.args).to.deep.equal [[@query]]
+            expect(@rulesTableSqlMock.whereSpy.args[0]).to.deep.equal [@query]
 
       )
 

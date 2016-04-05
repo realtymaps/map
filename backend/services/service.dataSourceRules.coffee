@@ -4,7 +4,8 @@ dbs = require '../config/dbs'
 {PartiallyHandledError, isUnhandled} = require '../utils/errors/util.error.partiallyHandledError'
 tables = require '../config/tables'
 require('chai').should()
-
+logger = require('../config/logger').spawn('service:dataSourceRules')
+uuid = require 'node-uuid'
 
 _getRules = (query) ->
   tables.config.dataNormalization()
@@ -34,21 +35,31 @@ _addRules = (query, rules, counts) ->
         idx[r.list] = -1
       idx[r.list] = idx[r.list] + 1
       r.ordering = idx[r.list]
+
   tables.config.dataNormalization()
   .insert(rules)
 
 _putRules = (query, rules) ->
-  dbs.get('main').transaction (trx) ->
-    tables.config.dataNormalization(transaction: trx)
-    .delete()
+  # This used to be wrapped in a transcation, but it was causing deadlocks so instead there is a 2-stage delete
+  del_id = uuid.v1()
+  logger.debug -> "PUT #{JSON.stringify query} #{rules.length} rules"
+  tables.config.dataNormalization()
+  .update(data_source_id: del_id)
+  .where(query)
+  .then (result) ->
+    _addRules(query, rules)
+  .catch isUnhandled, (error) ->
+    data_source_id = query.data_source_id
+    query.data_source_id = del_id
+    tables.config.dataNormalization()
+    .update(data_source_id: data_source_id)
     .where(query)
-    .then (result) ->
-      _addRules(query, rules)
-    .then (result) ->
-      trx.commit()
-    .catch (error) ->
-      trx.rollback()
+    .then ->
       throw new PartiallyHandledError(error)
+  .then (result) ->
+    tables.config.dataNormalization()
+    .delete()
+    .where(data_source_id: del_id)
 
 _deleteRules = (query) ->
   tables.config.dataNormalization()
