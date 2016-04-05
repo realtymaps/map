@@ -349,8 +349,10 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
   .where {id}
   .then (results) ->
-    sqlHelpers.expectSingleRow(results)  # might not want to throw and just continue to try and delete the rest
-  .then ({id, key}) ->
+    if !results?.length
+      return
+      
+    [{id, key}] = results
     logger.debug "deleting: id: #{id}, key: #{key}"
 
     awsService.deleteObject
