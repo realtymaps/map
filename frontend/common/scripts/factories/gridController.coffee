@@ -3,17 +3,16 @@ mod = require '../module.coffee'
 createTemplate = require('../../../common/html/views/templates/gridCreateModal.jade')()
 
 mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGridModalFactory) ->
-  ($scope) ->
+  ($scope, opts = {}) ->
     $scope.nameFilters = ""
 
     $scope.gridName = $scope.gridName or 'Grid'
 
     $scope.gridName = $scope.gridName[0].toUpperCase() + $scope.gridName.slice(1)
 
-    $scope.grid =
+    $scope.grid = _.extend
       enableColumnMenus: false
       enablePinning: true
-      columnDefs: $scope.columnDefs
       enableCellEditOnFocus: true
       onRegisterApi: (gridApi) ->
         gridApi.edit.on.afterCellEdit $scope, (rowEntity, colDef, newValue, oldValue) ->
@@ -22,6 +21,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
             rowEntity.save()
           # CellEditOnFocus selects cells as part of focusing, so clear focus after edit since we dont care for the selection to remain
           gridApi.grid.cellNav.clearFocus()
+    , opts
 
     $scope.exists = () ->
       idx = _.findIndex $scope.grid.data, name: $scope.recordName
@@ -37,7 +37,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
         template: createTemplate
         resolve:
           columnDefs: () ->
-            return $scope.columnDefs
+            return $scope.grid.columnDefs
           record: () ->
             return name: $scope.recordName
           gridName: () ->
@@ -86,7 +86,7 @@ mod.factory 'rmapsGridFactory', ($log, $rootScope, $modal, Restangular, rmapsGri
 
     $scope.refreshFieldTypes = () ->
       $scope.fieldTypeMap = {}
-      for c in $scope.columnDefs
+      for c in $scope.grid.columnDefs
         $scope.fieldTypeMap[c.name] = c.type
 
     $scope.load()
