@@ -34,8 +34,8 @@ analyzeValue = (value, fullJson=false) ->
     result.verbose = value.toString().split('\n')
     result.details = getFunctionName(result.verbose) || '<anonymous function>'
   else if result.type == 'object'
-    if value instanceof Error || value.hasOwnProperty('isOperational')
-      result.type = if value.hasOwnProperty('isOperational') then 'KnexError' else value.name
+    if value instanceof Error || (value.hasOwnProperty('isOperational') && value.name == 'error')
+      result.type = if value.hasOwnProperty('isOperational') && value.name == 'error' then 'KnexError' else value.name
       result.details = value.message
       result.verbose = util.inspect(result, depth: null).split('\n')
       if (value.stack?)
@@ -59,7 +59,7 @@ analyzeValue = (value, fullJson=false) ->
 
 
 getSimpleDetails = (err) ->
-  if err.hasOwnProperty('isOperational')  # means it's a knex error
+  if err.hasOwnProperty('isOperational') && err.name == 'error'  # means it's a knex error
     return util.inspect(err, depth: null)
   else
     return err.stack || "#{err}"
