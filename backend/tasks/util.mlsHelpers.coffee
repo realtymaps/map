@@ -146,17 +146,13 @@ finalizeData = (subtask, id) ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
 
-_getPhotoSettings = (subtask, id) -> Promise.try () ->
+_getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()
   .where(id: subtask.task_name)
   .then (results) ->
     sqlHelpers.expectSingleRow(results)
 
-  query = tables.property.combined()
-  .where
-    id: id
-    data_source_type: 'mls'
-    data_source_id: subtask.task_name
+  query = tables.property.listing().where listingRow
 
   Promise.all [mlsConfigQuery, query]
 
@@ -167,13 +163,13 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
 
   onMissingArgsFail
     args: opts
-    required: ['newFileName', 'imageId', 'photo_id']
+    required: ['newFileName', 'imageId', 'photo_id', 'data_source_uuid']
 
-  {newFileName, imageId, photo_id, uploadDate, description} = opts
+  {newFileName, imageId, photo_id, uploadDate, description, data_source_uuid} = opts
   externalAccounts.getAccountInfo(EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
-    Update photo's hash in a data_combined col
+    Update photo's hash in a listing col
     example:
       photos:
         1: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
@@ -181,6 +177,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
         3: https://s3.amazonaws.com/uuid/swflmls/mls_id_1.jpeg
     ###
     obj =
+      key: newFileName
       url: "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
 
     obj.uploadDate = uploadDate if uploadDate
@@ -191,18 +188,21 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
     finePhotologger.debug jsonObjStr
 
     query =
-      tables.property.combined()
+      tables.property.listing()
       .raw("""
-        UPDATE data_combined set
+        UPDATE listing set
         photos=jsonb_set(photos, '{#{imageId}}', '#{jsonObjStr}', true)
-        WHERE data_source_type = 'mls' AND
+        WHERE
          data_source_id = '#{subtask.task_name}' AND
+         data_source_uuid = '#{data_source_uuid}' AND
          photo_id = '#{photo_id}';
         """
       )
 
     finePhotologger.debug query.toString()
     query
+    .catch () ->
+      _enqueuePhotoToDelete obj.key, subtask.batch_id
 
 _enqueuePhotoToDelete = (key, batch_id) ->
   if key?
@@ -224,7 +224,8 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
       Key: newFileName
       ContentType: payload.contentType
       Metadata:
-        id: row.id
+        data_source_id: row.data_source_id
+        data_source_uuid: row.data_source_uuid
         rm_property_id: row.rm_property_id
         height: photoRes.height
         width: photoRes.width
@@ -239,10 +240,11 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
 
       payload.data.pipe(upload)
 
-storePhotos = (subtask, id) -> Promise.try () ->
+storePhotos = (subtask, listingRow) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
+  finePhotologger.debug listingRow, true
 
-  _getPhotoSettings(subtask, id)
+  _getPhotoSettings(subtask, listingRow)
   .then ([mlsConfig, rows]) ->
 
     if !rows.length
@@ -250,7 +252,7 @@ storePhotos = (subtask, id) -> Promise.try () ->
       return Promise.resolve()
 
     [row] = rows
-    finePhotologger.debug "id: #{id}"
+    finePhotologger.debug "id: data_source_id: #{listingRow.data_source_id} data_source_uuid: #{listingRow.data_source_uuid}"
 
     #if the photo set is not updated GTFO
     logger.debug row.photo_last_mod_time
@@ -317,23 +319,23 @@ storePhotos = (subtask, id) -> Promise.try () ->
           promises.push(
             _uploadPhoto({photoRes, newFileName, payload, row})
             .then () ->
-              _enqueuePhotoToDelete row.photos[imageId], subtask.batch_id
+              _enqueuePhotoToDelete row.photos[imageId]?.key, subtask.batch_id
             .then () ->
               logger.debug 'photo upload success'
               successCtr++
 
-              tables.property.combined()
-              .where(id: row.id)
+              tables.property.listing()
+              .where(listingRow)
               .update(photo_import_error: null)
               .then () ->
-                {newFileName, imageId, photo_id, uploadDate, description}
+                {newFileName, imageId, photo_id, uploadDate, description, data_source_uuid: listingRow.data_source_uuid}
             .catch (error) ->
               logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
               logger.debug error
               logger.debug error.stack
               #record the error an move on
-              tables.property.combined()
-              .where(id: row.id)
+              tables.property.listing()
+              .where(listingRow)
               .update(photo_import_error: error.stack)
               .then () ->
                 null
