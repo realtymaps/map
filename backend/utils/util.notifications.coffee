@@ -5,6 +5,7 @@ externalAccounts = require '../services/service.externalAccounts'
 logger = require '../config/logger'
 emailConfig = require '../config/email'
 tables = require '../config/tables'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 NO_CLIENT_THROW = 'no client'
@@ -47,23 +48,23 @@ notification = (type) ->
       .innerJoin(tables.auth.user.tableName, "#{tables.config.notification.tableName}.user_id", "#{tables.auth.user.tableName}.id")
       .where
         type: type
-  
+
       # restrict to a user_id if provided
       if options.user_id
         query = query.where
           user_id: options.user_id
-  
+
       query
       .then (data) ->
         emailList = []
-  
+
         # loop to build emailList as well as send sms
         # if notification lists grow large, we may need to refine this loop
         for datum in data
           do (datum) ->
             if datum.email and datum.method == 'email'
               emailList.push datum.email
-  
+
             # sms currently required to send one by one; If we implement
             # an async or bulk method, we can handle it similar to email
             if datum.cell_phone and datum.method == 'sms'
@@ -97,8 +98,8 @@ notification = (type) ->
               logger.error "error sending EMAIL: #{error}\n#{info}"
     .catch (err) ->
       if err != NO_CLIENT_THROW
-        logger.error "notification error: #{err.stack||err}"
-    
+        logger.error "notification error: #{analyzeValue.getSimpleDetails(err)}"
+
     Promise.resolve()
 
 module.exports =

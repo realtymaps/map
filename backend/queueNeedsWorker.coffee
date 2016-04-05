@@ -3,6 +3,7 @@ logger = require('./config/logger').spawn('queueNeeds')
 shutdown = require('./config/shutdown')
 config = require './config/config'
 cluster = require('cluster')
+analyzeValue = require '../common/utils/util.analyzeValue'
 
 
 _intervalHandler = null
@@ -88,5 +89,5 @@ if require.main == module  # run directly, not require()d
     .then () ->
       shutdown.exit()
     .catch (err) ->
-      logger.error "Unexpected error updating queue needs: #{err.stack || err}"
+      logger.error "Unexpected error updating queue needs: #{analyzeValue.getSimpleDetails(err)}"
       shutdown.exit(error: true)
