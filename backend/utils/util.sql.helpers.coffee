@@ -151,7 +151,7 @@ singleRow = (rows) -> Promise.try ->
     return null
   return rows[0]
 
-expectSingleRow = (rows) -> Promise.try ->
+expectSingleRow = (rows) ->
   if !rows?.length
     throw new Error('Expected a single result and rows are empty!')
   if !rows[0]?

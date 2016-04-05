@@ -28,7 +28,8 @@ getPlanId = (planName, trx) ->
 
     logger.debug q.toString()
 
-    q.then expectSingleRow
+    q.then (results) ->
+      expectSingleRow(results)
     .then (result) ->
       result.id
 

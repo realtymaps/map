@@ -83,7 +83,8 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
         .count()
         .where(fips: fipsCode)
         .whereNotNull('geom_point')
-        .then expectSingleRow
+        .then (rows) ->
+          expectSingleRow(rows)
         .then (row) ->
           logger.debug "Point Count: #{row.count}"
           if row.count != pointsInserted
@@ -95,7 +96,8 @@ _uploadToParcelsDb = (fullPath, digimapsSetings) -> Promise.try ->
         .where(fips: fipsCode)
         .whereNotNull('geom_point')
         .whereNotNull('geom_polys')
-        .then expectSingleRow
+        .then (rows) ->
+          expectSingleRow(rows)
         .then (row) ->
           logger.debug "Poly Count: #{row.count}"
           if row.count != polysUpdated

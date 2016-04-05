@@ -63,9 +63,12 @@ getAccountInfo = (name, opts={}) -> Promise.try () ->
     this.where(environment: environment)
     .orWhereNull('environment')
   .orderBy('environment')
-  .then expectSingleRow
-  .then _transform.bind(null, _decrypt, cipherKey)
-  .then _logResult.bind(null, opts)
+  .then (accountInfo) ->
+    expectSingleRow(accountInfo)
+  .then (accountInfo) ->
+    _transform(_decrypt, cipherKey, accountInfo)
+  .then (decryptedInfo) ->
+    _logResult(opts, decryptedInfo)
 
 insertAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   accountInfo = _handleAccountInfoTypes(accountInfo)
@@ -99,7 +102,8 @@ deleteAccountInfo = (accountInfo, opts={}) -> Promise.try () ->
   if opts.logOnly
     return console.log(query.toString())
 
-  query.then _logResult.bind(null, opts)
+  query.then (deleted) ->
+    _logResult(opts, deleted)
 
 
 
