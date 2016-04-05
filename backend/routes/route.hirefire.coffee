@@ -1,6 +1,7 @@
 logger = require('../config/logger').spawn('hirefire')
 ExpressResponse = require '../utils/util.expressResponse'
 hirefire = require '../services/service.hirefire'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 info = (req, res, next) ->
@@ -9,7 +10,7 @@ info = (req, res, next) ->
   .then (needs) ->
     result = new ExpressResponse(needs)
   .catch (err) ->
-    logger.error "unexpected error during hirefire info check: #{err.stack||err}"
+    logger.error "unexpected error during hirefire info check: #{analyzeValue.getSimpleDetails(err)}"
     result = err
   .finally () ->
     next(result)

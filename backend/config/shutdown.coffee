@@ -1,5 +1,6 @@
 Promise = require 'bluebird'
 logger = require('./logger').spawn('shutdown')
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 exitHandlers = []
@@ -22,7 +23,7 @@ exit = (opts={}) ->
   .then () ->
     require('./dbs').shutdown(!opts.error)
   .catch (err) ->
-    logger.error "Caught error during shutdown: #{err.stack||err}"
+    logger.error "Caught error during shutdown: #{analyzeValue.getSimpleDetails(err)}"
   .finally () ->
     logger.debug "... exiting now"
     process.exit(if opts.error then 1 else 0)
@@ -39,20 +40,16 @@ setup = (isParentProcess=false) ->
     process.on 'SIGTERM', exit
 
   process.on 'uncaughtException', (err) ->
-    logger.error 'Something very bad happened!!!  (uncaught exception)'
-    logger.error err.stack || err
+    logger.error('Something very bad happened!!!  (uncaught exception)')
+    logger.error(analyzeValue.getSimpleDetails(err))
     exit(error: true)
 
   process.on 'unhandledRejection', (err, promise) ->
     unhandledRejections.push(promise)
     logger.debug () -> "unhandled rejection detected (total is now #{unhandledRejections.length}): #{err.message}"
     rejectionExit = () ->
-      if err.hasOwnProperty('isOperational')  # means it's a knex error
-        detail = util.inspect(err, depth: null)
-      else
-        detail = err.stack || err
-      logger.error 'Something very bad happened!!!  (unhandled rejection)'
-      logger.error(detail)
+      logger.error('Something very bad happened!!!  (unhandled rejection)')
+      logger.error(analyzeValue.getSimpleDetails(err))
       exit(error: true)
     setTimeout((() -> if unhandledRejections.indexOf(promise) != -1 then rejectionExit()), 5000)
 

@@ -1,6 +1,7 @@
 Promise = require 'bluebird'
 stripeBootstrap = require './service.payment.impl.stripe.bootstrap'
 logger = (require '../../../config/logger').spawn('stripe')
+analyzeValue = require '../../../../common/utils/util.analyzeValue'
 
 module.exports = Promise.try () ->
   stripeBootstrap
@@ -10,4 +11,4 @@ module.exports = Promise.try () ->
     events: require('./service.payment.impl.stripe.events')(stripe)
   .catch (err) ->
     logger.error 'backend stripe is bootsraped failed'
-    logger.error err.stack || err
+    logger.error analyzeValue.getSimpleDetails(err)
