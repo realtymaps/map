@@ -5,7 +5,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 module.exports = app
 
 app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService,
-rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
+rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory) ->
 
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
@@ -45,6 +45,10 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions) ->
       windowTopClass: 'preview-mail-windowTop'
       resolve:
         template: () -> $scope.review
+
+  $scope.viewMap = () ->
+    rmapsMapTogglesFactory.currentToggles?.showMail = true
+    $state.go 'map'
 
   rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
   .then (review) ->

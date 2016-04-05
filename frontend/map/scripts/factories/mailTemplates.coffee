@@ -71,9 +71,6 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     isSubmitted: () ->
       @campaign.status != 'ready'
 
-    isSent: () ->
-      @campaign.status == 'sent'
-
     save: () ->
       @getSenderData()
       .then () =>
