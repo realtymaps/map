@@ -7,6 +7,7 @@ app.controller 'rmapsJobsHealthCtrl',
   $scope.healthTimerange = '1 day'
 
   $scope.jobsGrid =
+    enableFiltering: true
     enableColumnMenus: false
     showColumnFooter: true
     enablePinning: true

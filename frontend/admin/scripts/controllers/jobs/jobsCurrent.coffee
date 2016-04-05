@@ -20,6 +20,7 @@ app.controller 'rmapsJobsCurrentCtrl',
     "Last 30 Days": { timerange: "30 days" }
 
   $scope.jobsGrid =
+    enableFiltering: true
     enableColumnMenus: false
     showColumnFooter: true
     enablePinning: true
@@ -113,6 +114,7 @@ app.controller 'rmapsJobsCurrentCtrl',
 
   $scope.currentFilters = null
   $scope.summaryGrid =
+    enableFiltering: true
     enableColumnMenus: false
     enablePinning: true
     enableRowSelection: true

@@ -19,6 +19,7 @@ app.controller 'rmapsJobsHistoryCtrl',
   dateFilter = 'date:"MM/dd HH:mm"'
 
   $scope.jobsGrid =
+    enableFiltering: true
     enableColumnMenus: false
     enablePinning: true
     columnDefs: [
@@ -108,6 +109,7 @@ app.controller 'rmapsJobsHistoryCtrl',
       _.extend num, numericDefaults
 
   $scope.jobsErrorGrid =
+    enableFiltering: true
     enableColumnMenus: false
     enablePinning: true
     appScopeProvider: $scope
