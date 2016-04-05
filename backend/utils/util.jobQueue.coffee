@@ -467,7 +467,7 @@ _handleZombies = (transaction=null) ->
   .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
-      _handleSubtaskError(subtask, "<#{subtask.queue_name}-unknown>", 'zombie', subtask.hard_fail_zombies, 'zombie')
+      _handleSubtaskError("<#{subtask.queue_name}-unknown>", subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
 
 _handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
