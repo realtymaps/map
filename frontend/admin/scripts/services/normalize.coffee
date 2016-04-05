@@ -34,8 +34,8 @@ app.factory 'rmapsNormalizeFactory', ($log, Restangular) ->
         if rule.list != 'unassigned'
           listTo.items.splice idx, 0, rule
           @createListRules listTo.list, listTo.items
-      .then () ->
-        _.forEach listTo.items, (item, ordering) -> item.ordering = ordering
+          .then () ->
+            _.forEach listTo.items, (item, ordering) -> item.ordering = ordering
 
     moveUnassigned: (rules, listTo, idx) ->
       return unless rules?.length
