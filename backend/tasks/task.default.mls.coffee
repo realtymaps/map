@@ -56,23 +56,17 @@ finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
 
 storePhotosPrep = (subtask) ->
-  tables.property.combined()
-  .select('id')
+  tables.property.listing()
+  .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
-  # .orderBy('id', 'desc')
-  # .limit(1)
-  .returning('id')
   .then (rows) ->
-    r.id for r in rows
-  .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
+    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, rows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
 
 storePhotos = (subtask) -> Promise.try () ->
   #NOTE currently we can not do image download at high volume until we pool mls connections
   #swflmls, MRED and others only allow one connection at a time
-  PromiseExt.reduceSeries subtask.data.values.map (id) -> ->
-    mlsHelpers.storePhotos(subtask, id)
-  # Promise.map subtask.data.values, mlsHelpers.storePhotos.bind(null, subtask)
+  PromiseExt.reduceSeries subtask.data.values.map (row) -> ->
+    mlsHelpers.storePhotos(subtask, row)
 
 module.exports = new TaskImplementation {
   loadRawData
