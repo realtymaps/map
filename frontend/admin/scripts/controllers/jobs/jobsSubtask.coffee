@@ -89,6 +89,13 @@ app.controller 'rmapsJobsSubtaskCtrl', ($scope, $rootScope, $injector, Restangul
       defaultValue: true
       width: 125
       cellClass: 'clickable-cell'
+    ,
+      field: 'active'
+      displayName: 'Active?'
+      type: 'boolean'
+      defaultValue: true
+      width: 125
+      cellClass: 'clickable-cell'
   ]
 
   new rmapsGridFactory($scope)

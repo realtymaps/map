@@ -176,7 +176,7 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
     return 0
   _checkTask(transaction, batchId, subtasks[0].task_name)
   .then (taskData) ->
-    # need to make sure we don't continue to queue subtasks if the task has errored in some way
+    # need to make sure we don't continue to queue subtasks if the task has errorred in some way
     if taskData == undefined
       # return an array indicating we queued 0 subtasks
       logger.spawn("task:#{subtasks[0].task_name}").debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
@@ -192,61 +192,65 @@ queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualD
   .then (laterSubtask) ->
     queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
 
-queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) ->
-  Promise.try () ->
-    if manualData?
-      if replace
+queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -> Promise.try () ->
+  if !subtask.active
+    logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue inactive subtask for batchId #{batchId}: #{subtask.name}"
+    return 0
+  if manualData?
+    if replace
+      subtaskData = manualData
+    else
+      if _.isArray manualData && _.isArray subtask.data
+        throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.name}")
+      else if _.isArray manualData
         subtaskData = manualData
+        mergeData = subtask.data
+      else if _.isArray subtask.data
+        subtaskData = subtask.data
+        mergeData = manualData
       else
-        if _.isArray manualData && _.isArray subtask.data
-          throw new Error("array passed as non-replace manualData for subtask with array data: #{subtask.name}")
-        else if _.isArray manualData
-          subtaskData = manualData
-          mergeData = subtask.data
-        else if _.isArray subtask.data
-          subtaskData = subtask.data
-          mergeData = manualData
-        else
-          subtaskData = _.extend(subtask.data||{}, manualData)
-    else
-      subtaskData = subtask.data
-    # maybe we've already gotten the data and checked to be sure the task is still running
-    if _taskData != undefined
-      taskDataPromise = Promise.resolve(_taskData)
-    else
-      taskDataPromise = _checkTask(transaction, batchId, subtask.task_name)
-    taskDataPromise
-    .then (taskData) ->
-      # need to make sure we don't queue the subtask if the task has errored in some way
-      if taskData == undefined
-        # return 0 to indicate we queued 0 subtasks
-        logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
-        return 0
-      suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{_summary(subtask)}>"
-      logger.spawn("task:#{subtask.task_name}").debug () -> "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
-      if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
-        Promise.map subtaskData, (data) ->
-          singleSubtask = _.clone(subtask)
-          singleSubtask.data = data
-          if mergeData?
-            _.extend(singleSubtask.data, mergeData)
-          singleSubtask.task_data = taskData
-          singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
-          singleSubtask.batch_id = batchId
-          tables.jobQueue.currentSubtasks(transaction: transaction)
-          .insert singleSubtask
-        .then () ->
-          return subtaskData.length
-      else
+        subtaskData = _.extend(subtask.data||{}, manualData)
+  else
+    subtaskData = subtask.data
+  # maybe we've already gotten the data and checked to be sure the task is still running
+  if _taskData != undefined
+    taskDataPromise = Promise.resolve(_taskData)
+  else
+    taskDataPromise = _checkTask(transaction, batchId, subtask.task_name)
+  taskDataPromise
+  .then (taskData) ->
+    # need to make sure we don't queue the subtask if the task has errored in some way
+    if taskData == undefined
+      # return 0 to indicate we queued 0 subtasks
+      logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
+      return 0
+    suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{_summary(subtask)}>"
+    logger.spawn("task:#{subtask.task_name}").debug () -> "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
+    if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
+      Promise.map subtaskData, (data) ->
         singleSubtask = _.clone(subtask)
-        singleSubtask.data = subtaskData
+        delete singleSubtask.active
+        singleSubtask.data = data
+        if mergeData?
+          _.extend(singleSubtask.data, mergeData)
         singleSubtask.task_data = taskData
         singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction: transaction)
         .insert singleSubtask
-        .then () ->
-          return 1
+      .then () ->
+        return subtaskData.length
+    else
+      singleSubtask = _.clone(subtask)
+      delete singleSubtask.active
+      singleSubtask.data = subtaskData
+      singleSubtask.task_data = taskData
+      singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+      singleSubtask.batch_id = batchId
+      tables.jobQueue.currentSubtasks(transaction: transaction)
+      .insert singleSubtask
+      .then () ->
+        return 1
 
 cancelAllRunningTasks = (forget, status='canceled', withPrejudice=false) ->
   logger.spawn("manual").debug("Canceling all tasks -- forget:#{forget}, status:#{status}, withPrejudice:#{withPrejudice}")

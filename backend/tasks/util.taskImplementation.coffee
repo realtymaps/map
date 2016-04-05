@@ -36,6 +36,7 @@ class TaskImplementation
     .where
       task_name: task.name
       auto_enqueue: true
+      active: true
     .then (subtasks) ->
       if !subtasks.length
         return 0
