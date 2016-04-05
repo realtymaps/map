@@ -3,6 +3,7 @@ basePath = '../../backend'
 logger = require "#{basePath}/config/logger"
 sqlHelpers = require "#{basePath}/utils/util.sql.helpers"
 shutdown = require '../../backend/config/shutdown'
+analyzeValue = require '../../common/utils/util.analyzeValue'
 
 
 Promise.try () ->
@@ -66,5 +67,5 @@ Promise.try () ->
   if err.exitWithError?
     shutdown.exit(error: err.exitWithError)
   else
-    logger.error(err.stack||err)
+    logger.error(analyzeValue.getSimpleDetails(err))
     shutdown.exit(error: true)

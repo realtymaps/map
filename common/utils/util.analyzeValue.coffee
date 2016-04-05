@@ -24,6 +24,7 @@ getFunctionName = (funcString) ->
   results = (funcNameRegex).exec(funcString.toString())
   if results && results.length > 1 then results[1] else ''
 
+
 analyzeValue = (value, fullJson=false) ->
   result = {toString: analysisToString}
   result.type = typeof(value)
@@ -56,5 +57,15 @@ analyzeValue = (value, fullJson=false) ->
 
   return result
 
+
+getSimpleDetails = (err) ->
+  if err.hasOwnProperty('isOperational')  # means it's a knex error
+    return util.inspect(err, depth: null)
+  else
+    return err.stack || "#{err}"
+
+
+
 module.exports = analyzeValue
 module.exports.INDENT = "    "
+module.exports.getSimpleDetails = getSimpleDetails

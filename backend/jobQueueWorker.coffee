@@ -1,4 +1,3 @@
-
 logger = require './config/logger'
 cluster = require './config/cluster'
 tables = require './config/tables'
@@ -6,6 +5,7 @@ jobQueue = require './utils/util.jobQueue'
 # just to make sure we can run the hirefire backup if necessary (in case the web process is down)
 require './routes/route.hirefire'
 shutdown = require './config/shutdown'
+analyzeValue = require '../common/utils/util.analyzeValue'
 
 
 queueName = process.argv[2]
@@ -36,5 +36,5 @@ tables.jobQueue.queueConfig()
         shutdown.exit()
 .catch (err) ->
   logger.error "Error processing job queue (#{queueName}):"
-  logger.error "#{err.stack||err}"
+  logger.error "#{analyzeValue.getSimpleDetails(err)}"
   shutdown.exit(error: true)

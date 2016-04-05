@@ -331,7 +331,7 @@ executeSubtask = (subtask, prefix) ->
     .catch HardFail, _handleSubtaskError.bind(null, prefix, subtask, 'hard fail', true)
     .catch PartiallyHandledError, _handleSubtaskError.bind(null, prefix, subtask, 'infrastructure fail', true)
     .catch isUnhandled, (err) ->
-      logger.error("Unexpected error caught during job execution: #{err.stack||err}")
+      logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
       _handleSubtaskError(prefix, subtask, 'infrastructure fail', true, err)
     .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
       sendNotification
@@ -395,8 +395,9 @@ _handleSubtaskError = (prefix, subtask, status, hard, error) ->
     else
       errorSubtask = updatedSubtask[0]
     errorSubtask.error = "#{error}"
-    if error.stack
-      errorSubtask.stack = error.stack
+    details = analyzeValue.getSimpleDetails(err)
+    if details != errorSubtask.error
+      errorSubtask.stack = details
     tables.jobQueue.subtaskErrorHistory()
     .insert errorSubtask
   .then () ->
