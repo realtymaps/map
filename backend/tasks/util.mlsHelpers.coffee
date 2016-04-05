@@ -146,7 +146,7 @@ finalizeData = (subtask, id) ->
           tables.property.combined(transaction: transaction)
           .insert(listing)
 
-_getPhotoSettings = (subtask, id) ->
+_getPhotoSettings = (subtask, id) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls().where(id: subtask.task_name).then sqlHelpers.expectSingleRow
 
   query = tables.property.combined()
@@ -236,7 +236,7 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
 
       payload.data.pipe(upload)
 
-storePhotos = (subtask, id) ->
+storePhotos = (subtask, id) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
 
   _getPhotoSettings(subtask, id)
@@ -285,6 +285,8 @@ storePhotos = (subtask, id) ->
           if(err)
             logger.debug 'ERROR: rets-client getObjects!!!!!!!!!!!!!'
             logger.error err
+            #we might not want to reject here as some photos, could have suceeded
+            #this might be one corroupt photo out of many good ones (not sure)
             return reject err
 
           if(isEnd)
