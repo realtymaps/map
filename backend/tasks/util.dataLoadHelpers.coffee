@@ -260,7 +260,7 @@ normalizeData = (subtask, options) -> Promise.try () ->
   rowsPromise = tables.temp(subid: rawSubid)
   .whereBetween('rm_raw_id', [subtask.data.offset+1, subtask.data.offset+subtask.data.count])
 
-  logger.debug rowsPromise.toString()
+  logger.debug () -> rowsPromise.toString()
 
   # get validations
   validationPromise = getValidationInfo(options.dataSourceType, options.dataSourceId, subtask.data.dataType)
