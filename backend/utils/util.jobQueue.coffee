@@ -598,10 +598,10 @@ getQueueNeeds = () ->
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = (transaction, currentSubtask, total, maxPage, laterSubtaskName, mergeData) ->
+queueSubsequentPaginatedSubtask = (transaction, currentSubtask, totalOrList, maxPage, laterSubtaskName, mergeData) ->
   getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
   .then (laterSubtask) ->
-    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, total, maxPage, laterSubtask, mergeData)
+    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, totalOrList, maxPage, laterSubtask, mergeData)
 
 queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
   if _.isArray(totalOrList)
