@@ -49,7 +49,8 @@ StripeEvents = (stripe) ->
       q = userTable().where(stripe_customer_id: customer)
       # logger.debug q.toString()
 
-      q.then expectSingleRow
+      q.then (results) ->
+        expectSingleRow(results)
       .then (authUser) ->
         origFunction subscription, authUser
 

@@ -72,8 +72,8 @@ handles = wrapHandleRoutes
             logger.debug "new user (#{id}) inserted SUCCESS"
             tables.auth.user(transaction: trx).select(basicColumns.user.concat(["id"])...)
             .where id: parseInt id
-          .then expectSingleRow
           .then (authUser) ->
+            authUser = expectSingleRow(authUser)
             logger.debug {fips_code, mls_code, mls_id, plan}, true
             if !fips_code and !(mls_code and mls_id)
               throw new Error("fips_code or mls_code or mls_id is required for user location restrictions.")

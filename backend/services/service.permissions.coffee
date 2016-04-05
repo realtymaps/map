@@ -23,7 +23,8 @@ getPermissionForCodename = (codename) ->
   tables.auth.permission()
   .where
     codename: codename
-  .then expectSingleRow
+  .then (rows) ->
+    expectSingleRow(row)
   .then (row) ->
     logger.info("permission found for codename #{codename}")
     Promise.resolve(row)

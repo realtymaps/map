@@ -147,7 +147,10 @@ finalizeData = (subtask, id) ->
           .insert(listing)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
-  mlsConfigQuery = tables.config.mls().where(id: subtask.task_name).then sqlHelpers.expectSingleRow
+  mlsConfigQuery = tables.config.mls()
+  .where(id: subtask.task_name)
+  .then (results) ->
+    sqlHelpers.expectSingleRow(results)
 
   query = tables.property.listing().where listingRow
 
@@ -345,7 +348,8 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
   .where {id}
-  .then sqlHelpers.expectSingleRow #might not want to throw and just continue to try and delte the rest
+  .then (results) ->
+    sqlHelpers.expectSingleRow(results)  # might not want to throw and just continue to try and delete the rest
   .then ({id, key}) ->
     logger.debug "deleting: id: #{id}, key: #{key}"
 

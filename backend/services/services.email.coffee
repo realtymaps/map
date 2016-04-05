@@ -20,7 +20,8 @@ _isValidWithinTime = (timestamp) ->
 _getUserByHash = (hash) ->
   userTable()
   .where(email_validation_hash: hash, email_is_valid: false)
-  .then expectSingleRow
+  .then (results) ->
+    expectSingleRow(results)
 
 validateHash = (hash) -> Promise.try () ->
   unless emailThreshMilliSeconds
