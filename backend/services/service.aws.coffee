@@ -47,6 +47,10 @@ _handler = (handlerOpts, opts) ->
       accessKeyId: s3Info.api_key
       secretAccessKey: s3Info.other.secret_key
       region: 'us-east-1'
+  .catch (error) ->
+    logger.error "AWS external account lookup failed!"
+    logger.debug "Did you forget to import account info from lastpass?"
+    throw error
 
     s3 = Promise.promisifyAll new AWS.S3()
 

@@ -351,7 +351,7 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
   .then (results) ->
     if !results?.length
       return
-      
+
     [{id, key}] = results
     logger.debug "deleting: id: #{id}, key: #{key}"
 
