@@ -68,6 +68,8 @@ imagesHandle = (object, cb) ->
       cb(new Error 'No object events')
     cb(null, null, true)
 
+  return
+
 imagesStream = (object, archive = Archiver('zip')) ->
 
   archive.on 'error', (err)  ->
