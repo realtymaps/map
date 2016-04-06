@@ -240,6 +240,9 @@ _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
 
       payload.data.pipe(upload)
 
+    .catch (error) -> #missing catch
+      reject error
+
 storePhotos = (subtask, listingRow) -> Promise.try () ->
   finePhotologger.debug subtask.task_name
   finePhotologger.debug listingRow, true

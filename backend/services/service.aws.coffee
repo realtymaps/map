@@ -19,7 +19,7 @@ _debug = (thing, thingName) ->
   loggerFine.debug "end #{thingName} !!!!!!!!!!!"
 
 
-_handler = (handlerOpts, opts) ->
+_handler = (handlerOpts, opts) -> Promise.try () ->
 
   _debug handlerOpts, 'handlerOpts'
 
