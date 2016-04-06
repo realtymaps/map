@@ -10,8 +10,8 @@
 .modal-footer(ng-class="{'faded': sendingFlag}")
   .row.confirm-widgets(ng-hide="failedFlag || successFlag")
     input.sentinel(type="checkbox" ng-model="sentinel" ng-disabled="sendingFlag")
-    | Check this box to commit to pay {{price | currency}} 
-    span(style="font-weight: bold;") and 
+    | Check this box to commit to pay {{review.price | currency}}
+    span(style="font-weight: bold;") and
     | click submit.
   .row.confirm-widgets
     button.btn.btn-primary(ng-hide="failedFlag || successFlag" ng-disabled="sendingFlag" ng-click="send()") Submit

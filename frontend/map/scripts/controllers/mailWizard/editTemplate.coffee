@@ -36,6 +36,7 @@ app.controller 'rmapsEditTemplateCtrl',
   $scope.saveContent = _.debounce () ->
     $scope.saveStatus = 'saving'
     $log.debug "saving #{$scope.wizard.mail.campaign.name}"
+    $scope.wizard.mail.dirty = true
     $scope.wizard.mail.save()
     .then ->
       $scope.saveStatus = 'saved'
@@ -43,24 +44,24 @@ app.controller 'rmapsEditTemplateCtrl',
       $scope.saveStatus = 'error'
   , 1000
 
-  $scope.$watch 'wizard.mail.campaign.content', $scope.saveContent
+  $scope.$watch 'wizard.mail.campaign.content', (newVal, oldVal) ->
+    if oldVal != newVal
+      $scope.saveContent()
 
   $scope.animationsEnabled = true
 
   $scope.doPreview = () ->
-    $scope.wizard.mail.save()
-    .then () ->
-      $modal.open
-        animation: $scope.animationsEnabled
-        template: modalTemplate
-        controller: 'rmapsMailTemplatePdfPreviewCtrl'
-        openedClass: 'preview-mail-opened'
-        windowClass: 'preview-mail-window'
-        windowTopClass: 'preview-mail-windowTop'
-        resolve:
-          template: () ->
-            campaign: $scope.wizard.mail.campaign
-            title: 'Mail Preview'
+    $modal.open
+      animation: $scope.animationsEnabled
+      template: modalTemplate
+      controller: 'rmapsMailTemplatePdfPreviewCtrl'
+      openedClass: 'preview-mail-opened'
+      windowClass: 'preview-mail-window'
+      windowTopClass: 'preview-mail-windowTop'
+      resolve:
+        template: () ->
+          title: 'Mail Preview'
+          pdfPromise: $scope.wizard.mail.getQuoteAndPdf()
 
   $scope.quoteAndSend = () ->
     $scope.wizard.mail.save()

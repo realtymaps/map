@@ -13,12 +13,12 @@ app.controller 'rmapsMailTemplateIFramePreviewCtrl',
 
 
 app.controller 'rmapsMailTemplatePdfPreviewCtrl',
-  ($scope, $modalInstance, $log, $sce, template, rmapsLobService) ->
+  ($scope, $modalInstance, $log, $sce, template, rmapsMailCampaignService) ->
     $scope.template = template
     $scope.mediaType = 'pdf'
     $scope.processing = true
-    rmapsLobService.getPdf(template.campaign.id)
-    .then (pdf) ->
+    template.pdfPromise
+    .then ({pdf}) ->
       $scope.template.pdf = $sce.trustAsResourceUrl(pdf)
       $scope.processing = false
 
@@ -41,7 +41,7 @@ app.controller 'rmapsUploadedPdfPreviewCtrl',
 
 
 app.controller 'rmapsReviewPreviewCtrl',
-  ($scope, $modalInstance, $log, $sce, template, rmapsLobService) ->
+  ($scope, $modalInstance, $log, $sce, template) ->
     $scope.template = template
     $scope.mediaType = 'pdf'
     $scope.template.pdf = $sce.trustAsResourceUrl($scope.template.pdf)

@@ -2,7 +2,7 @@
 app = require '../app.coffee'
 
 app.service 'rmapsMailTemplateFactory', ($rootScope, $log, $q, $modal, rmapsMailCampaignService,
-rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
+rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService, rmapsMainOptions) ->
   $log = $log.spawn 'mail:mailTemplate'
 
   campaignDefaults =
@@ -57,13 +57,14 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
       else
         @campaign.aws_key = null
         @campaign.options.color = false
+      @dirty = true
 
     unsetTemplateType: () ->
       @campaign.template_type = ''
       @campaign.content = null
       @campaign.aws_key = null
       @campaign.options.color = false
-
+      @dirty = true
 
     getCategory: () ->
       rmapsMailTemplateTypeService.getCategoryFromType(@campaign.template_type)
@@ -71,7 +72,35 @@ rmapsPrincipalService, rmapsMailTemplateTypeService, rmapsUsStatesService) ->
     isSubmitted: () ->
       @campaign.status != 'ready'
 
+    _getReview: (serviceMethod) ->
+      return if !@campaign.id
+      if @reviewPromise
+        return @reviewPromise
+
+      @reviewPromise = rmapsMailCampaignService[serviceMethod](@campaign.id)
+      .then (review) =>
+        @review = _.assign review, rmapsMailTemplateTypeService.getMeta()[@campaign.template_type]
+      .catch (err) =>
+        if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
+          errorMsg = rmapsMainOptions.mail.sizeErrorMsg
+        else
+          errorMsg = err.data?.alert?.msg
+        @review =
+          price: "N/A"
+          errorMsg: errorMsg
+
+    getReviewDetails: () ->
+      @_getReview 'getReviewDetails'
+
+    getQuoteAndPdf: () ->
+      @_getReview 'getQuoteAndPdf'
+
     save: () ->
+      if !@dirty
+        return $q.when @campaign
+      @dirty = false
+      @reviewPromise = null
+
       @getSenderData()
       .then () =>
         toSave = _.pick @campaign, _.keys(campaignDefaults)

@@ -4,11 +4,13 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 
 module.exports = app
 
-app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $q, $state, $modal, rmapsLobService,
+app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $state, $modal,
 rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory) ->
 
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
+
+  $scope.statusNames = rmapsMainOptions.mail.statusNames
 
   $scope.sendMail = () ->
     modalInstance = $modal.open
@@ -18,8 +20,7 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       backdrop: 'static'
       windowClass: 'confirm-mail-modal'
       resolve:
-        price: $scope.review.price
-        mail: $scope.wizard.mail
+        mail: -> $scope.wizard.mail
 
     modalInstance.result.then (result) ->
       $log.debug "modal result: #{result}"
@@ -33,9 +34,6 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       windowClass: 'address-list-modal'
       scope: $scope
 
-  $scope.review = {}
-  $scope.statusNames = rmapsMainOptions.mail.statusNames
-
   $scope.reviewPreview = () ->
     modalInstance = $modal.open
       template: previewModalTemplate
@@ -44,17 +42,12 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       windowClass: 'preview-mail-window'
       windowTopClass: 'preview-mail-windowTop'
       resolve:
-        template: () -> $scope.review
+        template: -> $scope.wizard.mail.review
 
   $scope.viewMap = () ->
     rmapsMapTogglesFactory.currentToggles?.showMail = true
     $state.go 'map'
 
-  rmapsMailCampaignService.getReviewDetails($scope.wizard.mail.campaign.id)
+  $scope.wizard.mail.getReviewDetails()
   .then (review) ->
-    $scope.review = _.merge review, rmapsMailTemplateTypeService.getMeta()[$scope.wizard.mail.campaign.template_type]
-  .catch (err) ->
-    if err.data?.alert?.msg.indexOf("File length/width is incorrect size.") > -1
-      err.data.alert.msg = rmapsMainOptions.mail.sizeErrorMsg
-    $scope.review = _.merge $scope.review, err
-    $scope.review.price = "N/A"
+    $scope.review = review
