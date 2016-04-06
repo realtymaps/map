@@ -7,6 +7,7 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('service.aws')
 loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
+Spinner = require('cli-spinner').Spinner
 
 buckets =
   PDF: 'aws-pdf-downloads'
@@ -111,6 +112,10 @@ listObjects = (opts) ->
 #handle things as we go through pages
 #don't stack up memory
 _handleAllObjects = (opts, pageCb = (->)) ->
+  spinner = new Spinner('paging.. %s')
+  spinner.setSpinnerString('|/-\\')
+  spinner.start()
+
   new Promise (resolve, reject) ->
     ctr = 0
     pages = 0
@@ -119,6 +124,7 @@ _handleAllObjects = (opts, pageCb = (->)) ->
       #https://github.com/aws/aws-sdk-js/blob/0d19fe976f48860d9e929b027de0b601f55523cb/lib/request.js#L460-L477
       listObjects.eachPage (err, list, continueCb) ->
         if err
+          spinner.stop()
           return reject err
 
         ctr += list.Contents.length
@@ -127,7 +133,9 @@ _handleAllObjects = (opts, pageCb = (->)) ->
         if !@hasNextPage()
           logger.debug "pages: #{pages + 1}"
           continueCb(false)
+          spinner.stop()
           return resolve(ctr)
+
         pages += 1
         continueCb()
 
