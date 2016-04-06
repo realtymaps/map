@@ -56,29 +56,6 @@ app.controller 'rmapsMapCtrl', (
     map = new rmapsMapFactory($scope)
 
   #
-  # Set $scope variables for the Project selector tool
-  #
-
-  setScopeVariables = () ->
-    $scope.selectedProject = rmapsProfilesService.currentProfile
-    $scope.projects = _.values currentIdentity.profiles
-    $scope.totalProjects = $scope.projects.length
-    _.each $scope.projects, (project) ->
-      project.totalProperties = (_.keys project.properties_selected)?.length
-      project.totalFavorites = (_.keys project.favorites)?.length
-
-  setScopeVariables()
-
-  #
-  # What for changes to the current profile or add/remove a project. This is necessary since the map state is sticky
-  #
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
-    setScopeVariables()
-
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
-    setScopeVariables()
-
-  #
   # Utility functions to load a new Project and optional Property from the Map based selection tool
   #
 
@@ -109,18 +86,20 @@ app.controller 'rmapsMapCtrl', (
     else
       $location.search 'property_id', undefined
 
-  # Load Project
-  $scope.loadProject = (project) ->
-    $log.debug 'loadProject()', project, $scope.selectedProject
-    if project == $scope.selectedProject
-      return
+  #
+  # Set $scope variables for the Project selector tool
+  #
+  setScopeVariables = () ->
+    $scope.selectedProject = rmapsProfilesService.currentProfile
+    $scope.loadProperty $scope.selectedProject
 
-    $scope.selectedProject = project
-    $location.search 'project_id', project.project_id
+  #
+  # Watch for changes to the current profile. This is necessary since the map state is sticky
+  #
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    setScopeVariables()
 
-    rmapsProfilesService.setCurrentProfile project
-    .then () ->
-      $scope.loadProperty(project)
+  setScopeVariables()
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->

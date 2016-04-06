@@ -14,11 +14,22 @@ $fnMakeNav()
 
     ul.nav
       float left
-      li
+      color $gray
+      position relative // Allow dropdowns to assume the size of this element
+
+      > li, .btn-group
+        position static // Allow dropdowns to assume the size of this element
+
+      .btn
+        color $white
+        box-shadow none
+        border none
+
+      > li
         display inline-block
         margin 0
         float left
-        a
+        > a
           color $gray
           text-transform capitalize
           line-height $navbarHeight
