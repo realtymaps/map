@@ -59,24 +59,32 @@ app.service 'rmapsMailCampaignService', ($log, $http, $sce, $rootScope, rmapsPri
         $log.debug -> "getReviewDetails data:\n#{JSON.stringify(data)}"
         data
 
+    getQuoteAndPdf: (campaignId) ->
+      $http.get(backendRoutes.snail.quote.replace(':campaign_id', campaignId), alerts: false, cache: false)
+      .then ({data}) ->
+        $log.debug () -> "getQuoteAndPdf response: #{JSON.stringify(data)}"
+        data
+
     create: (entity) ->
       $http.post mailAPI, entity
       .then (result) ->
-        service.getProjectMail true
+        if !entity.id
+          service.getProjectMail true
         result
 
     remove: (id) ->
       throw new Error('must have id') unless id
       id = '/' + id if id
       $http.delete(mailAPI + id)
-      .then (result) ->
-        service.getProjectMail true
-        result
 
     update: (entity) ->
       throw new Error('entity must have id') unless entity.id
       id = '/' + entity.id
       $http.put(mailAPI + id, entity)
-      .then (result) ->
-        service.getProjectMail true
-        result
+
+    send: (campaignId) ->
+      url = backendRoutes.snail.send.replace(':campaign_id', campaignId)
+      $http.post(url, {}, alerts: false)
+      .success (data) ->
+        $log.debug () -> "lob data response:\n#{JSON.stringify(data)}"
+        data
