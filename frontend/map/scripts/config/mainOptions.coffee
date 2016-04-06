@@ -54,10 +54,10 @@ app.constant 'rmapsMainOptions', do () ->
         #base64 encoded policy: to enforce upload restriction to pdf only
         #https://aws.amazon.com/articles/1434
         #decode w https://www.npmjs.com/package/js-base64
-        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgICB7ImJ1Y2tldCI6ICJybWFwcy1wZG' +
-          'YtdXBsb2FkcyJ9LCAKICAgIFsic3RhcnRzLXdpdGgiLCAiJGtleSIsICJ1cGxvYWRzLyJdLAogICAgeyJhY2wiOiAicHJpdmF0ZSJ9LAogICAgWyJzdG' +
-          'FydHMtd2l0aCIsICIkQ29udGVudC1UeXBlIiwgImFwcGxpY2F0aW9uL3BkZiJdLAogICAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
-        signature: 'wvcT2Cp1Qb6a2XI59tr/vwjN1Vs='
+        policy: 'eyJleHBpcmF0aW9uIjogIjIwMzYtMDEtMDFUMDA6MDA6MDBaIiwKICAiY29uZGl0aW9ucyI6IFsgCiAgeyJidWNrZXQiOiAicm1hcHMtcGRmLXVwbG9hZHMifS' +
+          'wgCiAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgIiJdLAogIHsiYWNsIjogInByaXZhdGUifSwKICBbInN0YXJ0cy13aXRoIiwgIiRDb250ZW50LVR5cGUiLCAiYXBwbGlj' +
+          'YXRpb24vcGRmIl0sCiAgWyJjb250ZW50LWxlbmd0aC1yYW5nZSIsIDAsIDEwNzM3NDE4MjRdCiAgXQp9'
+        signature: 'nsvK9QD1CpVXA8mUpA4JXNS5OQ0='
       statusNames:
         ready: 'draft'
         sending: 'pending'
