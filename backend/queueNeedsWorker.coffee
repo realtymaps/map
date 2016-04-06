@@ -66,10 +66,10 @@ if require.main == module  # run directly, not require()d
       logger.warn "Waited #{intervalsWaited} intervals, worker has not finished"
       if intervalsWaited == 5
         logger.warn 'Attempting to terminate gracefully (SIGTERM)'
-        cluster.workers[workerId].kill('SIGTERM')
+        cluster.workers[workerId]?.kill('SIGTERM')
       else if intervalsWaited == 6
         logger.warn 'YOU ARE TERMINATED! (SIGKILL)'
-        cluster.workers[workerId].kill('SIGKILL')
+        cluster.workers[workerId]?.kill('SIGKILL')
       else if intervalsWaited >= 7
         logger.error 'COMMITTING SUICIDE'
         shutdown.exit(error: true)
