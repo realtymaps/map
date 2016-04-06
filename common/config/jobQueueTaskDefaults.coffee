@@ -5,8 +5,8 @@ module.exports =
     data: '{}'
     ignore_until: null
     repeat_period_minutes: 15
-    warn_timeout_minutes: 12
-    kill_timeout_minutes: 14
+    warn_timeout_minutes: 700
+    kill_timeout_minutes: 720
     fail_retry_minutes: 1
     active: false
 
@@ -21,8 +21,8 @@ module.exports =
     hard_fail_timeouts: false
     hard_fail_after_retries: true
     hard_fail_zombies: true
-    warn_timeout_seconds: 600
-    kill_timeout_seconds: 750
+    warn_timeout_seconds: 1200
+    kill_timeout_seconds: 1500
     auto_enqueue: true
 
   subtask_normalizeData:
@@ -36,8 +36,8 @@ module.exports =
     hard_fail_timeouts: true
     hard_fail_after_retries: true
     hard_fail_zombies: true
-    warn_timeout_seconds: 60
-    kill_timeout_seconds: 75
+    warn_timeout_seconds: 600
+    kill_timeout_seconds: 750
     auto_enqueue: false
 
   subtask_recordChangeCounts:

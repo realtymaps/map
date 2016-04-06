@@ -246,16 +246,18 @@ finalizeData = (subtask, id) ->
           tax.shared_groups.sale.push(price: deedInfo.price, close_date: deedInfo.close_date)
           tax.subscriber_groups.deedHistory.push(deedInfo.subscriber_groups.owner.concat(deedInfo.subscriber_groups.deed))
 
-        dbs.get('main').transaction (transaction) ->
-          tables.property.combined(transaction: transaction)
-          .where
-            rm_property_id: id
-            data_source_id: subtask.task_name
-            active: false
-          .delete()
-          .then () ->
+        Promise.delay(100)  #throttle for heroku's sake
+        .then () ->
+          dbs.get('main').transaction (transaction) ->
             tables.property.combined(transaction: transaction)
-            .insert(listing)
+            .where
+              rm_property_id: id
+              data_source_id: subtask.task_name
+              active: false
+            .delete()
+            .then () ->
+              tables.property.combined(transaction: transaction)
+              .insert(listing)
 
 
 ###

@@ -23,4 +23,3 @@ genToken = () ->
 module.exports =
   genUUID: genUUID
   genToken: genToken
- 
