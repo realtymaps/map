@@ -19,7 +19,7 @@ _debug = (thing, thingName) ->
   loggerFine.debug "end #{thingName} !!!!!!!!!!!"
 
 
-_handler = (handlerOpts, opts) ->
+_handler = (handlerOpts, opts) -> Promise.try () ->
 
   _debug handlerOpts, 'handlerOpts'
 
@@ -56,6 +56,11 @@ _handler = (handlerOpts, opts) ->
 
     handle = s3[s3FnName + if nodeStyle then '' else 'Async']
     handle.call s3, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+
+  .catch (error) ->
+    logger.error "AWS external account lookup failed!"
+    logger.debug "Did you forget to import account into externalAccounts?"
+    throw error
 
 
 getTimedDownloadUrl = (opts) ->
