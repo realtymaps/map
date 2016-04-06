@@ -1,8 +1,7 @@
 {PAYMENT_PLATFORM} = require '../config/config'
 logger = require('../config/logger').spawn("route.onboarding")
-{mergeHandles} = require '../utils/util.route.helpers'
+{mergeHandles, wrapHandleRoutes} = require '../utils/util.route.helpers'
 {validateAndTransformRequest} = require '../utils/util.validation'
-{wrapHandleRoutes} = require '../utils/util.route.helpers'
 onboardingTransforms = require('../utils/transforms/transforms.onboarding')
 emailServices = null
 paymentServices = null
@@ -39,7 +38,7 @@ submitEmail = ({authUser, plan, trx}) ->
       authUser:authUser
     throw error #rethrow error so transaction is reverted
 
-handles = wrapHandleRoutes
+handles = wrapHandleRoutes handles:
   createUser: (req) ->
     return throw new Error "OnBoarding API not ready" if !emailServices or !paymentServices
     # req = _.pick req, ['body', 'params', 'query']

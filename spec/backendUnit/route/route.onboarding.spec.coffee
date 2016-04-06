@@ -58,7 +58,7 @@ describe "route.onboarding", ->
         # logger.debug.yellow error
         # logger.debug.magenta "CATCH!!!!!!!!!!!!!!!!!!"
         @transactionCatchStub()
-    onboardingRoute.__set__ 'wrapHandleRoutes', (handles) ->
+    onboardingRoute.__set__ 'wrapHandleRoutes', ({handles}) ->
       handles
     onboardingRoute.__set__ 'emailServices', {}
     onboardingRoute.__set__ 'paymentServices', {}
