@@ -35,14 +35,16 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
   $scope.selectProject = (project) ->
     $log.debug 'selectProject: ', project
-    # $state.go $state.current, 'project_id': project.project_id, { notify: false }
+    if $state.current.projectParam?
+      $state.go $state.current, "#{$state.current.projectParam}": project.project_id
+
     $scope.projectDropdown.isOpen = false
     rmapsProfilesService.setCurrentProfileByProjectId project.project_id
 
   $scope.addProject = () ->
     $scope.newProject =
       copyCurrent: true
-      name: ($scope.selectedProject.name or 'Sandbox') + ' copy'
+      name: (rmapsProfilesService.currentProfile.name or 'Sandbox') + ' copy'
 
     modalInstance = $modal.open
       animation: true

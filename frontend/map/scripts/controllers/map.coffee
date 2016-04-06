@@ -90,8 +90,7 @@ app.controller 'rmapsMapCtrl', (
   # Set $scope variables for the Project selector tool
   #
   setScopeVariables = () ->
-    $scope.selectedProject = rmapsProfilesService.currentProfile
-    $scope.loadProperty $scope.selectedProject
+    $scope.loadProperty rmapsProfilesService.currentProfile
 
   #
   # Watch for changes to the current profile. This is necessary since the map state is sticky
