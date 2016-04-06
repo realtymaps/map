@@ -34,7 +34,7 @@ app.directive 'propertyButtons', (
       zoomClick: '&?'
       pinClick: '&?'
       favoriteClick: '&?'
-    template: template()
+    templateUrl: './includes/directives/property/_propertyButtonsDirective.jade'
     controller: ($scope, $element, $attrs, $transclude) ->
 #      $log.debug "PROPERTY BUTTONS with property", $scope.property, "and project", $scope.project
       $scope.formatters = {

@@ -45,6 +45,7 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.project = null
   $scope.notes = []
+  $scope.loadedProperties = false
 
   clientsService = null
 
@@ -130,7 +131,9 @@ app.controller 'rmapsProjectCtrl',
     .then (result) ->
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
-      properties
+
+      $scope.loadedProperties = false
+      return properties
 
   loadClients = () ->
     clientsService.getAll()

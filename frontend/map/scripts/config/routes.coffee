@@ -177,8 +177,6 @@ module.exports = app.config (
     resolve:
       currentProject: ($stateParams, rmapsProjectsService) ->
         return rmapsProjectsService.getProject $stateParams.id
-      currentProfile: ($stateParams, rmapsProfilesService) ->
-        return rmapsProfilesService.setCurrentProfileByProjectId $stateParams.id
 
   # Project dashboard
   buildChildState 'project', 'projectBase',
