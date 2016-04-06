@@ -1,5 +1,4 @@
 pieUtil = require './util.piechart.coffee'
-# commonConfig = require '../../../../common/config/commonConfig'
 
 _overlays =
   filterSummary: # can be price and poly (consider renaming)
@@ -7,7 +6,7 @@ _overlays =
     type: 'markercluster'
     visible: true
     layerOptions:
-      disableClusteringAtZoom: 16 # commonConfig.map.options.zoomThresh.disableClusteringAtZoom
+      disableClusteringAtZoom: 16
       maxClusterRadius: 60
       chunkedLoading: true
       showCoverageOnHover: false
