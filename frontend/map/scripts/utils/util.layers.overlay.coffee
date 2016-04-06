@@ -7,7 +7,7 @@ _overlays =
     type: 'markercluster'
     visible: true
     layerOptions:
-      disableClusteringAtZoom: 15 # commonConfig.map.options.zoomThresh.disableClusteringAtZoom
+      disableClusteringAtZoom: 16 # commonConfig.map.options.zoomThresh.disableClusteringAtZoom
       maxClusterRadius: 60
       chunkedLoading: true
       showCoverageOnHover: false
