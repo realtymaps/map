@@ -10,8 +10,16 @@ stateDefaults =
   loginRequired: true
   persist: false
 
-module.exports = app.config ($stateProvider, $stickyStateProvider, $urlRouterProvider,
-rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
+module.exports = app.config (
+  $stateProvider,
+  $stickyStateProvider,
+  $urlRouterProvider,
+  rmapsOnboardingOrderServiceProvider,
+  rmapsOnboardingProOrderServiceProvider,
+
+  rmapsRouteIdentityResolve,
+  rmapsRouteProfileResolve
+) ->
 
 #  $stickyStateProvider.enableDebug(true)
 
@@ -24,6 +32,18 @@ rmapsOnboardingOrderServiceProvider, rmapsOnboardingProOrderServiceProvider) ->
       controller:   "rmaps#{name[0].toUpperCase()}#{name.substr(1)}Ctrl" # we can have CamelCase yay!
     _.extend(state, overrides)
     _.defaults(state, stateDefaults)
+
+    # Evaluate resolves
+    if state.loginRequired
+      state.resolve = state.resolve or {}
+
+      # Add a resolve for the current Identity to injectable 'currentIdentity'
+      if !state.resolve.currentIdentity
+        state.resolve.currentIdentity = rmapsRouteIdentityResolve
+
+      # Add a resolve for the current or requested profile to injectable 'currentProfile'
+      if !state.resolve.currentProfile
+        state.resolve.currentProfile = rmapsRouteProfileResolve
 
     return state
 

@@ -15,7 +15,7 @@ app.directive 'propertyButtons', ($rootScope, $state, rmapsResultsFormatterServi
       favoriteClick: '&?'
     template: template()
     controller: ($scope, $element, $attrs, $transclude) ->
-      $log.debug "PROPERTY BUTTONS with property", $scope.property, "and project", $scope.project
+#      $log.debug "PROPERTY BUTTONS with property", $scope.property, "and project", $scope.project
       $scope.formatters = {
         results: new rmapsResultsFormatterService  scope: $scope
         property: new rmapsPropertyFormatterService()
