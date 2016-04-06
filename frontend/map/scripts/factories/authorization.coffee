@@ -10,7 +10,6 @@ app.factory 'rmapsMapAuthorizationFactory', (
   $timeout,
   rmapsPrincipalService,
   rmapsPriorStateService,
-  rmapsProfilesService,
   rmapsUrlHelpersService
 ) ->
 
@@ -80,31 +79,7 @@ app.factory 'rmapsMapAuthorizationFactory', (
 
       # otherwise, go to temporary view and do check ASAP
       else
-        # Does the state or location define a project id?
-        if toState.projectParam? and toParams[toState.projectParam]?
-          $log.debug "Loading project based on toState.projectParam #{toState.projectParam}"
-          project_id = Number(toParams[toState.projectParam])
-
-        else if $location.search().project_id?
-          $log.debug "Loading project based on ?project_id"
-          project_id = Number($location.search().project_id)
-
         rmapsPrincipalService.getIdentity()
-        .then (identity) ->
-          if identity
-            # Determine if the state defined project exists
-            if project_id?
-              profile = (_.find(identity.profiles, project_id: project_id))
-
-            # Does the defined project exist?
-            if profile?
-              $log.debug "Set current profile to", profile
-              return rmapsProfilesService.setCurrentProfile profile
-            else
-              # Default to the session profile or the first profile for the identity
-              $log.debug "Loading profile based on identity.currentProfileId #{identity.currentProfileId}"
-              return rmapsProfilesService.setCurrentProfileByIdentity identity
-
         .then () ->
           redirectState = doPermsCheck(toState, toParams)
           if redirectState

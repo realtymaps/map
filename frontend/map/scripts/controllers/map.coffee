@@ -14,11 +14,32 @@ map = undefined
 
 module.exports = app
 
-app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, $modal, $q, $window, $state, rmapsMapFactory,
-  rmapsMainOptions, rmapsEventConstants, rmapsProjectsService, rmapsProfilesService
-  rmapsParcelEnums, rmapsPropertiesService, $log, rmapsSearchboxService) ->
+app.controller 'rmapsMapCtrl', (
+  $http,
+  $location,
+  $log,
+  $modal,
+  $q,
+  $rootScope,
+  $scope,
+  $state,
+  $timeout,
+  $window,
+  rmapsEventConstants,
+  rmapsMainOptions,
+  rmapsMapFactory,
+  rmapsParcelEnums,
+  rmapsProfilesService
+  rmapsProjectsService,
+  rmapsPropertiesService,
+  rmapsSearchboxService,
+
+  currentIdentity,
+  currentProfile
+) ->
 
   $log = $log.spawn("map:controller")
+  $log.debug("Map Controller init")
 
   $scope.satMap = {}#accessor to satMap so that satMap is in the scope chain for resultsFormatter
 
@@ -28,27 +49,40 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
   rmapsSearchboxService('mainMap')
 
-  # If a new project is added or removed on the dashboard or elsewhere, this event will fire
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
-    $scope.loadIdentity identity
+  #
+  # Create the Map Factory
+  #
+  if !map? or !$scope.map?
+    map = new rmapsMapFactory($scope)
 
-  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
-    $scope.loadIdentity identity
+  #
+  # Set $scope variables for the Project selector tool
+  #
 
-  getProjects = (identity) ->
-    $scope.projects = _.values identity.profiles
+  setScopeVariables = () ->
+    $scope.selectedProject = rmapsProfilesService.currentProfile
+    $scope.projects = _.values currentIdentity.profiles
     $scope.totalProjects = $scope.projects.length
     _.each $scope.projects, (project) ->
       project.totalProperties = (_.keys project.properties_selected)?.length
       project.totalFavorites = (_.keys project.favorites)?.length
 
-  $scope.loadIdentity = (identity, project_id) ->
-    $log.debug "loadIdentity"
-    if identity?.currentProfileId? or project_id?
-      getProjects identity
-      projectToLoad = (_.find identity.profiles, project_id: project_id) or uiProfile(identity)
-      $scope.loadProject projectToLoad
+  setScopeVariables()
 
+  #
+  # What for changes to the current profile or add/remove a project. This is necessary since the map state is sticky
+  #
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
+    setScopeVariables()
+
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    setScopeVariables()
+
+  #
+  # Utility functions to load a new Project and optional Property from the Map based selection tool
+  #
+
+  # Load Property
   $scope.loadProperty = (project) ->
     selectedResultId = $state.params.property_id or project.map_results?.selectedResultId
 
@@ -75,6 +109,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
     else
       $location.search 'property_id', undefined
 
+  # Load Project
   $scope.loadProject = (project) ->
     $log.debug 'loadProject()', project, $scope.selectedProject
     if project == $scope.selectedProject
@@ -85,19 +120,7 @@ app.controller 'rmapsMapCtrl', ($scope, $rootScope, $location, $timeout, $http, 
 
     rmapsProfilesService.setCurrentProfile project
     .then () ->
-      if !$scope.map?
-        map = new rmapsMapFactory($scope)
-
       $scope.loadProperty(project)
-
-  #
-  # Load data when the controller initially loads
-  #
-
-  $log.debug "Get principal identity"
-  $rootScope.principal.getIdentity()
-  .then (identity) ->
-    $scope.loadIdentity identity, Number($state.params.project_id)
 
 # fix google map views after changing back to map state
 app.run ($rootScope, $timeout) ->
