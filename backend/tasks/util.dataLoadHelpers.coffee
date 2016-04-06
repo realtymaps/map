@@ -293,12 +293,14 @@ normalizeData = (subtask, options) -> Promise.try () ->
     successes
 
 _updateRecord = (stats, diffExcludeKeys, dataType, subid, updateRow) -> Promise.try () ->
-  # check for an existing row
-  tables.property[dataType](subid: subid)
-  .select('*')
-  .where
-    data_source_uuid: updateRow.data_source_uuid
-    data_source_id: updateRow.data_source_id
+  Promise.delay(100)  #throttle for heroku's sake
+  .then () ->
+    # check for an existing row
+    tables.property[dataType](subid: subid)
+    .select('*')
+    .where
+      data_source_uuid: updateRow.data_source_uuid
+      data_source_id: updateRow.data_source_id
   .then (result) ->
     if !result?.length
       # no existing row, just insert

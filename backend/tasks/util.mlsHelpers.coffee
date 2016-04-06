@@ -135,16 +135,18 @@ finalizeData = (subtask, id) ->
       listing = dataLoadHelpers.finalizeEntry(listings)
       listing.data_source_type = 'mls'
       _.extend(listing, parcel[0], promotion)
-      dbs.get('main').transaction (transaction) ->
-        tables.property.combined(transaction: transaction)
-        .where
-          rm_property_id: id
-          data_source_id: subtask.task_name
-          active: false
-        .delete()
-        .then () ->
+      Promise.delay(100)  #throttle for heroku's sake
+      .then () ->
+        dbs.get('main').transaction (transaction) ->
           tables.property.combined(transaction: transaction)
-          .insert(listing)
+          .where
+            rm_property_id: id
+            data_source_id: subtask.task_name
+            active: false
+          .delete()
+          .then () ->
+            tables.property.combined(transaction: transaction)
+            .insert(listing)
 
 _getPhotoSettings = (subtask, listingRow) -> Promise.try () ->
   mlsConfigQuery = tables.config.mls()
@@ -351,7 +353,7 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
   .then (results) ->
     if !results?.length
       return
-      
+
     [{id, key}] = results
     logger.debug "deleting: id: #{id}, key: #{key}"
 
