@@ -59,9 +59,8 @@ _handler = (handlerOpts, opts) -> Promise.try () ->
 
   .catch (error) ->
     logger.error "AWS external account lookup failed!"
-    logger.debug "Did you forget to import account info from lastpass?"
+    logger.debug "Did you forget to import account into externalAccounts?"
     throw error
-
 
 
 getTimedDownloadUrl = (opts) ->
