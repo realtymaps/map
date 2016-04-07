@@ -112,9 +112,13 @@ listObjects = (opts) ->
 #handle things as we go through pages
 #don't stack up memory
 _handleAllObjects = (opts, pageCb = (->)) ->
-  spinner = new Spinner('paging.. %s')
-  spinner.setSpinnerString('|/-\\')
-  spinner.start()
+  {progress} = opts
+  opts = _.omit opts, 'progress'
+
+  if progress
+    spinner = new Spinner('paging.. %s')
+    spinner.setSpinnerString('|/-\\')
+    spinner.start()
 
   new Promise (resolve, reject) ->
     ctr = 0
@@ -133,7 +137,7 @@ _handleAllObjects = (opts, pageCb = (->)) ->
         if !@hasNextPage()
           logger.debug "pages: #{pages + 1}"
           continueCb(false)
-          spinner.stop()
+          spinner?.stop()
           return resolve(ctr)
 
         pages += 1
