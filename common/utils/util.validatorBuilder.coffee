@@ -60,7 +60,7 @@ _rules =
       type: name: 'rm_property_id'
       input: {}
       valid: () ->
-        @input.apn && (@input.fipsCode || (@input.stateCode && @input.county))
+        @input.apn && (@input.fipsCode || ((@input.stateCode || @input.stateName) && @input.county))
 
     parcel_id:
       alias: 'Parcel ID'
@@ -77,6 +77,14 @@ _rules =
     close_date:
       alias: 'Close Date'
       type: name: 'datetime'
+
+    fips_code:
+      alias: 'FIPS code'
+      required: true
+      input: {}
+      type: name: 'fips'
+      valid: () ->
+        @input.fipsCode || ((@input.stateCode || @input.stateName) && @input.county)
 
   mls:
     listing:
@@ -105,14 +113,6 @@ _rules =
         valid: () ->
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
-
-      fips_code:
-        alias: 'FIPS code'
-        required: true
-        input: {}
-        type: name: 'fips'
-        valid: () ->
-          @input.stateCode && @input.county
 
       bedrooms:
         alias: 'Bedrooms'
@@ -198,11 +198,6 @@ _rules =
           @input.city && @input.state && (@input.zip || @input.zip9) &&
             ((@input.streetName && @input.streetNum) || @input.streetFull)
 
-      fips_code:
-        alias: 'FIPS code'
-        type: name: 'fips'
-        required: true
-
       bedrooms:
         alias: 'Bedrooms'
         type: name: 'integer'
@@ -264,11 +259,6 @@ _rules =
           @input.batchid
         type: name: 'data_source_uuid'
 
-      fips_code:
-        alias: 'FIPS code'
-        type: name: 'fips'
-        required: true
-
       address:
         alias: 'Address'
         input: {}
@@ -313,11 +303,6 @@ _rules =
         input: {}
         valid: () ->
           @input.batchid
-
-      fips_code:
-        alias: 'FIPS code'
-        type: name: 'fips'
-        required: true
 
       address:
         alias: 'Address'
