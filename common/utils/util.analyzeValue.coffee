@@ -61,7 +61,7 @@ analyzeValue = (value, fullJson=false) ->
 getSimpleDetails = (err) ->
   if err.hasOwnProperty('isOperational') && err.name == 'error'  # means it's a knex error
     inspect = util.inspect(err, depth: null)
-    return inspect.replace(/,?\n  \w+: undefined/g, '')  # filter out unnecessary fields
+    return inspect.replace(/,?\n +\w+: undefined/g, '')  # filter out unnecessary fields
   else
     return err.stack || "#{err}"
 
