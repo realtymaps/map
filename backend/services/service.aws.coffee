@@ -128,7 +128,7 @@ _handleAllObjects = (opts, pageCb = (->)) ->
       #https://github.com/aws/aws-sdk-js/blob/0d19fe976f48860d9e929b027de0b601f55523cb/lib/request.js#L460-L477
       listObjects.eachPage (err, list, continueCb) ->
         if err
-          spinner.stop()
+          spinner?.stop()
           return reject err
 
         ctr += list.Contents.length
