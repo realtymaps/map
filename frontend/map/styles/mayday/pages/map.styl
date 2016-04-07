@@ -10,6 +10,9 @@
 @import './map/mapNotesTap.styl'
 @import './map/mapDrawTools.styl'
 
+$fnMakeMapProjects()
+$fnMakeMapUlDropdown()
+
 .leaflet-control-layers
   display none
 
@@ -22,9 +25,7 @@ body
   .map-navigation
     // override some default bootstrap stuff for all dropdown controls
 
-    $fnMakeMapProjects()
     $fnMakeMapProperties()
-    $fnMakeMapUlDropdown()
 
     $fnMakeMapNotes()
     $fnMakeMapNeighbourhoods()
@@ -55,6 +56,9 @@ body
         background-position left top
         background-repeat no-repeat
         font-size 28px
+        i
+          margin auto
+
       &.properties-in-shapes.on
         color: $white
         background $rm-property-sale-green

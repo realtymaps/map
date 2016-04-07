@@ -8,8 +8,8 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="d
   .dropdown-menu.whiteblock.no-margin
     .fixed-header
       span
-        a(ng-show="pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") {{pinnedTotal}} Pinned Properties
-        a(ng-show="!pinnedTotal" ui-sref="projectPins({id: selectedProject.project_id})") No Pinned Properties
+        a(ng-show="pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") {{pinnedTotal}} Pinned Properties
+        a(ng-show="!pinnedTotal" ui-sref="projectPins({id: principal.getCurrentProfile().project_id})") No Pinned Properties
         span.results-btn(ng-controller="rmapsMailModalCtrl" popover-placement="right" popover-trigger="mouseenter" popover="New Mailing" ng-click="addMail()")
           i.fa.fa-envelope
         span.results-btn(ng-click="unpinResults(); $event.stopPropagation()" ng-class="{'disabled':!formatters.results.getResultsArray().length}")
