@@ -149,7 +149,13 @@ module.exports = app.config (
       showSteps: true
 
   buildState 'snail'
-  buildState 'user'
+  buildState 'user',
+    page: {title: 'My Account', dynamicTitle: true }
+  buildChildState 'userMLS', 'user', page: { title: 'MLS' }
+  buildChildState 'userBilling', 'user', page: { title: 'Billing' }
+  buildChildState 'userNotifications', 'user', page: { title: 'Notifications' }
+  buildChildState 'userTeamMembers', 'user', page: { title: 'Team Members' }
+
   buildState 'profiles'
   buildState 'history'
   buildState 'properties'
