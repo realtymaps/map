@@ -1,7 +1,7 @@
 {validators, requireAllTransforms, notRequired} = require '../util.validation'
 
 module.exports =
-  getResizedPayload:
+  getResized:
     params: validators.object isEmptyProtect: true
     body: validators.object isEmptyProtect: true
     query:  validators.object subValidateSeparate: requireAllTransforms

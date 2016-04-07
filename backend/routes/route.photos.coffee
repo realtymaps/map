@@ -15,7 +15,7 @@ handles = wrapHandleRoutes
   isDirect: true
   handles:
     getResized: (req, res, next) ->
-      validateAndTransformRequest req, transforms.getResizedPayload
+      validateAndTransformRequest req, transforms.getResized
       .then (validReq) ->
         #TODO might want to consider an enum of width heights to allow
 

@@ -33,23 +33,48 @@ getRawPayload = (opts) ->
     stream: request(meta.url)
     meta: meta
 
-_useOriginalImage = (width, height, payload) ->
-  (width == payload.meta.width &&  height == payload.meta.height) || (!width? and !height?)
+_useOriginalImage = ({newSize, originalSize}) ->
+  (!newSize?.width? || !newSize?.height?) ||
+  (!originalSize?.width? || !originalSize?.height?) ||
+  (Number(newSize.width) == Number(originalSize.width) && Number(newSize.height) == Number(originalSize.height))
+
+_useOriginalImagePromise = (opts) -> Promise.try () ->
+  {newSize, data_source_id} = opts
+
+  if !newSize? or !data_source_id?
+    logger.debug "GTFO: newSize: #{newSize}, data_source_id: #{data_source_id}"
+    return Promise.resolve(true)
+
+  tables.config.mls()
+  .where id: data_source_id
+  .then (rows) ->
+    {photoRes} = sqlHelpers.expectSingleRow(rows).listing_data
+    logger.debug photoRes
+    _useOriginalImage {originalSize: photoRes, newSize}
 
 getResizedPayload = (opts) -> Promise.try () ->
-  toOmit = ['width', 'height']
   {width, height} = opts
-  if (!width? and height?) or (!height? and width?)
-    throw new Error('both width and height must be specified')
-  getRawPayload(_.omit opts, toOmit)
+  newSize = {width, height}
+
+  getRawPayload(_.omit opts, Object.keys newSize)
   .then (payload) ->
     stream = payload.stream
+    meta = payload.meta
 
-    if !_useOriginalImage(width, height, payload)
-      stream = payload.stream.pipe(sharp().resize(width, height))
+    _useOriginalImagePromise
+      newSize: newSize
+      data_source_id: opts.data_source_id
+    .then (doUseOriginal) ->
 
-    stream: stream
-    meta: payload.meta
+      logger.debug "doUseOriginal: #{doUseOriginal}"
+
+      if !doUseOriginal
+        logger.debug "resizing to width: #{width}, height: #{height}"
+        stream = payload.stream.pipe(sharp().resize(width, height))
+        meta = _.extend {}, payload.meta, {width, height}
+
+      stream: stream
+      meta: meta
 
 
 module.exports = {
