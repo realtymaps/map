@@ -39,11 +39,15 @@ _useOriginalImage = ({newSize, originalSize}) ->
   (Number(newSize.width) == Number(originalSize.width) && Number(newSize.height) == Number(originalSize.height))
 
 _useOriginalImagePromise = (opts) -> Promise.try () ->
-  {newSize, data_source_id} = opts
+  {newSize, data_source_id, originalSize} = opts
 
   if !newSize? or !data_source_id?
     logger.debug "GTFO: newSize: #{newSize}, data_source_id: #{data_source_id}"
     return Promise.resolve(true)
+
+  if originalSize?
+    logger.debug "GTFO: already have originalSize"
+    return Promise.resolve _useOriginalImage {originalSize, newSize}
 
   tables.config.mls()
   .where id: data_source_id
@@ -61,9 +65,18 @@ getResizedPayload = (opts) -> Promise.try () ->
     stream = payload.stream
     meta = payload.meta
 
-    _useOriginalImagePromise
+    useOrigImageOpts =
       newSize: newSize
       data_source_id: opts.data_source_id
+
+    if payload.meta?.width? && payload.meta?.height?
+      logger.debug "using meta for originalSize"
+      logger.debug payload.meta, true
+      _.extend useOrigImageOpts, originalSize:
+        width: payload.meta.width
+        height: payload.meta.height
+
+    _useOriginalImagePromise(useOrigImageOpts)
     .then (doUseOriginal) ->
 
       logger.debug "doUseOriginal: #{doUseOriginal}"
