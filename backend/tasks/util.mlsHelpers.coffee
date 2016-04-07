@@ -16,7 +16,8 @@ mlsPhotoUtil = require '../utils/util.mls.photos'
 uuid = require '../utils/util.uuid'
 externalAccounts = require '../services/service.externalAccounts'
 {onMissingArgsFail} = require '../utils/errors/util.errors.args'
-EXT_AWS_PHOTO_ACCOUNT = 'aws-listing-photos'
+config = require '../config/config'
+
 
 ONE_DAY_MILLISEC = 24*60*60*1000
 
@@ -168,7 +169,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
     required: ['newFileName', 'imageId', 'photo_id', 'data_source_uuid']
 
   {newFileName, imageId, photo_id, uploadDate, description, data_source_uuid} = opts
-  externalAccounts.getAccountInfo(EXT_AWS_PHOTO_ACCOUNT)
+  externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
     Update photo's hash in a listing col
@@ -180,7 +181,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
     ###
     obj =
       key: newFileName
-      url: "https://s3.amazonaws.com/#{s3Info.other.bucket}/#{newFileName}"
+      url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
 
     obj.uploadDate = uploadDate if uploadDate
     obj.description = description if description
@@ -222,7 +223,7 @@ _enqueuePhotoToDelete = (key, batch_id) ->
 _uploadPhoto = ({photoRes, newFileName, payload, row}) ->
   new Promise (resolve, reject) ->
     awsService.upload
-      extAcctName: EXT_AWS_PHOTO_ACCOUNT
+      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
       Key: newFileName
       ContentType: payload.contentType
       Metadata:
@@ -361,7 +362,7 @@ deleteOldPhoto = (subtask, id) -> Promise.try () ->
     logger.debug "deleting: id: #{id}, key: #{key}"
 
     awsService.deleteObject
-      extAcctName: EXT_AWS_PHOTO_ACCOUNT
+      extAcctName: config.EXT_AWS_PHOTO_ACCOUNT
       Key: key
     .then () ->
       tables.deletes.photo()
