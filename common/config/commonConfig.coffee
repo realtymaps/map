@@ -53,7 +53,7 @@ commonConfig =
     options:
       zoomThresh:
         addressParcel: 18
-        price: 15
+        price: 15 # markercluster option `disableClusteringAtZoom` depends on this value
         ordering: 12
         roundDigit: 10 # threshold for when to round first decimal
         maxGrid: 6 # zoom level when grid will be largest (nearest integer lat/lng)
