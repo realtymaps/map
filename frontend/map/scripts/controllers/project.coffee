@@ -132,8 +132,9 @@ app.controller 'rmapsProjectCtrl',
       for detail in result.data
         properties[detail.rm_property_id] = _.extend detail, savedDetails: properties[detail.rm_property_id]
 
-      $scope.loadedProperties = false
       return properties
+    .finally () ->
+      $scope.loadedProperties = true
 
   loadClients = () ->
     clientsService.getAll()
