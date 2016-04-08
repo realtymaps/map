@@ -124,7 +124,7 @@ buildLetter = (campaign, recipient) ->
     rm_property_id: recipient.rm_property_id
     options:
       aws_key: campaign.aws_key
-      color: campaign.options?.color? or false
+      color: campaign.options?.color or false
       metadata:
         campaignId: campaign.id
         userId: campaign.auth_user_id
