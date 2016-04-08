@@ -34,7 +34,7 @@ findStripeErrors = (subtask) ->
     Promise.map queued, (row) ->
 
       enqueue = (subtaskName) ->
-        jobQueue.queueSubsequentSubtask null, subtask, subtaskName, row, true
+        jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: subtaskName, manualData: row, replace: true})
 
       switch row.error_name
         when stripeErrorEnums.stripeCustomerRemove

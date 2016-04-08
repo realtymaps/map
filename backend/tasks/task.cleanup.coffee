@@ -54,8 +54,7 @@ deletePhotosPrep = (subtask) ->
   .where(batch_id: subtask.batch_id)
   .orderBy 'id'
   .then (ids) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids,
-      NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_deletePhotos")
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "deletePhotos"})
 
 deletePhotos = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.deleteOldPhoto.bind(null, subtask)

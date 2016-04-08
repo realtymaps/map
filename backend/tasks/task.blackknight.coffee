@@ -109,8 +109,8 @@ _queuePerFileSubtasks = (transaction, subtask, files, action) -> Promise.try () 
         dataType: file.type
         deletes: dataLoadHelpers.DELETE.INDICATED
     loadDataList.push(loadData)
-  loadRawDataPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_loadRawData", loadDataList, true)
-  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_recordChangeCounts", countDataList, true)
+  loadRawDataPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "loadRawData", manualData: loadDataList, replace: true})
+  recordChangeCountsPromise = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "recordChangeCounts", manualData: countDataList, replace: true})
   Promise.join loadRawDataPromise, recordChangeCountsPromise, () ->  # empty handler
 
 
@@ -164,11 +164,11 @@ checkFtpDrop = (subtask) ->
         refresh = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.REFRESH], constants.REFRESH)
         update = _queuePerFileSubtasks(transaction, subtask, processInfo[constants.UPDATE], constants.UPDATE)
         #finalizePrep = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_finalizeDataPrep", {}, true)
-        activate = jobQueue.queueSubsequentSubtask(transaction, subtask, "blackknight_activateNewData", {deletes: dataLoadHelpers.DELETE.INDICATED}, true)
+        activate = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: "activateNewData", manualData: {deletes: dataLoadHelpers.DELETE.INDICATED}, replace: true})
         fileProcessing = Promise.join deletes, refresh, update, activate, () ->  # empty handler
       else
         fileProcessing = Promise.resolve()
-      dates = jobQueue.queueSubsequentSubtask(transaction, subtask, 'blackknight_saveProcessDates', dates: processInfo.dates, true)
+      dates = jobQueue.queueSubsequentSubtask({transaction, subtask, laterSubtaskName: 'saveProcessDates', manualData: {dates: processInfo.dates}, replace: true})
       Promise.join ftpEnd, fileProcessing, dates, () ->  # empty handler
 
 
@@ -187,14 +187,15 @@ loadRawData = (subtask) ->
       sftp: true
   .then (numRows) ->
     if subtask.data.fileType == constants.DELETE
-      nextSubtaskName = "blackknight_deleteData"
+      laterSubtaskName = "deleteData"
     else
-      nextSubtaskName = "blackknight_normalizeData"
-    jobQueue.queueSubsequentPaginatedSubtask null, subtask, numRows, constants.NUM_ROWS_TO_PAGINATE, nextSubtaskName,
+      laterSubtaskName = "normalizeData"
+    mergeData =
       rawTableSuffix: subtask.data.rawTableSuffix
       dataType: subtask.data.dataType
       action: subtask.data.action
       normalSubid: subtask.data.normalSubid
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: constants.NUM_ROWS_TO_PAGINATE, laterSubtaskName, mergeData})
 
 saveProcessedDates = (subtask) ->
   keystore.setValuesMap(subtask.data.dates, namespace: constants.BLACKKNIGHT_PROCESS_DATES)
@@ -246,7 +247,7 @@ normalizeData = (subtask) ->
     if successes.length == 0
       logger.debug('No successful data updates from normalize subtask: '+JSON.stringify(i: subtask.data.i, of: subtask.data.of, rawTableSuffix: subtask.data.rawTableSuffix))
       return
-    jobQueue.queueSubsequentSubtask null, subtask, "blackknight_finalizeData",
+    manualData =
       cause: subtask.data.dataType
       i: subtask.data.i
       of: subtask.data.of
@@ -254,18 +255,7 @@ normalizeData = (subtask) ->
       count: successes.length
       ids: successes
       normalSubid: subtask.data.normalSubid
-
-###
-finalizeDataPrep = (subtask) ->
-  Promise.map ['deed', 'tax', 'mortgage'], (source) ->
-    tables.property[source]()
-    .select('rm_property_id')
-    .where(batch_id: subtask.batch_id)
-    .then (ids) ->
-      _.pluck(ids, 'rm_property_id')
-  .then (lists) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, _.union(lists), constants.NUM_ROWS_TO_PAGINATE, "blackknight_finalizeData")
-###
+    jobQueue.queueSubsequentSubtask({subtask: subtask, laterSubtaskName: "finalizeData", manualData})
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.ids, countyHelpers.finalizeData.bind(null, subtask)

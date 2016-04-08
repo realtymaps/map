@@ -25,18 +25,17 @@ loadRawData = (subtask) ->
       return 0
     # now that we know we have data, queue up the rest of the subtasks (some have a flag depending
     # on whether this is a dump or an update)
-    recordCountsPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_recordChangeCounts", {deletes: deletes, dataType: 'listing'}, true)
-    finalizePrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_finalizeDataPrep", null, true)
-    storePhotosPrepPromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_storePhotosPrep", null, true)
-    activatePromise = jobQueue.queueSubsequentSubtask(null, subtask, "#{subtask.task_name}_activateNewData", {deletes: deletes}, true)
+    recordCountsPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "recordChangeCounts", manualData: {deletes, dataType: 'listing'}, replace: true})
+    finalizePrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "finalizeDataPrep", replace: true})
+    storePhotosPrepPromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "storePhotosPrep", replace: true})
+    activatePromise = jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: "activateNewData", manualData: {deletes}, replace: true})
     Promise.join recordCountsPromise, finalizePrepPromise, storePhotosPrepPromise, activatePromise, () ->
       numRawRows
   .then (numRows) ->
     if numRows == 0
       return
     logger.debug("num rows to normalize: #{numRows}")
-    jobQueue.queueSubsequentPaginatedSubtask(null,
-      subtask, numRows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_normalizeData", {dataType: 'listing'})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: numRows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "normalizeData", mergeData: {dataType: 'listing'}})
 
 normalizeData = (subtask) ->
   dataLoadHelpers.normalizeData subtask,
@@ -50,7 +49,7 @@ finalizeDataPrep = (subtask) ->
   .where(batch_id: subtask.batch_id)
   .then (ids) ->
     ids = _.uniq(_.pluck(ids, 'rm_property_id'))
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, ids, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_finalizeData")
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: ids, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "finalizeData"})
 
 finalizeData = (subtask) ->
   Promise.map subtask.data.values, mlsHelpers.finalizeData.bind(null, subtask)
@@ -60,7 +59,7 @@ storePhotosPrep = (subtask) ->
   .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
   .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask(null, subtask, rows, NUM_ROWS_TO_PAGINATE, "#{subtask.task_name}_storePhotos")
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "storePhotos"})
 
 storePhotos = (subtask) -> Promise.try () ->
   #NOTE currently we can not do image download at high volume until we pool mls connections
