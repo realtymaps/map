@@ -74,4 +74,16 @@ describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
       expectReject(validators.fips()(param, ''), DataValidationError)
     ]
 
+  promiseIt 'should accept case-insensitive state names instead of state codes', () ->
+    [
+      expectResolve(validators.fips()(param, stateName: 'Delaware', county: 'New Castle')).then (value) ->
+        value.should.equal('10003')
+      expectResolve(validators.fips()(param, stateName: 'FLORIDA', county: 'Miami-Dade')).then (value) ->
+        value.should.equal('12086')
+      expectResolve(validators.fips()(param, stateName: 'minnesota', county: 'St Louis')).then (value) ->
+        value.should.equal('27137')
+      expectResolve(validators.fips()(param, stateName: 'WyOmInG', county: 'Sweetwater')).then (value) ->
+        value.should.equal('56037')
+    ]
+
 
