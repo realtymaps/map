@@ -69,7 +69,9 @@ commonConfig =
         quality: .8
 
   pdfUpload:
-    getKey: () -> "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
+    # sufficiently large random string via powers, http://stackoverflow.com/questions/10726909/random-alpha-numeric-string-in-javascript
+    # note: consider the expoment of first `pow` is L + 1, and the exponent of the second `pow` is L, your random string will have length L
+    getKey: () -> "#{Math.round((Math.pow(36, 17) - Math.random() * Math.pow(36, 16))).toString(36).slice(1)}.pdf"
 
   validation: validation
   regexes: validation
