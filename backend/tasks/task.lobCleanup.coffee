@@ -23,7 +23,7 @@ updateLetters = (subtask) ->
   .where(status: 'error-transient')
   .then (letters) ->
     Promise.map letters, (letter) ->
-      jobQueue.queueSubsequentSubtask null, subtask, 'lobCleanup_getLetter', letter, true
+      jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'getLetter', manualData: letter, replace: true})
 
 #
 # This task queries the LOB API for letters with an unknown status.

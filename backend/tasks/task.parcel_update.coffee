@@ -15,7 +15,7 @@ _subtasks =
       _defineImports(subtask, creds)
     .then (imports) ->
       fileToDownload = imports.map (f) -> f.source_id
-      jobQueue.queueSubsequentSubtask null, subtask, 'digimaps_save', fileToDownload, true
+      jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'digimaps_save', manualData: fileToDownload, replace: true})
 
   digimaps_save: (subtask) ->
     #all saving and upserting is handled in this function
@@ -35,14 +35,14 @@ _subtasks =
         data_source_type: 'parcels'
         data_source_id: subtask.data
     .then ->
-      jobQueue.queueSubsequentSubtask null, subtask, 'sync_mv_parcels', subtask.data, true
+      jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'sync_mv_parcels', manualData: subtask.data, replace: true})
 
   sync_mv_parcels: (subtask) -> Promise.try ->
     dbs.get('main').raw('SELECT stage_dirty_views();')
     .then ->
       dbs.get('main').raw('SELECT push_staged_views(FALSE);')
     .then ->
-      jobQueue.queueSubsequentSubtask null, subtask, 'sync_cartodb', subtask.data, true
+      jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'sync_cartodb', manualData: subtask.data, replace: true})
 
   sync_cartodb: (subtask) -> Promise.try ->
     fileName = _.last subtask.task_data.split('/')
