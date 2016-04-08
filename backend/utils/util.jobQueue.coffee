@@ -171,7 +171,7 @@ _checkTask = (transaction, batchId, taskName) ->
       return undefined
     task?[0]?.data
 
-queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
+queueSubtasks = (transaction, batchId, subtasks, serialize) -> Promise.try () ->
   if !subtasks?.length
     return 0
   _checkTask(transaction, batchId, subtasks[0].task_name)
@@ -182,7 +182,7 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
       logger.spawn("task:#{subtasks[0].task_name}").debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
       return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
-      queueSubtask({transaction, batchId, taskData, subtask})
+      queueSubtask({transaction, batchId, taskData, subtask, serialize})
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
