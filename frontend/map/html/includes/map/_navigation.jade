@@ -5,6 +5,7 @@
 
     div.btn-group.desktop-only(ng-class="{'':!isOpened,'opened':isOpened}")
       include ./_projects.jade
+      +projectsDropdown()
       //- Todo: conditionally show pinned or favorites depending on user role
       include ./_pinned.jade
       include ./_favorites.jade

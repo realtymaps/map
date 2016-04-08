@@ -33,6 +33,7 @@ apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseShell = "#{apiBase}/shell"
+apiBasePhotos = "#{apiBase}/photos"
 
 module.exports =
   views:
@@ -245,5 +246,8 @@ module.exports =
   shell:
     apiBase: apiBaseShell
     shell: apiBaseShell
+  photos:
+    apiBase: apiBasePhotos
+    getResized: "#{apiBasePhotos}/resize"
 
   # hirefire secret value set from within backend/config/config.coffee

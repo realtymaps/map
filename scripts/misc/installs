@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+if [[ "$IS_HEROKU" != "" ]]; then
+  #use buildpacks
+  exit 0
+fi
+
+platform='unknown'
+unamestr=`uname`
+
+if [[ "$unamestr" == 'Linux' ]]; then
+  #http://sharp.dimens.io/en/stable/install/
+  curl -s https://raw.githubusercontent.com/lovell/sharp/master/preinstall.sh | sudo bash -
+elif [[ "$unamestr" == 'Darwin' ]]; then
+  #http://sharp.dimens.io/en/stable/install/
+  brew install homebrew/science/vips --with-imagemagick --with-webp
+fi
+
+exit 0

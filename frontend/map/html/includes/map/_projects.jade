@@ -1,27 +1,28 @@
-span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsMapProjectsCtrl")
-  button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
-    span
-      span.icon.icon-project
-      h4(ng-show="selectedProject.sandbox") Sandbox
-      h4(ng-show="!selectedProject.sandbox") {{selectedProject.name}}
-    span.caret
-  .dropdown-menu.whiteblock.no-margin
-    .fixed-header
-      a(ng-show="totalProjects == 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Project
-      a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
-    .inner
-      ul
-        li(ng-repeat="project in projects | orderBy:'sandbox':true" ng-click="selectProject(project)" )
-          a
-            span.enity
-              span.icon.icon-project
-              span.title
-                h3(ng-show="project.sandbox") Sandbox
-                h3(ng-show="!project.sandbox") {{project.name}}
-                span.count {{project.totalProperties}}
-                  span(ng-show="project.totalProperties == 1")  Property
-                  span(ng-show="project.totalProperties != 1")  Properties
-                  span(ng-show="project.archived")  -- archived
-            span.actions
-              span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
-              span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")
+mixin projectsDropdown()
+  span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group projects-list" dropdown is-open="projectDropdown.isOpen" ng-controller="rmapsProjectsDropdownCtrl")&attributes(attributes)
+    button(class="dropdown-toggle btn btn-transparent" dropdown-toggle)
+      span
+        span.icon.icon-project
+        h4(ng-show="principal.getCurrentProfile().sandbox") Project: Sandbox
+        h4(ng-show="!principal.getCurrentProfile().sandbox") Project: {{principal.getCurrentProfile().name}}
+      span.caret
+    .dropdown-menu.whiteblock.no-margin
+      .fixed-header
+        a(ng-show="totalProjects == 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Project
+        a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
+      .inner
+        ul
+          li(ng-repeat="project in projects | orderBy:'sandbox':true" ng-click="selectProject(project)" )
+            a
+              span.enity
+                span.icon.icon-project
+                span.title
+                  h3(ng-show="project.sandbox") Sandbox
+                  h3(ng-show="!project.sandbox") {{project.name}}
+                  span.count {{project.totalProperties}}
+                    span(ng-show="project.totalProperties == 1") &#32;Property
+                    span(ng-show="project.totalProperties != 1") &#32;Properties
+                    span(ng-show="project.archived") &#32;-- archived
+              span.actions
+                span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
+                span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")

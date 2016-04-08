@@ -53,7 +53,7 @@ commonConfig =
     options:
       zoomThresh:
         addressParcel: 18
-        price: 15
+        price: 15 # markercluster option `disableClusteringAtZoom` depends on this value
         ordering: 12
         roundDigit: 10 # threshold for when to round first decimal
         maxGrid: 6 # zoom level when grid will be largest (nearest integer lat/lng)
@@ -72,4 +72,5 @@ commonConfig =
     getKey: () -> "uploads/#{(new Date()).getTime().toString(36)}_#{Math.floor(Math.random()*1000000).toString(36)}.pdf"
 
   validation: validation
+  regexes: validation
 module.exports = commonConfig
