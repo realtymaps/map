@@ -24,7 +24,7 @@ module.exports =
   userMLS:        '/userMLS'
   userBilling:    '/userBilling'
   userNotifications: '/userNotifications'
-  userTeamMembers: '/userMLS'
+  userTeamMembers: '/userTeamMembers'
   
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'

@@ -3,13 +3,20 @@ app = require '../app.coffee'
 frontendRoutes = require '../../../../common/config/routes.frontend.coffee'
 backendRoutes = require '../../../../common/config/routes.backend.coffee'
 
-app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, rmapsEventConstants,
+app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, $state, rmapsEventConstants,
 rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
+
+  console.log "state:"
+  console.log $state
+
+  $scope.getStateName = (name) ->
+    name.replace /user(.+)/, '$1'
 
   {profile} = rmapsMainOptions.images.dimensions
   maxImagePixles = profile.width
   imageQuality = profile.quality
   rmapsPrincipalService.getIdentity().then ->
+    console.log "got identity"
     user = $rootScope.user
     rmapsUsStatesService.getAll().then (states) ->
       $scope.us_states = states
