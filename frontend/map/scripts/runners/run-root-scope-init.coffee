@@ -10,6 +10,7 @@ app.run ($rootScope, $state, $stateParams, $timeout, rmapsPrincipalService, rmap
   $rootScope.frontendRoutes = frontendRoutes
   $rootScope.backendRoutes = backendRoutes
   $rootScope.principal = rmapsPrincipalService
+  # TODO: Chris' idea of adding profileService or currentProfile
   $rootScope.$state = $state
   $rootScope.$stateParams = $stateParams
   $rootScope.Spinner = rmapsSpinnerService
