@@ -59,7 +59,7 @@ storePhotosPrep = (subtask) ->
   .select('data_source_id', 'data_source_uuid')
   .where(batch_id: subtask.batch_id)
   .then (rows) ->
-    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "storePhotos"})
+    jobQueue.queueSubsequentPaginatedSubtask({subtask, totalOrList: rows, maxPage: NUM_ROWS_TO_PAGINATE, laterSubtaskName: "storePhotos", serialize: true})
 
 storePhotos = (subtask) -> Promise.try () ->
   #NOTE currently we can not do image download at high volume until we pool mls connections
