@@ -48,6 +48,12 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
     rmapsMapTogglesFactory.currentToggles?.showMail = true
     $state.go 'map'
 
+  $scope.refreshColorPrice = () ->
+    $scope.review = null
+    $scope.wizard.mail.refreshColorPrice()
+    .then (review) ->
+      $scope.review = review
+
   $scope.wizard.mail.getReviewDetails()
   .then (review) ->
     $scope.review = review
