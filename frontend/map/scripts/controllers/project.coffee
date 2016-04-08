@@ -114,8 +114,8 @@ app.controller 'rmapsProjectCtrl',
     if not _.isEmpty toLoad
       loadProperties toLoad
       .then (properties) ->
-        project.properties_selected = _.pick properties, _.keys(project.properties_selected)
-        project.favorites = _.pick properties, _.keys(project.favorites)
+        $scope.pins = _.values(_.pick(properties, _.keys(project.properties_selected)))
+        $scope.favorites = _.values(_.pick(properties, _.keys(project.favorites)))
 
     clientsService = new rmapsClientsFactory project.id unless clientsService
     loadClients()
@@ -140,7 +140,7 @@ app.controller 'rmapsProjectCtrl',
   loadClients = () ->
     clientsService.getAll()
     .then (clients) ->
-      $scope.project.clients = clients
+      $scope.clients = clients
 
   loadNotes = () ->
     rmapsNotesService.getList()

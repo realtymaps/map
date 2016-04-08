@@ -173,14 +173,48 @@
       &.active
         background-color: black;
 
-//
-// Project PINS
-//
+  //
+  // Project Sub-Pages
+  //
 
-#project-pin-container, #project-favorite-container, #project-neighborhood-container
-  img
-    width: 100%
+  #project-pin-container, #project-favorite-container, #project-neighborhood-container
+    img
+     width: 100%
 
+  //
+  // Project Property View
+  //
+
+  .property-card
+    width: 100%;
+    background-color: white;
+    margin-bottom: 15px;
+
+  .property-data
+    position: relative;
+    padding: 10px;
+
+  .btn-actions
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    button
+      border: none;
+      background: transparent;
+      //font-size: 19px;
+
+      &.button-is-pin
+        color: $rm_saved
+
+      &.button-is-favorite
+        color: $rm_favorite
+
+      &.button-has-notes
+        color: $rm_note
+
+      &.button-has-mail
+        color: $rm_mail
 
 //@media not all, (-webkit-transform-3d)
 //  .carousel-inner > .carousel-item.next.left
