@@ -1,3 +1,5 @@
+@import "../animations.styl"
+
 // Project Dashboard
 
 #project-dashboard
@@ -72,6 +74,7 @@
       color: black;
 
     &.widget-active
+      width: 112px;
       border-right: solid $light_blue 3px;
       //border-right: 2px solid 1px 50% opacity;
 
@@ -126,15 +129,13 @@
     float: left;
 
   //
-  // Project Top
-  //
-
-  .project-top
-    margin-bottom: $project-gutter-width;
-
-  //
   // Notes
   //
+
+  .project-notes
+    margin-top: $project-gutter-width;
+
+    $fnMakeTransition(width 200ms ease 0ms)
 
   .notes-title
     font-size: 19px;
