@@ -1,96 +1,13 @@
-#project-dashboard.container-fluid
+.project-dashboard-container
+  //carousel(interval="myInterval" template-url="./includes/bootstrap/carousel.jade")
+  //  slide(ng-repeat="property in project.properties_selected" template-url="./includes/bootstrap/carousel-slide.jade")
+  //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+  //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
 
-  .row.project-header.desktop-only
-    .col-xs-12
-      .project-title
-        span(ng-show="!project.sandbox") {{project.name}}
-        span(ng-show="project.sandbox") Sandbox
-
-        .project-tools
-          button(class="btn btn-white" ng-click="editProject(project, $event)")
-            i.fa.fa-pencil-square-o
-            span Edit
-          button.btn.btn-white(ng-show="!project.sandbox" ng-click="archiveProject(project, $event)")
-            span.icon.icon-save_on_disk
-            span(ng-if="!project.archived") Archive
-            span(ng-show="!project.sandbox" ng-if="project.archived") Unarchive
-          button.btn.btn-white(ng-show="project.sandbox" ng-click="resetProject(project, $event)")
-            span.icon.fa.fa-undo
-            span Reset
-
-  .project-widgets
-    .project-widget.widget-project.bordered
-      .inner
-        .widget-background
-          span.icon.icon-property
-        a(ui-sref="project({ id: project.id})")
-          .widget-title Dashboard
-
-    .project-widget.widget-pin.bordered
-      .inner
-        .widget-background
-          span.icon.icon-pin
-        a(ui-sref="projectFavorites({ id: project.id})")
-          .widget-count {{_.keys(project.properties_selected).length || 0}}
-          .widget-title Pins
-
-    .project-widget.widget-favorite.bordered
-      .inner
-        .widget-background
-          i.icon.fa.fa-heart
-        a(ui-sref="projectFavorites({ id: project.id})")
-          .widget-count {{_.keys(project.favorites).length || 0}}
-          .widget-title Favorites
-
-    .project-widget.widget-neighborhood.bordered
-      .inner
-        .widget-background
-          span.icon.icon-neighbourhood
-        a(ui-sref="projectNeighbourhoods({ id: project.id})")
-          .widget-count {{project.neighbourhoods.length || 0}}
-          .widget-title Neighbourhoods
-
-    .project-widget.widget-client.bordered
-      .inner
-        .widget-background
-          span.icon.icon-project
-        a(ui-sref="projectClients({ id: project.id})")
-          .widget-count {{project.clients.length || 0}}
-          .widget-title Clients
-
-  .project-content
-    .row.project-top
-      .col-sm-6.col-xs-12
-        //carousel(interval="myInterval" template-url="./includes/bootstrap/carousel.jade")
-        //  slide(ng-repeat="property in project.properties_selected" template-url="./includes/bootstrap/carousel-slide.jade")
-        //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-        //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-
-        carousel.bordered(interval="myInterval")
-          slide(ng-repeat="property in project.properties_selected")
-            .pin-image
-              img(ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
-              img.pin-sample-image(ng-if="!property.geometry.coordinates and loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-            .pin-attributes
-              property-attributes(property="property")
-
-      .col-sm-6.hidden-xs
-        .map-goes-here.bordered(style="background-color: lightblue; opacity: 0.4; width: 100%; height: 406px")
-
-    .project-notes
-      .notes-title
-        a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
-
-      .list.bordered
-        .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
-          .row
-            .col-md-2
-              a(class="note-img" ng-if="note.coordinates")
-                img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
-            .col-md-8
-              .data
-                h4 {{note.title}}
-                p {{note.text}}
-            .col-md-2
-              .note-date
-                | {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+  carousel.bordered(interval="myInterval")
+    slide(ng-repeat="property in project.properties_selected")
+      .pin-image
+        img(ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
+        img.pin-sample-image(ng-if="!property.geometry.coordinates and loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+      .pin-attributes
+        property-attributes(property="property")

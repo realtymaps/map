@@ -179,7 +179,7 @@ module.exports = app.config (
         return rmapsProjectsService.getProject $stateParams.id
 
   # Project dashboard
-  buildChildState 'project', 'projectBase',
+  buildChildState 'project', 'projectLayout',
     projectParam: 'id',
     page: { title: 'Project', dynamicTitle: true },
     mobile: { modal: true },

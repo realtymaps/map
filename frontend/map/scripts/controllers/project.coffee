@@ -43,6 +43,7 @@ app.controller 'rmapsProjectCtrl',
     $state.go 'map', project_id: $state.params.id, property_id: result.rm_property_id
     return false
 
+  $scope.$state = $state
   $scope.project = null
   $scope.notes = []
   $scope.loadedProperties = false

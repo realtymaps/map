@@ -7,6 +7,9 @@
   $project-widget-width = 110px;
   $project-content-width = $project-gutter-width * 2 + $project-widgets-width;
 
+  a:focus, a:hover
+    text-decoration none
+
   background-color: $gray_lightest
   padding-left: 0;
   padding-right: 0;
@@ -67,6 +70,10 @@
       bottom: 0;
       z-index: 1;
       color: black;
+
+    &.widget-active
+      border-right: solid $light_blue 3px;
+      //border-right: 2px solid 1px 50% opacity;
 
   .widget-favorite
     .widget-background
@@ -164,6 +171,14 @@
 
       &.active
         background-color: black;
+
+//
+// Project PINS
+//
+
+#project-pin-container, #project-favorite-container, #project-neighborhood-container
+  img
+    width: 100%
 
 
 //@media not all, (-webkit-transform-3d)

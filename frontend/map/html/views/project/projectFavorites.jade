@@ -1,14 +1,10 @@
-include ../../includes/mixins/property/_propertyAttributes.jade
-
-.collapse-header
-  h2.title Favorites ({{_.keys(project.favorites).length}})
-.row.repeat
-  li.col-md-6(ng-repeat="property in project.favorites")
+#project-favorite-container
+  div(ng-repeat="property in project.favorites")
     .property-card
       .property-img
         span.status(ng-class="formatters.property.getStatusLabelClass(property,true)") {{property.rm_status}}
         img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
         img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
       .property-data
-        +propertyAttributes('property')
+        property-attributes(property='property')
         property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
