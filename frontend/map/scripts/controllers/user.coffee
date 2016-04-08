@@ -6,9 +6,6 @@ backendRoutes = require '../../../../common/config/routes.backend.coffee'
 app.controller 'rmapsUserCtrl', ($scope, $rootScope, $location, $http, $state, rmapsEventConstants,
 rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
 
-  console.log "state:"
-  console.log $state
-
   $scope.getStateName = (name) ->
     name.replace /user(.+)/, '$1'
 
@@ -16,7 +13,6 @@ rmapsPrincipalService, rmapsMainOptions, $log, rmapsUsStatesService) ->
   maxImagePixles = profile.width
   imageQuality = profile.quality
   rmapsPrincipalService.getIdentity().then ->
-    console.log "got identity"
     user = $rootScope.user
     rmapsUsStatesService.getAll().then (states) ->
       $scope.us_states = states

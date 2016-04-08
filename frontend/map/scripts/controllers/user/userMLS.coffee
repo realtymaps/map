@@ -1,4 +1,4 @@
-app = require '../app.coffee'
+app = require '../../app.coffee'
 module.exports = app
 
 app.controller 'rmapsUserMLSCtrl', ($scope, $log) ->
