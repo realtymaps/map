@@ -12,17 +12,19 @@ mixin projectsDropdown()
         a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
       .inner
         ul
-          li(ng-repeat="project in projects | orderBy:'sandbox':true" ng-click="selectProject(project)" )
+          li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )
             a
               span.enity
                 span.icon.icon-project
                 span.title
                   h3(ng-show="project.sandbox") Sandbox
                   h3(ng-show="!project.sandbox") {{project.name}}
-                  span.count {{project.totalProperties}}
-                    span(ng-show="project.totalProperties == 1") &#32;Property
-                    span(ng-show="project.totalProperties != 1") &#32;Properties
-                    span(ng-show="project.archived") &#32;-- archived
+                  .row.subtitle
+                    span.col-md-8 {{project.totalProperties}}
+                      span(ng-show="project.totalProperties == 1") &#32;Property
+                      span(ng-show="project.totalProperties != 1") &#32;Properties
+                      span(ng-show="project.archived == true") &#32;-- archived
+                    span.col-md-4.text-right &#32;{{project.modified.format('MMM Do')}}
               span.actions
                 span.icon.icon-save_on_disk(ng-show="!project.sandbox" ng-click="archiveProject(project); $event.stopPropagation()")
                 span.icon.fa.fa-undo(ng-show="project.sandbox" ng-click="resetProject(project); $event.stopPropagation()")
