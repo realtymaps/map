@@ -1,18 +1,20 @@
 commonConfig = require '../../../../../common/config/commonConfig.coffee'
 app = require '../../app.coffee'
 
-app.controller 'rmapsModalSendMailCtrl', ($scope, $state, mail, price, rmapsLobService) ->
-  $scope.price = price
+app.controller 'rmapsModalSendMailCtrl', ($scope, $state, $log, mail, rmapsMailCampaignService) ->
   $scope.sendingFlag = false
   $scope.bodyMessage = 'There\'s no turning back!'
   $scope.statusMessage = ''
   $scope.failedFlag = false
   $scope.successFlag = false
   $scope.sentinel = false
+  mail.getReviewDetails()
+  .then (review) ->
+    $scope.review = review
   $scope.send = () ->
     if $scope.sentinel
       $scope.sendingFlag = true
-      rmapsLobService.send(mail.campaign.id).success (response) ->
+      rmapsMailCampaignService.send(mail.campaign.id).success (response) ->
         $scope.bodyMessage = "Mail campaign \"#{mail.campaign.name}\" submitted!"
         $scope.statusMessage = ''
         $scope.sendingFlag = false

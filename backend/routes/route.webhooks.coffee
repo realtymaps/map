@@ -8,7 +8,7 @@ stripeTransforms = require '../utils/transforms/transforms.webhooks.stripe'
 paymentServices = require('../services/services.payment').then (services) ->
   paymentServices = services
 
-handles = wrapHandleRoutes
+handles = wrapHandleRoutes handles:
   #https://dashboard.stripe.com/account/webhooks
   #https://stripe.com/docs/api#events
   #https://stripe.com/docs/webhooks

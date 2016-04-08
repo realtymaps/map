@@ -8,7 +8,7 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsPinnedCtrl" class="d
   .dropdown-menu.whiteblock.no-margin
     .fixed-header
       span
-        a(ui-sref="projectFavorites({id: selectedProject.project_id})") {{favoriteTotal}} Favorite Properties
+        a(ui-sref="projectFavorites({id: principal.getCurrentProfile().project_id})") {{favoriteTotal}} Favorite Properties
     .inner
       ul
         li(ng-repeat="property in favoriteProperties")

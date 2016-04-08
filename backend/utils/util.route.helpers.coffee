@@ -44,8 +44,11 @@ handleQuery = (q, res, lHandleQuery) ->
   q.then (result) ->
     res.json(result)
 
-handleRoute = (req, res, next, toExec) ->
+handleRoute = ({req, res, next, toExec, isDirect}) ->
   Promise.try () ->
+    if isDirect
+      return toExec(req, res, next)
+
     handleQuery toExec(req, res), res
   .catch DataValidationError, (err) ->
     next new ExpressResponse(alert: {msg: err.message}, httpStatus.BAD_REQUEST)
@@ -57,11 +60,11 @@ handleRoute = (req, res, next, toExec) ->
     logger.error err.stack or err.toString()
     next(err)
 
-wrapHandleRoutes = (handles) ->
+wrapHandleRoutes = ({handles, isDirect}) ->
   for key, origFn of handles
     do (key, origFn) ->
       handles[key] = (req, res, next) ->
-        handleRoute req, res, next, origFn
+        handleRoute {req, res, next, toExec: origFn, isDirect}
   handles
 
 #http://stackoverflow.com/questions/10183291/how-to-get-the-full-url-in-express

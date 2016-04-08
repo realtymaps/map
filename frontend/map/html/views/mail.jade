@@ -67,4 +67,4 @@
                 td.col-md-1
                   span {{(campaign.stripe_charge.created | date:'MM/dd/yyyy') || 'never'}}
                 td.col-md-1
-                  button.btn.btn-white(ng-click="deleteCampaign(campaign); $event.stopPropagation()") Delete
+                  button.btn.btn-white(ng-click="deleteCampaign(campaign); $event.stopPropagation()" ng-show="campaign.status == 'ready'") Delete

@@ -10,6 +10,7 @@ propertySvc = require './service.properties.details'
 logger = require('../config/logger').spawn('route:mail_campaigns')
 lobSvc = require './service.lob'
 LobErrors = require '../utils/errors/util.errors.lob'
+Promise = require 'bluebird'
 
 class MailService extends ServiceCrud
   getAll: (entity = {}) ->
@@ -49,38 +50,32 @@ class MailService extends ServiceCrud
       db.raw("SUM(CASE WHEN (status='sent') THEN 1 ELSE 0 END) as sent"),
 
       # sample response from a letter to extract details, such as url
-      db.raw("(select lob_response from user_mail_letters where lob_response::text is not NULL and user_mail_campaign_id = #{campaign_id} limit 1)"),
+      db.raw("(select lob_response from user_mail_letters where lob_response::text is not NULL and user_mail_campaign_id = #{campaign_id} and auth_user_id = #{user_id} limit 1)"),
 
       # stripe_charge from campaign to extract details, such as amount charged
-      db.raw("(select stripe_charge from user_mail_campaigns where user_mail_campaigns.stripe_charge::text is not NULL and user_mail_campaigns.id = #{campaign_id} limit 1)")
+      db.raw("(select stripe_charge from user_mail_campaigns where user_mail_campaigns.stripe_charge::text is not NULL and user_mail_campaigns.id = #{campaign_id} and auth_user_id = #{user_id} limit 1)")
     )
     .count '*'
-    .where {'user_mail_campaign_id': campaign_id}
+    .where {'user_mail_campaign_id': campaign_id, auth_user_id: user_id}
     .then ([letterResults]) ->
-      query = null
 
-      # if it looks like lob has sent some letters...
-      if letterResults?.lob_response? and letterResults?.stripe_charge?
-        query = lobService.getLetter letterResults.lob_response.id
-        .then ({url}) ->
-          pdf: url
+      Promise.try ->
+        # if it looks like lob has sent some letters...
+        if letterResults?.lob_response? and letterResults?.stripe_charge?
+          pdf: letterResults.lob_response.url
           price: letterResults.stripe_charge.amount/100
 
-      # if lob has not sent any letters for this campaign...
-      else
-        query = lobService.getPriceQuote user_id, campaign_id
-        .then ({pdf,price}) ->
-          pdf: pdf
-          price: price
+        # if lob has not sent any letters for this campaign...
+        else
+          lobService.getPriceQuote user_id, campaign_id
 
-      query.then (response) ->
+      .then (response) ->
         # 'sent' and 'total' statistics
         details =
           sent: letterResults.sent
           total: letterResults.count
           pdf: response.pdf
           price: response.price
-        details
 
   getProperties: (project_id, auth_user_id) ->
     tables.mail.campaign().select([

@@ -91,6 +91,7 @@ _rules =
       photo_count:
         alias: 'Photo Count'
         required: false
+        type: name: 'integer'
 
       photo_last_mod_time:
         alias: 'Photo Last Mod Time'

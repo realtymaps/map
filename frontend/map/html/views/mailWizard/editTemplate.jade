@@ -23,7 +23,7 @@
           div.col-md-9
             .row
               .toolGroup
-                input.form-control.name-input(ng-model="wizard.mail.campaign.name" ng-change="saveContent()")
+                input.form-control.name-input(ng-disabled="saveStatus != 'saved'" ng-model="wizard.mail.campaign.name" ng-change="saveContent()")
                 .btns
                   button.btn.btn-success.miscTool(ng-click="doPreview()") Preview
                   //- button.btn.btn-success.miscTool(ng-click="quoteAndSend()") Price Quote!

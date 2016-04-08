@@ -7,6 +7,7 @@ _ = require 'lodash'
 logger = require('../config/logger').spawn('service.aws')
 loggerFine = logger.spawn('fine')
 awsUploadFactory = require('s3-upload-stream')
+Spinner = require('cli-spinner').Spinner
 
 buckets =
   PDF: 'aws-pdf-downloads'
@@ -19,7 +20,7 @@ _debug = (thing, thingName) ->
   loggerFine.debug "end #{thingName} !!!!!!!!!!!"
 
 
-_handler = (handlerOpts, opts) ->
+_handler = (handlerOpts, opts) -> Promise.try () ->
 
   _debug handlerOpts, 'handlerOpts'
 
@@ -56,6 +57,11 @@ _handler = (handlerOpts, opts) ->
 
     handle = s3[s3FnName + if nodeStyle then '' else 'Async']
     handle.call s3, extraArgs..., _.extend({}, {Bucket: s3Info.other.bucket}, opts)
+
+  .catch (error) ->
+    logger.error "AWS external account lookup failed!"
+    logger.debug "Did you forget to import account into externalAccounts?"
+    throw error
 
 
 getTimedDownloadUrl = (opts) ->
@@ -106,6 +112,14 @@ listObjects = (opts) ->
 #handle things as we go through pages
 #don't stack up memory
 _handleAllObjects = (opts, pageCb = (->)) ->
+  {progress} = opts
+  opts = _.omit opts, 'progress'
+
+  if progress
+    spinner = new Spinner('paging.. %s')
+    spinner.setSpinnerString('|/-\\')
+    spinner.start()
+
   new Promise (resolve, reject) ->
     ctr = 0
     pages = 0
@@ -114,6 +128,7 @@ _handleAllObjects = (opts, pageCb = (->)) ->
       #https://github.com/aws/aws-sdk-js/blob/0d19fe976f48860d9e929b027de0b601f55523cb/lib/request.js#L460-L477
       listObjects.eachPage (err, list, continueCb) ->
         if err
+          spinner?.stop()
           return reject err
 
         ctr += list.Contents.length
@@ -122,7 +137,9 @@ _handleAllObjects = (opts, pageCb = (->)) ->
         if !@hasNextPage()
           logger.debug "pages: #{pages + 1}"
           continueCb(false)
+          spinner?.stop()
           return resolve(ctr)
+
         pages += 1
         continueCb()
 
