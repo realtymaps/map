@@ -6,7 +6,7 @@ require("chai").should()
 {expect} = require("chai")
 sinon = require 'sinon'
 
-describe 'service.digimaps', ->
+describe 'service.parcel.fetcher.digimaps', ->
   beforeEach ->
     @subject = svc
     currentDir = null
@@ -22,9 +22,11 @@ describe 'service.digimaps', ->
       get: (fileName) -> Promise.try ->
         return new StringStream(fileName)
 
-  it 'getParcelZipFileStream', (done) ->
+    svc.__set__ '_ftpClientFactory', () => Promise.resolve @mockFtpClient
+
+  it 'getZipFileStream', (done) ->
     this.timeout(10000)
-    @subject.getParcelZipFileStream('/ZIPS/Parcels_123.zip', Promise.resolve @mockFtpClient)
+    @subject.getZipFileStream('/ZIPS/Parcels_123.zip')
     .then (stream) ->
       str = ''
       stream.on 'data', (buf)->

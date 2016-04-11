@@ -150,5 +150,14 @@ class Logger
     suffix = if subNamespace != '' && !subNamespace.endsWith(':') then ':' else ''
     debug.enabled(@namespace+subNamespace+suffix)
 
+  maybeInvalidError: ({error, where}) ->
+    @error "#{where} overall error"
+    if error.stack?
+      @error error
+      @error error.stack
+      return error.message
+
+    "unkown error obj: #{JSON.stringify error}"
+
 module.exports = (base) ->
   _getLogger(base, '')

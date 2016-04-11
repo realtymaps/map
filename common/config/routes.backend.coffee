@@ -158,11 +158,6 @@ module.exports =
   cartodb:
     getByFipsCodeAsFile: "#{apiBase}/cartodb/fipscodeFile/:fipscode"
     getByFipsCodeAsStream: "#{apiBase}/cartodb/fipscodeStream/:fipscode"
-  parcel:
-    getByFipsCode: "#{apiBase}/parcel"
-    getByFipsCodeFormatted: "#{apiBase}/parcel/formatted"
-    uploadToParcelsDb: "#{apiBase}/parcel/upload"
-    defineImports: "#{apiBase}/parcel/defineimports"
   mls_config:
     apiBase: apiBaseMlsConfig # Exposed for Restangular instantiation
     root: apiBaseMlsConfig

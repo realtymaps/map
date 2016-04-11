@@ -13,7 +13,7 @@ describe 'util.sql.helpers', ->
     entity =
       lorem: "ipsum's"
     tableName = 'temp_table'
-    query = sqlHelpers.buildUpsertBindings ids, entity, tableName
+    query = sqlHelpers.buildUpsertBindings {idObj:ids, entityObj: entity, tableName}
     expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
 
   it 'returns correct upsert query string with null pk and null values', ->
@@ -23,7 +23,7 @@ describe 'util.sql.helpers', ->
     entity =
       lorem: null
     tableName = 'temp_table'
-    query = sqlHelpers.buildUpsertBindings ids, entity, tableName
+    query = sqlHelpers.buildUpsertBindings {idObj:ids, entityObj: entity, tableName}
     expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()
 
   it 'returns correct upsert query string with objects and json', ->
@@ -37,5 +37,5 @@ describe 'util.sql.helpers', ->
       some_json: {'one': 1, 'two':["spec's", "array", "of", "strings"]}
       an_array: [1, 2, 3]
     tableName = 'temp_table'
-    query = sqlHelpers.buildUpsertBindings ids, entity, tableName
+    query = sqlHelpers.buildUpsertBindings {idObj:ids, entityObj: entity, tableName}
     expect(dbs.connectionless.raw(query.sql, query.bindings).toString().trim()).to.equal expectedSql.trim()

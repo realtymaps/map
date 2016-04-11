@@ -38,6 +38,7 @@ imageStream = (object) ->
     if event.error
       return error = event.error
 
+    logger.debug event.headerInfo
     everSentData = true
     event.dataStream.pipe(retStream)
 

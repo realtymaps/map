@@ -1,34 +1,35 @@
 Promise = require 'bluebird'
-logger = require('../config/logger').spawn('digimaps:parcelFetcher')
 _ = require 'lodash'
-moment = require 'moment'
+shp2json = require 'shp2jsonx'
+through = require 'through'
+JSONStream = require 'JSONStream'
 PromiseFtp = require 'promise-ftp'
-jobQueue = require '../utils/util.jobQueue'
-tables = require '../config/tables'
+parcelUtils = require '../utils/util.parcel'
 
+logger = require('../config/logger').spawn('digimaps:parcelFetcher')
+clientClose = require '../utils/util.client.close'
+{onMissingArgsFail} = require '../utils/errors/util.errors.args'
 
 DIGIMAPS =
   DIRECTORIES:[{name:'DELIVERIES'}, {name: 'DMP_DELIVERY_', doParseDate:true}, {name:'ZIPS'}]
   FILE:{name:'Parcels_', appendFipsCode:true, ext:'.zip'}
 
-DATA_SOURCE_TYPE = 'parcels'
 
-_getClientFromDigiSettings = (digiMapsSettings) ->
+_ftpClientFactory = (creds) -> Promise.try () ->
   # logger.debug digiMapsSettings
-  if _.isFunction digiMapsSettings?.then
-    return digiMapsSettings
+  if _.isFunction creds?.then
+    return creds
   ftp = new PromiseFtp()
   ftp.connect
-    host: digiMapsSettings.url
-    user: digiMapsSettings.username
-    password: digiMapsSettings.password
+    host: creds.url
+    user: creds.username
+    password: creds.password
     autoReconnect: true
+  .then (serverMsg) ->
+    if !serverMsg?
+      throw new Error "No Parcel Server Response"
+    ftp
 
-
-_numbersInString = (str) -> str.replace(/\D/g, '')
-
-_fipsCodesFromListing = (ls) ->
-  ls.map (l) -> _numbersInString(l.name)
 ###
 To define an import in digimaps_parcel_imports we need to get folderNames and fipsCodes
 
@@ -38,31 +39,30 @@ To define an import in digimaps_parcel_imports we need to get folderNames and fi
 
 - 3 then insert each object into data_load_history
 ###
-_defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].name, endDir = DIGIMAPS.DIRECTORIES[2].name) -> Promise.try ->
-  folderNamesToAdd = null
+defineImports = (opts) -> Promise.try ->
+  {creds, rootDir, endDir} = onMissingArgsFail
+    args: opts
+    required: 'creds'
+
+  rootDir ?= DIGIMAPS.DIRECTORIES[0].name
+  endDir ?= DIGIMAPS.DIRECTORIES[2].name
+
   importsToAdd = []
 
-  _getClientFromDigiSettings(digiMapsSettings)
+  _ftpClientFactory(creds)
   .then (client) -> #step 1
-    client.cwd './' + rootDir
+    Promise.try () ->
+      client.cwd './' + rootDir
     .then (dir) ->
       logger.debug 'defineImports: step 1'
       client.list()
       .then (ls) ->
         logger.debug 'defineImports: step 1 listing folderNames'
 
-        folderObjs = ls.map (l) ->
-          name: l.name
-          moment: moment(_numbersInString(l.name), 'YYYYMMDD').utc()
-
-        jobQueue.getLastTaskStartTime(subtask.task_name)
-        .then (lastStartDate) ->
-          lastStartDate = moment(lastStartDate).utc()
-          folderObjs = _.filter folderObjs, (o) ->
-            unixTime = o.moment.unix() - lastStartDate.unix()
-            unixTime > 0
-
-          folderObjs.map (f) -> f.name
+        paths = ls.map (l) -> l.name
+        #ignore ARCHIVED since it has no dumps (ONLY xls)
+        _.filter paths, (p) ->
+          !p.match(/archived/i)
     .finally ->
       logger.debug 'closing client'
       client.end()
@@ -73,18 +73,18 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
       _getImports = (lPath) ->
         #unique client for each pwd / ls combo as multiple Promises will occur at once
         #otherwise a single client will race itself and cause wierd errors
-        _getClientFromDigiSettings(digiMapsSettings).then (getClient) ->
-          getClient.cwd(lPath).then ->
-            getClient.pwd().then (path) ->
-              logger.debug "pwd: #{path}"
-            getClient.list()
+        _ftpClientFactory(creds).then (getClient) ->
+          Promise.try () ->
+            # logger.debug "lPath!!!!!!!!!!!!!!!"
+            # logger.debug lPath
+            getClient.cwd(lPath).then ->
+              getClient.pwd().then (path) ->
+                logger.debug "pwd: #{path}"
+              getClient.list()
           .then (ls) ->
             logger.debug "defineImports: step 2, file count: #{ls?.length}"
-            ls?.forEach (l) ->
-              importsToAdd.push
-                data_source_id: "#{lPath}/#{l.name}"
-                data_source_type: DATA_SOURCE_TYPE
-                batch_id: subtask.batch_id
+            if ls?
+              importsToAdd.push "#{lPath}/#{l.name}" for l in ls
 
           .finally ->
             logger.debug 'closing getClient'
@@ -100,24 +100,41 @@ _defineImports = (subtask, digiMapsSettings, rootDir = DIGIMAPS.DIRECTORIES[0].n
     .then -> #step 3
       logger.debug 'defineImports: step 3'
       # logger.debug importsToAdd
-      tables.jobQueue.dataLoadHistory()
-      .insert(importsToAdd)
       importsToAdd
 
-_getParcelZipFileStream = (fullPath, digiMapsSettings) -> Promise.try ->
-  _getClientFromDigiSettings(digiMapsSettings).then (client) ->
-    client.get(fullPath)
-    .then (stream) -> Promise.try ->
-      logger.debug("download complete: #{fullPath}")
-      stream.on 'error', (err) ->
-        logger.error "stream error: #{err}"
-        client.end()
-        throw err
-      stream.on 'close', ->
-        logger.debug 'stream close'
-        client.end()
-      stream
+getZipFileStream = (fullPath, {creds, doClose} = {}) ->
+  doClose ?= true
+  logger.debug "Attempting to download parcel zip: #{fullPath}"
 
-module.exports =
-  getParcelZipFileStream: _getParcelZipFileStream
-  defineImports: _defineImports
+  _ftpClientFactory(creds)
+  .then (client) ->
+    client.get(fullPath)
+    .then (stream) ->
+      if doClose
+        return clientClose.onEndStream {stream, client, where: 'getZipFileStream'}
+      {client, stream}
+
+getParcelJsonStream = (fullPath, {creds} = {}) ->
+  getZipFileStream(fullPath, {creds, doClose: false})
+  .then ({client, stream}) ->
+    clientClose.onEndStream {
+      client
+      stream: shp2json(stream).pipe(JSONStream.parse('*.features.*'))
+      where: 'getParcelJsonStream'
+    }
+
+getFormatedParcelJsonStream = (fullPath, {creds} = {}) ->
+  getParcelJsonStream(fullPath, {creds})
+  .then (stream) ->
+    write = (obj) ->
+      @queue parcelUtils.formatParcel(obj)
+    end = ->
+      @queue null
+    stream.pipe through(write, end)
+
+module.exports = {
+  getZipFileStream
+  getParcelJsonStream
+  getFormatedParcelJsonStream
+  defineImports
+}

@@ -29,7 +29,8 @@ String::firstRest = (find) ->
     first: @substring 0, findLoc
     rest: @substring findLoc + 1, @length
 
-
+String.numeric = (val) ->
+  val.replace(/\D/g, '')
 
 String::replaceLast = (find, replace) ->
   index = @lastIndexOf(find)
