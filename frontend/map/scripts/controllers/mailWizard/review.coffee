@@ -5,8 +5,7 @@ previewModalTemplate = require('../../../html/views/templates/modal-mailPreview.
 module.exports = app
 
 app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $state, $modal,
-rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory) ->
-
+rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory, rmapsChargesService) ->
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 
@@ -35,6 +34,9 @@ rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsM
       scope: $scope
 
   $scope.reviewPreview = () ->
+    rmapsChargesService.get()
+    .then (d) ->
+      console.log "rmapsChargesService d:\n#{d}"
     modalInstance = $modal.open
       template: previewModalTemplate
       controller: 'rmapsReviewPreviewCtrl'
