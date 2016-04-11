@@ -62,8 +62,7 @@ imagesHandle = (object, cb) ->
       payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
       if event.headerInfo.objectData?
-        _.extend payload,
-          objectData: event.headerInfo.objectData
+        payload.objectData = event.headerInfo.objectData
 
       cb(null, payload)
 
