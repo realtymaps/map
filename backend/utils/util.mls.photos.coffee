@@ -59,7 +59,7 @@ imagesHandle = (object, cb) ->
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
       logger.debug "fileName: #{fileName}"
 
-      payload = {data: event.dataStream, name: fileName, imageId, size, contentType, uploadDate, description}
+      payload = {data: event.dataStream, name: fileName, imageId, contentType}
 
       if event.headerInfo.objectData?
         _.extend payload,
