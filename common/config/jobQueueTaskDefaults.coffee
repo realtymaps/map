@@ -24,6 +24,7 @@ module.exports =
     warn_timeout_seconds: 1200
     kill_timeout_seconds: 1500
     auto_enqueue: true
+    active: true
 
   subtask_normalizeData:
     # task_name: '' # required
@@ -40,40 +41,26 @@ module.exports =
     kill_timeout_seconds: 750
     auto_enqueue: false
 
-  subtask_recordChangeCounts:
+  subtask_storePhotosPrep:
     # task_name: '' # required
-    # name: '' # should be set to task-centric "#{task_name}_recordChangeCounts"
+    # name: '' # should be set to task-centric "#{task_name}_normalizeData"
     step_num: 3
     queue_name: 'mls'
     data: null
-    retry_delay_seconds: null
-    retry_max_count: 0
+    retry_delay_seconds: 30
+    retry_max_count: 100
     hard_fail_timeouts: true
     hard_fail_after_retries: true
     hard_fail_zombies: true
     warn_timeout_seconds: 30
     kill_timeout_seconds: 45
     auto_enqueue: false
+    active: true
 
-  subtask_finalizeDataPrep:
+  subtask_storePhotos:
     # task_name: '' # required
-    # name: '' # should be set to task-centric "#{task_name}_finalizeDataPrep"
+    # name: '' # should be set to task-centric "#{task_name}_normalizeData"
     step_num: 4
-    queue_name: 'mls'
-    data: null
-    retry_delay_seconds: null
-    retry_max_count: 0
-    hard_fail_timeouts: true
-    hard_fail_after_retries: true
-    hard_fail_zombies: true
-    warn_timeout_seconds: 30
-    kill_timeout_seconds: 45
-    auto_enqueue: false
-
-  subtask_finalizeData:
-    # task_name: '' # required
-    # name: '' # should be set to task-centric "#{task_name}_finalizeData"
-    step_num: 5
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -84,11 +71,60 @@ module.exports =
     warn_timeout_seconds: 600
     kill_timeout_seconds: 750
     auto_enqueue: false
+    active: true
+
+  subtask_recordChangeCounts:
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_recordChangeCounts"
+    step_num: 5
+    queue_name: 'mls'
+    data: null
+    retry_delay_seconds: null
+    retry_max_count: 0
+    hard_fail_timeouts: true
+    hard_fail_after_retries: true
+    hard_fail_zombies: true
+    warn_timeout_seconds: 30
+    kill_timeout_seconds: 45
+    auto_enqueue: false
+    active: true
+
+  subtask_finalizeDataPrep:
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_finalizeDataPrep"
+    step_num: 6
+    queue_name: 'mls'
+    data: null
+    retry_delay_seconds: null
+    retry_max_count: 0
+    hard_fail_timeouts: true
+    hard_fail_after_retries: true
+    hard_fail_zombies: true
+    warn_timeout_seconds: 30
+    kill_timeout_seconds: 45
+    auto_enqueue: false
+    active: true
+
+  subtask_finalizeData:
+    # task_name: '' # required
+    # name: '' # should be set to task-centric "#{task_name}_finalizeData"
+    step_num: 7
+    queue_name: 'mls'
+    data: null
+    retry_delay_seconds: null
+    retry_max_count: 0
+    hard_fail_timeouts: true
+    hard_fail_after_retries: true
+    hard_fail_zombies: true
+    warn_timeout_seconds: 600
+    kill_timeout_seconds: 750
+    auto_enqueue: false
+    active: true
 
   subtask_activateNewData:
     # task_name: '' # required
     # name: '' # should be set to task-centric "#{task_name}_activateNewData"
-    step_num: 6
+    step_num: 8
     queue_name: 'mls'
     data: null
     retry_delay_seconds: null
@@ -99,3 +135,4 @@ module.exports =
     warn_timeout_seconds: 240
     kill_timeout_seconds: 300
     auto_enqueue: false
+    active: true
