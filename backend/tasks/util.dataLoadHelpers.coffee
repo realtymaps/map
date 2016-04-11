@@ -93,14 +93,16 @@ recordChangeCounts = (subtask) -> Promise.try () ->
   .where(updated: subtask.batch_id)
   .where(subset)
   .count('*')
+  ### too expensive to run
   touchedPromise = tables.property[subtask.data.dataType](subid: subtask.data.normalSubid)
   .where(batch_id: subtask.batch_id)
   .where(subset)
   .orWhere(deleted: subtask.batch_id)
   .where(subset)
   .count('*')
+  ###
 
-  updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount, touchedCount) ->
+  updateDataLoadHistory = (deletedCount=0, invalidCount, unvalidatedCount, insertedCount, updatedCount) ->
     args = arguments
     ['invalidCount', 'unvalidatedCount', 'insertedCount', 'updatedCount', 'touchedCount'].forEach (val, i) ->
       logger.debug val
@@ -114,9 +116,9 @@ recordChangeCounts = (subtask) -> Promise.try () ->
       inserted_rows: insertedCount[0]?.count ? 0
       updated_rows: updatedCount[0]?.count ? 0
       deleted_rows: deletedCount[0]?.count ? 0
-      touched_rows: touchedCount[0]?.count ? 0
+      touched_rows: null  # query was too expensive to run
 
-  Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, touchedPromise, updateDataLoadHistory)
+  Promise.join(deletedPromise, invalidPromise, unvalidatedPromise, insertedPromise, updatedPromise, updateDataLoadHistory)
 
 
 # this function flips inactive rows to active, active rows to inactive, and deletes now-inactive and extraneous rows
@@ -533,6 +535,9 @@ ensureNormalizedTable = (dataType, subid) ->
     .raw("CREATE UNIQUE INDEX ON #{tableName} (data_source_id, data_source_uuid)")
     .raw("CREATE INDEX ON #{tableName} (rm_property_id, deleted, close_date DESC NULLS FIRST)")
     .raw("CREATE TRIGGER update_rm_modified_time_#{tableName} BEFORE UPDATE ON #{tableName} FOR EACH ROW EXECUTE PROCEDURE update_rm_modified_time_column()")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, inserted)")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, deleted)")
+    .raw("CREATE INDEX ON #{tableName} (data_source_id, updated)")
 
 
 module.exports = {
