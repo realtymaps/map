@@ -352,10 +352,15 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
 
   .catch (error) ->
-    logger.debug 'storePhotos overall error'
-    logger.debug error
-    logger.debug error.stack
-    throw SoftFail error.message
+    logger.error 'storePhotos overall error'
+    if error.stack?
+      logger.error error
+      logger.error error.stack
+      throw SoftFail error.message
+
+    msg = "unkown error obj: #{JSON.stringify error}"
+    logger.error msg
+    throw SoftFail msg
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
