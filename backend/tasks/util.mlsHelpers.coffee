@@ -351,6 +351,12 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
         #filter/flatMap (remove nulls / GTFOS)
         Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
 
+  .catch (error) ->
+    logger.debug 'storePhotos overall error'
+    logger.debug error
+    logger.debug error.stack
+    throw SoftFail error.message
+
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()
   .where {id}
