@@ -7,7 +7,6 @@ module.exports =
   accessDenied:   'accessDenied'
   snail:          'snail'
   profiles:       'profiles'
-  user:           'user'
   history:        'history'
   properties:     'properties'
   property:       'property/:id'
@@ -20,6 +19,12 @@ module.exports =
   projectNotes:   '/notes'
   projectPins:    '/pins'
   projectNeighbourhoods: '/neighbourhoods'
+
+  user:           'user'
+  userMLS:        '/userMLS'
+  userBilling:    '/userBilling'
+  userNotifications: '/userNotifications'
+  userTeamMembers: '/userTeamMembers'
   
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'
@@ -42,3 +47,4 @@ module.exports =
     history:      '/json/history.json'
   # Note '*path' below is a special catchall syntax for ui-router
   pageNotFound:   '*path'
+
