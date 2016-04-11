@@ -1,0 +1,8 @@
+span.btn-group
+  button.btn.btn-transparent.nav-btn(
+    ng-click="Toggles.toggleIsSketchMode()"
+    popover-placement="right"
+    popover="Add a Sketch"
+    popover-trigger="mouseenter"
+    ng-class="Toggles.isSketchMode ? 'on' : ''")
+    span.icon.icon-pen2

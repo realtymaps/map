@@ -15,12 +15,35 @@ $fnMakeMapUlDropdown()
       font-size 12px
       font-weight bold
       padding 12px
+
+      .results-btn
+        float right
+        cursor pointer
+        border 1px solid $black_10
+        border-radius 3px
+        padding 7px
+        margin-left 5px
+        transform translateY(-25%)
+        &.disabled
+          color $gray_lighter
+        .icon
+          font-size 20px
+      .fa, .icon
+        float left
+        font-size 12px
+      .fa
+        margin 0 5px
+        transform translateY(22%)
+      .icon
+        margin -2px 5px
+
     .inner
       ul
         list-style none
         padding 0
         max-height 250px
         overflow auto
+        width 100%
         li
           a
             display block
