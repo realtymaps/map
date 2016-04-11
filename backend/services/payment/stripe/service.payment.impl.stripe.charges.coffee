@@ -1,12 +1,19 @@
-Promise = require 'bluebird'
+{expectSingleRow} = require '../../../utils/util.sql.helpers'
 tables = require '../../../config/tables'
 
+
 StripeCharges = (stripe) ->
-  #console.log "\n\nstripe:\n#{JSON.stringify(stripe,null,2)}"
   getHistory = (auth_user_id) ->
-    Promise.try () ->
-      console.log "auth_user_id:\n#{auth_user_id}"
-      return [{one: 1},{two: 2}]
+    tables.auth.user()
+    .select 'stripe_customer_id'
+    .where id: auth_user_id
+    .then (data) ->
+      expectSingleRow(data)
+    .then ({stripe_customer_id}) ->
+      stripe.charges.list customer: stripe_customer_id
+      .then (data) ->
+        data
+
   getHistory: getHistory
 
 module.exports = StripeCharges

@@ -154,6 +154,7 @@ module.exports = app.config (
   buildChildState 'userBilling', 'user', page: { title: 'Billing' }
   buildChildState 'userNotifications', 'user', page: { title: 'Notifications' }
   buildChildState 'userTeamMembers', 'user', page: { title: 'Team Members' }
+  buildChildState 'userPaymentHistory', 'user', page: { title: 'Payment History' }
 
   buildState 'profiles'
   buildState 'history'

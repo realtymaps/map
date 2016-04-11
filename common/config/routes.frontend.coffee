@@ -25,6 +25,7 @@ module.exports =
   userBilling:    '/userBilling'
   userNotifications: '/userNotifications'
   userTeamMembers: '/userTeamMembers'
+  userPaymentHistory: '/userPaymentHistory'
   
   neighbourhoods: 'neighbourhoods'
   notes:          'notes'
