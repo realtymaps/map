@@ -53,15 +53,19 @@ imagesHandle = (object, cb) ->
       imageId = event.headerInfo.objectId
       listingId = event.headerInfo.contentId
       fileExt = event.headerInfo.contentType.replace('image/','')
-      size = event.headerInfo.objectData.size
       contentType = event.headerInfo.contentType
-      uploadDate = event.headerInfo.objectData.uploadDate
-      description = event.headerInfo.objectData.description
 
       everSentData = true
       fileName = "#{listingId}_#{imageId}.#{fileExt}"
       logger.debug "fileName: #{fileName}"
-      cb(null, {data: event.dataStream, name: fileName, imageId, size, contentType, uploadDate, description})
+
+      payload = {data: event.dataStream, name: fileName, imageId, size, contentType, uploadDate, description}
+
+      if event.headerInfo.objectData?
+        _.extend payload,
+          objectData: event.headerInfo.objectData
+
+      cb(null, payload)
 
   object.objectStream.on 'end', () ->
     if !everSentData
