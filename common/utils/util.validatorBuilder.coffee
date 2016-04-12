@@ -60,7 +60,7 @@ _rules =
       type: name: 'rm_property_id'
       input: {}
       valid: () ->
-        @input.apn && (@input.fipsCode || ((@input.stateCode || @input.stateName) && @input.county))
+        @input.apn && (@input.fipsCode || (@input.stateCode && @input.county))
 
     parcel_id:
       alias: 'Parcel ID'
@@ -84,7 +84,7 @@ _rules =
       input: {}
       type: name: 'fips'
       valid: () ->
-        @input.fipsCode || ((@input.stateCode || @input.stateName) && @input.county)
+        @input.fipsCode || (@input.stateCode && @input.county)
 
   mls:
     listing:
@@ -171,8 +171,11 @@ _rules =
         type: name: 'datetime'
 
       year_built:
-        alias: 'Year Built'
-        type: name: 'integer'
+        alias: 'Year Built or Age'
+        type: name: 'yearOrAge'
+        input: {}
+        valid: () ->
+          @input.year || @input.age
 
       property_type:
         alias: 'Property Type'
@@ -243,8 +246,11 @@ _rules =
             ((@input.streetName && @input.streetNum) || @input.streetFull)
 
       year_built:
-        alias: 'Year Built'
-        type: name: 'integer'
+        alias: 'Year Built or Age'
+        type: name: 'yearOrAge'
+        input: {}
+        valid: () ->
+          @input.year || @input.age
 
       property_type:
         alias: 'Property Type'

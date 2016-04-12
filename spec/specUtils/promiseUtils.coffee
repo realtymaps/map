@@ -10,8 +10,9 @@ class PromiseExpectationError extends Error
     @message = "#{message} with #{analysis.type}"
     if analysis.details?
       @message += ": #{analysis.details}"
-    if @fulfillment instanceof Error and analysis.stack?
-      @stack = "#{@name}: #{@message}\n#{analysis.stack}"
+    if @fulfillment.stack?
+      @stack = "#{@name}: #{@message}\n#{@fulfillment.stack}"
+
 
 module.exports =
 

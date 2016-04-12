@@ -44,9 +44,9 @@ describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
         value.should.equal('56037')
     ]
 
-  promiseIt 'should resolve to a given raw code if no state or county are provided', () ->
+  promiseIt 'should resolve to a given raw code if fipsCode is provided directly', () ->
     [
-      expectResolve(validators.fips()(param, "10000")).then (value) ->
+      expectResolve(validators.fips()(param, fipsCode: "10000", stateCode: 'WY', county: 'Sweet Water')).then (value) ->
         value.should.equal('10000')
 
     ]
@@ -76,13 +76,13 @@ describe 'utils/validation.validators.fips()'.ns().ns('Backend'), ->
 
   promiseIt 'should accept case-insensitive state names instead of state codes', () ->
     [
-      expectResolve(validators.fips()(param, stateName: 'Delaware', county: 'New Castle')).then (value) ->
+      expectResolve(validators.fips()(param, stateCode: 'Delaware', county: 'New Castle')).then (value) ->
         value.should.equal('10003')
-      expectResolve(validators.fips()(param, stateName: 'FLORIDA', county: 'Miami-Dade')).then (value) ->
+      expectResolve(validators.fips()(param, stateCode: 'FLORIDA', county: 'Miami-Dade')).then (value) ->
         value.should.equal('12086')
-      expectResolve(validators.fips()(param, stateName: 'minnesota', county: 'St Louis')).then (value) ->
+      expectResolve(validators.fips()(param, stateCode: 'minnesota', county: 'St Louis')).then (value) ->
         value.should.equal('27137')
-      expectResolve(validators.fips()(param, stateName: 'WyOmInG', county: 'Sweetwater')).then (value) ->
+      expectResolve(validators.fips()(param, stateCode: 'WyOmInG', county: 'Sweetwater')).then (value) ->
         value.should.equal('56037')
     ]
 

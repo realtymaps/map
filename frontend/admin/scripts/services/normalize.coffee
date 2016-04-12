@@ -51,4 +51,5 @@ app.factory 'rmapsNormalizeFactory', ($log, Restangular) ->
 
     updateRule: (rule) ->
       if rule.list != 'unassigned'
-        @endpoint.one(rule.list).one(String(rule.ordering)).patch(@_formatRule(rule))
+        formatted = @_formatRule(rule)
+        @endpoint.one(rule.list).one(String(rule.ordering)).patch(formatted)
