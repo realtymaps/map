@@ -1,11 +1,25 @@
 .location-tools.desktop-only
-  button.btn.btn-transparent.zoom-previous(ng-click="Toggles.togglePreviousLocation()" tool-tip placement="right" title="Go to Previous Location" ng-if="Toggles.hasPreviousLocation")
+  button.btn.btn-transparent.zoom-previous(
+    ng-if="Toggles.hasPreviousLocation"
+    ng-click="Toggles.togglePreviousLocation()"
+    popover-placement="right"
+    popover="Previous Location"
+    popover-trigger="mouseenter")
     span.icon.icon-undo2
-  button.btn.btn-transparent.zoom-locate(ng-click="Toggles.toggleLocation()" findme="" ng:class="{'active' : showFollowMe }" tool-tip placement="right" title="My Location")
+  button.btn.btn-transparent.zoom-locate(ng-click="Toggles.toggleLocation()" findme="" ng:class="{'active' : showFollowMe }"
+    popover-placement="right"
+    popover="My Location"
+    popover-trigger="mouseenter")
     span.icon.icon-location
 
 .zoom-tools
-  button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1)" tool-tip placement="right" title="Zoom In")
+  button.btn.btn-transparent.zoom-in(ng-click="changeZoom(+1)"
+    popover-placement="right"
+    popover="Zoom In"
+    popover-trigger="mouseenter")
     span.icon.icon-plus
-  button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1)" tool-tip placement="right" title="Zoom Out")
+  button.btn.btn-transparent.zoom-out(ng-click="changeZoom(-1)"
+    popover-placement="right"
+    popover="Zoom Out"
+    popover-trigger="mouseenter")
     span.icon.icon-minus

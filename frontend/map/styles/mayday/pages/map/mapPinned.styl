@@ -4,8 +4,8 @@ $fnMakeMapPinned()
   .pinned-list
     .fa
       font-size 18px
-      position relative
-      top -3px
+      display inherit
+
     .enity
       // display table
       .circle-nr
@@ -65,7 +65,6 @@ $fnMakeMapPinned()
               &:last-child
                 border none
         .title
-          margin 0
           font-size 16px
           a
             padding 0
@@ -73,6 +72,10 @@ $fnMakeMapPinned()
             &:hover
             &:focus
               color $light_blue
+
+        .subtitle
+          margin-top 3px
+
         .location
           color c_gray
           font-size 12px

@@ -27,6 +27,8 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   setScopeVariables = () ->
     rmapsPrincipalService.getIdentity()
     .then (identity) ->
+      if !identity?.profiles
+        return
       $scope.projects = _.values identity.profiles
       $log.debug $scope.projects
       $scope.totalProjects = $scope.projects.length
@@ -37,6 +39,8 @@ app.controller 'rmapsProjectsDropdownCtrl', (
 
   setScopeVariables()
 
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    setScopeVariables()
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     setScopeVariables()
 

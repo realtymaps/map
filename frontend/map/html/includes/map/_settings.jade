@@ -1,7 +1,11 @@
 span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
   span.desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
-      button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(dropdown-toggle)
+      button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(
+        dropdown-toggle
+        popover-placement="right"
+        popover="Search Filters"
+        popover-trigger="mouseenter")
         span.icon.icon-settings
       .dropdown-menu.white.arrow.blueArrow(ng-click="$event.stopPropagation()")
         h4.title Property Filters

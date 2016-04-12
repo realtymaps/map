@@ -13,8 +13,14 @@ $fnMakeMapUlDropdown()
       border-top 1px solid $darker_white
       color $dark_blue
       font-size 12px
-      font-weight bold
-      padding 12px
+      font-weight boldx
+      display flex
+      align-items center
+      justify-content space-between
+
+      > span, .results-btn
+        display flex
+        align-items center
 
       .results-btn
         float right
@@ -23,7 +29,6 @@ $fnMakeMapUlDropdown()
         border-radius 3px
         padding 7px
         margin-left 5px
-        transform translateY(-25%)
         &.disabled
           color $gray_lighter
         .icon
@@ -33,9 +38,8 @@ $fnMakeMapUlDropdown()
         font-size 12px
       .fa
         margin 0 5px
-        transform translateY(22%)
       .icon
-        margin -2px 5px
+        margin -3px 5px 0
 
     .inner
       ul
