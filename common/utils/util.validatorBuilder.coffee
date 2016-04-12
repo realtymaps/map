@@ -335,7 +335,7 @@ _buildRule = (rule, defaults) ->
 getBaseRules = (dataSourceType, dataListType) ->
   if dataListType in _noBase
     return {}
-  _.defaultDeep(_.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType].common), _.cloneDeep(_rules[dataSourceType][dataListType]))
+  _.defaultsDeep(_.cloneDeep(_rules.common), _.cloneDeep(_rules[dataSourceType].common), _.cloneDeep(_rules[dataSourceType][dataListType]))
 
 buildDataRule = (rule) ->
   _buildRule rule, typeRules[rule.config.DataType]
