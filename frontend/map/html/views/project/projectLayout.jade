@@ -74,13 +74,16 @@
           .list.bordered
             .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
               .row
-                .col-md-2
-                  a(class="note-img" ng-if="note.coordinates")
-                    img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
-                .col-md-8
-                  .data
-                    h4 {{note.title}}
-                    p {{note.text}}
-                .col-md-2
-                  .note-date
-                    | {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+                .col-sm-12
+                  .note-image
+                    a(class="note-img" ng-if="note.coordinates")
+                      img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+                  .note-data-wrapper
+                    .note-data
+                      .row
+                        .col-sm-7
+                          .note-title {{note.title}}
+                        .col-sm-5.text-right
+                          .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+                      p {{note.text}}
+
