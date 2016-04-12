@@ -2,17 +2,15 @@
   .inner
     .container
       .row
-        .col-md-12
+        .col-md-3.desktop-only
           h1.pageTitle {{user.full_name}}
-
-      .row
-        .col-md-3.navbar.desktop-only
-          ul.nav
-            li(ng-class="{active: $state.is('user')}")
-              a(ui-sref="user") My Account
-            li(ng-repeat="state in $state.get() | filter:{parent: 'user'}"
-              ng-class="{active: $state.is(state.name)}")
-              a(ui-sref="{{state.name}}") {{getStateName(state.name) | camelToHuman }}
+          .navbar
+            ul.nav
+              li(ng-class="{active: $state.is('user')}")
+                a(ui-sref="user") My Account
+              li(ng-repeat="state in $state.get() | filter:{parent: 'user'}"
+                ng-class="{active: $state.is(state.name)}")
+                a(ui-sref="{{state.name}}") {{getStateName(state.name) | camelToHuman }}
 
 
         .col-md-9.content
@@ -20,7 +18,7 @@
             .col-md-12
               div(ui-view="user" ng-show="$state.is('user')" ng-cloak)
                 .collapse-header
-                  h2.title Edit Account
+                  h2 Edit Account
                 .white-page(ng-cloak ng-if="ready")
                   .row
                     // left column
