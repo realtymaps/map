@@ -8,8 +8,7 @@ app.controller 'rmapsUserPaymentHistoryCtrl', ($scope, $log, rmapsChargesService
   $scope.sortField = 'created'
   $scope.sortReverse = true
 
-
   rmapsChargesService.get()
   .then (charges) ->
-    console.log "charges:\n#{JSON.stringify(charges,null,2)}"
+    $log.debug -> "charges:\n#{JSON.stringify(charges,null,2)}"
     $scope.charges = charges
