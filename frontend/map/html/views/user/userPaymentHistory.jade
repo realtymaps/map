@@ -30,6 +30,8 @@ table(class="table table-hover")
       th.col-md-1
 
   tbody
+    tr(ng-show="!charges || charges.length == 0")
+      td No Results
     tr(ng-repeat="charge in charges | filter:{name:searchName} | orderBy:sortField:sortReverse")
       td {{ charge.created }}
       td {{ charge.description }}
