@@ -8,6 +8,12 @@ span(ng-hide="Toggles.getHideAnyDraw()" ng-controller="rmapsMapNotesCtrl" class=
     .fixed-header
       span
         a(ui-sref="projectNotes({id: principal.getCurrentProfile().project_id})") {{notes.length}} Notes
+        span.results-btn(
+          popover-placement="right"
+          popover-trigger="mouseenter"
+          popover="Add Note"
+          ng-click="Toggles.enableNoteTap()") New Note
+            span.icon.icon-add_note
     .inner
       ul
         li(ng-repeat="note in map.markers.notes" ng-cloak)

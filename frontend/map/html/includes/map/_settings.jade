@@ -1,5 +1,5 @@
-.settings-tool(ng-hide="Toggles.getHideAnyDraw()")
-  .desktop-only
+span.settings-tool.pull-right(ng-hide="Toggles.getHideAnyDraw()")
+  span.desktop-only
     span.dropdown.btn-group.settings-list(dropdown on-toggle="toggled(open)" ng-controller="rmapsFiltersCtrl")
       button.dropdown-toggle.btn.btn-transparent.nav-btn.settings.toggle-active(dropdown-toggle)
         span.icon.icon-settings
@@ -51,7 +51,7 @@
             span.col-md-1.label to
             .col-md-4
               select.form-control(ng-model="selectedFilters.acresMax" ng-options='c.value as c.name for c in filterValues.acresValues')
-          
+
           li.set.setInShapes.row
             span.label.col-md-5 In Shapes / Neighborhoods
             .col-md-7
@@ -62,7 +62,7 @@
                   ng-model="Toggles.propertiesInShapes"
                   btn-radio="{{c == 'on'}}"
                   uncheckable) {{c}}
-                  
+
           li.set.row
             span.label.col-md-5 Old DrawToolbar
             .col-md-7
@@ -147,7 +147,7 @@
           .settings-value {{translateDom(domSlider.min)}} - {{translateDom(domSlider.max)}}
           .settings-slider
             rzslider(rz-slider-model="domSlider.min" rz-slider-high="domSlider.max" rz-slider-options="domSlider.options" rz-slider-tpl-url="SettingsSliderTemplate")
-        
+
         .item.settings-row
           .settings-header In Shapes / Neighborhoods
           button.button.settings-button.btn-white.btn-checkbox(

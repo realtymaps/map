@@ -10,6 +10,12 @@ mixin projectsDropdown()
       .fixed-header
         a(ng-show="totalProjects == 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Project
         a(ng-show="totalProjects != 1" href="{{frontendRoutes.projects}}") {{totalProjects}} Projects
+        span.results-btn(
+          popover-placement="right"
+          popover-trigger="mouseenter"
+          popover="Add Project"
+          ng-click="addProject()") New Project
+            span.icon.icon-project
       .inner
         ul
           li(ng-repeat="project in projects | orderBy:[isSandbox, isArchived, '-rm_modified_time']" ng-click="selectProject(project)" )

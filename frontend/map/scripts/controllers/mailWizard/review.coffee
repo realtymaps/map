@@ -6,7 +6,6 @@ module.exports = app
 
 app.controller 'rmapsReviewCtrl', ($rootScope, $scope, $log, $state, $modal,
 rmapsMailCampaignService, rmapsMailTemplateTypeService, rmapsMainOptions, rmapsMapTogglesFactory) ->
-
   $log = $log.spawn 'mail:review'
   $log.debug 'rmapsReviewCtrl'
 

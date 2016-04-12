@@ -31,6 +31,7 @@ apiBasePlans = "#{apiBase}/plans"
 apiBaseEmail = "#{apiBase}/email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
+apiBaseCharges = "#{apiBase}/charges"
 apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
@@ -240,6 +241,9 @@ module.exports =
   webhooks:
     apiBase: apiBaseWebhooks
     stripe: "#{apiBaseWebhooks}/stripe"
+  charges:
+    apiBase: apiBaseCharges
+    getHistory: "#{apiBaseCharges}/history"
   memdump:
     apiBase: apiBaseMemdump
     download: "#{apiBaseMemdump}/download"
