@@ -32,8 +32,7 @@
 
   .row.panel(cg-busy="mlsLoading" ng-show="mlsData.current")
     .row
-      label Search All:
-        input(ng-model="rootSearchText")
+      input(ng-model="rootSearchText" placeholder="Search All")
     .row
       .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
 
@@ -41,11 +40,13 @@
         h4 Filters
         .row-slim.row
           .col-md-12
-            label Search:
-              input(ng-model="filterSearchText")
+            .filter-container
+              input(ng-model="filterSearchText" placeholder="Search")
         .row-slim.row
           .col-md-12
             .field-container(cg-busy="baseLoading")
+              .placeholder-field(ng-hide="categories.base")
+                span No Base Filters
               .field.base(
               ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
               ng-click="selectField(item)"
@@ -57,8 +58,8 @@
         .i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
         .row-slim.row
           .col-md-12
-            label Search:
-              input(ng-model="mlsSearchText")
+            .filter-container
+              input(ng-model="mlsSearchText" placeholder="Search")
         .row-slim.row
           .col-md-12
             .field-container(
@@ -77,15 +78,13 @@
       .col-md-3.list-container(ng-if="!showGrid")
         h4 Groups
         .row-slim.row
-          //size 8 to make it allign with other smaller searches
-          .col-md-8
-            label Search:
-              input(ng-model="groupSearchText")
+          .col-md-12
+            .filter-container
+              input(ng-model="groupSearchText" placeholder="Search")
         .row-slim.row
           .col-md-12
             .field-container(
-              cg-busy="fieldData.category.loading"
-              )
+            cg-busy="fieldData.category.loading")
               .field.category-item(
               rmaps-droppable="category.items" on-drop="onDropCategory"
               ng-class="{ selected: category == fieldData.category }"
@@ -354,55 +353,64 @@
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 County
+          .col-md-2 FIPS Code, or County and State
           .col-md-10
+            .field(rmaps-droppable="'fipsCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.fipsCode }")
+              span(ng-show="fieldData.current.input.fipsCode") {{fieldData.current.input.fipsCode}}:
+              span FIPS Code
+              span.remove-icon(ng-show="fieldData.current.input.fipsCode" ng-click="removeBaseInput('fipsCode')") X
+            span.sep OR
             .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.county }")
               span(ng-show="fieldData.current.input.county") {{fieldData.current.input.county}}:
               span County
               span.remove-icon(ng-show="fieldData.current.input.county" ng-click="removeBaseInput('county')") X
-        .row
-          .col-md-2 State
-          .col-md-10
             .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateCode }")
               span(ng-show="fieldData.current.input.stateCode") {{fieldData.current.input.stateCode}}:
-              span State Code
+              span State
               span.remove-icon(ng-show="fieldData.current.input.stateCode" ng-click="removeBaseInput('stateCode')") X
-            span.sep OR
-            .field(rmaps-droppable="'stateName'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateName }")
-              span(ng-show="fieldData.current.input.stateName") {{fieldData.current.input.stateName}}:
-              span State Name
-              span.remove-icon(ng-show="fieldData.current.input.stateName" ng-click="removeBaseInput('stateName')") X
 
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-2 {{fieldData.current.alias}}
         .row
-          .col-md-2 County and ParcelId
+          .col-md-2 ParcelId
           .col-md-10
-            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.county }")
-              span(ng-show="fieldData.current.input.county") {{fieldData.current.input.county}}:
-              span County
-              span.remove-icon(ng-show="fieldData.current.input.county" ng-click="removeBaseInput('county')") X
             .field(rmaps-droppable="'apn'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.apn }")
               span(ng-show="fieldData.current.input.apn") {{fieldData.current.input.apn}}:
               span Parcel
               span.remove-icon(ng-show="fieldData.current.input.apn" ng-click="removeBaseInput('apn')") X
         .row
-          .col-md-2 State
+          .col-md-2 FIPS Code, or County and State
           .col-md-10
+            .field(rmaps-droppable="'county'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.county }")
+              span(ng-show="fieldData.current.input.county") {{fieldData.current.input.county}}:
+              span County
+              span.remove-icon(ng-show="fieldData.current.input.county" ng-click="removeBaseInput('county')") X
             .field(rmaps-droppable="'stateCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateCode }")
               span(ng-show="fieldData.current.input.stateCode") {{fieldData.current.input.stateCode}}:
-              span State Code
+              span State
               span.remove-icon(ng-show="fieldData.current.input.stateCode" ng-click="removeBaseInput('stateCode')") X
+
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'year_built'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
+        .row
+          .col-md-2 Year or Age
+          .col-md-10
+            .field(rmaps-droppable="'year'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.year }")
+              span(ng-show="fieldData.current.input.year") {{fieldData.current.input.year}}:
+              span Year
+              span.remove-icon(ng-show="fieldData.current.input.year" ng-click="removeBaseInput('year')") X
             span.sep OR
-            .field(rmaps-droppable="'stateName'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.stateName }")
-              span(ng-show="fieldData.current.input.stateName") {{fieldData.current.input.stateName}}:
-              span State Name
-              span.remove-icon(ng-show="fieldData.current.input.stateName" ng-click="removeBaseInput('stateName')") X
+            .field(rmaps-droppable="'age'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.age }")
+              span(ng-show="fieldData.current.input.age") {{fieldData.current.input.age}}:
+              span Age
+              span.remove-icon(ng-show="fieldData.current.input.age" ng-click="removeBaseInput('age')") X
 
       //- Generic
-      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market'].indexOf(fieldData.current.output) == -1")
+      .col-md-12.scroll(ng-show="['address','status','status_display','substatus','fips_code','rm_property_id','days_on_market','year_built'].indexOf(fieldData.current.output) == -1")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-10

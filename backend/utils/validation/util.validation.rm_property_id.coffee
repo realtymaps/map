@@ -23,14 +23,10 @@ module.exports = (options = {}) ->
     if !value
       return null
 
-    if value.fipsCode
-      fipsInfo = value.fipsCode
-    else if value.stateCode && value.county
-      fipsInfo = value
-    else
+    if !value.fipsCode && (!value.stateCode || !value.county)
       throw new DataValidationError('either fipsCode, or state plus county is required', param, value)
 
     if !value.apn
       throw new DataValidationError('APN is required', param, value)
 
-    return composite(param, [fipsInfo, value.apn, value.sequenceNumber])
+    return composite(param, [value, value.apn, value.sequenceNumber])
