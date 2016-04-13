@@ -1,5 +1,5 @@
 Promise = require "bluebird"
-logger = require('../config/logger').spawn('service:filterSummary:base')
+logger = require('../config/logger').spawn('service:filterSummary:combined')
 validation = require "../utils/util.validation"
 sqlHelpers = require "./../utils/util.sql.helpers"
 filterStatuses = require "../enums/filterStatuses"
@@ -82,6 +82,7 @@ _getFilterSummaryAsQuery = (validatedQuery, limit = 2000, query = _getDefaultQue
   if bounds
     query.orWhere ->
       sqlHelpers.whereInBounds(query, "#{dbFn.tableName}.geometry_raw", bounds)
+      # TODO: remove this line, it is a temp hack since no geometry data exists yet
       query.whereNull('geometry_raw')
 
   if filters.status.length < statuses.length
