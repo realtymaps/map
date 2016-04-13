@@ -7,7 +7,7 @@ stateCodeLookup = require '../util.stateCodeLookup'
 module.exports = (options = {}) ->
   (param, value) ->
     Promise.try () ->
-      if value.state.length == 2
+      if !value.state || value.state.length == 2
         return value.state
       else
         return stateCodeLookup(value.state)
