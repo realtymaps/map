@@ -61,29 +61,4 @@
 
     .project-content
       .project-dashboard-container
-        .row.project-top
-          .col-sm-6.col-xs-12
-            div(ui-view)
-
-          .col-sm-6.hidden-xs
-            img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
-
-          .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
-            .notes-title
-              a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
-
-            .list.bordered
-              .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
-                .row
-                  .col-sm-12
-                    .note-image
-                      a(class="note-img" ng-if="note.coordinates")
-                        img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
-                    .note-data-wrapper
-                      .note-data
-                        .row
-                          .col-sm-7
-                            .note-title {{note.title}}
-                          .col-sm-5.text-right
-                            .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
-                        p {{note.text}}
+        div(ui-view)

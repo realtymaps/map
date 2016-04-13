@@ -1,7 +1,6 @@
 app = require '../../app.coffee'
 _ = require 'lodash'
 
-template = require './_propertyButtons.jade'
 #
 # USAGE:
 #

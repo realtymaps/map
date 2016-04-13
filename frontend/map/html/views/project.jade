@@ -1,13 +1,39 @@
 .project-dashboard-container
-  //carousel(interval="myInterval" template-url="./includes/bootstrap/carousel.jade")
-  //  slide(ng-repeat="property in project.properties_selected" template-url="./includes/bootstrap/carousel-slide.jade")
-  //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
-  //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+  .row.project-top
+    .col-sm-6.col-xs-12
 
-  carousel.bordered(interval="myInterval")
-    slide(ng-repeat="property in pins")
-      .pin-image
-        img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
-        img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
-      .pin-attributes
-        property-attributes(property="property")
+      //carousel(interval="myInterval" template-url="./includes/bootstrap/carousel.jade")
+      //  slide(ng-repeat="property in project.properties_selected" template-url="./includes/bootstrap/carousel-slide.jade")
+      //    img(ng-cloak ng-if="property.geometry.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 420, 280)}}" title="{{property.title}}")
+      //    img(ng-cloak ng-if="!property.geometry.coordinates" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+
+      carousel.bordered(interval="myInterval")
+        slide(ng-repeat="property in pins")
+          .pin-image
+            img(ng-if="property.geom_point_json.coordinates" ng-src="{{formatters.property.google.StreetView.getUrl(property, 500, 300)}}" title="{{property.title}}")
+            img.pin-sample-image(ng-if="!property.geom_point_json.coordinates && loadedProperties" ng-src="/assets/test_property.jpg" title="{{property.title}}")
+          .pin-attributes
+            property-attributes(property="property")
+
+    .col-sm-6.hidden-xs
+      img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+
+    .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
+      .notes-title
+        a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
+
+      .list.bordered
+        .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
+          .row
+            .col-sm-12
+              .note-image
+                a(class="note-img" ng-if="note.coordinates")
+                  img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+              .note-data-wrapper
+                .note-data
+                  .row
+                    .col-sm-7
+                      .note-title {{note.title}}
+                    .col-sm-5.text-right
+                      .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+                  p {{note.text}}
