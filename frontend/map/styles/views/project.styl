@@ -147,14 +147,12 @@
 
   .project-notes
     margin-top: $project-gutter-width;
-
-    $fnMakeTransition(width 200ms ease 0ms)
+    font-size: 16px;
 
     .item
       background-color: white;
 
   .notes-title
-    font-size: 19px;
     margin-bottom: 10px;
     text-transform: uppercase;
 
@@ -162,12 +160,9 @@
       color: black;
 
   .note-title
-    font-size: 16px;
     font-weight: 500;
 
   .note-image
-    //width: 110px;
-    //padding: 5px;
     width: 110px;
     height: 100px;
     float: left;
@@ -244,6 +239,18 @@
 
       &.button-has-mail
         color: $rm_mail
+
+  //
+  // Project sub-page property
+  //
+
+  .project-property-card
+    .property-data
+      padding: 0;
+
+  .project-card-notes
+    font-size: 14px;
+
 
 //@media not all, (-webkit-transform-3d)
 //  .carousel-inner > .carousel-item.next.left

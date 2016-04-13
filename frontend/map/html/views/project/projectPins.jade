@@ -1,6 +1,6 @@
 #project-pin-container
   .project-top
-    .item.item-card.bordered(ng-repeat="property in pins")
+    .project-property-card.item.item-card.bordered(ng-repeat="property in pins")
       .row
         .col-xs-6
           .prop-image
@@ -13,7 +13,7 @@
             property-attributes(property='property')
             property-buttons(property='property' project='project' zoom-click='zoomClick(property)')
 
-          .project-notes
+          .project-card-notes
             .notes-title
               a(ui-sref="projectNotes({ id: project.id })") Notes ({{filteredNotes.length || 0}})
 
@@ -25,4 +25,4 @@
                       .note-title {{note.title}}
                     .col-sm-5.text-right
                       .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
-                  p {{note.text}}
+                  .note-text {{note.text}}
