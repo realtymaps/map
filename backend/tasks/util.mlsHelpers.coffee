@@ -73,6 +73,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   data =
     address: sqlHelpers.safeJsonArray(base.address)
     hide_listing: base.hide_listing ? false
+    hide_address: base.hide_address ? false
     shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
