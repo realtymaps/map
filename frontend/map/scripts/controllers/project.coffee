@@ -129,7 +129,7 @@ app.controller 'rmapsProjectCtrl',
       $scope.newNotes[property.rm_property_id].text,
       project.project_id,
       property.rm_property_id,
-      property.geomPointJson
+      property.geom_point_json
     ).then () ->
       $rootScope.$emit rmapsEventConstants.notes
       delete $scope.newNotes[property.rm_property_id]
