@@ -19,14 +19,14 @@
             span Reset
 
   .project-widgets
-    .project-widget.widget-project.bordered(ng-class="{ 'widget-active': $state.is('project')}")
+    .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
       .inner
         .widget-background
           span.icon.icon-property
         a(ui-sref="project({ id: project.id})")
           .widget-title Dashboard
 
-    .project-widget.widget-pin.bordered(ng-class="{ 'widget-active': $state.is('projectPins')}")
+    .project-widget.widget-pin(ng-class="{ 'widget-active': $state.is('projectPins')}")
       .inner
         .widget-background
           span.icon.icon-pin
@@ -34,7 +34,7 @@
           .widget-count {{_.keys(project.properties_selected).length || 0}}
           .widget-title Pins
 
-    .project-widget.widget-favorite.bordered(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
+    .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
       .inner
         .widget-background
           i.icon.fa.fa-heart
@@ -42,7 +42,7 @@
           .widget-count {{_.keys(project.favorites).length || 0}}
           .widget-title Favorites
 
-    .project-widget.widget-neighborhood.bordered(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+    .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
       .inner
         .widget-background
           span.icon.icon-neighbourhood
@@ -50,7 +50,7 @@
           .widget-count {{project.neighbourhoods.length || 0}}
           .widget-title Neighbourhoods
 
-    .project-widget.widget-client.bordered(ng-class="{ 'widget-active': $state.is('projectClients')}")
+    .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
       .inner
         .widget-background
           span.icon.icon-project

@@ -4,10 +4,13 @@
 
 #project-dashboard
 
-  $project-gutter-width = 45px;
-  $project-widgets-width = 130px;
-  $project-widget-width = 110px;
-  $project-content-width = $project-gutter-width * 2 + $project-widgets-width;
+  $project-left-margin = 45px;
+  $project-gutter-width = 30px;
+  $project-widget-width = 160px;
+  $project-widget-width-active = $project-widget-width + 2;
+  $project-widget-height = 100px;
+  $project-widgets-width = $project-widget-width;
+  $project-content-width = $project-widgets-width;
 
   a:focus, a:hover
     text-decoration none
@@ -20,7 +23,6 @@
     background-color: white
     padding-top: 10px;
     padding-bottom: 10px;
-    margin-bottom: 15px;
 
     .btn
       font-size: 12px;
@@ -29,7 +31,7 @@
 
   .project-title
     font-size: 26px
-    margin-left: $project-gutter-width;
+    margin-left: 45px;
 
   .project-tools
     float: right;
@@ -42,16 +44,17 @@
   //
 
   .project-widgets
-    width: $project-widget-width;
-    margin-left: $project-gutter-width;
-    margin-right: $project-gutter-width;
-    padding: 0 0 20px 0;
+    width: $project-widgets-width;
+    //margin-left: $project-gutter-width;
+    //margin-right: $project-gutter-width;
+    padding: 0 0px 20px 0px;
     float: left;
+    background-color: white;
 
   .project-widget
     position: relative;
-    width: 100%;
-    padding-bottom: 100%;
+    width: $project-widget-width;
+    height: $project-widget-height;
     background-color: white;
     margin-bottom: 15px;
     text-align: center;
@@ -74,7 +77,7 @@
       color: black;
 
     &.widget-active
-      width: 112px;
+      width: $project-widget-width-active;
       border-right: solid $light_blue 3px;
       //border-right: 2px solid 1px 50% opacity;
 
@@ -85,7 +88,7 @@
   .widget-pin
     .widget-background
       color: $yellow;
-      font-size: 80px;
+      font-size: 60px;
       opacity: 0.3;
 
   .widget-neighborhood
@@ -95,22 +98,22 @@
   .widget-client
     .widget-background
       color: $green_logo;
-      font-size: 85px;
+      font-size: 60px;
 
   .widget-background
     position: absolute;
     top: 0;
     right: 0;
     left: 0;
-    font-size: 70px;
-    line-height: $project-widget-width;
+    font-size: 55px;
+    line-height: $project-widget-height;
     text-align: center;
     z-index: 0;
     opacity: 0.2;
 
   .widget-count
     font-size: 36px;
-    line-height: $project-widget-width;
+    line-height: $project-widget-height;
 
   .widget-title
     position: absolute;
@@ -118,7 +121,7 @@
     left: 0;
     right: 0;
     text-transform: uppercase;
-    font-size: 11px;
+    font-size: 10px;
 
   //
   // Project Content
@@ -127,6 +130,7 @@
   .project-content
     width: "calc(100% - %s)" % $project-content-width
     float: left;
+    padding: $project-gutter-width
 
   //
   // Notes
