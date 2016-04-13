@@ -40,15 +40,24 @@
     border: solid $rm-border-line 1px;
 
   //
+  // Inner panel
+  //
+  .inner
+    position: relative;
+
+  //
   // Project Nav Widgets
   //
 
   .project-widgets
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
     width: $project-widgets-width;
     //margin-left: $project-gutter-width;
     //margin-right: $project-gutter-width;
     padding: 0 0px 20px 0px;
-    float: left;
     background-color: white;
 
   .project-widget
@@ -89,7 +98,7 @@
     .widget-background
       color: $yellow;
       font-size: 60px;
-      opacity: 0.3;
+      opacity: 0.2;
 
   .widget-neighborhood
     .widget-background
@@ -109,7 +118,7 @@
     line-height: $project-widget-height;
     text-align: center;
     z-index: 0;
-    opacity: 0.2;
+    opacity: 0.13;
 
   .widget-count
     font-size: 36px;
@@ -129,7 +138,7 @@
 
   .project-content
     width: "calc(100% - %s)" % $project-content-width
-    float: left;
+    margin-left: $project-content-width;
     padding: $project-gutter-width
 
   //

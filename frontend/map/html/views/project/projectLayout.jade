@@ -18,72 +18,72 @@
             span.icon.fa.fa-undo
             span Reset
 
-  .project-widgets
-    .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
-      .inner
-        .widget-background
-          span.icon.icon-property
-        a(ui-sref="project({ id: project.id})")
-          .widget-title Dashboard
+  .inner
+    .project-widgets
+      .project-widget.widget-project(ng-class="{ 'widget-active': $state.is('project')}")
+        .inner
+          .widget-background
+            span.icon.icon-property
+          a(ui-sref="project({ id: project.id})")
+            .widget-title Dashboard
 
-    .project-widget.widget-pin(ng-class="{ 'widget-active': $state.is('projectPins')}")
-      .inner
-        .widget-background
-          span.icon.icon-pin
-        a(ui-sref="projectPins({ id: project.id})")
-          .widget-count {{_.keys(project.properties_selected).length || 0}}
-          .widget-title Pins
+      .project-widget.widget-pin(ng-class="{ 'widget-active': $state.is('projectPins')}")
+        .inner
+          .widget-background
+            span.icon.icon-pin
+          a(ui-sref="projectPins({ id: project.id})")
+            .widget-count {{_.keys(project.properties_selected).length || 0}}
+            .widget-title Pins
 
-    .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
-      .inner
-        .widget-background
-          i.icon.fa.fa-heart
-        a(ui-sref="projectFavorites({ id: project.id})")
-          .widget-count {{_.keys(project.favorites).length || 0}}
-          .widget-title Favorites
+      .project-widget.widget-favorite(ng-class="{ 'widget-active': $state.is('projectFavorites')}")
+        .inner
+          .widget-background
+            i.icon.fa.fa-heart
+          a(ui-sref="projectFavorites({ id: project.id})")
+            .widget-count {{_.keys(project.favorites).length || 0}}
+            .widget-title Favorites
 
-    .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
-      .inner
-        .widget-background
-          span.icon.icon-neighbourhood
-        a(ui-sref="projectNeighbourhoods({ id: project.id})")
-          .widget-count {{project.neighbourhoods.length || 0}}
-          .widget-title Neighbourhoods
+      .project-widget.widget-neighborhood(ng-class="{ 'widget-active': $state.is('projectNeighbourhoods')}")
+        .inner
+          .widget-background
+            span.icon.icon-neighbourhood
+          a(ui-sref="projectNeighbourhoods({ id: project.id})")
+            .widget-count {{project.neighbourhoods.length || 0}}
+            .widget-title Neighbourhoods
 
-    .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
-      .inner
-        .widget-background
-          span.icon.icon-project
-        a(ui-sref="projectClients({ id: project.id})")
-          .widget-count {{project.clients.length || 0}}
-          .widget-title Clients
+      .project-widget.widget-client(ng-class="{ 'widget-active': $state.is('projectClients')}")
+        .inner
+          .widget-background
+            span.icon.icon-project
+          a(ui-sref="projectClients({ id: project.id})")
+            .widget-count {{project.clients.length || 0}}
+            .widget-title Clients
 
-  .project-content
-    .project-dashboard-container
-      .row.project-top
-        .col-sm-6.col-xs-12
-          div(ui-view)
+    .project-content
+      .project-dashboard-container
+        .row.project-top
+          .col-sm-6.col-xs-12
+            div(ui-view)
 
-        .col-sm-6.hidden-xs
-          img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
+          .col-sm-6.hidden-xs
+            img.bordered(src='/assets/test_map.jpg' style="background-color: lightblue; width: 100%; height: 406px")
 
-        .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
-          .notes-title
-            a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
+          .project-notes(ng-class="{ 'col-sm-12': $state.is('project'), 'col-sm-6 pull-right': !$state.is('project') }")
+            .notes-title
+              a(ui-sref="projectNotes({ id: project.id })") Notes ({{notes.length || 0}})
 
-          .list.bordered
-            .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
-              .row
-                .col-sm-12
-                  .note-image
-                    a(class="note-img" ng-if="note.coordinates")
-                      img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
-                  .note-data-wrapper
-                    .note-data
-                      .row
-                        .col-sm-7
-                          .note-title {{note.title}}
-                        .col-sm-5.text-right
-                          .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
-                      p {{note.text}}
-
+            .list.bordered
+              .item.project-note(ng-repeat="note in notes | orderBy:rm_inserted_time:true")
+                .row
+                  .col-sm-12
+                    .note-image
+                      a(class="note-img" ng-if="note.coordinates")
+                        img(ng-src="{{formatters.property.google.StreetView.getUrlForCoordinates(note.coordinates, 100, 100)}}" title="{{note.title}}")
+                    .note-data-wrapper
+                      .note-data
+                        .row
+                          .col-sm-7
+                            .note-title {{note.title}}
+                          .col-sm-5.text-right
+                            .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
+                        p {{note.text}}
