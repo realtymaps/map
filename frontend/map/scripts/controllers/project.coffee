@@ -26,13 +26,23 @@ app.controller 'rmapsProjectCtrl',
   currentProfile,
   currentProject
 ) ->
-  $scope.activeView = 'project'
+  #
+  # Set up Logging
+  #
+
   $log = $log.spawn("map:projects")
   $log.debug 'projectCtrl', currentProfile
 
+  #
   # Current project is injected by route resolves
+  #
+
   project = currentProject
   profile = currentProfile
+
+  #
+  # Initialize Scope Variables
+  #
 
   $scope.formatters =
     results: new rmapsResultsFormatterService scope: $scope
@@ -45,10 +55,15 @@ app.controller 'rmapsProjectCtrl',
 
   $scope.$state = $state
   $scope.project = null
+  $scope.newNotes = {}
   $scope.notes = []
   $scope.loadedProperties = false
 
   clientsService = null
+
+  #
+  # Scope Event Handlers
+  #
 
   $scope.getStateName = (name) ->
     name.replace /project(.+)/, '$1'
@@ -107,6 +122,21 @@ app.controller 'rmapsProjectCtrl',
         animation: true
         scope: $scope
         template: require('../../html/views/templates/modals/propertyDetail.jade')()
+
+  # Create Note
+  $scope.createNote = (project, property) ->
+    rmapsNotesService.createFromText(
+      $scope.newNotes[property.rm_property_id].text,
+      project.project_id,
+      property.rm_property_id,
+      property.geomPointJson
+    ).then () ->
+      $rootScope.$emit rmapsEventConstants.notes
+      delete $scope.newNotes[property.rm_property_id]
+
+  #
+  # Load Project Data
+  #
 
   loadProject = () ->
     # It is important to load property details before properties are added to scope to prevent template breaking

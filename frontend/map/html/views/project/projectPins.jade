@@ -17,8 +17,8 @@
             .notes-title
               a(ui-sref="projectNotes({ id: project.id })") Notes ({{filteredNotes.length || 0}})
 
-            .list.bordered
-              .item.project-note(ng-repeat="note in notes | filter:{ rm_property_id: property.rm_property_id } | orderBy:rm_inserted_time:true as filteredNotes")
+            .list
+              .item.item-border.project-note(ng-repeat="note in notes | filter:{ rm_property_id: property.rm_property_id } | orderBy:rm_inserted_time:true as filteredNotes")
                 .note-data
                   .row
                     .col-sm-7
@@ -26,3 +26,14 @@
                     .col-sm-5.text-right
                       .note-date {{note.rm_inserted_time  | date:'MM/dd/yyyy'}}
                   .note-text {{note.text}}
+
+            .note-input
+              form.note(name="createNoteForm_{{property.rm_property_id}}")
+                .input-group
+                  textarea.form-control(cols="25" rows="2"
+                    placeholder="Add a note about this property"
+                    name="noteText"
+                    type="text"
+                    ng-model="newNotes[property.rm_property_id].text"
+                    validator="required,minlength=10")
+                  span.input-group-addon(ng-click="createNote(project, property)" validation-submit="createNoteForm_{{property.rm_property_id}}") +
