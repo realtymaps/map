@@ -1,6 +1,12 @@
 @import './avatar'
 
 .user
+  @extends .table-view
+  .table .fa-caret-down, .table .fa-caret-up
+    margin-left 4px
+  .table th
+    cursor pointer
+
   margin: auto
 
   .list-group
@@ -15,3 +21,7 @@
   .img-crop-area
     overflow: hidden
     margin: auto
+
+  .collapse-header
+    border-bottom 1px solid $gray_lighter
+

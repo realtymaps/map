@@ -13,14 +13,41 @@ $fnMakeMapUlDropdown()
       border-top 1px solid $darker_white
       color $dark_blue
       font-size 12px
-      font-weight bold
-      padding 12px
+      font-weight boldx
+      display flex
+      align-items center
+      justify-content space-between
+
+      > span, .results-btn
+        display flex
+        align-items center
+
+      .results-btn
+        float right
+        cursor pointer
+        border 1px solid $black_10
+        border-radius 3px
+        padding 7px
+        margin-left 5px
+        &.disabled
+          color $gray_lighter
+        .icon
+          font-size 20px
+      .fa, .icon
+        float left
+        font-size 12px
+      .fa
+        margin 0 5px
+      .icon
+        margin -3px 5px 0
+
     .inner
       ul
         list-style none
         padding 0
         max-height 250px
         overflow auto
+        width 100%
         li
           a
             display block
@@ -34,20 +61,17 @@ $fnMakeMapUlDropdown()
                 font-weight bold
                 display block
                 float left
+                width 80%
                 @extends .global-transition
                 h3
                   font-weight normal
                   margin 0
                   font-size 16px
                   color black
-                // span.count
-                //   font-size 10px
-                //   color $gray
-                //   float left
-              span.count
-                font-size 10px
-                color $gray
-                float left
+              .subtitle
+                span
+                  font-size 10px
+                  color $gray
               span.icon
                 float left
                 font-size 18px

@@ -34,7 +34,7 @@ describe 'task.lob', ->
 
     svc.__set__ 'lobSvc', @lobSvc
 
-    @jobQueue = queueSubsequentSubtask: sinon.spy (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
+    @jobQueue = queueSubsequentSubtask: sinon.spy ({transaction, subtask, laterSubtaskName, manualData, replace}) ->
       manualData
 
     svc.__set__ 'jobQueue', @jobQueue
@@ -64,10 +64,10 @@ describe 'task.lob', ->
       @tables.mail.letters().selectSpy.callCount.should.equal 2
       @tables.mail.letters().whereSpy.args[0].should.deep.equal ['status', 'ready']
       @jobQueue.queueSubsequentSubtask.callCount.should.equal @letters.length
-      expect(@jobQueue.queueSubsequentSubtask.args[0][0]).to.be.null
-      @jobQueue.queueSubsequentSubtask.args[0][1].should.equal @subtasks.findLetters
-      @jobQueue.queueSubsequentSubtask.args[0][2].should.equal 'lob_createLetter'
-      @jobQueue.queueSubsequentSubtask.args[0][3].should.equal mockLetter
+      expect(@jobQueue.queueSubsequentSubtask.args[0][0].transaction).to.be.undefined
+      @jobQueue.queueSubsequentSubtask.args[0][0].subtask.should.equal @subtasks.findLetters
+      @jobQueue.queueSubsequentSubtask.args[0][0].laterSubtaskName.should.equal 'createLetter'
+      @jobQueue.queueSubsequentSubtask.args[0][0].manualData.should.equal mockLetter
 
   it 'send a letter and capture LOB response', ->
     svc.executeSubtask(@subtasks.createLetter, '<test>')

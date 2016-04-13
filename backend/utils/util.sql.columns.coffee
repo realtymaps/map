@@ -120,6 +120,7 @@ joinColumns = do ->
     "#{tables.user.profile.tableName}.map_results"
     "#{tables.user.profile.tableName}.favorites"
     "#{tables.user.profile.tableName}.project_id"
+    "#{tables.user.profile.tableName}.rm_modified_time"
 
     "#{tables.user.project.tableName}.name"
     "#{tables.user.project.tableName}.archived"

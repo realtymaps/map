@@ -39,7 +39,7 @@ findLetters = (subtask) ->
 
     query.then (letters) ->
       Promise.map letters, (letter) ->
-        jobQueue.queueSubsequentSubtask null, subtask, 'lob_createLetter', letter, true
+        jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'createLetter', manualData: letter, replace: true})
 
 #
 # This task sends a _single_ letter via the LOB API and saves the response data (or error) returned

@@ -1,25 +1,35 @@
 span(ng-hide="Toggles.getHideAnyDraw()" class="dropdown btn-group neighbourhood-list"
-	ng-controller="rmapsMapNeighbourhoodsCtrl" ng-model="isOpen"
-	dropdown on-toggle="neighbourhoodListToggled(open);isOpen = open" auto-close="disabled")
-		div(ng-if="isOpen" ng-controller="rmapsDrawNeighborhoodCtrl")
-		button.btn.btn-transparent.dropdown-toggle.neighbour.nav-btn(dropdown-toggle)
-			span.icon.icon-neighbourhood
-		.dropdown-menu.whiteblock.no-margin
-			.fixed-header
-				span
-					a(ui-sref="neighbourhoods") {{neighbourhoods.length}} Neighbourhoods
-			.inner
-				ul
-					li(ng-repeat="model in neighbourhoods")
-						div(ng-controller="rmapsNeighbourhoodsModalCtrl")
-							span.enity
-								span.count {{$index+1}}.
+  ng-controller="rmapsMapNeighbourhoodsCtrl" ng-model="isOpen"
+  dropdown on-toggle="neighbourhoodListToggled(open);isOpen = open" auto-close="disabled")
+    div(ng-if="isOpen" ng-controller="rmapsDrawNeighborhoodCtrl")
+    button.btn.btn-transparent.dropdown-toggle.neighbour.nav-btn.toggle-active(
+    dropdown-toggle
+    popover-placement="right"
+    popover="Neighborhoods"
+    popover-trigger="mouseenter")
+      span.icon.icon-neighbourhood
+    .dropdown-menu.whiteblock.no-margin
+      .fixed-header
+        span
+          a(ui-sref="projectNeighborhoods({id: principal.getCurrentProfile().project_id})") {{neighbourhoods.length}} Neighborhoods
+        span.results-btn(
+          popover-placement="right"
+          popover-trigger="mouseenter"
+          popover="Add Neighborhood"
+          ng-click="Toggles.toggleIsNeighborhoodDraw()") New Neighborhood
+            span.icon.icon-add_neighbourhood
+      .inner
+        ul
+          li(ng-repeat="model in neighbourhoods")
+            div(ng-controller="rmapsNeighbourhoodsModalCtrl")
+              span.enity
+                span.count {{$index+1}}.
 
-								span.content
-									a(href="#/neighbourhoods/{{model.properties.id}}")
-									h3.title {{model.properties.neighbourhood_name}}
-									p.text {{model.properties.neighbourhood_details}}
+                span.content
+                  a(href="#/neighbourhoods/{{model.properties.id}}")
+                  h3.title {{model.properties.neighbourhood_name}}
+                  p.text {{model.properties.neighbourhood_details}}
 
-							span.actions
-								span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
-								span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")
+              span.actions
+                span.icon.icon-remove(ng-click="remove(model); $event.stopPropagation()")
+                span.fa.fa-edit(ng-click="update(model); $event.stopPropagation()")

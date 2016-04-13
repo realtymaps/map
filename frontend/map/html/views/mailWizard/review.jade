@@ -26,7 +26,7 @@
       .row.review-items
         div
           .row.separator
-            .col-md-10
+            .col-md-12
               .row
                 h2 Campaign Name
               .row
@@ -49,13 +49,10 @@
                 .col-md-3
                   label Print in Color?
                 .col-md-9
-                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key")
-
-            .col-md-2
-               button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="campaignInfo({id:wizard.mail.campaign.id})") edit
+                    input(type="checkbox" ng-model="wizard.mail.campaign.options.color" ng-disabled="!wizard.mail.campaign.aws_key" ng-change="refreshColorPrice()")
 
           .row.separator.recipients
-            .col-md-10
+            .col-md-12
               .row
                 h2 Recipients
               .row
@@ -63,11 +60,8 @@
                   p.recipient-link(ng-click="showAddresses(wizard.mail.campaign.recipients)" ng-pluralize count="wizard.mail.campaign.recipients.length"
                     when="{'0': 'There are no recipients selected for this mailing', '1': 'Mailing has 1 recipient.', 'other': 'Mailing has {} recipients.'}")
 
-            .col-md-2
-               button.btn.btn-primary.review-edit-button(ng-hide="wizard.mail.isSubmitted()" ui-sref="recipientInfo({id:wizard.mail.campaign.id})") edit
-
           .row.separator.errors(ng-show="review.data.alert.msg")
-            .col-md-10
+            .col-md-12
               .row
                 h2 Issues
               .row
@@ -84,7 +78,7 @@
                   button.btn.btn-primary.pull-right(ng-click="viewMap()" ng-show="wizard.mail.isSubmitted()") View Map
 
           .row.separator(ng-hide="wizard.mail.isSubmitted()")
-            .col-md-10
+            .col-md-12
               .row
                 h2 Price Quote
               .row

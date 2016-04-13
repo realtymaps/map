@@ -171,7 +171,7 @@ _checkTask = (transaction, batchId, taskName) ->
       return undefined
     task?[0]?.data
 
-queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
+queueSubtasks = ({transaction, batchId, subtasks, concurrency}) -> Promise.try () ->
   if !subtasks?.length
     return 0
   _checkTask(transaction, batchId, subtasks[0].task_name)
@@ -182,17 +182,18 @@ queueSubtasks = (transaction, batchId, subtasks) -> Promise.try () ->
       logger.spawn("task:#{subtasks[0].task_name}").debug () -> "Refusing to queue subtasks (parent task might have terminated): #{_.pluck(subtasks, 'name').join(', ')}"
       return [0]
     Promise.all _.map subtasks, (subtask) -> # can't use bind here because it passes in unwanted params
-      queueSubtask(transaction, batchId, taskData, subtask)
+      queueSubtask({transaction, batchId, taskData, subtask, concurrency})
   .then (counts) ->
     return _.reduce counts, (sum, count) -> sum+count
 
 # convenience function to get another subtask config and then enqueue it based on the current subtask
-queueSubsequentSubtask = (transaction, currentSubtask, laterSubtaskName, manualData, replace) ->
-  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+queueSubsequentSubtask = ({transaction, subtask, laterSubtaskName, manualData, replace, concurrency}) ->
+  subtaskName = "#{subtask.task_name}_#{laterSubtaskName}"
+  getSubtaskConfig(transaction, subtaskName, subtask.task_name)
   .then (laterSubtask) ->
-    queueSubtask(transaction, currentSubtask.batch_id, undefined, laterSubtask, manualData, replace)
+    queueSubtask({transaction, batchId: subtask.batch_id, subtask: laterSubtask, manualData, replace, concurrency})
 
-queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -> Promise.try () ->
+queueSubtask = ({transaction, batchId, taskData, subtask, manualData, replace, concurrency}) -> Promise.try () ->
   if !subtask.active
     logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue inactive subtask for batchId #{batchId}: #{subtask.name}"
     return 0
@@ -213,28 +214,30 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
   else
     subtaskData = subtask.data
   # maybe we've already gotten the data and checked to be sure the task is still running
-  if _taskData != undefined
-    taskDataPromise = Promise.resolve(_taskData)
+  if taskData != undefined
+    taskDataPromise = Promise.resolve(taskData)
   else
     taskDataPromise = _checkTask(transaction, batchId, subtask.task_name)
   taskDataPromise
-  .then (taskData) ->
+  .then (freshTaskData) ->
     # need to make sure we don't queue the subtask if the task has errored in some way
-    if taskData == undefined
+    if freshTaskData == undefined
       # return 0 to indicate we queued 0 subtasks
       logger.spawn("task:#{subtask.task_name}").debug () -> "Refusing to queue subtask for batchId #{batchId} (parent task might have terminated): #{subtask.name}"
       return 0
     suffix = if subtaskData?.length? then "[#{subtaskData.length}]" else "<#{_summary(subtask)}>"
     logger.spawn("task:#{subtask.task_name}").debug () -> "Queueing subtask for batchId #{batchId}: #{subtask.name}#{suffix}"
     if _.isArray subtaskData    # an array for data means to create multiple subtasks, one for each element of data
-      Promise.map subtaskData, (data) ->
+      Promise.map subtaskData, (data, index) ->
         singleSubtask = _.clone(subtask)
         delete singleSubtask.active
+        if concurrency
+          singleSubtask.step_num += Math.floor(index/concurrency)
         singleSubtask.data = data
         if mergeData?
           _.extend(singleSubtask.data, mergeData)
-        singleSubtask.task_data = taskData
-        singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
+        singleSubtask.task_data = freshTaskData
+        singleSubtask.task_step = "#{singleSubtask.task_name}_#{('00000'+(singleSubtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
         singleSubtask.batch_id = batchId
         tables.jobQueue.currentSubtasks(transaction: transaction)
         .insert singleSubtask
@@ -244,7 +247,7 @@ queueSubtask = (transaction, batchId, _taskData, subtask, manualData, replace) -
       singleSubtask = _.clone(subtask)
       delete singleSubtask.active
       singleSubtask.data = subtaskData
-      singleSubtask.task_data = taskData
+      singleSubtask.task_data = freshTaskData
       singleSubtask.task_step = "#{subtask.task_name}_#{('00000'+(subtask.step_num||'FINAL')).slice(-5)}"  # this is needed by a stored proc, 0-padding
       singleSubtask.batch_id = batchId
       tables.jobQueue.currentSubtasks(transaction: transaction)
@@ -329,14 +332,18 @@ executeSubtask = (subtask, prefix) ->
     if subtask.kill_timeout_seconds?
       subtaskPromise = subtaskPromise
       .timeout(subtask.kill_timeout_seconds*1000)
-      .catch Promise.TimeoutError, _handleSubtaskError.bind(null, prefix, subtask, 'timeout', subtask.hard_fail_timeouts, 'timeout')
+      .catch Promise.TimeoutError, (err) ->
+        _handleSubtaskError({prefix, subtask, status: 'timeout', hard: subtask.hard_fail_timeouts, error: 'timeout'})
     subtaskPromise = subtaskPromise
-    .catch SoftFail, _handleSubtaskError.bind(null, prefix, subtask, 'soft fail', false)
-    .catch HardFail, _handleSubtaskError.bind(null, prefix, subtask, 'hard fail', true)
-    .catch PartiallyHandledError, _handleSubtaskError.bind(null, prefix, subtask, 'infrastructure fail', true)
+    .catch SoftFail, (err) ->
+      _handleSubtaskError({prefix, subtask, status: 'soft fail', hard: false, error: err})
+    .catch HardFail, (err) ->
+      _handleSubtaskError({prefix, subtask, status: 'hard fail', hard: true, error: err})
+    .catch PartiallyHandledError, (err) ->
+      _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
     .catch isUnhandled, (err) ->
       logger.error("Unexpected error caught during job execution: #{analyzeValue.getSimpleDetails(err)}")
-      _handleSubtaskError(prefix, subtask, 'infrastructure fail', true, err)
+      _handleSubtaskError({prefix, subtask, status: 'infrastructure fail', hard: true, error: err})
     .catch (err) -> # if we make it here, then we probably can't rely on the db for error reporting
       sendNotification
         subject: 'major db interaction problem'
@@ -355,7 +362,7 @@ executeSubtask = (subtask, prefix) ->
         clearTimeout(warnTimeout)
     return subtaskPromise
 
-_handleSubtaskError = (prefix, subtask, status, hard, error) ->
+_handleSubtaskError = ({prefix, subtask, status, hard, error}) ->
   Promise.try () ->
     if hard
       logger.error("#{prefix} Hard error executing subtask for batchId #{subtask.batch_id}, #{subtask.name}<#{_summary(subtask)}>: #{error}")
@@ -472,7 +479,7 @@ _handleZombies = (transaction=null) ->
   .whereRaw("started + #{config.JOB_QUEUE.SUBTASK_ZOMBIE_SLACK} + kill_timeout_seconds * INTERVAL '1 second' < NOW()")
   .then (subtasks=[]) ->
     Promise.map subtasks, (subtask) ->
-      _handleSubtaskError("<#{subtask.queue_name}-unknown>", subtask, 'zombie', subtask.hard_fail_zombies, 'zombie')
+      _handleSubtaskError({prefix: "<#{subtask.queue_name}-unknown>", subtask, status: 'zombie', hard: subtask.hard_fail_zombies, error: 'zombie'})
 
 _handleSuccessfulTasks = (transaction=null) ->
   # mark running tasks with no unfinished or error subtasks as successful
@@ -567,7 +574,7 @@ getQueueNeeds = () ->
       if !queueConfigs[subtaskList[0]?.queue_name]?.active
         # any task running on an inactive queue (or a queue without config) can be ignored without further processing
         continue
-      taskSteps = _.groupBy(subtaskList, 'step_num')
+      taskSteps = _.groupBy(subtaskList, 'task_step')
       steps = _.keys(taskSteps).sort()
       # find and stop after the first step in each task that isn't "acceptably done", as we don't want to count
       # anything from steps past that (in this task)
@@ -598,12 +605,12 @@ getQueueNeeds = () ->
     return result
 
 # convenience function to get another subtask config and then enqueue it (paginated) based on the current subtask
-queueSubsequentPaginatedSubtask = (transaction, currentSubtask, totalOrList, maxPage, laterSubtaskName, mergeData) ->
-  getSubtaskConfig(transaction, laterSubtaskName, currentSubtask.task_name)
+queueSubsequentPaginatedSubtask = ({transaction, subtask, totalOrList, maxPage, laterSubtaskName, mergeData, concurrency}) ->
+  getSubtaskConfig(transaction, "#{subtask.task_name}_#{laterSubtaskName}", subtask.task_name)
   .then (laterSubtask) ->
-    queuePaginatedSubtask(transaction, currentSubtask.batch_id, undefined, totalOrList, maxPage, laterSubtask, mergeData)
+    queuePaginatedSubtask({transaction, batchId: subtask.batch_id, totalOrList, maxPage, subtask: laterSubtask, mergeData, concurrency})
 
-queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData) -> Promise.try () ->
+queuePaginatedSubtask = ({transaction, batchId, taskData, totalOrList, maxPage, subtask, mergeData, concurrency}) -> Promise.try () ->
   if _.isArray(totalOrList)
     list = totalOrList
     total = totalOrList.length
@@ -630,7 +637,7 @@ queuePaginatedSubtask = (transaction, batchId, taskData, totalOrList, maxPage, s
     data.push datum
     subtasksQueued += 1
     countHandled += datum.count
-  queueSubtask(transaction, batchId, taskData, subtask, data)
+  queueSubtask({transaction, batchId, taskData, subtask, manualData: data, concurrency})
 
 getSubtaskConfig = (transaction, subtaskName, taskName) ->
   tables.jobQueue.subtaskConfig(transaction: transaction)
@@ -691,23 +698,24 @@ getLastTaskStartTime = (taskName, successOnly = true) ->
   .then (result) ->
     result?[0]?.last_start_time || new Date(0)
 
-module.exports =
-  queueReadyTasks: queueReadyTasks
-  queueTask: queueTask
-  queueManualTask: queueManualTask
-  requeueManualTask: requeueManualTask
-  queueSubtasks: queueSubtasks
-  queueSubtask: queueSubtask
-  queueSubsequentSubtask: queueSubsequentSubtask
-  cancelTask: cancelTask
-  executeSubtask: executeSubtask
-  getQueuedSubtask: getQueuedSubtask
-  doMaintenance: doMaintenance
-  sendNotification: sendNotification
-  getQueueNeeds: getQueueNeeds
-  queuePaginatedSubtask: queuePaginatedSubtask
-  queueSubsequentPaginatedSubtask: queueSubsequentPaginatedSubtask
-  getSubtaskConfig: getSubtaskConfig
-  runWorker: runWorker
-  getLastTaskStartTime: getLastTaskStartTime
-  cancelAllRunningTasks: cancelAllRunningTasks
+module.exports = {
+  queueReadyTasks
+  queueTask
+  queueManualTask
+  requeueManualTask
+  queueSubtasks
+  queueSubtask
+  queueSubsequentSubtask
+  cancelTask
+  executeSubtask
+  getQueuedSubtask
+  doMaintenance
+  sendNotification
+  getQueueNeeds
+  queuePaginatedSubtask
+  queueSubsequentPaginatedSubtask
+  getSubtaskConfig
+  runWorker
+  getLastTaskStartTime
+  cancelAllRunningTasks
+}

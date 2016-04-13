@@ -1,5 +1,6 @@
 app = require '../app.coffee'
 module.exports = app
+moment = require 'moment'
 
 app.controller 'rmapsProjectsDropdownCtrl', (
   $rootScope,
@@ -17,29 +18,42 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   $log = $log.spawn 'rmapsProjectsDropdownCtrl'
 
   $scope.projectDropdown = isOpen: false
+  $scope.isSandbox = (project) ->
+    !project.sandbox
+
+  $scope.isArchived = (project) ->
+    project.archived
 
   setScopeVariables = () ->
     rmapsPrincipalService.getIdentity()
     .then (identity) ->
+      if !identity?.profiles
+        return
       $scope.projects = _.values identity.profiles
       $log.debug $scope.projects
       $scope.totalProjects = $scope.projects.length
       _.each $scope.projects, (project) ->
+        project.modified = moment(project.rm_modified_time)
         project.totalProperties = (_.keys project.properties_selected)?.length
         project.totalFavorites = (_.keys project.favorites)?.length
 
   setScopeVariables()
 
+  $rootScope.$onRootScope rmapsEventConstants.principal.profile.updated, (event, identity) ->
+    setScopeVariables()
   $rootScope.$onRootScope rmapsEventConstants.principal.profile.addremove, (event, identity) ->
     setScopeVariables()
 
   $scope.selectProject = (project) ->
     $log.debug 'selectProject: ', project
-    if $state.current.projectParam?
-      $state.go $state.current, "#{$state.current.projectParam}": project.project_id
 
     $scope.projectDropdown.isOpen = false
     rmapsProfilesService.setCurrentProfileByProjectId project.project_id
+    .then ->
+      if $state.current.projectParam?
+        $state.go $state.current, "#{$state.current.projectParam}": project.project_id, reload: true
+      else
+        $state.go $state.current, $state.current.params, reload: true
 
   $scope.addProject = () ->
     $scope.newProject =
@@ -65,8 +79,6 @@ app.controller 'rmapsProjectsDropdownCtrl', (
   $scope.archiveProject = (project) ->
     project.archived = !project.archived
     rmapsProjectsService.update project.project_id, _.pick project, 'archived'
-    .then () ->
-      $scope.projectDropdown.isOpen = false
 
   $scope.resetProject = (project) ->
     if confirm 'Clear all filters, saved properties, and notes?'

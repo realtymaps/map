@@ -12,6 +12,7 @@
 
 $fnMakeMapProjects()
 $fnMakeMapUlDropdown()
+$fnMakeMapProperties()
 
 .leaflet-control-layers
   display none
@@ -19,18 +20,16 @@ $fnMakeMapUlDropdown()
 body
 
 #map
-  .old-controls
-    display none
-
   .map-navigation
     // override some default bootstrap stuff for all dropdown controls
-
-    $fnMakeMapProperties()
-
     $fnMakeMapNotes()
     $fnMakeMapNeighbourhoods()
     $fnMakeMapSettings()
     $fnMakeMapPinned()
+
+    margin-left 60px
+    >.btn-group
+      width 420px
 
     .favorites
     .notes-list
@@ -71,6 +70,7 @@ body
       .btn-group
         margin 0
         position static
+
       button
         margin 0
 

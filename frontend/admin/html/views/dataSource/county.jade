@@ -18,97 +18,114 @@
     .col-md-5
 
   .row.panel(cg-busy="countyLoading" ng-show="countyData.current && countyData.dataListType")
+    .row
+      input(ng-model="rootSearchText" placeholder="Search All")
+    .row
+      .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
 
-    .close-icon(ng-click="showGrid=!showGrid" tooltip="Grid view") ☰
+      .col-md-2.list-container
+        h4 Filters
+        .row-slim.row
+          .col-md-12
+            .filter-container
+              input(ng-model="filterSearchText" placeholder="Search")
+        .row-slim.row
+          .col-md-12
+            .field-container(cg-busy="baseLoading")
+              .field.base(
+              ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
+              ng-click="selectField(item)"
+              ng-repeat="item in categories.base | filter:rootSearchText | filter:filterSearchText | orderBy : 'alias'") {{item.alias}}
+                span.datatype(ng-show="item.valid() && !item.input")
 
-    .col-md-2.list-container
-      h4 Filters
-      .field-container(cg-busy="baseLoading")
-        .placeholder-field(ng-hide="categories.base")
-          span No Base Filters
-        .field.base(
-        ng-class="{ invalid: !item.valid(), selected: item == fieldData.current }"
-        ng-click="selectField(item)"
-        ng-repeat="item in categories.base | orderBy : 'alias' ") {{item.alias}}
-          span.datatype(ng-show="item.valid() && !item.input")
+      .col-md-2.list-container
+        h4 {{countyData.dataSourceType.name}}, {{countyData.dataListType.name}}
+        .i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
+        .row-slim.row
+          .col-md-12
+            .filter-container
+              input(ng-model="countySearchText" placeholder="Search")
+        .row-slim.row
+          .col-md-12
+            .field-container(
+            rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
+              .placeholder-field(ng-hide="fieldData.totalCount > 0")
+                span No Available Fields for
+                br
+                span {{countyData.current.name}}, {{countyData.dataListType.name}}
+              .field(
+              ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
+              ng-click="selectField(item)"
+              rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
+              ng-repeat="item in categories.unassigned | filter:rootSearchText | filter:countySearchText | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
+                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+                 'datatype-yn': item.type.name == 'boolean', \
+                 'datatype-date': item.type.name == 'datetime' }"
+                 ng-show="item.type")
 
-    .col-md-2.list-container
-      h4 {{countyData.dataSourceType.name}}, {{countyData.dataListType.name}}
-      .i.fa.fa-eye-slash.close-icon(ng-click="hideUnassigned()" tooltip="All unassigned to Hidden")
-      .field-container(
-      rmaps-droppable="categories.unassigned" on-drop="onDropCategory")
-        .placeholder-field(ng-hide="fieldData.totalCount > 0")
-          span No Available Fields for
-          br
-          span {{countyData.current.name}}, {{countyData.dataListType.name}}
-        .field(
-        ng-class="{ 'assigned': item.assigned, categorized: item.list != 'unassigned', selected: item == fieldData.current, invalid: !item.DataType }"
-        ng-click="selectField(item)"
-        rmaps-draggable="item" rmaps-draggable-collection="categories.unassigned"
-        ng-repeat="item in categories.unassigned | orderBy : [orderValid, orderList, '-assigned', 'input']") {{item.input}}
-          span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-           'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-           'datatype-yn': item.type.name == 'boolean', \
-           'datatype-date': item.type.name == 'datetime' }"
-           ng-show="item.type")
+      .col-md-3.list-container(ng-if="!showGrid")
+        h4 Groups
+        .row-slim.row
+          .col-md-12
+            .filter-container
+              input(ng-model="groupSearchText" placeholder="Search")
+        .row-slim.row
+          .col-md-12
+            .field-container(
+            cg-busy="fieldData.category.loading")
+              .field.category-item(
+              rmaps-droppable="category.items" on-drop="onDropCategory"
+              ng-class="{ selected: category == fieldData.category }"
+              ng-click="fieldData.category = category"
+              ng-repeat="category in targetCategories | filter:rootSearchText | filter:groupSearchText | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
 
-    .col-md-3.list-container(ng-if="!showGrid")
-      h4 Groups
-      .field-container(
-        cg-busy="fieldData.category.loading"
-        )
-        .field.category-item(
-        rmaps-droppable="category.items" on-drop="onDropCategory"
-        ng-class="{ selected: category == fieldData.category }"
-        ng-click="fieldData.category = category"
-        ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }} ( {{category.items.length}} )
+      .col-md-3.list-container(ng-if="!showGrid && fieldData.category")
+        h4 {{fieldData.category.label}}
+        .field-container(
+          rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
+          cg-busy="fieldData.category.loading")
+          .field(
+          class="base unselectable"
+          ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
+          .field(
+          ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
+          ng-click="item.unselectable || selectField(item)"
+          rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
+          ng-repeat="item in fieldData.category.items | filter:rootSearchText")
+            span(ng-show="!item.unselectable") {{item.input}}
+            span(ng-show="item.unselectable") {{item.alias}}
+            span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+             'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+             'datatype-yn': item.type.name == 'boolean', \
+             'datatype-date': item.type.name == 'datetime' }"
+             ng-show="item.type")
 
-    .col-md-3.list-container(ng-if="!showGrid && fieldData.category")
-      h4 {{fieldData.category.label}}
-      .field-container(
-        rmaps-droppable="fieldData.category.items" on-drop="onDropCategory"
-        cg-busy="fieldData.category.loading")
-        .field(
-        class="base unselectable"
-        ng-repeat="item in baseRules" ng-if="fieldData.category && item.group == fieldData.category.list") {{ item.alias }}
-        .field(
-        ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType}"
-        ng-click="item.unselectable || selectField(item)"
-        rmaps-draggable="item" rmaps-draggable-collection="fieldData.category.items"
-        ng-repeat="item in fieldData.category.items")
-          span(ng-show="!item.unselectable") {{item.input}}
-          span(ng-show="item.unselectable") {{item.output}}
-          span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-           'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-           'datatype-yn': item.type.name == 'boolean', \
-           'datatype-date': item.type.name == 'datetime' }"
-           ng-show="item.type")
-
-    .col-md-8.list-container(ng-if="showGrid")
-      h4 Groups
-      .field-container
-        .category(
-        cg-busy="category.loading"
-        ng-class="{collapse: !expanded}"
-        rmaps-droppable="category.items" on-drop="onDropCategory"
-        ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
-          .expand-icon(ng-click="expanded = !expanded" ng-show="category.items.length > 5")
-          .field-list
-            .field(
-            class="base unselectable"
-            ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
-            .field(
-            ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
-            ng-click="item.unselectable || selectField(item)"
-            rmaps-draggable="item" rmaps-draggable-collection="category.items"
-            ng-repeat="item in category.items")
-              span(ng-show="!item.unselectable") {{item.input}}
-              span(ng-show="item.unselectable") {{item.output}}
-              span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
-               'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
-               'datatype-yn': item.type.name == 'boolean', \
-               'datatype-date': item.type.name == 'datetime' }"
-               ng-show="item.type")
+      .col-md-8.list-container(ng-if="showGrid")
+        h4 Groups
+        .field-container
+          .category(
+          cg-busy="category.loading"
+          ng-class="{collapse: !expanded}"
+          rmaps-droppable="category.items" on-drop="onDropCategory"
+          ng-repeat="category in targetCategories | filter:{label:'!base'} | filter:{label:'!unassigned'}") {{ category.label }}
+            .expand-icon(ng-click="expanded = !expanded" ng-show="category.items.length > 5")
+            .field-list
+              .field(
+              class="base unselectable"
+              ng-repeat="item in baseRules" ng-if="item.group == category.list") {{ item.alias }}
+              .field(
+              ng-class="{ 'assigned': item.assigned, selected: item == fieldData.current, invalid: !item.DataType }"
+              ng-click="item.unselectable || selectField(item)"
+              rmaps-draggable="item" rmaps-draggable-collection="category.items"
+              ng-repeat="item in category.items")
+                span(ng-show="!item.unselectable") {{item.input}}
+                span(ng-show="item.unselectable") {{item.output}}
+                span.datatype(ng-class="{ 'datatype-string': item.type.name == 'string', \
+                 'datatype-number': item.type.name == 'integer' || item.type.name == 'float', \
+                 'datatype-yn': item.type.name == 'boolean', \
+                 'datatype-date': item.type.name == 'datetime' }"
+                 ng-show="item.type")
 
   .row.panel.properties-container(ng-show="fieldData.current")
 
@@ -411,6 +428,15 @@
               span Full Name
               span.remove-icon(ng-show="fieldData.current.input.full" ng-click="removeBaseInput('full')") X
 
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'fips_code'")
+        .row
+          .col-md-2 FIPS Code
+          .col-md-10
+            .field(rmaps-droppable="'fipsCode'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.fipsCode }")
+              span(ng-show="fieldData.current.input.fipsCode") {{fieldData.current.input.fipsCode}}:
+              span FIPS Code
+              span.remove-icon(ng-show="fieldData.current.input.fipsCode" ng-click="removeBaseInput('fipsCode')") X
+
       .col-md-12.scroll(ng-show="fieldData.current.output == 'rm_property_id'")
         .row
           .col-md-2 RealtyMaps Field
@@ -434,8 +460,25 @@
               span Sequence Number
               span.remove-icon(ng-show="fieldData.current.input.sequenceNumber" ng-click="removeBaseInput('sequenceNumber')") X
 
+      .col-md-12.scroll(ng-show="fieldData.current.output == 'year_built'")
+        .row
+          .col-md-2 RealtyMaps Field
+          .col-md-2 {{fieldData.current.alias}}
+        .row
+          .col-md-2 Year or Age
+          .col-md-10
+            .field(rmaps-droppable="'year'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.year }")
+              span(ng-show="fieldData.current.input.year") {{fieldData.current.input.year}}:
+              span Year
+              span.remove-icon(ng-show="fieldData.current.input.year" ng-click="removeBaseInput('year')") X
+            span.sep OR
+            .field(rmaps-droppable="'age'" on-drop="onDropBaseInput" ng-class="{ empty: !fieldData.current.input.age }")
+              span(ng-show="fieldData.current.input.age") {{fieldData.current.input.age}}:
+              span Age
+              span.remove-icon(ng-show="fieldData.current.input.age" ng-click="removeBaseInput('age')") X
+
       //- Generic
-      .col-md-12.scroll(ng-show="['address','rm_property_id','data_source_uuid', 'owner_name', 'owner_name_2'].indexOf(fieldData.current.output) == -1")
+      .col-md-12.scroll(ng-show="['address','rm_property_id','data_source_uuid', 'owner_name', 'owner_name_2','owner_address','fips_code','year_built'].indexOf(fieldData.current.output) == -1")
         .row
           .col-md-2 RealtyMaps Field
           .col-md-10

@@ -57,6 +57,7 @@ app.controller 'rmapsMapMailCtrl', ($scope, $log, rmapsLayerFormattersService, r
     rmapsMailCampaignService.getProjectMail()
     .then (mail) ->
       $log.debug "received mail data #{mail.length} " if mail?.length
+      $scope.mailings = mail
       $scope.map.markers.mail = rmapsLayerFormattersService.setDataOptions mail, rmapsLayerFormattersService.MLS.setMarkerMailOptions
 
   $scope.map.getMail = getMail

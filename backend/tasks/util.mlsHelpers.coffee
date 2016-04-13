@@ -73,6 +73,7 @@ buildRecord = (stats, usedKeys, rawData, dataType, normalizedData) -> Promise.tr
   data =
     address: sqlHelpers.safeJsonArray(base.address)
     hide_listing: base.hide_listing ? false
+    hide_address: base.hide_address ? false
     shared_groups:
       general: normalizedData.general || []
       details: normalizedData.details || []
@@ -168,7 +169,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
     args: opts
     required: ['newFileName', 'imageId', 'photo_id', 'data_source_uuid']
 
-  {newFileName, imageId, photo_id, uploadDate, description, data_source_uuid} = opts
+  {newFileName, imageId, photo_id, data_source_uuid, objectData} = opts
   externalAccounts.getAccountInfo(config.EXT_AWS_PHOTO_ACCOUNT)
   .then (s3Info) ->
     ###
@@ -183,8 +184,7 @@ _updatePhotoUrl = (subtask, opts) -> Promise.try () ->
       key: newFileName
       url: "#{config.S3_URL}/#{s3Info.other.bucket}/#{newFileName}"
 
-    obj.uploadDate = uploadDate if uploadDate
-    obj.description = description if description
+    obj.objectData = objectData if objectData
 
     jsonObjStr = JSON.stringify obj
 
@@ -313,11 +313,11 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
           #file naming consideratons
           #http://docs.aws.amazon.com/AmazonS3/latest/dev/request-rate-perf-considerations.html
           newFileName = "#{uuid.genUUID()}/#{subtask.task_name}/#{payload.name}"
-          {imageId, uploadDate, description} = payload
+          {imageId, objectData} = payload
 
           logger.debug _.omit payload, 'data'
 
-          if mlsPhotoUtil.hasSameUploadDate(uploadDate, row.photos[imageId]?.uploadDate)
+          if mlsPhotoUtil.hasSameUploadDate(objectData?.uploadDate, row.photos[imageId]?.objectData?.uploadDate)
             skipsCtr++
             finePhotologger.debug 'photo has same updateDate GTFO.'
             return promises.push Promise.resolve(null)
@@ -334,7 +334,7 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
               .where(listingRow)
               .update(photo_import_error: null)
               .then () ->
-                {newFileName, imageId, photo_id, uploadDate, description, data_source_uuid: listingRow.data_source_uuid}
+                {newFileName, imageId, photo_id, objectData, data_source_uuid: listingRow.data_source_uuid}
             .catch (error) ->
               logger.debug 'ERROR: putObject!!!!!!!!!!!!!!!!'
               logger.debug error
@@ -350,6 +350,17 @@ storePhotos = (subtask, listingRow) -> Promise.try () ->
       savesPromise.then ([saves]) ->
         #filter/flatMap (remove nulls / GTFOS)
         Promise.all _.filter(saves).map _updatePhotoUrl.bind(null, subtask)
+
+  .catch (error) ->
+    logger.error 'storePhotos overall error'
+    if error.stack?
+      logger.error error
+      logger.error error.stack
+      throw SoftFail error.message
+
+    msg = "unkown error obj: #{JSON.stringify error}"
+    logger.error msg
+    throw SoftFail msg
 
 deleteOldPhoto = (subtask, id) -> Promise.try () ->
   tables.deletes.photo()

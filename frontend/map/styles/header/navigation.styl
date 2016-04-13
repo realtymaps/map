@@ -1,5 +1,8 @@
 $fnMakeNav()
   .navigation
+    .dropdown-menu
+      z-index $rm-modal-header-zindex + 1
+
     .nav-toggle
       font-size 0
       display none
@@ -17,18 +20,19 @@ $fnMakeNav()
       color $gray
       position relative // Allow dropdowns to assume the size of this element
 
-      > li, .btn-group
+      > li, > li > .btn-group
         position static // Allow dropdowns to assume the size of this element
 
-      .btn
-        color $white
-        box-shadow none
-        border none
+        > .btn
+          color $white
+          box-shadow none
+          border none
 
       > li
         display inline-block
         margin 0
         float left
+        font-weight bold
         > a
           color $gray
           text-transform capitalize

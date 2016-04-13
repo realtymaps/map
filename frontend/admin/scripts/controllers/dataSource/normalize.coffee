@@ -70,9 +70,8 @@ app.controller 'rmapsNormalizeCtrl',
   # Handles adding rules to categories
   addRule = (rule, list) ->
     category = $scope.categories[list]
-    _.defaults rule,
-      ordering: category.length
-      list: list
+    rule.ordering ?= category.length
+    rule.list ?= list
     idx = _.sortedIndex(category, rule, 'ordering')
     allRules[if list == 'base' then rule.output else rule.input] = rule
     category.splice idx, 0, rule
@@ -98,6 +97,11 @@ app.controller 'rmapsNormalizeCtrl',
       if !allRules[baseRulesKey]
         rule.output = baseRulesKey
         addBaseRule rule
+
+    # correct ordering in case there were gaps (from someone mucking with the db manually)
+    for name,list of $scope.categories when name != 'unassigned'
+      for rule,index in list
+        rule.ordering = index
 
     # Save base rules
     $scope.baseLoading = normalizeService.createListRules 'base', $scope.categories.base

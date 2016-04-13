@@ -22,6 +22,8 @@ validation = require '../utils/util.validation'
 safeColumns = (require '../utils/util.sql.helpers').columns
 emailTransforms = require('../utils/transforms/transforms.email')
 {InValidEmailError, InActiveUserError} = require '../utils/errors/util.errors.args'
+tables = require '../config/tables'
+moment = require 'moment'
 
 dimensionLimits = config.IMAGES.dimensions.profile
 
@@ -109,7 +111,12 @@ currentProfile = (req, res, next) -> Promise.try () ->
 
   req.session.current_profile_id = req.body.currentProfileId
   logger.debug "set req.session.current_profile_id: #{req.session.current_profile_id}"
-  updateCache(req, res, next)
+  profile = req.session.profiles[req.session.current_profile_id]
+  profile.rm_modified_time = moment()
+  # Note it doesn't really matter what value rm_modified_time is set to since it gets updated via trigger anyway
+  tables.user.profile().update(rm_modified_time: profile.rm_modified_time).where('id', profile.id)
+  .then ->
+    updateCache(req, res, next)
 
 updateState = (req, res, next) ->
   userSessionService.updateCurrentProfile(req.session, req.body)

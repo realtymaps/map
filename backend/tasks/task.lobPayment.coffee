@@ -55,7 +55,7 @@ findCampaigns = (subtask) ->
             logger.info "#{campaign.label} original payment was test mode but payments are currently live - skipping"
             return
 
-          jobQueue.queueSubsequentSubtask null, subtask, 'lobPayment_chargeCampaign', campaign, true
+          jobQueue.queueSubsequentSubtask({subtask, laterSubtaskName: 'chargeCampaign', manualData: campaign, replace: true})
 
 #
 # This task finalizes the charges for a campaign that has finished sending
