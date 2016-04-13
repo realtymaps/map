@@ -32,6 +32,7 @@ apiBaseEmail = "#{apiBase}/email"
 apiBaseOnboarding = "#{apiBase}/onboarding"
 apiBaseWebhooks = "#{apiBase}/webhooks"
 apiBaseCharges = "#{apiBase}/charges"
+apiBasePaymentMethod = "#{apiBase}/paymentMethod"
 apiBaseMemdump = "#{apiBase}/memdump"
 apiBaseShell = "#{apiBase}/shell"
 apiBasePhotos = "#{apiBase}/photos"
@@ -244,6 +245,10 @@ module.exports =
   charges:
     apiBase: apiBaseCharges
     getHistory: "#{apiBaseCharges}/history"
+  paymentMethod:
+    apiBase: apiBasePaymentMethod
+    getDefaultSource: "#{apiBasePaymentMethod}/defaultsource"
+    replaceDefaultSource: "#{apiBasePaymentMethod}/defaultsource/:source"
   memdump:
     apiBase: apiBaseMemdump
     download: "#{apiBaseMemdump}/download"
